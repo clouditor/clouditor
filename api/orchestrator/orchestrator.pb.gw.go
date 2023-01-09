@@ -1989,11 +1989,11 @@ func local_request_Orchestrator_GetTargetOfEvaluation_0(ctx context.Context, mar
 }
 
 var (
-	filter_Orchestrator_ListControlMonitoringStatus_0 = &utilities.DoubleArray{Encoding: map[string]int{"cloud_service_id": 0, "catalog_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_Orchestrator_ListControlsInScope_0 = &utilities.DoubleArray{Encoding: map[string]int{"cloud_service_id": 0, "catalog_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_Orchestrator_ListControlMonitoringStatus_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListControlMonitoringStatusRequest
+func request_Orchestrator_ListControlsInScope_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListControlsInScopeRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2026,17 +2026,17 @@ func request_Orchestrator_ListControlMonitoringStatus_0(ctx context.Context, mar
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_ListControlMonitoringStatus_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_ListControlsInScope_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.ListControlMonitoringStatus(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListControlsInScope(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Orchestrator_ListControlMonitoringStatus_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListControlMonitoringStatusRequest
+func local_request_Orchestrator_ListControlsInScope_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListControlsInScopeRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2069,21 +2069,233 @@ func local_request_Orchestrator_ListControlMonitoringStatus_0(ctx context.Contex
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_ListControlMonitoringStatus_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_ListControlsInScope_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.ListControlMonitoringStatus(ctx, &protoReq)
+	msg, err := server.ListControlsInScope(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-var (
-	filter_Orchestrator_UpdateControlMonitoringStatus_0 = &utilities.DoubleArray{Encoding: map[string]int{"status": 0, "target_of_evaluation_cloud_service_id": 1, "target_of_evaluation_catalog_id": 2, "control_category_name": 3, "control_id": 4}, Base: []int{1, 1, 1, 2, 3, 4, 0, 0, 0, 0}, Check: []int{0, 1, 2, 2, 2, 2, 3, 4, 5, 6}}
-)
+func request_Orchestrator_AddControlToScope_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddControlToScopeRequest
+	var metadata runtime.ServerMetadata
 
-func request_Orchestrator_UpdateControlMonitoringStatus_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateControlMonitoringStatusRequest
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Scope); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["scope.target_of_evaluation_cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_cloud_service_id", err)
+	}
+
+	val, ok = pathParams["scope.target_of_evaluation_catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_catalog_id", err)
+	}
+
+	msg, err := client.AddControlToScope(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_Orchestrator_AddControlToScope_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddControlToScopeRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Scope); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["scope.target_of_evaluation_cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_cloud_service_id", err)
+	}
+
+	val, ok = pathParams["scope.target_of_evaluation_catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_catalog_id", err)
+	}
+
+	msg, err := server.AddControlToScope(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_Orchestrator_UpdateControlInScope_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UpdateControlInScopeRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Scope); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["scope.target_of_evaluation_cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_cloud_service_id", err)
+	}
+
+	val, ok = pathParams["scope.target_of_evaluation_catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_catalog_id", err)
+	}
+
+	val, ok = pathParams["scope.control_category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.control_category_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.control_category_name", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.control_category_name", err)
+	}
+
+	val, ok = pathParams["scope.control_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.control_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.control_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.control_id", err)
+	}
+
+	msg, err := client.UpdateControlInScope(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_Orchestrator_UpdateControlInScope_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq UpdateControlInScopeRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Scope); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["scope.target_of_evaluation_cloud_service_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_cloud_service_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_cloud_service_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_cloud_service_id", err)
+	}
+
+	val, ok = pathParams["scope.target_of_evaluation_catalog_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.target_of_evaluation_catalog_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.target_of_evaluation_catalog_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.target_of_evaluation_catalog_id", err)
+	}
+
+	val, ok = pathParams["scope.control_category_name"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.control_category_name")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.control_category_name", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.control_category_name", err)
+	}
+
+	val, ok = pathParams["scope.control_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "scope.control_id")
+	}
+
+	err = runtime.PopulateFieldFromPath(&protoReq, "scope.control_id", val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "scope.control_id", err)
+	}
+
+	msg, err := server.UpdateControlInScope(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_Orchestrator_RemoveControlFromScope_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveControlFromScopeRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2093,60 +2305,53 @@ func request_Orchestrator_UpdateControlMonitoringStatus_0(ctx context.Context, m
 		_   = err
 	)
 
-	val, ok = pathParams["status.target_of_evaluation_cloud_service_id"]
+	val, ok = pathParams["cloud_service_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.target_of_evaluation_cloud_service_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.target_of_evaluation_cloud_service_id", val)
+	protoReq.CloudServiceId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.target_of_evaluation_cloud_service_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
 	}
 
-	val, ok = pathParams["status.target_of_evaluation_catalog_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.target_of_evaluation_catalog_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.target_of_evaluation_catalog_id", val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.target_of_evaluation_catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
 	}
 
-	val, ok = pathParams["status.control_category_name"]
+	val, ok = pathParams["control_category_name"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.control_category_name")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_category_name")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.control_category_name", val)
+	protoReq.ControlCategoryName, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.control_category_name", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_category_name", err)
 	}
 
-	val, ok = pathParams["status.control_id"]
+	val, ok = pathParams["control_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.control_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.control_id", val)
+	protoReq.ControlId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.control_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_UpdateControlMonitoringStatus_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.UpdateControlMonitoringStatus(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.RemoveControlFromScope(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Orchestrator_UpdateControlMonitoringStatus_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateControlMonitoringStatusRequest
+func local_request_Orchestrator_RemoveControlFromScope_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveControlFromScopeRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2156,54 +2361,47 @@ func local_request_Orchestrator_UpdateControlMonitoringStatus_0(ctx context.Cont
 		_   = err
 	)
 
-	val, ok = pathParams["status.target_of_evaluation_cloud_service_id"]
+	val, ok = pathParams["cloud_service_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.target_of_evaluation_cloud_service_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "cloud_service_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.target_of_evaluation_cloud_service_id", val)
+	protoReq.CloudServiceId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.target_of_evaluation_cloud_service_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "cloud_service_id", err)
 	}
 
-	val, ok = pathParams["status.target_of_evaluation_catalog_id"]
+	val, ok = pathParams["catalog_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.target_of_evaluation_catalog_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.target_of_evaluation_catalog_id", val)
+	protoReq.CatalogId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.target_of_evaluation_catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
 	}
 
-	val, ok = pathParams["status.control_category_name"]
+	val, ok = pathParams["control_category_name"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.control_category_name")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_category_name")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.control_category_name", val)
+	protoReq.ControlCategoryName, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.control_category_name", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_category_name", err)
 	}
 
-	val, ok = pathParams["status.control_id"]
+	val, ok = pathParams["control_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "status.control_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "control_id")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "status.control_id", val)
+	protoReq.ControlId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "status.control_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "control_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Orchestrator_UpdateControlMonitoringStatus_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.UpdateControlMonitoringStatus(ctx, &protoReq)
+	msg, err := server.RemoveControlFromScope(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -3438,19 +3636,19 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
-	mux.Handle("GET", pattern_Orchestrator_ListControlMonitoringStatus_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Orchestrator_ListControlsInScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListControlMonitoringStatus", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/monitoring_status"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListControlsInScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/controls_in_scope"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Orchestrator_ListControlMonitoringStatus_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Orchestrator_ListControlsInScope_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -3458,23 +3656,23 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			return
 		}
 
-		forward_Orchestrator_ListControlMonitoringStatus_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Orchestrator_ListControlsInScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Orchestrator_UpdateControlMonitoringStatus_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Orchestrator_AddControlToScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateControlMonitoringStatus", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/AddControlToScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Orchestrator_UpdateControlMonitoringStatus_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Orchestrator_AddControlToScope_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -3482,7 +3680,55 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			return
 		}
 
-		forward_Orchestrator_UpdateControlMonitoringStatus_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Orchestrator_AddControlToScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_Orchestrator_UpdateControlInScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateControlInScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope/categories/{scope.control_category_name}/controls/{scope.control_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Orchestrator_UpdateControlInScope_0(ctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_UpdateControlInScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_Orchestrator_RemoveControlFromScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveControlFromScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/controls_in_scope/categories/{control_category_name}/controls/{control_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Orchestrator_RemoveControlFromScope_0(ctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_RemoveControlFromScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -4424,45 +4670,87 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
-	mux.Handle("GET", pattern_Orchestrator_ListControlMonitoringStatus_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Orchestrator_ListControlsInScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListControlMonitoringStatus", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/monitoring_status"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/ListControlsInScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/controls_in_scope"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Orchestrator_ListControlMonitoringStatus_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Orchestrator_ListControlsInScope_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Orchestrator_ListControlMonitoringStatus_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Orchestrator_ListControlsInScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Orchestrator_UpdateControlMonitoringStatus_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_Orchestrator_AddControlToScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateControlMonitoringStatus", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{status.target_of_evaluation_cloud_service_id}/toes/{status.target_of_evaluation_catalog_id}/monitoring_status/categories/{status.control_category_name}/controls/{status.control_id}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/AddControlToScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Orchestrator_UpdateControlMonitoringStatus_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Orchestrator_AddControlToScope_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Orchestrator_UpdateControlMonitoringStatus_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Orchestrator_AddControlToScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_Orchestrator_UpdateControlInScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/UpdateControlInScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope/categories/{scope.control_category_name}/controls/{scope.control_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Orchestrator_UpdateControlInScope_0(ctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_UpdateControlInScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("PUT", pattern_Orchestrator_RemoveControlFromScope_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveControlFromScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{cloud_service_id}/toes/{catalog_id}/controls_in_scope/categories/{control_category_name}/controls/{control_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Orchestrator_RemoveControlFromScope_0(ctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_RemoveControlFromScope_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -4649,9 +4937,13 @@ var (
 
 	pattern_Orchestrator_GetTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id"}, ""))
 
-	pattern_Orchestrator_ListControlMonitoringStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id", "monitoring_status"}, ""))
+	pattern_Orchestrator_ListControlsInScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id", "controls_in_scope"}, ""))
 
-	pattern_Orchestrator_UpdateControlMonitoringStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10}, []string{"v1", "orchestrator", "cloud_services", "status.target_of_evaluation_cloud_service_id", "toes", "status.target_of_evaluation_catalog_id", "monitoring_status", "categories", "status.control_category_name", "controls", "status.control_id"}, ""))
+	pattern_Orchestrator_AddControlToScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "orchestrator", "cloud_services", "scope.target_of_evaluation_cloud_service_id", "toes", "scope.target_of_evaluation_catalog_id", "controls_in_scope"}, ""))
+
+	pattern_Orchestrator_UpdateControlInScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10}, []string{"v1", "orchestrator", "cloud_services", "scope.target_of_evaluation_cloud_service_id", "toes", "scope.target_of_evaluation_catalog_id", "controls_in_scope", "categories", "scope.control_category_name", "controls", "scope.control_id"}, ""))
+
+	pattern_Orchestrator_RemoveControlFromScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 2, 7, 1, 0, 4, 1, 5, 8, 2, 9, 1, 0, 4, 1, 5, 10}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id", "controls_in_scope", "categories", "control_category_name", "controls", "control_id"}, ""))
 
 	pattern_Orchestrator_ListTargetsOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "toes"}, ""))
 
@@ -4739,9 +5031,13 @@ var (
 
 	forward_Orchestrator_GetTargetOfEvaluation_0 = runtime.ForwardResponseMessage
 
-	forward_Orchestrator_ListControlMonitoringStatus_0 = runtime.ForwardResponseMessage
+	forward_Orchestrator_ListControlsInScope_0 = runtime.ForwardResponseMessage
 
-	forward_Orchestrator_UpdateControlMonitoringStatus_0 = runtime.ForwardResponseMessage
+	forward_Orchestrator_AddControlToScope_0 = runtime.ForwardResponseMessage
+
+	forward_Orchestrator_UpdateControlInScope_0 = runtime.ForwardResponseMessage
+
+	forward_Orchestrator_RemoveControlFromScope_0 = runtime.ForwardResponseMessage
 
 	forward_Orchestrator_ListTargetsOfEvaluation_0 = runtime.ForwardResponseMessage
 

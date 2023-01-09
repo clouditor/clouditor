@@ -359,24 +359,47 @@ service Orchestrator {
     };
   }
 
-  // Lists all control monitoring statuses
-  rpc ListControlMonitoringStatus(ListControlMonitoringStatusRequest)
-      returns (ListControlMonitoringStatusResponse) {
+  // Lists all controls in scope of a target of evaluation.
+  rpc ListControlsInScope(ListControlsInScopeRequest)
+      returns (ListControlsInScopeResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-            "{catalog_id}/monitoring_status"
+            "{catalog_id}/controls_in_scope"
     };
   }
 
-  // Updates a particular control monitoring status
-  rpc UpdateControlMonitoringStatus(UpdateControlMonitoringStatusRequest)
-      returns (ControlMonitoringStatus) {
+  // Adds the selected control as "in scope" for the target of evaluation.
+  rpc AddControlToScope(AddControlToScopeRequest) returns (ControlInScope) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/"
-            "{status.target_of_evaluation_cloud_service_id}/toes/"
-            "{status.target_of_evaluation_catalog_id}/monitoring_status/"
-            "categories/{status.control_category_name}/"
-            "controls/{status.control_id}"
+      post : "/v1/orchestrator/cloud_services/"
+             "{scope.target_of_evaluation_cloud_service_id}/toes/"
+             "{scope.target_of_evaluation_catalog_id}/controls_in_scope"
+      body : "scope"
+    };
+  }
+
+  // Updates a particular control in scope, e.g., its monitoring status.
+  rpc UpdateControlInScope(UpdateControlInScopeRequest)
+      returns (ControlInScope) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/"
+            "{scope.target_of_evaluation_cloud_service_id}/toes/"
+            "{scope.target_of_evaluation_catalog_id}/controls_in_scope/"
+            "categories/{scope.control_category_name}/"
+            "controls/{scope.control_id}"
+      body : "scope"
+    };
+  }
+
+  // Adds the selected control as "in scope" for the target of evaluation.
+  rpc RemoveControlFromScope(RemoveControlFromScopeRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/orchestrator/cloud_services/"
+            "{cloud_service_id}/toes/"
+            "{catalog_id}/controls_in_scope/"
+            "categories/{control_category_name}/"
+            "controls/{control_id}"
     };
   }
 
@@ -419,8 +442,7 @@ message RegisterAssessmentToolRequest {
 
 message ListAssessmentToolsRequest {
   // Optional. Filter tools by metric id.
-  optional string filter_metric_id = 1
-    [ (validate.rules).string.min_len = 1 ];
+  optional string filter_metric_id = 1 [ (validate.rules).string.min_len = 1 ];
 
   int32 page_size = 2;
   string page_token = 3;
@@ -551,8 +573,7 @@ message MetricChangeEvent {
     TYPE_METADATA_CHANGED = 3;
   }
 
-  Type type = 1
-    [(validate.rules).enum.defined_only = true];
+  Type type = 1 [ (validate.rules).enum.defined_only = true ];
 
   // The metric that is changing.
   string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
@@ -566,16 +587,15 @@ message MetricChangeEvent {
 // certain metrics.
 message AssessmentTool {
   string id = 1
-  [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
+      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
 
-  string name = 2
-    [ (validate.rules).string.min_len = 1 ];
+  string name = 2 [ (validate.rules).string.min_len = 1 ];
 
   string description = 3;
 
   // a list of metrics that this tool can assess, referred by their ids
   repeated string available_metrics = 4
-  [ (validate.rules).repeated.items.string.min_len = 1 ];
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
 }
 
 message CloudService {
@@ -586,13 +606,15 @@ message CloudService {
 
   string description = 3;
 
-  repeated Catalog catalogs_in_scope = 4
-      [ (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
-      (validate.rules).repeated.items.message.required = true ];
+  repeated Catalog catalogs_in_scope = 4 [
+    (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 
-  repeated clouditor.assessment.v1.Metric configured_metrics = 5
-      [ (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
-      (validate.rules).repeated.items.message.required = true ];
+  repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
+    (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 }
 
 message Catalog {
@@ -602,9 +624,10 @@ message Catalog {
 
   string description = 3;
 
-  repeated Category categories = 4
-      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
-      (validate.rules).repeated.items.message.required = true ];
+  repeated Category categories = 4 [
+    (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 
   // Certain security catalogs do not allow to select the scope of the controls,
   // but all controls are automatically "in scope", however they can be set to a
@@ -613,12 +636,16 @@ message Catalog {
 }
 
 message Category {
-  string name = 1 [ (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 ];
+  string name = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
 
   // Reference to the catalog this category belongs to.
-  string catalog_id = 2 [ (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 ];
+  string catalog_id = 2 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
 
   string description = 3;
 
@@ -626,7 +653,8 @@ message Category {
     (tagger.tags) =
         "gorm:\"foreignKey:category_name,category_"
         "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated.items.message.required = true ];
+    (validate.rules).repeated .items.message.required = true
+  ];
 }
 
 // Control represents a certain Control that needs to be fulfilled. It could be
@@ -636,44 +664,49 @@ message Category {
 message Control {
   // A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a
   // unique ID!
-  string id = 1 [ (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 ];
-  string category_name = 2 [ (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 ];
-  string category_catalog_id = 3 [ (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 ];
+  string id = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+  string category_name = 2 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+  string category_catalog_id = 3 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
 
   // Human-readable name of the control
-  string name = 4
-    [(validate.rules).string.min_len = 1 ];
+  string name = 4 [ (validate.rules).string.min_len = 1 ];
 
   // Description of the control
   string description = 5;
 
   // List of sub - controls -
   //     this is in accordance with the OSCAL model.
-  repeated Control controls = 6
-      [ (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
-                        "category_name,parent_control_category_catalog_id;"
-                        "references=id,category_name;category_catalog_id\"",
-      (validate.rules).repeated.items.message.required = true ];
+  repeated Control controls = 6 [
+    (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
+                    "category_name,parent_control_category_catalog_id;"
+                    "references=id,category_name;category_catalog_id\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
-  repeated clouditor.assessment.v1.Metric metrics = 7
-      [ (tagger.tags) =
-            "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
-      (validate.rules).repeated.items.message.required = true ];
+  repeated clouditor.assessment.v1.Metric metrics = 7 [
+    (tagger.tags) =
+        "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 
   // Reference to the parent category this control belongs to.
-
-  optional string parent_control_id = 8
-    [ (validate.rules).string.min_len = 1 ];
+  optional string parent_control_id = 8 [ (validate.rules).string.min_len = 1 ];
   optional string parent_control_category_name = 9
-    [ (validate.rules).string.min_len = 1 ];
+      [ (validate.rules).string.min_len = 1 ];
   optional string parent_control_category_catalog_id = 10
-  [ (validate.rules).string.min_len = 1 ];
+      [ (validate.rules).string.min_len = 1 ];
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -691,61 +724,91 @@ message TargetOfEvaluation {
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3
-    [ (validate.rules).string.pattern = "^(|basic|substantial|high)$" ];
+      [ (validate.rules).string.pattern = "^(|basic|substantial|high)$" ];
 
   // the controls that are in scope of this ToE. Note: For some security
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
   // all) are automatically in scope. In this case, this list needs auto-filled
   // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
-  repeated Control controls_in_scope = 4
-      [ (tagger.tags) = "gorm:\"many2many:control_monitoring_statuses;"
-                        "constraint:OnDelete:CASCADE\"",
-      (validate.rules).repeated.items.message.required = true ];
+  //
+  // Note: Because of limitations of our ORM framework, this field only contains
+  // a list of controls that are in scope of the target, but not the actual
+  // meta-data associated it with it (which is of message type ControlInScope).
+  // In order to retrieve the meta-data of the controls, the RPC
+  // ListControlsInScope (or the associated REST path) must be called.
+  repeated Control controls_in_scope = 4 [
+    (tagger.tags) = "gorm:\"many2many:controls_in_scope;"
+                    "constraint:OnDelete:CASCADE\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 }
 
-message ListControlMonitoringStatusRequest {
+message ListControlsInScopeRequest {
   int32 page_size = 1;
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
 
   string cloud_service_id = 10
-    [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
+      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
   string catalog_id = 11
-    [ (validate.rules).string = {ignore_empty : true, min_len : 1} ];
+      [ (validate.rules).string = {ignore_empty : true, min_len : 1} ];
 }
 
-message ListControlMonitoringStatusResponse {
-  repeated ControlMonitoringStatus status = 1;
+message ListControlsInScopeResponse {
+  repeated ControlInScope controls_in_scope = 1;
   string next_page_token = 2;
 }
 
-message UpdateControlMonitoringStatusRequest {
-  ControlMonitoringStatus status = 1
-    [ (validate.rules).message.required = true ];
+message UpdateControlInScopeRequest {
+  ControlInScope scope = 1 [ (validate.rules).message.required = true ];
 }
 
-message ControlMonitoringStatus {
-  string target_of_evaluation_cloud_service_id = 1
-    [ (validate.rules).string.min_len = 1 ];
-  string target_of_evaluation_catalog_id = 2
-    [ (validate.rules).string.min_len = 1 ];
+message AddControlToScopeRequest {
+  ControlInScope scope = 1 [ (validate.rules).message.required = true ];
+}
 
-  string control_id = 3
-    [ (validate.rules).string.min_len = 1 ];
-  string control_category_name = 4
-    [ (validate.rules).string.min_len = 1 ];
-  string control_category_catalog_id = 5
-    [ (validate.rules).string.min_len = 1 ];
+message RemoveControlFromScopeRequest {
+  string cloud_service_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
+  string control_category_name = 4 [ (validate.rules).string.min_len = 1 ];
+}
 
-  enum Status {
-    STATUS_UNSPECIFIED = 0;
-    STATUS_CONTINUOUSLY_MONITORED = 1;
-    STATUS_MANUALLY_MONITORED = 2;
-    STATUS_DELEGATED = 3;
-  }
+enum MonitoringStatus {
+  MONITORING_STATUS_UNSPECIFIED = 0;
+  MONITORING_STATUS_CONTINUOUSLY_MONITORED = 1;
+  MONITORING_STATUS_MANUALLY_MONITORED = 2;
+  MONITORING_STATUS_DELEGATED = 3;
+}
 
-  Status status = 6;
+// ControlInScope defines a control which is "in scope" of a target of
+// evaluation. Additional meta-data can be defined when a control is in scope,
+// e.g., its monitoring status (continuously monitored, delegated, etc.)
+message ControlInScope {
+  string target_of_evaluation_cloud_service_id = 1 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+  string target_of_evaluation_catalog_id = 2 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+
+  string control_id = 3 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+  string control_category_name = 4 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+  string control_category_catalog_id = 5 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
+    (validate.rules).string.min_len = 1
+  ];
+
+  MonitoringStatus monitoring_status = 6;
 }
 
 message CreateTargetOfEvaluationRequest {
@@ -836,19 +899,14 @@ message UpdateCatalogRequest {
 }
 
 message GetCategoryRequest {
-  string catalog_id = 1
-    [ (validate.rules).string.min_len = 1 ];
-  string category_name = 2
-    [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string category_name = 2 [ (validate.rules).string.min_len = 1 ];
 }
 
 message GetControlRequest {
-  string catalog_id = 1
-    [ (validate.rules).string.min_len = 1 ];
-  string category_name = 2
-    [ (validate.rules).string.min_len = 1 ];
-  string control_id = 3
-    [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string category_name = 2 [ (validate.rules).string.min_len = 1 ];
+  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
 }
 
 message ListControlsRequest {
@@ -878,10 +936,8 @@ message RemoveCertificateRequest {
 // An ISO17021-based certificate
 message Certificate {
   string id = 1 [ (validate.rules).string.min_len = 1 ];
-  string name = 2
-  [ (validate.rules).string.min_len = 1 ];
-  string cloud_service_id = 3
-    [ (validate.rules).string.uuid = true ];
+  string name = 2 [ (validate.rules).string.min_len = 1 ];
+  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
   string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;
@@ -917,18 +973,20 @@ message TargetOfEvaluationChangeEvent {
     TYPE_TARGET_OF_EVALUATION_UPDATED = 2;
     TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
 
-    TYPE_CONTROL_MONITORING_STATUS_UPDATED = 4;
+    TYPE_CONTROL_IN_SCOPE_ADDED = 4;
+    TYPE_CONTROL_IN_SCOPE_UPDATED = 5;
+    TYPE_CONTROL_IN_SCOPE_REMOVED = 6;
   }
 
-  Type type = 1
-    [(validate.rules).enum.defined_only = true];
+  Type type = 1 [ (validate.rules).enum.defined_only = true ];
 
-  // Optional. If the type is a TargetOfEvaluation_* the target_of_evaluation must be set
+  // Optional. If the type is a TARGET_OF_EVALUATION_* the target_of_evaluation
+  // field must be set
   optional TargetOfEvaluation target_of_evaluation = 2
-    [ (validate.rules).message.required = true ];
+      [ (validate.rules).message.required = true ];
 
-  // Optional. If the type is a ControlMonitoringStatus_* the control_monitoring_status
-  // must be set
-  optional ControlMonitoringStatus control_monitoring_status = 3
-    [ (validate.rules).message.required = true ];
+  // Optional. If the type is a CONTROL_IN_SCOPE_* the
+  // control_in_scope fied must be set
+  optional ControlInScope control_in_scope = 3
+      [ (validate.rules).message.required = true ];
 }

@@ -83,24 +83,14 @@ func TestService_CreateCatalog(t *testing.T) {
 				},
 			},
 			mockCatalog,
-			nil,
+			assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCatalog(tt.args.in0, tt.args.req)
-
-			if err != nil && tt.wantErr != nil {
-				tt.wantErr(t, err)
-				return
-			} else {
-				assert.Nil(t, err)
-
-				// Check catalog by validation method
-				err = gotResponse.Validate()
-				assert.NoError(t, err)
-			}
+			tt.wantErr(t, err)
 
 			// If no error is wanted, check response
 			if !proto.Equal(gotResponse, tt.wantResponse) {
@@ -340,12 +330,17 @@ func TestService_GetCategory(t *testing.T) {
 					Id:                "Cont1234",
 					Name:              "Mock Control",
 					Description:       "This is a mock control",
-					CategoryName:      "My name",
-					CategoryCatalogId: "Cat1234",
+					CategoryName:      orchestratortest.MockCategoryName,
+					CategoryCatalogId: orchestratortest.MockCatalogID,
 					// at this level, we will not have the metrics
 					Metrics: []*assessment.Metric{},
 					// at this level, we will not have the sub-controls
 					Controls: []*orchestrator.Control{},
+				}, {
+					Id:                orchestratortest.MockAnotherControlID,
+					Name:              "Another Mock Control",
+					CategoryName:      orchestratortest.MockCategoryName,
+					CategoryCatalogId: orchestratortest.MockCatalogID,
 				}},
 			},
 			wantErr: false,
