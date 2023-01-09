@@ -30,9 +30,10 @@ import (
 )
 
 var (
-	ErrRecordNotFound   = errors.New("record not in the database")
-	ErrConstraintFailed = errors.New("constraint failed")
-	ErrUnsupportedType  = errors.New("unsupported type")
+	ErrRecordNotFound         = errors.New("record not in the database")
+	ErrConstraintFailed       = errors.New("constraint failed")
+	ErrUniqueConstraintFailed = errors.New("unique constraint failed")
+	ErrUnsupportedType        = errors.New("unsupported type")
 )
 
 // Storage comprises a database interface
