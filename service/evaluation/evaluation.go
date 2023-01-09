@@ -52,7 +52,7 @@ import (
 
 var log *logrus.Entry
 
-// interval is the default interval time for the scheduler. If no interval is set in the StartEvaluationRequest, the default value is taken
+// interval is the default interval time for the scheduler. If no interval is set in the StartEvaluationRequest, the default value is taken.
 const defaultInterval int = 5
 
 type grpcTarget struct {
@@ -165,7 +165,7 @@ func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
-// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and the given controls_in_scope (e.g., EUCS OPS-13.2) in the target_of_evaluation.
+// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and the given controls_in_scope (e.g., EUCS OPS-13.2) in the target_of_evaluation periodically. If no inteval time is given, the default value of 5 minutes is used.
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
 		schedulerTag string
@@ -382,7 +382,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	// schedulerTag is the tag for the given control
 	schedulerTag := createSchedulerTag(toe.GetCloudServiceId(), c.GetId())
 
-	// Regarding the control level the specific method is called. We have to decide if the control is sub-control that can be evaluated direclty or a first level control that has to wait for the results of the sub-level controls.
+	// Regarding the control level the specific method is called every X minutes based on the given interval. We have to decide if the control is sub-control that can be evaluated direclty or a first level control that has to wait for the results of the sub-level controls.
 	if c.ParentControlId == nil { // first level control
 		_, err = s.scheduler.
 			Every(interval).

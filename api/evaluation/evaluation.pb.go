@@ -252,7 +252,7 @@ type StartEvaluationRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	TargetOfEvaluation *orchestrator.TargetOfEvaluation `protobuf:"bytes,1,opt,name=target_of_evaluation,json=targetOfEvaluation,proto3" json:"target_of_evaluation,omitempty"`
-	// The interval time in minutes
+	// The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
 	Interval *int32 `protobuf:"varint,2,opt,name=interval,proto3,oneof" json:"interval,omitempty"`
 }
 

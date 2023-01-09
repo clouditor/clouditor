@@ -11,7 +11,7 @@ paths:
         post:
             tags:
                 - Evaluation
-            description: StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog). The assessment results are evaluated regarding the contol ID.
+            description: StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog) periodically. The assessment results are evaluated regarding the contol ID.
             operationId: Evaluation_StartEvaluation
             requestBody:
                 content:
@@ -359,7 +359,7 @@ components:
                     $ref: '#/components/schemas/TargetOfEvaluation'
                 interval:
                     type: integer
-                    description: The interval time in minutes
+                    description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
                     format: int32
         StartEvaluationResponse:
             type: object
