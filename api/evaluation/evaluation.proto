@@ -39,11 +39,10 @@
 
  // This service represents the Evaluation Interface
  service Evaluation {
-    // StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog) periodically. The assessment results are evaluated regarding the contol ID.
+    // Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
     rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/start"
-        body : "*"
+        post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
       };
      } 
 
@@ -82,11 +81,14 @@ message ListEvaluationResultsRequest {
   }
 
 message StartEvaluationRequest {
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 1
-        [(validate.rules).message.required = true];
+    string cloud_service_id = 1
+      [ (validate.rules).string.uuid = true ];
+    string catalog_id = 2
+    [ (validate.rules).string.min_len = 1 ]; 
 
     // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-    optional int32 interval = 2;
+    optional int32 interval = 3
+      [ (validate.rules).int32.gt = 0 ];
 }
 
 message StartEvaluationResponse {

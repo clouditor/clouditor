@@ -7,36 +7,11 @@ info:
     description: This service represents the Evaluation Interface
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/start:
-        post:
-            tags:
-                - Evaluation
-            description: StartEvaluation evaluates all assessment results of an service based on its Target of Evaluation (binding of a cloud service to a catalog) periodically. The assessment results are evaluated regarding the contol ID.
-            operationId: Evaluation_StartEvaluation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/StartEvaluationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/StartEvaluationResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/evaluation/evaluate/{categoryName}/{controlId}/stop:
         post:
             tags:
                 - Evaluation
-            description: StopEvaluation stop the evaluation for the given Cloud Service
+            description: StopEvaluation stops the evaluation for the given target of evaluation
             operationId: Evaluation_StopEvaluation
             parameters:
                 - name: categoryName
@@ -64,6 +39,42 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/StopEvaluationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/start:
+        post:
+            tags:
+                - Evaluation
+            description: Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
+            operationId: Evaluation_StartEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: interval
+                  in: query
+                  description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StartEvaluationResponse'
                 default:
                     description: Default error response
                     content:
@@ -352,15 +363,6 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
-        StartEvaluationRequest:
-            type: object
-            properties:
-                targetOfEvaluation:
-                    $ref: '#/components/schemas/TargetOfEvaluation'
-                interval:
-                    type: integer
-                    description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-                    format: int32
         StartEvaluationResponse:
             type: object
             properties:

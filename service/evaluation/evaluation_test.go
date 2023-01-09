@@ -943,7 +943,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid StartEvaluationRequest.TargetOfEvaluation: value is required")
+				return assert.ErrorContains(t, err, "invalid StartEvaluationRequest.CloudServiceId: value must be a valid UUID")
 			},
 		},
 	}

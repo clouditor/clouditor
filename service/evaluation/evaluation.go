@@ -170,6 +170,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	var (
 		schedulerTag string
 		interval     int
+		toe          *orchestrator.TargetOfEvaluation
 	)
 
 	// Validate request
@@ -193,13 +194,24 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
+	// Get Target of Evaluation
+	toe, err = s.orchestratorClient.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
+		CloudServiceId: req.GetCloudServiceId(),
+		CatalogId:      req.GetCatalogId(),
+	})
+	if err != nil {
+		err = fmt.Errorf("could not get target of evaluation: %v", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
 	log.Info("Starting evaluation ...")
 
 	// Scheduler tags must be unique to find the jobs by tag name
 	s.scheduler.TagsUnique()
 
 	// Add the controlsInScope of the TargetOfEvaluation including their sub-controls to the scheduler
-	for _, c := range req.TargetOfEvaluation.GetControlsInScope() {
+	for _, c := range toe.GetControlsInScope() {
 		var controls []*orchestrator.Control
 
 		// We must get the control from the orchestrator, as we do not know if the request is correct and the parent_ids are probably missing
@@ -214,13 +226,13 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		parentSchedulerTag := ""
 
 		// The schedulerTag of the current control
-		schedulerTag = createSchedulerTag(req.TargetOfEvaluation.GetCloudServiceId(), c.GetId())
+		schedulerTag = createSchedulerTag(toe.GetCloudServiceId(), c.GetId())
 
 		// Check if scheduler job for current controlId is already running
 		// TODO(anatheka): Do we want to append the errors for already running jobs or do we ignore the error value?
 		jobs, err := s.scheduler.FindJobsByTag(schedulerTag)
 		if len(jobs) > 0 && err == nil {
-			err = fmt.Errorf("evaluation for cloud service id '%s' and control id '%s' already started", req.TargetOfEvaluation.GetCloudServiceId(), c.GetId())
+			err = fmt.Errorf("evaluation for cloud service id '%s' and control id '%s' already started", toe.GetCloudServiceId(), c.GetId())
 			log.Error(err)
 			return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 		}
@@ -241,19 +253,19 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			s.wg[schedulerTag].wgMutex.Unlock()
 
 			// parentSchedulerTag is the tag for the parent control, that is only needed if a first level control is schedules
-			parentSchedulerTag = createSchedulerTag(req.TargetOfEvaluation.GetCloudServiceId(), control.GetId())
+			parentSchedulerTag = createSchedulerTag(toe.GetCloudServiceId(), control.GetId())
 		}
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
-			err = s.addJobToScheduler(control, req.GetTargetOfEvaluation(), parentSchedulerTag, interval)
+			err = s.addJobToScheduler(control, toe, parentSchedulerTag, interval)
 			// We can return the error as it is
 			if err != nil {
 				return nil, err
 			}
 		}
 
-		log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", req.GetTargetOfEvaluation().GetCloudServiceId(), control.GetId())
+		log.Infof("Evaluate Cloud Service '%s' for Control ID '%s' every 5 minutes...", toe.GetCloudServiceId(), control.GetId())
 	}
 
 	// Start scheduler jobs
