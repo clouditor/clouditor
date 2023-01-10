@@ -127,7 +127,7 @@ func Test_loadMetricImplementation(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantImpl assert.ValueAssertionFunc
+		wantImpl *assessment.MetricImplementation
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
@@ -136,7 +136,7 @@ func Test_loadMetricImplementation(t *testing.T) {
 				metricID: MockMetricID,
 				file:     "doesnotexist.rego",
 			},
-			wantImpl: assert.Empty,
+			wantImpl: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, os.ErrNotExist)
 			},
@@ -147,11 +147,37 @@ func Test_loadMetricImplementation(t *testing.T) {
 				metricID: MockMetricID,
 				file:     "internal/testutil/metrictest/metric.rego",
 			},
-			wantImpl: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				impl, ok := i1.(*assessment.MetricImplementation)
-				assert.True(t, ok)
-				assert.NoError(t, impl.Validate())
-				return assert.NotEmpty(t, impl)
+			wantImpl: &assessment.MetricImplementation{
+				MetricId: MockMetricID,
+				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+				Code: `package clouditor.metrics.admin_mfa_enabled
+
+import data.clouditor.compare
+import future.keywords.every
+import input as identity
+
+default applicable = false
+
+default compliant = false
+
+applicable {
+	# we are only interested in some kind of privileged user    
+	identity.privileged
+}
+
+compliant {
+	# count the number of "factors"
+	compare(data.operator, data.target_value, count(identity.authenticity))
+
+	# also make sure, that we do not have any "NoAuthentication" in the factor and all are activated
+	every factor in identity.authenticity {
+		# TODO(oxisto): we do not have this type property (yet)
+		not factor.type == "NoAuthentication"
+
+		factor.activated == true
+	}
+}
+`,
 			},
 			wantErr: assert.NoError,
 		},
@@ -161,8 +187,20 @@ func Test_loadMetricImplementation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
 
+			assert.NoError(t, gotImpl.Validate())
 			tt.wantErr(t, err)
-			tt.wantImpl(t, gotImpl)
+
+			if tt.wantImpl != nil {
+				assert.NotEmpty(t, gotImpl)
+
+				// Check if time is set and than delete if for the deepEqual check
+				assert.NotEmpty(t, gotImpl.UpdatedAt)
+				gotImpl.UpdatedAt = nil
+			}
+
+			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
+				t.Errorf("loadMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
+			}
 		})
 	}
 }
@@ -296,10 +334,9 @@ func TestService_CreateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.CreateMetric(tt.args.in0, tt.args.req)
-			tt.wantErr(t, err)
 
-			// Check metric with validate method
 			assert.NoError(t, gotMetric.Validate())
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -393,10 +430,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.UpdateMetric(tt.args.in0, tt.args.req)
-			tt.wantErr(t, err)
 
-			// Check metric with validate method
 			assert.NoError(t, gotMetric.Validate())
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.UpdateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -479,7 +515,6 @@ func TestService_GetMetric(t *testing.T) {
 			}
 			gotMetric, err := svc.GetMetric(tt.args.in0, tt.args.req)
 
-			// Check metric with validate method
 			assert.NoError(t, gotMetric.Validate())
 
 			if (err != nil) != tt.wantErr {

@@ -44,7 +44,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var AssuranceLevelHigh = "high"
@@ -98,10 +97,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			}},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				svc := i2[0].(*Service)
-				res := i1.(*orchestrator.TargetOfEvaluation)
-
-				// Check if the Target of Evaluation is valid
-				assert.NoError(t, res.Validate())
 
 				// We want to assert that certain things happened in our database
 				var toes []*orchestrator.TargetOfEvaluation
@@ -141,6 +136,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			}
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.CreateTargetOfEvaluation() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -235,12 +231,12 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
-				assert.True(t, ok)
-				assert.NoError(t, res.Validate())
-
 				want := orchestratortest.NewTargetOfEvaluation()
-				assert.Equal(t, want.CloudServiceId, res.CloudServiceId)
-				return assert.Equal(t, want.CatalogId, res.CatalogId)
+
+				return assert.True(t, ok) &&
+					assert.NoError(t, res.Validate()) &&
+					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
+					assert.Equal(t, want.CatalogId, res.CatalogId)
 			},
 			wantErr: assert.NoError,
 		},
@@ -938,7 +934,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *emptypb.Empty
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -946,7 +941,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				req: nil,
 			},
-			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
@@ -970,7 +964,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 					CatalogId:           orchestratortest.MockCatalogID,
 				},
 			},
-			wantRes: &emptypb.Empty{},
 			wantErr: assert.NoError,
 		},
 		{

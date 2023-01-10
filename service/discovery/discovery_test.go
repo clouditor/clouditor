@@ -190,16 +190,24 @@ func TestService_StartDiscovery(t *testing.T) {
 
 			if tt.checkEvidence {
 				mockStream.Wait()
-
 				want, _ := tt.fields.discoverer.List()
 
 				got := mockStream.sentEvidences
 				assert.Equal(t, len(want), len(got))
 
 				// Retrieve the last one
-				e := got[len(got)-1]
-				err := e.Validate()
+				eWant := want[len(want)-1]
+				eGot := got[len(got)-1]
+				err := eGot.Validate()
+				assert.NotNil(t, eGot)
 				assert.NoError(t, err)
+
+				// Only the last element sent can be checked
+				assert.Equal(t, string(eWant.GetID()), eGot.Resource.GetStructValue().AsMap()["id"].(string))
+
+				// Assert cloud service ID
+				assert.Equal(t, tt.fields.csID, eGot.CloudServiceId)
+				assert.Equal(t, tt.fields.csID, eGot.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}

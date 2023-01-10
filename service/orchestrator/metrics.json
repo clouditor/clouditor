@@ -29,8 +29,8 @@
     "scale": 1,
     "allowedValues": {
       "values": [
-        "AES-128",
-        "AES-256",
+        "AES128",
+        "AES256",
         ""
       ]
     }

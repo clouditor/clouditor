@@ -97,9 +97,8 @@ func TestService_CreateCatalog(t *testing.T) {
 			if !proto.Equal(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.CreateCatalog() = %v, want %v", gotResponse, tt.wantResponse)
 
-				// Check catalog structure by validation method
-				err = gotResponse.Validate()
-				assert.NoError(t, err)
+				// Check catalog structure with validation method
+				assert.NoError(t, gotResponse.Validate())
 			}
 		})
 	}
@@ -326,7 +325,7 @@ func TestService_GetCategory(t *testing.T) {
 				req: &orchestrator.GetCategoryRequest{CatalogId: orchestratortest.MockCatalogID, CategoryName: orchestratortest.MockCategoryName},
 			},
 			wantRes: &orchestrator.Category{
-				Name:        "My name",
+				Name:        orchestratortest.MockCategoryName,
 				Description: "test",
 				CatalogId:   orchestratortest.MockCatalogID,
 				Controls: []*orchestrator.Control{{
