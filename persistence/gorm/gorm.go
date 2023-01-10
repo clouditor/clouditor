@@ -163,7 +163,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		return
 	}
 
-	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlMonitoringStatus{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlInScope{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}
@@ -178,8 +178,19 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	return
 }
 
-func (s *storage) Create(r any) error {
-	return s.db.Create(r).Error
+func (s *storage) Create(r any) (err error) {
+	err = s.db.Create(r).Error
+
+	if err != nil && (strings.Contains(err.Error(), "constraint failed: UNIQUE constraint failed") ||
+		strings.Contains(err.Error(), "duplicate key value violates unique constraint")) {
+		return persistence.ErrUniqueConstraintFailed
+	}
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstraintFailed
+	}
+
+	return
 }
 
 type preload struct {

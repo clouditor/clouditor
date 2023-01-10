@@ -91,7 +91,6 @@ func TestService_CreateCatalog(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCatalog(tt.args.in0, tt.args.req)
-
 			tt.wantErr(t, err)
 
 			// If no error is wanted, check response
@@ -340,6 +339,11 @@ func TestService_GetCategory(t *testing.T) {
 					Metrics: []*assessment.Metric{},
 					// at this level, we will not have the sub-controls
 					Controls: []*orchestrator.Control{},
+				}, {
+					Id:                orchestratortest.MockAnotherControlID,
+					Name:              "Another Mock Control",
+					CategoryName:      orchestratortest.MockCategoryName,
+					CategoryCatalogId: orchestratortest.MockCatalogID,
 				}},
 			},
 			wantErr: false,

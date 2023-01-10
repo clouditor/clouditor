@@ -27,6 +27,7 @@ package policies
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -150,7 +151,6 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 
 			if runMap != nil {
 				cached = append(cached, metric.Id)
-				runMap.MetricId = metric.Id
 
 				data = append(data, runMap)
 			}
@@ -168,7 +168,6 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 				return nil, err
 			}
 
-			runMap.MetricId = metric
 			data = append(data, runMap)
 		}
 	}
@@ -209,6 +208,8 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	// if the metric configuration (i.e. its hash) for a particular service has changed.
 	key = fmt.Sprintf("%s-%s-%s", metricID, serviceID, config.Hash())
 
+	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with
+	// the function specified as the second parameter
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx   storage.Transaction
@@ -219,14 +220,18 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-		c := map[string]interface{}{
+		// The contents of the data map is available as the data variable within the Rego evaluation
+		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
+			"config":       config,
 		}
 
-		store := inmem.NewFromObject(c)
+		// Create a new in-memory Rego store based on our data map
+		store := inmem.NewFromObject(data)
 		ctx := context.Background()
 
+		// Create a new transaction in the store
 		tx, err = store.NewTransaction(ctx, storage.WriteParams)
 		if err != nil {
 			return nil, fmt.Errorf("could not create transaction: %w", err)
@@ -237,22 +242,26 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		// Convert camelCase metric in under_score_style for package name
 		pkg = util.CamelCaseToSnakeCase(metricID)
 
+		// Fetch the metric implementation, i.e., the Rego code from the metric source
 		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}
 
+		// Insert/Update the policy. The bundle path depends on the metric ID
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
 		if err != nil {
 			return nil, fmt.Errorf("could not upsert policy: %w", err)
 		}
 
+		// Create a new Rego prepared query evaluation, which can later be used to query the metric on any object (input)
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
+			target_value = data.clouditor.target_value;
+			config = data.clouditor.config`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -266,6 +275,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
 		}
 
+		// Commit the transaction into the store
 		err = store.Commit(ctx, tx)
 		if err != nil {
 			return nil, fmt.Errorf("could not commit transaction: %w", err)
@@ -291,6 +301,18 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
+		MetricID:    metricID,
+	}
+
+	// A little trick to convert the map-based metric configuration back to a real object
+	var b []byte
+	if b, err = json.Marshal(results[0].Bindings["config"]); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	result.Config = new(assessment.MetricConfiguration)
+	if err = json.Unmarshal(b, result.Config); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
 	}
 
 	if !result.Applicable {

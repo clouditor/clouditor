@@ -55,9 +55,10 @@ type PolicyEval interface {
 type Result struct {
 	Applicable  bool
 	Compliant   bool
-	TargetValue interface{} `mapstructure:"target_value"`
+	TargetValue interface{}
 	Operator    string
-	MetricId    string
+	MetricID    string
+	Config      *assessment.MetricConfiguration
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric

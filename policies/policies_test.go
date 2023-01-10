@@ -30,9 +30,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/assessment"
 	"github.com/stretchr/testify/assert"
@@ -89,6 +92,10 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*as
 	err = protojson.Unmarshal(b, &config)
 	assert.NoError(m.t, err)
 
+	config.IsDefault = true
+	config.MetricId = metricID
+	config.CloudServiceId = serviceID
+
 	return &config, nil
 }
 
@@ -106,4 +113,19 @@ func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplement
 	}
 
 	return impl, nil
+}
+
+type updatedMockMetricsSource struct {
+	mockMetricsSource
+}
+
+func (*updatedMockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+	return &assessment.MetricConfiguration{
+		Operator:       "==",
+		TargetValue:    structpb.NewBoolValue(false),
+		IsDefault:      false,
+		UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+		MetricId:       metricID,
+		CloudServiceId: serviceID,
+	}, nil
 }

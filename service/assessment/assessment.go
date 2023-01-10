@@ -27,7 +27,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -47,7 +46,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -236,13 +234,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		svc.informHooks(nil, err)
-
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Validate evidence
@@ -250,34 +242,18 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
-		svc.informHooks(nil, err)
-
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-
-		return res, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
 	err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
-		res = &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
-			StatusMessage: err.Error(),
-		}
-
-		newError := errors.New("error while handling evidence")
-		log.Errorf("%v: %v", newError, err)
-
-		return res, status.Errorf(codes.Internal, "%v", newError)
+		err = fmt.Errorf("error while handling evidence: %v", err)
+		log.Error(err)
+		return res, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	// Create response
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
-	}
+	res = &assessment.AssessEvidenceResponse{}
 
 	return res, nil
 }
@@ -307,9 +283,17 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		assessEvidencesReq := &assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
+		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
-			log.Errorf("Error assessing evidence: %v", err)
+			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
+			res = &assessment.AssessEvidenceResponse{
+				Status:        assessment.AssessEvidenceResponse_FAILED,
+				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			}
 		}
 
 		// Send response back to the client
@@ -320,9 +304,9 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 			return nil
 		}
 		if err != nil {
-			newError := fmt.Errorf("cannot send response to the client: %w", err)
-			log.Error(newError)
-			return status.Errorf(codes.Unknown, "%v", newError)
+			err = fmt.Errorf("cannot send response to the client: %w", err)
+			log.Error(err)
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
 }
@@ -337,7 +321,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	evaluations, err := svc.pe.Eval(ev, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
-		log.Error(newError)
 
 		go svc.informHooks(nil, newError)
 
@@ -350,7 +333,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		channelEvidenceStore, err := svc.evidenceStoreStreams.GetStream(svc.evidenceStoreAddress.target, "Evidence Store", svc.initEvidenceStoreStream, svc.evidenceStoreAddress.opts...)
 		if err != nil {
 			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStoreAddress.target, err)
-			log.Error(err)
 
 			go svc.informHooks(nil, err)
 
@@ -363,7 +345,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	channelOrchestrator, err := svc.orchestratorStreams.GetStream(svc.orchestratorAddress.target, "Orchestrator", svc.initOrchestratorStream, svc.orchestratorAddress.opts...)
 	if err != nil {
 		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestratorAddress.target, err)
-		log.Error(err)
 
 		go svc.informHooks(nil, err)
 
@@ -371,16 +352,9 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	for i, data := range evaluations {
-		metricID := data.MetricId
+		metricID := data.MetricID
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
-
-		targetValue := data.TargetValue
-
-		convertedTargetValue, err := convertTargetValue(targetValue)
-		if err != nil {
-			return fmt.Errorf("could not convert target value: %w", err)
-		}
 
 		types, err = ev.ResourceTypes()
 		if err != nil {
@@ -388,16 +362,13 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 		}
 
 		result := &assessment.AssessmentResult{
-			Id:             uuid.NewString(),
-			Timestamp:      timestamppb.Now(),
-			CloudServiceId: ev.CloudServiceId,
-			MetricId:       metricID,
-			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: convertedTargetValue,
-				Operator:    data.Operator,
-			},
+			Id:                    uuid.NewString(),
+			Timestamp:             timestamppb.Now(),
+			CloudServiceId:        ev.GetCloudServiceId(),
+			MetricId:              metricID,
+			MetricConfiguration:   data.Config,
 			Compliant:             data.Compliant,
-			EvidenceId:            ev.Id,
+			EvidenceId:            ev.GetId(),
 			ResourceId:            resourceId,
 			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
@@ -416,21 +387,6 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 	}
 
 	return nil
-}
-
-// convertTargetValue converts v in a format accepted by protobuf (structpb.Value)
-func convertTargetValue(v interface{}) (s *structpb.Value, err error) {
-	var b []byte
-
-	// json.Marshal and json.Unmarshal is used instead of structpb.NewValue() which cannot handle json numbers
-	if b, err = json.Marshal(v); err != nil {
-		return nil, fmt.Errorf("JSON marshal failed: %w", err)
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
-	}
-	return
-
 }
 
 // informHooks informs the registered hook functions

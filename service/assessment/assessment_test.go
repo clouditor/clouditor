@@ -27,7 +27,6 @@ package assessment
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -241,7 +240,7 @@ func TestService_AssessEvidence(t *testing.T) {
 		// hasRPCConnection is true when connected to orchestrator and evidence store
 		hasRPCConnection bool
 		wantResp         *assessment.AssessEvidenceResponse
-		wantErr          bool
+		wantErr          assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Missing evidence",
@@ -249,11 +248,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				in0: context.TODO(),
 			},
 			hasRPCConnection: false,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: value is required",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: value is required")
 			},
-			wantErr: true,
 		},
 		{
 			name: "Empty evidence",
@@ -262,11 +260,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{},
 			},
 			hasRPCConnection: false,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format")
 			},
-			wantErr: true,
 		},
 		{
 			name: "Assess resource without id",
@@ -279,11 +276,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format")
 			},
-			wantErr: true,
 		},
 		{
 			name: "Assess resource without tool id",
@@ -297,11 +293,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes")
 			},
-			wantErr: true,
 		},
 		{
 			name: "Assess resource without timestamp",
@@ -315,11 +310,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required")
 			},
-			wantErr: true,
 		},
 		{
 			name: "Assess resource",
@@ -334,10 +328,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
-			},
-			wantErr: false,
+			wantResp:         &assessment.AssessEvidenceResponse{},
+			wantErr:          assert.NoError,
 		},
 		{
 			name: "Assess resource without resource id",
@@ -352,11 +344,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: true,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid evidence: resource in evidence is missing the id field",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid evidence: resource in evidence is missing the id field")
 			},
-			wantErr: true,
 		},
 		{
 			name: "No RPC connections",
@@ -371,11 +362,10 @@ func TestService_AssessEvidence(t *testing.T) {
 				},
 			},
 			hasRPCConnection: false,
-			wantResp: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator",
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator")
 			},
-			wantErr: true,
 		},
 	}
 
@@ -393,14 +383,13 @@ func TestService_AssessEvidence(t *testing.T) {
 
 			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 
 			// Check response
-			assert.Equal(t, tt.wantResp.Status, gotResp.Status)
-			assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
+			if tt.wantResp != nil {
+				assert.Equal(t, tt.wantResp.Status, gotResp.Status)
+				assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
+			}
 		})
 	}
 }
@@ -410,6 +399,8 @@ func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks                   []assessment.ResultHookFunc
 		results                       map[string]*assessment.AssessmentResult
+		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
+		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -440,7 +431,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
 		{
@@ -458,16 +449,20 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
 				Status:        assessment.AssessEvidenceResponse_FAILED,
-				StatusMessage: "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{
 			name: "Assess evidences",
 			fields: fields{
-				results: make(map[string]*assessment.AssessmentResult)},
+				results:              make(map[string]*assessment.AssessmentResult),
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+			},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
+						Id:             "11111111-1111-1111-1111-111111111111",
 						Timestamp:      timestamppb.Now(),
 						ToolId:         "2134",
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
@@ -518,9 +513,11 @@ func TestService_AssessEvidences(t *testing.T) {
 				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
+				evidenceStoreStreams:          tt.fields.evidenceStoreStreams,
 				evidenceStoreAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
+				orchestratorStreams: tt.fields.orchestratorStreams,
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
@@ -543,7 +540,9 @@ func TestService_AssessEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				if !reflect.DeepEqual(responseFromServer, tt.wantRespMessage) {
+					t.Errorf("AssessEvidences() gotResp = %v, want %v", responseFromServer, tt.wantRespMessage)
+				}
 			} else {
 				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
@@ -630,7 +629,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{Status: assessment.AssessEvidenceResponse_ASSESSED},
+			wantResp: &assessment.AssessEvidenceResponse{},
 		},
 	}
 
@@ -1014,88 +1013,6 @@ func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceReq
 	return m
 }
 
-func TestConvertTargetValue(t *testing.T) {
-	type args struct {
-		value interface{}
-	}
-	tests := []struct {
-		name                     string
-		args                     args
-		wantConvertedTargetValue *structpb.Value
-		wantErr                  assert.ErrorAssertionFunc
-	}{
-		{
-			name:                     "string",
-			args:                     args{value: "TLS1.3"},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "bool",
-			args:                     args{value: false},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_BoolValue{BoolValue: false}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "jsonNumber",
-			args:                     args{value: json.Number("4")},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "int",
-			args:                     args{value: 4},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "float64",
-			args:                     args{value: 4.},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name:                     "float32",
-			args:                     args{value: float32(4.)},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: 4.}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-		{
-			name: "list of strings",
-			args: args{value: []string{"TLS1.2", "TLS1.3"}},
-			wantConvertedTargetValue: &structpb.Value{Kind: &structpb.Value_ListValue{ListValue: &structpb.ListValue{Values: []*structpb.Value{
-				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.2"}},
-				{Kind: &structpb.Value_StringValue{StringValue: "TLS1.3"}},
-			}}}},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return err == nil
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotConvertedTargetValue, err := convertTargetValue(tt.args.value)
-			if !tt.wantErr(t, err, fmt.Sprintf("convertTargetValue(%v)", tt.args.value)) {
-				return
-			}
-			// Checking against 'String()' allows to compare the actual values instead of the respective pointers
-			assert.Equalf(t, tt.wantConvertedTargetValue.String(), gotConvertedTargetValue.String(), "convertTargetValue(%v)", tt.args.value)
-		})
-	}
-}
-
 func TestService_HandleEvidence(t *testing.T) {
 	type fields struct {
 		hasEvidenceStoreStream bool
@@ -1221,6 +1138,11 @@ func TestService_HandleEvidence(t *testing.T) {
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
 			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
 				assert.NotEmpty(t, s.results)
+				// Check the result by validation
+				for _, result := range s.results {
+					err := result.Validate()
+					assert.NoError(t, err)
+				}
 			}
 
 		})
