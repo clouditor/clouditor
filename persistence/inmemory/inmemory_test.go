@@ -19,6 +19,9 @@ func TestNewStorage(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, userInput.Validate())
+
 	err = s.Create(userInput)
 	assert.NoError(t, err)
 
@@ -26,5 +29,6 @@ func TestNewStorage(t *testing.T) {
 	userOutput := &auth.User{}
 	err = s.Get(userOutput, "Username = ?", "SomeName")
 	assert.NoError(t, err)
+	assert.NoError(t, userOutput.Validate())
 	assert.Equal(t, userInput, userOutput)
 }
