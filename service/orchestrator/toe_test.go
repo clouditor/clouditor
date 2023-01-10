@@ -488,13 +488,14 @@ func TestToeHook(t *testing.T) {
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
+			assert.NoError(t, gotResp.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
-				assert.NoError(t, gotResp.Validate())
 
 			}
 			assert.Equal(t, 2, hookCallCounter)
@@ -765,11 +766,11 @@ func TestService_UpdateControlMonitoringStatus(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlMonitoringStatus(tt.args.in0, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Service.UpdateControlMonitoringStatus() = %v, want %v", gotRes, tt.wantRes)
-				assert.NoError(t, gotRes.Validate())
 			}
 		})
 	}

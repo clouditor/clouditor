@@ -30,7 +30,7 @@
     "allowedValues": {
       "values": [
         "AES-128",
-        "AES256",
+        "AES-256",
         ""
       ]
     }
