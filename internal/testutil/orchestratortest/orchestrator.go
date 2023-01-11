@@ -9,13 +9,14 @@ import (
 )
 
 var (
-	MockCertificateID  = "1234"
-	MockCatalogID      = "Cat1234"
-	MockCategoryName   = "My name"
-	MockControlID      = "Cont1234"
-	MockSubControlID   = "Cont1234.1"
-	AssuranceLevelHigh = "high"
-	MockServiceID      = "11111111-1111-1111-1111-111111111111"
+	MockCertificateID    = "1234"
+	MockCatalogID        = "Cat1234"
+	MockCategoryName     = "My name"
+	MockControlID        = "Cont1234"
+	MockSubControlID     = "Cont1234.1"
+	MockAnotherControlID = "Cont4567"
+	AssuranceLevelHigh   = "high"
+	MockServiceID        = "11111111-1111-1111-1111-111111111111"
 )
 
 // NewCertificate creates a mock certificate
@@ -56,8 +57,8 @@ func NewCatalog() *orchestrator.Catalog {
 			Controls: []*orchestrator.Control{{
 				Id:                "Cont1234",
 				Name:              "Mock Control",
-				CategoryName:      "Mock Category name",
-				CategoryCatalogId: "Cat1234",
+				CategoryName:      MockCategoryName,
+				CategoryCatalogId: MockCatalogID,
 				Description:       "This is a mock control",
 				Metrics: []*assessment.Metric{{
 					Id:          "MockMetric",
@@ -76,10 +77,16 @@ func NewCatalog() *orchestrator.Catalog {
 					Name:              "Mock Sub-Control",
 					Description:       "This is a mock sub-control",
 					Metrics:           []*assessment.Metric{},
-					CategoryName:      "My name",
-					CategoryCatalogId: "Cat1234",
+					CategoryName:      MockCategoryName,
+					CategoryCatalogId: MockCatalogID,
 				}},
-			}},
+			},
+				{
+					Id:                "Cont4567",
+					Name:              "Another Mock Control",
+					CategoryName:      MockCategoryName,
+					CategoryCatalogId: MockCatalogID,
+				}},
 		}}}
 	return mockCatalog
 }
