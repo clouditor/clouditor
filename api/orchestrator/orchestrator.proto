@@ -395,7 +395,7 @@ service Orchestrator {
   rpc RemoveControlFromScope(RemoveControlFromScopeRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/"
+      delete : "/v1/orchestrator/cloud_services/"
             "{cloud_service_id}/toes/"
             "{catalog_id}/controls_in_scope/"
             "categories/{control_category_name}/"
