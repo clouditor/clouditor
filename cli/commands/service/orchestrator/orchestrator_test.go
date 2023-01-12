@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -60,19 +61,19 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:             "11111111-1111-1111-1111-111111111111",
-			MetricId:       "assessmentResultMetricID",
-			EvidenceId:     "11111111-1111-1111-1111-111111111111",
-			CloudServiceId: "11111111-1111-1111-1111-111111111111",
+			Id:             testvariables.MockCloudServiceID,
+			MetricId:       testvariables.MockMetricID,
+			EvidenceId:     testvariables.MockCloudServiceID,
+			CloudServiceId: testvariables.MockCloudServiceID,
 			Timestamp:      timestamppb.Now(),
-			ResourceId:     "myResource",
+			ResourceId:     string(testvariables.MockResourceID),
 			ResourceTypes:  []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue:    toStruct(1.0),
 				Operator:       "<",
 				IsDefault:      true,
-				MetricId:       "assessmentResultMetricID",
-				CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				MetricId:       testvariables.MockMetricID,
+				CloudServiceId: testvariables.MockCloudServiceID,
 			}}})
 	if err != nil {
 		panic(err)
@@ -142,7 +143,7 @@ func TestNewGetCatalogCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetCatalogCommand()
-	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID})
+	err := cmd.RunE(nil, []string{testvariables.MockCatalogID})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Catalog{}
@@ -151,7 +152,7 @@ func TestNewGetCatalogCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, orchestratortest.MockCatalogID, response.Id)
+	assert.Equal(t, testvariables.MockCatalogID, response.Id)
 }
 
 func TestNewGetCategoryCommand(t *testing.T) {
@@ -160,7 +161,7 @@ func TestNewGetCategoryCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetCategoryCommand()
-	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName})
+	err := cmd.RunE(nil, []string{testvariables.MockCatalogID, testvariables.MockCategoryName})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Category{}
@@ -169,7 +170,7 @@ func TestNewGetCategoryCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, orchestratortest.MockCategoryName, response.Name)
+	assert.Equal(t, testvariables.MockCategoryName, response.Name)
 }
 
 func TestNewGetControlCommand(t *testing.T) {
@@ -178,7 +179,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetControlCommand()
-	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName, orchestratortest.MockControlID})
+	err := cmd.RunE(nil, []string{testvariables.MockCatalogID, testvariables.MockCategoryName, testvariables.MockControlID})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Control{}
@@ -187,7 +188,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, orchestratortest.MockControlID, response.Id)
+	assert.Equal(t, testvariables.MockControlID, response.Id)
 }
 
 func toStruct(f float32) (s *structpb.Value) {

@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
@@ -127,7 +128,7 @@ func TestService_GetCloudService(t *testing.T) {
 			"cloud service not found",
 			NewService(),
 			context.Background(),
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: "11111111-1111-1111-1111-111111111111"},
+			&orchestrator.GetCloudServiceRequest{CloudServiceId: testvariables.MockCloudServiceID},
 			nil,
 			status.Error(codes.NotFound, "service not found"),
 		},
@@ -384,8 +385,8 @@ func TestService_ListCloudServices(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two cloud services, of which only one we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CloudService{Id: "11111111-1111-1111-1111-111111111111"})
-					_ = s.Create(&orchestrator.CloudService{Id: "22222222-2222-2222-2222-222222222222"})
+					_ = s.Create(&orchestrator.CloudService{Id: testvariables.MockCloudServiceID})
+					_ = s.Create(&orchestrator.CloudService{Id: testvariables.MockAnotherCloudServiceID})
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
@@ -395,7 +396,7 @@ func TestService_ListCloudServices(t *testing.T) {
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{
 				Services: []*orchestrator.CloudService{
-					{Id: "11111111-1111-1111-1111-111111111111"},
+					{Id: testvariables.MockCloudServiceID},
 				},
 			},
 			wantErr: assert.NoError,

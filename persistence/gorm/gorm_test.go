@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -97,12 +98,7 @@ func TestStorageOptions(t *testing.T) {
 
 			// Test to create new user and get it again with respective 'Create' and 'Get'
 			// Create record via DB call
-			userInput := &auth.User{
-				Username: "SomeName",
-				Password: "SomePassword",
-				Email:    "SomeMail",
-				FullName: "SomeFullName",
-			}
+			userInput := testvariables.NewUser1()
 			err = s.Create(userInput)
 			assert.NoError(t, err)
 
@@ -122,7 +118,7 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: orchestratortest.MockMetricID}
+	metric = &assessment.Metric{Id: testvariables.MockMetricID}
 
 	// Create storage
 	s, err = NewStorage()
@@ -142,12 +138,7 @@ func Test_storage_Get(t *testing.T) {
 		user *auth.User
 	)
 
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	user = testvariables.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()
@@ -180,7 +171,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, user, gotUser3)
 
 	var metric = &assessment.Metric{
-		Id:    orchestratortest.MockMetricID,
+		Id:    testvariables.MockMetricID,
 		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 	}
 
@@ -190,12 +181,12 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric via Id
 	gotMetric := &assessment.Metric{}
-	err = s.Get(gotMetric, "id = ?", orchestratortest.MockMetricID)
+	err = s.Get(gotMetric, "id = ?", testvariables.MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  orchestratortest.MockMetricID,
+		MetricId:  testvariables.MockMetricID,
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
 
@@ -205,7 +196,7 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric implementation via Id
 	gotImpl := &assessment.MetricImplementation{}
-	err = s.Get(gotImpl, "metric_id = ?", orchestratortest.MockMetricID)
+	err = s.Get(gotImpl, "metric_id = ?", testvariables.MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, impl, gotImpl)
 }
@@ -225,19 +216,8 @@ func Test_storage_List(t *testing.T) {
 
 	// Test user
 
-	user1 = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
-
-	user2 = &auth.User{
-		Username: "SomeName2",
-		Password: "SomePassword2",
-		Email:    "SomeMail2",
-		FullName: "SomeFullName2",
-	}
+	user1 = testvariables.NewUser1()
+	user2 = testvariables.NewUser2()
 
 	// List should return empty list since no users are in DB yet
 	err = s.List(&users, "", true, 0, -1)
@@ -306,19 +286,8 @@ func Test_storage_Count(t *testing.T) {
 		user2 *auth.User
 	)
 
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
-
-	user2 = &auth.User{
-		Username: "SomeName2",
-		Password: "SomePassword2",
-		Email:    "SomeMail2",
-		FullName: "SomeFullName2",
-	}
+	user = testvariables.NewUser1()
+	user2 = testvariables.NewUser2()
 
 	// Create storage
 	s, err = NewStorage()
@@ -366,12 +335,7 @@ func Test_storage_Save(t *testing.T) {
 		gotUser *auth.User
 		myVar   MyTest
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	user = testvariables.NewUser1()
 
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
@@ -418,12 +382,7 @@ func Test_storage_Update(t *testing.T) {
 		s    persistence.Storage
 		user *auth.User
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	user = testvariables.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()
@@ -458,12 +417,12 @@ func Test_storage_Update(t *testing.T) {
 	// Testing cloud service
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
-		Id:          "SomeId",
-		Name:        "SomeName",
-		Description: "SomeDescription",
+		Id:          testvariables.MockCloudServiceID,
+		Name:        testvariables.MockCloudServiceName,
+		Description: testvariables.MockCloudServiceDescription,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id: "SomeId",
+				Id: testvariables.MockCloudServiceID,
 			},
 		},
 	}
@@ -495,12 +454,7 @@ func Test_storage_Delete(t *testing.T) {
 		user *auth.User
 		//gotUser *auth.User
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	user = testvariables.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()

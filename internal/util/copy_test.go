@@ -30,6 +30,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/voc"
 )
 
@@ -113,8 +114,8 @@ func TestDeepCopyOfMap(t *testing.T) {
 			args: args{
 				originalMap: map[string]interface{}{
 					"testKey1": &voc.Resource{
-						ID:   "00000000-0000-0000-0000-000000000000",
-						Name: "testResource1",
+						ID:   testvariables.MockResourceID,
+						Name: testvariables.MockResourceName,
 						Type: []string{"Resource"},
 					},
 					"testKey2": &voc.Resource{
@@ -126,8 +127,8 @@ func TestDeepCopyOfMap(t *testing.T) {
 			},
 			want: map[string]interface{}{
 				"testKey1": &voc.Resource{
-					ID:   "00000000-0000-0000-0000-000000000000",
-					Name: "testResource1",
+					ID:   testvariables.MockResourceID,
+					Name: testvariables.MockResourceName,
 					Type: []string{"Resource"},
 				},
 				"testKey2": &voc.Resource{
@@ -179,8 +180,8 @@ func TestDeepCopy(t *testing.T) {
 			args: args{
 				original: []interface{}{
 					&voc.Resource{
-						ID:   "00000000-0000-0000-0000-000000000000",
-						Name: "testResource1",
+						ID:   testvariables.MockResourceID,
+						Name: testvariables.MockResourceName,
 						Type: []string{"Resource"},
 					},
 					&voc.Resource{
@@ -192,8 +193,8 @@ func TestDeepCopy(t *testing.T) {
 			},
 			want: []interface{}{
 				&voc.Resource{
-					ID:   "00000000-0000-0000-0000-000000000000",
-					Name: "testResource1",
+					ID:   testvariables.MockResourceID,
+					Name: testvariables.MockResourceName,
 					Type: []string{"Resource"},
 				},
 				&voc.Resource{

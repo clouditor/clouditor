@@ -28,9 +28,9 @@ package assessment
 import (
 	"testing"
 
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -39,9 +39,6 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 		AssessmentResult *AssessmentResult
 	}
 
-	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
-	const mockEvidenceID = "11111111-1111-1111-1111-111111111111"
-	const mockServiceID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
 		name     string
 		args     args
@@ -54,16 +51,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Empty id
 					Id:       "",
-					MetricId: "MockMetricID",
+					MetricId: testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "==",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    "==",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -78,16 +71,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Only 4 characters
 					Id:       "1234",
-					MetricId: "MockMetricID",
+					MetricId: testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "==",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    "==",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -102,16 +91,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Wrong format: 'x' not allowed (no hexadecimal character)
 					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-					MetricId: "MockMetricID",
+					MetricId: testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "==",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    "==",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -124,17 +109,13 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result timestamp",
 			args: args{
 				&AssessmentResult{
-					Id:       assessmentResultID,
-					MetricId: "MockMetricID",
+					Id:       testvariables.MockAssessmentResultID,
+					MetricId: testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: ">",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    ">",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -147,18 +128,14 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric id",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "<",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    "<",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 				},
 			},
 			wantResp: "",
@@ -170,21 +147,17 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result resource types",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  "MockMetricID",
+					MetricId:  testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						MetricId: "MockMetricID",
-						Operator: "==",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
-						CloudServiceId: mockServiceID,
+						MetricId:       testvariables.MockMetricID,
+						Operator:       "==",
+						TargetValue:    testvariables.MockMetricConfigurationTargetValueString,
+						CloudServiceId: testvariables.MockCloudServiceID,
 					},
 					ResourceId: "myResource",
-					EvidenceId: mockEvidenceID,
+					EvidenceId: testvariables.MockEvidenceID,
 				},
 			},
 			wantResp: "",
@@ -196,10 +169,10 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration",
 			args: args{
 				&AssessmentResult{
-					Id:            assessmentResultID,
+					Id:            testvariables.MockAssessmentResultID,
 					Timestamp:     timestamppb.Now(),
-					MetricId:      "MockMetricID",
-					EvidenceId:    mockEvidenceID,
+					MetricId:      testvariables.MockMetricID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -212,18 +185,14 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration operator",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  "MockMetricID",
+					MetricId:  testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
-						MetricId: "MockMetricID",
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
+						MetricId:    testvariables.MockMetricID,
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -236,13 +205,13 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result metric configuration target value",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  "MockMetricID",
+					MetricId:  testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "<",
 					},
-					EvidenceId:    mockEvidenceID,
+					EvidenceId:    testvariables.MockEvidenceID,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -255,17 +224,13 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Missing assessment result evidence id",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  "MockMetricID",
+					MetricId:  testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: ">",
-						MetricId: "MockMetricID",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
+						Operator:    ">",
+						MetricId:    testvariables.MockMetricID,
+						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
 				},
@@ -279,23 +244,19 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			name: "Valid assessment result",
 			args: args{
 				&AssessmentResult{
-					Id:        assessmentResultID,
+					Id:        testvariables.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  "MockMetricID",
+					MetricId:  testvariables.MockMetricID,
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "==",
-						MetricId: "MockMetricID",
-						TargetValue: &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: "MockTargetValue",
-							},
-						},
-						CloudServiceId: mockServiceID,
+						Operator:       "==",
+						MetricId:       testvariables.MockMetricID,
+						TargetValue:    testvariables.MockMetricConfigurationTargetValueString,
+						CloudServiceId: testvariables.MockCloudServiceID,
 					},
-					EvidenceId:     mockEvidenceID,
+					EvidenceId:     testvariables.MockEvidenceID,
 					ResourceId:     "myResource",
 					ResourceTypes:  []string{"Resource"},
-					CloudServiceId: mockServiceID,
+					CloudServiceId: testvariables.MockCloudServiceID,
 				},
 			},
 			wantResp: "",
@@ -354,7 +315,7 @@ func TestListAssessmentResultsRequest_Validate(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				req: &ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+					FilteredCloudServiceId: util.Ref(testvariables.MockCloudServiceID),
 				},
 			},
 			wantErr: assert.NoError,

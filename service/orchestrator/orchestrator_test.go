@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -53,10 +54,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-)
-
-const (
-	assessmentResultID1 = "11111111-1111-1111-1111-111111111111"
 )
 
 func TestMain(m *testing.M) {
@@ -117,21 +114,21 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             assessmentResultID1,
-						MetricId:       "assessmentResultMetricID",
-						EvidenceId:     "11111111-1111-1111-1111-111111111111",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						Id:             testvariables.MockAssessmentResultID,
+						MetricId:       testvariables.MockMetricID,
+						EvidenceId:     testvariables.MockEvidenceID,
+						CloudServiceId: testvariables.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       ">=",
 							IsDefault:      true,
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-							MetricId:       "TestMetric",
+							CloudServiceId: testvariables.MockCloudServiceID,
+							MetricId:       testvariables.MockMetricID,
 						},
-						NonComplianceComments: "non_compliance_comment",
+						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            "resourceID",
+						ResourceId:            testvariables.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -180,21 +177,21 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             assessmentResultID1,
+						Id:             testvariables.MockAssessmentResultID,
 						MetricId:       "assessmentResultMetricID",
-						EvidenceId:     "11111111-1111-1111-1111-111111111111",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						EvidenceId:     testvariables.MockEvidenceID,
+						CloudServiceId: testvariables.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "<=",
 							IsDefault:      true,
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-							MetricId:       "TestMetric",
+							CloudServiceId: testvariables.MockCloudServiceID,
+							MetricId:       testvariables.MockMetricID,
 						},
-						NonComplianceComments: "non_compliance_comment",
+						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            "resourceID",
+						ResourceId:            testvariables.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -208,20 +205,20 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             assessmentResultID1,
-						EvidenceId:     "11111111-1111-1111-1111-111111111111",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						Id:             testvariables.MockAssessmentResultID,
+						EvidenceId:     testvariables.MockEvidenceID,
+						CloudServiceId: testvariables.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "<=",
 							IsDefault:      true,
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-							MetricId:       "TestMetric",
+							CloudServiceId: testvariables.MockCloudServiceID,
+							MetricId:       testvariables.MockMetricID,
 						},
-						NonComplianceComments: "non_compliance_comment",
+						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            "resourceID",
+						ResourceId:            testvariables.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -241,7 +238,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			assert.Equal(t, tt.wantResp, gotResp)
 
 			if err == nil {
-				assert.NotNil(t, s.results[assessmentResultID1])
+				assert.NotNil(t, s.results[testvariables.MockAssessmentResultID])
 			} else {
 				assert.Empty(t, s.results)
 			}
@@ -385,19 +382,19 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 			Result: &assessment.AssessmentResult{
 				Id:             uuid.NewString(),
 				MetricId:       fmt.Sprintf("assessmentResultMetricID-%d", i),
-				EvidenceId:     "11111111-1111-1111-1111-111111111111",
-				CloudServiceId: "00000000-0000-0000-0000-000000000000",
+				EvidenceId:     testvariables.MockEvidenceID,
+				CloudServiceId: testvariables.MockCloudServiceID,
 				Timestamp:      timestamppb.Now(),
 				MetricConfiguration: &assessment.MetricConfiguration{
 					TargetValue:    toStruct(1.0),
 					Operator:       "<=",
 					IsDefault:      true,
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					MetricId:       "TestMetric",
+					CloudServiceId: testvariables.MockCloudServiceID,
+					MetricId:       testvariables.MockMetricID,
 				},
-				NonComplianceComments: "non_compliance_comment",
+				NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
 				Compliant:             true,
-				ResourceId:            "resourceID",
+				ResourceId:            testvariables.MockResourceID,
 				ResourceTypes:         []string{"ResourceType"},
 			},
 		}
@@ -719,9 +716,9 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			Id:             orchestratortest.MockCertificateID,
+			Id:             testvariables.MockCertificateID,
 			Name:           "EUCS",
-			CloudServiceId: orchestratortest.MockCloudServiceID,
+			CloudServiceId: testvariables.MockCloudServiceID,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -804,7 +801,7 @@ func Test_GetCertificate(t *testing.T) {
 		},
 		{
 			"valid",
-			&orchestrator.GetCertificateRequest{CertificateId: orchestratortest.MockCertificateID},
+			&orchestrator.GetCertificateRequest{CertificateId: testvariables.MockCertificateID},
 			orchestratortest.NewCertificate(),
 			nil,
 		},
