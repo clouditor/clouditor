@@ -891,7 +891,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     ? /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope/categories/{controlCategoryName}/controls/{controlId}
-    :   put:
+    :   delete:
             tags:
                 - Orchestrator
             description: Adds the selected control as "in scope" for the target of evaluation.
