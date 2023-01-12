@@ -892,7 +892,7 @@ type mockAssessmentServerStream struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentServerStream) CloseSend() error {
+func (*mockAssessmentServerStream) CloseSend() error {
 	panic("implement me")
 }
 
@@ -906,12 +906,12 @@ func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mock
 	return m
 }
 
-func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
+func (m *mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
 
-func (mockAssessmentServerStream) SendAndClose() error {
+func (*mockAssessmentServerStream) SendAndClose() error {
 	return nil
 }
 
@@ -929,26 +929,26 @@ func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceReque
 	return req, nil
 }
 
-func (mockAssessmentServerStream) SetHeader(metadata.MD) error {
+func (*mockAssessmentServerStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) SendHeader(metadata.MD) error {
+func (*mockAssessmentServerStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) SetTrailer(metadata.MD) {
+func (*mockAssessmentServerStream) SetTrailer(metadata.MD) {
 }
 
-func (mockAssessmentServerStream) Context() context.Context {
+func (*mockAssessmentServerStream) Context() context.Context {
 	return nil
 }
 
-func (mockAssessmentServerStream) SendMsg(interface{}) error {
+func (*mockAssessmentServerStream) SendMsg(interface{}) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) RecvMsg(interface{}) error {
+func (*mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
@@ -993,11 +993,11 @@ type mockAssessmentServerStreamWithRecvErr struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
 	panic("implement me")
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+func (*mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
 	err := errors.New("Recv()-error")
 
 	return nil, err
