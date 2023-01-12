@@ -721,7 +721,7 @@ func Test_UpdateCertificate(t *testing.T) {
 		Certificate: &orchestrator.Certificate{
 			Id:             orchestratortest.MockCertificateID,
 			Name:           "EUCS",
-			CloudServiceId: orchestratortest.MockServiceID,
+			CloudServiceId: orchestratortest.MockCloudServiceID,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))

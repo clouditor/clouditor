@@ -164,9 +164,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetMetrics(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetMetrics() got1 = %v, want %v", got1, tt.want1)
@@ -193,7 +191,7 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", orchestratortest.MockCatalogID, orchestratortest.MockCatalogName, orchestratortest.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -214,9 +212,7 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCatalogs(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -243,7 +239,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", orchestratortest.MockCatalogID, orchestratortest.MockCatalogName, orchestratortest.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -254,7 +250,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "My name\ttest")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", orchestratortest.MockCategoryName, orchestratortest.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -275,9 +271,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCategory(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -304,7 +298,7 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", orchestratortest.MockCatalogID, orchestratortest.MockCatalogName, orchestratortest.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -315,7 +309,7 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "My name\ttest")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", orchestratortest.MockCategoryName, orchestratortest.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -326,7 +320,7 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cont1234\tMock Control: This is a mock control")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", orchestratortest.MockControlID, orchestratortest.MockControlName, orchestratortest.MockControlDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -347,9 +341,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -386,9 +378,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCloudServices(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("TestValidArgsGetCloudServices() got1 = %v, want %v", got1, tt.want1)
