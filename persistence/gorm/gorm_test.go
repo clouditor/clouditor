@@ -37,8 +37,8 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -98,7 +98,7 @@ func TestStorageOptions(t *testing.T) {
 
 			// Test to create new user and get it again with respective 'Create' and 'Get'
 			// Create record via DB call
-			userInput := testvariables.NewUser1()
+			userInput := testdata.NewUser1()
 			err = s.Create(userInput)
 			assert.NoError(t, err)
 
@@ -118,7 +118,7 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: testvariables.MockMetricID}
+	metric = &assessment.Metric{Id: testdata.MockMetricID}
 
 	// Create storage
 	s, err = NewStorage()
@@ -138,7 +138,7 @@ func Test_storage_Get(t *testing.T) {
 		user *auth.User
 	)
 
-	user = testvariables.NewUser1()
+	user = testdata.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()
@@ -171,7 +171,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, user, gotUser3)
 
 	var metric = &assessment.Metric{
-		Id:    testvariables.MockMetricID,
+		Id:    testdata.MockMetricID,
 		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 	}
 
@@ -181,12 +181,12 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric via Id
 	gotMetric := &assessment.Metric{}
-	err = s.Get(gotMetric, "id = ?", testvariables.MockMetricID)
+	err = s.Get(gotMetric, "id = ?", testdata.MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  testvariables.MockMetricID,
+		MetricId:  testdata.MockMetricID,
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
 
@@ -196,7 +196,7 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric implementation via Id
 	gotImpl := &assessment.MetricImplementation{}
-	err = s.Get(gotImpl, "metric_id = ?", testvariables.MockMetricID)
+	err = s.Get(gotImpl, "metric_id = ?", testdata.MockMetricID)
 	assert.NoError(t, err)
 	assert.Equal(t, impl, gotImpl)
 }
@@ -216,8 +216,8 @@ func Test_storage_List(t *testing.T) {
 
 	// Test user
 
-	user1 = testvariables.NewUser1()
-	user2 = testvariables.NewUser2()
+	user1 = testdata.NewUser1()
+	user2 = testdata.NewUser2()
 
 	// List should return empty list since no users are in DB yet
 	err = s.List(&users, "", true, 0, -1)
@@ -286,8 +286,8 @@ func Test_storage_Count(t *testing.T) {
 		user2 *auth.User
 	)
 
-	user = testvariables.NewUser1()
-	user2 = testvariables.NewUser2()
+	user = testdata.NewUser1()
+	user2 = testdata.NewUser2()
 
 	// Create storage
 	s, err = NewStorage()
@@ -335,7 +335,7 @@ func Test_storage_Save(t *testing.T) {
 		gotUser *auth.User
 		myVar   MyTest
 	)
-	user = testvariables.NewUser1()
+	user = testdata.NewUser1()
 
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
@@ -382,7 +382,7 @@ func Test_storage_Update(t *testing.T) {
 		s    persistence.Storage
 		user *auth.User
 	)
-	user = testvariables.NewUser1()
+	user = testdata.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()
@@ -417,12 +417,12 @@ func Test_storage_Update(t *testing.T) {
 	// Testing cloud service
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
-		Id:          testvariables.MockCloudServiceID,
-		Name:        testvariables.MockCloudServiceName,
-		Description: testvariables.MockCloudServiceDescription,
+		Id:          testdata.MockCloudServiceID,
+		Name:        testdata.MockCloudServiceName,
+		Description: testdata.MockCloudServiceDescription,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id: testvariables.MockCloudServiceID,
+				Id: testdata.MockCloudServiceID,
 			},
 		},
 	}
@@ -454,7 +454,7 @@ func Test_storage_Delete(t *testing.T) {
 		user *auth.User
 		//gotUser *auth.User
 	)
-	user = testvariables.NewUser1()
+	user = testdata.NewUser1()
 
 	// Create storage
 	s, err = NewStorage()

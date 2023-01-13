@@ -29,7 +29,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/internal/testvariables"
+	"clouditor.io/clouditor/internal/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,10 +46,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId: testvariables.MockMetricID,
+					MetricId: testdata.MockMetricID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -61,11 +61,11 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       testvariables.MockMetricID,
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -77,10 +77,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					CloudServiceId: testvariables.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: testvariables.MockMetricConfigurationTargetValueString,
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -92,13 +92,13 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       testvariables.MockMetricID,
-					CloudServiceId: testvariables.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:       "<",
-						TargetValue:    testvariables.MockMetricConfigurationTargetValueString,
-						MetricId:       testvariables.MockMetricID,
-						CloudServiceId: testvariables.MockCloudServiceID,
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+						MetricId:       testdata.MockMetricID,
+						CloudServiceId: testdata.MockCloudServiceID,
 					},
 				},
 			},
@@ -126,7 +126,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId: testvariables.MockMetricID,
+					MetricId: testdata.MockMetricID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -137,7 +137,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       testvariables.MockMetricID,
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 				},
 			},
@@ -149,7 +149,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					CloudServiceId: testvariables.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -160,8 +160,8 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       testvariables.MockMetricID,
-					CloudServiceId: testvariables.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: assert.NoError,

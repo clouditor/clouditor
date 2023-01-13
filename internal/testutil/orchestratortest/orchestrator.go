@@ -5,28 +5,28 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testvariables"
+	"clouditor.io/clouditor/internal/testdata"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // NewCertificate creates a mock certificate
 func NewCertificate() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
-		Id:             testvariables.MockCertificateID,
-		Name:           testvariables.MockCertificateName,
-		CloudServiceId: testvariables.MockCloudServiceID,
+		Id:             testdata.MockCertificateID,
+		Name:           testdata.MockCertificateName,
+		CloudServiceId: testdata.MockCloudServiceID,
 		IssueDate:      "2021-11-06",
 		ExpirationDate: "2024-11-06",
-		Standard:       testvariables.MockCertificateName,
-		AssuranceLevel: testvariables.AssuranceLevelHigh,
-		Cab:            testvariables.MockCertificateCab,
-		Description:    testvariables.MockCertificateDescription,
+		Standard:       testdata.MockCertificateName,
+		AssuranceLevel: testdata.AssuranceLevelHigh,
+		Cab:            testdata.MockCertificateCab,
+		Description:    testdata.MockCertificateDescription,
 		States: []*orchestrator.State{{
-			State:         testvariables.MockStateState,
-			TreeId:        testvariables.MockStateTreeID,
+			State:         testdata.MockStateState,
+			TreeId:        testdata.MockStateTreeID,
 			Timestamp:     time.Now().String(),
-			CertificateId: testvariables.MockCertificateID,
-			Id:            testvariables.MockStateId,
+			CertificateId: testdata.MockCertificateID,
+			Id:            testdata.MockStateId,
 		}},
 	}
 
@@ -36,24 +36,24 @@ func NewCertificate() *orchestrator.Certificate {
 // NewCatalog creates a mock catalog
 func NewCatalog() *orchestrator.Catalog {
 	var mockCatalog = &orchestrator.Catalog{
-		Name:        testvariables.MockCatalogName,
-		Id:          testvariables.MockCatalogID,
-		Description: testvariables.MockCatalogDescription,
+		Name:        testdata.MockCatalogName,
+		Id:          testdata.MockCatalogID,
+		Description: testdata.MockCatalogDescription,
 		AllInScope:  true,
 		Categories: []*orchestrator.Category{{
-			Name:        testvariables.MockCategoryName,
-			Description: testvariables.MockCategoryDescription,
-			CatalogId:   testvariables.MockCatalogID,
+			Name:        testdata.MockCategoryName,
+			Description: testdata.MockCategoryDescription,
+			CatalogId:   testdata.MockCatalogID,
 			Controls: []*orchestrator.Control{{
-				Id:                testvariables.MockControlID,
-				Name:              testvariables.MockControlName,
-				CategoryName:      testvariables.MockCategoryName,
-				CategoryCatalogId: testvariables.MockCatalogID,
-				Description:       testvariables.MockControlDescription,
+				Id:                testdata.MockControlID,
+				Name:              testdata.MockControlName,
+				CategoryName:      testdata.MockCategoryName,
+				CategoryCatalogId: testdata.MockCatalogID,
+				Description:       testdata.MockControlDescription,
 				Metrics: []*assessment.Metric{{
-					Id:          testvariables.MockMetricID,
-					Name:        testvariables.MockMetricName,
-					Description: testvariables.MockMetricDescription,
+					Id:          testdata.MockMetricID,
+					Name:        testdata.MockMetricName,
+					Description: testdata.MockMetricDescription,
 					Scale:       assessment.Metric_ORDINAL,
 					Range: &assessment.Range{
 						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
@@ -63,19 +63,19 @@ func NewCatalog() *orchestrator.Catalog {
 							}}}},
 				}},
 				Controls: []*orchestrator.Control{{
-					Id:                testvariables.MockSubControlID,
-					Name:              testvariables.MockSubControlName,
-					Description:       testvariables.MockSubControlDescription,
+					Id:                testdata.MockSubControlID,
+					Name:              testdata.MockSubControlName,
+					Description:       testdata.MockSubControlDescription,
 					Metrics:           []*assessment.Metric{},
-					CategoryName:      testvariables.MockCategoryName,
-					CategoryCatalogId: testvariables.MockCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 				}},
 			},
 				{
-					Id:                testvariables.MockAnotherControlID,
-					Name:              testvariables.MockAnotherControlName,
-					CategoryName:      testvariables.MockCategoryName,
-					CategoryCatalogId: testvariables.MockCatalogID,
+					Id:                testdata.MockAnotherControlID,
+					Name:              testdata.MockAnotherControlName,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 				}},
 		}}}
 
@@ -84,22 +84,22 @@ func NewCatalog() *orchestrator.Catalog {
 
 func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
-		CloudServiceId: testvariables.MockCloudServiceID,
-		CatalogId:      testvariables.MockCatalogID,
-		AssuranceLevel: &testvariables.AssuranceLevelHigh,
+		CloudServiceId: testdata.MockCloudServiceID,
+		CatalogId:      testdata.MockCatalogID,
+		AssuranceLevel: &testdata.AssuranceLevelHigh,
 	}
 
 	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation
 	toe.ControlsInScope = []*orchestrator.Control{{
-		Id:                testvariables.MockControlID,
-		CategoryName:      testvariables.MockCategoryName,
-		CategoryCatalogId: testvariables.MockCatalogID,
-		Name:              testvariables.MockControlName,
+		Id:                testdata.MockControlID,
+		CategoryName:      testdata.MockCategoryName,
+		CategoryCatalogId: testdata.MockCatalogID,
+		Name:              testdata.MockControlName,
 	}, {
-		Id:                testvariables.MockSubControlID,
-		CategoryName:      testvariables.MockCategoryName,
-		CategoryCatalogId: testvariables.MockCatalogID,
-		Name:              testvariables.MockSubControlName,
+		Id:                testdata.MockSubControlID,
+		CategoryName:      testdata.MockCategoryName,
+		CategoryCatalogId: testdata.MockCatalogID,
+		Name:              testdata.MockSubControlName,
 	}}
 
 	return toe

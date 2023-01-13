@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/auth"
-	"clouditor.io/clouditor/internal/testvariables"
+	"clouditor.io/clouditor/internal/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +14,7 @@ func TestNewStorage(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test to create new user
-	userInput := testvariables.NewUser1()
+	userInput := testdata.NewUser1()
 	err = s.Create(userInput)
 	assert.NoError(t, err)
 

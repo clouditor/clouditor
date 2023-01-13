@@ -40,9 +40,9 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -114,21 +114,21 @@ func TestAssessmentResultHook(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testvariables.MockAssessmentResultID,
-						MetricId:       testvariables.MockMetricID,
-						EvidenceId:     testvariables.MockEvidenceID,
-						CloudServiceId: testvariables.MockCloudServiceID,
+						Id:             testdata.MockAssessmentResultID,
+						MetricId:       testdata.MockMetricID,
+						EvidenceId:     testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       ">=",
 							IsDefault:      true,
-							CloudServiceId: testvariables.MockCloudServiceID,
-							MetricId:       testvariables.MockMetricID,
+							CloudServiceId: testdata.MockCloudServiceID,
+							MetricId:       testdata.MockMetricID,
 						},
-						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
+						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            testvariables.MockResourceID,
+						ResourceId:            testdata.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -177,21 +177,21 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testvariables.MockAssessmentResultID,
+						Id:             testdata.MockAssessmentResultID,
 						MetricId:       "assessmentResultMetricID",
-						EvidenceId:     testvariables.MockEvidenceID,
-						CloudServiceId: testvariables.MockCloudServiceID,
+						EvidenceId:     testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "<=",
 							IsDefault:      true,
-							CloudServiceId: testvariables.MockCloudServiceID,
-							MetricId:       testvariables.MockMetricID,
+							CloudServiceId: testdata.MockCloudServiceID,
+							MetricId:       testdata.MockMetricID,
 						},
-						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
+						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            testvariables.MockResourceID,
+						ResourceId:            testdata.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -205,20 +205,20 @@ func TestStoreAssessmentResult(t *testing.T) {
 				in0: context.TODO(),
 				assessment: &orchestrator.StoreAssessmentResultRequest{
 					Result: &assessment.AssessmentResult{
-						Id:             testvariables.MockAssessmentResultID,
-						EvidenceId:     testvariables.MockEvidenceID,
-						CloudServiceId: testvariables.MockCloudServiceID,
+						Id:             testdata.MockAssessmentResultID,
+						EvidenceId:     testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						MetricConfiguration: &assessment.MetricConfiguration{
 							TargetValue:    toStruct(1.0),
 							Operator:       "<=",
 							IsDefault:      true,
-							CloudServiceId: testvariables.MockCloudServiceID,
-							MetricId:       testvariables.MockMetricID,
+							CloudServiceId: testdata.MockCloudServiceID,
+							MetricId:       testdata.MockMetricID,
 						},
-						NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
+						NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
 						Compliant:             true,
-						ResourceId:            testvariables.MockResourceID,
+						ResourceId:            testdata.MockResourceID,
 						ResourceTypes:         []string{"ResourceType"},
 					},
 				},
@@ -238,7 +238,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			assert.Equal(t, tt.wantResp, gotResp)
 
 			if err == nil {
-				assert.NotNil(t, s.results[testvariables.MockAssessmentResultID])
+				assert.NotNil(t, s.results[testdata.MockAssessmentResultID])
 			} else {
 				assert.Empty(t, s.results)
 			}
@@ -382,19 +382,19 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 			Result: &assessment.AssessmentResult{
 				Id:             uuid.NewString(),
 				MetricId:       fmt.Sprintf("assessmentResultMetricID-%d", i),
-				EvidenceId:     testvariables.MockEvidenceID,
-				CloudServiceId: testvariables.MockCloudServiceID,
+				EvidenceId:     testdata.MockEvidenceID,
+				CloudServiceId: testdata.MockCloudServiceID,
 				Timestamp:      timestamppb.Now(),
 				MetricConfiguration: &assessment.MetricConfiguration{
 					TargetValue:    toStruct(1.0),
 					Operator:       "<=",
 					IsDefault:      true,
-					CloudServiceId: testvariables.MockCloudServiceID,
-					MetricId:       testvariables.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID,
 				},
-				NonComplianceComments: testvariables.MockAssessmentResultNonComplianceComment,
+				NonComplianceComments: testdata.MockAssessmentResultNonComplianceComment,
 				Compliant:             true,
-				ResourceId:            testvariables.MockResourceID,
+				ResourceId:            testdata.MockResourceID,
 				ResourceTypes:         []string{"ResourceType"},
 			},
 		}
@@ -716,9 +716,9 @@ func Test_UpdateCertificate(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: &orchestrator.Certificate{
-			Id:             testvariables.MockCertificateID,
+			Id:             testdata.MockCertificateID,
 			Name:           "EUCS",
-			CloudServiceId: testvariables.MockCloudServiceID,
+			CloudServiceId: testdata.MockCloudServiceID,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -801,7 +801,7 @@ func Test_GetCertificate(t *testing.T) {
 		},
 		{
 			"valid",
-			&orchestrator.GetCertificateRequest{CertificateId: testvariables.MockCertificateID},
+			&orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
 			orchestratortest.NewCertificate(),
 			nil,
 		},

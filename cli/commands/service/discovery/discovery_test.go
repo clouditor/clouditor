@@ -34,9 +34,9 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/service"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	"clouditor.io/clouditor/voc"
@@ -106,20 +106,20 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:   testvariables.MockResourceID,
-						Name: testvariables.MockResourceName,
+						ID:   testdata.MockResourceID,
+						Name: testdata.MockResourceName,
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
 					},
 				},
 			},
 			&voc.ObjectStorageService{
 				StorageService: &voc.StorageService{
-					Storage: []voc.ResourceID{testvariables.MockResourceID},
+					Storage: []voc.ResourceID{testdata.MockResourceID},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:   testvariables.MockResourceStorageID,
-								Name: testvariables.MockResourceStorageName,
+								ID:   testdata.MockResourceStorageID,
+								Name: testdata.MockResourceStorageName,
 								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
 							},
 						},

@@ -29,7 +29,7 @@ import (
 	"database/sql/driver"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testvariables"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/runtime/protoimpl"
@@ -50,7 +50,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "MetricConfiguration Operator is empty",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					TargetValue: testvariables.MockMetricConfigurationTargetValueString,
+					TargetValue: testdata.MockMetricConfigurationTargetValueString,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -72,10 +72,10 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "Successful Validation",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					TargetValue:    testvariables.MockMetricConfigurationTargetValueString,
+					TargetValue:    testdata.MockMetricConfigurationTargetValueString,
 					Operator:       "==",
-					MetricId:       testvariables.MockMetricID,
-					CloudServiceId: testvariables.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: assert.NoError,
@@ -334,7 +334,7 @@ func TestCheckCloudServiceID(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				serviceID: testvariables.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID,
 			},
 			wantErr: assert.NoError,
 		},

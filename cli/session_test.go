@@ -34,9 +34,9 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/internal/testvariables"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -192,14 +192,14 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testvariables.MockCatalogID, testvariables.MockCatalogName, testvariables.MockCatalogDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testvariables.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -240,25 +240,25 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testvariables.MockCatalogID, testvariables.MockCatalogName, testvariables.MockCatalogDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testvariables.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testvariables.MockCategoryName, testvariables.MockCategoryDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testvariables.MockCatalogID, testvariables.MockCategoryName},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -299,36 +299,36 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testvariables.MockCatalogID, testvariables.MockCatalogName, testvariables.MockCatalogDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testvariables.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testvariables.MockCategoryName, testvariables.MockCategoryDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "two args - return category",
 			args: args{
-				args:       []string{testvariables.MockCatalogID, testvariables.MockCategoryName},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testvariables.MockControlID, testvariables.MockControlName, testvariables.MockControlDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID, testdata.MockControlName, testdata.MockControlDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testvariables.MockCatalogID, testvariables.MockCategoryName, testvariables.MockControlID},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
