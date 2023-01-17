@@ -38,6 +38,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
@@ -106,6 +107,7 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
+	defenderClient          *armsecurity.PricingsClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {

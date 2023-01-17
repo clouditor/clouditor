@@ -54,6 +54,8 @@ github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/internal v1.0.0 h1:lMW1lD/
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0 h1:QM6sE5k2ZT/vI5BEe0r7mqjsUSnhVBFbOsVkEuaEfiA=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0/go.mod h1:243D9iHbcQXoFUtgHJwL7gl2zx1aDuDMjvBZVGr2uW0=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.0.0 h1:ECsQtyERDVz3NP3kvDOTLvbQhqWp/x9EsGKtb4ogUr8=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.9.0 h1:leZbYXt1X1+IXOhinVq/eyCu4J/fR/RcgdF6lWeaa5o=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.9.0/go.mod h1:iwDIDV5jIo+eXQf6RA7PwyJnycTQxX4s4MGKSy+m1LA=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.2.0 h1:Ma67P/GGprNwsslzEH6+Kb8nybI8jpDTm4Wmzu2ReK8=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.2.0/go.mod h1:c+Lifp3EDEamAkPVzMooRNOK6CZjNSdEnf1A7jsI9u4=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.0.0 h1:vsovXlTyKHZXnqzQyt7QMVkwpJBDkHchQL53qXaGBRY=

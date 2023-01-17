@@ -255,7 +255,8 @@ func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryReques
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
 				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
 				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
-				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
+				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
+				azure.NewAzureDefenderDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {

@@ -167,6 +167,7 @@ require (
 require github.com/envoyproxy/protoc-gen-validate v0.9.1
 
 require (
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.9.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
