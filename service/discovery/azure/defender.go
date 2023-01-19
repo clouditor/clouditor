@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/voc"
@@ -44,7 +45,7 @@ type azureDefenderDiscovery struct {
 }
 
 func NewAzureDefenderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureStorageDiscovery{
+	d := &azureDefenderDiscovery{
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
@@ -60,7 +61,7 @@ func NewAzureDefenderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 }
 
 func (*azureDefenderDiscovery) Name() string {
-	return "Azure Storage Account"
+	return "Azure Defender for Cloud"
 }
 
 func (*azureDefenderDiscovery) Description() string {
@@ -73,7 +74,7 @@ func (d *azureDefenderDiscovery) List() (list []voc.IsCloudResource, err error) 
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
-	log.Info("Discover Azure storage resources")
+	log.Info("Discover Azure Defender for Cloud")
 
 	// Discover defender
 	defender, err := d.discoverDefender()
@@ -85,15 +86,19 @@ func (d *azureDefenderDiscovery) List() (list []voc.IsCloudResource, err error) 
 	return
 }
 
+// discoverDefender discovers the enabled status for the Denfender for X services.
 func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+	var (
+		list                      []voc.IsCloudResource
+		securityMonitoringEnabled = true
+	)
 
 	// initialize defender client: to get the properties set for defender for cloud, we have to get the pricing information
 	if err := d.initDefenderClient(); err != nil {
 		return nil, err
 	}
 
-	// TODO(anatheka): List all storage accounts across all resource groups
+	// List all pricings to get the enabled Defender for X
 	pricingsList, err := d.clients.defenderClient.List(context.Background(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover pricing")
@@ -104,25 +109,52 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 		if err != nil {
 			return nil, fmt.Errorf("could not handle pricing: %w", err)
 		}
-		log.Infof("Adding defender '%s'", defender.Name)
 
+		log.Infof("Adding defender '%s'", pricing.Name)
 		list = append(list, defender)
 	}
+
+	// Get information if security monitoring is enabled for the subscription. The security monitoring is enabled for the subscription if all Defender services are enabled.
+	for _, defender := range list {
+		defenderTest := defender.(*voc.Account)
+		if !defenderTest.InventoryOfAssetsEnabled {
+			securityMonitoringEnabled = false
+			break
+		}
+	}
+
+	list = append(list, &voc.Account{
+		Resource: discovery.NewResource(d,
+			voc.ResourceID(getSubscriptionID(string(list[0].GetID()))),
+			getSubscriptionName(string(list[0].GetID())),
+			nil,
+			voc.GeoLocation{},
+			nil,
+			voc.AccountType,
+		),
+		SecurityMonitoringEnabld: securityMonitoringEnabled,
+	})
 
 	return list, nil
 }
 
+// TODO(anatheka): defender ressourcen als eigene resourcen hinzufügen, aber welche art von resource? Separate anlegen?
 func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*voc.Account, error) {
-	var inventoryOfAssetsEnabled bool
+	var (
+		inventoryOfAssetsEnabled bool
+	)
 
 	if pricing == nil {
 		return nil, ErrEmptyPricing
 	}
 
+	// TODO(all): Maybe we have to check here which pricing tier is used and based on that the specific features for, e.g., Storage, IoT, ARM are used.
+	// Add all Defender for Cloud resources to the list
 	if *pricing.Properties.PricingTier == armsecurity.PricingTierFree {
-		inventoryOfAssetsEnabled = true
+		inventoryOfAssetsEnabled = false
 	}
 
+	// TODO(all): What should we use? Account or another Resource?
 	return &voc.Account{
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(*pricing.ID),
@@ -134,10 +166,23 @@ func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*
 		),
 		InventoryOfAssetsEnabled: inventoryOfAssetsEnabled,
 	}, nil
+
 }
 
 // initDefenderClient creates the client if not already exists
 func (d *azureDefenderDiscovery) initDefenderClient() (err error) {
 	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d.azureDiscovery, armsecurity.NewPricingsClient)
 	return
+}
+
+// getSubscriptionName returns the Azure subscription number
+func getSubscriptionName(id string) string {
+	return strings.Split(id, "/")[2]
+}
+
+// getSubscriptionID returns the Azure subscription ID
+func getSubscriptionID(id string) string {
+	split := strings.Split(id, "/")
+
+	return "/" + split[1] + "/" + split[2]
 }
