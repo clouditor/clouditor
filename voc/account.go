@@ -35,5 +35,5 @@ type Account struct {
 	// TODO(anatheka): InventoryOfAssets is not available in the Ontology. That ist just a test for getting the property for a new metric for EUCS AM-01.4H
 	InventoryOfAssetsEnabled bool `json:"inventoryOfAssets"`
 	// Security Monitoring for whole Account
-	SecurityMonitoringEnabld bool `json:"securityMonitoringEnabld"`
+	SecurityMonitoringEnabled bool `json:"securityMonitoringEnabld"`
 }

@@ -132,7 +132,7 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 			nil,
 			voc.AccountType,
 		),
-		SecurityMonitoringEnabld: securityMonitoringEnabled,
+		SecurityMonitoringEnabled: securityMonitoringEnabled,
 	})
 
 	return list, nil
