@@ -45,3 +45,10 @@ isIn(target_values, actual_values) {
 	# Current implementation: It is enough that one output is one of target_values
 	actual_values[_] == target_values[_]
 }
+
+# // TODO: Add additional with target_values
+# Params: actual_values (multiple actual values), target_value (single target value)
+has_key(actual_values, target_value) {
+	# the _ is needed, otherwise the following returns false: has_key({"foo": false}, "foo")
+	 _ = actual_values[target_value]
+}
