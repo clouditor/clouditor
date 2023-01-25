@@ -44,50 +44,57 @@ import (
 
 func TestService_RegisterCloudService(t *testing.T) {
 	tests := []struct {
-		name string
-		req  *orchestrator.RegisterCloudServiceRequest
-		res  *orchestrator.CloudService
-		err  error
+		name    string
+		req     *orchestrator.RegisterCloudServiceRequest
+		res     *orchestrator.CloudService
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"missing request",
-			nil,
-			nil,
-			status.Error(codes.InvalidArgument, "empty request"),
+			name: "missing request",
+			req:  nil,
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error()) &&
+					assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
 		},
 		{
-			"missing service",
-			&orchestrator.RegisterCloudServiceRequest{},
-			nil,
-			status.Error(codes.InvalidArgument, "invalid request: invalid RegisterCloudServiceRequest.CloudService: value is required"),
+			name: "missing service",
+			req:  &orchestrator.RegisterCloudServiceRequest{},
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid RegisterCloudServiceRequest.CloudService: value is required") &&
+					assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
 		},
 		{
-			"missing service name",
-			&orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{}},
-			nil,
-			status.Error(codes.InvalidArgument, "invalid request: invalid RegisterCloudServiceRequest.CloudService: embedded message failed validation | caused by: invalid CloudService.Name: value length must be at least 1 runes"),
+			name: "missing service name",
+			req:  &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{}},
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid request: invalid RegisterCloudServiceRequest.CloudService: embedded message failed validation | caused by: invalid CloudService.Name: value length must be at least 1 runes") &&
+					assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
 		},
 		{
-			"valid",
-			&orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "test", Description: "some"}},
-			&orchestrator.CloudService{Name: "test", Description: "some"},
-			nil,
+			name:    "valid",
+			req:     &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "test", Description: "some"}},
+			res:     &orchestrator.CloudService{Name: "test", Description: "some"},
+			wantErr: assert.NoError,
 		},
 	}
 	orchestratorService := NewService()
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
+	assert.NoError(t, cloudService.Validate())
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := orchestratorService.RegisterCloudService(context.Background(), tt.req)
 
-			if tt.err == nil {
-				assert.Equal(t, err, tt.err)
-			} else {
-				assert.EqualError(t, err, tt.err.Error())
-			}
+			assert.NoError(t, res.Validate())
+			tt.wantErr(t, err)
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
@@ -109,64 +116,73 @@ func TestService_RegisterCloudService(t *testing.T) {
 
 func TestService_GetCloudService(t *testing.T) {
 	tests := []struct {
-		name string
-		svc  *Service
-		ctx  context.Context
-		req  *orchestrator.GetCloudServiceRequest
-		res  *orchestrator.CloudService
-		err  error
+		name    string
+		svc     *Service
+		ctx     context.Context
+		req     *orchestrator.GetCloudServiceRequest
+		res     *orchestrator.CloudService
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"invalid request",
-			NewService(),
-			context.Background(),
-			nil,
-			nil,
-			status.Error(codes.InvalidArgument, "empty request"),
+			name: "invalid request",
+			svc:  NewService(),
+			ctx:  context.Background(),
+			req:  nil,
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error()) &&
+					assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
 		},
 		{
-			"cloud service not found",
-			NewService(),
-			context.Background(),
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
-			nil,
-			status.Error(codes.NotFound, "service not found"),
+			name: "cloud service not found",
+			svc:  NewService(),
+			ctx:  context.Background(),
+			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+      res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "service not found") &&
+					assert.Equal(t, codes.NotFound, status.Code(err))
+			},
 		},
 		{
-			"valid",
-			NewService(),
-			context.Background(),
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
-			&orchestrator.CloudService{
+			name: "valid",
+			svc:  NewService(),
+			ctx:  context.Background(),
+			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
+			res: &orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
 				Description: DefaultTargetCloudServiceDescription,
 			},
-			nil,
+			wantErr: assert.NoError,
 		},
 		{
-			"permission denied",
-			NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims)),
-			testutil.TestContextOnlyService1,
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
-			nil,
-			service.ErrPermissionDenied,
+			name: "permission denied",
+			svc:  NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims)),
+			ctx:  testutil.TestContextOnlyService1,
+			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "access denied") &&
+					assert.Equal(t, codes.PermissionDenied, status.Code(err))
+			},
 		},
 		{
-			"permission granted",
-			NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+			name: "permission granted",
+			svc: NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.CloudService{
 					Id:   testutil.TestCloudService1,
 					Name: "service1",
 				})
 			}))),
-			testutil.TestContextOnlyService1,
-			&orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
-			&orchestrator.CloudService{
+			ctx: testutil.TestContextOnlyService1,
+			req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			res: &orchestrator.CloudService{
 				Id:   testutil.TestCloudService1,
 				Name: "service1",
 			},
-			nil,
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -176,12 +192,9 @@ func TestService_GetCloudService(t *testing.T) {
 			assert.NoError(t, err)
 
 			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
+			assert.NoError(t, res.Validate())
 
-			if tt.err == nil {
-				assert.Equal(t, tt.err, err)
-			} else {
-				assert.EqualError(t, err, tt.err.Error())
-			}
+			tt.wantErr(t, err)
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
@@ -238,6 +251,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
+	assert.NoError(t, cloudService.Validate())
 	assert.Equal(t, "NewName", cloudService.Name)
 	// Description should be overwritten with empty string
 	assert.Equal(t, "", cloudService.Description)
@@ -298,6 +312,9 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 		Name:        DefaultTargetCloudServiceName,
 		Description: DefaultTargetCloudServiceDescription,
 	}, cloudServiceResponse)
+
+	// Check if CloudService is valid
+	assert.NoError(t, cloudServiceResponse.Validate())
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
@@ -418,6 +435,9 @@ func TestService_ListCloudServices(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
+
+			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err, tt.args)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
