@@ -812,7 +812,7 @@ func Test_GetCertificate(t *testing.T) {
 		},
 		{
 			name:    "valid",
-			req:     &orchestrator.GetCertificateRequest{CertificateId: orchestratortest.MockCertificateID},
+			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
 			res:     orchestratortest.NewCertificate(),
 			wantErr: assert.NoError,
 		},
