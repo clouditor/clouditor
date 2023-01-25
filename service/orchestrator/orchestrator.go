@@ -218,7 +218,9 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	go s.informHook(req.Result, nil)
 
-	resp = &orchestrator.StoreAssessmentResultResponse{}
+	resp = &orchestrator.StoreAssessmentResultResponse{
+		Status: true,
+	}
 
 	return resp, nil
 }

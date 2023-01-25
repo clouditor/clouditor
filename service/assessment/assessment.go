@@ -253,7 +253,9 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		return res, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	res = &assessment.AssessEvidenceResponse{}
+	res = &assessment.AssessEvidenceResponse{
+		Status: assessment.AssessEvidenceResponse_ASSESSED,
+	}
 
 	return res, nil
 }
