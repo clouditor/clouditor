@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -137,7 +138,7 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "cloud service not found",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: "11111111-1111-1111-1111-111111111111"},
+			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "service not found") &&
@@ -402,11 +403,13 @@ func TestService_ListCloudServices(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two cloud services, of which only one we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.CloudService{
-						Id:   testutil.TestCloudService1,
-						Name: testutil.TestCloudServiceName1})
+						Id:   testdata.MockCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					})
 					_ = s.Create(&orchestrator.CloudService{
-						Id:   testutil.TestCloudService2,
-						Name: testutil.TestCloudServiceName2})
+						Id:   testdata.MockAnotherCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					})
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
@@ -415,9 +418,11 @@ func TestService_ListCloudServices(t *testing.T) {
 				req: &orchestrator.ListCloudServicesRequest{},
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{
-				Services: []*orchestrator.CloudService{{
-					Id:   testutil.TestCloudService1,
-					Name: testutil.TestCloudServiceName1},
+				Services: []*orchestrator.CloudService{
+					{
+						Id:   testdata.MockCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					},
 				},
 			},
 			wantErr: assert.NoError,

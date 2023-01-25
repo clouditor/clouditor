@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/policies"
@@ -270,7 +271,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					ToolId:    "mock",
+					ToolId:    testdata.MockEvidenceToolID,
 					Timestamp: timestamppb.Now(),
 					Resource:  toStruct(voc.VirtualMachine{}, t),
 				},
@@ -286,9 +287,9 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
+					Id:             testdata.MockEvidenceID,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 					Resource:       toStruct(voc.VirtualMachine{}, t),
 				},
 			},
@@ -303,10 +304,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
+					CloudServiceId: testdata.MockCloudServiceID,
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: true,
@@ -320,12 +321,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: testdata.MockCloudServiceID},
 			},
 			hasRPCConnection: true,
 			wantResp:         &assessment.AssessEvidenceResponse{},
@@ -336,11 +336,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
 					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			hasRPCConnection: true,
@@ -354,11 +354,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: testdata.MockCloudServiceID,
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
 				},
 			},
 			hasRPCConnection: false,
@@ -423,10 +423,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "11111111-1111-1111-1111-111111111111",
+						Id:             testdata.MockEvidenceID,
 						Timestamp:      timestamppb.Now(),
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						CloudServiceId: testdata.MockCloudServiceID,
+						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -442,9 +442,9 @@ func TestService_AssessEvidences(t *testing.T) {
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
-						ToolId:         "2134",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						ToolId:         testdata.MockEvidenceToolID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -462,11 +462,11 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "11111111-1111-1111-1111-111111111111",
+						Id:             testdata.MockEvidenceID,
 						Timestamp:      timestamppb.Now(),
-						ToolId:         "2134",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						ToolId:         testdata.MockEvidenceToolID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidenceResponse{
@@ -480,9 +480,9 @@ func TestService_AssessEvidences(t *testing.T) {
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
-						ToolId:         "2134",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						ToolId:         testdata.MockEvidenceToolID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
@@ -494,9 +494,9 @@ func TestService_AssessEvidences(t *testing.T) {
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Timestamp:      timestamppb.Now(),
-						ToolId:         "2134",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
+						ToolId:         testdata.MockEvidenceToolID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
@@ -588,14 +588,14 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						ToolId:         "mock",
+						Id:             testdata.MockEvidenceID,
+						ToolId:         testdata.MockEvidenceToolID,
 						Timestamp:      timestamppb.Now(),
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						CloudServiceId: testdata.MockCloudServiceID,
 						Resource: toStruct(&voc.VirtualMachine{
 							Compute: &voc.Compute{
 								Resource: &voc.Resource{
-									ID:   "my-resource-id",
+									ID:   testdata.MockResourceID,
 									Type: []string{"VirtualMachine", "Compute", "Resource"}},
 							},
 							BootLogging: &voc.BootLogging{
@@ -892,7 +892,7 @@ type mockAssessmentServerStream struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentServerStream) CloseSend() error {
+func (*mockAssessmentServerStream) CloseSend() error {
 	panic("implement me")
 }
 
@@ -906,12 +906,12 @@ func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mock
 	return m
 }
 
-func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
+func (m *mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
 
-func (mockAssessmentServerStream) SendAndClose() error {
+func (*mockAssessmentServerStream) SendAndClose() error {
 	return nil
 }
 
@@ -929,26 +929,26 @@ func (m *mockAssessmentServerStream) Recv() (req *assessment.AssessEvidenceReque
 	return req, nil
 }
 
-func (mockAssessmentServerStream) SetHeader(metadata.MD) error {
+func (*mockAssessmentServerStream) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) SendHeader(metadata.MD) error {
+func (*mockAssessmentServerStream) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) SetTrailer(metadata.MD) {
+func (*mockAssessmentServerStream) SetTrailer(metadata.MD) {
 }
 
-func (mockAssessmentServerStream) Context() context.Context {
+func (*mockAssessmentServerStream) Context() context.Context {
 	return nil
 }
 
-func (mockAssessmentServerStream) SendMsg(interface{}) error {
+func (*mockAssessmentServerStream) SendMsg(interface{}) error {
 	return nil
 }
 
-func (mockAssessmentServerStream) RecvMsg(interface{}) error {
+func (*mockAssessmentServerStream) RecvMsg(interface{}) error {
 	return nil
 }
 
@@ -993,11 +993,11 @@ type mockAssessmentServerStreamWithRecvErr struct {
 	SentFromServer chan *assessment.AssessEvidenceResponse
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
 	panic("implement me")
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
+func (*mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidenceRequest, error) {
 	err := errors.New("Recv()-error")
 
 	return nil, err
@@ -1036,13 +1036,13 @@ func TestService_HandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}},
+							Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}},
 						},
 						BootLogging: &voc.BootLogging{
 							Logging: &voc.Logging{
@@ -1053,7 +1053,7 @@ func TestService_HandleEvidence(t *testing.T) {
 						},
 					}, t),
 				},
-				resourceId: "my-resource-id",
+				resourceId: testdata.MockResourceID,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.NoError(t, err)
@@ -1068,13 +1068,13 @@ func TestService_HandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{}}}}, t),
+					CloudServiceId: testdata.MockCloudServiceID,
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{}}}}, t),
 				},
-				resourceId: "my-resource-id",
+				resourceId: testdata.MockResourceID,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Error(t, err)
@@ -1091,13 +1091,13 @@ func TestService_HandleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ToolId:         "mock",
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
-							Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}},
+							Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}},
 						},
 						BootLogging: &voc.BootLogging{
 							Logging: &voc.Logging{
@@ -1105,10 +1105,9 @@ func TestService_HandleEvidence(t *testing.T) {
 								Enabled:         true,
 								RetentionPeriod: 0,
 							},
-						},
-					}, t),
+						}}, t),
 				},
-				resourceId: "my-resource-id",
+				resourceId: testdata.MockResourceID,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				if !assert.NotEmpty(t, err) {
