@@ -14,6 +14,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -39,53 +40,53 @@ func TestService_CreateCatalog(t *testing.T) {
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
-			"missing request",
-			args{
+			name: "missing request",
+			args: args{
 				context.Background(),
 				nil,
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.ErrorContains(t, err, "empty request")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
 		{
-			"missing catalog",
-			args{
+			name: "missing catalog",
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCatalogRequest{},
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.ErrorContains(t, err, "Catalog: value is required")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
 		{
-			"missing catalog id",
-			args{
+			name: "missing catalog id",
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCatalogRequest{
 					Catalog: mockCatalogWithoutID,
 				},
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.ErrorContains(t, err, "Catalog.Id: value length must be at least 1 runes")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
 		{
-			"valid catalog",
-			args{
+			name: "valid catalog",
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCatalogRequest{
 					Catalog: mockCatalog,
 				},
 			},
-			mockCatalog,
-			assert.NoError,
+			wantResponse: mockCatalog,
+			wantErr:      assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -97,6 +98,9 @@ func TestService_CreateCatalog(t *testing.T) {
 			// If no error is wanted, check response
 			if !proto.Equal(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.CreateCatalog() = %v, want %v", gotResponse, tt.wantResponse)
+
+				// Check catalog structure with validation method
+				assert.NoError(t, gotResponse.Validate())
 			}
 		})
 	}
@@ -512,15 +516,17 @@ func TestService_loadCatalogs(t *testing.T) {
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
+		name       string
+		fields     fields
+		wantResult assert.ValueAssertionFunc
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name: "json not found",
 			fields: fields{
 				metricsFile: "notfound.json",
 			},
+			wantResult: assert.NotEmpty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, os.ErrNotExist)
 			},
@@ -531,6 +537,7 @@ func TestService_loadCatalogs(t *testing.T) {
 				catalogsFile: "catalogs.json",
 				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
+			wantResult: assert.NotEmpty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
@@ -542,9 +549,29 @@ func TestService_loadCatalogs(t *testing.T) {
 					return nil, ErrSomeError
 				},
 			},
+			wantResult: assert.NotEmpty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				catalogsFile: "catalogs.json",
+				storage:      testutil.NewInMemoryStorage(t),
+			},
+			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				svc, ok := i.(*Service)
+				assert.True(t, ok)
+
+				catalog := new(orchestrator.Catalog)
+				err := svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "DemoCatalog")
+				assert.NoError(t, err)
+
+				err = catalog.Validate()
+				return assert.NoError(t, err)
+			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -562,9 +589,12 @@ func TestService_loadCatalogs(t *testing.T) {
 			}
 
 			err := svc.loadCatalogs()
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			}
+
+			// Validate the error via the ErrorAssertionFunc function
+			tt.wantErr(t, err)
+
+			// Validate the result via the ValueAssertionFunc function
+			tt.wantResult(t, svc)
 		})
 	}
 }

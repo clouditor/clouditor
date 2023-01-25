@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"runtime"
 	"sync"
@@ -46,7 +45,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var AssuranceLevelHigh = "high"
@@ -82,6 +80,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				req: &orchestrator.CreateTargetOfEvaluationRequest{},
 			},
 			wantErr: true,
+			want:    assert.Empty,
 		},
 		{
 			name: "valid",
@@ -119,6 +118,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 
 				return assert.Equal(t, 1, len(service.CatalogsInScope))
 			},
+			wantErr: false,
 		},
 	}
 
@@ -137,14 +137,13 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			}
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.CreateTargetOfEvaluation() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if tt.want != nil {
-				tt.want(t, gotRes, svc)
-			}
+			tt.want(t, gotRes, svc)
 		})
 	}
 }
@@ -234,10 +233,11 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
 				want := orchestratortest.NewTargetOfEvaluation()
-				assert.True(t, ok)
-				fmt.Println(res)
-				assert.Equal(t, want.CloudServiceId, res.CloudServiceId)
-				return assert.Equal(t, want.CatalogId, res.CatalogId)
+
+				return assert.True(t, ok) &&
+					assert.NoError(t, res.Validate()) &&
+					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
+					assert.Equal(t, want.CatalogId, res.CatalogId)
 			},
 			wantErr: assert.NoError,
 		},
@@ -284,6 +284,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// 3rd case: Invalid request
@@ -337,6 +338,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
+	assert.NoError(t, toe.Validate())
 	assert.Equal(t, &AssuranceLevelSubstantial, toe.AssuranceLevel)
 }
 
@@ -375,6 +377,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// Remove record
@@ -483,12 +486,15 @@ func TestToeHook(t *testing.T) {
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
+			assert.NoError(t, gotResp.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+
 			}
 			assert.Equal(t, 2, hookCallCounter)
 		})
@@ -558,6 +564,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "one control explicitly set to continuously monitored",
@@ -610,6 +617,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
@@ -635,11 +643,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListControlsInScope(tt.args.ctx, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListControlInScope() = %v, want %v", gotRes, tt.wantRes)
@@ -908,6 +912,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlInScope(tt.args.in0, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
@@ -930,7 +935,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *emptypb.Empty
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -938,7 +942,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				req: nil,
 			},
-			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
@@ -962,7 +965,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 					CatalogId:           testdata.MockCatalogID,
 				},
 			},
-			wantRes: &emptypb.Empty{},
 			wantErr: assert.NoError,
 		},
 		{
@@ -1009,12 +1011,8 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
-			gotRes, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
+			_, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err, tt.args)
-
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
-			}
 		})
 	}
 }

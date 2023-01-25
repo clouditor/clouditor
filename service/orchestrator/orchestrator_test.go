@@ -34,6 +34,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 
@@ -686,6 +687,8 @@ func Test_CreateCertificate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
+			assert.NoError(t, gotResponse.Validate())
+
 			tt.wantErr(t, err)
 
 			// If no error is wanted, check response
@@ -736,6 +739,7 @@ func Test_UpdateCertificate(t *testing.T) {
 	certificate, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
 		Certificate: mockCertificate,
 	})
+	assert.NoError(t, certificate.Validate())
 	assert.NoError(t, err)
 	assert.NotNil(t, certificate)
 	assert.Equal(t, "new description", certificate.Description)
@@ -760,6 +764,7 @@ func Test_RemoveCertificate(t *testing.T) {
 
 	// 3rd case: Record removed successfully
 	mockCertificate := orchestratortest.NewCertificate()
+	assert.NoError(t, mockCertificate.Validate())
 	err = orchestratorService.storage.Create(mockCertificate)
 	assert.NoError(t, err)
 
@@ -782,28 +787,34 @@ func Test_RemoveCertificate(t *testing.T) {
 
 func Test_GetCertificate(t *testing.T) {
 	tests := []struct {
-		name string
-		req  *orchestrator.GetCertificateRequest
-		res  *orchestrator.Certificate
-		err  error
+		name    string
+		req     *orchestrator.GetCertificateRequest
+		res     *orchestrator.Certificate
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"invalid request",
-			nil,
-			nil,
-			status.Error(codes.InvalidArgument, "empty request"),
+			name: "invalid request",
+			req:  nil,
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
 		},
 		{
-			"certificate not found",
-			&orchestrator.GetCertificateRequest{CertificateId: ""},
-			nil,
-			status.Error(codes.InvalidArgument, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes"),
+			name: "certificate not found",
+			req:  &orchestrator.GetCertificateRequest{CertificateId: ""},
+			res:  nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes")
+			},
 		},
 		{
-			"valid",
-			&orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
-			orchestratortest.NewCertificate(),
-			nil,
+			name:    "valid",
+			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
+			res:     orchestratortest.NewCertificate(),
+			wantErr: assert.NoError,
 		},
 	}
 	orchestratorService := NewService()
@@ -816,22 +827,17 @@ func Test_GetCertificate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := orchestratorService.GetCertificate(context.Background(), tt.req)
+			assert.NoError(t, res.Validate())
 
-			if tt.err == nil {
-				assert.Equal(t, tt.err, err)
-			} else {
-				assert.ErrorIs(t, err, tt.err)
-				return
-			}
+			tt.wantErr(t, err)
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
+				// Compare timestamp. We have to cut off the microseconds, otherwise an error is returned.
+				tt.res.States[0].Timestamp = strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
+				res.States[0].Timestamp = strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
-
-			// Compare
-			// TODO(immqu, lebogg): Currently timestamp differs. Dunno why. (Comment out next line to see it)
-			tt.res.States[0].Timestamp = res.States[0].Timestamp
-			assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 		})
 	}
 }
@@ -854,6 +860,8 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NoError(t, err)
 
 	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
+	// We check only the first certificate and assume that all certificates are valid
+	assert.NoError(t, listCertificatesResponse.Certificates[0].Validate())
 	assert.NoError(t, err)
 	assert.NotNil(t, listCertificatesResponse.Certificates)
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)

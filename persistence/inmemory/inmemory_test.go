@@ -22,5 +22,6 @@ func TestNewStorage(t *testing.T) {
 	userOutput := &auth.User{}
 	err = s.Get(userOutput, "Username = ?", "SomeName")
 	assert.NoError(t, err)
+	assert.NoError(t, userOutput.Validate())
 	assert.Equal(t, userInput, userOutput)
 }
