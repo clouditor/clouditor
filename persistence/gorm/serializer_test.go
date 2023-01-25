@@ -36,7 +36,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 			},
 			want:    time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC),
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "nil field",
@@ -46,7 +46,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: nil,
 			},
 			want:    nil,
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "field wrong type",
@@ -68,11 +68,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TimestampSerializer.Value() = %v, want %v", got, tt.want)
@@ -110,11 +106,7 @@ func TestTimestampSerializer_Scan(t *testing.T) {
 			tr := TimestampSerializer{}
 			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 		})
 	}
 }
@@ -163,7 +155,7 @@ func TestAnySerializer_Value(t *testing.T) {
 					"id":    "my-service",
 				})
 			},
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "nil field",
@@ -172,8 +164,8 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: nil,
 			},
-			want:    nil,
-			wantErr: nil,
+			want:    assert.Empty,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "field wrong type",
@@ -182,7 +174,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: "string",
 			},
-			want: nil,
+			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
 			},
@@ -195,17 +187,12 @@ func TestAnySerializer_Value(t *testing.T) {
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			// Validate the error via the ErrorAssertionFunc function
+			tt.wantErr(t, err, tt.args)
 
-			if !reflect.DeepEqual(got, tt.want) {
-				if tt.want != nil {
-					tt.want(t, got)
-				}
-			}
+			// Validate the response via the ValueAssertionFunc function
+			tt.want(t, got)
+
 		})
 	}
 }
@@ -239,11 +226,8 @@ func TestAnySerializer_Scan(t *testing.T) {
 			tr := AnySerializer{}
 			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
+
 		})
 	}
 }

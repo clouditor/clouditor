@@ -15,7 +15,10 @@ import (
 	"clouditor.io/clouditor/persistence"
 )
 
-var MockMetricID = "MyMetric"
+var (
+	MockMetricID   = "MyMetric"
+	MockMetricName = "MyMetricName"
+)
 
 func TestStorageOptions(t *testing.T) {
 	type args struct {
@@ -77,6 +80,8 @@ func TestStorageOptions(t *testing.T) {
 				Email:    "SomeMail",
 				FullName: "SomeFullName",
 			}
+			// Check if user has all necessary fields
+			assert.NoError(t, userInput.Validate())
 			err = s.Create(userInput)
 			assert.NoError(t, err)
 
@@ -84,6 +89,7 @@ func TestStorageOptions(t *testing.T) {
 			userOutput := &auth.User{}
 			err = s.Get(userOutput, "Username = ?", "SomeName")
 			assert.NoError(t, err)
+			assert.NoError(t, userOutput.Validate())
 			assert.Equal(t, userInput, userOutput)
 		})
 	}
@@ -96,7 +102,13 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: MockMetricID}
+	metric = &assessment.Metric{
+		Id:    MockMetricID,
+		Name:  MockMetricName,
+		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+	}
+	// Check if metric has all necessary fields
+	assert.NoError(t, metric.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -122,6 +134,8 @@ func Test_storage_Get(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -139,6 +153,7 @@ func Test_storage_Get(t *testing.T) {
 	gotUser := &auth.User{}
 	err = s.Get(gotUser)
 	assert.NoError(t, err)
+	assert.NoError(t, gotUser.Validate())
 	assert.Equal(t, user, gotUser)
 
 	// Get user via username
@@ -151,12 +166,16 @@ func Test_storage_Get(t *testing.T) {
 	gotUser3 := &auth.User{}
 	err = s.Get(gotUser3, "Email = ?", user.Email)
 	assert.NoError(t, err)
+	assert.NoError(t, gotUser3.Validate())
 	assert.Equal(t, user, gotUser3)
 
 	var metric = &assessment.Metric{
 		Id:    MockMetricID,
+		Name:  MockMetricName,
 		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 	}
+	// Check if metric has all necessary fields
+	assert.NoError(t, metric.Validate())
 
 	// Create metric
 	err = s.Create(metric)
@@ -166,12 +185,16 @@ func Test_storage_Get(t *testing.T) {
 	gotMetric := &assessment.Metric{}
 	err = s.Get(gotMetric, "id = ?", MockMetricID)
 	assert.NoError(t, err)
+	assert.NoError(t, gotMetric.Validate())
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
 		MetricId:  MockMetricID,
+		Code:      "TestCode",
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
+	// Check if impl has all necessary fields
+	assert.NoError(t, impl.Validate())
 
 	// Create metric implementation
 	err = s.Create(impl)
@@ -181,6 +204,7 @@ func Test_storage_Get(t *testing.T) {
 	gotImpl := &assessment.MetricImplementation{}
 	err = s.Get(gotImpl, "metric_id = ?", MockMetricID)
 	assert.NoError(t, err)
+	assert.NoError(t, gotImpl.Validate())
 	assert.Equal(t, impl, gotImpl)
 }
 
@@ -205,6 +229,8 @@ func Test_storage_List(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user1.Validate())
 
 	user2 = &auth.User{
 		Username: "SomeName2",
@@ -212,6 +238,8 @@ func Test_storage_List(t *testing.T) {
 		Email:    "SomeMail2",
 		FullName: "SomeFullName2",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user2.Validate())
 
 	// List should return empty list since no users are in DB yet
 	err = s.List(&users, "", true, 0, -1)
@@ -226,6 +254,8 @@ func Test_storage_List(t *testing.T) {
 	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, len(users), 2)
+	// We only check one user and assume the others are also correct
+	assert.NoError(t, users[0].Validate())
 
 	// Test with certificates (associations included via states)
 	var (
@@ -255,6 +285,8 @@ func Test_storage_List(t *testing.T) {
 	assert.Equal(t, len(certificates), 2)
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
+	// We only check one certificate and assume the others are also correct
+	assert.NoError(t, certificates[0].Validate())
 
 	fmt.Println(certificates)
 
@@ -286,6 +318,8 @@ func Test_storage_Count(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user.Validate())
 
 	user2 = &auth.User{
 		Username: "SomeName2",
@@ -293,6 +327,8 @@ func Test_storage_Count(t *testing.T) {
 		Email:    "SomeMail2",
 		FullName: "SomeFullName2",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user2.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -346,6 +382,8 @@ func Test_storage_Save(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user.Validate())
 
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
@@ -365,12 +403,16 @@ func Test_storage_Save(t *testing.T) {
 		Email:    "",
 		FullName: user.FullName,
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, newUser.Validate())
+
 	err = s.Save(newUser, "username = ?", user.Username)
 	assert.NoError(t, err)
 
 	gotUser = &auth.User{}
 	err = s.Get(gotUser, "username = ?", user.Username)
 	assert.NoError(t, err)
+	assert.NoError(t, gotUser.Validate())
 
 	// UserName and FullName should be the same
 	assert.Equal(t, user.Username, gotUser.Username)
@@ -382,6 +424,7 @@ func Test_storage_Save(t *testing.T) {
 
 	// Save MyTest
 	myVar = MyTest{ID: 1, Name: "Test"}
+
 	err = s.Save(&myVar)
 	assert.NoError(t, err)
 }
@@ -398,6 +441,8 @@ func Test_storage_Update(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -420,6 +465,7 @@ func Test_storage_Update(t *testing.T) {
 	gotUser := &auth.User{}
 	err = s.Get(gotUser, "username = ?", user.Username)
 	assert.NoError(t, err)
+	assert.NoError(t, gotUser.Validate())
 
 	// UserName should be changed
 	assert.Equal(t, "SomeNewName", gotUser.FullName)
@@ -432,15 +478,19 @@ func Test_storage_Update(t *testing.T) {
 	// Testing cloud service
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
-		Id:          "SomeId",
+		Id:          orchestratortest.MockServiceID,
 		Name:        "SomeName",
 		Description: "SomeDescription",
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id: "SomeId",
+				Id:    MockMetricID,
+				Name:  MockMetricName,
+				Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
 			},
 		},
 	}
+	// Check if cloud service has all necessary fields
+	assert.NoError(t, cloudService.Validate())
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
 
@@ -453,6 +503,7 @@ func Test_storage_Update(t *testing.T) {
 	gotCloudService := &orchestrator.CloudService{}
 	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
 	assert.NoError(t, err)
+	assert.NoError(t, gotCloudService.Validate())
 
 	// Name should be changed
 	assert.Equal(t, "SomeNewName", gotCloudService.Name)
@@ -475,6 +526,8 @@ func Test_storage_Delete(t *testing.T) {
 		Email:    "SomeMail",
 		FullName: "SomeFullName",
 	}
+	// Check if user has all necessary fields
+	assert.NoError(t, user.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -494,5 +547,4 @@ func Test_storage_Delete(t *testing.T) {
 
 	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
-
 }
