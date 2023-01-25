@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2016-2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -45,7 +46,6 @@ var log *logrus.Entry
 
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
-	// Currently only in-memory
 	storage persistence.Storage
 
 	// evidenceHooks is a list of hook functions that can be used if one wants to be
@@ -53,6 +53,10 @@ type Service struct {
 	evidenceHooks []evidence.EvidenceHookFunc
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
+
+	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// resources, such as evidences and assessment results.
+	authz service.AuthorizationStrategy
 
 	evidence.UnimplementedEvidenceStoreServer
 }
@@ -73,12 +77,18 @@ func NewService(opts ...service.Option[Service]) (svc *Service) {
 		o(svc)
 	}
 
+	// Default to an allow-all authorization strategy
+	if svc.authz == nil {
+		svc.authz = &service.AuthorizationStrategyAllowAll{}
+	}
+
 	if svc.storage == nil {
 		svc.storage, err = inmemory.NewStorage()
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
 		}
 	}
+
 	return
 }
 
@@ -87,7 +97,7 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
-func (svc *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
+func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -103,6 +113,11 @@ func (svc *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidence
 
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	err = svc.storage.Create(req.Evidence)
@@ -177,18 +192,31 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 }
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the storage
-func (svc *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+	var (
+		all     bool
+		allowed []string
+		conds   []any
+	)
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
+	// conditions to our storage request, if we are allowed to see all cloud services.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		conds = append(conds, "cloud_service_id IN ?", allowed)
+	}
+
 	res = new(evidence.ListEvidencesResponse)
 
 	// Paginate the evidences according to the request
 	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
-		service.DefaultPaginationOpts)
+		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -197,15 +225,31 @@ func (svc *Service) ListEvidences(_ context.Context, req *evidence.ListEvidences
 }
 
 // GetEvidence is a method implementation of the evidenceServer interface: It returns a particular evidence in the storage
-func (svc *Service) GetEvidence(_ context.Context, req *evidence.GetEvidenceRequest) (res *evidence.Evidence, err error) {
+func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRequest) (res *evidence.Evidence, err error) {
+	var (
+		all     bool
+		allowed []string
+		conds   []any
+	)
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
+	// conditions to our storage request, if we are allowed to see all cloud services.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		conds = []any{"id = ? AND cloud_service_id IN ?", req.EvidenceId, allowed}
+	} else {
+		conds = []any{"id = ?", req.EvidenceId}
+	}
+
 	res = new(evidence.Evidence)
-	err = svc.storage.Get(res, "id = ?", req.EvidenceId)
+
+	err = svc.storage.Get(res, conds...)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "evidence not found")
 	} else if err != nil {

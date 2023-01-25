@@ -46,7 +46,7 @@ func ValidateRequest(req IncomingRequest) (err error) {
 	// someone is directly setting nil to a variable of the interface IncomingRequest. Furthermore, we need to check,
 	// whether the *value* of the interface is nil. This can happen if nil is first assigned to a variable of a struct
 	// (pointer) that implements the interface. If this variable is then passed to the validate function, the req
-	// paramater is not nil, but the value of the interface representing it is.
+	// parameter is not nil, but the value of the interface representing it is.
 	if req == nil || reflect.ValueOf(req).IsNil() {
 		return status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
 	}

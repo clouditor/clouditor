@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2016-2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -71,7 +72,7 @@ func TestNewService(t *testing.T) {
 			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
 				svc, ok := i.(*Service)
 				assert.True(t, ok)
-				// Storage should be default (in-memory storage). Hard to check since its type is unexported
+				// Storage should be default (in-memory storage). Hard to check since its type is not exported
 				assert.NotNil(t, svc.storage)
 				return true
 			},
@@ -82,7 +83,7 @@ func TestNewService(t *testing.T) {
 			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
 				svc, ok := i.(*Service)
 				assert.True(t, ok)
-				// Storage should be gorm (in-memory storage). Hard to check since its type is unexported
+				// Storage should be gorm (in-memory storage). Hard to check since its type is not exported
 				assert.NotNil(t, svc.storage)
 				return true
 			},
@@ -295,6 +296,7 @@ func TestService_StoreEvidences(t *testing.T) {
 
 // TestListEvidences tests List req
 func TestService_ListEvidences(t *testing.T) {
+	// TODO(oxisto): Convert this test to a table test
 	s := NewService()
 	err := s.storage.Create(&evidence.Evidence{
 		Id:             testdata.MockEvidenceID,
@@ -316,6 +318,12 @@ func TestService_ListEvidences(t *testing.T) {
 	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
+
+	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
+
+	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(resp.Evidences))
 }
 
 func TestService_EvidenceHook(t *testing.T) {
@@ -582,7 +590,7 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
 	s, err := voc.ToStruct(r)
 	if err != nil {
-		log.Errorf("eror getting struct of resource: %v", err)
+		log.Errorf("error getting struct of resource: %v", err)
 	}
 
 	return
@@ -591,6 +599,7 @@ func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
 func TestService_GetEvidence(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
+		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -604,6 +613,34 @@ func TestService_GetEvidence(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "permission denied (not found)",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidence.Evidence{
+						Id:             testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockAnotherCloudServiceID,
+						ToolId:         testdata.MockEvidenceToolID,
+						Resource:       structpb.NewNullValue(),
+						Timestamp:      timestamppb.Now(),
+					}))
+				}),
+				authz: &service.AuthorizationStrategyJWT{
+					Key: testutil.TestCustomClaims,
+				},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: &evidence.GetEvidenceRequest{
+					EvidenceId: testdata.MockEvidenceID,
+				},
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "evidence not found")
+			},
+		},
+		{
 			name: "valid evidence",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -615,6 +652,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -631,6 +669,7 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "invalid UUID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -647,6 +686,7 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "evidence not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -665,6 +705,7 @@ func TestService_GetEvidence(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.GetEvidence(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
