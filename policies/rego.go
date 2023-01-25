@@ -27,6 +27,7 @@ package policies
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -103,7 +104,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
 	}
 
-	key := createKey(evidence.ToolId, types)
+	key := createKey(evidence, types)
 
 	re.mrtc.RLock()
 	cached := re.mrtc.m[key]
@@ -130,7 +131,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
 			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
 			// and continue.
-			runMap, err := re.evalMap(baseDir, metric.Id, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric.Id, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := api.StatusFromWrappedError(err)
@@ -150,7 +151,6 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 
 			if runMap != nil {
 				cached = append(cached, metric.Id)
-				runMap.MetricId = metric.Id
 
 				data = append(data, runMap)
 			}
@@ -163,12 +163,11 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 		re.mrtc.Unlock()
 	} else {
 		for _, metric := range cached {
-			runMap, err := re.evalMap(baseDir, metric, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric, m, src)
 			if err != nil {
 				return nil, err
 			}
 
-			runMap.MetricId = metric
 			data = append(data, runMap)
 		}
 	}
@@ -179,9 +178,9 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 // HandleMetricEvent takes care of handling metric events, such as evicting cache entries for the
 // appropriate metrics.
 func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error) {
-	if event.Type == orchestrator.MetricChangeEvent_IMPLEMENTATION_CHANGED {
+	if event.Type == orchestrator.MetricChangeEvent_TYPE_IMPLEMENTATION_CHANGED {
 		log.Infof("Implementation of %s has changed. Clearing cache for this metric", event.MetricId)
-	} else if event.Type == orchestrator.MetricChangeEvent_CONFIG_CHANGED {
+	} else if event.Type == orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED {
 		log.Infof("Configuration of %s has changed. Clearing cache for this metric", event.MetricId)
 	}
 
@@ -191,7 +190,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -200,15 +199,17 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(metric)
+	config, err := src.MetricConfiguration(serviceID, metricID)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric, err)
+		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricID, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
-	// if the metric configuration (i.e. its hash) has changed.
-	key = fmt.Sprintf("%s-%s", metric, config.Hash())
+	// if the metric configuration (i.e. its hash) for a particular service has changed.
+	key = fmt.Sprintf("%s-%s-%s", metricID, serviceID, config.Hash())
 
+	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with
+	// the function specified as the second parameter
 	query, err = re.qc.Get(key, func(key string) (*rego.PreparedEvalQuery, error) {
 		var (
 			tx   storage.Transaction
@@ -216,17 +217,21 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metric)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
-		c := map[string]interface{}{
+		// The contents of the data map is available as the data variable within the Rego evaluation
+		data := map[string]interface{}{
 			"target_value": config.TargetValue.AsInterface(),
 			"operator":     config.Operator,
+			"config":       config,
 		}
 
-		store := inmem.NewFromObject(c)
+		// Create a new in-memory Rego store based on our data map
+		store := inmem.NewFromObject(data)
 		ctx := context.Background()
 
+		// Create a new transaction in the store
 		tx, err = store.NewTransaction(ctx, storage.WriteParams)
 		if err != nil {
 			return nil, fmt.Errorf("could not create transaction: %w", err)
@@ -235,24 +240,28 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		prefix = re.pkg
 
 		// Convert camelCase metric in under_score_style for package name
-		pkg = util.CamelCaseToSnakeCase(metric)
+		pkg = util.CamelCaseToSnakeCase(metricID)
 
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_REGO, metric)
+		// Fetch the metric implementation, i.e., the Rego code from the metric source
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metric, err)
+			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}
 
+		// Insert/Update the policy. The bundle path depends on the metric ID
 		err = store.UpsertPolicy(context.Background(), tx, bundle+"metric.rego", []byte(impl.Code))
 		if err != nil {
 			return nil, fmt.Errorf("could not upsert policy: %w", err)
 		}
 
+		// Create a new Rego prepared query evaluation, which can later be used to query the metric on any object (input)
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
-			target_value = data.clouditor.target_value`, prefix, pkg, prefix, pkg)),
+			target_value = data.clouditor.target_value;
+			config = data.clouditor.config`, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -263,9 +272,10 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 				nil),
 		).PrepareForEval(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metric, err)
+			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
 		}
 
+		// Commit the transaction into the store
 		err = store.Commit(ctx, tx)
 		if err != nil {
 			return nil, fmt.Errorf("could not commit transaction: %w", err)
@@ -274,7 +284,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		return &query, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metric, err)
+		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metricID, err)
 	}
 
 	results, err := query.Eval(context.Background(), rego.EvalInput(m))
@@ -283,7 +293,7 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metric)
+		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricID)
 	}
 
 	result = &Result{
@@ -291,6 +301,18 @@ func (re *regoEval) evalMap(baseDir string, metric string, m map[string]interfac
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
+		MetricID:    metricID,
+	}
+
+	// A little trick to convert the map-based metric configuration back to a real object
+	var b []byte
+	if b, err = json.Marshal(results[0].Bindings["config"]); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	result.Config = new(assessment.MetricConfiguration)
+	if err = json.Unmarshal(b, result.Config); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
 	}
 
 	if !result.Applicable {

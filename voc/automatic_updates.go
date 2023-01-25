@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,9 +29,11 @@ package voc
 
 import "time"
 
+// AutomaticUpdates is an entity in our Cloud ontology. This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
 type AutomaticUpdates struct {
 	*Integrity
-	Enabled      bool          `json:"enabled"`
-	Interval     time.Duration `json:"interval"`
-	SecurityOnly bool          `json:"securityOnly"`
+	Enabled      bool `json:"enabled"`
+	SecurityOnly bool `json:"securityOnly"`
+	// The interval refers to the update interval in days.
+	Interval time.Duration `json:"interval"`
 }

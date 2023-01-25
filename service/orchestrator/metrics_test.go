@@ -31,6 +31,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -43,6 +44,8 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/service"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -51,13 +54,13 @@ const MockMetricID = "SomeMetric"
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		requirements          []*orchestrator.Requirement
+		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	tests := []struct {
@@ -100,20 +103,18 @@ func TestService_loadMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
 
 			err := svc.loadMetrics()
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			}
+			tt.wantErr(t, err)
 		})
 	}
 }
@@ -135,18 +136,68 @@ func Test_loadMetricImplementation(t *testing.T) {
 				metricID: MockMetricID,
 				file:     "doesnotexist.rego",
 			},
+			wantImpl: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, os.ErrNotExist)
 			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				metricID: MockMetricID,
+				file:     "internal/testutil/metrictest/metric.rego",
+			},
+			wantImpl: &assessment.MetricImplementation{
+				MetricId: MockMetricID,
+				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+				Code: `package clouditor.metrics.admin_mfa_enabled
+
+import data.clouditor.compare
+import future.keywords.every
+import input as identity
+
+default applicable = false
+
+default compliant = false
+
+applicable {
+	# we are only interested in some kind of privileged user    
+	identity.privileged
+}
+
+compliant {
+	# count the number of "factors"
+	compare(data.operator, data.target_value, count(identity.authenticity))
+
+	# also make sure, that we do not have any "NoAuthentication" in the factor and all are activated
+	every factor in identity.authenticity {
+		# TODO(oxisto): we do not have this type property (yet)
+		not factor.type == "NoAuthentication"
+
+		factor.activated == true
+	}
+}
+`,
+			},
+			wantErr: assert.NoError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
+
+			assert.NoError(t, gotImpl.Validate())
+			tt.wantErr(t, err)
+
+			if tt.wantImpl != nil {
+				assert.NotEmpty(t, gotImpl)
+
+				// Check if time is set and than delete if for the deepEqual check
+				assert.NotEmpty(t, gotImpl.UpdatedAt)
+				gotImpl.UpdatedAt = nil
 			}
+
 			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
 				t.Errorf("loadMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
 			}
@@ -163,12 +214,11 @@ func TestService_CreateMetric(t *testing.T) {
 		req *orchestrator.CreateMetricRequest
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantMetric     *assessment.Metric
-		wantErr        bool
-		wantErrMessage string
+		name       string
+		fields     fields
+		args       args
+		wantMetric *assessment.Metric
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Create valid metric",
@@ -179,16 +229,20 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:   "MyTransportEncryptionEnabled",
-						Name: "A very good metric",
+						Id:    "MyTransportEncryptionEnabled",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_ORDINAL,
+						Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:   "MyTransportEncryptionEnabled",
-				Name: "A very good metric",
+				Id:    "MyTransportEncryptionEnabled",
+				Name:  "A very good metric",
+				Scale: assessment.Metric_ORDINAL,
+				Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Create invalid metric",
@@ -201,15 +255,16 @@ func TestService_CreateMetric(t *testing.T) {
 					Metric: &assessment.Metric{},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid Metric.Id: value length must be at least 1 runes")
+			},
 		},
 		{
 			name: "Create metric which already exists",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TLSVersion"})
+					assert.NoError(t, s.Create(&assessment.Metric{Id: "TLSVersion"}))
 				}),
 			},
 			args: args{
@@ -220,12 +275,14 @@ func TestService_CreateMetric(t *testing.T) {
 						Name:     "TLSMetricMockName",
 						Category: "",
 						Scale:    assessment.Metric_NOMINAL,
+						Range:    &assessment.Range{},
 					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = AlreadyExists desc = metric already exists",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = AlreadyExists desc = metric already exists")
+			},
 		},
 		{
 			name: "Error while counting",
@@ -235,12 +292,18 @@ func TestService_CreateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
-					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+					Metric: &assessment.Metric{
+						Id:    "SomeMetric",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{},
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Internal desc = database error: some error")
+			},
 		},
 		{
 			name: "Error while creating",
@@ -250,12 +313,18 @@ func TestService_CreateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
-					Metric: &assessment.Metric{Id: "SomeMetric", Name: "A very good metric"},
+					Metric: &assessment.Metric{
+						Id:    "SomeMetric",
+						Name:  "A very good metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{},
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Internal desc = database error: some error",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Internal desc = database error: some error")
+			},
 		},
 	}
 
@@ -266,14 +335,8 @@ func TestService_CreateMetric(t *testing.T) {
 			}
 			gotMetric, err := svc.CreateMetric(tt.args.in0, tt.args.req)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantErr {
-				assert.Equal(t, tt.wantErrMessage, err.Error())
-			}
+			assert.NoError(t, gotMetric.Validate())
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -291,34 +354,37 @@ func TestService_UpdateMetric(t *testing.T) {
 		req *orchestrator.UpdateMetricRequest
 	}
 	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantMetric     *assessment.Metric
-		wantErr        bool
-		wantErrMessage string
+		name       string
+		fields     fields
+		args       args
+		wantMetric *assessment.Metric
+		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Update existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
 			},
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Metric: &assessment.Metric{
-						Name: "A slightly updated metric",
+						Id:    "TransportEncryptionEnabled",
+						Name:  "A slightly updated metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:   "TransportEncryptionEnabled",
-				Name: "A slightly updated metric",
+				Id:    "TransportEncryptionEnabled",
+				Name:  "A slightly updated metric",
+				Scale: assessment.Metric_NOMINAL,
+				Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Update non-existing metric",
@@ -328,29 +394,33 @@ func TestService_UpdateMetric(t *testing.T) {
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
 					Metric: &assessment.Metric{
-						Id:   "UpdateMetricID",
-						Name: "UpdateMetricName",
+						Id:    "DoesProbablyNotExist",
+						Name:  "UpdateMetricName",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = NotFound desc = metric not found",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = NotFound desc = metric not found")
+			},
 		},
 		{
 			name: "Updating invalid metric",
 			args: args{
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
-					MetricId: "DoesProbablyNotExist",
-					Metric:   &assessment.Metric{},
+					Metric: &assessment.Metric{
+						Id: "DoesProbablyNotExist",
+					},
 				},
 			},
-			wantMetric:     nil,
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = InvalidArgument desc = validation of metric failed",
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Name: value length must be at least 1 runes")
+			},
 		},
 	}
 
@@ -361,14 +431,8 @@ func TestService_UpdateMetric(t *testing.T) {
 			}
 			gotMetric, err := svc.UpdateMetric(tt.args.in0, tt.args.req)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-
-			if tt.wantErr {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
-			}
+			assert.NoError(t, gotMetric.Validate())
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.UpdateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -396,7 +460,7 @@ func TestService_GetMetric(t *testing.T) {
 			name: "Get existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{
+					_ = s.Create(&assessment.Metric{
 						Id:          "TransportEncryptionEnabled",
 						Name:        "Transport Encryption: Enabled",
 						Description: "This metric describes, whether transport encryption is turned on or not",
@@ -451,6 +515,8 @@ func TestService_GetMetric(t *testing.T) {
 			}
 			gotMetric, err := svc.GetMetric(tt.args.in0, tt.args.req)
 
+			assert.NoError(t, gotMetric.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.GetMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
@@ -473,6 +539,8 @@ func TestService_ListMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, response.Metrics)
+	// TODO(anatheka): Test failes because of incorrect metrics.json file
+	// assert.NoError(t, response.Validate())
 
 	// Invalid request
 	_, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
@@ -483,13 +551,12 @@ func TestService_ListMetrics(t *testing.T) {
 
 func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
 		events                chan *orchestrator.MetricChangeEvent
+		catalogsFile          string
 	}
 	type args struct {
 		ctx context.Context
@@ -530,14 +597,14 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			name: "metric found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Save(&assessment.MetricImplementation{
+					err := s.Save(&assessment.Metric{Id: MockMetricID})
+					assert.NoError(t, err)
+					err = s.Save(&assessment.MetricImplementation{
 						MetricId: MockMetricID,
-						Lang:     assessment.MetricImplementation_REGO,
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 						Code:     "package test",
 					}, "metric_id = ?", MockMetricID)
-					if err != nil {
-						t.Errorf("Could not save implementation: %v", err)
-					}
+					assert.NoError(t, err)
 				}),
 			},
 			args: args{
@@ -547,7 +614,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			},
 			wantRes: &assessment.MetricImplementation{
 				MetricId: MockMetricID,
-				Lang:     assessment.MetricImplementation_REGO,
+				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 				Code:     "package test",
 			},
 		},
@@ -556,16 +623,17 @@ func TestService_GetMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
 			}
 
 			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.GetMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
@@ -579,12 +647,11 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
+		catalogsFile          string
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -595,7 +662,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		name     string
 		fields   fields
 		args     args
-		wantImpl *assessment.MetricImplementation
+		wantImpl assert.ValueAssertionFunc
 		wantErr  bool
 	}{
 		{
@@ -606,10 +673,11 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "notfound",
+					Implementation: &assessment.MetricImplementation{MetricId: "notfound"},
 				},
 			},
-			wantErr: true,
+			wantImpl: assert.Empty,
+			wantErr:  true,
 		},
 		{
 			name: "storage error",
@@ -618,36 +686,41 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
-			wantErr: true,
+			wantImpl: assert.Empty,
+			wantErr:  true,
 		},
 		{
 			name: "update",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "TransportEncryptionEnabled"})
+					_ = s.Create(&assessment.Metric{Id: "TransportEncryptionEnabled"})
 				}),
 				metricsFile: "metrics.json",
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricImplementationRequest{
-					MetricId: "TransportEncryptionEnabled",
 					Implementation: &assessment.MetricImplementation{
-						Lang: assessment.MetricImplementation_REGO,
-						Code: "package example",
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
 					},
 				},
 			},
-			wantImpl: &assessment.MetricImplementation{
-				MetricId: "TransportEncryptionEnabled",
-				Lang:     assessment.MetricImplementation_REGO,
-				Code:     "package example",
+			wantImpl: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				var impl = i1.(*assessment.MetricImplementation)
+
+				return assert.Equal(t, "TransportEncryptionEnabled", impl.MetricId) &&
+					assert.Equal(t, assessment.MetricImplementation_LANGUAGE_REGO, impl.Lang) &&
+					assert.Equal(t, "package example", impl.Code) &&
+					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now())) &&
+					assert.NoError(t, impl.Validate())
 			},
 		},
 	}
@@ -655,12 +728,11 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
 			}
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
@@ -668,22 +740,21 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
-				t.Errorf("Service.UpdateMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
-			}
+
+			tt.wantImpl(t, gotImpl)
 		})
 	}
 }
 
 func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
+		catalogsFile          string
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -694,16 +765,69 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		fields       fields
 		args         args
 		wantResponse *assessment.MetricConfiguration
+		want         assert.ValueAssertionFunc
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "metric not found",
-			fields: fields{},
+			name: "metric found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id: MockMetricID})
+					_ = s.Create(&orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId})
+					_ = s.Create(&assessment.MetricConfiguration{
+						MetricId:       MockMetricID,
+						CloudServiceId: DefaultTargetCloudServiceId,
+						Operator:       "==",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+					})
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
-					MetricId: "NotExists",
+					MetricId:       MockMetricID,
+					CloudServiceId: DefaultTargetCloudServiceId,
 				},
 			},
+			wantResponse: &assessment.MetricConfiguration{
+				MetricId:       MockMetricID,
+				CloudServiceId: DefaultTargetCloudServiceId,
+				Operator:       "==",
+				TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp := i1.(*assessment.MetricConfiguration)
+				wantResp := i2[0].(*assessment.MetricConfiguration)
+
+				// We have to check the TargetValue independently and delete it, because otherwise DeepEqual throws an error.
+				assert.Equal(t, resp.TargetValue.GetStringValue(), wantResp.TargetValue.GetStringValue())
+				resp.TargetValue = nil
+				wantResp.TargetValue = nil
+
+				if !reflect.DeepEqual(resp, wantResp) {
+					t.Errorf("Service.GetMetricConfiguration() = %v, want %v", resp, wantResp)
+					return false
+				}
+
+				return true
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "metric not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					MetricId:       "NotExists",
+					CloudServiceId: DefaultTargetCloudServiceId,
+				},
+			},
+			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				gotStatus, ok := status.FromError(err)
 				if !ok {
@@ -717,34 +841,33 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := s.GetMetricConfiguration(tt.args.in0, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			}
-			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
-				t.Errorf("Service.GetMetricConfiguration() = %v, want %v", gotResponse, tt.wantResponse)
-			}
+			assert.NoError(t, gotResponse.Validate())
+
+			tt.wantErr(t, err, tt.args)
+
+			tt.want(t, gotResponse, tt.wantResponse)
 		})
 	}
 }
 
 func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		requirements          []*orchestrator.Requirement
+		catalogsFile          string
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -761,6 +884,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "error",
 			fields: fields{
 				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
@@ -771,25 +895,29 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "no error",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId,
+					})
+					_ = s.Create(&assessment.MetricConfiguration{
+						MetricId:       MockMetricID,
+						CloudServiceId: DefaultTargetCloudServiceId,
+						Operator:       "==",
+					})
 				}),
-				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{
-					DefaultTargetCloudServiceId: {
-						MockMetricID: {
-							Operator: "==",
-						},
-					},
-				},
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{
-					ServiceId: DefaultTargetCloudServiceId,
+					CloudServiceId: DefaultTargetCloudServiceId,
 				},
 			},
 			wantResponse: &orchestrator.ListMetricConfigurationResponse{
 				Configurations: map[string]*assessment.MetricConfiguration{
 					MockMetricID: {
-						Operator: "==",
+						MetricId:       MockMetricID,
+						CloudServiceId: DefaultTargetCloudServiceId,
+						Operator:       "==",
 					},
 				},
 			},
@@ -799,15 +927,19 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
+
+			// TODO(anatheka): Test failes because of incorrect metrics.json file
+			// assert.NoError(t, gotResponse.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
@@ -821,14 +953,15 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
-		metricConfigurations  map[string]map[string]*assessment.MetricConfiguration
 		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		requirements          []*orchestrator.Requirement
+		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -838,65 +971,304 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *assessment.MetricConfiguration
-		wantErr bool
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "metric does not exist",
-			fields: fields{storage: testutil.NewInMemoryStorage(t)},
-			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric"},
+			name: "metricId is missing in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
-			wantErr: true,
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "at least")
+			},
 		},
 		{
-			name: "service does not exist",
+			name: "cloudServiceID is missing in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId: "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "cloudServiceID is invalid in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: "00000000-000000000000",
+					MetricId:       "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "configuration is missing in request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Configuration: value is required")
+			},
+		},
+		{
+			name: "metricId is missing in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "at least")
+			},
+		},
+		{
+			name: "cloudServiceId is missing in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:    "<",
+						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:    "MyMetric",
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "cloudServiceId is invalid in configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					MetricId:       "MyMetric",
+					CloudServiceId: DefaultTargetCloudServiceId,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: "00000000-000000000000",
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "metric does not exist in storage",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric or service does not exist")
+			},
+		},
+		{
+			name: "cloudService does not exist in storage",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "MyMetric"})
+					_ = s.Create(&assessment.Metric{Id: "MyMetric"})
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: "MyService", MetricId: "MyMetric"},
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       "MyMetric",
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+						MetricId:       "MyMetric",
+						CloudServiceId: DefaultTargetCloudServiceId,
+					},
+				},
 			},
-			wantErr: true,
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric or service does not exist")
+			},
 		},
 		{
-			name: "first metric in service",
+			name: "append metric configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(assessment.Metric{Id: "MyMetric"})
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{Id: DefaultTargetCloudServiceId})
 				}),
-				metricConfigurations: map[string]map[string]*assessment.MetricConfiguration{},
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &orchestrator.UpdateMetricConfigurationRequest{ServiceId: DefaultTargetCloudServiceId, MetricId: "MyMetric", Configuration: &assessment.MetricConfiguration{Operator: "<"}},
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       MockMetricID,
+					Configuration: &assessment.MetricConfiguration{
+						CloudServiceId: DefaultTargetCloudServiceId,
+						MetricId:       MockMetricID,
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+					},
+				},
 			},
-			wantErr: false,
-			wantRes: &assessment.MetricConfiguration{Operator: "<"},
+			wantErr: assert.NoError,
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				svc := i2[0].(*Service)
+
+				var config *assessment.MetricConfiguration
+				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", DefaultTargetCloudServiceId, MockMetricID)
+				if !assert.NoError(t, err) {
+					return false
+				}
+
+				return assert.Equal(t, config, i1)
+			},
+		},
+		{
+			name: "replace metric configuration",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{Id: MockMetricID})
+					_ = s.Create(&orchestrator.CloudService{
+						Id: DefaultTargetCloudServiceId,
+					})
+					_ = s.Create(&assessment.MetricConfiguration{
+						MetricId:       MockMetricID,
+						CloudServiceId: DefaultTargetCloudServiceId,
+						Operator:       ">",
+					})
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: DefaultTargetCloudServiceId,
+					MetricId:       MockMetricID,
+					Configuration: &assessment.MetricConfiguration{
+						CloudServiceId: DefaultTargetCloudServiceId,
+						MetricId:       MockMetricID,
+						Operator:       "<",
+						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				svc := i2[0].(*Service)
+
+				var config *assessment.MetricConfiguration
+				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", DefaultTargetCloudServiceId, MockMetricID)
+				if !assert.NoError(t, err) {
+					return false
+				}
+
+				return assert.Equal(t, config, i1)
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				metricConfigurations:  tt.fields.metricConfigurations,
 				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				requirements:          tt.fields.requirements,
+				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetricConfiguration() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateMetricConfiguration() = %v, want %v", gotRes, tt.wantRes)
-			}
+			assert.NoError(t, gotRes.Validate())
+
+			tt.wantErr(t, err)
+
+			tt.want(t, gotRes, svc)
 		})
 	}
 }

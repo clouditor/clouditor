@@ -69,6 +69,26 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
+// DiscoveryEventType defines the event types for [DiscoveryEvent].
+type DiscoveryEventType int
+
+const (
+	// DiscovererStart is emmited at the start of a discovery run.
+	DiscovererStart DiscoveryEventType = iota
+	// DiscovererFinished is emmited at the end of a discovery run.
+	DiscovererFinished
+)
+
+// DiscoveryEvent represents an event that is ommited if certain situations happen in the discoverer (defined by
+// [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
+// the future.
+type DiscoveryEvent struct {
+	Type            DiscoveryEventType
+	DiscovererName  string
+	DiscoveredItems int
+	Time            time.Time
+}
+
 // Service is an implementation of the Clouditor Discovery service.
 // It should not be used directly, but rather the NewService constructor
 // should be used.
@@ -89,6 +109,11 @@ type Service struct {
 
 	// Mutex for resources
 	resourceMutex sync.RWMutex
+
+	Events chan *DiscoveryEvent
+
+	// csID is the cloud service ID for which we are gathering resources.
+	csID string
 }
 
 type Configuration struct {
@@ -114,6 +139,13 @@ func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOptio
 			target: address,
 			opts:   opts,
 		}
+	}
+}
+
+// WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
+func WithCloudServiceID(ID string) ServiceOption {
+	return func(svc *Service) {
+		svc.csID = ID
 	}
 }
 
@@ -145,6 +177,8 @@ func NewService(opts ...ServiceOption) *Service {
 		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
+		Events:         make(chan *DiscoveryEvent),
+		csID:           discovery.DefaultCloudServiceID,
 	}
 
 	// Apply any options
@@ -193,7 +227,13 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 }
 
 // Start starts discovery
-func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
@@ -213,9 +253,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 			discoverer = append(discoverer,
 				// For now, we do not want to discover the ARM template
 				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer)))
+				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
+				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
+				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
@@ -223,9 +263,9 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
 			discoverer = append(discoverer,
-				k8s.NewKubernetesComputeDiscovery(k8sClient),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient),
-				k8s.NewKubernetesStorageDiscovery(k8sClient))
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
@@ -233,8 +273,8 @@ func (svc *Service) Start(_ context.Context, _ *discovery.StartDiscoveryRequest)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
 			discoverer = append(discoverer,
-				aws.NewAwsStorageDiscovery(awsClient),
-				aws.NewAwsComputeDiscovery(awsClient))
+				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
@@ -274,6 +314,14 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []voc.IsCloudResource
 	)
 
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:           DiscovererStart,
+			DiscovererName: discoverer.Name(),
+			Time:           time.Now(),
+		}
+	}()
+
 	list, err = discoverer.List()
 
 	if err != nil {
@@ -281,7 +329,20 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		return
 	}
 
+	// Notify event listeners that the discoverer is finished
+	go func() {
+		svc.Events <- &DiscoveryEvent{
+			Type:            DiscovererFinished,
+			DiscovererName:  discoverer.Name(),
+			DiscoveredItems: len(list),
+			Time:            time.Now(),
+		}
+	}()
+
 	for _, resource := range list {
+		// Set the cloud service ID to the one of the discoverer
+		resource.SetServiceID(svc.csID)
+
 		svc.resourceMutex.Lock()
 		svc.resources[string(resource.GetID())] = resource
 		svc.resourceMutex.Unlock()
@@ -297,11 +358,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		// TODO(all): What is the raw type in our case?
 		e := &evidence.Evidence{
-			Id:        uuid.New().String(),
-			Timestamp: timestamppb.Now(),
-			ToolId:    "Clouditor Evidences Collection",
-			Raw:       "",
-			Resource:  v,
+			Id:             uuid.New().String(),
+			CloudServiceId: resource.GetServiceID(),
+			Timestamp:      timestamppb.Now(),
+			ToolId:         "Clouditor Evidences Collection",
+			Raw:            nil,
+			Resource:       v,
 		}
 
 		// Get Evidence Store stream
@@ -320,9 +382,10 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	var r []*structpb.Value
 	var resources []voc.IsCloudResource
 
-	var filteredType = ""
-	if req != nil {
-		filteredType = req.FilteredType
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	resources = maps.Values(svc.resources)
@@ -333,7 +396,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	for _, v := range resources {
 		var resource *structpb.Value
 
-		if filteredType != "" && !v.HasType(filteredType) {
+		if req.FilteredType != nil && !v.HasType(req.GetFilteredType()) {
+			continue
+		}
+
+		if req.FilteredCloudServiceId != nil && v.GetServiceID() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 
@@ -349,7 +416,13 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	res = new(discovery.QueryResponse)
 
 	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, service.DefaultPaginationOpts)
+	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
+		if req.OrderBy == "creation_time" {
+			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
+		} else {
+			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
+		}
+	}, service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

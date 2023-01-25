@@ -33,7 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 )
 
 // Not the most sophisticated tests. They will probably fail at some point when these proto messages change. Mocking
@@ -44,17 +44,17 @@ func TestGetFieldNames(t *testing.T) {
 	)
 
 	// Successful
-	fieldnames = GetFieldNames[*auth.User]()
+	fieldnames = GetFieldNames(&auth.User{})
 	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
 	assert.Equal(t, reflect.ValueOf(auth.User{}).NumField()-3, len(fieldnames))
 
 	// Successful
-	fieldnames = GetFieldNames[*orchestrator.Certificate]()
-	assert.Equal(t, reflect.ValueOf(orchestrator.Certificate{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "name", "service_id", "issue_date", "expiration_date", "standard", "assurance_level", "cab", "description", "states"}, fieldnames)
+	fieldnames = GetFieldNames(&prototest.TestStruct{})
+	assert.Equal(t, reflect.ValueOf(prototest.TestStruct{}).NumField()-3, len(fieldnames))
+	assert.Equal(t, []string{"test_name", "test_id", "test_description", "test_status"}, fieldnames)
 
 	// Successful
-	fieldnames = GetFieldNames[*evidence.Evidence]()
+	fieldnames = GetFieldNames(&evidence.Evidence{})
 	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "timestamp", "service_id", "tool_id", "raw", "resource"}, fieldnames)
+	assert.Equal(t, []string{"id", "timestamp", "cloud_service_id", "tool_id", "raw", "resource"}, fieldnames)
 }

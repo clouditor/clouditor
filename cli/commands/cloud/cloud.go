@@ -62,7 +62,7 @@ func NewRegisterCloudServiceCommand() *cobra.Command {
 			name := args[0]
 
 			res, err = client.RegisterCloudService(context.Background(), &orchestrator.RegisterCloudServiceRequest{
-				Service: &orchestrator.CloudService{
+				CloudService: &orchestrator.CloudService{
 					Name: name,
 				},
 			})
@@ -140,7 +140,7 @@ func NewGetCloudServiceCommand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{ServiceId: serviceID})
+			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{CloudServiceId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -173,7 +173,7 @@ func NewRemoveCloudServiceComand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{ServiceId: serviceID})
+			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -204,13 +204,10 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 			client = orchestrator.NewOrchestratorClient(session)
 
 			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-				ServiceId: viper.GetString("id"),
-				Service: &orchestrator.CloudService{
+				CloudService: &orchestrator.CloudService{
+					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
-					Requirements: &orchestrator.CloudService_Requirements{
-						RequirementIds: viper.GetStringSlice("requirement-ids"),
-					},
 				},
 			})
 
@@ -222,19 +219,17 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
-	cmd.PersistentFlags().StringSliceP("requirement-ids", "r", nil, "a list of requirements this cloud service should satisfy")
 
 	_ = cmd.MarkPersistentFlagRequired("id")
 	_ = cmd.MarkPersistentFlagRequired("name")
 	_ = viper.BindPFlag("id", cmd.PersistentFlags().Lookup("id"))
 	_ = viper.BindPFlag("name", cmd.PersistentFlags().Lookup("name"))
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
-	_ = viper.BindPFlag("requirement-ids", cmd.PersistentFlags().Lookup("requirement-ids"))
+	_ = viper.BindPFlag("control-ids", cmd.PersistentFlags().Lookup("control-ids"))
 
 	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
-	_ = cmd.RegisterFlagCompletionFunc("requirement-ids", cli.ValidArgsGetRequirements)
 
 	return cmd
 }
@@ -264,7 +259,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 			serviceID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{ServiceId: serviceID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CloudServiceId: serviceID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},

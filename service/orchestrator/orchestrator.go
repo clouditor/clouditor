@@ -33,7 +33,6 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -53,21 +52,20 @@ var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 var log *logrus.Entry
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultRequirementsFile = "requirements.json"
+
+var DefaultCatalogsFile = "catalogs.json"
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// metricConfigurations holds a double-map of metric configurations associated first by service ID and then metric ID
-	metricConfigurations map[string]map[string]*assessment.MetricConfiguration
-
-	// mm is a mutex for metric related maps
-	mm sync.Mutex
-
 	// cloudServiceHooks is a list of hook functions that can be used to inform
 	// about updated CloudServices
 	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+
+	// toeHooks is a list of hook functions that can be used to inform about updated Target of Evaluations
+	toeHooks []orchestrator.TargetOfEvaluationHookFunc
+
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex
 
@@ -86,9 +84,16 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	requirements []*orchestrator.Requirement
+	catalogsFile string
+
+	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
+	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
 
 	events chan *orchestrator.MetricChangeEvent
+
+	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// resources, such as evidences and assessment results.
+	authz service.AuthorizationStrategy
 }
 
 func init() {
@@ -112,9 +117,17 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	}
 }
 
-func WithRequirements(r []*orchestrator.Requirement) ServiceOption {
+// WithCatalogsFile can be used to load a different catalogs file
+func WithCatalogsFile(file string) ServiceOption {
 	return func(s *Service) {
-		s.requirements = r
+		s.catalogsFile = file
+	}
+}
+
+// WithExternalCatalogs can be used to load catalog definitions from an external source
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+	return func(s *Service) {
+		s.loadCatalogsFunc = f
 	}
 }
 
@@ -125,14 +138,21 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
+func WithAuthorizationStrategyJWT(key string) ServiceOption {
+	return func(s *Service) {
+		s.authz = &service.AuthorizationStrategyJWT{Key: key}
+	}
+}
+
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:              make(map[string]*assessment.AssessmentResult),
-		metricConfigurations: make(map[string]map[string]*assessment.MetricConfiguration),
-		metricsFile:          DefaultMetricsFile,
-		events:               make(chan *orchestrator.MetricChangeEvent, 1000),
+		results:      make(map[string]*assessment.AssessmentResult),
+		metricsFile:  DefaultMetricsFile,
+		catalogsFile: DefaultCatalogsFile,
+		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -148,12 +168,17 @@ func NewService(opts ...ServiceOption) *Service {
 		}
 	}
 
-	if err = s.loadRequirements(); err != nil {
-		log.Errorf("Could not load embedded requirements. Will continue with empty requirements list: %v", err)
+	// Default to an allow-all authorization strategy
+	if s.authz == nil {
+		s.authz = &service.AuthorizationStrategyAllowAll{}
 	}
 
 	if err = s.loadMetrics(); err != nil {
 		log.Errorf("Could not load embedded metrics. Will continue with empty metric list: %v", err)
+	}
+
+	if err = s.loadCatalogs(); err != nil {
+		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
 
 	return &s
@@ -182,29 +207,18 @@ func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFun
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-	_, err = req.Result.Validate()
-
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("invalid assessment result: %w", err)
-		log.Error(newError)
-
-		go s.informHook(nil, newError)
-
-		resp = &orchestrator.StoreAssessmentResultResponse{
-			Status:        false,
-			StatusMessage: newError.Error(),
-		}
-
-		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
+		log.Error(err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
 
-	resp = &orchestrator.StoreAssessmentResultResponse{
-		Status: true,
-	}
+	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	return resp, nil
 }
@@ -232,9 +246,17 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
 			Result: result.Result,
 		}
-		res, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
-			log.Errorf("Error storing assessment result: %v", err)
+			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
+			res = &orchestrator.StoreAssessmentResultResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &orchestrator.StoreAssessmentResultResponse{
+				Status: true,
+			}
 		}
 
 		log.Debugf("Assessment result received (%v)", result.Result.Id)
@@ -251,21 +273,6 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 			return status.Errorf(codes.Unknown, "%v", newError.Error())
 		}
 	}
-}
-
-// ListAssessmentResults is a method implementation of the orchestrator interface
-func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	res = new(assessment.ListAssessmentResultsResponse)
-
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
-		return a.Timestamp.AsTime().After(b.Timestamp.AsTime())
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
-
-	return
 }
 
 func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
@@ -290,21 +297,13 @@ func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
 func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateCertificateRequest) (
 	*orchestrator.Certificate, error) {
 	// Validate request
-	if req == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.Certificate == nil {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCertificateIsNil.Error())
-	}
-	if req.Certificate.Id == "" {
-		return nil,
-			status.Errorf(codes.InvalidArgument, orchestrator.ErrCertIDIsMissing.Error())
+	err := service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	// Persist the new certificate in our database
-	err := svc.storage.Create(req.Certificate)
+	err = svc.storage.Create(req.Certificate)
 	if err != nil {
 		return nil,
 			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
@@ -316,11 +315,10 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 
 // GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.NotFound, orchestrator.ErrCertIDIsMissing.Error())
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	response = new(orchestrator.Certificate)
@@ -335,12 +333,10 @@ func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCerti
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
 func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
-	// Validate the request
-	if err = api.ValidateListRequest[*orchestrator.Certificate](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
@@ -355,15 +351,13 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 
 // UpdateCertificate implements method for updating an existing certificate
 func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	if req.Certificate == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate is empty")
-	}
-
-	count, err := svc.storage.Count(req.Certificate, "Certificate_id = ?", req.CertificateId)
+	count, err := svc.storage.Count(req.Certificate, req.Certificate.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -373,7 +367,6 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 	}
 
 	response = req.Certificate
-	response.Id = req.CertificateId
 
 	err = svc.storage.Save(response, "Id = ?", response.Id)
 	if err != nil {
@@ -384,8 +377,10 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 
 // RemoveCertificate implements method for removing a certificate
 func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
-	if req.CertificateId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "certificate id is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
 	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)

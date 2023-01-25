@@ -25,14 +25,40 @@
 
 package discovery
 
-import "clouditor.io/clouditor/voc"
+import (
+	"time"
 
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
+)
+
+// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
+// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+// structures for this feature.
+const DefaultCloudServiceID = "00000000-0000-0000-0000-000000000000"
+
+// Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
+// vocabulary objects.
 type Discoverer interface {
 	Name() string
 	List() ([]voc.IsCloudResource, error)
+	CloudServiceID() string
 }
 
 // Authorizer authorizes a Cloud service
 type Authorizer interface {
 	Authorize() (err error)
+}
+
+// NewResource creates a new resource.
+func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string) *voc.Resource {
+	return &voc.Resource{
+		ID:           ID,
+		ServiceID:    d.CloudServiceID(),
+		CreationTime: util.SafeTimestamp(creationTime),
+		Name:         name,
+		GeoLocation:  location,
+		Type:         typ,
+		Labels:       labels,
+	}
 }

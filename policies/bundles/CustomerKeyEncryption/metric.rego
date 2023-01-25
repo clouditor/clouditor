@@ -4,13 +4,13 @@ default applicable = false
 
 default compliant = false
 
-keyUrl := input.atRestEncryption.keyUrl
+import input.atRestEncryption as enc
 
 applicable {
-	keyUrl != null
+	enc
 }
 
 compliant {
 	# Check if keyUrl is set (not an empty string)
-	keyUrl != ""
+	enc.keyUrl != ""
 }

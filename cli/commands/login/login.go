@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	"clouditor.io/clouditor/cli"
 	oauth2 "github.com/oxisto/oauth2go"
@@ -164,8 +165,9 @@ func newCallbackServer(config *oauth2.Config) *callbackServer {
 
 	var srv = &callbackServer{
 		Server: http.Server{
-			Handler: mux,
-			Addr:    DefaultCallbackServerAddress,
+			Handler:           mux,
+			Addr:              DefaultCallbackServerAddress,
+			ReadHeaderTimeout: 2 * time.Second,
 		},
 		verifier: VerifierGenerator(),
 		config:   config,

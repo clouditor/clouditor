@@ -26,10 +26,11 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.evidence.v1;
 
 import "api/evidence/evidence.proto";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
 
@@ -57,7 +58,9 @@ service EvidenceStore {
   }
 }
 
-message StoreEvidenceRequest { Evidence evidence = 1; }
+message StoreEvidenceRequest {
+  Evidence evidence = 1 [ (validate.rules).message.required = true ];
+}
 message StoreEvidenceResponse {
   bool status = 1;
   string status_message = 2;

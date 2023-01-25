@@ -26,13 +26,9 @@
 package gorm
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"time"
-
-	"google.golang.org/protobuf/types/known/structpb"
+	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/auth"
@@ -40,10 +36,9 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 
+	"github.com/glebarez/sqlite"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
@@ -51,6 +46,8 @@ import (
 )
 
 var log *logrus.Entry
+
+type DB = gorm.DB
 
 type storage struct {
 	db *gorm.DB
@@ -73,8 +70,10 @@ var DefaultTypes = []any{
 	&assessment.Metric{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
-	&orchestrator.Requirement{},
 	&evidence.Evidence{},
+	&orchestrator.Catalog{},
+	&orchestrator.Category{},
+	&orchestrator.Control{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres
@@ -83,7 +82,7 @@ type StorageOption func(*storage)
 // WithInMemory is an option to configure Storage to use an in memory DB
 func WithInMemory() StorageOption {
 	return func(s *storage) {
-		s.dialector = sqlite.Open(":memory:")
+		s.dialector = sqlite.Open(":memory:?_pragma=foreign_keys(1)")
 	}
 }
 
@@ -155,6 +154,22 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("structpbvalue", &StructpbValueSerializer{})
+	schema.RegisterSerializer("anypb", &AnySerializer{})
+
+	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
+	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
+
+	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlInScope{}); err != nil {
+		err = fmt.Errorf("error during join-table: %w", err)
+		return
+	}
 
 	// After successful DB initialization, migrate the schema
 	if err = g.db.AutoMigrate(g.types...); err != nil {
@@ -166,18 +181,80 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	return
 }
 
-func (s *storage) Create(r any) error {
-	return s.db.Create(r).Error
+func (s *storage) Create(r any) (err error) {
+	err = s.db.Create(r).Error
+
+	if err != nil && (strings.Contains(err.Error(), "constraint failed: UNIQUE constraint failed") ||
+		strings.Contains(err.Error(), "duplicate key value violates unique constraint")) {
+		return persistence.ErrUniqueConstraintFailed
+	}
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstraintFailed
+	}
+
+	return
+}
+
+type preload struct {
+	query string
+	args  []any
+}
+
+type QueryOption interface{}
+
+// WithPreload allows the customization of Gorm's preload feature with the specified query and arguments.
+func WithPreload(query string, args ...any) QueryOption {
+	return &preload{query: query, args: args}
+}
+
+// WithoutPreload disables any kind of preloading of Gorm. This is necessary, if custom join tables are used, otherwise
+// Gorm will throws errors.
+func WithoutPreload() QueryOption {
+	return &preload{query: ""}
 }
 
 func (s *storage) Get(r any, conds ...any) (err error) {
-	// Preload all associations for r being filled with all items (including relationships)
-	err = s.db.Preload(clause.Associations).First(r, conds...).Error
+	// Preload all associations of r if necessary
+	db, conds := applyPreload(s.db, conds...)
+
+	err = db.First(r, conds...).Error
+
 	// if record is not found, use the error message defined in the persistence package
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = persistence.ErrRecordNotFound
 	}
 	return
+}
+
+// applyWhere applies the conditional arguments to db.Where. We now basically distinguish between three cases:
+//   - an empty conditions list means no db.Where function is called
+//   - one condition specified means that it is takes as the query parameter. This will query for the specified primary key
+//   - otherwise, the first condition will be taken as the query parameter and all others will be taken as additional args.
+func applyWhere(db *gorm.DB, conds ...any) *gorm.DB {
+	if len(conds) == 0 {
+		return db
+	} else if len(conds) == 1 {
+		return db.Where(conds[0])
+	} else {
+		return db.Where(conds[0], conds[1:]...)
+	}
+}
+
+// applyPreload checks for any preload options and prepends them to the DB query. If no extra option is specified,
+// "clause.Associations" is used as the default preload.
+func applyPreload(db *gorm.DB, conds ...any) (*gorm.DB, []any) {
+	if len(conds) > 0 {
+		if preload, ok := conds[0].(*preload); ok {
+			if preload.query != "" {
+				return db.Preload(preload.query, preload.args...), conds[1:]
+			} else {
+				return db, conds[1:]
+			}
+		}
+	}
+
+	return db.Preload(clause.Associations), conds
 }
 
 func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, conds ...any) error {
@@ -198,21 +275,48 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 		orderStmt = ""
 	}
 
-	return query.Offset(offset).Preload(clause.Associations).Order(orderStmt).Find(r, conds...).Error
+	// Preload all associations of r if necessary
+	query, conds = applyPreload(query.Offset(offset), conds...)
+
+	return query.Order(orderStmt).Find(r, conds...).Error
 }
 
 func (s *storage) Count(r any, conds ...any) (count int64, err error) {
-	err = s.db.Model(r).Where(conds).Count(&count).Error
+	db := applyWhere(s.db.Model(r), conds...)
+
+	err = db.Count(&count).Error
 	return
 }
 
 func (s *storage) Save(r any, conds ...any) error {
-	return s.db.Where(conds).Save(r).Error
+	tx := applyWhere(s.db, conds...).Save(r)
+	err := tx.Error
+
+	if err != nil && strings.Contains(err.Error(), "constraint failed") {
+		return persistence.ErrConstraintFailed
+	}
+
+	return err
 }
 
 // Update will update the record with non-zero fields. Note that to get the entire updated record you have to call Get
-func (s *storage) Update(r any, query any, args ...any) error {
-	return s.db.Model(r).Where(query, args).Updates(r).Error
+func (s *storage) Update(r any, conds ...any) error {
+	tx := s.db.Session(&gorm.Session{FullSaveAssociations: true}).Model(r)
+	tx = applyWhere(tx, conds...).Updates(r)
+	if err := tx.Error; err != nil { // db error
+		if strings.Contains(err.Error(), "constraint failed") {
+			return persistence.ErrConstraintFailed
+		} else {
+			return err
+		}
+	}
+
+	// No record with given ID found
+	if tx.RowsAffected == 0 {
+		return persistence.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 // Delete deletes record with given id. If no record was found, returns ErrRecordNotFound
@@ -222,97 +326,11 @@ func (s *storage) Delete(r any, conds ...any) error {
 	if err := tx.Error; err != nil { // db error
 		return err
 	}
+
 	// No record with given ID found
 	if tx.RowsAffected == 0 {
 		return persistence.ErrRecordNotFound
 	}
 
 	return nil
-}
-
-// TimestampSerializer is a GORM serializer that allows the serialization and deserialization of the
-// google.protobuf.Timestamp protobuf message type.
-type TimestampSerializer struct{}
-
-// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
-// how this struct will be saved into an SQL database field.
-func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
-	var (
-		t  *timestamppb.Timestamp
-		ok bool
-	)
-
-	if fieldValue == nil {
-		return nil, nil
-	}
-
-	if t, ok = fieldValue.(*timestamppb.Timestamp); !ok {
-		return nil, persistence.ErrUnsupportedType
-	}
-
-	return t.AsTime(), nil
-}
-
-// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
-// this struct can be loaded from an SQL database field.
-func (TimestampSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
-	var t *timestamppb.Timestamp
-
-	if dbValue != nil {
-		switch v := dbValue.(type) {
-		case time.Time:
-			t = timestamppb.New(v)
-		default:
-			return persistence.ErrUnsupportedType
-		}
-
-		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(t))
-	}
-
-	return
-}
-
-// StructpbValueSerializer is a GORM serializer that allows the serialization and deserialization of the
-// google.protobuf.Value protobuf message type.
-type StructpbValueSerializer struct{}
-
-// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
-// how this struct will be saved into an SQL database field.
-func (StructpbValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
-	var (
-		v  *structpb.Value
-		ok bool
-	)
-
-	if fieldValue == nil {
-		return nil, nil
-	}
-
-	if v, ok = fieldValue.(*structpb.Value); !ok {
-		return nil, persistence.ErrUnsupportedType
-	}
-
-	return v.MarshalJSON()
-}
-
-// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
-// this struct can be loaded from an SQL database field.
-func (StructpbValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
-	v := new(structpb.Value)
-
-	if dbValue != nil {
-		switch d := dbValue.(type) {
-		case []byte:
-			err = v.UnmarshalJSON(d)
-			if err != nil {
-				return err
-			}
-		default:
-			return persistence.ErrUnsupportedType
-		}
-
-		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(v))
-	}
-
-	return
 }

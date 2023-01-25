@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +27,11 @@
 
 package voc
 
+var ContainerOrchestrationType = []string{"ContainerOrchestration", "Resource"}
+
 type ContainerOrchestration struct {
 	*Resource
-	Containers    []ResourceID `json:"containers"`
-	ManagementUrl string       `json:"managementUrl"`
+	ResourceLogging *ResourceLogging `json:"resourceLogging"`
+	Containers      []ResourceID     `json:"containers"`
+	ManagementUrl   string           `json:"managementUrl"`
 }

@@ -1,3 +1,28 @@
+// Copyright 2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package assessment
 
 import (
@@ -8,11 +33,15 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/persistence"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var (
-	ErrMetricNameMissing = errors.New("metric name is missing")
-	ErrMetricEmpty       = errors.New("metric is missing or empty")
+	ErrMetricNameMissing       = errors.New("metric name is missing")
+	ErrMetricEmpty             = errors.New("metric is missing or empty")
+	ErrCloudServiceIDIsMissing = errors.New("cloud service id is missing")
+	ErrCloudServiceIDIsInvalid = errors.New("cloud service id is invalid")
 )
 
 func (r *Range) UnmarshalJSON(b []byte) (err error) {
@@ -108,42 +137,31 @@ func (*Range) GormDataType() string {
 	return "jsonb"
 }
 
-// MetricValidationOption is a function-style option to fine-tune metric validation.
-type MetricValidationOption func(*Metric) error
-
-// WithMetricRequiresId is a validation option that specifies that ID must not be empty.
-func WithMetricRequiresId() MetricValidationOption {
-	return func(m *Metric) error {
-		if m.Id == "" {
-			return ErrMetricIdMissing
-		}
-		return nil
-	}
-}
-
-// Validate validates the metric according to several required fields.
-func (m *Metric) Validate(opts ...MetricValidationOption) (err error) {
-	if m == nil {
-		return ErrMetricEmpty
-	}
-
-	// Check for extra validation options
-	for _, o := range opts {
-		err = o(m)
-		if err != nil {
-			return err
-		}
-	}
-
-	if m.Name == "" {
-		return ErrMetricNameMissing
-	}
-
-	return nil
-}
-
 // Hash provides a simple string based hash for this metric configuration. It can be used
 // to provide a key for a map or a cache.
 func (x *MetricConfiguration) Hash() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("%v-%v", x.Operator, x.TargetValue)))
+}
+
+func (x *MetricConfiguration) MarshalJSON() (b []byte, err error) {
+	return protojson.Marshal(x)
+}
+
+func (x *MetricConfiguration) UnmarshalJSON(b []byte) (err error) {
+	return protojson.Unmarshal(b, x)
+}
+
+// CheckCloudServiceID checks if serviceID is available and in the valid UUID format.
+func CheckCloudServiceID(serviceID string) error {
+	// Check if ServiceId is missing
+	if serviceID == "" {
+		return ErrCloudServiceIDIsMissing
+	}
+
+	// Check if ServiceId is valid
+	if _, err := uuid.Parse(serviceID); err != nil {
+		return ErrCloudServiceIDIsInvalid
+	}
+
+	return nil
 }

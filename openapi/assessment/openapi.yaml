@@ -43,6 +43,23 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             parameters:
+                - name: filteredCloudServiceId
+                  in: query
+                  description: Optional. List only assessment results of a specific cloud service.
+                  schema:
+                    type: string
+                - name: filteredCompliant
+                  in: query
+                  description: Optional. List only compliant assessment results.
+                  schema:
+                    type: boolean
+                - name: filteredMetricId
+                  in: query
+                  description: Optional. List only assessment results of a specific metric id.
+                  schema:
+                    type: array
+                    items:
+                        type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -120,6 +137,9 @@ components:
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                cloudServiceId:
+                    type: string
+                    description: The cloud service which this assessment result belongs to
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
             type: object
@@ -131,7 +151,7 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                serviceId:
+                cloudServiceId:
                     type: string
                     description: Reference to a service this evidence was gathered from
                 toolId:
@@ -139,7 +159,7 @@ components:
                     description: Reference to the tool which provided the evidence
                 raw:
                     type: string
-                    description: Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
+                    description: Optional. Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
                     $ref: '#/components/schemas/GoogleProtobufValue'
             description: An evidence resource
@@ -177,6 +197,12 @@ components:
                     type: string
                     description: The last time of update
                     format: date-time
+                metricId:
+                    type: string
+                    description: The metric this configuration belongs to
+                cloudServiceId:
+                    type: string
+                    description: The service this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         Status:
             type: object

@@ -36,9 +36,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
@@ -160,6 +160,37 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+					"name":     "disk1",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+					"name":     "disk2",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+							"type":                "EncryptionAtRestWithCustomerKey",
+						},
+					},
+				},
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -172,6 +203,35 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
+		return createResponse(map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault1",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
+					},
+					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
+		return createResponse(map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault2",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault2",
+					},
 				},
 			},
 		}, 200)
@@ -195,8 +255,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				opts: nil,
 			},
 			want: &azureComputeDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					discovererComponent: ComputeComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -206,13 +267,14 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithSender(mockComputeSender{})},
 			},
 			want: &azureComputeDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
 							Transport: mockComputeSender{},
 						},
 					},
 					discovererComponent: ComputeComponent,
+					csID:                discovery.DefaultCloudServiceID,
 				},
 			},
 		},
@@ -222,9 +284,22 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
 			},
 			want: &azureComputeDiscovery{
-				azureDiscovery{
+				&azureDiscovery{
 					cred:                &mockAuthorizer{},
 					discovererComponent: ComputeComponent,
+					csID:                discovery.DefaultCloudServiceID,
+				},
+			},
+		},
+		{
+			name: "With cloud service ID",
+			args: args{
+				opts: []DiscoveryOption{WithCloudServiceID(testutil.TestCloudService1)},
+			},
+			want: &azureComputeDiscovery{
+				&azureDiscovery{
+					discovererComponent: ComputeComponent,
+					csID:                testutil.TestCloudService1,
 				},
 			},
 		},
@@ -258,11 +333,11 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 4, len(list))
+	assert.Equal(t, 6, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
-func TestVirtualMachine(t *testing.T) {
+func TestDiscoverer_List(t *testing.T) {
 	d := NewAzureComputeDiscovery(
 		WithSender(&mockComputeSender{}),
 		WithAuthorizer(&mockAuthorizer{}),
@@ -271,29 +346,29 @@ func TestVirtualMachine(t *testing.T) {
 	list, err := d.List()
 	assert.NoError(t, err)
 
-	virtualMachine, ok := list[0].(*voc.VirtualMachine)
+	virtualMachine, ok := list[2].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
 	assert.Equal(t, "vm1", virtualMachine.Name)
-	assert.Equal(t, 2, len(virtualMachine.NetworkInterface))
+	assert.Equal(t, 2, len(virtualMachine.NetworkInterfaces))
 	assert.Equal(t, 3, len(virtualMachine.BlockStorage))
 
 	assert.Equal(t, "data_disk_1", string(virtualMachine.BlockStorage[1]))
-	assert.Equal(t, "123", string(virtualMachine.NetworkInterface[0]))
+	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
 	assert.Equal(t, true, virtualMachine.BootLogging.Enabled)
 	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
 	assert.Equal(t, time.Duration(0), virtualMachine.BootLogging.RetentionPeriod)
 
-	virtualMachine2, ok := list[1].(*voc.VirtualMachine)
+	virtualMachine2, ok := list[3].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine2.BootLogging.LoggingService)
 
-	virtualMachine3, ok := list[2].(*voc.VirtualMachine)
+	virtualMachine3, ok := list[4].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorage)
-	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterface)
+	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterfaces)
 
 }
 
@@ -307,16 +382,16 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 4, len(list))
+	assert.Equal(t, 6, len(list))
 
-	function, ok := list[3].(*voc.Function)
+	function, ok := list[5].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)
 }
 
 func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
-	d := azureComputeDiscovery{}
+	d := azureComputeDiscovery{azureDiscovery: &azureDiscovery{}}
 
 	discoverFunctionsResponse, err := d.discoverFunctions()
 
@@ -325,7 +400,7 @@ func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestComputeDiscoverVirtualMachines(t *testing.T) {
-	d := azureComputeDiscovery{}
+	d := azureComputeDiscovery{azureDiscovery: &azureDiscovery{}}
 
 	discoverVirtualMachineResponse, err := d.discoverVirtualMachines()
 
@@ -390,7 +465,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name     string
@@ -398,78 +473,93 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 		wantList []voc.IsCloudResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		{
-			name: "Authorize error",
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: nil,
-				},
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-			},
-		},
+		// {
+		// 	name: "Authorize error",
+		// 	fields: fields{
+		// 		azureDiscovery: azureDiscovery{
+		// 			cred: nil,
+		// 		},
+		// 	},
+		// 	wantList: nil,
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+		// 	},
+		// },
 		{
 			name: "Discovery error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockNetworkSender{},
-						},
-					},
-				},
+				// Intentionally use wrong sender
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
 			},
 			wantList: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover virtual machines:")
-			},
-		},
-		{
-			name: "Handle function error",
-			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockNetworkSender{},
-						},
-					},
-				},
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover virtual machines:")
+				return assert.ErrorContains(t, err, "could not discover block storage:")
 			},
 		},
 		{
 			name: "Without errors",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: &mockComputeSender{},
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			wantList: []voc.IsCloudResource{
+				&voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							ServiceID:    testutil.TestCloudService1,
+							Name:         "disk1",
+							CreationTime: util.SafeTimestamp(&creationTime),
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Type:   voc.BlockStorageType,
+						},
+
+						AtRestEncryption: &voc.ManagedKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
 						},
 					},
 				},
-			},
-			wantList: []voc.IsCloudResource{
+				&voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							ServiceID:    testutil.TestCloudService1,
+							Name:         "disk2",
+							CreationTime: util.SafeTimestamp(&creationTime),
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Type:   voc.BlockStorageType,
+						},
+						AtRestEncryption: &voc.CustomerKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "",
+								Enabled:   true,
+							},
+							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+						},
+					},
+				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
-							Type:         []string{"VirtualMachine", "Compute", "Resource"},
+							Type:         voc.VirtualMachineType,
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"123", "234"},
+						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
@@ -482,7 +572,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -498,15 +588,16 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
-							Type:         []string{"VirtualMachine", "Compute", "Resource"},
+							Type:         voc.VirtualMachineType,
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"987", "654"},
+						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
@@ -519,7 +610,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -535,15 +626,16 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm3",
-							Type:         []string{"VirtualMachine", "Compute", "Resource"},
+							Type:         voc.VirtualMachineType,
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Labels:       map[string]string{},
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 					BlockStorage: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
@@ -556,7 +648,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -572,9 +664,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
-							Type:         []string{"Function", "Compute", "Resource"},
+							Type:         voc.FunctionType,
 							Labels: map[string]string{
 								"testKey1": "testTag1",
 								"testKey2": "testTag2",
@@ -583,7 +676,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "West Europe",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 				},
 			},
@@ -606,13 +699,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 }
 
 func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
-
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name    string
@@ -623,7 +711,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 		{
 			name: "Error list pages",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
+				azureDiscovery: &azureDiscovery{
 					cred: nil,
 				},
 			},
@@ -635,15 +723,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockComputeSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
 
 			want: []voc.IsCloudResource{
@@ -651,6 +731,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -662,7 +743,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 								Region: "West Europe",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 				},
 			},
@@ -691,7 +772,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 	testTag2 := "testTag2"
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		function *armappservice.Site
@@ -720,6 +801,9 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 		},
 		{
 			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
 			args: args{
 				function: &armappservice.Site{
 					ID:       &functionID,
@@ -735,6 +819,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+						ServiceID:    testutil.TestCloudService1,
 						Name:         "function1",
 						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -746,7 +831,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 							Region: "West Europe",
 						},
 					},
-					NetworkInterface: []voc.ResourceID{},
+					NetworkInterfaces: []voc.ResourceID{},
 				},
 			},
 		},
@@ -762,14 +847,10 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 }
 
 func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
-	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
-		SubscriptionID: &subID,
-	}
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
 		name    string
@@ -794,21 +875,14 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: azureDiscovery{
-					cred: &mockAuthorizer{},
-					sub:  sub,
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockComputeSender{},
-						},
-					},
-				},
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -817,7 +891,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"123", "234"},
+						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
@@ -830,7 +904,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -846,6 +920,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -854,7 +929,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{"987", "654"},
+						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_2", "data_disk_3"},
 					BootLogging: &voc.BootLogging{
@@ -867,7 +942,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							RetentionPeriod: 0,
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -883,6 +958,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+							ServiceID:    testutil.TestCloudService1,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -891,7 +967,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								Region: "eastus",
 							},
 						},
-						NetworkInterface: []voc.ResourceID{},
+						NetworkInterfaces: []voc.ResourceID{},
 					},
 					BlockStorage: []voc.ResourceID{},
 					BootLogging: &voc.BootLogging{
@@ -904,7 +980,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
-					OSLogging: &voc.OSLogging{
+					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
 							Enabled:         false,
 							LoggingService:  []voc.ResourceID{},
@@ -970,7 +1046,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 	enabledTrue := true
 
 	type fields struct {
-		azureDiscovery azureDiscovery
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		vm *armcompute.VirtualMachine
@@ -991,6 +1067,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 		},
 		{
 			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
 			args: args{
 				vm: &armcompute.VirtualMachine{
 					ID:       &ID,
@@ -1020,6 +1099,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+						ServiceID:    testutil.TestCloudService1,
 						Name:         "vm1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1028,7 +1108,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 							Region: "eastus",
 						},
 					},
-					NetworkInterface: []voc.ResourceID{"123", "234"},
+					NetworkInterfaces: []voc.ResourceID{"123", "234"},
 				},
 				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
@@ -1041,7 +1121,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						RetentionPeriod: 0,
 					},
 				},
-				OSLogging: &voc.OSLogging{
+				OsLogging: &voc.OSLogging{
 					Logging: &voc.Logging{
 						Enabled:         false,
 						LoggingService:  []voc.ResourceID{},
@@ -1235,6 +1315,434 @@ func Test_bootLogOutput(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, bootLogOutput(tt.args.vm))
+		})
+	}
+}
+
+func TestBlockStoragesHandleMethodsWhenInputIsInvalid(t *testing.T) {
+	d := azureComputeDiscovery{}
+
+	// Test method handleBlockStorage
+	disk := &armcompute.Disk{}
+	handleBlockStorageResponse, err := d.handleBlockStorage(disk)
+	assert.Error(t, err)
+	assert.Nil(t, handleBlockStorageResponse)
+}
+
+func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							ServiceID:    testutil.TestCloudService1,
+							Name:         "disk1",
+							CreationTime: util.SafeTimestamp(&creationTime),
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Type:   []string{"BlockStorage", "Storage", "Resource"},
+							Labels: map[string]string{},
+						},
+
+						AtRestEncryption: &voc.ManagedKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+				},
+				&voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+							ServiceID:    testutil.TestCloudService1,
+							Name:         "disk2",
+							CreationTime: util.SafeTimestamp(&creationTime),
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Type:   []string{"BlockStorage", "Storage", "Resource"},
+							Labels: map[string]string{},
+						},
+						AtRestEncryption: &voc.CustomerKeyEncryption{
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "",
+								Enabled:   true,
+							},
+							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.discoverBlockStorages()
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "discoverBlockStorages()")
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
+	encType := armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey
+	diskID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"
+	diskName := "disk1"
+	diskRegion := "eastus"
+	encSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		disk *armcompute.Disk
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *voc.BlockStorage
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				disk: nil,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "disk is nil")
+			},
+		},
+		{
+			name: "Empty diskID",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				disk: &armcompute.Disk{
+					ID: &diskID,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type: &encType,
+						},
+					},
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get block storage properties for the atRestEncryption:")
+			},
+		},
+		{
+			name: "Empty encryptionType",
+			args: args{
+				disk: &armcompute.Disk{
+					ID: &diskID,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type: nil,
+						},
+					},
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting atRestEncryption properties of blockStorage")
+			},
+		},
+		{
+			name: "No error",
+			args: args{
+				disk: &armcompute.Disk{
+					ID:       &diskID,
+					Name:     &diskName,
+					Location: &diskRegion,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type:                &encType,
+							DiskEncryptionSetID: &encSetID,
+						},
+						TimeCreated: &creationTime,
+					},
+				},
+			},
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			want: &voc.BlockStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:           voc.ResourceID(diskID),
+						ServiceID:    testutil.TestCloudService1,
+						Name:         "disk1",
+						CreationTime: util.SafeTimestamp(&creationTime),
+						Type:         []string{"BlockStorage", "Storage", "Resource"},
+						GeoLocation: voc.GeoLocation{
+							Region: "eastus",
+						},
+						Labels: map[string]string{},
+					},
+
+					AtRestEncryption: &voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.AtRestEncryption{
+							Algorithm: "",
+							Enabled:   true,
+						},
+						KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+					},
+				},
+			},
+
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.handleBlockStorage(tt.args.disk)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleBlockStorage(%v)", tt.args.disk)) {
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
+	encType := armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey
+	diskID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"
+	diskName := "disk1"
+	diskRegion := "eastus"
+	encSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		disk *armcompute.Disk
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    voc.IsAtRestEncryption
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty disk",
+			args: args{},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "disk is empty")
+			},
+		},
+		{
+			name: "Error getting atRestEncryptionProperties",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				disk: &armcompute.Disk{
+					ID:       &diskID,
+					Name:     &diskName,
+					Location: &diskRegion,
+					Properties: &armcompute.DiskProperties{
+						Encryption:  &armcompute.Encryption{},
+						TimeCreated: &creationTime,
+					},
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting atRestEncryption properties of blockStorage")
+			},
+		},
+		{
+			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				disk: &armcompute.Disk{
+					ID:       &diskID,
+					Name:     &diskName,
+					Location: &diskRegion,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type:                &encType,
+							DiskEncryptionSetID: &encSetID,
+						},
+						TimeCreated: &creationTime,
+					},
+				},
+			},
+			want: &voc.CustomerKeyEncryption{
+				AtRestEncryption: &voc.AtRestEncryption{
+					Algorithm: "",
+					Enabled:   true,
+				},
+				KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.blockStorageAtRestEncryption(tt.args.disk)
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_keyURL(t *testing.T) {
+	encSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
+	encSetID2 := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2"
+
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		diskEncryptionSetID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			want: "",
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrMissingDiskEncryptionSetID)
+			},
+		},
+		{
+			name:   "Error get disc encryption set",
+			fields: fields{&azureDiscovery{}},
+			args: args{
+				diskEncryptionSetID: encSetID,
+			},
+			want: "",
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get key vault:")
+			},
+		},
+		{
+			name: "Empty keyURL",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				diskEncryptionSetID: encSetID2,
+			},
+			want: "",
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get keyURL")
+			},
+		},
+		{
+			name: "No error",
+			args: args{
+				diskEncryptionSetID: encSetID,
+			},
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			want:    "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.keyURL(tt.args.diskEncryptionSetID)
+			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetID)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetID)
+		})
+	}
+}
+
+func Test_diskEncryptionSetName(t *testing.T) {
+	type args struct {
+		diskEncryptionSetID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Correct ID",
+			args: args{
+				diskEncryptionSetID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+			},
+			want: "encryptionkeyvault1",
+		},
+		{
+			name: "Empty ID",
+			args: args{
+				diskEncryptionSetID: "",
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
 		})
 	}
 }

@@ -1,16 +1,17 @@
 [
   {
-    "id": "AnomalyDetectionEnabled"
+    "id": "AdminMFAEnabled"
   },
   {
-    "id": "AnomalyDetectionOutput"
+    "id": "IdentityPasswordPolicy"
   },
   {
-    "id": "AnonymousAuthentication"
+    "id": "IdentityRecentActivity"
   },
   {
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
+    "category": "CKM-03",
     "description": "This metric describes whether storage encryption is enabled",
     "scale": 1,
     "allowedValues": {
@@ -24,11 +25,12 @@
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
     "description": "This metric describes the algorithm of a storage encryption block cipher",
+    "category": "CKM-03",
     "scale": 1,
     "allowedValues": {
       "values": [
-        "AES-128",
-        "AES-256",
+        "AES128",
+        "AES256",
         ""
       ]
     }
@@ -43,16 +45,19 @@
     "id": "AutomaticUpdatesSecurityOnly"
   },
   {
-    "id": "BootLoggingEnabled"
+    "id": "AnomalyDetectionEnabled"
   },
   {
-    "id": "BootLoggingOutput"
+    "id": "AnonymousAuthentication"
+  },
+  {
+    "id": "BootLoggingEnabled"
   },
   {
     "id": "BootLoggingRetention"
   },
   {
-    "id": "BroadAssignments"
+    "id": "RoleBroadAssignments"
   },
   {
     "id": "CustomerKeyEncryption"
@@ -67,19 +72,13 @@
     "id": "MalwareProtectionEnabled"
   },
   {
-    "id": "MalwareProtectionOutput"
-  },
-  {
-    "id": "MixedDuties"
+    "id": "AdminMixedDuties"
   },
   {
     "id": "MutualAuthentication"
   },
   {
     "id": "OSLoggingEnabled"
-  },
-  {
-    "id": "OSLoggingOutput"
   },
   {
     "id": "OSLoggingRetention"
@@ -96,6 +95,7 @@
   {
     "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
+    "category": "CKM-02",
     "description": "This metric describes, whether transport encryption is turned on or not",
     "scale": 1,
     "range": {
@@ -105,14 +105,12 @@
           true
         ]
       }
-    },
-    "requirements_id": [
-      "CKM-02.2"
-    ]
+    }
   },
   {
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
+    "category": "CKM-02",
     "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
     "scale": 1,
     "range": {
@@ -124,15 +122,19 @@
           "TLS 1.3"
         ]
       }
-    },
-    "requirements_id": [
-      "CKM-02.2"
-    ]
+    }
   },
   {
-    "id": "TransportEncryptionEnforced"
+    "id": "TransportEncryptionEnforced",
+    "category": "CKM-02"
   },
   {
     "id": "WebApplicationFirewallEnabled"
+  },
+  {
+    "id": "ResourceInventory"
+  },
+  {
+    "id": "ObjectStoragePublicAccessDisabled"
   }
 ]

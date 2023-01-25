@@ -94,7 +94,7 @@ func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedReque
 
 	var (
 		res       ResponseType
-		pageToken string = ""
+		pageToken string
 	)
 
 	for {

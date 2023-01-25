@@ -37,19 +37,29 @@ import (
 
 type IsCloudResource interface {
 	GetID() ResourceID
+	GetServiceID() string
+	SetServiceID(ID string)
 	GetName() string
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	Related() []string
+}
+
+type IsSecurityFeature interface {
+	Type() string
 }
 
 type ResourceID string
 
 // Resource file from Ontology currently not used. How do we merge this file with the 'Resource Ontology file'
 type Resource struct {
-	ID           ResourceID `json:"id"`
-	Name         string     `json:"name"`
-	CreationTime int64      `json:"creationTime"` // is set to 0 if no creation time is available
+	ID ResourceID `json:"id"`
+	// ServiceID contains the ID of the cloud service to which this resource belongs. When creating new resources using
+	// the NewResource function of the discovery API, this gets filled automatically.
+	ServiceID    string `json:"serviceId"`
+	Name         string `json:"name"`
+	CreationTime int64  `json:"creationTime"` // is set to 0 if no creation time is available
 	// The resource type. It is an array, because a type can be derived from another
 	Type        []string          `json:"type"`
 	GeoLocation GeoLocation       `json:"geoLocation"`
@@ -58,6 +68,14 @@ type Resource struct {
 
 func (r *Resource) GetID() ResourceID {
 	return r.ID
+}
+
+func (r *Resource) GetServiceID() string {
+	return r.ServiceID
+}
+
+func (r *Resource) SetServiceID(ID string) {
+	r.ServiceID = ID
 }
 
 func (r *Resource) GetName() string {
@@ -85,6 +103,10 @@ func (r *Resource) GetCreationTime() *time.Time {
 	return &t
 }
 
+func (*Resource) Related() []string {
+	return []string{}
+}
+
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 	var b []byte
 
@@ -107,20 +129,36 @@ func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
 
 type IsStorage interface {
 	IsCloudResource
-
-	HasAtRestEncryption
+	IsAtRestEncryption
 }
 
-type HasAtRestEncryption interface {
-	GetAtRestEncryption() *AtRestEncryption
+type IsAtRestEncryption interface {
+	IsSecurityFeature
+	atRestEncryption()
+	IsEnabled() bool
 }
+
+func (*AtRestEncryption) atRestEncryption() {}
+func (a *AtRestEncryption) IsEnabled() bool {
+	return a.Enabled
+}
+
+type IsAuthorization interface {
+	IsSecurityFeature
+	authorization()
+}
+
+func (*Authorization) authorization() {}
+
+type IsAuthenticity interface {
+	IsSecurityFeature
+	authenticity()
+}
+
+func (*Authenticity) authenticity() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
-}
-
-func (s *Storage) GetAtRestEncryption() *HasAtRestEncryption {
-	return &s.AtRestEncryption
 }
 
 type IsCompute interface {

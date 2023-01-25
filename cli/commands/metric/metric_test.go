@@ -57,7 +57,7 @@ func TestListMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	var response *orchestrator.ListMetricsResponse = &orchestrator.ListMetricsResponse{}
+	var response = &orchestrator.ListMetricsResponse{}
 
 	err = protojson.Unmarshal(b.Bytes(), response)
 

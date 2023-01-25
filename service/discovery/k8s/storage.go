@@ -38,8 +38,8 @@ import (
 
 type k8sStorageDiscovery struct{ k8sDiscovery }
 
-func NewKubernetesStorageDiscovery(intf kubernetes.Interface) discovery.Discoverer {
-	return &k8sStorageDiscovery{k8sDiscovery{intf}}
+func NewKubernetesStorageDiscovery(intf kubernetes.Interface, cloudServiceID string) discovery.Discoverer {
+	return &k8sStorageDiscovery{k8sDiscovery{intf, cloudServiceID}}
 }
 
 func (*k8sStorageDiscovery) Name() string {
@@ -76,16 +76,17 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 // handlePVC returns all PersistentVolumes
-func (k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-
+func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
 	s := &voc.Storage{
-		Resource: &voc.Resource{
-			ID:           voc.ResourceID(pv.UID),
-			Name:         pv.Name,
-			CreationTime: pv.CreationTimestamp.Unix(),
-			Type:         []string{"BlockStorage", "Storage", "Resource"},
-			Labels:       pv.GetLabels(),
-		},
+		Resource: discovery.NewResource(d,
+			voc.ResourceID(pv.UID),
+			pv.Name,
+			&pv.CreationTimestamp.Time,
+			// TODO(all) Add region
+			voc.GeoLocation{},
+			pv.Labels,
+			voc.BlockStorageType,
+		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}
 

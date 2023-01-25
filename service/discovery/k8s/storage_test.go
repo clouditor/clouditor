@@ -29,6 +29,7 @@ import (
 	"context"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -71,7 +72,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		t.Fatalf("error injecting volume add: %v", err)
 	}
 
-	d := NewKubernetesStorageDiscovery(client)
+	d := NewKubernetesStorageDiscovery(client, testutil.TestCloudService1)
 
 	list, err := d.List()
 	assert.NoError(t, err)
@@ -85,6 +86,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeUID),
+				ServiceID:    testutil.TestCloudService1,
 				Name:         volumeName,
 				CreationTime: volume.CreationTime,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

@@ -27,46 +27,39 @@ package orchestrator
 
 import (
 	"context"
-	"database/sql/driver"
-	"errors"
-	"strings"
+
+	"google.golang.org/protobuf/proto"
 )
 
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
+type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
 
-var (
-	ErrCertificateIsNil = errors.New("certificate is empty")
-	ErrServiceIsNil     = errors.New("service is empty")
-	ErrNameIsMissing    = errors.New("service name is empty")
-	ErrIDIsMissing      = errors.New("service ID is empty")
-	ErrCertIDIsMissing  = errors.New("certificate ID is empty")
-)
-
-// Value implements https://pkg.go.dev/database/sql/driver#Valuer to indicate
-// how this struct will be saved into an SQL database field.
-func (c *CloudService_Requirements) Value() (driver.Value, error) {
-	if c == nil || c.RequirementIds == nil {
-		return nil, nil
-	} else {
-		return driver.Value(strings.Join(c.RequirementIds, ",")), nil
-	}
+// CloudServiceRequest represents any kind of RPC request, that contains a
+// reference to a cloud service.
+type CloudServiceRequest interface {
+	GetCloudServiceId() string
+	proto.Message
 }
 
-// Scan implements https://pkg.go.dev/database/sql#Scanner to indicate how
-// this struct can be loaded from an SQL database field.
-func (c *CloudService_Requirements) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case string:
-		(*c).RequirementIds = strings.Split(v, ",")
-	default:
-		return errors.New("unsupported type")
-	}
-
-	return nil
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *AddControlToScopeRequest) GetCloudServiceId() string {
+	return req.Scope.GetTargetOfEvaluationCloudServiceId()
 }
 
-// GormDataType implements GormDataTypeInterface to give an indication how
-// this struct will be serialized into a database using GORM.
-func (*CloudService_Requirements) GormDataType() string {
-	return "string"
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateControlInScopeRequest) GetCloudServiceId() string {
+	return req.Scope.GetTargetOfEvaluationCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
+	return req.CloudService.GetId()
+}
+
+// TableName overrides the table name used by ControlInScope to `controls_in_scope`
+func (*ControlInScope) TableName() string {
+	return "controls_in_scope"
 }

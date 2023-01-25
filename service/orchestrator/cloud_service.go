@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -42,54 +41,60 @@ import (
 )
 
 const (
-	DefaultTargetCloudServiceId          = "00000000-0000-0000-000000000000"
+	DefaultTargetCloudServiceId          = "00000000-0000-0000-0000-000000000000"
 	DefaultTargetCloudServiceName        = "default"
 	DefaultTargetCloudServiceDescription = "The default target cloud service"
 )
 
-func (s *Service) RegisterCloudService(_ context.Context, req *orchestrator.RegisterCloudServiceRequest) (service *orchestrator.CloudService, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
-	}
-	if req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrServiceIsNil.Error())
-	}
-	if req.Service.Name == "" {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrNameIsMissing.Error())
+func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (res *orchestrator.CloudService, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	service = new(orchestrator.CloudService)
+	res = new(orchestrator.CloudService)
 
 	// Generate a new ID
-	service.Id = uuid.NewString()
-	service.Name = req.Service.Name
-	service.Description = req.Service.Description
+	res.Id = uuid.NewString()
+	res.Name = req.CloudService.Name
+	res.Description = req.CloudService.Description
 
 	// Persist the service in our database
-	err = s.storage.Create(service)
+	err = s.storage.Create(res)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
 	}
 
+	go s.informHooks(ctx, res, nil)
 	return
 }
 
 // ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListCloudServicesRequest) (
+func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.ListCloudServicesRequest) (
 	res *orchestrator.ListCloudServicesResponse, err error) {
+	var conds []any
+	var allowed []string
+	var all bool
+
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(orchestrator.ListCloudServicesResponse)
 
-	// Validate tne request
-	if err = api.ValidateListRequest[*orchestrator.CloudService](req); err != nil {
-		err = fmt.Errorf("invalid request: %w", err)
-		log.Error(err)
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all cloud services.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		conds = append(conds, allowed)
 	}
 
 	// Paginate the cloud services according to the request
 	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
-		service.DefaultPaginationOpts)
+		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -98,16 +103,20 @@ func (svc *Service) ListCloudServices(_ context.Context, req *orchestrator.ListC
 }
 
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
-func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, api.ErrRequestIsNil.Error())
+func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
-	if req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, orchestrator.ErrIDIsMissing.Error())
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	response = new(orchestrator.CloudService)
-	err = s.storage.Get(response, "Id = ?", req.ServiceId)
+	err = s.storage.Get(response, "Id = ?", req.CloudServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -119,15 +128,18 @@ func (s *Service) GetCloudService(_ context.Context, req *orchestrator.GetCloudS
 
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
-	if req.Service == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "service is empty")
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	if req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
-	count, err := s.storage.Count(req.Service, "Id = ?", req.ServiceId)
+	count, err := s.storage.Count(req.CloudService, "id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -137,31 +149,39 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	response = req.Service
-	response.Id = req.ServiceId
+	response = req.CloudService
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.ServiceId)
+	err = s.storage.Save(response, "Id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
 	go s.informHooks(ctx, response, nil)
 	return
 }
 
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
-func (s *Service) RemoveCloudService(_ context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
-	if req.ServiceId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "service id is empty")
+func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
 	}
 
-	err = s.storage.Delete(&orchestrator.CloudService{Id: req.ServiceId})
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessDelete, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	err = s.storage.Delete(&orchestrator.CloudService{Id: req.CloudServiceId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
+	go s.informHooks(ctx, nil, nil)
 	return &emptypb.Empty{}, nil
 }
 
@@ -193,6 +213,8 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 		} else {
 			log.Infof("Created new default target cloud service: %s", service.Id)
 		}
+	} else {
+		log.Infof("Cloud services already exist.")
 	}
 
 	return

@@ -34,3 +34,8 @@ func Deref[T any](p *T) T {
 
 	return result
 }
+
+// Ref references pointer values
+func Ref[T any](p T) *T {
+	return &p
+}

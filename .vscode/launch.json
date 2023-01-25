@@ -36,7 +36,8 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:3000"
+                "--dashboard-url=http://localhost:5173",
+                "--api-cors-allowed-origins=http://localhost:5173"
             ],
             "env": {},
             "preLaunchTask": "go: generate"

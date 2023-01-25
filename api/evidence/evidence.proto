@@ -26,55 +26,40 @@
  */
 syntax = "proto3";
 
-package clouditor;
+package clouditor.evidence.v1;
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
+import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
 
 // An evidence resource
 message Evidence {
   // the ID in a uuid format
-  string id = 1;
+  string id = 1 [ (validate.rules).string.uuid = true ];
 
   // time of evidence creation
-  google.protobuf.Timestamp timestamp = 2
-  [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+  google.protobuf.Timestamp timestamp = 2 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (validate.rules).timestamp.required = true
+  ];
 
   // Reference to a service this evidence was gathered from
-  string service_id = 3;
+  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
 
   // Reference to the tool which provided the evidence
-  string tool_id = 4;
+  string tool_id = 4 [ (validate.rules).string.min_len = 1 ];
 
-  // Contains the evidence in its original form without following a defined
-  // schema, e.g. the raw JSON
-  string raw = 5;
+  // Optional. Contains the evidence in its original form without following a
+  // defined schema, e.g. the raw JSON
+  optional string raw = 5 [ (validate.rules).string.min_len = 1 ];
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Value resource = 6
-  [ (tagger.tags) = "gorm:\"serializer:structpbvalue;type:json\"" ];
-}
-
-// An error result
-message Error {
-  // The broad type of error, should not be too collection module specific
-  enum Code {
-    ERROR_UNKNOWN = 0;
-    // TODO(all): But all invalid configs are rejected anyway (`Validate` functions)
-    ERROR_INVALID_CONFIGURATION =
-        1; // The collection module configuration did not allow for collection
-    // (e.g. Port number 1000000)
-    ERROR_CONNECTION_FAILURE =
-        2; // The service could not be reached (e.g. Timeout)
-    ERROR_PROTOCOL_VIOLATION = 3; // The service did not behave as expected
-    // (e.g. served SMTP instead of HTTP)
-  }
-  // The type of error
-  Code code = 1;
-  // Optional. A human-readable description of the error.
-  string description = 2;
+  google.protobuf.Value resource = 6 [
+    (tagger.tags) = "gorm:\"serializer:structpbvalue;type:json\"",
+    (validate.rules).message.required = true
+  ];
 }

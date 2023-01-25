@@ -88,17 +88,16 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
-func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (
-	resp *evidence.StoreEvidenceResponse, err error) {
-
-	_, err = req.Evidence.Validate()
+func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
 
 		go s.informHooks(nil, err)
 
-		resp = &evidence.StoreEvidenceResponse{
+		res = &evidence.StoreEvidenceResponse{
 			Status:        false,
 			StatusMessage: err.Error(),
 		}
@@ -115,7 +114,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 		go s.informHooks(nil, err)
 
-		resp = &evidence.StoreEvidenceResponse{
+		res = &evidence.StoreEvidenceResponse{
 			Status:        false,
 			StatusMessage: err.Error(),
 		}
@@ -125,13 +124,13 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	}
 	go s.informHooks(req.Evidence, nil)
 
-	resp = &evidence.StoreEvidenceResponse{
+	res = &evidence.StoreEvidenceResponse{
 		Status: true,
 	}
 
 	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
 
-	return resp, nil
+	return res, nil
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
@@ -163,7 +162,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			log.Errorf("Error storing evidence: %v", err)
 		}
 
-		// Send response back to the client
+		// Send resonse back to the client
 		err = stream.Send(res)
 
 		// Check for send errors
@@ -171,7 +170,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return nil
 		}
 		if err != nil {
-			newError := fmt.Errorf("cannot send response to the client: %w", err)
+			newError := fmt.Errorf("cannot send resonse to the client: %w", err)
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
@@ -180,6 +179,12 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 
 // ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
 func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
 	res = new(evidence.ListEvidencesResponse)
 
 	// Paginate the evidences according to the request

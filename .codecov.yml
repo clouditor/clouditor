@@ -1,6 +1,6 @@
 ignore:
   - "**/*.pb.go" # ignore protoc generated files
-  - "**/*.pb.gw.go" # ignore protoc-gen-grpc-gateway generated files
+  - "**/*.pb.*.go" # ignore protoc-gen-* generated files
 coverage:
   range: "70...85"
   status:

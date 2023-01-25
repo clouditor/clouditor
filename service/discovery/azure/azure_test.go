@@ -29,14 +29,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testutil"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
 )
@@ -65,7 +68,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 
 type mockAuthorizer struct{}
 
-func (c *mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
+func (*mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions) (azcore.AccessToken, error) {
 	var token azcore.AccessToken
 
 	return token, nil
@@ -209,5 +212,118 @@ func Test_azureDiscovery_authorize(t *testing.T) {
 			}
 			tt.wantErr(t, a.authorize())
 		})
+	}
+}
+
+func Test_initClient(t *testing.T) {
+	var (
+		subID      = "00000000-0000-0000-0000-000000000000"
+		someError  = errors.New("some error")
+		someClient = &armstorage.AccountsClient{}
+	)
+
+	type args struct {
+		existingClient *armstorage.AccountsClient
+		d              *azureDiscovery
+		fun            ClientCreateFunc[armstorage.AccountsClient]
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantClient assert.ValueAssertionFunc
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "No error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub: armsubscription.Subscription{
+						SubscriptionID: &subID,
+					},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockNetworkSender{},
+						},
+					},
+				},
+				fun: armstorage.NewAccountsClient,
+			},
+			wantClient: assert.NotEmpty,
+			wantErr:    assert.NoError,
+		},
+		{
+			name: "Some error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub: armsubscription.Subscription{
+						SubscriptionID: &subID,
+					},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockNetworkSender{},
+						},
+					},
+				},
+				fun: func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*armstorage.AccountsClient, error) {
+					return nil, someError
+				},
+			},
+			wantClient: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, someError)
+			},
+		},
+		{
+			name: "No error, client already exists",
+			args: args{
+				existingClient: someClient,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub: armsubscription.Subscription{
+						SubscriptionID: &subID,
+					},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockNetworkSender{},
+						},
+					},
+				},
+				fun: armstorage.NewAccountsClient,
+			},
+			wantClient: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				return assert.Same(t, i1, someClient)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotClient, err := initClient(tt.args.existingClient, tt.args.d, tt.args.fun)
+			tt.wantErr(t, err)
+			tt.wantClient(t, gotClient)
+		})
+	}
+}
+
+func NewMockAzureDiscovery(transport policy.Transporter) *azureDiscovery {
+	var subID = "00000000-0000-0000-0000-000000000000"
+	sub := armsubscription.Subscription{
+		SubscriptionID: &subID,
+	}
+
+	return &azureDiscovery{
+		cred: &mockAuthorizer{},
+		sub:  sub,
+		clientOptions: arm.ClientOptions{
+			ClientOptions: policy.ClientOptions{
+				Transport: transport,
+			},
+		},
+		csID: testutil.TestCloudService1,
 	}
 }

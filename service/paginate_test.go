@@ -92,7 +92,7 @@ func TestPaginateSlice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, tt.args.opts)
+			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, func(a int, b int) bool { return a < b }, tt.args.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PaginateSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -186,8 +186,11 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "1"}, {Id: "2"}},
-			wantNbt:  "CAIQAg==",
+			wantPage: []orchestrator.CloudService{
+				{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+			},
+			wantNbt: "CAIQAg==",
 		},
 		{
 			name: "next page",
@@ -205,8 +208,11 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "3"}, {Id: "4"}},
-			wantNbt:  "CAQQAg==",
+			wantPage: []orchestrator.CloudService{
+				{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+			},
+			wantNbt: "CAQQAg==",
 		},
 		{
 			name: "last page",
@@ -224,7 +230,7 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "5"}},
+			wantPage: []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}},
 			wantNbt:  "",
 		},
 	}

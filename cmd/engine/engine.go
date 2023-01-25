@@ -136,7 +136,6 @@ var engineCmd = &cobra.Command{
 func init() {
 	log = logrus.WithField("component", "grpc")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-
 	cobra.OnInitialize(initConfig)
 
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
@@ -222,7 +221,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	} else {
 		db, err = gorm.NewStorage(gorm.WithPostgres(
 			viper.GetString(DBHostFlag),
-			uint16(viper.GetUint(DBPortFlag)),
+			viper.GetUint16(DBPortFlag),
 			viper.GetString(DBUserNameFlag),
 			viper.GetString(DBPasswordFlag),
 			viper.GetString(DBNameFlag),
@@ -283,8 +282,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	grpcPort := uint16(viper.GetUint(APIgRPCPortFlag))
-	httpPort := uint16(viper.GetUint(APIHTTPPortFlag))
+	grpcPort := viper.GetUint16(APIgRPCPortFlag)
+	httpPort := viper.GetUint16(APIHTTPPortFlag)
 
 	grpcLogger := logrus.New()
 	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
@@ -307,12 +306,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-			grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc),
+			service.UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), service.UnaryReflectionFilter),
 		),
 		grpc_middleware.WithStreamServerChain(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			grpc_auth.StreamServerInterceptor(authConfig.AuthFunc),
+			service.StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), service.StreamReflectionFilter),
 		))
 	discovery.RegisterDiscoveryServer(server, discoveryService)
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
@@ -322,7 +321,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// enable reflection, primary for testing in early stages
 	reflection.Register(server)
 
-	var opts []rest.ServerConfigOption = []rest.ServerConfigOption{
+	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
@@ -334,7 +333,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
 	// can be used.
 	if viper.GetBool(APIStartEmbeddedOAuth2ServerFlag) {
-		opts = []rest.ServerConfigOption{
+		opts = append(opts,
 			rest.WithEmbeddedOAuth2Server(
 				viper.GetString(APIKeyPathFlag),
 				viper.GetString(APIKeyPasswordFlag),
@@ -366,7 +365,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					login.WithBaseURL("/v1/auth"),
 				),
 			),
-		}
+		)
 	}
 
 	// start the gRPC-HTTP gateway

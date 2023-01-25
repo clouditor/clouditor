@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 	service_discovery "clouditor.io/clouditor/service/discovery"
@@ -110,14 +111,16 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					},
 				},
 			},
-			&voc.StorageService{
-				Storages: []voc.ResourceID{"some-id"},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:   "some-storage-service-id",
-							Name: "some-storage-service-name",
-							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storage: []voc.ResourceID{"some-id"},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "some-storage-service-id",
+								Name: "some-storage-service-name",
+								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
 					},
 				},
@@ -135,6 +138,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	}
 }
 
+func (mockDiscoverer) CloudServiceID() string {
+	return testutil.TestCloudService1
+}
+
 func wrongFormattedResource() voc.IsCloudResource {
 	res1 := mockIsCloudResource{Another: nil}
 	res2 := mockIsCloudResource{Another: &res1}
@@ -149,7 +156,15 @@ type mockIsCloudResource struct {
 }
 
 func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceId"
+	return "MockResourceID"
+}
+
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceID"
+}
+
+func (mockIsCloudResource) SetServiceID(_ string) {
+
 }
 
 func (mockIsCloudResource) GetName() string {
@@ -166,4 +181,8 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) Related() []string {
+	return []string{}
 }

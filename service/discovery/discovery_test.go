@@ -40,7 +40,9 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -79,10 +81,24 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
+				csID:              discovery.DefaultCloudServiceID,
+			},
+		},
+		{
+			name: "Create service with option 'WithDefaultCloudServiceID'",
+			args: args{
+				opts: []ServiceOption{
+					WithCloudServiceID(testutil.TestCloudService1),
+				},
+			},
+			want: &Service{
+				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
+				resources:         make(map[string]voc.IsCloudResource),
+				configurations:    make(map[discovery.Discoverer]*Configuration),
+				csID:              testutil.TestCloudService1,
 			},
 		},
 	}
@@ -91,9 +107,22 @@ func TestNewService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
 
-			// we cannot compare the scheduler, so we need to nil it
+			// we cannot compare the scheduler, so we first check if it is not empty and then nil it
+			assert.NotEmpty(t, got.scheduler)
 			got.scheduler = nil
 			tt.want.scheduler = nil
+			got.Events = nil
+			tt.want.Events = nil
+
+			// we cannot compare the assessment streams, so we first check if it is not empty and then nil it
+			assert.NotEmpty(t, got.assessmentStreams)
+			got.assessmentStreams = nil
+			tt.want.assessmentStreams = nil
+
+			// we cannot compare the Events, so we first check if it is not empty and then nil it
+			assert.Empty(t, got.Events)
+			got.Events = nil
+			tt.want.Events = nil
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -102,9 +131,10 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestStartDiscovery(t *testing.T) {
+func TestService_StartDiscovery(t *testing.T) {
 	type fields struct {
 		discoverer discovery.Discoverer
+		csID       string
 	}
 
 	tests := []struct {
@@ -116,18 +146,29 @@ func TestStartDiscovery(t *testing.T) {
 			name: "Err in discoverer",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 0},
+				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "Err in marshaling the resource containing circular dependencies",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 1},
+				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
-			name: "No err",
+			name: "No err with default cloud service ID",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 2},
+				csID:       discovery.DefaultCloudServiceID,
+			},
+			checkEvidence: true,
+		},
+		{
+			name: "No err with custom cloud service ID",
+			fields: fields{
+				discoverer: mockDiscoverer{testCase: 2},
+				csID:       testutil.TestCloudService1,
 			},
 			checkEvidence: true,
 		},
@@ -139,6 +180,7 @@ func TestStartDiscovery(t *testing.T) {
 			mockStream.Prepare()
 
 			svc := NewService()
+			svc.csID = tt.fields.csID
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
@@ -148,31 +190,30 @@ func TestStartDiscovery(t *testing.T) {
 
 			if tt.checkEvidence {
 				mockStream.Wait()
-
 				want, _ := tt.fields.discoverer.List()
 
 				got := mockStream.sentEvidences
 				assert.Equal(t, len(want), len(got))
 
 				// Retrieve the last one
-				e := got[len(got)-1]
-
-				// Check, if evidence was sent
-				assert.NotNil(t, e)
-				// Check if UUID has been created
-				assert.NotEmpty(t, e.Id)
-				// Check if cloud resources / properties are there
-				assert.NotEmpty(t, e.Resource)
-				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
+				eWant := want[len(want)-1]
+				eGot := got[len(got)-1]
+				err := eGot.Validate()
+				assert.NotNil(t, eGot)
+				assert.NoError(t, err)
 
 				// Only the last element sent can be checked
-				assert.Equal(t, string(want[len(want)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
+				assert.Equal(t, string(eWant.GetID()), eGot.Resource.GetStructValue().AsMap()["id"].(string))
+
+				// Assert cloud service ID
+				assert.Equal(t, tt.fields.csID, eGot.CloudServiceId)
+				assert.Equal(t, tt.fields.csID, eGot.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}
 }
 
-func TestQuery(t *testing.T) {
+func TestService_Query(t *testing.T) {
 	s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
@@ -199,7 +240,7 @@ func TestQuery(t *testing.T) {
 		},
 		{
 			name:                     "Filter type",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: "Compute"}},
+			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: util.Ref("Compute")}},
 			numberOfQueriedResources: 0,
 		},
 		{
@@ -229,7 +270,7 @@ func TestQuery(t *testing.T) {
 	}
 }
 
-func TestStart(t *testing.T) {
+func TestService_Start(t *testing.T) {
 
 	type envVariable struct {
 		hasEnvVariable   bool
@@ -252,6 +293,7 @@ func TestStart(t *testing.T) {
 	}{
 		{
 			name:           "No Azure authorizer",
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -280,6 +322,7 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -297,6 +340,7 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderK8S},
 			wantResp:       nil,
 			wantErr:        true,
@@ -314,6 +358,7 @@ func TestStart(t *testing.T) {
 					},
 				},
 			},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"aws", "k8s"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -322,6 +367,7 @@ func TestStart(t *testing.T) {
 		{
 			name:           "Empty request",
 			fields:         fields{},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
 			wantErr:        false,
@@ -330,6 +376,7 @@ func TestStart(t *testing.T) {
 		{
 			name:           "Request with wrong provider name",
 			fields:         fields{},
+			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
@@ -347,7 +394,7 @@ func TestStart(t *testing.T) {
 				}
 			}
 
-			resp, err := s.Start(context.TODO(), nil)
+			resp, err := s.Start(context.TODO(), tt.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -362,7 +409,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestShutdown(t *testing.T) {
+func TestService_Shutdown(t *testing.T) {
 	service := NewService()
 	service.Shutdown()
 
@@ -439,14 +486,16 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					},
 				},
 			},
-			&voc.StorageService{
-				Storages: []voc.ResourceID{"some-id"},
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:   "some-storage-account-id",
-							Name: "some-storage-account-name",
-							Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+			&voc.ObjectStorageService{
+				StorageService: &voc.StorageService{
+					Storage: []voc.ResourceID{"some-id"},
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:   "some-storage-account-id",
+								Name: "some-storage-account-name",
+								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
+							},
 						},
 					},
 				},
@@ -462,6 +511,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	default:
 		return nil, nil
 	}
+}
+
+func (mockDiscoverer) CloudServiceID() string {
+	return testutil.TestCloudService1
 }
 
 func wrongFormattedResource() voc.IsCloudResource {
@@ -558,6 +611,14 @@ func (mockIsCloudResource) GetID() voc.ResourceID {
 	return "MockResourceId"
 }
 
+func (mockIsCloudResource) GetServiceID() string {
+	return "MockServiceId"
+}
+
+func (mockIsCloudResource) SetServiceID(_ string) {
+
+}
+
 func (mockIsCloudResource) GetName() string {
 	return ""
 }
@@ -572,4 +633,8 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) Related() []string {
+	return []string{}
 }

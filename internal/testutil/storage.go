@@ -14,7 +14,7 @@ func NewInMemoryStorage(t *testing.T, funcs ...func(s persistence.Storage)) (s p
 
 	s, err = inmemory.NewStorage()
 	if err != nil {
-		t.Errorf("Could not initialize in-memory db: %v", err)
+		t.Fatalf("Could not initialize in-memory db: %v", err)
 	}
 
 	for _, f := range funcs {
@@ -35,16 +35,16 @@ type StorageWithError struct {
 	DeleteErr error
 }
 
-func (s *StorageWithError) Create(_ interface{}) error                 { return s.CreateErr }
-func (s *StorageWithError) Save(_ interface{}, _ ...interface{}) error { return s.SaveErr }
-func (*StorageWithError) Update(_ interface{}, _ interface{}, _ ...interface{}) error {
+func (s *StorageWithError) Create(_ any) error         { return s.CreateErr }
+func (s *StorageWithError) Save(_ any, _ ...any) error { return s.SaveErr }
+func (*StorageWithError) Update(_ any, _ ...any) error {
 	return nil
 }
-func (s *StorageWithError) Get(_ interface{}, _ ...interface{}) error { return s.GetErr }
-func (s *StorageWithError) List(_ interface{}, _ string, _ bool, _ int, _ int, _ ...interface{}) error {
+func (s *StorageWithError) Get(_ any, _ ...any) error { return s.GetErr }
+func (s *StorageWithError) List(_ any, _ string, _ bool, _ int, _ int, _ ...any) error {
 	return s.ListErr
 }
-func (s *StorageWithError) Count(_ interface{}, _ ...interface{}) (int64, error) {
+func (s *StorageWithError) Count(_ any, _ ...any) (int64, error) {
 	return 0, s.CountErr
 }
-func (s *StorageWithError) Delete(_ interface{}, _ ...interface{}) error { return s.DeleteErr }
+func (s *StorageWithError) Delete(_ any, _ ...any) error { return s.DeleteErr }

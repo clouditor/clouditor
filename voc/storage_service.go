@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +27,10 @@
 
 package voc
 
+var StorageServiceType = []string{"StorageService", "NetworkService", "Networking", "Resource"}
+
+// StorageService is an entity in our Cloud ontology. This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
 type StorageService struct {
 	*NetworkService
-	Storages     []ResourceID  `json:"storages"`
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+	Storage []ResourceID `json:"storage"`
 }

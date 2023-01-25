@@ -33,6 +33,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/service"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -59,16 +60,26 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:         "11111111-1111-1111-1111-111111111111",
-			MetricId:   "assessmentResultMetricID",
-			EvidenceId: "11111111-1111-1111-1111-111111111111",
-			Timestamp:  timestamppb.Now(),
-			ResourceId: "myResource",
+			Id:             "11111111-1111-1111-1111-111111111111",
+			MetricId:       "assessmentResultMetricID",
+			EvidenceId:     "11111111-1111-1111-1111-111111111111",
+			CloudServiceId: "11111111-1111-1111-1111-111111111111",
+			Timestamp:      timestamppb.Now(),
+			ResourceId:     "myResource",
+			ResourceTypes:  []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue: toStruct(1.0),
-				Operator:    "operator",
-				IsDefault:   true,
+				TargetValue:    toStruct(1.0),
+				Operator:       "<",
+				IsDefault:      true,
+				MetricId:       "assessmentResultMetricID",
+				CloudServiceId: "11111111-1111-1111-1111-111111111111",
 			}}})
+	if err != nil {
+		panic(err)
+	}
+
+	// Store our mock catalog
+	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
 	if err != nil {
 		panic(err)
 	}
@@ -106,6 +117,77 @@ func TestNewListResultsCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
+}
+
+func TestNewListCatalogCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewListCatalogsCommand()
+	err := cmd.RunE(nil, []string{})
+	assert.NoError(t, err)
+
+	var response = &orchestrator.ListCatalogsResponse{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Catalogs)
+}
+
+func TestNewGetCatalogCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewGetCatalogCommand()
+	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID})
+	assert.NoError(t, err)
+
+	var response = &orchestrator.Catalog{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
+	assert.Equal(t, orchestratortest.MockCatalogID, response.Id)
+}
+
+func TestNewGetCategoryCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewGetCategoryCommand()
+	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName})
+	assert.NoError(t, err)
+
+	var response = &orchestrator.Category{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
+	assert.Equal(t, orchestratortest.MockCategoryName, response.Name)
+}
+
+func TestNewGetControlCommand(t *testing.T) {
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewGetControlCommand()
+	err := cmd.RunE(nil, []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName, orchestratortest.MockControlID})
+	assert.NoError(t, err)
+
+	var response = &orchestrator.Control{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
+	assert.Equal(t, orchestratortest.MockControlID, response.Id)
 }
 
 func toStruct(f float32) (s *structpb.Value) {

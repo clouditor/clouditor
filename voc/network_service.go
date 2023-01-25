@@ -1,4 +1,6 @@
-// Copyright 2021 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +27,13 @@
 
 package voc
 
+var NetworkServiceType = []string{"NetworkService", "Networking", "Resource"}
+
+// NetworkService is an entity in our Cloud ontology. A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 type NetworkService struct {
 	*Networking
-	Compute             []ResourceID         `json:"compute"`
+	Authenticity        IsAuthenticity       `json:"authenticity"`
+	Compute             ResourceID           `json:"compute"`
 	TransportEncryption *TransportEncryption `json:"transportEncryption"`
 	Ips                 []string             `json:"ips"`
 	Ports               []uint16             `json:"ports"`

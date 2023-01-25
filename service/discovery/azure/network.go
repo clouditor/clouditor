@@ -37,19 +37,20 @@ import (
 )
 
 type azureNetworkDiscovery struct {
-	azureDiscovery
+	*azureDiscovery
 }
 
 func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureNetworkDiscovery{
-		azureDiscovery{
+		&azureDiscovery{
 			discovererComponent: NetworkComponent,
+			csID:                discovery.DefaultCloudServiceID,
 		},
 	}
 
 	// Apply options
 	for _, opt := range opts {
-		opt(&d.azureDiscovery)
+		opt(d.azureDiscovery)
 	}
 
 	return d
@@ -92,15 +93,13 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create network client
-	client, err := armnetwork.NewInterfacesClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new virtual machines client: %w", err)
+	// initialize network interfaces client
+	if err := d.initNetworkInterfacesClient(); err != nil {
 		return nil, err
 	}
 
 	// List all network interfaces accross all resource groups
-	listPager := client.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
+	listPager := d.clients.networkInterfacesClient.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
 	ni := make([]*armnetwork.Interface, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -114,27 +113,25 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	for i := range ni {
 		s := d.handleNetworkInterfaces(ni[i])
 
-		log.Infof("Adding network interfaces %+v", s)
+		log.Infof("Adding network interface '%s'", s.GetName())
 
 		list = append(list, s)
 	}
 
-	return list, err
+	return list, nil
 }
 
 // Discover load balancer
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
-	// Create load balancer client
-	client, err := armnetwork.NewLoadBalancersClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new load balancers client: %w", err)
+	// initialize load balancers client
+	if err := d.initLoadBalancersClient(); err != nil {
 		return nil, err
 	}
 
 	// List all load balancers accross all resource groups
-	listPager := client.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
+	listPager := d.clients.loadBalancerClient.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
 	lbs := make([]*armnetwork.LoadBalancer, 0)
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
@@ -153,25 +150,26 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 		list = append(list, s)
 	}
 
-	return list, err
+	return list, nil
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(util.Deref(lb.ID)),
-					Name:         util.Deref(lb.Name),
-					CreationTime: 0, // No creation time available
-					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(lb.ID)),
+					util.Deref(lb.Name),
+					// No creation time available
+					nil,
+					voc.GeoLocation{
 						Region: util.Deref(lb.Location),
 					},
-					Labels: labels(lb.Tags),
-				},
+					labels(lb.Tags),
+					voc.LoadBalancerType,
+				),
 			},
-			Ips:   d.publicIPAddressFromLoadBalancer(lb),
+			Ips:   publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the AccessRestriction for load balancers?
@@ -181,19 +179,20 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 	}
 }
 
-func (*azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
+func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(util.Deref(ni.ID)),
-				Name:         util.Deref(ni.Name),
-				CreationTime: 0, // No creation time available
-				Type:         []string{"NetworkInterface", "Compute", "Resource"},
-				GeoLocation: voc.GeoLocation{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(ni.ID)),
+				util.Deref(ni.Name),
+				// No creation time available
+				nil,
+				voc.GeoLocation{
 					Region: util.Deref(ni.Location),
 				},
-				Labels: labels(ni.Tags),
-			},
+				labels(ni.Tags),
+				voc.NetworkInterfaceType,
+			),
 		},
 
 		// AccessRestriction: &voc.AccessRestriction{
@@ -261,8 +260,7 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 //     return list
 // }
 
-func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
-
+func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 	var publicIPAddresses = []string{}
 
 	if lb == nil || lb.Properties == nil || lb.Properties.FrontendIPConfigurations == nil {
@@ -287,4 +285,16 @@ func (d *azureNetworkDiscovery) publicIPAddressFromLoadBalancer(lb *armnetwork.L
 	}
 
 	return publicIPAddresses
+}
+
+// initNetworkInterfacesClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
+	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d.azureDiscovery, armnetwork.NewInterfacesClient)
+	return
+}
+
+// initLoadBalancersClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
+	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
+	return
 }

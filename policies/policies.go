@@ -46,7 +46,7 @@ type metricsCache struct {
 	m map[string][]string
 }
 
-// TODO(oxisto): Rename to AssessmentEngine or something?
+// PolicyEval is an interface for the policy evaluation engine
 type PolicyEval interface {
 	Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
@@ -55,28 +55,29 @@ type PolicyEval interface {
 type Result struct {
 	Applicable  bool
 	Compliant   bool
-	TargetValue interface{} `mapstructure:"target_value"`
+	TargetValue interface{}
 	Operator    string
-	MetricId    string
+	MetricID    string
+	Config      *assessment.MetricConfiguration
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(metric string) (*assessment.MetricConfiguration, error)
+	MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error)
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
 }
 
-// RequirementsSource is used to retrieve a list of requirements
-type RequirementsSource interface {
-	Requirements() ([]*orchestrator.Requirement, error)
+// ControlsSource is used to retrieve a list of controls
+type ControlsSource interface {
+	Controls() ([]*orchestrator.Control, error)
 }
 
 // createKey creates a key by concatenating toolID and all types
-func createKey(toolID string, types []string) (key string) {
+func createKey(evidence *evidence.Evidence, types []string) (key string) {
 	// Merge toolID and types to one slice and concatenate all its elements
-	key = strings.Join(append(types, toolID), "-")
+	key = strings.Join(append(types, evidence.ToolId), "-")
 	key = strings.ReplaceAll(key, " ", "")
 	return
 }

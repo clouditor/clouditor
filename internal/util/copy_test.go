@@ -113,12 +113,12 @@ func TestDeepCopyOfMap(t *testing.T) {
 			args: args{
 				originalMap: map[string]interface{}{
 					"testKey1": &voc.Resource{
-						ID:   "00000000-0000-0000-000000000000",
+						ID:   "00000000-0000-0000-0000-000000000000",
 						Name: "testResource1",
 						Type: []string{"Resource"},
 					},
 					"testKey2": &voc.Resource{
-						ID:   "00000000-0000-0000-000000000001",
+						ID:   "00000000-0000-0000-0000-000000000001",
 						Name: "testResource2",
 						Type: []string{"Resource"},
 					},
@@ -126,12 +126,12 @@ func TestDeepCopyOfMap(t *testing.T) {
 			},
 			want: map[string]interface{}{
 				"testKey1": &voc.Resource{
-					ID:   "00000000-0000-0000-000000000000",
+					ID:   "00000000-0000-0000-0000-000000000000",
 					Name: "testResource1",
 					Type: []string{"Resource"},
 				},
 				"testKey2": &voc.Resource{
-					ID:   "00000000-0000-0000-000000000001",
+					ID:   "00000000-0000-0000-0000-000000000001",
 					Name: "testResource2",
 					Type: []string{"Resource"},
 				},
@@ -179,7 +179,7 @@ func TestDeepCopy(t *testing.T) {
 			args: args{
 				original: []interface{}{
 					&voc.Resource{
-						ID:   "00000000-0000-0000-000000000000",
+						ID:   "00000000-0000-0000-0000-000000000000",
 						Name: "testResource1",
 						Type: []string{"Resource"},
 					},
@@ -192,7 +192,7 @@ func TestDeepCopy(t *testing.T) {
 			},
 			want: []interface{}{
 				&voc.Resource{
-					ID:   "00000000-0000-0000-000000000000",
+					ID:   "00000000-0000-0000-0000-000000000000",
 					Name: "testResource1",
 					Type: []string{"Resource"},
 				},

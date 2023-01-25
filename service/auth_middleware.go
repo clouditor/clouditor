@@ -131,6 +131,8 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
 		if err != nil {
+			log.Debugf("Could not retrieve bearer token from header metadata: %v", err)
+
 			// We do not want to disclose any error details which could be security related,
 			// so we do not wrap the original error
 			return nil, status.Error(codes.Unauthenticated, "invalid auth token")
@@ -138,6 +140,8 @@ func ConfigureAuth(opts ...AuthOption) *AuthConfig {
 
 		tokenInfo, err := parseToken(token, config)
 		if err != nil {
+			log.Debugf("Could not parse token in request: %v", err)
+
 			// We do not want to disclose any error details which could be security related,
 			// so we do not wrap the original error
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token")

@@ -39,8 +39,8 @@ import (
 
 type k8sNetworkDiscovery struct{ k8sDiscovery }
 
-func NewKubernetesNetworkDiscovery(intf kubernetes.Interface) discovery.Discoverer {
-	return &k8sNetworkDiscovery{k8sDiscovery{intf}}
+func NewKubernetesNetworkDiscovery(intf kubernetes.Interface, cloudServiceID string) discovery.Discoverer {
+	return &k8sNetworkDiscovery{k8sDiscovery{intf, cloudServiceID}}
 }
 
 func (*k8sNetworkDiscovery) Name() string {
@@ -51,7 +51,7 @@ func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
@@ -84,7 +84,7 @@ func (d k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var ports []uint16
 
 	for _, v := range service.Spec.Ports {
@@ -93,15 +93,15 @@ func (k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork 
 
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(getNetworkServiceResourceID(service)),
-				Name:         service.Name,
-				CreationTime: service.CreationTimestamp.Unix(),
-				Type:         []string{"NetworkService", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "", // TODO(all)
-				},
-			},
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(getNetworkServiceResourceID(service)),
+				service.Name,
+				&service.CreationTimestamp.Time,
+				// TODO(all): Add region
+				voc.GeoLocation{},
+				service.Labels,
+				voc.NetworkServiceType,
+			),
 		},
 
 		Ips:   service.Spec.ClusterIPs,
@@ -113,19 +113,19 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(getLoadBalancerResourceID(ingress)),
-					Name:         ingress.Name,
-					CreationTime: ingress.CreationTimestamp.Unix(),
-					Type:         []string{"LoadBalancer", "NetworkService", "Resource"},
-					GeoLocation: voc.GeoLocation{
-						Region: "", // TODO(all)
-					},
-				},
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(getLoadBalancerResourceID(ingress)),
+					ingress.Name,
+					&ingress.CreationTimestamp.Time,
+					// TODO(all): Add region
+					voc.GeoLocation{},
+					ingress.Labels,
+					voc.LoadBalancerType,
+				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
 			Ports: []uint16{80, 443},

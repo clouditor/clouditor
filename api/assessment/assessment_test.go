@@ -26,9 +26,9 @@
 package assessment
 
 import (
-	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -41,12 +41,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 
 	const assessmentResultID = "11111111-1111-1111-1111-111111111111"
 	const mockEvidenceID = "11111111-1111-1111-1111-111111111111"
+	const mockServiceID = "11111111-1111-1111-1111-111111111111"
 	tests := []struct {
-		name          string
-		args          args
-		wantResp      string
-		wantRespError error
-		wantErr       bool
+		name     string
+		args     args
+		wantResp string
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Missing assessment result id",
@@ -56,20 +56,21 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "",
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "==",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
 			wantResp: "",
-			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: ErrIdInvalidFormat,
-			wantErr:       true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid uuid format")
+			},
 		},
 		{
 			name: "Wrong length of assessment result id",
@@ -79,20 +80,21 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "1234",
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "==",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
 			wantResp: "",
-			// cannot access unexported invalidLengthError of uuid package. Use the error string directly
-			wantRespError: ErrIdInvalidFormat,
-			wantErr:       true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid uuid format")
+			},
 		},
 		{
 			name: "Wrong format of assessment result id",
@@ -102,20 +104,21 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "==",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
 			wantResp: "",
-			// Copied error of uuid package.
-			wantRespError: ErrIdInvalidFormat,
-			wantErr:       true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid uuid format")
+			},
 		},
 		{
 			name: "Missing assessment result timestamp",
@@ -124,19 +127,21 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:       assessmentResultID,
 					MetricId: "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: ">",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrTimestampMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "value is required")
+			},
 		},
 		{
 			name: "Missing assessment result metric id",
@@ -145,33 +150,63 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Id:        assessmentResultID,
 					Timestamp: timestamppb.Now(),
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "<",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
+					ResourceTypes: []string{"Resource"},
+					EvidenceId:    mockEvidenceID,
+				},
+			},
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "value length must be at least 1 runes")
+			},
+		},
+		{
+			name: "Missing assessment result resource types",
+			args: args{
+				&AssessmentResult{
+					Id:        assessmentResultID,
+					Timestamp: timestamppb.Now(),
+					MetricId:  "MockMetricID",
+					MetricConfiguration: &MetricConfiguration{
+						MetricId: "MockMetricID",
+						Operator: "==",
+						TargetValue: &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: "MockTargetValue",
+							},
+						},
+						CloudServiceId: mockServiceID,
+					},
+					ResourceId: "myResource",
 					EvidenceId: mockEvidenceID,
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrMetricIdMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "ResourceTypes: value must contain at least 1 item(s")
+			},
 		},
 		{
 			name: "Missing assessment result metric configuration",
 			args: args{
 				&AssessmentResult{
-					Id:         assessmentResultID,
-					Timestamp:  timestamppb.Now(),
-					MetricId:   "MockMetricID",
-					EvidenceId: mockEvidenceID,
+					Id:            assessmentResultID,
+					Timestamp:     timestamppb.Now(),
+					MetricId:      "MockMetricID",
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrMetricConfigurationMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "MetricConfiguration: value is required")
+			},
 		},
 		{
 			name: "Missing assessment result metric configuration operator",
@@ -186,13 +221,16 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 								StringValue: "MockTargetValue",
 							},
 						},
+						MetricId: "MockMetricID",
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrMetricConfigurationOperatorMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid uuid format")
+			},
 		},
 		{
 			name: "Missing assessment result metric configuration target value",
@@ -202,14 +240,16 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "<",
 					},
-					EvidenceId: mockEvidenceID,
+					EvidenceId:    mockEvidenceID,
+					ResourceTypes: []string{"Resource"},
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrMetricConfigurationTargetValueMissing,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "TargetValue: value is required")
+			},
 		},
 		{
 			name: "Missing assessment result evidence id",
@@ -219,18 +259,21 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: ">",
+						MetricId: "MockMetricID",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
 					},
+					ResourceTypes: []string{"Resource"},
 				},
 			},
-			wantResp:      "",
-			wantRespError: ErrEvidenceIdInvalidFormat,
-			wantErr:       true,
+			wantResp: "",
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "invalid uuid format")
+			},
 		},
 		{
 			name: "Valid assessment result",
@@ -240,39 +283,87 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					Timestamp: timestamppb.Now(),
 					MetricId:  "MockMetricID",
 					MetricConfiguration: &MetricConfiguration{
-						Operator: "MockOperator",
+						Operator: "==",
+						MetricId: "MockMetricID",
 						TargetValue: &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: "MockTargetValue",
 							},
 						},
+						CloudServiceId: mockServiceID,
 					},
-					EvidenceId: mockEvidenceID,
-					ResourceId: "myResource",
+					EvidenceId:     mockEvidenceID,
+					ResourceId:     "myResource",
+					ResourceTypes:  []string{"Resource"},
+					CloudServiceId: mockServiceID,
 				},
 			},
-			wantResp:      "",
-			wantRespError: nil,
-			wantErr:       false,
+			wantResp: "",
+			wantErr:  assert.NoError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			err := tt.args.AssessmentResult.Validate()
+			if tt.wantErr != nil {
+				tt.wantErr(t, err, tt.args)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-			resourceId, err := tt.args.AssessmentResult.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(resourceId, tt.wantResp) {
-				t.Errorf("Validate() gotResp = %v, want %v", resourceId, tt.wantResp)
-			}
-			assert.Equal(t, resourceId, tt.wantResp)
+func TestListAssessmentResultsRequest_Validate(t *testing.T) {
+	type fields struct {
+		req *ListAssessmentResultsRequest
+	}
 
-			if err != nil {
-				assert.ErrorIs(t, err, tt.wantRespError)
-			}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request is empty",
+			fields: fields{
+				&ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("invalidCloudServiceId"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "No filtered cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.fields.req.Validate()
+			tt.wantErr(t, err)
 		})
 	}
 }
