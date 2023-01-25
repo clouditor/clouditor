@@ -20,9 +20,11 @@ const (
 	TestAuthClientID     = "client"
 	TestAuthClientSecret = "secret"
 
-	TestCustomClaims  = "cloudserviceid"
-	TestCloudService1 = "11111111-1111-1111-1111-111111111111"
-	TestCloudService2 = "22222222-2222-2222-2222-222222222222"
+	TestCustomClaims      = "cloudserviceid"
+	TestCloudService1     = "11111111-1111-1111-1111-111111111111"
+	TestCloudService2     = "22222222-2222-2222-2222-222222222222"
+	TestCloudServiceName1 = "My Cloud Service 1"
+	TestCloudServiceName2 = "My Cloud Service 2"
 )
 
 var (
