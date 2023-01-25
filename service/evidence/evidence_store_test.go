@@ -146,7 +146,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evidence.ErrToolIdMissing.Error())
+				return assert.ErrorContains(t, err, "Evidence.ToolId: value length must be at least 1 runes")
 			},
 			wantResp: &evidence.StoreEvidenceResponse{
 				Status:        false,
@@ -283,7 +283,7 @@ func TestService_StoreEvidences(t *testing.T) {
 				assert.Nil(t, err)
 				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
 			} else {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
+				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
 		})
 	}
@@ -297,7 +297,7 @@ func TestService_ListEvidences(t *testing.T) {
 		CloudServiceId: "MockServiceId-1",
 		Timestamp:      timestamppb.Now(),
 		Raw:            util.Ref(""),
-		Resource:       nil,
+		Resource:       structpb.NewNullValue(),
 	})
 	assert.NoError(t, err)
 	err = s.storage.Create(&evidence.Evidence{
@@ -305,7 +305,7 @@ func TestService_ListEvidences(t *testing.T) {
 		CloudServiceId: "MockServiceId-2",
 		Timestamp:      timestamppb.Now(),
 		Raw:            util.Ref(""),
-		Resource:       nil,
+		Resource:       structpb.NewNullValue(),
 	})
 	assert.NoError(t, err)
 

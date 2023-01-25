@@ -162,7 +162,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			log.Errorf("Error storing evidence: %v", err)
 		}
 
-		// Send resonse back to the client
+		// Send response back to the client
 		err = stream.Send(res)
 
 		// Check for send errors
@@ -170,7 +170,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 			return nil
 		}
 		if err != nil {
-			newError := fmt.Errorf("cannot send resonse to the client: %w", err)
+			newError := fmt.Errorf("cannot send response to the client: %w", err)
 			log.Error(newError)
 			return status.Errorf(codes.Unknown, "%v", newError)
 		}
