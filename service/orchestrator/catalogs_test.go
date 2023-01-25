@@ -9,8 +9,10 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 
@@ -159,7 +161,7 @@ func TestService_GetCatalog(t *testing.T) {
 				// Create Catalog
 				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
-			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: orchestratortest.MockCatalogID}},
+			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: testdata.MockCatalogID}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.Catalog)
 				want := orchestratortest.NewCatalog()
@@ -227,8 +229,8 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
-			Id:   orchestratortest.MockCatalogID,
-			Name: "My cat",
+			Id:   testdata.MockCatalogID,
+			Name: testdata.MockCatalogName,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -322,27 +324,27 @@ func TestService_GetCategory(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args: args{
-				req: &orchestrator.GetCategoryRequest{CatalogId: orchestratortest.MockCatalogID, CategoryName: orchestratortest.MockCategoryName},
+				req: &orchestrator.GetCategoryRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName},
 			},
 			wantRes: &orchestrator.Category{
-				Name:        orchestratortest.MockCategoryName,
-				Description: "test",
-				CatalogId:   orchestratortest.MockCatalogID,
+				Name:        testdata.MockCategoryName,
+				Description: testdata.MockCategoryDescription,
+				CatalogId:   testdata.MockCatalogID,
 				Controls: []*orchestrator.Control{{
-					Id:                orchestratortest.MockControlID,
-					Name:              "Mock Control",
-					Description:       "This is a mock control",
-					CategoryName:      orchestratortest.MockCategoryName,
-					CategoryCatalogId: orchestratortest.MockCatalogID,
+					Id:                testdata.MockControlID,
+					Name:              testdata.MockControlName,
+					Description:       testdata.MockControlDescription,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					// at this level, we will not have the metrics
 					Metrics: []*assessment.Metric{},
 					// at this level, we will not have the sub-controls
 					Controls: []*orchestrator.Control{},
 				}, {
-					Id:                orchestratortest.MockAnotherControlID,
-					Name:              "Another Mock Control",
-					CategoryName:      orchestratortest.MockCategoryName,
-					CategoryCatalogId: orchestratortest.MockCatalogID,
+					Id:                testdata.MockAnotherControlID,
+					Name:              testdata.MockAnotherControlName,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 				}},
 			},
 			wantErr: false,
@@ -403,17 +405,17 @@ func TestService_GetControl(t *testing.T) {
 					// Create Catalog
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
-			args: args{req: &orchestrator.GetControlRequest{CatalogId: orchestratortest.MockCatalogID, CategoryName: "My name", ControlId: orchestratortest.MockControlID}},
+			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID}},
 			wantRes: &orchestrator.Control{
-				Id:                orchestratortest.MockControlID,
-				CategoryName:      orchestratortest.MockCategoryName,
-				CategoryCatalogId: orchestratortest.MockCatalogID,
-				Name:              "Mock Control",
-				Description:       "This is a mock control",
+				Id:                testdata.MockControlID,
+				CategoryName:      testdata.MockCategoryName,
+				CategoryCatalogId: testdata.MockCatalogID,
+				Name:              testdata.MockControlName,
+				Description:       testdata.MockControlDescription,
 				Metrics: []*assessment.Metric{{
-					Id:          "MockMetric",
-					Name:        "A Mock Metric",
-					Description: "This Metric is a mock metric",
+					Id:          testdata.MockMetricID,
+					Name:        testdata.MockMetricName,
+					Description: testdata.MockMetricDescription,
 					Scale:       assessment.Metric_ORDINAL,
 					Range: &assessment.Range{
 						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
@@ -423,15 +425,15 @@ func TestService_GetControl(t *testing.T) {
 							}}}},
 				}},
 				Controls: []*orchestrator.Control{{
-					Id:                             orchestratortest.MockSubControlID,
-					Name:                           "Mock Sub-Control",
-					Description:                    "This is a mock sub-control",
+					Id:                             testdata.MockSubControlID,
+					Name:                           testdata.MockSubControlName,
+					Description:                    testdata.MockSubControlDescription,
 					Metrics:                        []*assessment.Metric{},
-					CategoryName:                   orchestratortest.MockCategoryName,
-					CategoryCatalogId:              orchestratortest.MockCatalogID,
-					ParentControlId:                &orchestratortest.MockControlID,
-					ParentControlCategoryCatalogId: &orchestratortest.MockCatalogID,
-					ParentControlCategoryName:      &orchestratortest.MockCategoryName,
+					CategoryName:                   testdata.MockCategoryName,
+					CategoryCatalogId:              testdata.MockCatalogID,
+					ParentControlId:                util.Ref(testdata.MockControlID),
+					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				}},
 			},
 			wantErr: false,
