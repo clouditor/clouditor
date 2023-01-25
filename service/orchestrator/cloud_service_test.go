@@ -419,7 +419,10 @@ func TestService_ListCloudServices(t *testing.T) {
 			},
 			wantRes: &orchestrator.ListCloudServicesResponse{
 				Services: []*orchestrator.CloudService{
-					{Id: testdata.MockCloudServiceID},
+					{
+						Id:   testdata.MockCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					},
 				},
 			},
 			wantErr: assert.NoError,
