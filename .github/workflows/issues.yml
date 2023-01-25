@@ -1,18 +1,18 @@
-name: Move new issues into Someday
+name: Add issues to development project
 
 on:
   issues:
-    types: [opened]
+    types:
+      - opened
 
 jobs:
-  issue_opened:
+  add-to-project:
+    name: Add issue to project
     runs-on: ubuntu-latest
     steps:
-      - name: Move issue to Someday
-        uses: leonsteinhaeuser/project-beta-automations@v1.2.1
+      - uses: actions/add-to-project@v0.4.0
         with:
-          gh_token: ${{ secrets.ISSUE_TOKEN }}
-          organization: clouditor
-          project_id: 1
-          resource_node_id: ${{ github.event.issue.node_id }}
-          status_value: Someday
+          project-url: https://github.com/orgs/clouditor/projects/1
+          github-token: ${{ secrets.ISSUE_TOKEN }}
+          labeled: dependencies
+          label-operator: NOT
