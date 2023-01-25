@@ -36,15 +36,19 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -110,7 +114,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "11111111-1111-1111-1111-111111111111",
+						Id:             testdata.MockEvidenceID,
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						ToolId:         "MockTool",
 						Timestamp:      timestamppb.Now(),
@@ -131,7 +135,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             "11111111-1111-1111-1111-111111111111",
+						Id:             testdata.MockEvidenceID,
 						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
@@ -293,16 +297,16 @@ func TestService_StoreEvidences(t *testing.T) {
 func TestService_ListEvidences(t *testing.T) {
 	s := NewService()
 	err := s.storage.Create(&evidence.Evidence{
-		Id:             "MockEvidenceId-1",
-		CloudServiceId: "MockServiceId-1",
+		Id:             testdata.MockEvidenceID,
+		CloudServiceId: testdata.MockCloudServiceID,
 		Timestamp:      timestamppb.Now(),
 		Raw:            util.Ref(""),
 		Resource:       structpb.NewNullValue(),
 	})
 	assert.NoError(t, err)
 	err = s.storage.Create(&evidence.Evidence{
-		Id:             "MockEvidenceId-2",
-		CloudServiceId: "MockServiceId-2",
+		Id:             testdata.MockAnotherEvidenceID,
+		CloudServiceId: testdata.MockAnotherCloudServiceID,
 		Timestamp:      timestamppb.Now(),
 		Raw:            util.Ref(""),
 		Resource:       structpb.NewNullValue(),
@@ -365,8 +369,8 @@ func TestService_EvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:             "11111111-1111-1111-1111-111111111111",
-					CloudServiceId: "11111111-1111-1111-1111-111111111111",
+					Id:             testdata.MockEvidenceID,
+					CloudServiceId: testdata.MockAnotherCloudServiceID,
 					Timestamp:      timestamppb.Now(),
 					Raw:            nil,
 					ToolId:         "mockToolId-1",
@@ -582,4 +586,89 @@ func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
 	}
 
 	return
+}
+
+func TestService_GetEvidence(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+	}
+	type args struct {
+		ctx context.Context
+		req *evidence.GetEvidenceRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "valid evidence",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidence.Evidence{
+						Id:             testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						ToolId:         testdata.MockEvidenceToolID,
+						Resource:       structpb.NewNullValue(),
+						Timestamp:      timestamppb.Now(),
+					}))
+				}),
+			},
+			args: args{
+				req: &evidence.GetEvidenceRequest{
+					EvidenceId: testdata.MockEvidenceID,
+				},
+			},
+			wantErr: assert.NoError,
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res := i1.(*evidence.Evidence)
+				return assert.NoError(t, res.Validate())
+			},
+		},
+		{
+			name: "invalid UUID",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &evidence.GetEvidenceRequest{
+					EvidenceId: "not valid",
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "EvidenceId: value must be a valid UUID")
+			},
+			want: assert.Nil,
+		},
+		{
+			name: "evidence not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &evidence.GetEvidenceRequest{
+					EvidenceId: testdata.MockEvidenceID,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "evidence not found")
+			},
+			want: assert.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+			}
+			gotRes, err := svc.GetEvidence(tt.args.ctx, tt.args.req)
+			tt.wantErr(t, err)
+			tt.want(t, gotRes)
+		})
+	}
 }

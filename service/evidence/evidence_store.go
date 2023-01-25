@@ -207,7 +207,7 @@ func (svc *Service) GetEvidence(_ context.Context, req *evidence.GetEvidenceRequ
 	res = new(evidence.Evidence)
 	err = svc.storage.Get(res, "id = ?", req.EvidenceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "catalog not found")
+		return nil, status.Errorf(codes.NotFound, "evidence not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -224,6 +224,7 @@ func (svc *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc)
 func (svc *Service) informHooks(result *evidence.Evidence, err error) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
+
 	// Inform our hook, if we have any
 	if svc.evidenceHooks != nil {
 		for _, hook := range svc.evidenceHooks {
