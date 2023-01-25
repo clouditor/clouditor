@@ -104,3 +104,23 @@ func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
 
 	return toe
 }
+
+func NewCloudService() *orchestrator.CloudService {
+	return &orchestrator.CloudService{
+		Id:                testdata.MockCloudServiceID,
+		Name:              testdata.MockCloudServiceName,
+		Description:       testdata.MockCloudServiceDescription,
+		CatalogsInScope:   []*orchestrator.Catalog{},
+		ConfiguredMetrics: []*assessment.Metric{},
+	}
+}
+
+func NewAnotherCloudService() *orchestrator.CloudService {
+	return &orchestrator.CloudService{
+		Id:                testdata.MockAnotherCloudServiceID,
+		Name:              testdata.MockAnotherCloudServiceName,
+		Description:       testdata.MockAnotherCloudServiceDescription,
+		CatalogsInScope:   []*orchestrator.Catalog{},
+		ConfiguredMetrics: []*assessment.Metric{},
+	}
+}
