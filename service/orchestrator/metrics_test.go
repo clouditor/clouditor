@@ -143,11 +143,11 @@ func Test_loadMetricImplementation(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				metricID: MockMetricID,
+				metricID: testdata.MockMetricID,
 				file:     "internal/testutil/metrictest/metric.rego",
 			},
 			wantImpl: &assessment.MetricImplementation{
-				MetricId: MockMetricID,
+				MetricId: testdata.MockMetricID,
 				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 				Code: `package clouditor.metrics.admin_mfa_enabled
 

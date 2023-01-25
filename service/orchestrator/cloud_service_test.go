@@ -139,7 +139,7 @@ func TestService_GetCloudService(t *testing.T) {
 			svc:  NewService(),
 			ctx:  context.Background(),
 			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
-      res:  nil,
+			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "service not found") &&
 					assert.Equal(t, codes.NotFound, status.Code(err))
@@ -402,8 +402,14 @@ func TestService_ListCloudServices(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two cloud services, of which only one we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
-					_ = s.Create(&orchestrator.CloudService{Id: testdata.MockAnotherCloudServiceID})
+					_ = s.Create(&orchestrator.CloudService{
+						Id:   testdata.MockCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					})
+					_ = s.Create(&orchestrator.CloudService{
+						Id:   testdata.MockAnotherCloudServiceID,
+						Name: testdata.MockCloudServiceName,
+					})
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},

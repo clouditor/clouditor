@@ -42,6 +42,8 @@ import (
 	"clouditor.io/clouditor/persistence"
 )
 
+var mockMetricRange = &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}}
+
 func TestStorageOptions(t *testing.T) {
 	type args struct {
 		opts []StorageOption
@@ -117,7 +119,11 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: testdata.MockMetricID}
+	metric = &assessment.Metric{
+		Id:    testdata.MockMetricID,
+		Name:  testdata.MockMetricName,
+		Range: mockMetricRange,
+	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, metric.Validate())
 
@@ -140,7 +146,7 @@ func Test_storage_Get(t *testing.T) {
 	)
 
 	user = testdata.NewUser1()
-	
+
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
@@ -175,7 +181,8 @@ func Test_storage_Get(t *testing.T) {
 
 	var metric = &assessment.Metric{
 		Id:    testdata.MockMetricID,
-		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+		Name:  testdata.MockMetricName,
+		Range: mockMetricRange,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, metric.Validate())
@@ -192,7 +199,7 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  MockMetricID,
+		MetricId:  testdata.MockMetricID,
 		Code:      "TestCode",
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
@@ -228,7 +235,7 @@ func Test_storage_List(t *testing.T) {
 
 	user1 = testdata.NewUser1()
 	user2 = testdata.NewUser2()
-	
+
 	// List should return empty list since no users are in DB yet
 	err = s.List(&users, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
@@ -302,7 +309,7 @@ func Test_storage_Count(t *testing.T) {
 
 	user = testdata.NewUser1()
 	user2 = testdata.NewUser2()
-	
+
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
@@ -350,7 +357,7 @@ func Test_storage_Save(t *testing.T) {
 		myVar   MyTest
 	)
 	user = testdata.NewUser1()
-	
+
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
 	assert.NoError(t, err)
@@ -364,7 +371,9 @@ func Test_storage_Save(t *testing.T) {
 
 	// Save new User: Change PW and delete email. Username and FullName remain unchanged
 	newUser = testdata.NewUser1()
-	
+	newUser.Email = ""
+	newUser.Password = "ChangedPW"
+
 	err = s.Save(newUser, "username = ?", user.Username)
 	assert.NoError(t, err)
 
@@ -395,7 +404,7 @@ func Test_storage_Update(t *testing.T) {
 		user *auth.User
 	)
 	user = testdata.NewUser1()
-	
+
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
@@ -435,7 +444,9 @@ func Test_storage_Update(t *testing.T) {
 		Description: testdata.MockCloudServiceDescription,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id: testdata.MockCloudServiceID,
+				Id:    testdata.MockCloudServiceID,
+				Name:  testdata.MockMetricName,
+				Range: mockMetricRange,
 			},
 		},
 	}
@@ -470,7 +481,7 @@ func Test_storage_Delete(t *testing.T) {
 		user *auth.User
 	)
 	user = testdata.NewUser1()
-	
+
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
