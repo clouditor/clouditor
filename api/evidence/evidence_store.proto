@@ -56,6 +56,14 @@ service EvidenceStore {
       get : "/v1/evidence_store/evidences"
     };
   }
+
+  // Returns a particular stored evidence. Part of the public API, also exposed
+  // as REST.
+  rpc GetEvidence(GetEvidenceRequest) returns (Evidence) {
+    option (google.api.http) = {
+      get : "/v1/evidence_store/evidences/{evidence_id}"
+    };
+  }
 }
 
 message StoreEvidenceRequest {
@@ -76,3 +84,5 @@ message ListEvidencesResponse {
   repeated Evidence evidences = 1;
   string next_page_token = 2;
 }
+
+message GetEvidenceRequest { string evidence_id = 1; }

@@ -32,14 +32,13 @@ import (
 	"io"
 	"sync"
 
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var log *logrus.Entry
@@ -88,14 +87,14 @@ func init() {
 }
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
-func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
+func (svc *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
 
-		go s.informHooks(nil, err)
+		go svc.informHooks(nil, err)
 
 		res = &evidence.StoreEvidenceResponse{
 			Status:        false,
@@ -106,13 +105,13 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		return
 	}
 
-	err = s.storage.Create(req.Evidence)
+	err = svc.storage.Create(req.Evidence)
 	if err != nil {
 		// TODO(lebogg): Almost identical error handling as above -> extract here or even to internal
 		err = fmt.Errorf("internal error: %w", err)
 		log.Error(err)
 
-		go s.informHooks(nil, err)
+		go svc.informHooks(nil, err)
 
 		res = &evidence.StoreEvidenceResponse{
 			Status:        false,
@@ -122,7 +121,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 		err = status.Errorf(codes.Internal, "%v", err)
 		return
 	}
-	go s.informHooks(req.Evidence, nil)
+	go svc.informHooks(req.Evidence, nil)
 
 	res = &evidence.StoreEvidenceResponse{
 		Status: true,
@@ -134,7 +133,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
-func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
+func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
 		req *evidence.StoreEvidenceRequest
 		res *evidence.StoreEvidenceResponse
@@ -157,7 +156,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = s.StoreEvidence(context.Background(), evidenceRequest)
+		res, err = svc.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
 		}
@@ -177,8 +176,8 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 	}
 }
 
-// ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the req storage
-func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
+// ListEvidences is a method implementation of the evidenceServer interface: It returns the evidences lying in the storage
+func (svc *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRequest) (res *evidence.ListEvidencesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -188,7 +187,7 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 	res = new(evidence.ListEvidencesResponse)
 
 	// Paginate the evidences according to the request
-	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, s.storage,
+	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
 		service.DefaultPaginationOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
@@ -197,18 +196,37 @@ func (s *Service) ListEvidences(_ context.Context, req *evidence.ListEvidencesRe
 	return
 }
 
-func (s *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.evidenceHooks = append(s.evidenceHooks, evidenceHook)
+// GetEvidence is a method implementation of the evidenceServer interface: It returns a particular evidence in the storage
+func (svc *Service) GetEvidence(_ context.Context, req *evidence.GetEvidenceRequest) (res *evidence.Evidence, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	res = new(evidence.Evidence)
+	err = svc.storage.Get(res, "id = ?", req.EvidenceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "catalog not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	return
 }
 
-func (s *Service) informHooks(result *evidence.Evidence, err error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (svc *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc) {
+	svc.mu.Lock()
+	defer svc.mu.Unlock()
+	svc.evidenceHooks = append(svc.evidenceHooks, evidenceHook)
+}
+
+func (svc *Service) informHooks(result *evidence.Evidence, err error) {
+	svc.mu.Lock()
+	defer svc.mu.Unlock()
 	// Inform our hook, if we have any
-	if s.evidenceHooks != nil {
-		for _, hook := range s.evidenceHooks {
+	if svc.evidenceHooks != nil {
+		for _, hook := range svc.evidenceHooks {
 			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
 			hook(result, err)
 		}
