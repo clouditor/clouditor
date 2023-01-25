@@ -89,8 +89,8 @@ func (d *azureDefenderDiscovery) List() (list []voc.IsCloudResource, err error) 
 // discoverDefender discovers the enabled status for the Denfender for X services.
 func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, error) {
 	var (
-		list                      []voc.IsCloudResource
-		securityMonitoringEnabled = true
+		list                     []voc.IsCloudResource
+		monitoringLogDataEnabled = true
 	)
 
 	// initialize defender client: to get the properties set for defender for cloud, we have to get the pricing information
@@ -114,11 +114,11 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 		list = append(list, defender)
 	}
 
-	// Get information if security monitoring is enabled for the subscription. The security monitoring is enabled for the subscription if all Defender services are enabled.
+	// Get information if security monitoring is enabled for the subscription. The security monitoring is enabled for the subscription if all defender services are enabled.
 	for _, defender := range list {
 		defenderTest := defender.(*voc.Account)
-		if !defenderTest.InventoryOfAssetsEnabled {
-			securityMonitoringEnabled = false
+		if !defenderTest.InventoryOfAssets {
+			monitoringLogDataEnabled = false
 			break
 		}
 	}
@@ -132,13 +132,13 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 			nil,
 			voc.AccountType,
 		),
-		SecurityMonitoringEnabled: securityMonitoringEnabled,
+		MonitoringLogData: monitoringLogDataEnabled,
 	})
 
 	return list, nil
 }
 
-// TODO(anatheka): defender ressourcen als eigene resourcen hinzufügen, aber welche art von resource? Separate anlegen?
+// TODO(anatheka): Which is rht right resource for the defender?
 func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*voc.Account, error) {
 	var (
 		inventoryOfAssetsEnabled bool
@@ -148,8 +148,7 @@ func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*
 		return nil, ErrEmptyPricing
 	}
 
-	// TODO(all): Maybe we have to check here which pricing tier is used and based on that the specific features for, e.g., Storage, IoT, ARM are used.
-	// Add all Defender for Cloud resources to the list
+	// TODO(all): Maybe we have to check here which pricing tier is used and based on that the specific features for, e.g., Storage, IoT, ARM are used. For now, we add for each defener one voc.Account object.
 	if *pricing.Properties.PricingTier == armsecurity.PricingTierFree {
 		inventoryOfAssetsEnabled = false
 	}
@@ -164,7 +163,7 @@ func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*
 			nil,
 			voc.AccountType,
 		),
-		InventoryOfAssetsEnabled: inventoryOfAssetsEnabled,
+		InventoryOfAssets: inventoryOfAssetsEnabled,
 	}, nil
 
 }

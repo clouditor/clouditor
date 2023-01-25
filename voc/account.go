@@ -32,8 +32,10 @@ var AccountType = []string{"Account", "Resource"}
 // Account is an entity in our Cloud ontology. This represents the cloud account as a whole, e.g., an Azure subscription.
 type Account struct {
 	*Resource
-	// TODO(anatheka): InventoryOfAssets is not available in the Ontology. That ist just a test for getting the property for a new metric for EUCS AM-01.4H
-	InventoryOfAssetsEnabled bool `json:"inventoryOfAssets"`
-	// Security Monitoring for whole Account
-	SecurityMonitoringEnabled bool `json:"securityMonitoringEnabld"`
+	// TODO(anatheka): InventoryOfAssets is not available in the Ontology. Maybe we should combine that information for all resources?
+	// InventoryOfAssets
+	InventoryOfAssets bool `json:"inventoryOfAssets"`
+	// TODO(anatheka): MonitoringLogData is not available in the Ontology. Should we split the informaton for each resource?
+	// Monitoring log data enabled for whole Account
+	MonitoringLogData bool `json:"monitoringLogDataEnabled"`
 }
