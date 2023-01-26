@@ -94,17 +94,7 @@ components:
     schemas:
         AssessEvidenceResponse:
             type: object
-            properties:
-                status:
-                    enum:
-                        - ASSESSMENT_STATUS_UNSPECIFIED
-                        - WAITING_FOR_RELATED
-                        - ASSESSED
-                        - FAILED
-                    type: string
-                    format: enum
-                statusMessage:
-                    type: string
+            properties: {}
         AssessmentResult:
             type: object
             properties:

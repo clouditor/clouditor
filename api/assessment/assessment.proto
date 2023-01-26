@@ -59,7 +59,7 @@ service Assessment {
   // Assesses stream of evidences sent by the discovery and returns a response
   // stream. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest)
-      returns (stream AssessEvidenceResponse) {};
+      returns (stream AssessEvidencesResponse) {};
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
@@ -100,6 +100,9 @@ message AssessEvidenceRequest {
       [ (validate.rules).message.required = true ];
 }
 message AssessEvidenceResponse {
+}
+
+message AssessEvidencesResponse {
   enum AssessmentStatus {
     ASSESSMENT_STATUS_UNSPECIFIED = 0;
     WAITING_FOR_RELATED = 1;

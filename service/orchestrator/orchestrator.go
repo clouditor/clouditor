@@ -218,9 +218,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 
 	go s.informHook(req.Result, nil)
 
-	resp = &orchestrator.StoreAssessmentResultResponse{
-		Status: true,
-	}
+	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	return resp, nil
 }
@@ -228,7 +226,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
 	var (
 		result *orchestrator.StoreAssessmentResultRequest
-		res    *orchestrator.StoreAssessmentResultResponse
+		res    *orchestrator.StoreAssessmentResultsResponse
 	)
 
 	for {
@@ -251,12 +249,12 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
 			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
-			res = &orchestrator.StoreAssessmentResultResponse{
+			res = &orchestrator.StoreAssessmentResultsResponse{
 				Status:        false,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &orchestrator.StoreAssessmentResultResponse{
+			res = &orchestrator.StoreAssessmentResultsResponse{
 				Status: true,
 			}
 		}

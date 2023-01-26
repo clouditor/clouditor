@@ -253,9 +253,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		return res, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	res = &assessment.AssessEvidenceResponse{
-		Status: assessment.AssessEvidenceResponse_ASSESSED,
-	}
+	res = &assessment.AssessEvidenceResponse{}
 
 	return res, nil
 }
@@ -264,7 +262,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
-		res *assessment.AssessEvidenceResponse
+		res *assessment.AssessEvidencesResponse
 	)
 
 	for {
@@ -288,13 +286,13 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
-			res = &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			res = &assessment.AssessEvidencesResponse{
+				Status:        assessment.AssessEvidencesResponse_FAILED,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			res = &assessment.AssessEvidencesResponse{
+				Status: assessment.AssessEvidencesResponse_ASSESSED,
 			}
 		}
 

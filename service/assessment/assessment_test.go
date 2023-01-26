@@ -386,10 +386,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			tt.wantErr(t, err)
 
 			// Check response
-			if tt.wantResp != nil {
-				assert.Equal(t, tt.wantResp.Status, gotResp.Status)
-				assert.Contains(t, gotResp.StatusMessage, tt.wantResp.StatusMessage)
-			}
+			assert.Empty(t, gotResp)
 		})
 	}
 }
@@ -414,7 +411,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		args            args
 		wantErr         bool
 		wantErrMessage  string
-		wantRespMessage *assessment.AssessEvidenceResponse
+		wantRespMessage *assessment.AssessEvidencesResponse
 	}{
 		{
 			name: "Missing toolId",
@@ -429,8 +426,8 @@ func TestService_AssessEvidences(t *testing.T) {
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantRespMessage: &assessment.AssessEvidencesResponse{
+				Status:        assessment.AssessEvidencesResponse_FAILED,
 				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
 			},
 		},
@@ -447,8 +444,8 @@ func TestService_AssessEvidences(t *testing.T) {
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			wantRespMessage: &assessment.AssessEvidencesResponse{
+				Status:        assessment.AssessEvidencesResponse_FAILED,
 				StatusMessage: "rpc error: code = InvalidArgument desc = rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
@@ -469,8 +466,8 @@ func TestService_AssessEvidences(t *testing.T) {
 						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}, t)}}),
 			},
 			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			wantRespMessage: &assessment.AssessEvidencesResponse{
+				Status: assessment.AssessEvidencesResponse_ASSESSED,
 			},
 		},
 		{
@@ -506,7 +503,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				err                error
-				responseFromServer *assessment.AssessEvidenceResponse
+				responseFromServer *assessment.AssessEvidencesResponse
 			)
 			s := Service{
 				resultHooks:                   tt.fields.ResultHooks,
@@ -889,7 +886,7 @@ func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
 type mockAssessmentServerStream struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	SentFromServer chan *assessment.AssessEvidencesResponse
 }
 
 func (mockAssessmentServerStream) CloseSend() error {
@@ -902,11 +899,11 @@ func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mock
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessment.AssessEvidencesResponse, 1)
 	return m
 }
 
-func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
+func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidencesResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
@@ -958,7 +955,7 @@ func createMockAssessmentServerStreamWithSendErr(r *assessment.AssessEvidenceReq
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessment.AssessEvidencesResponse, 1)
 	return m
 }
 
@@ -966,10 +963,10 @@ func createMockAssessmentServerStreamWithSendErr(r *assessment.AssessEvidenceReq
 type mockAssessmentServerStreamWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	SentFromServer chan *assessment.AssessEvidencesResponse
 }
 
-func (*mockAssessmentServerStreamWithSendErr) Send(*assessment.AssessEvidenceResponse) error {
+func (*mockAssessmentServerStreamWithSendErr) Send(*assessment.AssessEvidencesResponse) error {
 	return errors.New("error sending response to client")
 }
 
@@ -990,10 +987,10 @@ func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEv
 type mockAssessmentServerStreamWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
-	SentFromServer chan *assessment.AssessEvidenceResponse
+	SentFromServer chan *assessment.AssessEvidencesResponse
 }
 
-func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
+func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidencesResponse) error {
 	panic("implement me")
 }
 
@@ -1009,7 +1006,7 @@ func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceReq
 	}
 	m.RecvToServer <- r
 
-	m.SentFromServer = make(chan *assessment.AssessEvidenceResponse, 1)
+	m.SentFromServer = make(chan *assessment.AssessEvidencesResponse, 1)
 	return m
 }
 

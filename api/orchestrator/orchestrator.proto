@@ -94,7 +94,7 @@ service Orchestrator {
   // Stores stream of assessment results provided by an assessment tool and
   // returns a response stream. Part of the public API, not exposed as REST.
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
-      returns (stream StoreAssessmentResultResponse);
+      returns (stream StoreAssessmentResultsResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(
@@ -470,10 +470,14 @@ message StoreAssessmentResultRequest {
   clouditor.assessment.v1.AssessmentResult result = 1
       [ (validate.rules).message.required = true ];
 }
-message StoreAssessmentResultResponse {
+
+message StoreAssessmentResultResponse {}
+
+message StoreAssessmentResultsResponse {
   bool status = 1;
   string status_message = 2;
 }
+
 
 message CreateMetricRequest {
   clouditor.assessment.v1.Metric metric = 1
