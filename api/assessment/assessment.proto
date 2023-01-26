@@ -99,8 +99,7 @@ message AssessEvidenceRequest {
   clouditor.evidence.v1.Evidence evidence = 1
       [ (validate.rules).message.required = true ];
 }
-message AssessEvidenceResponse {
-}
+message AssessEvidenceResponse {}
 
 message AssessEvidencesResponse {
   enum AssessmentStatus {

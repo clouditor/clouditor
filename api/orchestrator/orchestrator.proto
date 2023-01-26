@@ -478,7 +478,6 @@ message StoreAssessmentResultsResponse {
   string status_message = 2;
 }
 
-
 message CreateMetricRequest {
   clouditor.assessment.v1.Metric metric = 1
       [ (validate.rules).message.required = true ];

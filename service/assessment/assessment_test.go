@@ -903,11 +903,7 @@ func createMockAssessmentServerStream(r *assessment.AssessEvidenceRequest) *mock
 	return m
 }
 
-<<<<<<< fix_responses
-func (m mockAssessmentServerStream) Send(response *assessment.AssessEvidencesResponse) error {
-=======
-func (m *mockAssessmentServerStream) Send(response *assessment.AssessEvidenceResponse) error {
->>>>>>> main
+func (m *mockAssessmentServerStream) Send(response *assessment.AssessEvidencesResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
@@ -994,11 +990,7 @@ type mockAssessmentServerStreamWithRecvErr struct {
 	SentFromServer chan *assessment.AssessEvidencesResponse
 }
 
-<<<<<<< fix_responses
-func (mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidencesResponse) error {
-=======
-func (*mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidenceResponse) error {
->>>>>>> main
+func (*mockAssessmentServerStreamWithRecvErr) Send(*assessment.AssessEvidencesResponse) error {
 	panic("implement me")
 }
 
