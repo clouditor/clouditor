@@ -35,6 +35,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
@@ -58,19 +59,19 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:             "11111111-1111-1111-1111-111111111111",
-			MetricId:       "assessmentResultMetricID",
-			EvidenceId:     "11111111-1111-1111-1111-111111111111",
-			CloudServiceId: "11111111-1111-1111-1111-111111111111",
+			Id:             testdata.MockCloudServiceID,
+			MetricId:       testdata.MockMetricID,
+			EvidenceId:     testdata.MockCloudServiceID,
+			CloudServiceId: testdata.MockCloudServiceID,
 			Timestamp:      timestamppb.Now(),
 			ResourceId:     "myResource",
 			ResourceTypes:  []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue:    toStruct(1.0),
-				MetricId:       "assessmentResultMetricID",
+				MetricId:       testdata.MockMetricID,
 				Operator:       "==",
 				IsDefault:      true,
-				CloudServiceId: "11111111-1111-1111-1111-111111111111",
+				CloudServiceId: testdata.MockCloudServiceID,
 			}}})
 	if err != nil {
 		panic(err)

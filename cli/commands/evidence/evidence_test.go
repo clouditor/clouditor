@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/service"
 	service_evidence "clouditor.io/clouditor/service/evidence"
@@ -54,11 +55,11 @@ func TestMain(m *testing.M) {
 	svc = service_evidence.NewService()
 
 	_, err = svc.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:             "11111111-1111-1111-1111-111111111111",
-		CloudServiceId: "11111111-1111-1111-1111-111111111111",
-		ToolId:         "mock",
+		Id:             testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID,
+		ToolId:         testdata.MockEvidenceToolID,
 		Timestamp:      timestamppb.Now(),
-		Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: "my-resource-id", Type: []string{"VirtualMachine"}}}}),
+		Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}),
 	}})
 	if err != nil {
 		panic(err)

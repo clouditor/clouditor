@@ -29,8 +29,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/testdata"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
@@ -46,10 +46,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId: "TestMetric",
+					MetricId: testdata.MockMetricID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -61,11 +61,11 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       "TestMetric",
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -77,10 +77,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -92,13 +92,13 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       "TestMetric",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:       "<",
-						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
-						MetricId:       "TestMetric",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+						MetricId:       testdata.MockMetricID,
+						CloudServiceId: testdata.MockCloudServiceID,
 					},
 				},
 			},
@@ -126,7 +126,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId: "TestMetric",
+					MetricId: testdata.MockMetricID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -137,7 +137,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       "TestMetric",
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 				},
 			},
@@ -149,7 +149,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -160,8 +160,8 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       "TestMetric",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: assert.NoError,
