@@ -22,7 +22,7 @@ require (
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/oauth2 v0.4.0
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
-	google.golang.org/grpc v1.51.0
+	google.golang.org/grpc v1.52.1
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.4.4
 	gorm.io/gorm v1.24.2

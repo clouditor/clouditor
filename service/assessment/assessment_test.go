@@ -364,7 +364,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			hasRPCConnection: false,
 			wantResp:         nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not evaluate evidence: could not retrieve metric definitions: could not retrieve metric list from orchestrator")
+				return assert.ErrorContains(t, err, "could not evaluate evidence: could not retrieve metric definitions: could not init orchestrator client")
 			},
 		},
 	}
