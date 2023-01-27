@@ -427,6 +427,7 @@ func (x *AssessEvidenceRequest) GetEvidence() *evidence.Evidence {
 	return nil
 }
 
+// AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 type AssessEvidenceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -465,6 +466,7 @@ func (*AssessEvidenceResponse) Descriptor() ([]byte, []int) {
 	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{6}
 }
 
+// AssessEvidencesResponse belongs to AssessEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 type AssessEvidencesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

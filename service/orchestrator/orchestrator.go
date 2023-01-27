@@ -207,6 +207,8 @@ func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFun
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
+	resp = &orchestrator.StoreAssessmentResultResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -217,8 +219,6 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
-
-	resp = &orchestrator.StoreAssessmentResultResponse{}
 
 	return resp, nil
 }

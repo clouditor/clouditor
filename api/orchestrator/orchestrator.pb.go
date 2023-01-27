@@ -588,6 +588,7 @@ func (x *StoreAssessmentResultRequest) GetResult() *assessment.AssessmentResult 
 	return nil
 }
 
+// StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 type StoreAssessmentResultResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -626,6 +627,7 @@ func (*StoreAssessmentResultResponse) Descriptor() ([]byte, []int) {
 	return file_api_orchestrator_orchestrator_proto_rawDescGZIP(), []int{7}
 }
 
+// StoreAssessmentResultsReponse belongs to StoreAssessmentResults, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 type StoreAssessmentResultsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -95,6 +95,7 @@ components:
         AssessEvidenceResponse:
             type: object
             properties: {}
+            description: AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
         AssessmentResult:
             type: object
             properties:

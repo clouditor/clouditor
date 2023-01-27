@@ -1800,6 +1800,7 @@ components:
         StoreAssessmentResultResponse:
             type: object
             properties: {}
+            description: StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
         TargetOfEvaluation:
             type: object
             properties:

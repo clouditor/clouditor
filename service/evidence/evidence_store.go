@@ -67,6 +67,8 @@ func init() {
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
+	resp = &evidence.StoreEvidenceResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -75,20 +77,11 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 		go s.informHooks(nil, newError)
 
-		resp = &evidence.StoreEvidenceResponse{
-			Status:        false,
-			StatusMessage: newError.Error(),
-		}
-
 		return resp, status.Errorf(codes.InvalidArgument, "%v", newError)
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
 	go s.informHooks(req.Evidence, nil)
-
-	resp = &evidence.StoreEvidenceResponse{
-		Status: true,
-	}
 
 	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
 
@@ -99,7 +92,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
 		req *evidence.StoreEvidenceRequest
-		res *evidence.StoreEvidenceResponse
+		res *evidence.StoreEvidencesResponse
 	)
 
 	for {
@@ -119,9 +112,18 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = s.StoreEvidence(context.Background(), evidenceRequest)
+		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
+			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
+			res = &evidence.StoreEvidencesResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &evidence.StoreEvidencesResponse{
+				Status: true,
+			}
 		}
 
 		// Send response back to the client
