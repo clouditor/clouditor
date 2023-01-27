@@ -115,7 +115,7 @@ func (s *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesSer
 		_, err = s.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
-			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
+			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &evidence.StoreEvidencesResponse{
 				Status:        false,
 				StatusMessage: err.Error(),
