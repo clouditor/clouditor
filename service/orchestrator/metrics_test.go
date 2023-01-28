@@ -53,7 +53,6 @@ var ErrSomeError = errors.New("some error")
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -102,7 +101,6 @@ func TestService_loadMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -550,7 +548,6 @@ func TestService_ListMetrics(t *testing.T) {
 
 func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -622,7 +619,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -646,7 +642,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -727,7 +722,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -747,7 +741,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 
 func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -840,7 +833,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -860,7 +852,6 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 
 func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -926,7 +917,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -952,7 +942,6 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -1252,7 +1241,6 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,

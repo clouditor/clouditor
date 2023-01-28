@@ -324,7 +324,6 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 func TestService_ListCloudServices(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -432,7 +431,6 @@ func TestService_ListCloudServices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,

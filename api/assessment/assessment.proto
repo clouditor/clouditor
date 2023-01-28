@@ -61,7 +61,11 @@ service Assessment {
   rpc AssessEvidences(stream AssessEvidenceRequest)
       returns (stream AssessEvidenceResponse) {};
 
-  // List all assessment results. Part of the public API, also exposed as REST.
+  // List all assessment results of all cloud services the requester can access.
+  // Optionally, further filters of specific cloud services, metrics or the
+  // compliance status can be specified.
+  //
+  // Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
       returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
