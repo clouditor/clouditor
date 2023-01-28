@@ -78,7 +78,7 @@ message ListAssessmentResultsRequest {
   optional bool filtered_compliant = 2;
   // Optional. List only assessment results of a specific metric id.
   repeated string filtered_metric_id = 3
-    [ (validate.rules).repeated.items.string.min_len = 1 ];
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
 
   int32 page_size = 10;
   string page_token = 11;
@@ -127,8 +127,10 @@ message AssessmentResult {
   string metric_id = 3 [ (validate.rules).string.min_len = 1 ];
 
   // Data corresponding to the metric by the given metric id
-  MetricConfiguration metric_configuration = 4
-      [ (validate.rules).message.required = true ];
+  MetricConfiguration metric_configuration = 4 [
+    (tagger.tags) = "gorm:\"serializer:json;type:time\"",
+    (validate.rules).message.required = true
+  ];
 
   // Compliant case: true or false
   bool compliant = 5;
@@ -140,8 +142,10 @@ message AssessmentResult {
   string resource_id = 7 [ (validate.rules).string.min_len = 1 ];
 
   // Resource types
-  repeated string resource_types = 8
-      [ (validate.rules).repeated.min_items = 1 ];
+  repeated string resource_types = 8 [
+    (tagger.tags) = "gorm:\"serializer:json;type:time\"",
+    (validate.rules).repeated .min_items = 1
+  ];
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;

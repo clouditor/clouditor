@@ -96,7 +96,9 @@ type Service struct {
 	// hookMutex is used for (un)locking result hook calls
 	hookMutex sync.RWMutex
 
-	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
+	// results will contain all the assessment results of the current run. They will NOT be persisted to the storage,
+	// but should only be seen as debug information. The persisted assessment results will be stored in the
+	// Orchestrator.
 	results     map[string]*assessment.AssessmentResult
 	resultMutex sync.Mutex
 
