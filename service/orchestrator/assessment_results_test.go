@@ -34,12 +34,12 @@ import (
 	"runtime"
 	"sync"
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -97,16 +97,16 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "list all with allow all",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))}))
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "2", Timestamp: timestamppb.New(time.Unix(1, 0))}))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &assessment.ListAssessmentResultsRequest{}},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0))},
-					{Id: "2", Timestamp: timestamppb.New(time.Unix(1, 0))},
+					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult2,
 				},
 			},
 			wantErr: assert.NoError,
@@ -115,8 +115,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "list all only with allowed cloud service",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockCloudServiceID}))
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "2", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockAnotherCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
@@ -126,7 +126,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockCloudServiceID},
+					orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -135,15 +135,15 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "specify filtered cloud service ID which is not allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockCloudServiceID}))
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "2", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockAnotherCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService2),
+					FilteredCloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
 				},
 			},
 			wantRes: nil,
@@ -155,20 +155,20 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered cloud service ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockCloudServiceID}))
-					assert.NoError(t, s.Create(&assessment.AssessmentResult{Id: "2", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testdata.MockAnotherCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{Id: "1", Timestamp: timestamppb.New(time.Unix(1, 0)), CloudServiceId: testutil.TestCloudService1},
+					orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -177,26 +177,20 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered cloud service ID and filtered compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredCompliant:      util.Ref(true),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "1",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService1,
-					},
+					orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -205,26 +199,20 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered cloud service ID and filtered non-compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredCompliant:      util.Ref(false),
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "3",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-2",
-						Compliant:      false,
-						CloudServiceId: testutil.TestCloudService1,
-					},
+					orchestratortest.MockAssessmentResult3,
 				},
 			},
 			wantErr: assert.NoError,
@@ -233,8 +221,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
-
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -246,20 +233,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "1",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService1,
-					},
-					{
-						Id:             "2",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-2",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService2,
-					},
+					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult2,
 				},
 			},
 			wantErr: assert.NoError,
@@ -268,7 +243,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered non-compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -281,20 +256,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "3",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-2",
-						Compliant:      false,
-						CloudServiceId: testutil.TestCloudService1,
-					},
-					{
-						Id:             "4",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      false,
-						CloudServiceId: testutil.TestCloudService2,
-					},
+					orchestratortest.MockAssessmentResult3,
+					orchestratortest.MockAssessmentResult4,
 				},
 			},
 			wantErr: assert.NoError,
@@ -303,27 +266,20 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered cloud service ID and one filtered metric ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
-
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
-					FilteredMetricId:       []string{"TestMetricID-1"},
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					FilteredMetricId:       []string{testdata.MockMetricID},
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "1",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService1,
-					},
+					orchestratortest.MockAssessmentResult1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -332,34 +288,21 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return filtered cloud service ID and two filtered metric IDs",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
-
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testutil.TestCloudService1),
-					FilteredMetricId:       []string{"TestMetricID-1", "TestMetricID-2"},
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					FilteredMetricId:       []string{testdata.MockMetricID, testdata.MockAnotherMetricID},
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "1",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService1,
-					},
-					{
-						Id:             "3",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-2",
-						Compliant:      false,
-						CloudServiceId: testutil.TestCloudService1,
-					},
+					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult3,
 				},
 			},
 			wantErr: assert.NoError,
@@ -368,33 +311,20 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "return one filtered metric ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
-
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &assessment.ListAssessmentResultsRequest{
-					FilteredMetricId: []string{"TestMetricID-1"},
+					FilteredMetricId: []string{testdata.MockMetricID},
 				},
 			},
 			wantRes: &assessment.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					{
-						Id:             "1",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      true,
-						CloudServiceId: testutil.TestCloudService1,
-					},
-					{
-						Id:             "4",
-						Timestamp:      timestamppb.New(time.Unix(1, 0)),
-						MetricId:       "TestMetricID-1",
-						Compliant:      false,
-						CloudServiceId: testutil.TestCloudService2,
-					},
+					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult2,
 				},
 			},
 			wantErr: assert.NoError,
@@ -403,8 +333,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "Invalid cloud service id request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(getAssessmentResults()))
-
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
@@ -433,45 +362,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			if tt.wantRes == nil {
 				assert.Nil(t, gotRes)
 			} else {
+				assert.NoError(t, gotRes.Validate())
 				assert.Equal(t, tt.wantRes, gotRes)
 			}
 		})
 	}
-}
-
-func getAssessmentResults() (results []*assessment.AssessmentResult) {
-	results = []*assessment.AssessmentResult{
-		{
-			Id:             "1",
-			Timestamp:      timestamppb.New(time.Unix(1, 0)),
-			MetricId:       "TestMetricID-1",
-			Compliant:      true,
-			CloudServiceId: testutil.TestCloudService1,
-		},
-		{
-			Id:             "2",
-			Timestamp:      timestamppb.New(time.Unix(1, 0)),
-			MetricId:       "TestMetricID-2",
-			Compliant:      true,
-			CloudServiceId: testutil.TestCloudService2,
-		},
-		{
-			Id:             "3",
-			Timestamp:      timestamppb.New(time.Unix(1, 0)),
-			MetricId:       "TestMetricID-2",
-			Compliant:      false,
-			CloudServiceId: testutil.TestCloudService1,
-		},
-		{
-			Id:             "4",
-			Timestamp:      timestamppb.New(time.Unix(1, 0)),
-			MetricId:       "TestMetricID-1",
-			Compliant:      false,
-			CloudServiceId: testutil.TestCloudService2,
-		},
-	}
-
-	return
 }
 
 func TestAssessmentResultHook(t *testing.T) {
@@ -795,7 +690,7 @@ func createStoreAssessmentResultRequestMockWithMissingMetricID(count int) []*orc
 	return req
 }
 
-// createStoreAssessmentResultrequestMocks creates store assessment result requests with random assessment result IDs
+// createStoreAssessmentResultRequestMocks creates store assessment result requests with random assessment result IDs
 func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAssessmentResultRequest {
 	var mockRequests []*orchestrator.StoreAssessmentResultRequest
 

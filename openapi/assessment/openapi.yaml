@@ -40,7 +40,12 @@ paths:
         get:
             tags:
                 - Assessment
-            description: List all assessment results. Part of the public API, also exposed as REST.
+            description: |-
+                List all assessment results of all cloud services the requester can access.
+                 Optionally, further filters of specific cloud services, metrics or the
+                 compliance status can be specified.
+
+                 Part of the public API, also exposed as REST.
             operationId: Assessment_ListAssessmentResults
             parameters:
                 - name: filteredCloudServiceId

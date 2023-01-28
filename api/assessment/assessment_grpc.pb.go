@@ -32,7 +32,11 @@ type AssessmentClient interface {
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(ctx context.Context, opts ...grpc.CallOption) (Assessment_AssessEvidencesClient, error)
-	// List all assessment results. Part of the public API, also exposed as REST.
+	// List all assessment results of all cloud services the requester can access.
+	// Optionally, further filters of specific cloud services, metrics or the
+	// compliance status can be specified.
+	//
+	// Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 }
 
@@ -115,7 +119,11 @@ type AssessmentServer interface {
 	// Assesses stream of evidences sent by the discovery and returns a response
 	// stream. Part of the public API. Not exposed as REST.
 	AssessEvidences(Assessment_AssessEvidencesServer) error
-	// List all assessment results. Part of the public API, also exposed as REST.
+	// List all assessment results of all cloud services the requester can access.
+	// Optionally, further filters of specific cloud services, metrics or the
+	// compliance status can be specified.
+	//
+	// Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	mustEmbedUnimplementedAssessmentServer()
 }

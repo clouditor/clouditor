@@ -132,7 +132,7 @@ message AssessmentResult {
 
   // Data corresponding to the metric by the given metric id
   MetricConfiguration metric_configuration = 4 [
-    (tagger.tags) = "gorm:\"serializer:json;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).message.required = true
   ];
 
@@ -147,7 +147,7 @@ message AssessmentResult {
 
   // Resource types
   repeated string resource_types = 8 [
-    (tagger.tags) = "gorm:\"serializer:json;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated .min_items = 1
   ];
 
