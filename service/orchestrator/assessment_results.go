@@ -104,12 +104,16 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 }
 
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
-func (svc *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (res *orchestrator.StoreAssessmentResultResponse, err error) {
+func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator.StoreAssessmentResultRequest) (res *orchestrator.StoreAssessmentResultResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	err = svc.storage.Create(req.Result)
