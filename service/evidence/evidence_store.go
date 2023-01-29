@@ -71,7 +71,6 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-
 		return nil, err
 	}
 
