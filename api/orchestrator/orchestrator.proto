@@ -396,10 +396,10 @@ service Orchestrator {
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/cloud_services/"
-            "{cloud_service_id}/toes/"
-            "{catalog_id}/controls_in_scope/"
-            "categories/{control_category_name}/"
-            "controls/{control_id}"
+               "{cloud_service_id}/toes/"
+               "{catalog_id}/controls_in_scope/"
+               "categories/{control_category_name}/"
+               "controls/{control_id}"
     };
   }
 
@@ -780,10 +780,21 @@ message RemoveControlFromScopeRequest {
   string control_category_name = 4 [ (validate.rules).string.min_len = 1 ];
 }
 
+// MonitoringStatus describes how a particular control is handled by the
+// Clouditor framework.
 enum MonitoringStatus {
+  // The status is not yet decided.
   MONITORING_STATUS_UNSPECIFIED = 0;
-  MONITORING_STATUS_CONTINUOUSLY_MONITORED = 1;
+  // Control is automatically assessed by the Clouditor security assessment
+  // engine or another tool, which forwards assessment results to the
+  // Orchestrator.
+  MONITORING_STATUS_AUTOMATICALLY_MONITORED = 1;
+  // Control is assessed manually and the result must be set via the Clouditor
+  // UI to be evaluated by the Clouditor.
   MONITORING_STATUS_MANUALLY_MONITORED = 2;
+  // Control is checked by another party and the result is not used by the
+  // Clouditor evaluation. In the future this might be part of compositional
+  // certification.
   MONITORING_STATUS_DELEGATED = 3;
 }
 
