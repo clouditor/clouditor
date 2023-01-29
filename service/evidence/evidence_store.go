@@ -70,18 +70,16 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		newError := fmt.Errorf("invalid evidence: %w", err)
-		log.Error(newError)
+		log.Error(err)
 
-		go s.informHooks(nil, newError)
-
-		return nil, status.Errorf(codes.InvalidArgument, "%v", newError)
+		return nil, err
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
+
 	go s.informHooks(req.Evidence, nil)
 
-	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
+	log.Debugf("Evidence stored with id: %v", req.Evidence.GetId())
 
 	return nil, nil
 }

@@ -207,7 +207,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &evidence.StoreEvidencesResponse{
 				Status:        false,
-				StatusMessage: "invalid evidence:",
+				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid StoreEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.CloudServiceId: value must be a valid UUID | caused by: invalid uuid format",
 			},
 		},
 		{

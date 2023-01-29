@@ -211,12 +211,14 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, err
 	}
 
 	s.results[req.Result.Id] = req.Result
 
 	go s.informHook(req.Result, nil)
+
+	log.Debugf("Assessment result stored with id: %v", req.Result.GetId())
 
 	return nil, nil
 }
