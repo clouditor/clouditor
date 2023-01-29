@@ -626,7 +626,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{},
+			wantResp: nil,
 		},
 	}
 
@@ -1140,7 +1140,6 @@ func TestService_HandleEvidence(t *testing.T) {
 					assert.NoError(t, err)
 				}
 			}
-
 		})
 	}
 }

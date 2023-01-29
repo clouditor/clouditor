@@ -135,7 +135,7 @@ func TestAssessmentResultHook(t *testing.T) {
 				},
 			},
 			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantResp: nil,
 		},
 	}
 
@@ -198,7 +198,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 				},
 			},
 			wantErr:  assert.NoError,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantResp: nil,
 		},
 		{
 			name: "Store assessment without metricId to the map",
