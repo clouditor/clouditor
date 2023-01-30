@@ -59,7 +59,7 @@ message Evidence {
   // Semantic representation of the Cloud resource according to our defined
   // ontology
   google.protobuf.Value resource = 6 [
-    (tagger.tags) = "gorm:\"serializer:structpbvalue;type:json\"",
+    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
     (validate.rules).message.required = true
   ];
 }

@@ -3,39 +3,5 @@
         "options": [
             "--proto_path=third_party",
         ]
-    },
-    "cSpell.words": [
-        "AISEC",
-        "bufnet",
-        "Clouditor",
-        "Debugf",
-        "dialector",
-        "emptypb",
-        "Equalf",
-        "gocron",
-        "GOPATH",
-        "gorm",
-        "Infof",
-        "inmem",
-        "inmemory",
-        "jwks",
-        "JWKSURL",
-        "Kube",
-        "Kubernetes",
-        "logrus",
-        "orchestratortest",
-        "oxisto",
-        "PBES",
-        "protobuf",
-        "protoc",
-        "Rego",
-        "sirupsen",
-        "stretchr",
-        "structpb",
-        "testdata",
-        "testutil",
-        "timestamppb",
-        "unmarshalling",
-        "Warnf"
-    ]
+    }
 }

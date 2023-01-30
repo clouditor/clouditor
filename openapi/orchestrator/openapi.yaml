@@ -1554,7 +1554,7 @@ components:
                 monitoringStatus:
                     enum:
                         - MONITORING_STATUS_UNSPECIFIED
-                        - MONITORING_STATUS_CONTINUOUSLY_MONITORED
+                        - MONITORING_STATUS_AUTOMATICALLY_MONITORED
                         - MONITORING_STATUS_MANUALLY_MONITORED
                         - MONITORING_STATUS_DELEGATED
                     type: string

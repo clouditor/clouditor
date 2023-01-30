@@ -116,8 +116,8 @@ func TestService_StoreEvidence(t *testing.T) {
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Id:             testdata.MockEvidenceID,
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						ToolId:         "MockTool",
+						CloudServiceId: testdata.MockCloudServiceID,
+						ToolId:         testdata.MockEvidenceToolID,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{
@@ -137,7 +137,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Id:             testdata.MockEvidenceID,
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						CloudServiceId: testdata.MockCloudServiceID,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{

@@ -41,6 +41,9 @@ import (
 //   - If the request is nil, [api.ErrEmptyRequest] is returned
 //   - The request is validated according to the generated validation method
 //   - Lastly, if the request is a [api.PaginatedRequest], an additional check is performed to ensure only valid columns are listed
+//
+// Note: This function already returns a gRPC error, so the error can be returned directly without any wrapping in a
+// request function.
 func ValidateRequest(req IncomingRequest) (err error) {
 	// Check, if request is nil. We need to check whether the interface itself is nil (untyped nil); this happens if
 	// someone is directly setting nil to a variable of the interface IncomingRequest. Furthermore, we need to check,

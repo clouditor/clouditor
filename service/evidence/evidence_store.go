@@ -101,7 +101,6 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 

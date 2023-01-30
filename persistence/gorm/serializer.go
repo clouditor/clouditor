@@ -52,8 +52,7 @@ func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.V
 		ok bool
 	)
 
-	if fieldValue == nil || (reflect.ValueOf(fieldValue).Kind() == reflect.Pointer &&
-		reflect.ValueOf(fieldValue).IsNil()) {
+	if isInterfaceNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -95,7 +94,7 @@ func (AnySerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, 
 		ok bool
 	)
 
-	if fieldValue == nil {
+	if isInterfaceNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -134,19 +133,19 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 	return
 }
 
-// StructpbValueSerializer is a GORM serializer that allows the serialization and deserialization of the
+// ValueSerializer is a GORM serializer that allows the serialization and deserialization of the
 // google.protobuf.Value protobuf message type.
-type StructpbValueSerializer struct{}
+type ValueSerializer struct{}
 
 // Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
 // how this struct will be saved into an SQL database field.
-func (StructpbValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
+func (ValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
 	var (
 		v  *structpb.Value
 		ok bool
 	)
 
-	if fieldValue == nil {
+	if isInterfaceNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -159,7 +158,7 @@ func (StructpbValueSerializer) Value(_ context.Context, _ *schema.Field, _ refle
 
 // Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
 // this struct can be loaded from an SQL database field.
-func (StructpbValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+func (ValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
 	v := new(structpb.Value)
 
 	if dbValue != nil {
@@ -177,4 +176,13 @@ func (StructpbValueSerializer) Scan(ctx context.Context, field *schema.Field, ds
 	}
 
 	return
+}
+
+func isInterfaceNil(fieldValue interface{}) bool {
+	if fieldValue == nil || (reflect.ValueOf(fieldValue).Kind() == reflect.Pointer &&
+		reflect.ValueOf(fieldValue).IsNil()) {
+		return true
+	}
+
+	return false
 }

@@ -66,6 +66,7 @@ var DefaultTypes = []any{
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
+	&assessment.AssessmentResult{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&evidence.Evidence{},
@@ -151,7 +152,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
-	schema.RegisterSerializer("structpbvalue", &StructpbValueSerializer{})
+	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
 	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
