@@ -60,7 +60,7 @@ func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.C
 
 type EvidenceStore_StoreEvidencesClient interface {
 	Send(*StoreEvidenceRequest) error
-	Recv() (*StoreEvidenceResponse, error)
+	Recv() (*StoreEvidencesResponse, error)
 	grpc.ClientStream
 }
 
@@ -72,8 +72,8 @@ func (x *evidenceStoreStoreEvidencesClient) Send(m *StoreEvidenceRequest) error 
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidenceResponse, error) {
-	m := new(StoreEvidenceResponse)
+func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidencesResponse, error) {
+	m := new(StoreEvidencesResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func _EvidenceStore_StoreEvidences_Handler(srv interface{}, stream grpc.ServerSt
 }
 
 type EvidenceStore_StoreEvidencesServer interface {
-	Send(*StoreEvidenceResponse) error
+	Send(*StoreEvidencesResponse) error
 	Recv() (*StoreEvidenceRequest, error)
 	grpc.ServerStream
 }
@@ -162,7 +162,7 @@ type evidenceStoreStoreEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *evidenceStoreStoreEvidencesServer) Send(m *StoreEvidenceResponse) error {
+func (x *evidenceStoreStoreEvidencesServer) Send(m *StoreEvidencesResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

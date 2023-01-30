@@ -52,24 +52,24 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type AssessEvidenceResponse_AssessmentStatus int32
+type AssessEvidencesResponse_AssessmentStatus int32
 
 const (
-	AssessEvidenceResponse_ASSESSMENT_STATUS_UNSPECIFIED AssessEvidenceResponse_AssessmentStatus = 0
-	AssessEvidenceResponse_WAITING_FOR_RELATED           AssessEvidenceResponse_AssessmentStatus = 1
-	AssessEvidenceResponse_ASSESSED                      AssessEvidenceResponse_AssessmentStatus = 2
-	AssessEvidenceResponse_FAILED                        AssessEvidenceResponse_AssessmentStatus = 3
+	AssessEvidencesResponse_ASSESSMENT_STATUS_UNSPECIFIED AssessEvidencesResponse_AssessmentStatus = 0
+	AssessEvidencesResponse_WAITING_FOR_RELATED           AssessEvidencesResponse_AssessmentStatus = 1
+	AssessEvidencesResponse_ASSESSED                      AssessEvidencesResponse_AssessmentStatus = 2
+	AssessEvidencesResponse_FAILED                        AssessEvidencesResponse_AssessmentStatus = 3
 )
 
-// Enum value maps for AssessEvidenceResponse_AssessmentStatus.
+// Enum value maps for AssessEvidencesResponse_AssessmentStatus.
 var (
-	AssessEvidenceResponse_AssessmentStatus_name = map[int32]string{
+	AssessEvidencesResponse_AssessmentStatus_name = map[int32]string{
 		0: "ASSESSMENT_STATUS_UNSPECIFIED",
 		1: "WAITING_FOR_RELATED",
 		2: "ASSESSED",
 		3: "FAILED",
 	}
-	AssessEvidenceResponse_AssessmentStatus_value = map[string]int32{
+	AssessEvidencesResponse_AssessmentStatus_value = map[string]int32{
 		"ASSESSMENT_STATUS_UNSPECIFIED": 0,
 		"WAITING_FOR_RELATED":           1,
 		"ASSESSED":                      2,
@@ -77,31 +77,31 @@ var (
 	}
 )
 
-func (x AssessEvidenceResponse_AssessmentStatus) Enum() *AssessEvidenceResponse_AssessmentStatus {
-	p := new(AssessEvidenceResponse_AssessmentStatus)
+func (x AssessEvidencesResponse_AssessmentStatus) Enum() *AssessEvidencesResponse_AssessmentStatus {
+	p := new(AssessEvidencesResponse_AssessmentStatus)
 	*p = x
 	return p
 }
 
-func (x AssessEvidenceResponse_AssessmentStatus) String() string {
+func (x AssessEvidencesResponse_AssessmentStatus) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (AssessEvidenceResponse_AssessmentStatus) Descriptor() protoreflect.EnumDescriptor {
+func (AssessEvidencesResponse_AssessmentStatus) Descriptor() protoreflect.EnumDescriptor {
 	return file_api_assessment_assessment_proto_enumTypes[0].Descriptor()
 }
 
-func (AssessEvidenceResponse_AssessmentStatus) Type() protoreflect.EnumType {
+func (AssessEvidencesResponse_AssessmentStatus) Type() protoreflect.EnumType {
 	return &file_api_assessment_assessment_proto_enumTypes[0]
 }
 
-func (x AssessEvidenceResponse_AssessmentStatus) Number() protoreflect.EnumNumber {
+func (x AssessEvidencesResponse_AssessmentStatus) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use AssessEvidenceResponse_AssessmentStatus.Descriptor instead.
-func (AssessEvidenceResponse_AssessmentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{6, 0}
+// Deprecated: Use AssessEvidencesResponse_AssessmentStatus.Descriptor instead.
+func (AssessEvidencesResponse_AssessmentStatus) EnumDescriptor() ([]byte, []int) {
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{7, 0}
 }
 
 type ListAssessmentResultsRequest struct {
@@ -427,13 +427,11 @@ func (x *AssessEvidenceRequest) GetEvidence() *evidence.Evidence {
 	return nil
 }
 
+// AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 type AssessEvidenceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Status        AssessEvidenceResponse_AssessmentStatus `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.assessment.v1.AssessEvidenceResponse_AssessmentStatus" json:"status,omitempty"`
-	StatusMessage string                                  `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
 }
 
 func (x *AssessEvidenceResponse) Reset() {
@@ -468,14 +466,56 @@ func (*AssessEvidenceResponse) Descriptor() ([]byte, []int) {
 	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *AssessEvidenceResponse) GetStatus() AssessEvidenceResponse_AssessmentStatus {
+// AssessEvidencesResponse belongs to AssessEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
+type AssessEvidencesResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status        AssessEvidencesResponse_AssessmentStatus `protobuf:"varint,1,opt,name=status,proto3,enum=clouditor.assessment.v1.AssessEvidencesResponse_AssessmentStatus" json:"status,omitempty"`
+	StatusMessage string                                   `protobuf:"bytes,2,opt,name=status_message,json=statusMessage,proto3" json:"status_message,omitempty"`
+}
+
+func (x *AssessEvidencesResponse) Reset() {
+	*x = AssessEvidencesResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_assessment_assessment_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AssessEvidencesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AssessEvidencesResponse) ProtoMessage() {}
+
+func (x *AssessEvidencesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_assessment_assessment_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AssessEvidencesResponse.ProtoReflect.Descriptor instead.
+func (*AssessEvidencesResponse) Descriptor() ([]byte, []int) {
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *AssessEvidencesResponse) GetStatus() AssessEvidencesResponse_AssessmentStatus {
 	if x != nil {
 		return x.Status
 	}
-	return AssessEvidenceResponse_ASSESSMENT_STATUS_UNSPECIFIED
+	return AssessEvidencesResponse_ASSESSMENT_STATUS_UNSPECIFIED
 }
 
-func (x *AssessEvidenceResponse) GetStatusMessage() string {
+func (x *AssessEvidencesResponse) GetStatusMessage() string {
 	if x != nil {
 		return x.StatusMessage
 	}
@@ -514,7 +554,7 @@ type AssessmentResult struct {
 func (x *AssessmentResult) Reset() {
 	*x = AssessmentResult{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_assessment_assessment_proto_msgTypes[7]
+		mi := &file_api_assessment_assessment_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -527,7 +567,7 @@ func (x *AssessmentResult) String() string {
 func (*AssessmentResult) ProtoMessage() {}
 
 func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_assessment_assessment_proto_msgTypes[7]
+	mi := &file_api_assessment_assessment_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -540,7 +580,7 @@ func (x *AssessmentResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssessmentResult.ProtoReflect.Descriptor instead.
 func (*AssessmentResult) Descriptor() ([]byte, []int) {
-	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{7}
+	return file_api_assessment_assessment_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *AssessmentResult) GetId() string {
@@ -788,35 +828,36 @@ func file_api_assessment_assessment_proto_rawDescGZIP() []byte {
 }
 
 var file_api_assessment_assessment_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_assessment_assessment_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_api_assessment_assessment_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_api_assessment_assessment_proto_goTypes = []interface{}{
-	(AssessEvidenceResponse_AssessmentStatus)(0), // 0: clouditor.assessment.v1.AssessEvidenceResponse.AssessmentStatus
-	(*ListAssessmentResultsRequest)(nil),         // 1: clouditor.assessment.v1.ListAssessmentResultsRequest
-	(*ListAssessmentResultsResponse)(nil),        // 2: clouditor.assessment.v1.ListAssessmentResultsResponse
-	(*ConfigureAssessmentRequest)(nil),           // 3: clouditor.assessment.v1.ConfigureAssessmentRequest
-	(*ConfigureAssessmentResponse)(nil),          // 4: clouditor.assessment.v1.ConfigureAssessmentResponse
-	(*CalculateComplianceRequest)(nil),           // 5: clouditor.assessment.v1.CalculateComplianceRequest
-	(*AssessEvidenceRequest)(nil),                // 6: clouditor.assessment.v1.AssessEvidenceRequest
-	(*AssessEvidenceResponse)(nil),               // 7: clouditor.assessment.v1.AssessEvidenceResponse
-	(*AssessmentResult)(nil),                     // 8: clouditor.assessment.v1.AssessmentResult
-	(*evidence.Evidence)(nil),                    // 9: clouditor.evidence.v1.Evidence
-	(*timestamppb.Timestamp)(nil),                // 10: google.protobuf.Timestamp
-	(*MetricConfiguration)(nil),                  // 11: clouditor.assessment.v1.MetricConfiguration
-	(*emptypb.Empty)(nil),                        // 12: google.protobuf.Empty
+	(AssessEvidencesResponse_AssessmentStatus)(0), // 0: clouditor.assessment.v1.AssessEvidencesResponse.AssessmentStatus
+	(*ListAssessmentResultsRequest)(nil),          // 1: clouditor.assessment.v1.ListAssessmentResultsRequest
+	(*ListAssessmentResultsResponse)(nil),         // 2: clouditor.assessment.v1.ListAssessmentResultsResponse
+	(*ConfigureAssessmentRequest)(nil),            // 3: clouditor.assessment.v1.ConfigureAssessmentRequest
+	(*ConfigureAssessmentResponse)(nil),           // 4: clouditor.assessment.v1.ConfigureAssessmentResponse
+	(*CalculateComplianceRequest)(nil),            // 5: clouditor.assessment.v1.CalculateComplianceRequest
+	(*AssessEvidenceRequest)(nil),                 // 6: clouditor.assessment.v1.AssessEvidenceRequest
+	(*AssessEvidenceResponse)(nil),                // 7: clouditor.assessment.v1.AssessEvidenceResponse
+	(*AssessEvidencesResponse)(nil),               // 8: clouditor.assessment.v1.AssessEvidencesResponse
+	(*AssessmentResult)(nil),                      // 9: clouditor.assessment.v1.AssessmentResult
+	(*evidence.Evidence)(nil),                     // 10: clouditor.evidence.v1.Evidence
+	(*timestamppb.Timestamp)(nil),                 // 11: google.protobuf.Timestamp
+	(*MetricConfiguration)(nil),                   // 12: clouditor.assessment.v1.MetricConfiguration
+	(*emptypb.Empty)(nil),                         // 13: google.protobuf.Empty
 }
 var file_api_assessment_assessment_proto_depIdxs = []int32{
-	8,  // 0: clouditor.assessment.v1.ListAssessmentResultsResponse.results:type_name -> clouditor.assessment.v1.AssessmentResult
-	9,  // 1: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
-	0,  // 2: clouditor.assessment.v1.AssessEvidenceResponse.status:type_name -> clouditor.assessment.v1.AssessEvidenceResponse.AssessmentStatus
-	10, // 3: clouditor.assessment.v1.AssessmentResult.timestamp:type_name -> google.protobuf.Timestamp
-	11, // 4: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
+	9,  // 0: clouditor.assessment.v1.ListAssessmentResultsResponse.results:type_name -> clouditor.assessment.v1.AssessmentResult
+	10, // 1: clouditor.assessment.v1.AssessEvidenceRequest.evidence:type_name -> clouditor.evidence.v1.Evidence
+	0,  // 2: clouditor.assessment.v1.AssessEvidencesResponse.status:type_name -> clouditor.assessment.v1.AssessEvidencesResponse.AssessmentStatus
+	11, // 3: clouditor.assessment.v1.AssessmentResult.timestamp:type_name -> google.protobuf.Timestamp
+	12, // 4: clouditor.assessment.v1.AssessmentResult.metric_configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	5,  // 5: clouditor.assessment.v1.Assessment.CalculateCompliance:input_type -> clouditor.assessment.v1.CalculateComplianceRequest
 	6,  // 6: clouditor.assessment.v1.Assessment.AssessEvidence:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
 	6,  // 7: clouditor.assessment.v1.Assessment.AssessEvidences:input_type -> clouditor.assessment.v1.AssessEvidenceRequest
 	1,  // 8: clouditor.assessment.v1.Assessment.ListAssessmentResults:input_type -> clouditor.assessment.v1.ListAssessmentResultsRequest
-	12, // 9: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
+	13, // 9: clouditor.assessment.v1.Assessment.CalculateCompliance:output_type -> google.protobuf.Empty
 	7,  // 10: clouditor.assessment.v1.Assessment.AssessEvidence:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
-	7,  // 11: clouditor.assessment.v1.Assessment.AssessEvidences:output_type -> clouditor.assessment.v1.AssessEvidenceResponse
+	8,  // 11: clouditor.assessment.v1.Assessment.AssessEvidences:output_type -> clouditor.assessment.v1.AssessEvidencesResponse
 	2,  // 12: clouditor.assessment.v1.Assessment.ListAssessmentResults:output_type -> clouditor.assessment.v1.ListAssessmentResultsResponse
 	9,  // [9:13] is the sub-list for method output_type
 	5,  // [5:9] is the sub-list for method input_type
@@ -917,6 +958,18 @@ func file_api_assessment_assessment_proto_init() {
 			}
 		}
 		file_api_assessment_assessment_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AssessEvidencesResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_assessment_assessment_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AssessmentResult); i {
 			case 0:
 				return &v.state
@@ -936,7 +989,7 @@ func file_api_assessment_assessment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_assessment_assessment_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

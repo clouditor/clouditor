@@ -231,7 +231,9 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
+	resp = &assessment.AssessEvidenceResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -251,19 +253,17 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
-		return res, status.Errorf(codes.Internal, "%v", err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	res = &assessment.AssessEvidenceResponse{}
-
-	return res, nil
+	return resp, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
 func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
-		res *assessment.AssessEvidenceResponse
+		res *assessment.AssessEvidencesResponse
 	)
 
 	for {
@@ -287,13 +287,13 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
-			res = &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			res = &assessment.AssessEvidencesResponse{
+				Status:        assessment.AssessEvidencesResponse_FAILED,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			res = &assessment.AssessEvidencesResponse{
+				Status: assessment.AssessEvidencesResponse_ASSESSED,
 			}
 		}
 
