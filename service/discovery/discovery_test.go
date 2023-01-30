@@ -543,17 +543,17 @@ func (m *mockAssessmentStream) Wait() {
 	m.wg.Wait()
 }
 
-func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidenceResponse, error) {
+func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
+		return &assessment.AssessEvidencesResponse{
+			Status:        assessment.AssessEvidencesResponse_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status: assessment.AssessEvidenceResponse_ASSESSED,
+		return &assessment.AssessEvidencesResponse{
+			Status: assessment.AssessEvidencesResponse_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF

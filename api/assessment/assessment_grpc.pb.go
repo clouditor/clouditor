@@ -73,7 +73,7 @@ func (c *assessmentClient) AssessEvidences(ctx context.Context, opts ...grpc.Cal
 
 type Assessment_AssessEvidencesClient interface {
 	Send(*AssessEvidenceRequest) error
-	Recv() (*AssessEvidenceResponse, error)
+	Recv() (*AssessEvidencesResponse, error)
 	grpc.ClientStream
 }
 
@@ -85,8 +85,8 @@ func (x *assessmentAssessEvidencesClient) Send(m *AssessEvidenceRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *assessmentAssessEvidencesClient) Recv() (*AssessEvidenceResponse, error) {
-	m := new(AssessEvidenceResponse)
+func (x *assessmentAssessEvidencesClient) Recv() (*AssessEvidencesResponse, error) {
+	m := new(AssessEvidencesResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func _Assessment_AssessEvidences_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type Assessment_AssessEvidencesServer interface {
-	Send(*AssessEvidenceResponse) error
+	Send(*AssessEvidencesResponse) error
 	Recv() (*AssessEvidenceRequest, error)
 	grpc.ServerStream
 }
@@ -199,7 +199,7 @@ type assessmentAssessEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *assessmentAssessEvidencesServer) Send(m *AssessEvidenceResponse) error {
+func (x *assessmentAssessEvidencesServer) Send(m *AssessEvidencesResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
