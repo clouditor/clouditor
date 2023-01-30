@@ -213,7 +213,7 @@ func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.Sto
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return resp, err
+		return nil, err
 	}
 
 	s.results[req.Result.Id] = req.Result

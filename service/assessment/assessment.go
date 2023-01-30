@@ -236,7 +236,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return resp, err
+		return nil, err
 	}
 
 	// Validate evidence
@@ -244,7 +244,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
-		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
@@ -252,7 +252,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
-		return resp, status.Errorf(codes.Internal, "%v", err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	return resp, nil

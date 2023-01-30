@@ -73,7 +73,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return resp, err
+		return nil, err
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence

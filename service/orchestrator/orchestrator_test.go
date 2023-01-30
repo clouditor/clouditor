@@ -227,7 +227,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes")
 			},
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantResp: nil,
 		},
 	}
 

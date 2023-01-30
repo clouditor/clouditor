@@ -124,7 +124,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr:  true,
-			wantResp: &evidence.StoreEvidenceResponse{},
+			wantResp: nil,
 		},
 	}
 	for _, tt := range tests {
