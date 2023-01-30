@@ -101,18 +101,8 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
-
-		go svc.informHooks(nil, err)
-
-		res = &evidence.StoreEvidenceResponse{
-			Status:        false,
-			StatusMessage: err.Error(),
-		}
-
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
@@ -121,28 +111,17 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 	}
 
 	err = svc.storage.Create(req.Evidence)
-	if err != nil {
-		// TODO(lebogg): Almost identical error handling as above -> extract here or even to internal
-		err = fmt.Errorf("internal error: %w", err)
-		log.Error(err)
-
-		go svc.informHooks(nil, err)
-
-		res = &evidence.StoreEvidenceResponse{
-			Status:        false,
-			StatusMessage: err.Error(),
-		}
-
-		err = status.Errorf(codes.Internal, "%v", err)
-		return
+	if err != nil && errors.Is(err, persistence.ErrUniqueConstraintFailed) {
+		return nil, status.Error(codes.AlreadyExists, "entry already exists")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
 	go svc.informHooks(req.Evidence, nil)
 
-	res = &evidence.StoreEvidenceResponse{
-		Status: true,
-	}
+	res = &evidence.StoreEvidenceResponse{}
 
-	log.Debugf("Evidence stored with id: %v", req.Evidence.Id)
+	log.Debugf("Evidence stored with id: %v", req.Evidence.GetId())
 
 	return res, nil
 }
@@ -151,7 +130,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesServer) (err error) {
 	var (
 		req *evidence.StoreEvidenceRequest
-		res *evidence.StoreEvidenceResponse
+		res *evidence.StoreEvidencesResponse
 	)
 
 	for {
@@ -171,9 +150,18 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		res, err = svc.StoreEvidence(context.Background(), evidenceRequest)
+		_, err = svc.StoreEvidence(context.Background(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
+			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
+			res = &evidence.StoreEvidencesResponse{
+				Status:        false,
+				StatusMessage: err.Error(),
+			}
+		} else {
+			res = &evidence.StoreEvidencesResponse{
+				Status: true,
+			}
 		}
 
 		// Send response back to the client

@@ -805,10 +805,6 @@ func (m *AssessEvidenceResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Status
-
-	// no validation rules for StatusMessage
-
 	if len(errors) > 0 {
 		return AssessEvidenceResponseMultiError(errors)
 	}
@@ -888,6 +884,112 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AssessEvidenceResponseValidationError{}
+
+// Validate checks the field values on AssessEvidencesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AssessEvidencesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AssessEvidencesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AssessEvidencesResponseMultiError, or nil if none found.
+func (m *AssessEvidencesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AssessEvidencesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for StatusMessage
+
+	if len(errors) > 0 {
+		return AssessEvidencesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// AssessEvidencesResponseMultiError is an error wrapping multiple validation
+// errors returned by AssessEvidencesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type AssessEvidencesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AssessEvidencesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AssessEvidencesResponseMultiError) AllErrors() []error { return m }
+
+// AssessEvidencesResponseValidationError is the validation error returned by
+// AssessEvidencesResponse.Validate if the designated constraints aren't met.
+type AssessEvidencesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AssessEvidencesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AssessEvidencesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AssessEvidencesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AssessEvidencesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AssessEvidencesResponseValidationError) ErrorName() string {
+	return "AssessEvidencesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AssessEvidencesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAssessEvidencesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AssessEvidencesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AssessEvidencesResponseValidationError{}
 
 // Validate checks the field values on AssessmentResult with the rules defined
 // in the proto definition for this message. If any rules are violated, the
