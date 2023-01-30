@@ -131,7 +131,7 @@ func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator
 func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
 	var (
 		result *orchestrator.StoreAssessmentResultRequest
-		res    *orchestrator.StoreAssessmentResultResponse
+		res    *orchestrator.StoreAssessmentResultsResponse
 	)
 
 	for {
@@ -154,12 +154,12 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
 		if err != nil {
 			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
-			res = &orchestrator.StoreAssessmentResultResponse{
+			res = &orchestrator.StoreAssessmentResultsResponse{
 				Status:        false,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &orchestrator.StoreAssessmentResultResponse{
+			res = &orchestrator.StoreAssessmentResultsResponse{
 				Status: true,
 			}
 		}

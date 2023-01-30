@@ -582,7 +582,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 		fields          fields
 		args            args
 		wantErr         bool
-		wantRespMessage []orchestrator.StoreAssessmentResultResponse
+		wantRespMessage []orchestrator.StoreAssessmentResultsResponse
 		wantErrMessage  string
 	}{
 		{
@@ -593,7 +593,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			},
 			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestsMock(count2))},
 			wantErr: false,
-			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
+			wantRespMessage: []orchestrator.StoreAssessmentResultsResponse{
 				{
 					Status: true,
 				},
@@ -610,7 +610,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			},
 			args:    args{streamToServer: createMockStream(createStoreAssessmentResultRequestMockWithMissingMetricID(count1))},
 			wantErr: false,
-			wantRespMessage: []orchestrator.StoreAssessmentResultResponse{
+			wantRespMessage: []orchestrator.StoreAssessmentResultsResponse{
 				{
 					Status:        false,
 					StatusMessage: "MetricId: value length must be at least 1 runes",
@@ -725,7 +725,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 type mockStreamer struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
-	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+	SentFromServer chan *orchestrator.StoreAssessmentResultsResponse
 }
 
 func createMockStream(requests []*orchestrator.StoreAssessmentResultRequest) *mockStreamer {
@@ -736,11 +736,11 @@ func createMockStream(requests []*orchestrator.StoreAssessmentResultRequest) *mo
 		m.RecvToServer <- req
 	}
 
-	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultsResponse, len(requests))
 	return m
 }
 
-func (m mockStreamer) Send(response *orchestrator.StoreAssessmentResultResponse) error {
+func (m mockStreamer) Send(response *orchestrator.StoreAssessmentResultsResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
@@ -788,10 +788,10 @@ func (mockStreamer) RecvMsg(_ interface{}) error {
 type mockStreamerWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
-	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+	SentFromServer chan *orchestrator.StoreAssessmentResultsResponse
 }
 
-func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultsResponse) error {
 	return errors.New("Send()-err")
 }
 
@@ -815,17 +815,17 @@ func createMockStreamWithSendErr(requests []*orchestrator.StoreAssessmentResultR
 		m.RecvToServer <- req
 	}
 
-	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultsResponse, len(requests))
 	return m
 }
 
 type mockStreamerWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
-	SentFromServer chan *orchestrator.StoreAssessmentResultResponse
+	SentFromServer chan *orchestrator.StoreAssessmentResultsResponse
 }
 
-func (mockStreamerWithRecvErr) Send(*orchestrator.StoreAssessmentResultResponse) error {
+func (mockStreamerWithRecvErr) Send(*orchestrator.StoreAssessmentResultsResponse) error {
 	panic("implement me")
 }
 
@@ -843,6 +843,6 @@ func createMockStreamWithRecvErr(requests []*orchestrator.StoreAssessmentResultR
 		m.RecvToServer <- req
 	}
 
-	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultResponse, len(requests))
+	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultsResponse, len(requests))
 	return m
 }
