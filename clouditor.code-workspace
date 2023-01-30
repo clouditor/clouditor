@@ -20,5 +20,42 @@
 		"yaml.schemas": {
 			"https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
 		},
+		"cSpell.words": [
+			"AISEC",
+			"bufnet",
+			"clientcredentials",
+			"clitest",
+			"Clouditor",
+			"Debugf",
+			"dialector",
+			"emptypb",
+			"Equalf",
+			"gocron",
+			"GOPATH",
+			"gorm",
+			"Infof",
+			"inmem",
+			"inmemory",
+			"jwks",
+			"JWKSURL",
+			"Kube",
+			"Kubernetes",
+			"logrus",
+			"orchestratortest",
+			"oxisto",
+			"PBES",
+			"proto",
+			"protobuf",
+			"protoc",
+			"Rego",
+			"sirupsen",
+			"stretchr",
+			"structpb",
+			"testdata",
+			"testutil",
+			"timestamppb",
+			"unmarshalling",
+			"Warnf"
+		]
 	}
 }

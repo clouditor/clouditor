@@ -65,6 +65,7 @@ var DefaultTypes = []any{
 	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
+	&assessment.AssessmentResult{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},

@@ -42,6 +42,7 @@ const (
 	MockMetricID          = "Mock Metric"
 	MockMetricName        = "Mock Metric Name"
 	MockMetricDescription = "This is a mock metric"
+	MockAnotherMetricID   = "Another Mock Metric"
 
 	// Assessment result
 	MockAssessmentResultID                   = "11111111-1111-1111-1111-111111111111"
@@ -68,6 +69,12 @@ const (
 	MockStateId     = "12345"
 	MockStateState  = "new"
 	MockStateTreeID = "12345"
+
+	// Assessment Results
+	MockAssessmentResult1ID = "11111111-1111-1111-1111-111111111111"
+	MockAssessmentResult2ID = "22222222-2222-2222-2222-222222222222"
+	MockAssessmentResult3ID = "33333333-3333-3333-3333-333333333333"
+	MockAssessmentResult4ID = "44444444-4444-4444-4444-444444444444"
 )
 
 var (

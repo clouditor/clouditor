@@ -7,6 +7,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // NewCertificate creates a mock certificate
@@ -124,3 +125,75 @@ func NewAnotherCloudService() *orchestrator.CloudService {
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
 }
+
+var (
+	MockAssessmentResult1 = &assessment.AssessmentResult{
+		Id:             testdata.MockAssessmentResult1ID,
+		Timestamp:      timestamppb.New(time.Unix(1, 0)),
+		CloudServiceId: testdata.MockCloudServiceID,
+		MetricId:       testdata.MockMetricID,
+		Compliant:      true,
+		EvidenceId:     testdata.MockEvidenceID,
+		ResourceId:     testdata.MockResourceID,
+		ResourceTypes:  []string{"Resource"},
+		MetricConfiguration: &assessment.MetricConfiguration{
+			Operator:       "==",
+			TargetValue:    structpb.NewBoolValue(true),
+			IsDefault:      true,
+			MetricId:       testdata.MockMetricID,
+			CloudServiceId: testdata.MockCloudServiceID,
+		},
+	}
+	MockAssessmentResult2 = &assessment.AssessmentResult{
+		Id:             testdata.MockAssessmentResult2ID,
+		Timestamp:      timestamppb.New(time.Unix(1, 0)),
+		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		MetricId:       testdata.MockMetricID,
+		Compliant:      true,
+		EvidenceId:     testdata.MockEvidenceID,
+		ResourceId:     testdata.MockResourceID,
+		ResourceTypes:  []string{"Resource"},
+		MetricConfiguration: &assessment.MetricConfiguration{
+			Operator:       "==",
+			TargetValue:    structpb.NewBoolValue(true),
+			IsDefault:      true,
+			MetricId:       testdata.MockMetricID,
+			CloudServiceId: testdata.MockAnotherCloudServiceID,
+		},
+	}
+	MockAssessmentResult3 = &assessment.AssessmentResult{
+		Id:             testdata.MockAssessmentResult3ID,
+		Timestamp:      timestamppb.New(time.Unix(1, 0)),
+		CloudServiceId: testdata.MockCloudServiceID,
+		MetricId:       testdata.MockAnotherMetricID,
+		Compliant:      false,
+		EvidenceId:     testdata.MockEvidenceID,
+		ResourceId:     testdata.MockResourceID,
+		ResourceTypes:  []string{"Resource"},
+		MetricConfiguration: &assessment.MetricConfiguration{
+			Operator:       "==",
+			TargetValue:    structpb.NewBoolValue(true),
+			IsDefault:      true,
+			MetricId:       testdata.MockMetricID,
+			CloudServiceId: testdata.MockCloudServiceID,
+		},
+	}
+	MockAssessmentResult4 = &assessment.AssessmentResult{
+		Id:             testdata.MockAssessmentResult4ID,
+		Timestamp:      timestamppb.New(time.Unix(1, 0)),
+		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		MetricId:       testdata.MockAnotherMetricID,
+		Compliant:      false,
+		EvidenceId:     testdata.MockEvidenceID,
+		ResourceId:     testdata.MockResourceID,
+		ResourceTypes:  []string{"Resource"},
+		MetricConfiguration: &assessment.MetricConfiguration{
+			Operator:       "==",
+			TargetValue:    structpb.NewBoolValue(true),
+			IsDefault:      true,
+			MetricId:       testdata.MockAnotherMetricID,
+			CloudServiceId: testdata.MockAnotherCloudServiceID,
+		},
+	}
+	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
+)
