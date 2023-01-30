@@ -229,12 +229,14 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
+	resp = &assessment.AssessEvidenceResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return resp, err
 	}
 
 	// Validate evidence
@@ -242,7 +244,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return resp, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	// Assess evidence
@@ -250,10 +252,10 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return resp, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	return nil, nil
+	return resp, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.

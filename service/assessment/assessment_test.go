@@ -624,7 +624,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
-			wantResp: nil,
+			wantResp: &assessment.AssessEvidenceResponse{},
 		},
 	}
 

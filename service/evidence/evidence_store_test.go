@@ -101,7 +101,7 @@ func TestService_StoreEvidence(t *testing.T) {
 					}},
 			},
 			wantErr:  false,
-			wantResp: nil,
+			wantResp: &evidence.StoreEvidenceResponse{},
 		},
 		{
 			name: "Store an evidence without toolId to the map",
@@ -124,7 +124,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr:  true,
-			wantResp: nil,
+			wantResp: &evidence.StoreEvidenceResponse{},
 		},
 	}
 	for _, tt := range tests {
@@ -347,7 +347,7 @@ func TestService_EvidenceHook(t *testing.T) {
 				},
 			},
 			wantErr:  false,
-			wantResp: nil,
+			wantResp: &evidence.StoreEvidenceResponse{},
 		},
 	}
 

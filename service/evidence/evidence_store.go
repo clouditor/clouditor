@@ -67,11 +67,13 @@ func init() {
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRequest) (resp *evidence.StoreEvidenceResponse, err error) {
+	resp = &evidence.StoreEvidenceResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return resp, err
 	}
 
 	s.evidences[req.Evidence.Id] = req.Evidence
@@ -80,7 +82,7 @@ func (s *Service) StoreEvidence(_ context.Context, req *evidence.StoreEvidenceRe
 
 	log.Debugf("Evidence stored with id: %v", req.Evidence.GetId())
 
-	return nil, nil
+	return resp, nil
 }
 
 // StoreEvidences is a method implementation of the evidenceServer interface: It receives evidences and stores them
