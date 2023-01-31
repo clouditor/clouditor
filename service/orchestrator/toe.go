@@ -59,7 +59,10 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
 	if c.AllInScope {
-		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
+		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{
+			CatalogId: req.TargetOfEvaluation.CatalogId,
+			PageSize:  2000,
+		})
 		if err != nil {
 			// The error is already a gRPC error, so we can just return it
 			return nil, err
