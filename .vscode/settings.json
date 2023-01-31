@@ -3,5 +3,5 @@
         "options": [
             "--proto_path=third_party",
         ]
-    },
+    }
 }
