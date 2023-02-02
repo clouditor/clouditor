@@ -295,24 +295,31 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 		return nil, err
 	}
 
-	// List all disks across all resource groups
-	listPager := d.clients.blockStorageClient.NewListPager(&armcompute.DisksClientListOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %w", ErrGettingNextPage, err)
-			return nil, err
-		}
-
-		for _, disk := range pageResponse.Value {
+	// List all disks
+	err := listPager(d.azureDiscovery,
+		d.clients.blockStorageClient.NewListPager,
+		d.clients.blockStorageClient.NewListByResourceGroupPager,
+		&armcompute.DisksClientListOptions{},
+		&armcompute.DisksClientListByResourceGroupOptions{},
+		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
+			return res.Value
+		},
+		func(res armcompute.DisksClientListByResourceGroupResponse) []*armcompute.Disk {
+			return res.Value
+		},
+		func(disk *armcompute.Disk) error {
 			blockStorages, err := d.handleBlockStorage(disk)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle block storage: %w", err)
+				return fmt.Errorf("could not handle block storage: %w", err)
 			}
+
 			log.Infof("Adding block storage '%s'", blockStorages.Name)
 
 			list = append(list, blockStorages)
-		}
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil

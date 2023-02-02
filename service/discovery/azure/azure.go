@@ -34,6 +34,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
@@ -88,8 +89,10 @@ func init() {
 type azureDiscovery struct {
 	isAuthorized bool
 
-	sub                 armsubscription.Subscription
-	cred                azcore.TokenCredential
+	sub  armsubscription.Subscription
+	cred azcore.TokenCredential
+	// rg optionally contains the name of a resource group. If this is not nil, all discovery calls will be scoped to the particular resource group.
+	rg                  *string
 	clientOptions       arm.ClientOptions
 	discovererComponent string
 	clients             clients
@@ -204,4 +207,59 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	}
 
 	return
+}
+
+func listPager[O1 any, R1 any, O2 any, R2 any, T any](
+	d *azureDiscovery,
+	laf func(options O1) *runtime.Pager[R1],
+	lraf func(resourceGroupName string, options O2) *runtime.Pager[R2],
+	o1 O1,
+	o2 O2,
+	valuer1 func(res R1) []*T,
+	valuer2 func(res R2) []*T,
+	callback func(disk *T) error,
+) error {
+	if d.rg == nil {
+		pager := laf(o1)
+		return allPages(pager, func(page R1) error {
+			value := valuer1(page)
+			for _, resource := range value {
+				err := callback(resource)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	} else {
+		pager := lraf(*d.rg, o2)
+		return allPages(pager, func(page R2) error {
+			value := valuer2(page)
+			for _, resource := range value {
+				err := callback(resource)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	}
+}
+
+func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error {
+	for pager.More() {
+		page, err := pager.NextPage(context.TODO())
+		if err != nil {
+			return fmt.Errorf("%s: %w", ErrGettingNextPage, err)
+		}
+
+		err = callback(page)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
