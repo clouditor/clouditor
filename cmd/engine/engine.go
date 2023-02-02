@@ -264,7 +264,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			},
 		),
 	)
-	evidenceStoreService = service_evidenceStore.NewService()
+	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
 	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)

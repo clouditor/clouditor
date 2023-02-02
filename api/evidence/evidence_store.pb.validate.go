@@ -35,6 +35,9 @@ var (
 	_ = sort.Sort
 )
 
+// define the regex for a UUID once up-front
+var _evidence_store_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
 // Validate checks the field values on StoreEvidenceRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -199,10 +202,6 @@ func (m *StoreEvidenceResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Status
-
-	// no validation rules for StatusMessage
-
 	if len(errors) > 0 {
 		return StoreEvidenceResponseMultiError(errors)
 	}
@@ -282,6 +281,112 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = StoreEvidenceResponseValidationError{}
+
+// Validate checks the field values on StoreEvidencesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *StoreEvidencesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StoreEvidencesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// StoreEvidencesResponseMultiError, or nil if none found.
+func (m *StoreEvidencesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StoreEvidencesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for StatusMessage
+
+	if len(errors) > 0 {
+		return StoreEvidencesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// StoreEvidencesResponseMultiError is an error wrapping multiple validation
+// errors returned by StoreEvidencesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type StoreEvidencesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StoreEvidencesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StoreEvidencesResponseMultiError) AllErrors() []error { return m }
+
+// StoreEvidencesResponseValidationError is the validation error returned by
+// StoreEvidencesResponse.Validate if the designated constraints aren't met.
+type StoreEvidencesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StoreEvidencesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StoreEvidencesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StoreEvidencesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StoreEvidencesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StoreEvidencesResponseValidationError) ErrorName() string {
+	return "StoreEvidencesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e StoreEvidencesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStoreEvidencesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StoreEvidencesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StoreEvidencesResponseValidationError{}
 
 // Validate checks the field values on ListEvidencesRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -530,3 +635,125 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListEvidencesResponseValidationError{}
+
+// Validate checks the field values on GetEvidenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetEvidenceRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetEvidenceRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetEvidenceRequestMultiError, or nil if none found.
+func (m *GetEvidenceRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetEvidenceRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if err := m._validateUuid(m.GetEvidenceId()); err != nil {
+		err = GetEvidenceRequestValidationError{
+			field:  "EvidenceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetEvidenceRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *GetEvidenceRequest) _validateUuid(uuid string) error {
+	if matched := _evidence_store_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// GetEvidenceRequestMultiError is an error wrapping multiple validation errors
+// returned by GetEvidenceRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetEvidenceRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetEvidenceRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetEvidenceRequestMultiError) AllErrors() []error { return m }
+
+// GetEvidenceRequestValidationError is the validation error returned by
+// GetEvidenceRequest.Validate if the designated constraints aren't met.
+type GetEvidenceRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetEvidenceRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetEvidenceRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetEvidenceRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetEvidenceRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetEvidenceRequestValidationError) ErrorName() string {
+	return "GetEvidenceRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetEvidenceRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetEvidenceRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetEvidenceRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetEvidenceRequestValidationError{}

@@ -30,6 +30,7 @@ package clouditor.evidence.v1;
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "tagger/tagger.proto";
 import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/evidence";
@@ -40,8 +41,10 @@ message Evidence {
   string id = 1 [ (validate.rules).string.uuid = true ];
 
   // time of evidence creation
-  google.protobuf.Timestamp timestamp = 2
-      [ (validate.rules).timestamp.required = true ];
+  google.protobuf.Timestamp timestamp = 2 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (validate.rules).timestamp.required = true
+  ];
 
   // Reference to a service this evidence was gathered from
   string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
@@ -49,13 +52,14 @@ message Evidence {
   // Reference to the tool which provided the evidence
   string tool_id = 4 [ (validate.rules).string.min_len = 1 ];
 
-  // Optional. Contains the evidence in its original form without following a defined
-  // schema, e.g. the raw JSON
-  optional string raw = 5
-    [ (validate.rules).string.min_len = 1 ];
+  // Optional. Contains the evidence in its original form without following a
+  // defined schema, e.g. the raw JSON
+  optional string raw = 5 [ (validate.rules).string.min_len = 1 ];
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Value resource = 6
-      [ (validate.rules).message.required = true ];
+  google.protobuf.Value resource = 6 [
+    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
+    (validate.rules).message.required = true
+  ];
 }

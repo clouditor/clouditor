@@ -71,6 +71,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/evidence_store/evidences/{evidenceId}:
+        get:
+            tags:
+                - EvidenceStore
+            description: |-
+                Returns a particular stored evidence. Part of the public API, also exposed
+                 as REST.
+            operationId: EvidenceStore_GetEvidence
+            parameters:
+                - name: evidenceId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Evidence'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         Evidence:
@@ -132,10 +159,7 @@ components:
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         StoreEvidenceResponse:
             type: object
-            properties:
-                status:
-                    type: boolean
-                statusMessage:
-                    type: string
+            properties: {}
+            description: StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 tags:
     - name: EvidenceStore
