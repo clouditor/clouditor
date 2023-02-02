@@ -29,10 +29,12 @@ import (
 	"context"
 	"errors"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -40,8 +42,8 @@ import (
 
 func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	var (
-		c     *orchestrator.Catalog
-		lcres *orchestrator.ListControlsResponse
+		c        *orchestrator.Catalog
+		controls []*orchestrator.Control
 	)
 
 	// Validate request
@@ -59,7 +61,11 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
 	if c.AllInScope {
-		lcres, err = svc.ListControls(ctx, &orchestrator.ListControlsRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
+		controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{CatalogId: c.Id}, func(ctx context.Context, req *orchestrator.ListControlsRequest, opts ...grpc.CallOption) (*orchestrator.ListControlsResponse, error) {
+			return svc.ListControls(ctx, req)
+		}, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
+			return res.Controls
+		})
 		if err != nil {
 			// The error is already a gRPC error, so we can just return it
 			return nil, err
@@ -67,7 +73,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 		// Make all controls in scope
 		// TODO: Certain catalogs differentiate between assurance levels
-		req.TargetOfEvaluation.ControlsInScope = lcres.Controls
+		req.TargetOfEvaluation.ControlsInScope = controls
 	}
 
 	// Create the ToE

@@ -296,7 +296,6 @@ func TestService_RemoveCatalog(t *testing.T) {
 func TestService_GetCategory(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -355,7 +354,6 @@ func TestService_GetCategory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -379,7 +377,6 @@ func TestService_GetCategory(t *testing.T) {
 func TestService_GetControl(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -444,7 +441,6 @@ func TestService_GetControl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			srv := &Service{
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -506,7 +502,6 @@ func TestService_ListControls(t *testing.T) {
 
 func TestService_loadCatalogs(t *testing.T) {
 	type fields struct {
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -578,7 +573,6 @@ func TestService_loadCatalogs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,

@@ -30,6 +30,9 @@ type EvidenceStoreClient interface {
 	StoreEvidences(ctx context.Context, opts ...grpc.CallOption) (EvidenceStore_StoreEvidencesClient, error)
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error)
+	// Returns a particular stored evidence. Part of the public API, also exposed
+	// as REST.
+	GetEvidence(ctx context.Context, in *GetEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error)
 }
 
 type evidenceStoreClient struct {
@@ -60,7 +63,7 @@ func (c *evidenceStoreClient) StoreEvidences(ctx context.Context, opts ...grpc.C
 
 type EvidenceStore_StoreEvidencesClient interface {
 	Send(*StoreEvidenceRequest) error
-	Recv() (*StoreEvidenceResponse, error)
+	Recv() (*StoreEvidencesResponse, error)
 	grpc.ClientStream
 }
 
@@ -72,8 +75,8 @@ func (x *evidenceStoreStoreEvidencesClient) Send(m *StoreEvidenceRequest) error 
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidenceResponse, error) {
-	m := new(StoreEvidenceResponse)
+func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidencesResponse, error) {
+	m := new(StoreEvidencesResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -83,6 +86,15 @@ func (x *evidenceStoreStoreEvidencesClient) Recv() (*StoreEvidenceResponse, erro
 func (c *evidenceStoreClient) ListEvidences(ctx context.Context, in *ListEvidencesRequest, opts ...grpc.CallOption) (*ListEvidencesResponse, error) {
 	out := new(ListEvidencesResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.evidence.v1.EvidenceStore/ListEvidences", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *evidenceStoreClient) GetEvidence(ctx context.Context, in *GetEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error) {
+	out := new(Evidence)
+	err := c.cc.Invoke(ctx, "/clouditor.evidence.v1.EvidenceStore/GetEvidence", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +113,9 @@ type EvidenceStoreServer interface {
 	StoreEvidences(EvidenceStore_StoreEvidencesServer) error
 	// Returns all stored evidences. Part of the public API, also exposed as REST.
 	ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error)
+	// Returns a particular stored evidence. Part of the public API, also exposed
+	// as REST.
+	GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error)
 	mustEmbedUnimplementedEvidenceStoreServer()
 }
 
@@ -116,6 +131,9 @@ func (UnimplementedEvidenceStoreServer) StoreEvidences(EvidenceStore_StoreEviden
 }
 func (UnimplementedEvidenceStoreServer) ListEvidences(context.Context, *ListEvidencesRequest) (*ListEvidencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEvidences not implemented")
+}
+func (UnimplementedEvidenceStoreServer) GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEvidence not implemented")
 }
 func (UnimplementedEvidenceStoreServer) mustEmbedUnimplementedEvidenceStoreServer() {}
 
@@ -153,7 +171,7 @@ func _EvidenceStore_StoreEvidences_Handler(srv interface{}, stream grpc.ServerSt
 }
 
 type EvidenceStore_StoreEvidencesServer interface {
-	Send(*StoreEvidenceResponse) error
+	Send(*StoreEvidencesResponse) error
 	Recv() (*StoreEvidenceRequest, error)
 	grpc.ServerStream
 }
@@ -162,7 +180,7 @@ type evidenceStoreStoreEvidencesServer struct {
 	grpc.ServerStream
 }
 
-func (x *evidenceStoreStoreEvidencesServer) Send(m *StoreEvidenceResponse) error {
+func (x *evidenceStoreStoreEvidencesServer) Send(m *StoreEvidencesResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -192,6 +210,24 @@ func _EvidenceStore_ListEvidences_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EvidenceStore_GetEvidence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEvidenceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvidenceStoreServer).GetEvidence(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.evidence.v1.EvidenceStore/GetEvidence",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvidenceStoreServer).GetEvidence(ctx, req.(*GetEvidenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EvidenceStore_ServiceDesc is the grpc.ServiceDesc for EvidenceStore service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +242,10 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListEvidences",
 			Handler:    _EvidenceStore_ListEvidences_Handler,
+		},
+		{
+			MethodName: "GetEvidence",
+			Handler:    _EvidenceStore_GetEvidence_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

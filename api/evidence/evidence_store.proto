@@ -48,7 +48,7 @@ service EvidenceStore {
   // Stores a stream of evidences to the evidence storage and returns a response
   // stream. Part of the public API, not exposed as REST.
   rpc StoreEvidences(stream StoreEvidenceRequest)
-      returns (stream StoreEvidenceResponse) {};
+      returns (stream StoreEvidencesResponse) {};
 
   // Returns all stored evidences. Part of the public API, also exposed as REST.
   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
@@ -56,12 +56,25 @@ service EvidenceStore {
       get : "/v1/evidence_store/evidences"
     };
   }
+
+  // Returns a particular stored evidence. Part of the public API, also exposed
+  // as REST.
+  rpc GetEvidence(GetEvidenceRequest) returns (Evidence) {
+    option (google.api.http) = {
+      get : "/v1/evidence_store/evidences/{evidence_id}"
+    };
+  }
 }
 
 message StoreEvidenceRequest {
   Evidence evidence = 1 [ (validate.rules).message.required = true ];
 }
-message StoreEvidenceResponse {
+
+// StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+message StoreEvidenceResponse {}
+
+// StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling. 
+message StoreEvidencesResponse {
   bool status = 1;
   string status_message = 2;
 }
@@ -75,4 +88,8 @@ message ListEvidencesRequest {
 message ListEvidencesResponse {
   repeated Evidence evidences = 1;
   string next_page_token = 2;
+}
+
+message GetEvidenceRequest {
+  string evidence_id = 1 [ (validate.rules).string.uuid = true ];
 }

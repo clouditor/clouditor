@@ -203,7 +203,7 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 
 type Orchestrator_StoreAssessmentResultsClient interface {
 	Send(*StoreAssessmentResultRequest) error
-	Recv() (*StoreAssessmentResultResponse, error)
+	Recv() (*StoreAssessmentResultsResponse, error)
 	grpc.ClientStream
 }
 
@@ -215,8 +215,8 @@ func (x *orchestratorStoreAssessmentResultsClient) Send(m *StoreAssessmentResult
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultResponse, error) {
-	m := new(StoreAssessmentResultResponse)
+func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultsResponse, error) {
+	m := new(StoreAssessmentResultsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -964,7 +964,7 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 }
 
 type Orchestrator_StoreAssessmentResultsServer interface {
-	Send(*StoreAssessmentResultResponse) error
+	Send(*StoreAssessmentResultsResponse) error
 	Recv() (*StoreAssessmentResultRequest, error)
 	grpc.ServerStream
 }
@@ -973,7 +973,7 @@ type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultResponse) error {
+func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
