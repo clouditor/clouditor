@@ -204,6 +204,7 @@ func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) 
 }
 
 func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.ListControlsInScopeRequest) (res *orchestrator.ListControlsInScopeResponse, err error) {
+	var conds = []any{gorm.WithoutPreload()}
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -215,8 +216,10 @@ func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.L
 		return nil, service.ErrPermissionDenied
 	}
 
+	conds = append(conds, "target_of_evaluation_cloud_service_id = ? AND target_of_evaluation_catalog_id = ?", req.CloudServiceId, req.CatalogId)
+
 	res = new(orchestrator.ListControlsInScopeResponse)
-	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
