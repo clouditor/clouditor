@@ -27,6 +27,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"net"
@@ -123,7 +124,8 @@ var (
 	db                   persistence.Storage
 	providers            []string
 
-	log *logrus.Entry
+	log     *logrus.Entry
+	version string
 )
 
 var engineCmd = &cobra.Command{

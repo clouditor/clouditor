@@ -38,6 +38,235 @@ var (
 // define the regex for a UUID once up-front
 var _orchestrator_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
+// Validate checks the field values on MetadataRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *MetadataRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MetadataRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// MetadataRequestMultiError, or nil if none found.
+func (m *MetadataRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MetadataRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return MetadataRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// MetadataRequestMultiError is an error wrapping multiple validation errors
+// returned by MetadataRequest.ValidateAll() if the designated constraints
+// aren't met.
+type MetadataRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MetadataRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MetadataRequestMultiError) AllErrors() []error { return m }
+
+// MetadataRequestValidationError is the validation error returned by
+// MetadataRequest.Validate if the designated constraints aren't met.
+type MetadataRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MetadataRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MetadataRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MetadataRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MetadataRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MetadataRequestValidationError) ErrorName() string { return "MetadataRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MetadataRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMetadataRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MetadataRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MetadataRequestValidationError{}
+
+// Validate checks the field values on MetadataResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *MetadataResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MetadataResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// MetadataResponseMultiError, or nil if none found.
+func (m *MetadataResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MetadataResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetMetadata()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, MetadataResponseValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, MetadataResponseValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MetadataResponseValidationError{
+				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return MetadataResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// MetadataResponseMultiError is an error wrapping multiple validation errors
+// returned by MetadataResponse.ValidateAll() if the designated constraints
+// aren't met.
+type MetadataResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MetadataResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MetadataResponseMultiError) AllErrors() []error { return m }
+
+// MetadataResponseValidationError is the validation error returned by
+// MetadataResponse.Validate if the designated constraints aren't met.
+type MetadataResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MetadataResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MetadataResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MetadataResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MetadataResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MetadataResponseValidationError) ErrorName() string { return "MetadataResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MetadataResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMetadataResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MetadataResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MetadataResponseValidationError{}
+
 // Validate checks the field values on RegisterAssessmentToolRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -8579,6 +8808,107 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RemoveCertificateRequestValidationError{}
+
+// Validate checks the field values on Metadata with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Metadata) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Metadata with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MetadataMultiError, or nil
+// if none found.
+func (m *Metadata) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Metadata) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Version
+
+	if len(errors) > 0 {
+		return MetadataMultiError(errors)
+	}
+
+	return nil
+}
+
+// MetadataMultiError is an error wrapping multiple validation errors returned
+// by Metadata.ValidateAll() if the designated constraints aren't met.
+type MetadataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MetadataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MetadataMultiError) AllErrors() []error { return m }
+
+// MetadataValidationError is the validation error returned by
+// Metadata.Validate if the designated constraints aren't met.
+type MetadataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MetadataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MetadataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MetadataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MetadataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MetadataValidationError) ErrorName() string { return "MetadataValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MetadataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMetadata.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MetadataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MetadataValidationError{}
 
 // Validate checks the field values on Certificate with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

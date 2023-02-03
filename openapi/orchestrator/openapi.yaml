@@ -1125,6 +1125,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/metadata:
+        get:
+            tags:
+                - Orchestrator
+            description: Get Metadata
+            operationId: Orchestrator_Metadata
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MetadataResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -1659,6 +1678,16 @@ components:
                         $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
+        Metadata:
+            type: object
+            properties:
+                version:
+                    type: string
+        MetadataResponse:
+            type: object
+            properties:
+                metadata:
+                    $ref: '#/components/schemas/Metadata'
         Metric:
             type: object
             properties:

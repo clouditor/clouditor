@@ -29,6 +29,7 @@ import (
 	"context"
 	"embed"
 	"errors"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -46,12 +47,17 @@ import (
 //go:embed *.json
 var f embed.FS
 
-var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
-var log *logrus.Entry
+//go:generate bash get_version.sh
+//go:embed version.txt
+var version string
 
 var DefaultMetricsFile = "metrics.json"
-
 var DefaultCatalogsFile = "catalogs.json"
+
+var (
+	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
+	log                         *logrus.Entry
+)
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -89,6 +95,9 @@ type Service struct {
 	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
+
+	// metadata is a struct for all necessary Clouditor metadata information
+	metadata *orchestrator.Metadata
 }
 
 func init() {
@@ -147,6 +156,9 @@ func NewService(opts ...ServiceOption) *Service {
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
+		metadata: &orchestrator.Metadata{
+			Version: strings.TrimRight(version, "\n"),
+		},
 	}
 
 	// Apply service options

@@ -20,3 +20,4 @@ engine
 cl
 coverage.cov
 *.log
+version.txt

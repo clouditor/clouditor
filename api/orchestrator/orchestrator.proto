@@ -39,6 +39,14 @@ option go_package = "clouditor.io/clouditor/api/orchestrator";
 
 // Manages the orchestration of components within the Clouditor architecture
 service Orchestrator {
+  // Get Metadata
+  rpc Metadata(MetadataRequest)
+  returns (MetadataResponse) {
+    option (google.api.http) = {
+      get: "/v1/orchestrator/metadata"
+    };
+  }
+
   // Registers the passed assessment tool
   rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
       returns (AssessmentTool) {
@@ -434,6 +442,12 @@ service Orchestrator {
                "{catalog_id}"
     };
   }
+}
+
+message MetadataRequest {}
+
+message MetadataResponse {
+  Metadata metadata = 1;
 }
 
 message RegisterAssessmentToolRequest {
@@ -947,6 +961,10 @@ message CreateCertificateRequest {
 
 message RemoveCertificateRequest {
   string certificate_id = 1 [ (validate.rules).string.min_len = 1 ];
+}
+
+message Metadata {
+  string version = 1;
 }
 
 // An ISO17021-based certificate
