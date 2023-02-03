@@ -111,8 +111,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	err := listPager(d.azureDiscovery,
 		d.clients.accountsClient.NewListPager,
 		d.clients.accountsClient.NewListByResourceGroupPager,
-		&armstorage.AccountsClientListOptions{},
-		&armstorage.AccountsClientListByResourceGroupOptions{},
 		func(res armstorage.AccountsClientListResponse) []*armstorage.Account {
 			return res.Value
 		},

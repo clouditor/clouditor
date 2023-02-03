@@ -209,18 +209,17 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	return
 }
 
+// listPager
 func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 	d *azureDiscovery,
 	laf func(options O1) *runtime.Pager[R1],
 	lraf func(resourceGroupName string, options O2) *runtime.Pager[R2],
-	o1 O1,
-	o2 O2,
 	valuer1 func(res R1) []*T,
 	valuer2 func(res R2) []*T,
 	callback func(disk *T) error,
 ) error {
 	if d.rg == nil {
-		pager := laf(o1)
+		pager := laf(*new(O1))
 		return allPages(pager, func(page R1) error {
 			value := valuer1(page)
 			for _, resource := range value {
@@ -233,7 +232,7 @@ func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 			return nil
 		})
 	} else {
-		pager := lraf(*d.rg, o2)
+		pager := lraf(*d.rg, *new(O2))
 		return allPages(pager, func(page R2) error {
 			value := valuer2(page)
 			for _, resource := range value {

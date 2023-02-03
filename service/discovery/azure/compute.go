@@ -170,26 +170,30 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 		return nil, err
 	}
 
-	// List all VMs across all resource groups
-	listPager := d.clients.virtualMachinesClient.NewListAllPager(&armcompute.VirtualMachinesClientListAllOptions{})
-
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-
-		for _, vm := range pageResponse.Value {
+	// List all VMs
+	err := listPager(d.azureDiscovery,
+		d.clients.virtualMachinesClient.NewListAllPager,
+		d.clients.virtualMachinesClient.NewListPager,
+		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
+			return res.Value
+		},
+		func(res armcompute.VirtualMachinesClientListResponse) []*armcompute.VirtualMachine {
+			return res.Value
+		},
+		func(vm *armcompute.VirtualMachine) error {
 			r, err := d.handleVirtualMachines(vm)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle virtual machine: %w", err)
+				return fmt.Errorf("could not handle virtual machine: %w", err)
 			}
 
 			log.Infof("Adding virtual machine '%s'", r.GetName())
 
 			list = append(list, r)
-		}
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil
@@ -299,8 +303,6 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	err := listPager(d.azureDiscovery,
 		d.clients.blockStorageClient.NewListPager,
 		d.clients.blockStorageClient.NewListByResourceGroupPager,
-		&armcompute.DisksClientListOptions{},
-		&armcompute.DisksClientListByResourceGroupOptions{},
 		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
 			return res.Value
 		},
