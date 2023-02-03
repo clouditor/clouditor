@@ -112,24 +112,26 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 	}
 
 	// List functions
-	listPager := d.clients.functionsClient.NewListPager(&armappservice.WebAppsClientListOptions{})
-	functionApps := make([]*armappservice.Site, 0)
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-		functionApps = append(functionApps, pageResponse.Value...)
-	}
+	err := listPager(d.azureDiscovery,
+		d.clients.functionsClient.NewListPager,
+		d.clients.functionsClient.NewListByResourceGroupPager,
+		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
+			return res.Value
+		},
+		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
+			return res.Value
+		},
+		func(function *armappservice.Site) error {
+			r := d.handleFunction(function)
 
-	// functionApp := *result.Response().Value
-	for i := range functionApps {
-		r := d.handleFunction(functionApps[i])
+			log.Infof("Adding function %+v", r)
 
-		log.Infof("Adding function %+v", r)
+			list = append(list, r)
 
-		list = append(list, r)
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil

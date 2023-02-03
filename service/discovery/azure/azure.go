@@ -82,6 +82,13 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 	}
 }
 
+// WithResourceGroup is a [DiscoveryOption] that scopes the discovery to a specific resource group.
+func WithResourceGroup(rg string) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.rg = &rg
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
@@ -209,7 +216,7 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	return
 }
 
-// listPager
+// listPager is magic
 func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 	d *azureDiscovery,
 	laf func(options O1) *runtime.Pager[R1],
