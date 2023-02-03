@@ -31,7 +31,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 )
 
-// GetMetric retrieves a metric specified by req.MetricId.
-func (svc *Service) Metadata(_ context.Context, req *orchestrator.MetadataRequest) (metadata *orchestrator.MetadataResponse, err error) {
+// Metadata retrieves the Clouditor metadata
+func (svc *Service) Metadata(_ context.Context, _ *orchestrator.MetadataRequest) (metadata *orchestrator.MetadataResponse, err error) {
 	return &orchestrator.MetadataResponse{Metadata: svc.metadata}, nil
 }
