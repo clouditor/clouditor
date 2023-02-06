@@ -46,9 +46,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// var AssuranceLevelHigh = "high"
-// var AssuranceLevelSubstantial = "substantial"
-
 func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
