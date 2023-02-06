@@ -71,9 +71,14 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 			return nil, err
 		}
 
-		// Make all controls in scope
-		// TODO: Certain catalogs differentiate between assurance levels
-		req.TargetOfEvaluation.ControlsInScope = controls
+		// If the catalog allows assurance levels, add only controls with the corresponsing assurance level.
+		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high includes all control.
+		if c.AssuranceLevel {
+			req.TargetOfEvaluation.ControlsInScope = getControls(controls, req.TargetOfEvaluation.GetAssuranceLevel())
+		} else {
+			// The catalog does not allow assurance levels, add all controls.
+			req.TargetOfEvaluation.ControlsInScope = controls
+		}
 	}
 
 	// Create the ToE
@@ -87,6 +92,46 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	res = req.TargetOfEvaluation
 
 	return
+}
+
+// getControls returns all controls based on the assurance level
+func getControls(controls []*orchestrator.Control, level orchestrator.AssuranceLevel) []*orchestrator.Control {
+
+	var (
+		basic       []*orchestrator.Control
+		substantial []*orchestrator.Control
+		high        []*orchestrator.Control
+		c           = []*orchestrator.Control{}
+	)
+
+	// Add controls based on their assurance level to the lists basic, substantial and high. If a controls is not defined regarding the assurance level it is dropped.
+	for i := range controls {
+		switch controls[i].GetAssuranceLevel() {
+		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
+			basic = append(basic, controls[i])
+		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
+			substantial = append(substantial, controls[i])
+		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
+			high = append(high, controls[i])
+		default:
+			continue
+		}
+	}
+
+	// Add all needed controls based on the assurance level and return
+	switch level {
+	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
+		c = append(c, basic...)
+	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
+		c = append(c, basic...)
+		c = append(c, substantial...)
+	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
+		c = append(c, basic...)
+		c = append(c, substantial...)
+		c = append(c, high...)
+	}
+
+	return c
 }
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI

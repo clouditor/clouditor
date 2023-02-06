@@ -1446,6 +1446,9 @@ components:
                 allInScope:
                     type: boolean
                     description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
+                assuranceLevel:
+                    type: boolean
+                    description: Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
         Category:
             type: object
             properties:
@@ -1537,6 +1540,15 @@ components:
                     type: string
                 parentControlCategoryCatalogId:
                     type: string
+                assuranceLevel:
+                    enum:
+                        - ASSURANCE_LEVEL_UNSPECIFIED
+                        - ASSURANCE_LEVEL_BASIC
+                        - ASSURANCE_LEVEL_SUBSTANTIAL
+                        - ASSURANCE_LEVEL_HIGH
+                    type: string
+                    description: An assurance level is not offered by every catalog, therefore it is optional.
+                    format: enum
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         ControlInScope:
             type: object
@@ -1559,7 +1571,7 @@ components:
                         - MONITORING_STATUS_DELEGATED
                     type: string
                     format: enum
-            description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
+            description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.) or assurance level (basic, substantial, high)
         GoogleProtobufAny:
             type: object
             properties:
@@ -1809,8 +1821,14 @@ components:
                 catalogId:
                     type: string
                 assuranceLevel:
+                    enum:
+                        - ASSURANCE_LEVEL_UNSPECIFIED
+                        - ASSURANCE_LEVEL_BASIC
+                        - ASSURANCE_LEVEL_SUBSTANTIAL
+                        - ASSURANCE_LEVEL_HIGH
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
+                    format: enum
                 controlsInScope:
                     type: array
                     items:

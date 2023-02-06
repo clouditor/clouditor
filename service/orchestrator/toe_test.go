@@ -47,8 +47,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var AssuranceLevelHigh = "high"
-var AssuranceLevelSubstantial = "substantial"
+// var AssuranceLevelHigh = "high"
+// var AssuranceLevelSubstantial = "substantial"
 
 func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
@@ -331,13 +331,13 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: testdata.MockCloudServiceID,
 			CatalogId:      testdata.MockCatalogID,
-			AssuranceLevel: &AssuranceLevelSubstantial,
+			AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
 		},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
 	assert.NoError(t, toe.Validate())
-	assert.Equal(t, &AssuranceLevelSubstantial, toe.AssuranceLevel)
+	assert.Equal(t, orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC, toe.AssuranceLevel)
 }
 
 func TestService_RemoveTargetOfEvaluation(t *testing.T) {
@@ -450,7 +450,7 @@ func TestToeHook(t *testing.T) {
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: testdata.MockCloudServiceID,
 						CatalogId:      testdata.MockCatalogID,
-						AssuranceLevel: &AssuranceLevelSubstantial,
+						AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
 					},
 				},
 			},
@@ -458,7 +458,7 @@ func TestToeHook(t *testing.T) {
 			wantResp: &orchestrator.TargetOfEvaluation{
 				CloudServiceId: testdata.MockCloudServiceID,
 				CatalogId:      testdata.MockCatalogID,
-				AssuranceLevel: &AssuranceLevelSubstantial,
+				AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
 			},
 		},
 	}
@@ -545,7 +545,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			wantRes: &orchestrator.ListControlsInScopeResponse{
 				ControlsInScope: []*orchestrator.ControlInScope{
 					{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -572,14 +572,14 @@ func TestService_ListControlsInScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 					assert.NoError(t, s.Update(&orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					}, orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -598,7 +598,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			wantRes: &orchestrator.ListControlsInScopeResponse{
 				ControlsInScope: []*orchestrator.ControlInScope{
 					{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -690,7 +690,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -713,7 +713,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -769,7 +769,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
@@ -838,7 +838,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -848,7 +848,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				},
 			},
 			wantRes: &orchestrator.ControlInScope{
-				ControlId:                        testdata.MockControlID,
+				ControlId:                        testdata.MockControlID1,
 				ControlCategoryName:              testdata.MockCategoryName,
 				ControlCategoryCatalogId:         testdata.MockCatalogID,
 				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -867,7 +867,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -890,7 +890,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
-						ControlId:                        testdata.MockControlID,
+						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
@@ -957,7 +957,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					ControlId:           testdata.MockControlID,
+					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
 					CloudServiceId:      testdata.MockCloudServiceID,
 					CatalogId:           testdata.MockCatalogID,
@@ -974,7 +974,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					ControlId:           testdata.MockControlID,
+					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
 					CloudServiceId:      testdata.MockCloudServiceID,
 					CatalogId:           testdata.MockCatalogID,
@@ -993,7 +993,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				in0: testutil.TestContextOnlyService1,
 				req: &orchestrator.RemoveControlFromScopeRequest{
 					CloudServiceId:      testutil.TestCloudService2,
-					ControlId:           testdata.MockControlID,
+					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
 					CatalogId:           testdata.MockCatalogID,
 				},
@@ -1011,6 +1011,66 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			}
 			_, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err, tt.args)
+		})
+	}
+}
+
+func Test_getControls(t *testing.T) {
+	type args struct {
+		controls []*orchestrator.Control
+		level    orchestrator.AssuranceLevel
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*orchestrator.Control
+	}{
+		{
+			name: "Missing controls",
+			args: args{
+				controls: []*orchestrator.Control{},
+				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+			},
+			want: []*orchestrator.Control{},
+		},
+		{
+			name: "Happy path with assurance level unspecified",
+			args: args{
+				controls: orchestratortest.MockControls,
+				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+			},
+			want: []*orchestrator.Control{},
+		},
+		{
+			name: "Happy path with assurance level basic",
+			args: args{
+				controls: orchestratortest.MockControls,
+				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
+			},
+			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2},
+		},
+		{
+			name: "Happy path with assurance level substantial",
+			args: args{
+				controls: orchestratortest.MockControls,
+				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
+			},
+			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2, orchestratortest.MockControl3},
+		},
+		{
+			name: "Happy path with assurance level high",
+			args: args{
+				controls: orchestratortest.MockControls,
+				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH,
+			},
+			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2, orchestratortest.MockControl3, orchestratortest.MockControl4},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getControls(tt.args.controls, tt.args.level); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getControls() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

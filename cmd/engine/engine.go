@@ -252,7 +252,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithCatalogsFile("eucs_catalog.json"))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(

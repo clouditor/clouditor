@@ -4149,6 +4149,8 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AllInScope
 
+	// no validation rules for AssuranceLevel
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
@@ -4551,6 +4553,17 @@ func (m *Control) validate(all bool) error {
 
 	}
 
+	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
+		err := ControlValidationError{
+			field:  "AssuranceLevel",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if m.ParentControlId != nil {
 
 		if utf8.RuneCountInString(m.GetParentControlId()) < 1 {
@@ -4718,6 +4731,17 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
+		err := TargetOfEvaluationValidationError{
+			field:  "AssuranceLevel",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetControlsInScope() {
 		_, _ = idx, item
 
@@ -4759,21 +4783,6 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 					cause:  err,
 				}
 			}
-		}
-
-	}
-
-	if m.AssuranceLevel != nil {
-
-		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
-			err := TargetOfEvaluationValidationError{
-				field:  "AssuranceLevel",
-				reason: "value does not match regex pattern \"^(|basic|substantial|high)$\"",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 
 	}
@@ -4865,8 +4874,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
-
-var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high)$")
 
 // Validate checks the field values on ListControlsInScopeRequest with the
 // rules defined in the proto definition for this message. If any rules are
