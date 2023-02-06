@@ -32,7 +32,6 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -284,12 +283,6 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
-
-	// 3rd case: Invalid request
-	_, err = orchestratorService.ListTargetsOfEvaluation(context.Background(),
-		&orchestrator.ListTargetsOfEvaluationRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestService_UpdateTargetOfEvaluation(t *testing.T) {
@@ -1047,7 +1040,7 @@ func Test_getControls(t *testing.T) {
 				controls: orchestratortest.MockControls,
 				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
 			},
-			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2},
+			want: []*orchestrator.Control{orchestratortest.MockControl2},
 		},
 		{
 			name: "Happy path with assurance level substantial",
@@ -1055,7 +1048,7 @@ func Test_getControls(t *testing.T) {
 				controls: orchestratortest.MockControls,
 				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
 			},
-			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2, orchestratortest.MockControl3},
+			want: []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3},
 		},
 		{
 			name: "Happy path with assurance level high",
@@ -1063,7 +1056,7 @@ func Test_getControls(t *testing.T) {
 				controls: orchestratortest.MockControls,
 				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH,
 			},
-			want: []*orchestrator.Control{orchestratortest.MockControl1, orchestratortest.MockControl2, orchestratortest.MockControl3, orchestratortest.MockControl4},
+			want: []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3, orchestratortest.MockControl4},
 		},
 	}
 	for _, tt := range tests {

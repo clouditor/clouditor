@@ -203,7 +203,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
+		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID,
 			Name:        testdata.MockMetricName,

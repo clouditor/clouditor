@@ -104,19 +104,34 @@ func getControls(controls []*orchestrator.Control, level orchestrator.AssuranceL
 		c           = []*orchestrator.Control{}
 	)
 
+	// TODO(all): Work around until the controls have the assurance levels set
 	// Add controls based on their assurance level to the lists basic, substantial and high. If a controls is not defined regarding the assurance level it is dropped.
 	for i := range controls {
-		switch controls[i].GetAssuranceLevel() {
-		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
+		c := controls[i].GetId()
+		if c[len(c)-1:] == "B" {
 			basic = append(basic, controls[i])
-		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
+		} else if c[len(c)-1:] == "S" {
 			substantial = append(substantial, controls[i])
-		case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
+		} else if c[len(c)-1:] == "H" {
 			high = append(high, controls[i])
-		default:
+		} else {
 			continue
 		}
 	}
+
+	// // Add controls based on their assurance level to the lists basic, substantial and high. If a controls is not defined regarding the assurance level it is dropped.
+	// for i := range controls {
+	// 	switch controls[i].GetAssuranceLevel() {
+	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
+	// 		basic = append(basic, controls[i])
+	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
+	// 		substantial = append(substantial, controls[i])
+	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
+	// 		high = append(high, controls[i])
+	// 	default:
+	// 		continue
+	// 	}
+	// }
 
 	// Add all needed controls based on the assurance level and return
 	switch level {
