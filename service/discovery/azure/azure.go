@@ -216,21 +216,35 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	return
 }
 
-// listPager is magic
+// listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It
+// takes the following arguments:
+//   - d, an [azureDiscovery] struct,
+//   - newListAllPager, a function that supplies a [runtime.Pager] listing all resources of a specific Azure client,
+//   - newListByResourceGroupPager, a function that supplies a [runtime.Pager] listing all resource of a specific resource group,
+//   - resToValues1, a function that takes the response from a single page of newListAllPager and returns its values,
+//   - resToValues2, a function that takes the response from a single page of newListByResourceGroupPager and returns its values,
+//   - callback, a function that is called for each item in every page.
+//
+// group scope is specified in the azureDiscovery object,
 func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 	d *azureDiscovery,
-	laf func(options O1) *runtime.Pager[R1],
-	lraf func(resourceGroupName string, options O2) *runtime.Pager[R2],
-	valuer1 func(res R1) []*T,
-	valuer2 func(res R2) []*T,
+	newListAllPager func(options O1) *runtime.Pager[R1],
+	newListByResourceGroupPager func(resourceGroupName string, options O2) *runtime.Pager[R2],
+	resToValues1 func(res R1) []*T,
+	resToValues2 func(res R2) []*T,
 	callback func(disk *T) error,
 ) error {
+	// If the resource group is empty, we invoke the all-pager
 	if d.rg == nil {
-		pager := laf(*new(O1))
+		pager := newListAllPager(*new(O1))
+		// Invoke a callback for each page
 		return allPages(pager, func(page R1) error {
-			value := valuer1(page)
-			for _, resource := range value {
+			// Retrieve all resources of every page
+			values := resToValues1(page)
+			for _, resource := range values {
+				// Invoke the outer callback for each resource
 				err := callback(resource)
+				// We abort with the supplied error, if the callback issued an error
 				if err != nil {
 					return err
 				}
@@ -239,11 +253,16 @@ func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 			return nil
 		})
 	} else {
-		pager := lraf(*d.rg, *new(O2))
+		// Otherwise, we ivnoke the by-resource-group-pager
+		pager := newListByResourceGroupPager(*d.rg, *new(O2))
+		// Invoke a callback for each page
 		return allPages(pager, func(page R2) error {
-			value := valuer2(page)
-			for _, resource := range value {
+			// Retrieve all resources of every page
+			values := resToValues2(page)
+			for _, resource := range values {
+				// Invoke the outer callback for each resource
 				err := callback(resource)
+				// We abort with the supplied error, if the callback issued an error
 				if err != nil {
 					return err
 				}
@@ -254,6 +273,7 @@ func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 	}
 }
 
+// allPages loops through all pages of a [runtime.Pager] and issues a callback to each page.
 func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error {
 	for pager.More() {
 		page, err := pager.NextPage(context.TODO())
