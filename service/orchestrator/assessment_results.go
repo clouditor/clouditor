@@ -70,11 +70,11 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	// * compliant status
 	// * metric ID
 	if req.FilteredCloudServiceId != nil {
-		query = append(query, "cloud_service_id == ?")
+		query = append(query, "cloud_service_id = ?")
 		args = append(args, req.GetFilteredCloudServiceId())
 	}
 	if req.FilteredCompliant != nil {
-		query = append(query, "compliant == ?")
+		query = append(query, "compliant = ?")
 		args = append(args, req.GetFilteredCompliant())
 	}
 	if req.FilteredMetricId != nil {

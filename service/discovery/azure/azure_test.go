@@ -310,13 +310,13 @@ func Test_initClient(t *testing.T) {
 	}
 }
 
-func NewMockAzureDiscovery(transport policy.Transporter) *azureDiscovery {
+func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	var subID = "00000000-0000-0000-0000-000000000000"
 	sub := armsubscription.Subscription{
 		SubscriptionID: &subID,
 	}
 
-	return &azureDiscovery{
+	d := &azureDiscovery{
 		cred: &mockAuthorizer{},
 		sub:  sub,
 		clientOptions: arm.ClientOptions{
@@ -326,4 +326,11 @@ func NewMockAzureDiscovery(transport policy.Transporter) *azureDiscovery {
 		},
 		csID: testutil.TestCloudService1,
 	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
 }
