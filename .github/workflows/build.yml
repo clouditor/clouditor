@@ -17,9 +17,9 @@ jobs:
           fetch-depth: '0'
       - name: Find latest tag
         run: |
-        git --version
-        git status
-        git describe
+          git --version
+          git status
+          git describe
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
