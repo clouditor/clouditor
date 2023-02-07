@@ -27,9 +27,10 @@ package orchestrator
 
 import (
 	"context"
+	"debug/buildinfo"
 	"embed"
 	"errors"
-	"strings"
+	"runtime/debug"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -46,10 +47,6 @@ import (
 
 //go:embed *.json
 var f embed.FS
-
-//go:generate bash get_version.sh
-//go:embed version.txt
-var version string
 
 var DefaultMetricsFile = "metrics.json"
 var DefaultCatalogsFile = "catalogs.json"
@@ -98,6 +95,10 @@ type Service struct {
 
 	// metadata is a struct for all necessary Clouditor metadata information
 	metadata *orchestrator.Metadata
+
+	// Go binary build informaton
+	// TODO(all): How to put that to the metadata proto message
+	buildInfo *buildinfo.BuildInfo
 }
 
 func init() {
@@ -149,16 +150,22 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 	}
 }
 
+// SetGitReleaseTag is an option to set the Clouditors last release tag. The release tag is set to the version number.
+func SetGitReleaseTag(tag string) ServiceOption {
+	return func(s *Service) {
+		s.metadata.Version = tag
+	}
+}
+
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error
+	var ok bool
 	s := Service{
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
-		metadata: &orchestrator.Metadata{
-			Version: strings.TrimRight(version, "\n"),
-		},
+		metadata:     &orchestrator.Metadata{},
 	}
 
 	// Apply service options
@@ -185,6 +192,14 @@ func NewService(opts ...ServiceOption) *Service {
 
 	if err = s.loadCatalogs(); err != nil {
 		log.Errorf("Could not load embedded catalogs: %v", err)
+	}
+
+	// Set build info
+	s.buildInfo, ok = debug.ReadBuildInfo()
+	if !ok {
+		log.Errorf("error reading build info: %v", err)
+	} else {
+		log.Info("Build info: %v", s.buildInfo)
 	}
 
 	return &s

@@ -33,7 +33,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"runtime/debug"
 	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -126,7 +125,7 @@ var (
 	providers            []string
 
 	log     *logrus.Entry
-	Version string
+	version string
 )
 
 var engineCmd = &cobra.Command{
@@ -219,10 +218,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  `)
 
-	info, _ := debug.ReadBuildInfo()
-	log.Infof("Build info: %v", info)
-	log.Infof("Version: %v", Version)
-
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
 	} else {
@@ -259,7 +254,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.SetGitReleaseTag(version))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(

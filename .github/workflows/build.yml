@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: |
           mkdir -p build
-          go build -o build ./...
+          go build -ldflags="-X 'main.version=$(git tag | tail -1)'" -o build ./...
       - name: Test
         run: |
           go install github.com/mfridman/tparse@latest
