@@ -220,18 +220,26 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 // takes the following arguments:
 //   - d, an [azureDiscovery] struct,
 //   - newListAllPager, a function that supplies a [runtime.Pager] listing all resources of a specific Azure client,
-//   - newListByResourceGroupPager, a function that supplies a [runtime.Pager] listing all resource of a specific resource group,
+//   - newListByResourceGroupPager, a function that supplies a [runtime.Pager] listing all resources of a specific resource group,
 //   - resToValues1, a function that takes the response from a single page of newListAllPager and returns its values,
 //   - resToValues2, a function that takes the response from a single page of newListByResourceGroupPager and returns its values,
 //   - callback, a function that is called for each item in every page.
 //
-// group scope is specified in the azureDiscovery object,
+// This function will then decide to use newListAllPager or newListByResourceGroupPager depending on whether a resource
+// group scope is set in the [azureDiscovery] object.
+//
+// This function makes heavy use of the following type constraints (generics):
+//   - O1, a type that represents an option argument to the newListAllPager function, e.g. *[armcompute.VirtualMachinesClientListAllOptions],
+//   - R1, a type that represents the return type of the newListAllPager function, e.g. [armcompute.VirtualMachinesClientListAllResponse],
+//   - O2, a type that represents an option argument to the newListByResourceGroupPager function, e.g. *[armcompute.VirtualMachinesClientListOptions],
+//   - R1, a type that represents the return type of the newListAllPager function, e.g. [armcompute.VirtualMachinesClientListResponse],
+//   - T, a type that represents the final resource that is supplied to the callback, e.g. *[armcompute.VirtualMachine].
 func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 	d *azureDiscovery,
 	newListAllPager func(options O1) *runtime.Pager[R1],
 	newListByResourceGroupPager func(resourceGroupName string, options O2) *runtime.Pager[R2],
-	resToValues1 func(res R1) []*T,
-	resToValues2 func(res R2) []*T,
+	allPagerResponseToValues func(res R1) []*T,
+	allByResourceGroupPagerResponseToValues func(res R2) []*T,
 	callback func(disk *T) error,
 ) error {
 	// If the resource group is empty, we invoke the all-pager
@@ -240,7 +248,7 @@ func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 		// Invoke a callback for each page
 		return allPages(pager, func(page R1) error {
 			// Retrieve all resources of every page
-			values := resToValues1(page)
+			values := allPagerResponseToValues(page)
 			for _, resource := range values {
 				// Invoke the outer callback for each resource
 				err := callback(resource)
@@ -258,7 +266,7 @@ func listPager[O1 any, R1 any, O2 any, R2 any, T any](
 		// Invoke a callback for each page
 		return allPages(pager, func(page R2) error {
 			// Retrieve all resources of every page
-			values := resToValues2(page)
+			values := allByResourceGroupPagerResponseToValues(page)
 			for _, resource := range values {
 				// Invoke the outer callback for each resource
 				err := callback(resource)
