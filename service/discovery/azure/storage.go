@@ -107,27 +107,27 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
-	// List all storage accounts across all resource groups
-	listPager := d.clients.accountsClient.NewListPager(&armstorage.AccountsClientListOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-
-		// Discover object and file storages
-		for _, account := range pageResponse.Value {
+	// Discover object and file storages
+	err := listPager(d.azureDiscovery,
+		d.clients.accountsClient.NewListPager,
+		d.clients.accountsClient.NewListByResourceGroupPager,
+		func(res armstorage.AccountsClientListResponse) []*armstorage.Account {
+			return res.Value
+		},
+		func(res armstorage.AccountsClientListByResourceGroupResponse) []*armstorage.Account {
+			return res.Value
+		},
+		func(account *armstorage.Account) error {
 			// Discover object storages
 			objectStorages, err := d.discoverObjectStorages(account)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle object storages: %w", err)
+				return fmt.Errorf("could not handle object storages: %w", err)
 			}
 
 			// Discover file storages
 			fileStorages, err := d.discoverFileStorages(account)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle file storages: %w", err)
+				return fmt.Errorf("could not handle file storages: %w", err)
 			}
 
 			storageResourcesList = append(storageResourcesList, objectStorages...)
@@ -136,11 +136,14 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			// Create storage service for all storage account resources
 			storageService, err := d.handleStorageAccount(account, storageResourcesList)
 			if err != nil {
-				return nil, fmt.Errorf("could not create storage service: %w", err)
+				return fmt.Errorf("could not create storage service: %w", err)
 			}
 
 			storageResourcesList = append(storageResourcesList, storageService)
-		}
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return storageResourcesList, nil
