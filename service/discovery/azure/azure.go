@@ -34,6 +34,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
@@ -81,6 +82,13 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 	}
 }
 
+// WithResourceGroup is a [DiscoveryOption] that scopes the discovery to a specific resource group.
+func WithResourceGroup(rg string) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.rg = &rg
+	}
+}
+
 func init() {
 	log = logrus.WithField("component", "azure-discovery")
 }
@@ -88,8 +96,10 @@ func init() {
 type azureDiscovery struct {
 	isAuthorized bool
 
-	sub                 armsubscription.Subscription
-	cred                azcore.TokenCredential
+	sub  armsubscription.Subscription
+	cred azcore.TokenCredential
+	// rg optionally contains the name of a resource group. If this is not nil, all discovery calls will be scoped to the particular resource group.
+	rg                  *string
 	clientOptions       arm.ClientOptions
 	discovererComponent string
 	clients             clients
@@ -204,4 +214,86 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	}
 
 	return
+}
+
+// listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It
+// takes the following arguments:
+//   - d, an [azureDiscovery] struct,
+//   - newListAllPager, a function that supplies a [runtime.Pager] listing all resources of a specific Azure client,
+//   - newListByResourceGroupPager, a function that supplies a [runtime.Pager] listing all resources of a specific resource group,
+//   - resToValues1, a function that takes the response from a single page of newListAllPager and returns its values,
+//   - resToValues2, a function that takes the response from a single page of newListByResourceGroupPager and returns its values,
+//   - callback, a function that is called for each item in every page.
+//
+// This function will then decide to use newListAllPager or newListByResourceGroupPager depending on whether a resource
+// group scope is set in the [azureDiscovery] object.
+//
+// This function makes heavy use of the following type constraints (generics):
+//   - O1, a type that represents an option argument to the newListAllPager function, e.g. *[armcompute.VirtualMachinesClientListAllOptions],
+//   - R1, a type that represents the return type of the newListAllPager function, e.g. [armcompute.VirtualMachinesClientListAllResponse],
+//   - O2, a type that represents an option argument to the newListByResourceGroupPager function, e.g. *[armcompute.VirtualMachinesClientListOptions],
+//   - R1, a type that represents the return type of the newListAllPager function, e.g. [armcompute.VirtualMachinesClientListResponse],
+//   - T, a type that represents the final resource that is supplied to the callback, e.g. *[armcompute.VirtualMachine].
+func listPager[O1 any, R1 any, O2 any, R2 any, T any](
+	d *azureDiscovery,
+	newListAllPager func(options O1) *runtime.Pager[R1],
+	newListByResourceGroupPager func(resourceGroupName string, options O2) *runtime.Pager[R2],
+	allPagerResponseToValues func(res R1) []*T,
+	allByResourceGroupPagerResponseToValues func(res R2) []*T,
+	callback func(disk *T) error,
+) error {
+	// If the resource group is empty, we invoke the all-pager
+	if d.rg == nil {
+		pager := newListAllPager(*new(O1))
+		// Invoke a callback for each page
+		return allPages(pager, func(page R1) error {
+			// Retrieve all resources of every page
+			values := allPagerResponseToValues(page)
+			for _, resource := range values {
+				// Invoke the outer callback for each resource
+				err := callback(resource)
+				// We abort with the supplied error, if the callback issued an error
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	} else {
+		// Otherwise, we ivnoke the by-resource-group-pager
+		pager := newListByResourceGroupPager(*d.rg, *new(O2))
+		// Invoke a callback for each page
+		return allPages(pager, func(page R2) error {
+			// Retrieve all resources of every page
+			values := allByResourceGroupPagerResponseToValues(page)
+			for _, resource := range values {
+				// Invoke the outer callback for each resource
+				err := callback(resource)
+				// We abort with the supplied error, if the callback issued an error
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	}
+}
+
+// allPages loops through all pages of a [runtime.Pager] and issues a callback to each page.
+func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error {
+	for pager.More() {
+		page, err := pager.NextPage(context.TODO())
+		if err != nil {
+			return fmt.Errorf("%s: %w", ErrGettingNextPage, err)
+		}
+
+		err = callback(page)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
