@@ -964,7 +964,14 @@ message RemoveCertificateRequest {
 }
 
 message Metadata {
-  string version = 1;
+  string clouditor_version = 1;
+  string golang_version = 2;
+  repeated Dependency dependency = 3; 
+}
+
+message Dependency{
+  string path = 1; 
+  string version = 2; 
 }
 
 // An ISO17021-based certificate

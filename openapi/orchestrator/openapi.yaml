@@ -1579,6 +1579,13 @@ components:
                     type: string
                     format: enum
             description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
+        Dependency:
+            type: object
+            properties:
+                path:
+                    type: string
+                version:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -1681,8 +1688,14 @@ components:
         Metadata:
             type: object
             properties:
-                version:
+                clouditorVersion:
                     type: string
+                golangVersion:
+                    type: string
+                dependency:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Dependency'
         MetadataResponse:
             type: object
             properties:

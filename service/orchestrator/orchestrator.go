@@ -150,10 +150,10 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 	}
 }
 
-// SetGitReleaseTag is an option to set the Clouditors last release tag. The release tag is set to the version number.
-func SetGitReleaseTag(tag string) ServiceOption {
+// WithClouditorVersion is an option to set the Clouditors last release version.
+func WithClouditorVersion(version string) ServiceOption {
 	return func(s *Service) {
-		s.metadata.Version = tag
+		s.metadata.ClouditorVersion = version
 	}
 }
 
@@ -165,7 +165,11 @@ func NewService(opts ...ServiceOption) *Service {
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
-		metadata:     &orchestrator.Metadata{},
+		metadata: &orchestrator.Metadata{
+			ClouditorVersion: "",
+			GolangVersion:    "",
+			Dependency:       []*orchestrator.Dependency{},
+		},
 	}
 
 	// Apply service options
@@ -199,7 +203,14 @@ func NewService(opts ...ServiceOption) *Service {
 	if !ok {
 		log.Errorf("error reading build info: %v", err)
 	} else {
-		log.Info("Build info: %v", s.buildInfo)
+		s.metadata.GolangVersion = s.buildInfo.GoVersion
+		for _, d := range s.buildInfo.Deps {
+			s.metadata.Dependency = append(s.metadata.Dependency, &orchestrator.Dependency{
+				Path:    d.Path,
+				Version: d.Version,
+			})
+		}
+
 	}
 
 	return &s

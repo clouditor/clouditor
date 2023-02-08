@@ -207,7 +207,7 @@ func initConfig() {
 func doCmd(_ *cobra.Command, _ []string) (err error) {
 	log.Info("Welcome to new Clouditor 2.0")
 
-	fmt.Println(`
+	fmt.Printf(`
            $$\                           $$\ $$\   $$\
            $$ |                          $$ |\__|  $$ |
   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
@@ -216,7 +216,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- `)
+ 
+  Version %s
+  `, version)
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
@@ -254,7 +256,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.SetGitReleaseTag(version))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithClouditorVersion(version))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
