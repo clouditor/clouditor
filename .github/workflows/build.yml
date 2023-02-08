@@ -17,7 +17,6 @@ jobs:
           fetch-depth: 0
       - name: Find latest tag
         run: |
-          git --version
           git describe --tags --abbrev=0
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -42,7 +41,7 @@ jobs:
       - name: Build
         run: |
           mkdir -p build
-          go build -ldflags="-X 'main.version=$(git tag | tail -1)'" -o build ./...
+          go build -ldflags="-X 'main.version=$(git describe --tags --abbrev=0)'" -o build ./...
       - name: Test
         run: |
           go install github.com/mfridman/tparse@latest
