@@ -18,7 +18,7 @@ jobs:
       - name: Find latest tag
         run: |
           git --version
-          git describe --abbrev=0
+          git describe --tags --abbrev=0
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
