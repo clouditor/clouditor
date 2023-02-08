@@ -145,7 +145,7 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 	}
 }
 
-// WithClouditorVersion is an option to set the Clouditors last release version.
+// WithClouditorVersion is an option to set the Clouditor's last release version.
 func WithClouditorVersion(version string) ServiceOption {
 	return func(s *Service) {
 		s.metadata.ClouditorVersion = version
