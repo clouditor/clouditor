@@ -16,7 +16,7 @@ jobs:
       - name: Find latest tag
         run: |
           git --version
-          git tag | tail -1
+          git tag
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
