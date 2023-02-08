@@ -325,3 +325,8 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 
 	return &emptypb.Empty{}, nil
 }
+
+// Metadata implements method to get Clouditors metadata information
+func (svc *Service) Metadata(_ context.Context, _ *orchestrator.MetadataRequest) (metadata *orchestrator.MetadataResponse, err error) {
+	return &orchestrator.MetadataResponse{Metadata: svc.metadata}, nil
+}
