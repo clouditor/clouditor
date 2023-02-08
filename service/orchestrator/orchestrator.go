@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"debug/buildinfo"
 	"embed"
 	"errors"
 	"runtime/debug"
@@ -95,10 +94,6 @@ type Service struct {
 
 	// metadata is a struct for all necessary Clouditor metadata information
 	metadata *orchestrator.Metadata
-
-	// Go binary build informaton
-	// TODO(all): How to put that to the metadata proto message
-	buildInfo *buildinfo.BuildInfo
 }
 
 func init() {
@@ -166,9 +161,7 @@ func NewService(opts ...ServiceOption) *Service {
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 		metadata: &orchestrator.Metadata{
-			ClouditorVersion: "",
-			GolangVersion:    "",
-			Dependency:       []*orchestrator.Dependency{},
+			Dependency: []*orchestrator.Dependency{},
 		},
 	}
 
@@ -199,12 +192,12 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	// Set build info
-	s.buildInfo, ok = debug.ReadBuildInfo()
+	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
 		log.Errorf("error reading build info: %v", err)
 	} else {
-		s.metadata.GolangVersion = s.buildInfo.GoVersion
-		for _, d := range s.buildInfo.Deps {
+		s.metadata.GolangVersion = buildInfo.GoVersion
+		for _, d := range buildInfo.Deps {
 			s.metadata.Dependency = append(s.metadata.Dependency, &orchestrator.Dependency{
 				Path:    d.Path,
 				Version: d.Version,
