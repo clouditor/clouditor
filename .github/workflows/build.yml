@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Find latest tag
         run: |
+          mkdir -p .git
           git --version
           git tag
       - name: Setup Go
