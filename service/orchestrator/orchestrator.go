@@ -148,7 +148,7 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 // WithClouditorVersion is an option to set the Clouditor's last release version.
 func WithClouditorVersion(version string) ServiceOption {
 	return func(s *Service) {
-		s.runtime.ClouditorVersion = version
+		s.runtime.ClouditorReleaseVersion = version
 	}
 }
 
@@ -161,7 +161,7 @@ func NewService(opts ...ServiceOption) *Service {
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
 		runtime: &orchestrator.Runtime{
-			Dependency: []*orchestrator.Dependency{},
+			Dependencies: []*orchestrator.Dependency{},
 		},
 	}
 
@@ -198,7 +198,7 @@ func NewService(opts ...ServiceOption) *Service {
 	} else {
 		s.runtime.GolangVersion = buildInfo.GoVersion
 		for _, d := range buildInfo.Deps {
-			s.runtime.Dependency = append(s.runtime.Dependency, &orchestrator.Dependency{
+			s.runtime.Dependencies = append(s.runtime.Dependencies, &orchestrator.Dependency{
 				Path:    d.Path,
 				Version: d.Version,
 			})

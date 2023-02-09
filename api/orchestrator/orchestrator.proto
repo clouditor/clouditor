@@ -964,9 +964,17 @@ message RemoveCertificateRequest {
 }
 
 message Runtime {
-  string clouditor_version = 1;
-  string golang_version = 2;
-  repeated Dependency dependency = 3; 
+  // clouditor_release_version is the latest release version for this commit
+  string clouditor_release_version = 1; 
+
+  // commit_hash is the current commit hash
+  string clouditor_commit_hash = 2;
+
+  // golang_version is the used golang version
+  string golang_version = 3;
+
+  // dependency is a list of used runtime dependencies
+  repeated Dependency dependencies = 4; 
 }
 
 message Dependency{

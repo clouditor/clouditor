@@ -1794,14 +1794,20 @@ components:
         Runtime:
             type: object
             properties:
-                clouditorVersion:
+                clouditorReleaseVersion:
                     type: string
+                    description: clouditor_release_version is the latest release version for this commit
+                clouditorCommitHash:
+                    type: string
+                    description: commit_hash is the current commit hash
                 golangVersion:
                     type: string
-                dependency:
+                    description: golang_version is the used golang version
+                dependencies:
                     type: array
                     items:
                         $ref: '#/components/schemas/Dependency'
+                    description: dependency is a list of used runtime dependencies
         RuntimeResponse:
             type: object
             properties:
