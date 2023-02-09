@@ -148,7 +148,7 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 // WithClouditorVersion is an option to set the Clouditor's last release version.
 func WithClouditorVersion(version string) ServiceOption {
 	return func(s *Service) {
-		s.runtime.ClouditorReleaseVersion = version
+		s.runtime.ReleaseVersion = version
 	}
 }
 
@@ -197,6 +197,7 @@ func NewService(opts ...ServiceOption) *Service {
 		log.Errorf("error reading build info: %v", err)
 	} else {
 		s.runtime.GolangVersion = buildInfo.GoVersion
+		// Set dependencies
 		for _, d := range buildInfo.Deps {
 			s.runtime.Dependencies = append(s.runtime.Dependencies, &orchestrator.Dependency{
 				Path:    d.Path,
@@ -204,6 +205,15 @@ func NewService(opts ...ServiceOption) *Service {
 			})
 		}
 
+		// Set version control system info
+		for _, setting := range buildInfo.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				s.runtime.CommitHash = setting.Value
+			case "vcs":
+				s.runtime.Vcs = setting.Value
+			}
+		}
 	}
 
 	return &s

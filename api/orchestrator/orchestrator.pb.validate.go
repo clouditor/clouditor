@@ -8830,9 +8830,11 @@ func (m *Runtime) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ClouditorReleaseVersion
+	// no validation rules for ReleaseVersion
 
-	// no validation rules for ClouditorCommitHash
+	// no validation rules for Vcs
+
+	// no validation rules for CommitHash
 
 	// no validation rules for GolangVersion
 

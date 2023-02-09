@@ -1794,12 +1794,15 @@ components:
         Runtime:
             type: object
             properties:
-                clouditorReleaseVersion:
+                releaseVersion:
                     type: string
-                    description: clouditor_release_version is the latest release version for this commit
-                clouditorCommitHash:
+                    description: release_version is the latest Clouditor release version for this commit
+                vcs:
                     type: string
-                    description: commit_hash is the current commit hash
+                    description: vcs is the used version control system
+                commitHash:
+                    type: string
+                    description: commit_hash is the current Clouditor commit hash
                 golangVersion:
                     type: string
                     description: golang_version is the used golang version
