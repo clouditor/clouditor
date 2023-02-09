@@ -1125,25 +1125,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/metadata:
-        get:
-            tags:
-                - Orchestrator
-            description: Get Metadata
-            operationId: Orchestrator_Metadata
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/MetadataResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics:
         get:
             tags:
@@ -1311,6 +1292,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/runtime:
+        get:
+            tags:
+                - Orchestrator
+            description: Get Runtime
+            operationId: Orchestrator_Runtime
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RuntimeResponse'
                 default:
                     description: Default error response
                     content:
@@ -1685,22 +1685,6 @@ components:
                         $ref: '#/components/schemas/TargetOfEvaluation'
                 nextPageToken:
                     type: string
-        Metadata:
-            type: object
-            properties:
-                clouditorVersion:
-                    type: string
-                golangVersion:
-                    type: string
-                dependency:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Dependency'
-        MetadataResponse:
-            type: object
-            properties:
-                metadata:
-                    $ref: '#/components/schemas/Metadata'
         Metric:
             type: object
             properties:
@@ -1807,6 +1791,22 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        Runtime:
+            type: object
+            properties:
+                clouditorVersion:
+                    type: string
+                golangVersion:
+                    type: string
+                dependency:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Dependency'
+        RuntimeResponse:
+            type: object
+            properties:
+                runtime:
+                    $ref: '#/components/schemas/Runtime'
         State:
             type: object
             properties:

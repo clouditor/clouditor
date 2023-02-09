@@ -38,22 +38,22 @@ var (
 // define the regex for a UUID once up-front
 var _orchestrator_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
-// Validate checks the field values on MetadataRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *MetadataRequest) Validate() error {
+// Validate checks the field values on RuntimeRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *RuntimeRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on MetadataRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// MetadataRequestMultiError, or nil if none found.
-func (m *MetadataRequest) ValidateAll() error {
+// ValidateAll checks the field values on RuntimeRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in RuntimeRequestMultiError,
+// or nil if none found.
+func (m *RuntimeRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *MetadataRequest) validate(all bool) error {
+func (m *RuntimeRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -61,19 +61,19 @@ func (m *MetadataRequest) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return MetadataRequestMultiError(errors)
+		return RuntimeRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// MetadataRequestMultiError is an error wrapping multiple validation errors
-// returned by MetadataRequest.ValidateAll() if the designated constraints
+// RuntimeRequestMultiError is an error wrapping multiple validation errors
+// returned by RuntimeRequest.ValidateAll() if the designated constraints
 // aren't met.
-type MetadataRequestMultiError []error
+type RuntimeRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m MetadataRequestMultiError) Error() string {
+func (m RuntimeRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -82,11 +82,11 @@ func (m MetadataRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m MetadataRequestMultiError) AllErrors() []error { return m }
+func (m RuntimeRequestMultiError) AllErrors() []error { return m }
 
-// MetadataRequestValidationError is the validation error returned by
-// MetadataRequest.Validate if the designated constraints aren't met.
-type MetadataRequestValidationError struct {
+// RuntimeRequestValidationError is the validation error returned by
+// RuntimeRequest.Validate if the designated constraints aren't met.
+type RuntimeRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -94,22 +94,22 @@ type MetadataRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e MetadataRequestValidationError) Field() string { return e.field }
+func (e RuntimeRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e MetadataRequestValidationError) Reason() string { return e.reason }
+func (e RuntimeRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e MetadataRequestValidationError) Cause() error { return e.cause }
+func (e RuntimeRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e MetadataRequestValidationError) Key() bool { return e.key }
+func (e RuntimeRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e MetadataRequestValidationError) ErrorName() string { return "MetadataRequestValidationError" }
+func (e RuntimeRequestValidationError) ErrorName() string { return "RuntimeRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e MetadataRequestValidationError) Error() string {
+func (e RuntimeRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -121,14 +121,14 @@ func (e MetadataRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sMetadataRequest.%s: %s%s",
+		"invalid %sRuntimeRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = MetadataRequestValidationError{}
+var _ error = RuntimeRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -136,24 +136,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = MetadataRequestValidationError{}
+} = RuntimeRequestValidationError{}
 
-// Validate checks the field values on MetadataResponse with the rules defined
+// Validate checks the field values on RuntimeResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *MetadataResponse) Validate() error {
+func (m *RuntimeResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on MetadataResponse with the rules
+// ValidateAll checks the field values on RuntimeResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// MetadataResponseMultiError, or nil if none found.
-func (m *MetadataResponse) ValidateAll() error {
+// RuntimeResponseMultiError, or nil if none found.
+func (m *RuntimeResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *MetadataResponse) validate(all bool) error {
+func (m *RuntimeResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -161,28 +161,28 @@ func (m *MetadataResponse) validate(all bool) error {
 	var errors []error
 
 	if all {
-		switch v := interface{}(m.GetMetadata()).(type) {
+		switch v := interface{}(m.GetRuntime()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MetadataResponseValidationError{
-					field:  "Metadata",
+				errors = append(errors, RuntimeResponseValidationError{
+					field:  "Runtime",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, MetadataResponseValidationError{
-					field:  "Metadata",
+				errors = append(errors, RuntimeResponseValidationError{
+					field:  "Runtime",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetRuntime()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return MetadataResponseValidationError{
-				field:  "Metadata",
+			return RuntimeResponseValidationError{
+				field:  "Runtime",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -190,19 +190,19 @@ func (m *MetadataResponse) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return MetadataResponseMultiError(errors)
+		return RuntimeResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// MetadataResponseMultiError is an error wrapping multiple validation errors
-// returned by MetadataResponse.ValidateAll() if the designated constraints
+// RuntimeResponseMultiError is an error wrapping multiple validation errors
+// returned by RuntimeResponse.ValidateAll() if the designated constraints
 // aren't met.
-type MetadataResponseMultiError []error
+type RuntimeResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m MetadataResponseMultiError) Error() string {
+func (m RuntimeResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -211,11 +211,11 @@ func (m MetadataResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m MetadataResponseMultiError) AllErrors() []error { return m }
+func (m RuntimeResponseMultiError) AllErrors() []error { return m }
 
-// MetadataResponseValidationError is the validation error returned by
-// MetadataResponse.Validate if the designated constraints aren't met.
-type MetadataResponseValidationError struct {
+// RuntimeResponseValidationError is the validation error returned by
+// RuntimeResponse.Validate if the designated constraints aren't met.
+type RuntimeResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -223,22 +223,22 @@ type MetadataResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e MetadataResponseValidationError) Field() string { return e.field }
+func (e RuntimeResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e MetadataResponseValidationError) Reason() string { return e.reason }
+func (e RuntimeResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e MetadataResponseValidationError) Cause() error { return e.cause }
+func (e RuntimeResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e MetadataResponseValidationError) Key() bool { return e.key }
+func (e RuntimeResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e MetadataResponseValidationError) ErrorName() string { return "MetadataResponseValidationError" }
+func (e RuntimeResponseValidationError) ErrorName() string { return "RuntimeResponseValidationError" }
 
 // Error satisfies the builtin error interface
-func (e MetadataResponseValidationError) Error() string {
+func (e RuntimeResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -250,14 +250,14 @@ func (e MetadataResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sMetadataResponse.%s: %s%s",
+		"invalid %sRuntimeResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = MetadataResponseValidationError{}
+var _ error = RuntimeResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -265,7 +265,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = MetadataResponseValidationError{}
+} = RuntimeResponseValidationError{}
 
 // Validate checks the field values on RegisterAssessmentToolRequest with the
 // rules defined in the proto definition for this message. If any rules are
@@ -8809,22 +8809,21 @@ var _ interface {
 	ErrorName() string
 } = RemoveCertificateRequestValidationError{}
 
-// Validate checks the field values on Metadata with the rules defined in the
+// Validate checks the field values on Runtime with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *Metadata) Validate() error {
+func (m *Runtime) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Metadata with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in MetadataMultiError, or nil
-// if none found.
-func (m *Metadata) ValidateAll() error {
+// ValidateAll checks the field values on Runtime with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in RuntimeMultiError, or nil if none found.
+func (m *Runtime) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Metadata) validate(all bool) error {
+func (m *Runtime) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -8842,7 +8841,7 @@ func (m *Metadata) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, MetadataValidationError{
+					errors = append(errors, RuntimeValidationError{
 						field:  fmt.Sprintf("Dependency[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -8850,7 +8849,7 @@ func (m *Metadata) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, MetadataValidationError{
+					errors = append(errors, RuntimeValidationError{
 						field:  fmt.Sprintf("Dependency[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -8859,7 +8858,7 @@ func (m *Metadata) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return MetadataValidationError{
+				return RuntimeValidationError{
 					field:  fmt.Sprintf("Dependency[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -8870,18 +8869,18 @@ func (m *Metadata) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return MetadataMultiError(errors)
+		return RuntimeMultiError(errors)
 	}
 
 	return nil
 }
 
-// MetadataMultiError is an error wrapping multiple validation errors returned
-// by Metadata.ValidateAll() if the designated constraints aren't met.
-type MetadataMultiError []error
+// RuntimeMultiError is an error wrapping multiple validation errors returned
+// by Runtime.ValidateAll() if the designated constraints aren't met.
+type RuntimeMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m MetadataMultiError) Error() string {
+func (m RuntimeMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -8890,11 +8889,11 @@ func (m MetadataMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m MetadataMultiError) AllErrors() []error { return m }
+func (m RuntimeMultiError) AllErrors() []error { return m }
 
-// MetadataValidationError is the validation error returned by
-// Metadata.Validate if the designated constraints aren't met.
-type MetadataValidationError struct {
+// RuntimeValidationError is the validation error returned by Runtime.Validate
+// if the designated constraints aren't met.
+type RuntimeValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -8902,22 +8901,22 @@ type MetadataValidationError struct {
 }
 
 // Field function returns field value.
-func (e MetadataValidationError) Field() string { return e.field }
+func (e RuntimeValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e MetadataValidationError) Reason() string { return e.reason }
+func (e RuntimeValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e MetadataValidationError) Cause() error { return e.cause }
+func (e RuntimeValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e MetadataValidationError) Key() bool { return e.key }
+func (e RuntimeValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e MetadataValidationError) ErrorName() string { return "MetadataValidationError" }
+func (e RuntimeValidationError) ErrorName() string { return "RuntimeValidationError" }
 
 // Error satisfies the builtin error interface
-func (e MetadataValidationError) Error() string {
+func (e RuntimeValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -8929,14 +8928,14 @@ func (e MetadataValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sMetadata.%s: %s%s",
+		"invalid %sRuntime.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = MetadataValidationError{}
+var _ error = RuntimeValidationError{}
 
 var _ interface {
 	Field() string
@@ -8944,7 +8943,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = MetadataValidationError{}
+} = RuntimeValidationError{}
 
 // Validate checks the field values on Dependency with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

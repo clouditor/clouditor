@@ -24,8 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrchestratorClient interface {
-	// Get Metadata
-	Metadata(ctx context.Context, in *MetadataRequest, opts ...grpc.CallOption) (*MetadataResponse, error)
+	// Get Runtime
+	Runtime(ctx context.Context, in *RuntimeRequest, opts ...grpc.CallOption) (*RuntimeResponse, error)
 	// Registers the passed assessment tool
 	RegisterAssessmentTool(ctx context.Context, in *RegisterAssessmentToolRequest, opts ...grpc.CallOption) (*AssessmentTool, error)
 	// Lists all assessment tools assessing evidences for the metric given by the
@@ -140,9 +140,9 @@ func NewOrchestratorClient(cc grpc.ClientConnInterface) OrchestratorClient {
 	return &orchestratorClient{cc}
 }
 
-func (c *orchestratorClient) Metadata(ctx context.Context, in *MetadataRequest, opts ...grpc.CallOption) (*MetadataResponse, error) {
-	out := new(MetadataResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/Metadata", in, out, opts...)
+func (c *orchestratorClient) Runtime(ctx context.Context, in *RuntimeRequest, opts ...grpc.CallOption) (*RuntimeResponse, error) {
+	out := new(RuntimeResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/Runtime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -603,8 +603,8 @@ func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *R
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
 type OrchestratorServer interface {
-	// Get Metadata
-	Metadata(context.Context, *MetadataRequest) (*MetadataResponse, error)
+	// Get Runtime
+	Runtime(context.Context, *RuntimeRequest) (*RuntimeResponse, error)
 	// Registers the passed assessment tool
 	RegisterAssessmentTool(context.Context, *RegisterAssessmentToolRequest) (*AssessmentTool, error)
 	// Lists all assessment tools assessing evidences for the metric given by the
@@ -716,8 +716,8 @@ type OrchestratorServer interface {
 type UnimplementedOrchestratorServer struct {
 }
 
-func (UnimplementedOrchestratorServer) Metadata(context.Context, *MetadataRequest) (*MetadataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Metadata not implemented")
+func (UnimplementedOrchestratorServer) Runtime(context.Context, *RuntimeRequest) (*RuntimeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Runtime not implemented")
 }
 func (UnimplementedOrchestratorServer) RegisterAssessmentTool(context.Context, *RegisterAssessmentToolRequest) (*AssessmentTool, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterAssessmentTool not implemented")
@@ -867,20 +867,20 @@ func RegisterOrchestratorServer(s grpc.ServiceRegistrar, srv OrchestratorServer)
 	s.RegisterService(&Orchestrator_ServiceDesc, srv)
 }
 
-func _Orchestrator_Metadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MetadataRequest)
+func _Orchestrator_Runtime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RuntimeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).Metadata(ctx, in)
+		return srv.(OrchestratorServer).Runtime(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/Metadata",
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/Runtime",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).Metadata(ctx, req.(*MetadataRequest))
+		return srv.(OrchestratorServer).Runtime(ctx, req.(*RuntimeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1714,8 +1714,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*OrchestratorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Metadata",
-			Handler:    _Orchestrator_Metadata_Handler,
+			MethodName: "Runtime",
+			Handler:    _Orchestrator_Runtime_Handler,
 		},
 		{
 			MethodName: "RegisterAssessmentTool",

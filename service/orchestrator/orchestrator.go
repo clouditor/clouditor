@@ -92,8 +92,8 @@ type Service struct {
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 
-	// metadata is a struct for all necessary Clouditor metadata information
-	metadata *orchestrator.Metadata
+	// runtime is a struct for all necessary Clouditor runtime information
+	runtime *orchestrator.Runtime
 }
 
 func init() {
@@ -148,7 +148,7 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 // WithClouditorVersion is an option to set the Clouditor's last release version.
 func WithClouditorVersion(version string) ServiceOption {
 	return func(s *Service) {
-		s.metadata.ClouditorVersion = version
+		s.runtime.ClouditorVersion = version
 	}
 }
 
@@ -160,7 +160,7 @@ func NewService(opts ...ServiceOption) *Service {
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
-		metadata: &orchestrator.Metadata{
+		runtime: &orchestrator.Runtime{
 			Dependency: []*orchestrator.Dependency{},
 		},
 	}
@@ -196,9 +196,9 @@ func NewService(opts ...ServiceOption) *Service {
 	if !ok {
 		log.Errorf("error reading build info: %v", err)
 	} else {
-		s.metadata.GolangVersion = buildInfo.GoVersion
+		s.runtime.GolangVersion = buildInfo.GoVersion
 		for _, d := range buildInfo.Deps {
-			s.metadata.Dependency = append(s.metadata.Dependency, &orchestrator.Dependency{
+			s.runtime.Dependency = append(s.runtime.Dependency, &orchestrator.Dependency{
 				Path:    d.Path,
 				Version: d.Version,
 			})
@@ -330,7 +330,7 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	return &emptypb.Empty{}, nil
 }
 
-// Metadata implements method to get Clouditors metadata information
-func (svc *Service) Metadata(_ context.Context, _ *orchestrator.MetadataRequest) (metadata *orchestrator.MetadataResponse, err error) {
-	return &orchestrator.MetadataResponse{Metadata: svc.metadata}, nil
+// Runtime implements method to get Clouditors runtime information
+func (svc *Service) Runtime(_ context.Context, _ *orchestrator.RuntimeRequest) (runtime *orchestrator.RuntimeResponse, err error) {
+	return &orchestrator.RuntimeResponse{Runtime: svc.runtime}, nil
 }
