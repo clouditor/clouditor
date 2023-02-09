@@ -641,6 +641,18 @@ message Catalog {
 
   // Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
   bool assurance_level = 6;
+
+  // The catalogs naming for the assurance level corresponding to basic.
+  string basic = 7
+    [ (validate.rules).string.pattern = "^(|basic|low)$" ];
+
+  // The catalogs naming for the assurance level corresponding to substantial.
+  string substantial = 7
+  [ (validate.rules).string.pattern = "^(|substantial|medium)$" ]; 
+  
+  // The catalogs naming for the assurance level corresponding to high.
+  string high = 7
+    [ (validate.rules).string.pattern = "^(|high)$" ]; 
 }
 
 message Category {
