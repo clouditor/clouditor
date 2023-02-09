@@ -36,7 +36,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
@@ -521,20 +520,9 @@ func TestCloudServiceHooks(t *testing.T) {
 
 func TestService_Runtime(t *testing.T) {
 	type fields struct {
-		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
-		cloudServiceHooks               []orchestrator.CloudServiceHookFunc
-		toeHooks                        []orchestrator.TargetOfEvaluationHookFunc
-		hookMutex                       sync.RWMutex
-		AssessmentResultHooks           []func(result *assessment.AssessmentResult, err error)
-		mu                              sync.Mutex
-		storage                         persistence.Storage
-		metricsFile                     string
-		loadMetricsFunc                 func() ([]*assessment.Metric, error)
-		catalogsFile                    string
-		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
-		events                          chan *orchestrator.MetricChangeEvent
-		authz                           service.AuthorizationStrategy
-		runtime                         *orchestrator.Runtime
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+		runtime *orchestrator.Runtime
 	}
 	type args struct {
 		in0 context.Context
@@ -565,20 +553,9 @@ func TestService_Runtime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
-				cloudServiceHooks:               tt.fields.cloudServiceHooks,
-				toeHooks:                        tt.fields.toeHooks,
-				hookMutex:                       tt.fields.hookMutex,
-				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
-				mu:                              tt.fields.mu,
-				storage:                         tt.fields.storage,
-				metricsFile:                     tt.fields.metricsFile,
-				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
-				catalogsFile:                    tt.fields.catalogsFile,
-				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
-				events:                          tt.fields.events,
-				authz:                           tt.fields.authz,
-				runtime:                         tt.fields.runtime,
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+				runtime: tt.fields.runtime,
 			}
 			gotRuntime, err := svc.Runtime(tt.args.in0, tt.args.in1)
 			if (err != nil) != tt.wantErr {
