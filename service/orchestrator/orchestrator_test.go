@@ -36,11 +36,14 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -512,6 +515,79 @@ func TestCloudServiceHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
+		})
+	}
+}
+
+func TestService_Runtime(t *testing.T) {
+	type fields struct {
+		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
+		cloudServiceHooks               []orchestrator.CloudServiceHookFunc
+		toeHooks                        []orchestrator.TargetOfEvaluationHookFunc
+		hookMutex                       sync.RWMutex
+		AssessmentResultHooks           []func(result *assessment.AssessmentResult, err error)
+		mu                              sync.Mutex
+		storage                         persistence.Storage
+		metricsFile                     string
+		loadMetricsFunc                 func() ([]*assessment.Metric, error)
+		catalogsFile                    string
+		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
+		events                          chan *orchestrator.MetricChangeEvent
+		authz                           service.AuthorizationStrategy
+		runtime                         *orchestrator.Runtime
+	}
+	type args struct {
+		in0 context.Context
+		in1 *orchestrator.RuntimeRequest
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		args        args
+		wantRuntime *orchestrator.RuntimeResponse
+		wantErr     bool
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				runtime: &orchestrator.Runtime{
+					ReleaseVersion: "testVersion",
+				},
+			},
+			wantRuntime: &orchestrator.RuntimeResponse{
+				Runtime: &orchestrator.Runtime{
+					ReleaseVersion: "testVersion",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
+				cloudServiceHooks:               tt.fields.cloudServiceHooks,
+				toeHooks:                        tt.fields.toeHooks,
+				hookMutex:                       tt.fields.hookMutex,
+				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
+				mu:                              tt.fields.mu,
+				storage:                         tt.fields.storage,
+				metricsFile:                     tt.fields.metricsFile,
+				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
+				catalogsFile:                    tt.fields.catalogsFile,
+				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
+				events:                          tt.fields.events,
+				authz:                           tt.fields.authz,
+				runtime:                         tt.fields.runtime,
+			}
+			gotRuntime, err := svc.Runtime(tt.args.in0, tt.args.in1)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.Runtime() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotRuntime, tt.wantRuntime) {
+				t.Errorf("Service.Runtime() = %v, want %v", gotRuntime, tt.wantRuntime)
+			}
 		})
 	}
 }
