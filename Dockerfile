@@ -6,9 +6,9 @@ ADD go.mod .
 ADD go.sum .
 
 RUN apk update && apk add protobuf gcc libc-dev
+RUN apk update && apk add nodejs npm && npm install @bufbuild/buf
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
-    google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+RUN go install \
     github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
     github.com/google/gnostic/cmd/protoc-gen-openapi \
     github.com/srikrsna/protoc-gen-gotag
