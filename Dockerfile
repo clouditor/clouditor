@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.20-alpine as builder
 
 WORKDIR /build
 
@@ -8,13 +8,14 @@ ADD go.sum .
 ADD .git .
 
 RUN apk update && apk add protobuf gcc libc-dev git
-RUN apk update && apk add nodejs npm && npm install -g @bufbuild/buf
 
 RUN go install \
     google.golang.org/protobuf/cmd/protoc-gen-go \
     github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
     github.com/google/gnostic/cmd/protoc-gen-openapi \
     github.com/srikrsna/protoc-gen-gotag
+
+RUN go install github.com/bufbuild/buf/cmd/buf@latest
 
 ADD . .
 
