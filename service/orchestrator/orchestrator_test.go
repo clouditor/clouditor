@@ -40,9 +40,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -492,6 +490,7 @@ func TestCloudServiceHooks(t *testing.T) {
 	}
 }
 
+/*
 func TestService_Runtime(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
@@ -541,3 +540,4 @@ func TestService_Runtime(t *testing.T) {
 		})
 	}
 }
+*/

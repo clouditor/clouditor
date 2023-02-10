@@ -23,44 +23,39 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package clouditor
+package service
 
 import (
-	"context"
 	"runtime/debug"
+	"time"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"github.com/sirupsen/logrus"
+	"clouditor.io/clouditor/api/runtime"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	Version string
-	log     *logrus.Entry
+	// rt is a struct for all necessary Clouditor runtime information
+	rt runtime.Runtime
+
+	// populated is set to true once the runtime information has been succesfully populated
+	populated = false
 )
 
-type Service struct {
-	// runtime is a struct for all necessary Clouditor runtime information
-	runtime *orchestrator.Runtime
-}
-
-// NewService creates a new Orchestrator service
-func NewService() *Service {
-	var err error
-	s := Service{
-		runtime: &orchestrator.Runtime{
-			Dependencies: []*orchestrator.Dependency{},
-		},
+// populateRuntimeInfo populates the runtime info using the build info and other sources.
+func populateRuntimeInfo() {
+	if populated {
+		return
 	}
 
 	// Set build info
 	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
-		log.Errorf("error reading build info: %v", err)
+		log.Errorf("Could not read build info. Runtime information will not be complete")
 	} else {
-		s.runtime.GolangVersion = buildInfo.GoVersion
+		rt.GolangVersion = buildInfo.GoVersion
 		// Set dependencies
 		for _, d := range buildInfo.Deps {
-			s.runtime.Dependencies = append(s.runtime.Dependencies, &orchestrator.Dependency{
+			rt.Dependencies = append(rt.Dependencies, &runtime.Dependency{
 				Path:    d.Path,
 				Version: d.Version,
 			})
@@ -69,17 +64,26 @@ func NewService() *Service {
 		// Set version control system info
 		for _, setting := range buildInfo.Settings {
 			switch setting.Key {
+			case "vcs.time":
+				var t, err = time.Parse(time.RFC3339, setting.Value)
+				if err == nil {
+					rt.CommitTime = timestamppb.New(t)
+				}
 			case "vcs.revision":
-				s.runtime.CommitHash = setting.Value
+				rt.CommitHash = setting.Value
 			case "vcs":
-				s.runtime.Vcs = setting.Value
+				rt.Vcs = setting.Value
 			}
 		}
+
+		populated = true
 	}
-	return &s
 }
 
 // GetRuntimeInfo implements method to get Clouditors runtime information
-func (svc *Service) GetRuntimeInfo(_ context.Context, _ *orchestrator.RuntimeRequest) (runtime *orchestrator.RuntimeResponse, err error) {
-	return &orchestrator.RuntimeResponse{Runtime: svc.runtime}, nil
+func GetRuntimeInfo() (*runtime.Runtime, error) {
+	// Make sure, runtime info is populated
+	populateRuntimeInfo()
+
+	return &rt, nil
 }

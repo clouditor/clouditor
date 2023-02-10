@@ -34,7 +34,6 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
@@ -204,7 +203,7 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Info("Welcome to new Clouditor 2.0")
+	var rt, _ = service.GetRuntimeInfo()
 
 	fmt.Printf(`
            $$\                           $$\ $$\   $$\
@@ -217,7 +216,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  
   Version %s
-  `, clouditor.Version)
+  `, rt.VersionString())
 	fmt.Println()
 
 	if viper.GetBool(DBInMemoryFlag) {

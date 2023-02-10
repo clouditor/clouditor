@@ -1298,19 +1298,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/runtime:
+    /v1/orchestrator/runtime_info:
         get:
             tags:
                 - Orchestrator
-            description: Get Runtime
-            operationId: Orchestrator_Runtime
+            description: Get Runtime Information
+            operationId: Orchestrator_GetRuntimeInfo
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/RuntimeResponse'
+                                $ref: '#/components/schemas/Runtime'
                 default:
                     description: Default error response
                     content:
@@ -1803,6 +1803,10 @@ components:
                 commitHash:
                     type: string
                     description: commit_hash is the current Clouditor commit hash
+                commitTime:
+                    type: string
+                    description: commit_time is the time of the Clouditor commit
+                    format: date-time
                 golangVersion:
                     type: string
                     description: golang_version is the used golang version
@@ -1811,11 +1815,6 @@ components:
                     items:
                         $ref: '#/components/schemas/Dependency'
                     description: dependency is a list of used runtime dependencies
-        RuntimeResponse:
-            type: object
-            properties:
-                runtime:
-                    $ref: '#/components/schemas/Runtime'
         State:
             type: object
             properties:

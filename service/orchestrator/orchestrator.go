@@ -33,6 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/runtime"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -298,4 +299,9 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// GetRuntimeInfo implements a method to retrieve runtime information
+func (svc *Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
+	return service.GetRuntimeInfo()
 }
