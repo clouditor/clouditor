@@ -53,6 +53,8 @@ var DefaultMetricsFile = "metrics.json"
 
 var DefaultCatalogsFile = "catalogs.json"
 
+var version string
+
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
@@ -174,6 +176,8 @@ func NewService(opts ...ServiceOption) *Service {
 	if err = s.loadCatalogs(); err != nil {
 		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
+
+	log.Infof("Ochestrator Version: %s", version)
 
 	return &s
 }

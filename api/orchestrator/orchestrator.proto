@@ -641,18 +641,6 @@ message Catalog {
 
   // Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
   bool assurance_level = 6;
-
-  // The catalogs naming for the assurance level corresponding to basic.
-  string basic = 7
-    [ (validate.rules).string.pattern = "^(|basic|low)$" ];
-
-  // The catalogs naming for the assurance level corresponding to substantial.
-  string substantial = 7
-  [ (validate.rules).string.pattern = "^(|substantial|medium)$" ]; 
-  
-  // The catalogs naming for the assurance level corresponding to high.
-  string high = 7
-    [ (validate.rules).string.pattern = "^(|high)$" ]; 
 }
 
 message Category {
@@ -729,7 +717,7 @@ message Control {
       [ (validate.rules).string.min_len = 1 ];
 
   // An assurance level is not offered by every catalog, therefore it is optional.
-  AssuranceLevel assurance_level = 11
+  optional string assurance_level = 11
       [ (validate.rules).enum.defined_only = true  ];
 }
 
@@ -742,13 +730,13 @@ message TargetOfEvaluation {
   ];
   string catalog_id = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
+    (validate.rules).string.pattern = "^(|basic|substantial|high)$"
   ];
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  AssuranceLevel assurance_level = 3
-      [ (validate.rules).enum.defined_only = true  ];
+  optional string assurance_level = 3
+    [(validate.rules).string.pattern = "^(|basic|substantial|high)$"];
 
   // the controls that are in scope of this ToE. Note: For some security
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
@@ -815,16 +803,6 @@ enum MonitoringStatus {
   // Clouditor evaluation. In the future this might be part of compositional
   // certification.
   MONITORING_STATUS_DELEGATED = 3;
-}
-
-// AssuranceLevel describes the assurance level for a specific control. We use a threefold approach to distinguish between the assurance levels.
-// Note: For some security catalogs, e.g., the EUCS, the controls can cover different assurance levels. For example, the EUCS covers the 3 levels basic, substantial and high. 
-enum AssuranceLevel {
-  // The assurance level is not yet decided.
-  ASSURANCE_LEVEL_UNSPECIFIED = 0;
-  ASSURANCE_LEVEL_BASIC = 2;
-  ASSURANCE_LEVEL_SUBSTANTIAL = 3;
-  ASSURANCE_LEVEL_HIGH = 4;
 }
 
 // ControlInScope defines a control which is "in scope" of a target of
