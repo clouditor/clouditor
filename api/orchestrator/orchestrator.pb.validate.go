@@ -4151,6 +4151,33 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AssuranceLevel
 
+	if len(m.GetAssuranceLevels()) < 3 {
+		err := CatalogValidationError{
+			field:  "AssuranceLevels",
+			reason: "value must contain at least 3 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetAssuranceLevels() {
+		_, _ = idx, item
+
+		if !_Catalog_AssuranceLevels_Pattern.MatchString(item) {
+			err := CatalogValidationError{
+				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
@@ -4227,6 +4254,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CatalogValidationError{}
+
+var _Catalog_AssuranceLevels_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on Category with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -4553,17 +4582,6 @@ func (m *Control) validate(all bool) error {
 
 	}
 
-	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
-		err := ControlValidationError{
-			field:  "AssuranceLevel",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if m.ParentControlId != nil {
 
 		if utf8.RuneCountInString(m.GetParentControlId()) < 1 {
@@ -4600,6 +4618,21 @@ func (m *Control) validate(all bool) error {
 			err := ControlValidationError{
 				field:  "ParentControlCategoryCatalogId",
 				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.AssuranceLevel != nil {
+
+		if !_Control_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
+			err := ControlValidationError{
+				field:  "AssuranceLevel",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
 			}
 			if !all {
 				return err
@@ -4686,6 +4719,8 @@ var _ interface {
 	ErrorName() string
 } = ControlValidationError{}
 
+var _Control_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
+
 // Validate checks the field values on TargetOfEvaluation with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -4720,21 +4755,10 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+	if !_TargetOfEvaluation_CatalogId_Pattern.MatchString(m.GetCatalogId()) {
 		err := TargetOfEvaluationValidationError{
 			field:  "CatalogId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
-		err := TargetOfEvaluationValidationError{
-			field:  "AssuranceLevel",
-			reason: "value must be one of the defined enum values",
+			reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
 		}
 		if !all {
 			return err
@@ -4783,6 +4807,21 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 					cause:  err,
 				}
 			}
+		}
+
+	}
+
+	if m.AssuranceLevel != nil {
+
+		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
+			err := TargetOfEvaluationValidationError{
+				field:  "AssuranceLevel",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
 
 	}
@@ -4874,6 +4913,10 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
+
+var _TargetOfEvaluation_CatalogId_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
+
+var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on ListControlsInScopeRequest with the
 // rules defined in the proto definition for this message. If any rules are

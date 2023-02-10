@@ -321,13 +321,13 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 			CloudServiceId: testdata.MockCloudServiceID,
 			CatalogId:      testdata.MockCatalogID,
-			AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
+			AssuranceLevel: &testdata.AssuranceLevelBasic,
 		},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
 	assert.NoError(t, toe.Validate())
-	assert.Equal(t, orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC, toe.AssuranceLevel)
+	assert.Equal(t, &testdata.AssuranceLevelBasic, toe.AssuranceLevel)
 }
 
 func TestService_RemoveTargetOfEvaluation(t *testing.T) {
@@ -440,7 +440,7 @@ func TestToeHook(t *testing.T) {
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 						CloudServiceId: testdata.MockCloudServiceID,
 						CatalogId:      testdata.MockCatalogID,
-						AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
+						AssuranceLevel: &testdata.AssuranceLevelSubstantial,
 					},
 				},
 			},
@@ -448,7 +448,7 @@ func TestToeHook(t *testing.T) {
 			wantResp: &orchestrator.TargetOfEvaluation{
 				CloudServiceId: testdata.MockCloudServiceID,
 				CatalogId:      testdata.MockCatalogID,
-				AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
+				AssuranceLevel: &testdata.AssuranceLevelSubstantial,
 			},
 		},
 	}
@@ -1007,8 +1007,9 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 
 func Test_getControls(t *testing.T) {
 	type args struct {
-		controls []*orchestrator.Control
-		level    orchestrator.AssuranceLevel
+		controls        []*orchestrator.Control
+		level           string
+		assuranceLevels []string
 	}
 	tests := []struct {
 		name string
@@ -1019,46 +1020,50 @@ func Test_getControls(t *testing.T) {
 			name: "Missing controls",
 			args: args{
 				controls: []*orchestrator.Control{},
-				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+				level:    "",
 			},
 			want: []*orchestrator.Control{},
 		},
 		{
 			name: "Happy path with assurance level unspecified",
 			args: args{
-				controls: orchestratortest.MockControls,
-				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+				controls:        orchestratortest.MockControls,
+				level:           "",
+				assuranceLevels: []string{},
 			},
 			want: []*orchestrator.Control{},
 		},
 		{
 			name: "Happy path with assurance level basic",
 			args: args{
-				controls: orchestratortest.MockControls,
-				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
+				controls:        orchestratortest.MockControls,
+				level:           testdata.AssuranceLevelBasic,
+				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
 			want: []*orchestrator.Control{orchestratortest.MockControl2},
 		},
 		{
 			name: "Happy path with assurance level substantial",
 			args: args{
-				controls: orchestratortest.MockControls,
-				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
+				controls:        orchestratortest.MockControls,
+				level:           testdata.AssuranceLevelSubstantial,
+				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
 			want: []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3},
 		},
 		{
 			name: "Happy path with assurance level high",
 			args: args{
-				controls: orchestratortest.MockControls,
-				level:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH,
+				controls:        orchestratortest.MockControls,
+				level:           testdata.AssuranceLevelHigh,
+				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
 			want: []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3, orchestratortest.MockControl4},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getControls(tt.args.controls, tt.args.level); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := getControls(tt.args.controls, tt.args.assuranceLevels, tt.args.level); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getControls() = %v, want %v", got, tt.want)
 			}
 		})

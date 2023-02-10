@@ -37,10 +37,12 @@ func NewCertificate() *orchestrator.Certificate {
 // NewCatalog creates a mock catalog
 func NewCatalog() *orchestrator.Catalog {
 	var mockCatalog = &orchestrator.Catalog{
-		Name:        testdata.MockCatalogName,
-		Id:          testdata.MockCatalogID,
-		Description: testdata.MockCatalogDescription,
-		AllInScope:  true,
+		Name:            testdata.MockCatalogName,
+		Id:              testdata.MockCatalogID,
+		Description:     testdata.MockCatalogDescription,
+		AllInScope:      true,
+		AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
+		AssuranceLevel:  true,
 		Categories: []*orchestrator.Category{{
 			Name:        testdata.MockCategoryName,
 			Description: testdata.MockCategoryDescription,
@@ -87,7 +89,7 @@ func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
 		CloudServiceId: testdata.MockCloudServiceID,
 		CatalogId:      testdata.MockCatalogID,
-		AssuranceLevel: orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH,
+		AssuranceLevel: &testdata.AssuranceLevelBasic,
 	}
 
 	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation
@@ -203,7 +205,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID,
 			Name:        testdata.MockMetricName,
@@ -227,7 +229,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC,
+		AssuranceLevel:    &testdata.AssuranceLevelBasic,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID,
 			Name:        testdata.MockMetricName,
@@ -251,7 +253,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL,
+		AssuranceLevel:    &testdata.AssuranceLevelSubstantial,
 	}
 	MockControl4 = &orchestrator.Control{
 		Id:                testdata.MockControlID4,
@@ -259,7 +261,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH,
+		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID,
 			Name:        testdata.MockMetricName,
@@ -283,7 +285,7 @@ var (
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    orchestrator.AssuranceLevel_ASSURANCE_LEVEL_UNSPECIFIED,
+		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID,
 			Name:        testdata.MockMetricName,
