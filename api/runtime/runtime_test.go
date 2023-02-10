@@ -25,15 +25,58 @@
 
 package runtime
 
-import "fmt"
+import (
+	"testing"
+	"time"
 
-// VersionString returns a version, if this is a release version, or a pseudo-version using a git commit hash otherwise.
-func (r *Runtime) VersionString() string {
-	if r.ReleaseVersion != nil {
-		return r.GetReleaseVersion()
-	} else if r.CommitTime != nil && r.CommitHash != "" {
-		return fmt.Sprintf("v0.0.0-%s-%s", r.CommitTime.AsTime().Format("20060102150405"), r.CommitHash[0:12])
-	} else {
-		return "v0.0.0"
+	"clouditor.io/clouditor/internal/util"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+func TestRuntime_VersionString(t *testing.T) {
+	type fields struct {
+		ReleaseVersion *string
+		CommitHash     string
+		CommitTime     *timestamppb.Timestamp
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "release",
+			fields: fields{
+				ReleaseVersion: util.Ref("v2.0.0"),
+			},
+			want: "v2.0.0",
+		},
+		{
+			name: "pseudo-version",
+			fields: fields{
+				ReleaseVersion: nil,
+				CommitHash:     "1234567890ab",
+				CommitTime:     timestamppb.New(time.Unix(0, 0)),
+			},
+			want: "v0.0.0-19700101000000-1234567890ab",
+		},
+		{
+			name:   "no-version",
+			fields: fields{},
+			want:   "v0.0.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Runtime{
+				ReleaseVersion: tt.fields.ReleaseVersion,
+				CommitHash:     tt.fields.CommitHash,
+				CommitTime:     tt.fields.CommitTime,
+			}
+			if got := r.VersionString(); got != tt.want {
+				t.Errorf("Runtime.VersionString() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

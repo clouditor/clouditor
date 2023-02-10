@@ -1,4 +1,4 @@
-// Copyright 2016-2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ import (
 )
 
 var (
+	// version can contain a version that is set externally using ldflags. Otherwise it will be empty
+	version string
+
 	// rt is a struct for all necessary Clouditor runtime information
 	rt runtime.Runtime
 
@@ -52,6 +55,9 @@ func populateRuntimeInfo() {
 	if !ok {
 		log.Errorf("Could not read build info. Runtime information will not be complete")
 	} else {
+		if version != "" {
+			rt.ReleaseVersion = &version
+		}
 		rt.GolangVersion = buildInfo.GoVersion
 		// Set dependencies
 		for _, d := range buildInfo.Deps {
