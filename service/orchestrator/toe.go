@@ -72,9 +72,12 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		}
 
 		// If the catalog allows assurance levels, add only controls with the corresponsing assurance level.
-		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high includes all control.
+		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high include all control.
 		if c.AssuranceLevel {
-			req.TargetOfEvaluation.ControlsInScope = getControls(controls, req.TargetOfEvaluation.GetAssuranceLevel())
+			req.TargetOfEvaluation.ControlsInScope, err = getControls(controls, c.GetAssuranceLevels(), req.TargetOfEvaluation.GetAssuranceLevel())
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, "assurance level error: %v", err)
+			}
 		} else {
 			// The catalog does not allow assurance levels, add all controls.
 			req.TargetOfEvaluation.ControlsInScope = controls
@@ -95,58 +98,54 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 }
 
 // getControls returns all controls based on the assurance level
-func getControls(controls []*orchestrator.Control, level orchestrator.AssuranceLevel) []*orchestrator.Control {
+func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
 
 	var (
-		basic       []*orchestrator.Control
-		substantial []*orchestrator.Control
-		high        []*orchestrator.Control
-		c           = []*orchestrator.Control{}
+		low    []*orchestrator.Control
+		medium []*orchestrator.Control
+		high   []*orchestrator.Control
+		c      = []*orchestrator.Control{}
 	)
 
-	// TODO(all): Work around until the controls have the assurance levels set
-	// Add controls based on their assurance level to the lists basic, substantial and high. If a controls is not defined regarding the assurance level it is dropped.
+	// Check that levels and level is not empty
+	if len(levels) < 3 {
+		err := errors.New("levels are empty")
+		return nil, err
+	}
+
+	if level == "" {
+		err := errors.New("levels are empty")
+		return nil, err
+	}
+
+	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.
 	for i := range controls {
-		c := controls[i].GetId()
-		if c[len(c)-1:] == "B" {
-			basic = append(basic, controls[i])
-		} else if c[len(c)-1:] == "S" {
-			substantial = append(substantial, controls[i])
-		} else if c[len(c)-1:] == "H" {
+		switch controls[i].GetAssuranceLevel() {
+		case levels[0]:
+			low = append(low, controls[i])
+		case levels[1]:
+			medium = append(medium, controls[i])
+		case levels[2]:
 			high = append(high, controls[i])
-		} else {
+		default:
 			continue
 		}
 	}
 
-	// // Add controls based on their assurance level to the lists basic, substantial and high. If a controls is not defined regarding the assurance level it is dropped.
-	// for i := range controls {
-	// 	switch controls[i].GetAssuranceLevel() {
-	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
-	// 		basic = append(basic, controls[i])
-	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
-	// 		substantial = append(substantial, controls[i])
-	// 	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
-	// 		high = append(high, controls[i])
-	// 	default:
-	// 		continue
-	// 	}
-	// }
-
 	// Add all needed controls based on the assurance level and return
 	switch level {
-	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_BASIC:
-		c = append(c, basic...)
-	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_SUBSTANTIAL:
-		c = append(c, basic...)
-		c = append(c, substantial...)
-	case orchestrator.AssuranceLevel_ASSURANCE_LEVEL_HIGH:
-		c = append(c, basic...)
-		c = append(c, substantial...)
+	case levels[0]:
+		c = append(c, low...)
+	case levels[1]:
+		c = append(c, low...)
+		c = append(c, medium...)
+	case levels[2]:
+		c = append(c, low...)
+		c = append(c, medium...)
 		c = append(c, high...)
 	}
 
-	return c
+	return c, nil
 }
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI

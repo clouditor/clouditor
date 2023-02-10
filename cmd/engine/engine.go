@@ -27,6 +27,8 @@ package main
 
 import (
 	"context"
+	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -64,6 +66,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+
+//go:embed *.json
+var f embed.FS
 
 const (
 	APIDefaultUserFlag               = "api-default-user"
@@ -112,6 +117,10 @@ const (
 	DefaultDashboardURL                        = "http://localhost:8080"
 
 	EnvPrefix = "CLOUDITOR"
+
+	// TODO(anatheka): Delete after testing assurance levels
+	DefaultEucsCatalogFile = "eucs_catalog.json"
+	DefaultTestCatalogFile = "test_catalog.json"
 )
 
 var (
@@ -252,7 +261,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
+	orchestratorService = service_orchestrator.NewService(
+		service_orchestrator.WithStorage(db),
+		service_orchestrator.WithExternalCatalogs(loadCatalogs),
+	)
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
@@ -407,6 +419,103 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	return nil
+}
+
+// loadCatalogs loads two catalogs for testing
+func loadCatalogs() (catalogs []*orchestrator.Catalog, err error) {
+	eucs, err := loadEucsCatalog()
+	if err != nil {
+		log.Errorf("error loading EUCS catalog: %v", err)
+	}
+	catalogs = append(catalogs, eucs...)
+
+	test, err := loadTestCatalog()
+	if err != nil {
+		log.Errorf("error loading TEST catalog: %v", err)
+	}
+	catalogs = append(catalogs, test...)
+
+	return
+}
+
+// loadEucsCatalog loads the eucs_catalog.json file with assurance levels
+func loadEucsCatalog() (catalogs []*orchestrator.Catalog, err error) {
+
+	var b []byte
+
+	log.Infof("Loading catalogs from %s", DefaultEucsCatalogFile)
+	b, err = f.ReadFile(DefaultEucsCatalogFile)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", DefaultEucsCatalogFile, err)
+	}
+
+	err = json.Unmarshal(b, &catalogs)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
+	for _, catalog := range catalogs {
+		for _, category := range catalog.Categories {
+			for _, control := range category.Controls {
+				for _, sub := range control.Controls {
+					sub.CategoryName = category.Name
+					sub.CategoryCatalogId = catalog.Id
+					// TODO(anatheka): Delte after testing assurance level stuff
+					c := sub.GetId()
+					if c[len(c)-1:] == "B" {
+						sub.AssuranceLevel = "basic"
+					} else if c[len(c)-1:] == "S" {
+						sub.AssuranceLevel = "substantial"
+					} else if c[len(c)-1:] == "H" {
+						sub.AssuranceLevel = "high"
+					}
+				}
+			}
+		}
+	}
+
+	return
+}
+
+// loadTestCatalog loads the test_catalog.json file (same as eucs_catalog.json, but with other assurance levels than the EUCS catalog)
+func loadTestCatalog() (catalogs []*orchestrator.Catalog, err error) {
+
+	var b []byte
+
+	log.Infof("Loading catalogs from %s", DefaultTestCatalogFile)
+	b, err = f.ReadFile(DefaultTestCatalogFile)
+	if err != nil {
+		return nil, fmt.Errorf("error while loading %s: %w", DefaultTestCatalogFile, err)
+	}
+
+	err = json.Unmarshal(b, &catalogs)
+	if err != nil {
+		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+
+	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
+	for _, catalog := range catalogs {
+		for _, category := range catalog.Categories {
+			for _, control := range category.Controls {
+				for _, sub := range control.Controls {
+					sub.CategoryName = category.Name
+					sub.CategoryCatalogId = catalog.Id
+					// TODO(anatheka): Delte after testing assurance level stuff
+					c := sub.GetId()
+					if c[len(c)-1:] == "B" {
+						sub.AssuranceLevel = "low"
+					} else if c[len(c)-1:] == "S" {
+						sub.AssuranceLevel = "medium"
+					} else if c[len(c)-1:] == "H" {
+						sub.AssuranceLevel = "high"
+					}
+				}
+			}
+		}
+	}
+
+	return
 }
 
 func main() {

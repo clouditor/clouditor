@@ -4151,6 +4151,33 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AssuranceLevel
 
+	if len(m.GetAssuranceLevels()) < 3 {
+		err := CatalogValidationError{
+			field:  "AssuranceLevels",
+			reason: "value must contain at least 3 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetAssuranceLevels() {
+		_, _ = idx, item
+
+		if !_Catalog_AssuranceLevels_Pattern.MatchString(item) {
+			err := CatalogValidationError{
+				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
@@ -4227,6 +4254,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CatalogValidationError{}
+
+var _Catalog_AssuranceLevels_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on Category with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -4553,10 +4582,10 @@ func (m *Control) validate(all bool) error {
 
 	}
 
-	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
+	if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
 		err := ControlValidationError{
 			field:  "AssuranceLevel",
-			reason: "value must be one of the defined enum values",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
@@ -4731,17 +4760,6 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := AssuranceLevel_name[int32(m.GetAssuranceLevel())]; !ok {
-		err := TargetOfEvaluationValidationError{
-			field:  "AssuranceLevel",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	for idx, item := range m.GetControlsInScope() {
 		_, _ = idx, item
 
@@ -4783,6 +4801,21 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 					cause:  err,
 				}
 			}
+		}
+
+	}
+
+	if m.AssuranceLevel != nil {
+
+		if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
+			err := TargetOfEvaluationValidationError{
+				field:  "AssuranceLevel",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
 
 	}

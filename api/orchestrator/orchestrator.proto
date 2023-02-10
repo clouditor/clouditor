@@ -600,7 +600,7 @@ message AssessmentTool {
 
   // a list of metrics that this tool can assess, referred by their ids
   repeated string available_metrics = 4
-      [ (validate.rules).repeated .items.string.min_len = 1 ];
+      [ (validate.rules).repeated.items.string.min_len = 1 ];
 }
 
 message CloudService {
@@ -613,12 +613,12 @@ message CloudService {
 
   repeated Catalog catalogs_in_scope = 4 [
     (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 }
 
@@ -631,7 +631,7 @@ message Catalog {
 
   repeated Category categories = 4 [
     (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // Certain security catalogs do not allow to select the scope of the controls,
@@ -642,17 +642,17 @@ message Catalog {
   // Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
   bool assurance_level = 6;
 
-  // The catalogs naming for the assurance level corresponding to basic.
-  string basic = 7
-    [ (validate.rules).string.pattern = "^(|basic|low)$" ];
-
-  // The catalogs naming for the assurance level corresponding to substantial.
-  string substantial = 7
-  [ (validate.rules).string.pattern = "^(|substantial|medium)$" ]; 
-  
-  // The catalogs naming for the assurance level corresponding to high.
-  string high = 7
-    [ (validate.rules).string.pattern = "^(|high)$" ]; 
+  // A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
+  repeated string assurance_levels = 7 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (validate.rules).repeated = {
+      min_items: 3
+      items: {
+        string: {
+          pattern: "^(|basic|substantial|high|low|medium)$"
+        }
+      }
+    }];
 }
 
 message Category {
@@ -673,7 +673,7 @@ message Category {
     (tagger.tags) =
         "gorm:\"foreignKey:category_name,category_"
         "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 }
 
@@ -709,7 +709,7 @@ message Control {
     (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
                     "category_name,parent_control_category_catalog_id;"
                     "references=id,category_name;category_catalog_id\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // metrics contains either a list of reference to metrics - in this case only
@@ -718,7 +718,7 @@ message Control {
   repeated clouditor.assessment.v1.Metric metrics = 7 [
     (tagger.tags) =
         "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // Reference to the parent category this control belongs to.
@@ -729,8 +729,8 @@ message Control {
       [ (validate.rules).string.min_len = 1 ];
 
   // An assurance level is not offered by every catalog, therefore it is optional.
-  AssuranceLevel assurance_level = 11
-      [ (validate.rules).enum.defined_only = true  ];
+  string assurance_level = 11
+      [ (validate.rules).string.min_len = 1 ];
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -747,8 +747,8 @@ message TargetOfEvaluation {
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  AssuranceLevel assurance_level = 3
-      [ (validate.rules).enum.defined_only = true  ];
+  optional string assurance_level = 3
+      [ (validate.rules).string.min_len = 1 ];
 
   // the controls that are in scope of this ToE. Note: For some security
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
@@ -817,19 +817,9 @@ enum MonitoringStatus {
   MONITORING_STATUS_DELEGATED = 3;
 }
 
-// AssuranceLevel describes the assurance level for a specific control. We use a threefold approach to distinguish between the assurance levels.
-// Note: For some security catalogs, e.g., the EUCS, the controls can cover different assurance levels. For example, the EUCS covers the 3 levels basic, substantial and high. 
-enum AssuranceLevel {
-  // The assurance level is not yet decided.
-  ASSURANCE_LEVEL_UNSPECIFIED = 0;
-  ASSURANCE_LEVEL_BASIC = 2;
-  ASSURANCE_LEVEL_SUBSTANTIAL = 3;
-  ASSURANCE_LEVEL_HIGH = 4;
-}
-
 // ControlInScope defines a control which is "in scope" of a target of
 // evaluation. Additional meta-data can be defined when a control is in scope,
-// e.g., its monitoring status (continuously monitored, delegated, etc.) or assurance level (basic, substantial, high)
+// e.g., its monitoring status (continuously monitored, delegated, etc.)
 message ControlInScope {
   string target_of_evaluation_cloud_service_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
