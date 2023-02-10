@@ -20,7 +20,7 @@ RUN go install github.com/bufbuild/buf/cmd/buf@latest
 ADD . .
 
 RUN go generate ./...
-RUN go build -ldflags "-X clouditor.io/clouditor.Version=1.0.0" -o /build/engine ./cmd/engine
+RUN go build -ldflags "-X clouditor.io/clouditor.Version=$(git describe --tags --abbrev=0)" -o /build/engine ./cmd/engine
 RUN go build -o /build/cl cmd/cli/cl.go
 
 FROM alpine

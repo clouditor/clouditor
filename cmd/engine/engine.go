@@ -216,8 +216,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  
-  Version %s\n
+  Version %s
   `, clouditor.Version)
+	fmt.Println()
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
@@ -255,7 +256,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithClouditorVersion(clouditor.Version))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(

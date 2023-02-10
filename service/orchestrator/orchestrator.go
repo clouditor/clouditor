@@ -29,7 +29,6 @@ import (
 	"context"
 	"embed"
 	"errors"
-	"runtime/debug"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -91,9 +90,6 @@ type Service struct {
 	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
-
-	// runtime is a struct for all necessary Clouditor runtime information
-	runtime *orchestrator.Runtime
 }
 
 func init() {
@@ -145,24 +141,13 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 	}
 }
 
-// WithClouditorVersion is an option to set the Clouditor's last release version.
-func WithClouditorVersion(version string) ServiceOption {
-	return func(s *Service) {
-		s.runtime.ReleaseVersion = version
-	}
-}
-
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error
-	var ok bool
 	s := Service{
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
-		runtime: &orchestrator.Runtime{
-			Dependencies: []*orchestrator.Dependency{},
-		},
 	}
 
 	// Apply service options
@@ -189,31 +174,6 @@ func NewService(opts ...ServiceOption) *Service {
 
 	if err = s.loadCatalogs(); err != nil {
 		log.Errorf("Could not load embedded catalogs: %v", err)
-	}
-
-	// Set build info
-	buildInfo, ok := debug.ReadBuildInfo()
-	if !ok {
-		log.Errorf("error reading build info: %v", err)
-	} else {
-		s.runtime.GolangVersion = buildInfo.GoVersion
-		// Set dependencies
-		for _, d := range buildInfo.Deps {
-			s.runtime.Dependencies = append(s.runtime.Dependencies, &orchestrator.Dependency{
-				Path:    d.Path,
-				Version: d.Version,
-			})
-		}
-
-		// Set version control system info
-		for _, setting := range buildInfo.Settings {
-			switch setting.Key {
-			case "vcs.revision":
-				s.runtime.CommitHash = setting.Value
-			case "vcs":
-				s.runtime.Vcs = setting.Value
-			}
-		}
 	}
 
 	return &s
@@ -338,9 +298,4 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-// Runtime implements method to get Clouditors runtime information
-func (svc *Service) Runtime(_ context.Context, _ *orchestrator.RuntimeRequest) (runtime *orchestrator.RuntimeResponse, err error) {
-	return &orchestrator.RuntimeResponse{Runtime: svc.runtime}, nil
 }

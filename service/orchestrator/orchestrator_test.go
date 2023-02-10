@@ -88,32 +88,6 @@ func TestNewService(t *testing.T) {
 		want assert.ValueAssertionFunc
 	}{
 		{
-			name: "New service with golang version",
-			args: args{},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.NotEmpty(tt, service.runtime.GolangVersion)
-			},
-		},
-		{
-			name: "New service with Clouditor version",
-			args: args{
-				opts: []ServiceOption{WithClouditorVersion("testVersion")},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(tt, "testVersion", service.runtime.ReleaseVersion)
-			},
-		},
-		{
 			name: "New service with database",
 			args: args{
 				opts: []ServiceOption{WithStorage(myStorage)},
@@ -555,7 +529,6 @@ func TestService_Runtime(t *testing.T) {
 			svc := &Service{
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
-				runtime: tt.fields.runtime,
 			}
 			gotRuntime, err := svc.Runtime(tt.args.in0, tt.args.in1)
 			if (err != nil) != tt.wantErr {
