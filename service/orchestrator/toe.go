@@ -110,12 +110,12 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 	// Check that levels and level is not empty
 	if len(levels) < 3 {
 		err := errors.New("levels are empty")
-		return nil, err
+		return c, err
 	}
 
 	if level == "" {
 		err := errors.New("levels are empty")
-		return nil, err
+		return c, err
 	}
 
 	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.

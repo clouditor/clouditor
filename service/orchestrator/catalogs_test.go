@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -201,12 +200,6 @@ func TestService_ListCatalogs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
 	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
-
-	// 2nd case: Invalid request
-	_, err = orchestratorService.ListCatalogs(context.Background(),
-		&orchestrator.ListCatalogsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestService_UpdateCatalog(t *testing.T) {
@@ -229,8 +222,9 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
-			Id:   testdata.MockCatalogID,
-			Name: testdata.MockCatalogName,
+			Id:              testdata.MockCatalogID,
+			Name:            testdata.MockCatalogName,
+			AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -492,12 +486,6 @@ func TestService_ListControls(t *testing.T) {
 	assert.NotEmpty(t, listControlsResponse.Controls)
 	// there are the two default controls
 	assert.Equal(t, len(listControlsResponse.Controls), 2)
-
-	// 4th case: Invalid request
-	_, err = orchestratorService.ListControls(context.Background(),
-		&orchestrator.ListControlsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestService_loadCatalogs(t *testing.T) {

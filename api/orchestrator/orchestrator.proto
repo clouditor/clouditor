@@ -729,7 +729,7 @@ message Control {
       [ (validate.rules).string.min_len = 1 ];
 
   // An assurance level is not offered by every catalog, therefore it is optional.
-  string assurance_level = 11
+  optional string assurance_level = 11
       [ (validate.rules).string.min_len = 1 ];
 }
 

@@ -4582,17 +4582,6 @@ func (m *Control) validate(all bool) error {
 
 	}
 
-	if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
-		err := ControlValidationError{
-			field:  "AssuranceLevel",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if m.ParentControlId != nil {
 
 		if utf8.RuneCountInString(m.GetParentControlId()) < 1 {
@@ -4628,6 +4617,21 @@ func (m *Control) validate(all bool) error {
 		if utf8.RuneCountInString(m.GetParentControlCategoryCatalogId()) < 1 {
 			err := ControlValidationError{
 				field:  "ParentControlCategoryCatalogId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.AssuranceLevel != nil {
+
+		if utf8.RuneCountInString(m.GetAssuranceLevel()) < 1 {
+			err := ControlValidationError{
+				field:  "AssuranceLevel",
 				reason: "value length must be at least 1 runes",
 			}
 			if !all {
