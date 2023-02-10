@@ -34,6 +34,7 @@ import (
 	"os"
 	"strings"
 
+	"clouditor.io/clouditor"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
@@ -124,9 +125,6 @@ var (
 	providers            []string
 
 	log *logrus.Entry
-
-	// version is used for the Clouditor releaseversion, linked during the build process
-	version string
 )
 
 var engineCmd = &cobra.Command{
@@ -219,7 +217,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  
   Version %s\n
-  `, version)
+  `, clouditor.Version)
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
@@ -257,7 +255,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithClouditorVersion(version))
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db), service_orchestrator.WithClouditorVersion(clouditor.Version))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
