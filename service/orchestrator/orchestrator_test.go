@@ -37,6 +37,7 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	apiruntime "clouditor.io/clouditor/api/runtime"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
@@ -486,6 +487,39 @@ func TestCloudServiceHooks(t *testing.T) {
 
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
+		})
+	}
+}
+
+func TestService_GetRuntimeInfo(t *testing.T) {
+	type fields struct {
+	}
+	type args struct {
+		in0 context.Context
+		in1 *apiruntime.GetRuntimeInfoRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr bool
+	}{
+		{
+			name: "return runtime",
+			want: assert.NotNil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{}
+			gotRes, err := svc.GetRuntimeInfo(tt.args.in0, tt.args.in1)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.GetRuntimeInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			tt.want(t, gotRes)
 		})
 	}
 }
