@@ -53,7 +53,6 @@ var DefaultCatalogsFile = "catalogs.json"
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 	log                         *logrus.Entry
-  version string
 )
 
 // Service is an implementation of the Clouditor Orchestrator service
@@ -177,8 +176,6 @@ func NewService(opts ...ServiceOption) *Service {
 	if err = s.loadCatalogs(); err != nil {
 		log.Errorf("Could not load embedded catalogs: %v", err)
 	}
-
-	log.Infof("Ochestrator Version: %s", version)
 
 	return &s
 }

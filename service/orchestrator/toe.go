@@ -52,6 +52,11 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
 	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
 	if err != nil {

@@ -80,6 +80,12 @@ func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
 	return req.GetResult().GetCloudServiceId()
 }
 
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
+	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`
 func (*ControlInScope) TableName() string {
 	return "controls_in_scope"

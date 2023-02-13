@@ -60,6 +60,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		catalogsFile          string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -88,6 +89,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "Error getting catalog",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
@@ -108,6 +110,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					err = s.Create(catalogWithoutAssuranceLevelList)
 					assert.NoError(t, err)
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
@@ -128,6 +131,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewCatalog(false))
 					assert.NoError(t, err)
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(""),
@@ -166,6 +170,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewCatalog(true))
 					assert.NoError(t, err)
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
@@ -207,6 +212,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				catalogsFile:          tt.fields.catalogsFile,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
 			}
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
