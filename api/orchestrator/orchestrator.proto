@@ -742,7 +742,7 @@ message TargetOfEvaluation {
   ];
   string catalog_id = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.pattern = "^(|basic|substantial|high|low|medium)$"
+    (validate.rules).string.min_len = 1 
   ];
 
   // an assurance level is not offered by every catalog, therefore it is

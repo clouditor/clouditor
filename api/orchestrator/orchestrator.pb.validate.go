@@ -4755,10 +4755,10 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_TargetOfEvaluation_CatalogId_Pattern.MatchString(m.GetCatalogId()) {
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
 		err := TargetOfEvaluationValidationError{
 			field:  "CatalogId",
-			reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
@@ -4913,8 +4913,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
-
-var _TargetOfEvaluation_CatalogId_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
