@@ -35,14 +35,14 @@ func NewCertificate() *orchestrator.Certificate {
 }
 
 // NewCatalog creates a mock catalog
-func NewCatalog() *orchestrator.Catalog {
+func NewCatalog(assuranceLevelUsed bool) *orchestrator.Catalog {
 	var mockCatalog = &orchestrator.Catalog{
 		Name:            testdata.MockCatalogName,
 		Id:              testdata.MockCatalogID,
 		Description:     testdata.MockCatalogDescription,
 		AllInScope:      true,
 		AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
-		AssuranceLevel:  true,
+		AssuranceLevel:  assuranceLevelUsed,
 		Categories: []*orchestrator.Category{{
 			Name:        testdata.MockCategoryName,
 			Description: testdata.MockCategoryDescription,
@@ -85,11 +85,15 @@ func NewCatalog() *orchestrator.Catalog {
 	return mockCatalog
 }
 
-func NewTargetOfEvaluation() *orchestrator.TargetOfEvaluation {
+// NewTargetOfEvaluation creates a new Target of Evaluation. The assurance level is set if available.
+func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
 		CloudServiceId: testdata.MockCloudServiceID,
 		CatalogId:      testdata.MockCatalogID,
-		AssuranceLevel: &testdata.AssuranceLevelBasic,
+	}
+
+	if assuranceLevel != "" {
+		toe.AssuranceLevel = &assuranceLevel
 	}
 
 	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation

@@ -109,12 +109,12 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 
 	// Check that levels and level is not empty
 	if len(levels) < 3 {
-		err := errors.New("levels are empty")
+		err := errors.New("assurance levels are empty")
 		return c, err
 	}
 
 	if level == "" {
-		err := errors.New("levels are empty")
+		err := errors.New("assurance level is empty")
 		return c, err
 	}
 

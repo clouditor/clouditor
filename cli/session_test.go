@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
+	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog(true)})
 	if err != nil {
 		panic(err)
 	}
