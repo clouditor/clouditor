@@ -149,7 +149,7 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 }
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
-func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -181,11 +181,12 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 		return nil, service.ErrPermissionDenied
 	}
 
+	// Either the cloud_service_id or the catalog_id is set and the conds are added accordingly.
 	if req.GetCloudServiceId() != "" {
 		conds = append(conds, "cloud_service_id = ?", req.CloudServiceId)
+	} else if req.GetCatalogId() != "" {
+		conds = append(conds, "catalog_id = ?", req.CatalogId)
 	}
-
-	// TODO: filter according to catalog (and acually make it mutually exclusive)
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
 	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, conds...)
