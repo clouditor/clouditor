@@ -32,6 +32,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
+import "api/runtime/runtime.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -434,6 +435,14 @@ service Orchestrator {
                "{catalog_id}"
     };
   }
+
+  // Get Runtime Information
+  rpc GetRuntimeInfo(clouditor.runtime.v1.GetRuntimeInfoRequest)
+      returns (clouditor.runtime.v1.Runtime) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/runtime_info"
+    };
+  }
 }
 
 message RegisterAssessmentToolRequest {
@@ -471,10 +480,15 @@ message StoreAssessmentResultRequest {
       [ (validate.rules).message.required = true ];
 }
 
-// StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+// StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a
+// custom unary RPC and therefore requires a response message according to the
+// style convention. Since no return values are required, this is empty.
 message StoreAssessmentResultResponse {}
 
-// StoreAssessmentResultsReponse belongs to StoreAssessmentResults, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling. 
+// StoreAssessmentResultsReponse belongs to StoreAssessmentResults, which uses a
+// custom bidirectional streaming RPC and therefore requires a response message
+// according to the style convention. The bidirectional streaming needs the
+// status and its message in the response for error handling.
 message StoreAssessmentResultsResponse {
   bool status = 1;
   string status_message = 2;

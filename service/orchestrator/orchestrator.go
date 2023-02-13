@@ -33,6 +33,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api/runtime"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -46,14 +47,14 @@ import (
 //go:embed *.json
 var f embed.FS
 
-var defaultMetricConfigurations map[string]*assessment.MetricConfiguration
-var log *logrus.Entry
-
 var DefaultMetricsFile = "metrics.json"
-
 var DefaultCatalogsFile = "catalogs.json"
 
-var version string
+var (
+	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
+	log                         *logrus.Entry
+  version string
+)
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {
@@ -301,4 +302,9 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// GetRuntimeInfo implements a method to retrieve runtime information
+func (svc *Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
+	return service.GetRuntimeInfo()
 }
