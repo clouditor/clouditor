@@ -55,7 +55,9 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest {}
+message StartDiscoveryRequest {
+  optional string resource_group = 1; 
+}
 
 message StartDiscoveryResponse { bool successful = 1; }
 
