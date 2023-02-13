@@ -1,4 +1,5 @@
-// Copyright 2022 Fraunhofer AISEC
+//
+// Copyright 2016-2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,31 +24,10 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package evidence
 
-// DeepCopy copies an interface[] array
-func DeepCopy(original []interface{}) []interface{} {
-
-	var target []interface{}
-
-	for i := range original {
-		target = append(target, original[i])
-	}
-
-	return target
-}
-
-// DeepCopyOfMap copies a map
-func DeepCopyOfMap(originalMap map[string]interface{}) map[string]interface{} {
-	targetMap := make(map[string]interface{})
-
-	for key, value := range originalMap {
-		if mapValue, ok := value.(map[string]interface{}); ok {
-			targetMap[key] = DeepCopyOfMap(mapValue)
-		} else {
-			targetMap[key] = value
-		}
-	}
-
-	return targetMap
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *StoreEvidenceRequest) GetCloudServiceId() string {
+	return req.GetEvidence().GetCloudServiceId()
 }

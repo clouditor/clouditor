@@ -34,6 +34,7 @@ guide](https://cloud.google.com/apis/design/), including the following conventio
 | DeleteBook  | DeleteBookRequest | google.brotobuf.Empty |
 
 * Even if we *transfer* a single resource (e.g. in the case of `StoreEvidence`) we create a corresponding `XxxRequest` message (`StoreEvidenceRequest`). `XxxRequest` allows adding new fields to the request (e.g. metadata) while not breaking the code.
+* In case of an error we return nil instead of the `XxxResponse`.
 
 ### Generate Go files
 

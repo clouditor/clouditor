@@ -3,7 +3,9 @@ package inmemory
 import (
 	"testing"
 
-	"clouditor.io/clouditor/api/auth"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,19 +14,15 @@ func TestNewStorage(t *testing.T) {
 	s, err := NewStorage()
 	assert.NoError(t, err)
 
-	// Test to create new user
-	userInput := &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	// Test to create new cloud service
+	userInput := orchestratortest.NewCloudService()
 	err = s.Create(userInput)
 	assert.NoError(t, err)
 
 	// Test if we get same user via its name
-	userOutput := &auth.User{}
-	err = s.Get(userOutput, "Username = ?", "SomeName")
+	userOutput := &orchestrator.CloudService{}
+	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName)
 	assert.NoError(t, err)
+	assert.NoError(t, userOutput.Validate())
 	assert.Equal(t, userInput, userOutput)
 }

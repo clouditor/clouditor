@@ -29,8 +29,6 @@ import (
 	"context"
 	"embed"
 	"errors"
-	"fmt"
-	"io"
 	"sync"
 
 	"clouditor.io/clouditor/api/assessment"
@@ -68,10 +66,6 @@ type Service struct {
 
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex
-
-	// Currently only in-memory
-	results      map[string]*assessment.AssessmentResult
-	resultsMutex sync.Mutex
 
 	// Hook
 	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
@@ -150,7 +144,6 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		results:      make(map[string]*assessment.AssessmentResult),
 		metricsFile:  DefaultMetricsFile,
 		catalogsFile: DefaultCatalogsFile,
 		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
@@ -204,96 +197,6 @@ func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFun
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.cloudServiceHooks = append(s.cloudServiceHooks, hook)
-}
-
-// StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
-func (s *Service) StoreAssessmentResult(_ context.Context, req *orchestrator.StoreAssessmentResultRequest) (resp *orchestrator.StoreAssessmentResultResponse, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	s.resultsMutex.Lock()
-	s.results[req.Result.Id] = req.Result
-	s.resultsMutex.Unlock()
-
-	go s.informHook(req.Result, nil)
-
-	resp = &orchestrator.StoreAssessmentResultResponse{}
-
-	return resp, nil
-}
-
-func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreAssessmentResultsServer) (err error) {
-	var (
-		result *orchestrator.StoreAssessmentResultRequest
-		res    *orchestrator.StoreAssessmentResultResponse
-	)
-
-	for {
-		result, err = stream.Recv()
-
-		// If no more input of the stream is available, return
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			newError := fmt.Errorf("cannot receive stream request: %w", err)
-			log.Error(newError)
-			return status.Errorf(codes.Unknown, "%v", newError)
-		}
-
-		// Call StoreAssessmentResult() for storing a single assessment
-		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
-			Result: result.Result,
-		}
-		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
-		if err != nil {
-			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
-			res = &orchestrator.StoreAssessmentResultResponse{
-				Status:        false,
-				StatusMessage: err.Error(),
-			}
-		} else {
-			res = &orchestrator.StoreAssessmentResultResponse{
-				Status: true,
-			}
-		}
-
-		log.Debugf("Assessment result received (%v)", result.Result.Id)
-
-		err = stream.Send(res)
-
-		// Check for send errors
-		if errors.Is(err, io.EOF) {
-			return nil
-		}
-		if err != nil {
-			newError := fmt.Errorf("cannot stream response to the client: %w", err)
-			log.Error(newError)
-			return status.Errorf(codes.Unknown, "%v", newError.Error())
-		}
-	}
-}
-
-func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
-	s.hookMutex.Lock()
-	defer s.hookMutex.Unlock()
-	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
-}
-
-func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	// Inform our hook, if we have any
-	if s.AssessmentResultHooks != nil {
-		for _, hook := range s.AssessmentResultHooks {
-			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(result, err)
-		}
-	}
 }
 
 // CreateCertificate implements method for creating a new certificate

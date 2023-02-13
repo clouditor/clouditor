@@ -268,7 +268,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		),
 	)
 
-	evidenceStoreService = service_evidenceStore.NewService()
+  evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
 
 	evaluationService = service_evaluation.NewService(
 		service_evaluation.WithOAuth2Authorizer(

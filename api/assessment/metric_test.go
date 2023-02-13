@@ -29,6 +29,7 @@ import (
 	"database/sql/driver"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/runtime/protoimpl"
@@ -49,11 +50,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "MetricConfiguration Operator is empty",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					TargetValue: &structpb.Value{
-						Kind: &structpb.Value_StringValue{
-							StringValue: "1111",
-						},
-					},
+					TargetValue: testdata.MockMetricConfigurationTargetValueString,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -75,14 +72,10 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "Successful Validation",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					TargetValue: &structpb.Value{
-						Kind: &structpb.Value_StringValue{
-							StringValue: "1111",
-						},
-					},
+					TargetValue:    testdata.MockMetricConfigurationTargetValueString,
 					Operator:       "==",
-					MetricId:       "TestMetric",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: assert.NoError,
@@ -341,7 +334,7 @@ func TestCheckCloudServiceID(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				serviceID: "00000000-0000-0000-0000-000000000000",
+				serviceID: testdata.MockCloudServiceID,
 			},
 			wantErr: assert.NoError,
 		},

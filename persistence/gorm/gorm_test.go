@@ -1,3 +1,29 @@
+// Copyright 2016-2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//	         $$\                           $$\ $$\   $$\
+//	         $$ |                          $$ |\__|  $$ |
+//	$$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+//
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//
+//	\_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
 package gorm
 
 import (
@@ -9,13 +35,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 )
 
-var MockMetricID = "MyMetric"
+var mockMetricRange = &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}}
 
 func TestStorageOptions(t *testing.T) {
 	type args struct {
@@ -69,22 +95,18 @@ func TestStorageOptions(t *testing.T) {
 
 			assert.Equal(t, tt.wantDialectorType, fmt.Sprintf("%T", gorm.dialector))
 
-			// Test to create new user and get it again with respective 'Create' and 'Get'
-			// Create record via DB call
-			userInput := &auth.User{
-				Username: "SomeName",
-				Password: "SomePassword",
-				Email:    "SomeMail",
-				FullName: "SomeFullName",
-			}
-			err = s.Create(userInput)
+			// Test to create a new cloud service and get it again with
+			// respective 'Create' and 'Get' Create record via DB call
+			serviceInput := &orchestrator.CloudService{Name: "SomeName"}
+			err = s.Create(serviceInput)
 			assert.NoError(t, err)
 
 			// Get record via DB call
-			userOutput := &auth.User{}
-			err = s.Get(userOutput, "Username = ?", "SomeName")
+			serviceOutput := &orchestrator.CloudService{}
+			err = s.Get(serviceOutput, "name = ?", "SomeName")
 			assert.NoError(t, err)
-			assert.Equal(t, userInput, userOutput)
+			assert.NoError(t, serviceOutput.Validate())
+			assert.Equal(t, serviceInput, serviceOutput)
 		})
 	}
 }
@@ -96,7 +118,13 @@ func Test_storage_Create(t *testing.T) {
 		metric *assessment.Metric
 	)
 
-	metric = &assessment.Metric{Id: MockMetricID}
+	metric = &assessment.Metric{
+		Id:    testdata.MockMetricID,
+		Name:  testdata.MockMetricName,
+		Range: mockMetricRange,
+	}
+	// Check if metric has all necessary fields
+	assert.NoError(t, metric.Validate())
 
 	// Create storage
 	s, err = NewStorage()
@@ -111,52 +139,52 @@ func Test_storage_Create(t *testing.T) {
 
 func Test_storage_Get(t *testing.T) {
 	var (
-		err  error
-		s    persistence.Storage
-		user *auth.User
+		err     error
+		s       persistence.Storage
+		service *orchestrator.CloudService
 	)
 
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	service = orchestratortest.NewCloudService()
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
 	// Return error since no record in the DB yet
-	err = s.Get(&auth.User{})
+	err = s.Get(&orchestrator.CloudService{})
 	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
 
-	// Create user
-	err = s.Create(user)
+	// Create service
+	err = s.Create(service)
 	assert.NoError(t, err)
 
-	// Get user via passing entire record
-	gotUser := &auth.User{}
-	err = s.Get(gotUser)
+	// Get service via passing entire record
+	gotService := &orchestrator.CloudService{}
+	err = s.Get(gotService)
 	assert.NoError(t, err)
-	assert.Equal(t, user, gotUser)
+	assert.NoError(t, gotService.Validate())
+	assert.Equal(t, service, gotService)
 
-	// Get user via username
-	gotUser2 := &auth.User{}
-	err = s.Get(gotUser2, "username = ?", user.Username)
+	// Get service via name
+	gotService2 := &orchestrator.CloudService{}
+	err = s.Get(gotService2, "name = ?", service.Name)
 	assert.NoError(t, err)
-	assert.Equal(t, user, gotUser2)
+	assert.Equal(t, service, gotService2)
 
-	// Get user via mail
-	gotUser3 := &auth.User{}
-	err = s.Get(gotUser3, "Email = ?", user.Email)
+	// Get service via description
+	gotService3 := &orchestrator.CloudService{}
+	err = s.Get(gotService3, "description = ?", service.Description)
 	assert.NoError(t, err)
-	assert.Equal(t, user, gotUser3)
+	assert.NoError(t, gotService3.Validate())
+	assert.Equal(t, service, gotService3)
 
 	var metric = &assessment.Metric{
-		Id:    MockMetricID,
-		Range: &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}},
+		Id:    testdata.MockMetricID,
+		Name:  testdata.MockMetricName,
+		Range: mockMetricRange,
 	}
+	// Check if metric has all necessary fields
+	assert.NoError(t, metric.Validate())
 
 	// Create metric
 	err = s.Create(metric)
@@ -164,14 +192,18 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric via Id
 	gotMetric := &assessment.Metric{}
-	err = s.Get(gotMetric, "id = ?", MockMetricID)
+	err = s.Get(gotMetric, "id = ?", testdata.MockMetricID)
 	assert.NoError(t, err)
+	assert.NoError(t, gotMetric.Validate())
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  MockMetricID,
+		MetricId:  testdata.MockMetricID,
+		Code:      "TestCode",
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
+	// Check if impl has all necessary fields
+	assert.NoError(t, impl.Validate())
 
 	// Create metric implementation
 	err = s.Create(impl)
@@ -179,53 +211,44 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric implementation via Id
 	gotImpl := &assessment.MetricImplementation{}
-	err = s.Get(gotImpl, "metric_id = ?", MockMetricID)
+	err = s.Get(gotImpl, "metric_id = ?", testdata.MockMetricID)
 	assert.NoError(t, err)
+	assert.NoError(t, gotImpl.Validate())
 	assert.Equal(t, impl, gotImpl)
 }
 
 func Test_storage_List(t *testing.T) {
 	var (
-		err   error
-		s     persistence.Storage
-		user1 *auth.User
-		user2 *auth.User
-		users []auth.User
+		err      error
+		s        persistence.Storage
+		service1 *orchestrator.CloudService
+		service2 *orchestrator.CloudService
+		services []orchestrator.CloudService
 	)
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Test user
+	// Test service
+	service1 = &orchestrator.CloudService{Name: testdata.MockCloudServiceName}
+	service2 = &orchestrator.CloudService{Name: testdata.MockAnotherCloudServiceName}
 
-	user1 = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
-
-	user2 = &auth.User{
-		Username: "SomeName2",
-		Password: "SomePassword2",
-		Email:    "SomeMail2",
-		FullName: "SomeFullName2",
-	}
-
-	// List should return empty list since no users are in DB yet
-	err = s.List(&users, "", true, 0, -1)
+	// List should return empty list since no services are in DB yet
+	err = s.List(&services, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Empty(t, users)
+	assert.Empty(t, services)
 
-	// List should return list of 2 users (user1 and user2)
-	err = s.Create(user1)
+	// List should return list of 2 services (service1 and service2)
+	err = s.Create(service1)
 	assert.NoError(t, err)
-	err = s.Create(user2)
+	err = s.Create(service2)
 	assert.NoError(t, err)
-	err = s.List(&users, "", true, 0, -1)
+	err = s.List(&services, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, len(users), 2)
+	assert.Equal(t, len(services), 2)
+	// We only check one service and assume the others are also correct
+	assert.NoError(t, services[0].Validate())
 
 	// Test with certificates (associations included via states)
 	var (
@@ -255,6 +278,8 @@ func Test_storage_List(t *testing.T) {
 	assert.Equal(t, len(certificates), 2)
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
+	// We only check one certificate and assume the others are also correct
+	assert.NoError(t, certificates[0].Validate())
 
 	fmt.Println(certificates)
 
@@ -273,52 +298,41 @@ func Test_storage_List(t *testing.T) {
 
 func Test_storage_Count(t *testing.T) {
 	var (
-		count int64
-		err   error
-		s     persistence.Storage
-		user  *auth.User
-		user2 *auth.User
+		count    int64
+		err      error
+		s        persistence.Storage
+		service1 *orchestrator.CloudService
+		service2 *orchestrator.CloudService
 	)
 
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
-
-	user2 = &auth.User{
-		Username: "SomeName2",
-		Password: "SomePassword2",
-		Email:    "SomeMail2",
-		FullName: "SomeFullName2",
-	}
+	service1 = orchestratortest.NewCloudService()
+	service2 = orchestratortest.NewAnotherCloudService()
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Since no records in DB yet, count of users should be 0
-	count, err = s.Count(&auth.User{})
+	// Since no records in DB yet, count of services should be 0
+	count, err = s.Count(&orchestrator.CloudService{})
 	assert.NoError(t, err)
 	assert.Equal(t, int(count), 0)
 
-	// Create one user -> count of users should be 1
-	assert.ErrorIs(t, s.Create(user), nil)
-	count, err = s.Count(&auth.User{})
+	// Create one service -> count of services should be 1
+	assert.ErrorIs(t, s.Create(service1), nil)
+	count, err = s.Count(&orchestrator.CloudService{})
 	assert.NoError(t, err)
-	assert.Equal(t, int(count), 1)
+	assert.Equal(t, 1, int(count))
 
-	// Add another one -> count of users should be 2
-	assert.ErrorIs(t, s.Create(user2), nil)
-	count, err = s.Count(&auth.User{})
+	// Add another one -> count of services should be 2
+	assert.ErrorIs(t, s.Create(service2), nil)
+	count, err = s.Count(&orchestrator.CloudService{})
 	assert.NoError(t, err)
-	assert.Equal(t, int(count), 2)
+	assert.Equal(t, 2, int(count))
 
-	// Count of users with ID "SomeName2" should be 1
-	count, err = s.Count(&auth.User{}, "username = ?", "SomeName2")
+	// Count of services with ID "SomeName2" should be 1
+	count, err = s.Count(&orchestrator.CloudService{}, "name = ?", testdata.MockAnotherCloudServiceName)
 	assert.NoError(t, err)
-	assert.Equal(t, int(count), 1)
+	assert.Equal(t, 1, int(count))
 
 	// Calling s.Count() with unsupported record type should throw "unsupported" error
 	_, err = s.Count(nil, nil)
@@ -333,114 +347,76 @@ func Test_storage_Save(t *testing.T) {
 	}
 
 	var (
-		err     error
-		s       persistence.Storage
-		user    *auth.User
-		newUser *auth.User
-		gotUser *auth.User
-		myVar   MyTest
+		err        error
+		s          persistence.Storage
+		service    *orchestrator.CloudService
+		newService *orchestrator.CloudService
+		gotService *orchestrator.CloudService
+		myVar      MyTest
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	service = orchestratortest.NewCloudService()
 
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
 	assert.NoError(t, err)
 
-	// Create user
-	err = s.Create(user)
+	// Create service
+	err = s.Create(service)
 	assert.NoError(t, err)
 
-	err = s.Get(&auth.User{}, "username = ?", user.Username)
+	err = s.Get(&orchestrator.CloudService{}, "name = ?", service.Name)
 	assert.NoError(t, err)
 
-	// Save new User: Change PW and delete email. Username and FullName remain unchanged
-	newUser = &auth.User{
-		Username: user.Username,
-		Password: "SomeNewPassword",
-		Email:    "",
-		FullName: user.FullName,
-	}
-	err = s.Save(newUser, "username = ?", user.Username)
+	// Save new service: Change description. Name and ID remain unchanged
+	newService = orchestratortest.NewCloudService()
+	newService.Description = ""
+
+	err = s.Save(newService, "name = ?", service.Name)
 	assert.NoError(t, err)
 
-	gotUser = &auth.User{}
-	err = s.Get(gotUser, "username = ?", user.Username)
+	gotService = &orchestrator.CloudService{}
+	err = s.Get(gotService, "name = ?", service.Name)
 	assert.NoError(t, err)
+	assert.NoError(t, gotService.Validate())
 
-	// UserName and FullName should be the same
-	assert.Equal(t, user.Username, gotUser.Username)
-	assert.Equal(t, user.Username, gotUser.Username)
-	// PW should be changed
-	assert.Equal(t, newUser.Password, gotUser.Password)
-	// Email should be zero
-	assert.Equal(t, "", gotUser.Email)
+	// Name should be the same
+	assert.Equal(t, service.Name, gotService.Name)
+	// Description should be zero
+	assert.Equal(t, "", gotService.Description)
 
 	// Save MyTest
 	myVar = MyTest{ID: 1, Name: "Test"}
+
 	err = s.Save(&myVar)
 	assert.NoError(t, err)
 }
 
 func Test_storage_Update(t *testing.T) {
 	var (
-		err  error
-		s    persistence.Storage
-		user *auth.User
+		err error
+		s   persistence.Storage
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Testing user
-	// Create user
-	err = s.Create(user)
-	assert.NoError(t, err)
-
-	err = s.Get(&auth.User{}, "username = ?", user.Username)
-	assert.NoError(t, err)
-
-	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", "SomeOtherUser")
-	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
-
-	err = s.Update(&auth.User{FullName: "SomeNewName"}, "username = ?", user.Username)
-	assert.NoError(t, err)
-
-	gotUser := &auth.User{}
-	err = s.Get(gotUser, "username = ?", user.Username)
-	assert.NoError(t, err)
-
-	// UserName should be changed
-	assert.Equal(t, "SomeNewName", gotUser.FullName)
-
-	// Other properties should stay the same
-	assert.Equal(t, user.Username, gotUser.Username)
-	assert.Equal(t, user.Password, gotUser.Password)
-	assert.Equal(t, user.Email, gotUser.Email)
-
 	// Testing cloud service
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
-		Id:          "SomeId",
-		Name:        "SomeName",
-		Description: "SomeDescription",
+		Id:          testdata.MockCloudServiceID,
+		Name:        testdata.MockCloudServiceName,
+		Description: testdata.MockCloudServiceDescription,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id: "SomeId",
+				Id:    testdata.MockCloudServiceID,
+				Name:  testdata.MockMetricName,
+				Range: mockMetricRange,
 			},
 		},
 	}
+	// Check if cloud service has all necessary fields
+	assert.NoError(t, cloudService.Validate())
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
 
@@ -453,6 +429,7 @@ func Test_storage_Update(t *testing.T) {
 	gotCloudService := &orchestrator.CloudService{}
 	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
 	assert.NoError(t, err)
+	assert.NoError(t, gotCloudService.Validate())
 
 	// Name should be changed
 	assert.Equal(t, "SomeNewName", gotCloudService.Name)
@@ -464,35 +441,28 @@ func Test_storage_Update(t *testing.T) {
 
 func Test_storage_Delete(t *testing.T) {
 	var (
-		err  error
-		s    persistence.Storage
-		user *auth.User
-		//gotUser *auth.User
+		err     error
+		s       persistence.Storage
+		service *orchestrator.CloudService
 	)
-	user = &auth.User{
-		Username: "SomeName",
-		Password: "SomePassword",
-		Email:    "SomeMail",
-		FullName: "SomeFullName",
-	}
+	service = orchestratortest.NewCloudService()
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Create user
-	err = s.Create(user)
+	// Create service
+	err = s.Create(service)
 	assert.NoError(t, err)
 
-	// Should return ErrRecordNotFound since there is no user "FakeUserName" in DB
-	assert.ErrorIs(t, s.Delete(&auth.User{}, "username = ?", "FakeUserName"), persistence.ErrRecordNotFound)
+	// Should return ErrRecordNotFound since there is no service "Fake" in DB
+	assert.ErrorIs(t, s.Delete(&orchestrator.CloudService{}, "name = ?", "Fake"), persistence.ErrRecordNotFound)
 
 	// Successful deletion
-	assert.Nil(t, s.Delete(&auth.User{}, "username = ?", user.Username))
-	// Check with s.Get that user is not in DB anymore
-	assert.ErrorIs(t, s.Get(&auth.User{}, "username = ?", user.Username), persistence.ErrRecordNotFound)
+	assert.Nil(t, s.Delete(&orchestrator.CloudService{}, "name = ?", service.Name))
+	// Check with s.Get that service is not in DB anymore
+	assert.ErrorIs(t, s.Get(&orchestrator.CloudService{}, "name = ?", service.Name), persistence.ErrRecordNotFound)
 
-	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &auth.User{})
+	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &orchestrator.CloudService{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")
-
 }

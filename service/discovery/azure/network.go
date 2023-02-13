@@ -26,7 +26,6 @@
 package azure
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -98,24 +97,27 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 		return nil, err
 	}
 
-	// List all network interfaces accross all resource groups
-	listPager := d.clients.networkInterfacesClient.NewListAllPager(&armnetwork.InterfacesClientListAllOptions{})
-	ni := make([]*armnetwork.Interface, 0)
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-		ni = append(ni, pageResponse.Value...)
-	}
+	// List all network interfaces
+	err := listPager(d.azureDiscovery,
+		d.clients.networkInterfacesClient.NewListAllPager,
+		d.clients.networkInterfacesClient.NewListPager,
+		func(res armnetwork.InterfacesClientListAllResponse) []*armnetwork.Interface {
+			return res.Value
+		},
+		func(res armnetwork.InterfacesClientListResponse) []*armnetwork.Interface {
+			return res.Value
+		},
+		func(ni *armnetwork.Interface) error {
+			s := d.handleNetworkInterfaces(ni)
 
-	for i := range ni {
-		s := d.handleNetworkInterfaces(ni[i])
+			log.Infof("Adding network interface '%s'", s.GetName())
 
-		log.Infof("Adding network interface '%s'", s.GetName())
+			list = append(list, s)
 
-		list = append(list, s)
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil
@@ -130,24 +132,27 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 		return nil, err
 	}
 
-	// List all load balancers accross all resource groups
-	listPager := d.clients.loadBalancerClient.NewListAllPager(&armnetwork.LoadBalancersClientListAllOptions{})
-	lbs := make([]*armnetwork.LoadBalancer, 0)
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-		lbs = append(lbs, pageResponse.Value...)
-	}
+	// List all load balancers
+	err := listPager(d.azureDiscovery,
+		d.clients.loadBalancerClient.NewListAllPager,
+		d.clients.loadBalancerClient.NewListPager,
+		func(res armnetwork.LoadBalancersClientListAllResponse) []*armnetwork.LoadBalancer {
+			return res.Value
+		},
+		func(res armnetwork.LoadBalancersClientListResponse) []*armnetwork.LoadBalancer {
+			return res.Value
+		},
+		func(lbs *armnetwork.LoadBalancer) error {
+			s := d.handleLoadBalancer(lbs)
 
-	for i := range lbs {
-		s := d.handleLoadBalancer(lbs[i])
+			log.Infof("Adding load balancer %+v", s)
 
-		log.Infof("Adding load balancer %+v", s)
+			list = append(list, s)
 
-		list = append(list, s)
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil

@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"runtime"
 	"sync"
@@ -36,6 +35,7 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/persistence"
@@ -45,7 +45,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var AssuranceLevelHigh = "high"
@@ -54,7 +53,6 @@ var AssuranceLevelSubstantial = "substantial"
 func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		results               map[string]*assessment.AssessmentResult
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
@@ -81,12 +79,13 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				req: &orchestrator.CreateTargetOfEvaluationRequest{},
 			},
 			wantErr: true,
+			want:    assert.Empty,
 		},
 		{
 			name: "valid",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -111,13 +110,14 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}
 
 				var service orchestrator.CloudService
-				err = svc.storage.Get(&service, "id = ?", orchestratortest.MockServiceID)
+				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID)
 				if !assert.NoError(t, err) {
 					return false
 				}
 
 				return assert.Equal(t, 1, len(service.CatalogsInScope))
 			},
+			wantErr: false,
 		},
 	}
 
@@ -125,7 +125,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				cloudServiceHooks:     tt.fields.cloudServiceHooks,
-				results:               tt.fields.results,
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
@@ -136,14 +135,13 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			}
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.CreateTargetOfEvaluation() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if tt.want != nil {
-				tt.want(t, gotRes, svc)
-			}
+			tt.want(t, gotRes, svc)
 		})
 	}
 }
@@ -192,7 +190,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "toe not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -204,7 +202,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testutil.TestCloudService2,
-				CatalogId:      orchestratortest.MockCatalogID,
+				CatalogId:      testdata.MockCatalogID,
 			}},
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -216,7 +214,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "valid toe",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -227,16 +225,17 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				}),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: orchestratortest.MockServiceID,
+				CloudServiceId: testdata.MockCloudServiceID,
 				CatalogId:      "Cat1234",
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
 				want := orchestratortest.NewTargetOfEvaluation()
-				assert.True(t, ok)
-				fmt.Println(res)
-				assert.Equal(t, want.CloudServiceId, res.CloudServiceId)
-				return assert.Equal(t, want.CatalogId, res.CatalogId)
+
+				return assert.True(t, ok) &&
+					assert.NoError(t, res.Validate()) &&
+					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
+					assert.Equal(t, want.CatalogId, res.CatalogId)
 			},
 			wantErr: assert.NoError,
 		},
@@ -264,7 +263,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	)
 
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -283,6 +282,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// 3rd case: Invalid request
@@ -298,7 +298,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		err error
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -329,13 +329,14 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: orchestratortest.MockServiceID,
-			CatalogId:      orchestratortest.MockCatalogID,
+			CloudServiceId: testdata.MockCloudServiceID,
+			CatalogId:      testdata.MockCatalogID,
 			AssuranceLevel: &AssuranceLevelSubstantial,
 		},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
+	assert.NoError(t, toe.Validate())
 	assert.Equal(t, &AssuranceLevelSubstantial, toe.AssuranceLevel)
 }
 
@@ -345,7 +346,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -360,7 +361,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 
 	// 2nd case: ErrRecordNotFound
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: "11111111-1111-1111-1111-111111111111",
+		CloudServiceId: testdata.MockCloudServiceID,
 		CatalogId:      "0000",
 	})
 	assert.Error(t, err)
@@ -374,12 +375,13 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
+	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: orchestratortest.MockServiceID,
-		CatalogId:      orchestratortest.MockCatalogID,
+		CloudServiceId: testdata.MockCloudServiceID,
+		CatalogId:      testdata.MockCatalogID,
 	})
 	assert.NoError(t, err)
 
@@ -446,16 +448,16 @@ func TestToeHook(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: orchestratortest.MockServiceID,
-						CatalogId:      orchestratortest.MockCatalogID,
+						CloudServiceId: testdata.MockCloudServiceID,
+						CatalogId:      testdata.MockCatalogID,
 						AssuranceLevel: &AssuranceLevelSubstantial,
 					},
 				},
 			},
 			wantErr: false,
 			wantResp: &orchestrator.TargetOfEvaluation{
-				CloudServiceId: orchestratortest.MockServiceID,
-				CatalogId:      orchestratortest.MockCatalogID,
+				CloudServiceId: testdata.MockCloudServiceID,
+				CatalogId:      testdata.MockCatalogID,
 				AssuranceLevel: &AssuranceLevelSubstantial,
 			},
 		},
@@ -466,7 +468,7 @@ func TestToeHook(t *testing.T) {
 
 			// Create service
 			s := service
-			err := s.storage.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID})
+			err := s.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 			assert.NoError(t, err)
 
 			// Create catalog
@@ -482,12 +484,15 @@ func TestToeHook(t *testing.T) {
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
+			assert.NoError(t, gotResp.Validate())
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotResp, tt.wantResp) {
 				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+
 			}
 			assert.Equal(t, 2, hookCallCounter)
 		})
@@ -525,7 +530,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -533,51 +538,52 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: orchestratortest.MockServiceID,
-					CatalogId:      orchestratortest.MockCatalogID,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
 				},
 			},
 			wantRes: &orchestrator.ListControlsInScopeResponse{
 				ControlsInScope: []*orchestrator.ControlInScope{
 					{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 					{
-						ControlId:                        orchestratortest.MockSubControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						ControlId:                        testdata.MockSubControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "one control explicitly set to continuously monitored",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 					assert.NoError(t, s.Update(&orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					}, orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 					}))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -585,30 +591,31 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: orchestratortest.MockServiceID,
-					CatalogId:      orchestratortest.MockCatalogID,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
 				},
 			},
 			wantRes: &orchestrator.ListControlsInScopeResponse{
 				ControlsInScope: []*orchestrator.ControlInScope{
 					{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 					{
-						ControlId:                        orchestratortest.MockSubControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
+						ControlId:                        testdata.MockSubControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
@@ -634,11 +641,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListControlsInScope(tt.args.ctx, tt.args.req)
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListControlInScope() = %v, want %v", gotRes, tt.wantRes)
@@ -678,7 +681,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -687,12 +690,12 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
@@ -710,12 +713,12 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
@@ -728,7 +731,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -737,22 +740,22 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockAnotherControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockAnotherControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
 			wantRes: &orchestrator.ControlInScope{
-				ControlId:                        orchestratortest.MockAnotherControlID,
-				ControlCategoryName:              orchestratortest.MockCategoryName,
-				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+				ControlId:                        testdata.MockAnotherControlID,
+				ControlCategoryName:              testdata.MockCategoryName,
+				ControlCategoryCatalogId:         testdata.MockCatalogID,
+				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 			},
 			wantErr: assert.NoError,
 		},
@@ -766,11 +769,11 @@ func TestService_AddControlToScope(t *testing.T) {
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
@@ -826,7 +829,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -835,22 +838,22 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
 			wantRes: &orchestrator.ControlInScope{
-				ControlId:                        orchestratortest.MockControlID,
-				ControlCategoryName:              orchestratortest.MockCategoryName,
-				ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-				TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-				TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+				ControlId:                        testdata.MockControlID,
+				ControlCategoryName:              testdata.MockCategoryName,
+				ControlCategoryCatalogId:         testdata.MockCatalogID,
+				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 			},
 			wantErr: assert.NoError,
 		},
@@ -864,12 +867,12 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: orchestratortest.MockServiceID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
@@ -887,11 +890,11 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
-						ControlId:                        orchestratortest.MockControlID,
-						ControlCategoryName:              orchestratortest.MockCategoryName,
-						ControlCategoryCatalogId:         orchestratortest.MockCatalogID,
-						TargetOfEvaluationCatalogId:      orchestratortest.MockCatalogID,
-						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_CONTINUOUSLY_MONITORED,
+						ControlId:                        testdata.MockControlID,
+						ControlCategoryName:              testdata.MockCategoryName,
+						ControlCategoryCatalogId:         testdata.MockCatalogID,
+						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
+						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 				},
 			},
@@ -907,6 +910,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateControlInScope(tt.args.in0, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
 			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
@@ -929,7 +933,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *emptypb.Empty
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -937,7 +940,6 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				req: nil,
 			},
-			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
@@ -947,7 +949,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: orchestratortest.MockServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation()))
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
@@ -955,13 +957,12 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					ControlId:           orchestratortest.MockControlID,
-					ControlCategoryName: orchestratortest.MockCategoryName,
-					CloudServiceId:      orchestratortest.MockServiceID,
-					CatalogId:           orchestratortest.MockCatalogID,
+					ControlId:           testdata.MockControlID,
+					ControlCategoryName: testdata.MockCategoryName,
+					CloudServiceId:      testdata.MockCloudServiceID,
+					CatalogId:           testdata.MockCatalogID,
 				},
 			},
-			wantRes: &emptypb.Empty{},
 			wantErr: assert.NoError,
 		},
 		{
@@ -973,10 +974,10 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					ControlId:           orchestratortest.MockControlID,
-					ControlCategoryName: orchestratortest.MockCategoryName,
-					CloudServiceId:      orchestratortest.MockServiceID,
-					CatalogId:           orchestratortest.MockCatalogID,
+					ControlId:           testdata.MockControlID,
+					ControlCategoryName: testdata.MockCategoryName,
+					CloudServiceId:      testdata.MockCloudServiceID,
+					CatalogId:           testdata.MockCatalogID,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -992,9 +993,9 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				in0: testutil.TestContextOnlyService1,
 				req: &orchestrator.RemoveControlFromScopeRequest{
 					CloudServiceId:      testutil.TestCloudService2,
-					ControlId:           orchestratortest.MockControlID,
-					ControlCategoryName: orchestratortest.MockCategoryName,
-					CatalogId:           orchestratortest.MockCatalogID,
+					ControlId:           testdata.MockControlID,
+					ControlCategoryName: testdata.MockCategoryName,
+					CatalogId:           testdata.MockCatalogID,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1008,12 +1009,8 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
-			gotRes, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
+			_, err := svc.RemoveControlFromScope(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err, tt.args)
-
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
-			}
 		})
 	}
 }
