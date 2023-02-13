@@ -97,11 +97,8 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 	// Paginate the results according to the request
 	res.Results, res.NextPageToken, err = service.PaginateStorage[*assessment.AssessmentResult](req, svc.storage, service.DefaultPaginationOpts, args...)
 	if err != nil {
-		svc.resultsMutex.Unlock()
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
-
-	svc.resultsMutex.Unlock()
 
 	return
 }
