@@ -20,3 +20,6 @@ engine
 cl
 coverage.cov
 *.log
+eucs_catalog.json
+eucs_catalaogs.json
+
