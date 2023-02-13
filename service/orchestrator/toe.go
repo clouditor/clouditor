@@ -149,7 +149,7 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 }
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
-func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -167,7 +167,7 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 }
 
 // ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
-func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
+func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
 	var conds = []any{gorm.WithPreload("ControlsInScope")}
 
 	// Validate request
@@ -176,7 +176,11 @@ func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator
 		return nil, err
 	}
 
-	// TODO: authz
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	if req.GetCloudServiceId() != "" {
 		conds = append(conds, "cloud_service_id = ?", req.CloudServiceId)
 	}

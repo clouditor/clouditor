@@ -41,6 +41,21 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
+// GetCloudServiceId() already implemented for the following requests by protoc-gen-validate
+// * RemoveControlFromScopeRequest
+// * ListControlsInScopeRequest
+// * GetCloudServiceRequest
+// * RemoveCloudServiceRequest
+// * UpdateMetricConfigurationRequest
+// * GetMetricConfigurationRequest
+// * ListMetricConfigurationRequest
+// * MetricChangeEvent
+// * TargetOfEvaluation
+// * RemoveTargetOfEvaluationRequest
+// * GetTargetOfEvaluationRequest
+// * ListTargetsOfEvaluationRequest
+// * Certificate
+
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
 func (req *AddControlToScopeRequest) GetCloudServiceId() string {
