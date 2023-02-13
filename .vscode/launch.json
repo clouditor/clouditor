@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "env": {},
             "preLaunchTask": "go: generate"
@@ -19,7 +19,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory"
@@ -32,7 +32,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/engine/engine.go",
+            "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
@@ -47,7 +47,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/cl.go",
+            "program": "${workspaceFolder}/cmd/cli",
             "cwd": "${workspaceFolder}",
             "args": [
                 "cloud",
@@ -61,7 +61,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cli/cl.go",
+            "program": "${workspaceFolder}/cmd/cli",
             "cwd": "${workspaceFolder}",
             "args": [
                 "login",
