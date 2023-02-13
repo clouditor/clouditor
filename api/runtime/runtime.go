@@ -27,7 +27,7 @@ package runtime
 
 import "fmt"
 
-// VersionString returns a version, if this is a release version, or a pseudo-version using a git commit hash otherwise.
+// VersionString returns a version. If it is a release version the release version returned, otherwise a pseudo version with a git commit hash or v0.0.0 if no commit hash is known.
 func (r *Runtime) VersionString() string {
 	if r.ReleaseVersion != nil {
 		return r.GetReleaseVersion()

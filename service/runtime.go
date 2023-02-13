@@ -53,7 +53,7 @@ func populateRuntimeInfo() {
 	// Set build info
 	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
-		log.Errorf("Could not read build info. Runtime information will not be complete")
+		log.Errorf("Could not read build info. Runtime information will not be complete.")
 	} else {
 		if version != "" {
 			rt.ReleaseVersion = &version
