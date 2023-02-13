@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"clouditor.io/clouditor/api/assessment"
+	runtime_0 "clouditor.io/clouditor/api/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"google.golang.org/grpc"
@@ -2742,6 +2743,24 @@ func local_request_Orchestrator_RemoveTargetOfEvaluation_0(ctx context.Context, 
 
 }
 
+func request_Orchestrator_GetRuntimeInfo_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq runtime_0.GetRuntimeInfoRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetRuntimeInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_Orchestrator_GetRuntimeInfo_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq runtime_0.GetRuntimeInfoRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetRuntimeInfo(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterOrchestratorHandlerServer registers the http handlers for service Orchestrator to "mux".
 // UnaryRPC     :call OrchestratorServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -3806,6 +3825,29 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("GET", pattern_Orchestrator_GetRuntimeInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo", runtime.WithHTTPPathPattern("/v1/orchestrator/runtime_info"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_Orchestrator_GetRuntimeInfo_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_GetRuntimeInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -4767,6 +4809,26 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("GET", pattern_Orchestrator_GetRuntimeInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo", runtime.WithHTTPPathPattern("/v1/orchestrator/runtime_info"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Orchestrator_GetRuntimeInfo_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Orchestrator_GetRuntimeInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -4862,6 +4924,8 @@ var (
 	pattern_Orchestrator_UpdateTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "target_of_evaluation.cloud_service_id", "toes", "target_of_evaluation.catalog_id"}, ""))
 
 	pattern_Orchestrator_RemoveTargetOfEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "cloud_service_id", "toes", "catalog_id"}, ""))
+
+	pattern_Orchestrator_GetRuntimeInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
 )
 
 var (
@@ -4956,4 +5020,6 @@ var (
 	forward_Orchestrator_UpdateTargetOfEvaluation_0 = runtime.ForwardResponseMessage
 
 	forward_Orchestrator_RemoveTargetOfEvaluation_0 = runtime.ForwardResponseMessage
+
+	forward_Orchestrator_GetRuntimeInfo_0 = runtime.ForwardResponseMessage
 )

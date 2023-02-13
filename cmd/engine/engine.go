@@ -206,9 +206,9 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Info("Welcome to new Clouditor 2.0")
+	var rt, _ = service.GetRuntimeInfo()
 
-	fmt.Println(`
+	fmt.Printf(`
            $$\                           $$\ $$\   $$\
            $$ |                          $$ |\__|  $$ |
   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
@@ -217,7 +217,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- `)
+ 
+  Version %s
+  `, rt.VersionString())
+	fmt.Println()
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
