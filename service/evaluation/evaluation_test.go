@@ -685,7 +685,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
-			gotMetrics, err := s.getMetricsFromSubControls(tt.args.control)
+			gotMetrics, err := s.getMetricsFromSubdontrols(tt.args.control)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
 			}
@@ -1514,7 +1514,7 @@ func TestService_handleFindParentControlJobError(t *testing.T) {
 
 			}
 
-			err := s.handleFindParentControlJobError(tt.args.err, tt.args.cloudServiceId, tt.args.controlId)
+			err := s.stopJobAndHandleError(tt.args.err, tt.args.cloudServiceId, tt.args.controlId)
 			tt.wantErr(t, err)
 		})
 	}
@@ -1761,7 +1761,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 				storage:                       tt.fields.storage,
 			}
 
-			s.evaluateFirstLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.schedulerTag, tt.args.subControls)
+			s.evaluateControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.schedulerTag, tt.args.subControls)
 
 			assert.Equal(t, 4, len(s.results))
 			// Check if the evaluatation results (and the new one) have no validation error
@@ -1824,7 +1824,7 @@ func TestService_evaluateSecondLevelControl(t *testing.T) {
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
-			s.evaluateSecondLevelControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
+			s.evaluateSubcontrol(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
 
 			assert.Equal(t, tt.fields.numberEvaluationResults, len(s.results))
 		})
@@ -1876,7 +1876,7 @@ func TestService_evaluationResultForSecondControlLevel(t *testing.T) {
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
-			gotResult, err := s.evaluationResultForSecondControlLevel(tt.args.cloudServiceId, tt.args.catalogId, tt.args.categoryName, tt.args.controlId, tt.args.toe)
+			gotResult, err := s.evaluationResultForSubcontrol(tt.args.cloudServiceId, tt.args.catalogId, tt.args.categoryName, tt.args.controlId, tt.args.toe)
 
 			tt.wantErr(t, err)
 

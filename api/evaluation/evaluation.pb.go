@@ -109,6 +109,7 @@ type ListEvaluationResultsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Optional. List only evaluation results for a specific cloud service.
 	FilteredCloudServiceId *string `protobuf:"bytes,1,opt,name=filtered_cloud_service_id,json=filteredCloudServiceId,proto3,oneof" json:"filtered_cloud_service_id,omitempty"`
 	FilteredControlId      *string `protobuf:"bytes,2,opt,name=filtered_control_id,json=filteredControlId,proto3,oneof" json:"filtered_control_id,omitempty"`
 	PageSize               int32   `protobuf:"varint,10,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`

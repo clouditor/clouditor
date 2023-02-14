@@ -92,6 +92,7 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
+                  description: Optional. List only evaluation results for a specific cloud service.
                   schema:
                     type: string
                 - name: filteredControlId
@@ -202,6 +203,7 @@ components:
                     description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
                 parentControlId:
                     type: string
+                    description: Reference to the parent category this control belongs to.
                 parentControlCategoryName:
                     type: string
                 parentControlCategoryCatalogId:
@@ -405,7 +407,7 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
-                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation.'
+                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation. Note: Because of limitations of our ORM framework, this field only contains a list of controls that are in scope of the target, but not the actual meta-data associated it with it (which is of message type ControlInScope). In order to retrieve the meta-data of the controls, the RPC ListControlsInScope (or the associated REST path) must be called.'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Evaluation

@@ -24,3 +24,9 @@
 // This file is part of Clouditor Community Edition.
 
 package evaluation
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *ListEvaluationResultsRequest) GetCloudServiceId() string {
+	return req.GetCloudServiceId()
+}

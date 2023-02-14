@@ -39,114 +39,118 @@
 
  // This service represents the Evaluation Interface
  service Evaluation {
-    // Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
-    rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
-    option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
-      };
-     } 
-
-    // StopEvaluation stops the evaluation for the given target of evaluation
-    rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
-    option (google.api.http) = {
-        post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
-        };
+  // Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
+  rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
+  option (google.api.http) = {
+      post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
+    };
     } 
 
-    // List all evaluation results. Part of the public API, also exposed as REST.
-    rpc ListEvaluationResults(ListEvaluationResultsRequest)
-        returns (ListEvaluationResultsResponse) {
-        option (google.api.http) = {
-            get : "/v1/evaluation/results"
-        };
-    }
+  // StopEvaluation stops the evaluation for the given target of evaluation
+  rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
+  option (google.api.http) = {
+      post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
+      };
+  } 
+
+  // List all evaluation results. Part of the public API, also exposed as REST.
+  rpc ListEvaluationResults(ListEvaluationResultsRequest)
+      returns (ListEvaluationResultsResponse) {
+      option (google.api.http) = {
+          get : "/v1/evaluation/results"
+      };
+  }
 }
 
 message ListEvaluationResultsRequest {
-    optional string filtered_cloud_service_id = 1
-        [(validate.rules).string.min_len = 1];
-  
-    optional string filtered_control_id = 2
-        [(validate.rules).string.min_len = 1];
-  
-    int32 page_size = 10;
-    string page_token = 11;
-    string order_by = 12;
-    bool asc = 13;
-  }
-  message ListEvaluationResultsResponse {
-    repeated EvaluationResult results = 1;
-    string next_page_token = 2;
-  }
+  // Optional. List only evaluation results for a specific cloud service.
+  optional string filtered_cloud_service_id = 1
+    [(validate.rules).string.min_len = 1];
+
+  // Optional. List only evaluation results for a specific control id.
+
+  optional string filtered_control_id = 2
+    [(validate.rules).string.min_len = 1];
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListEvaluationResultsResponse {
+  repeated EvaluationResult results = 1;
+  string next_page_token = 2;
+}
 
 message StartEvaluationRequest {
-    string cloud_service_id = 1
-      [ (validate.rules).string.uuid = true ];
-    string catalog_id = 2
+  string cloud_service_id = 1
+    [ (validate.rules).string.uuid = true ];
+  string catalog_id = 2
     [ (validate.rules).string.min_len = 1 ]; 
 
-    // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-    optional int32 interval = 3
-      [ (validate.rules).int32.gt = 0 ];
+  // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
+  optional int32 interval = 3
+    [ (validate.rules).int32.gt = 0 ];
 }
 
 message StartEvaluationResponse {
-    bool status = 1; 
-    string status_message = 2; 
+  bool status = 1; 
+  string status_message = 2; 
 }
 
 message StopEvaluationRequest {
-    string cloud_service_id = 1
-      [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1
+    [ (validate.rules).string.uuid = true ];
 
-    string catalog_id = 2
-      [ (validate.rules).string.min_len = 1 ]; 
-    
-    // The control ID 
-    string control_id = 3
-      [(validate.rules).string.min_len = 1];
+  string catalog_id = 2
+    [ (validate.rules).string.min_len = 1 ]; 
+  
+  // The control ID 
+  string control_id = 3
+    [(validate.rules).string.min_len = 1];
 
-    // The category the control ID belongs to 
-    string category_name = 4
-      [(validate.rules).string.min_len = 1]; 
-    }
+  // The category the control ID belongs to 
+  string category_name = 4
+    [(validate.rules).string.min_len = 1]; 
+}
 
 message StopEvaluationResponse {}
  
 // A evaluation result resource, representing the result after evaluating the cloud service with a specific control
 message EvaluationResult {
-    // Evaluation result id
-    string id = 1
-        [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
+  // Evaluation result id
+  string id = 1
+    [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
 
-    enum EvaluationStatus {
-        STATUS_UNSPECIFIED = 0;
-        COMPLIANT = 1;
-        NOT_COMPLIANT = 2;
-        PENDING = 3;
-    }
-    
-    // Evaluation status
-    EvaluationStatus status = 2
-        [(validate.rules).enum.defined_only = true];
-    
-    // The category the control belongs to 
-    string category_name = 3
-        [(validate.rules).string.min_len = 1]; 
+  enum EvaluationStatus {
+    STATUS_UNSPECIFIED = 0;
+    COMPLIANT = 1;
+    NOT_COMPLIANT = 2;
+    PENDING = 3;
+  }
+  
+  // Evaluation status
+  EvaluationStatus status = 2
+    [(validate.rules).enum.defined_only = true];
+  
+  // The category the control belongs to 
+  string category_name = 3
+    [(validate.rules).string.min_len = 1]; 
 
-    // Reference to the control id the evaluation was based on
-    string control_id = 4
-        [(validate.rules).string.min_len = 1];
+  // Reference to the control id the evaluation was based on
+  string control_id = 4
+    [(validate.rules).string.min_len = 1];
 
-    // Time of evaluation
-    google.protobuf.Timestamp timestamp = 5
-      [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+  // Time of evaluation
+  google.protobuf.Timestamp timestamp = 5
+    [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
-    // Reference to the target of evaluation the evaluation was based on
-    clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6
+  // Reference to the target of evaluation the evaluation was based on
+  clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6
     [(validate.rules).message.required = true];
 
-    // List of assessment results because of which the evaluation status is not 'compliant'
-    repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7
-        [(validate.rules).repeated.items.message.required = true];
+  // List of assessment results because of which the evaluation status is not 'compliant'
+  repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7
+    [(validate.rules).repeated.items.message.required = true];
 }
