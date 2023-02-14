@@ -39,7 +39,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/defaults"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
@@ -76,11 +76,11 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(defaults.DefaultOrchestratorAddress))},
+				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
+					target: testdata.MockOrchestratorAddress,
 				},
 				results:   make(map[string]*evaluation.EvaluationResult),
 				scheduler: gocron.NewScheduler(time.UTC),
@@ -227,24 +227,24 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Input controlId empty",
 			args: args{
-				controlId: defaults.DefaultEUCSSecondLevelControlID137,
+				controlId: testdata.MockSubControlID,
 			},
 			want: "",
 		},
 		{
 			name: "Input cloudServiceId empty",
 			args: args{
-				cloudServiceId: defaults.DefaultTargetCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID,
 			},
 			want: "",
 		},
 		{
 			name: "Happy path",
 			args: args{
-				cloudServiceId: defaults.DefaultTargetCloudServiceID,
-				controlId:      defaults.DefaultEUCSSecondLevelControlID137,
+				cloudServiceId: testdata.MockCloudServiceID,
+				controlId:      testdata.MockSubControlID,
 			},
-			want: fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137),
+			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID),
 		},
 	}
 	for _, tt := range tests {
@@ -571,7 +571,7 @@ func TestService_initOrchestratorClient(t *testing.T) {
 			fields: fields{
 				orchestratorClient: orchestrator.NewOrchestratorClient(&grpc.ClientConn{}),
 				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
+					target: testdata.MockOrchestratorAddress,
 				},
 			},
 			wantErr: assert.NoError,
@@ -580,7 +580,7 @@ func TestService_initOrchestratorClient(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				orchestratorAddress: grpcTarget{
-					target: defaults.DefaultOrchestratorAddress,
+					target: testdata.MockOrchestratorAddress,
 				},
 			},
 			wantErr: assert.NoError,
@@ -637,8 +637,8 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 			args: args{
 				control: &orchestrator.Control{
 					Id:                "testId",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockSubControlID,
 					Name:              "testId",
 					Controls:          nil,
 					Metrics:           nil,
@@ -655,14 +655,14 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 			args: args{
 				control: &orchestrator.Control{
 					Id:                "testId",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockSubControlID,
 					Name:              "testId",
 					Controls: []*orchestrator.Control{
 						{
 							Id:                "testId-subcontrol",
-							CategoryName:      defaults.DefaultEUCSCategoryName,
-							CategoryCatalogId: defaults.DefaultEUCSSecondLevelControlID137,
+							CategoryName:      testdata.MockCategoryName,
+							CategoryCatalogId: testdata.MockSubControlID,
 							Name:              "testId-subcontrol",
 						},
 					},
@@ -734,14 +734,14 @@ func TestService_StopEvaluation(t *testing.T) {
 		// 		in0: context.Background(),
 		// 		req: &evaluation.StopEvaluationRequest{
 		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
-		// 				CatalogId:      defaults.DefaultCatalogID,
-		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
+		// 				CloudServiceId:  testdata.MockCloudServiceID,
+		// 				CatalogId:       testdata.MockCatalogID,
+		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
 		// 			},
 		// 			ControlId:    defaults.DefaultEUCSLowerLevelControlID137,
-		// 			CategoryName: defaults.DefaultEUCSCategoryName,
+		// 			CategoryName:  testdata.MockCategoryName,
 		// 		},
-		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
+		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, defaults.DefaultEUCSLowerLevelControlID137),
 		// 		schedulerRunning: true,
 		// 	},
 		// 	fields: fields{
@@ -796,8 +796,8 @@ func Test_getAllControlIdsFromControl(t *testing.T) {
 			args: args{
 				&orchestrator.Control{
 					Id:                "testId-1",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					Name:              "testId-1",
 					Description:       "test test test",
 					Controls:          []*orchestrator.Control{},
@@ -810,8 +810,8 @@ func Test_getAllControlIdsFromControl(t *testing.T) {
 			args: args{
 				&orchestrator.Control{
 					Id:                "testId-1",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					Name:              "testId-1",
 					Description:       "test test test",
 					Controls: []*orchestrator.Control{
@@ -875,21 +875,21 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 		in0: context.Background(),
 		// 		req: &evaluation.StartEvaluationRequest{
 		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
-		// 				CatalogId:      defaults.DefaultCatalogID,
-		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
+		// 				CloudServiceId:  testdata.MockCloudServiceID,
+		// 				CatalogId:       testdata.MockCatalogID,
+		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
 		// 				ControlsInScope: []*orchestrator.Control{
 		// 					{
-		// 						Id:                defaults.DefaultEUCSFirstLevelControlID13,
-		// 						CategoryName:      defaults.DefaultEUCSCategoryName,
-		// 						CategoryCatalogId: defaults.DefaultCatalogID,
-		// 						Name:              defaults.DefaultEUCSFirstLevelControlID13,
+		// 						Id:                testdata.MockControlID,
+		// 						CategoryName:       testdata.MockCategoryName,
+		// 						CategoryCatalogId:  testdata.MockCatalogID,
+		// 						Name:              testdata.MockControlID,
 		// 					},
 		// 				},
 		// 			},
 		// 		},
 		// 		schedulerRunning: false,
-		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSFirstLevelControlID13),
+		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, testdata.MockControlID),
 		// 	},
 		// 	wantResp: &evaluation.StartEvaluationResponse{Status: true},
 		// 	wantErr:  assert.NoError,
@@ -899,7 +899,7 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 	fields: fields{
 		// 		scheduler: gocron.NewScheduler(time.UTC),
 		// 		wg: map[string]*WaitGroup{
-		// 			fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13): {
+		// 			fmt.Sprintf("%s-%s",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13): {
 		// 				wg:      &sync.WaitGroup{},
 		// 				wgMutex: sync.Mutex{},
 		// 			},
@@ -910,28 +910,28 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 		in0: context.Background(),
 		// 		req: &evaluation.StartEvaluationRequest{
 		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId: defaults.DefaultTargetCloudServiceID,
-		// 				CatalogId:      defaults.DefaultCatalogID,
-		// 				AssuranceLevel: &defaults.AssuranceLevelHigh,
+		// 				CloudServiceId:  testdata.MockCloudServiceID,
+		// 				CatalogId:       testdata.MockCatalogID,
+		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
 		// 				ControlsInScope: []*orchestrator.Control{
 		// 					{
 		// 						Id:                defaults.DefaultEUCSUpperLevelControlID13,
-		// 						CategoryName:      defaults.DefaultEUCSCategoryName,
-		// 						CategoryCatalogId: defaults.DefaultCatalogID,
+		// 						CategoryName:       testdata.MockCategoryName,
+		// 						CategoryCatalogId:  testdata.MockCatalogID,
 		// 						Name:              defaults.DefaultEUCSUpperLevelControlID13,
 		// 					},
 		// 				},
 		// 			},
 		// 		},
 		// 		schedulerRunning: true,
-		// 		schedulerTag:     createSchedulerTag(defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
+		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
 		// 	},
 		// 	wantResp: &evaluation.StartEvaluationResponse{
 		// 		Status:        false,
-		// 		StatusMessage: fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
+		// 		StatusMessage: fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
 		// 	},
 		// 	wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13))
+		// 		return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13))
 		// 	},
 		// },
 		{
@@ -995,7 +995,7 @@ func Test_getSchedulerTagsForControlIds(t *testing.T) {
 		{
 			name: "Empty control ids",
 			args: args{
-				cloudServiceId: defaults.DefaultTargetCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID,
 			},
 			wantSchedulerTags: []string{},
 		},
@@ -1003,12 +1003,12 @@ func Test_getSchedulerTagsForControlIds(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				controlIds:     []string{"OPS-13", "OPS-13.2", "OPS-13.3"},
-				cloudServiceId: defaults.DefaultTargetCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID,
 			},
 			wantSchedulerTags: []string{
-				fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, "OPS-13"),
-				fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, "OPS-13.2"),
-				fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, "OPS-13.3")},
+				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13"),
+				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13.2"),
+				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13.3")},
 		},
 	}
 	for _, tt := range tests {
@@ -1101,14 +1101,14 @@ func Test_getMetricIds(t *testing.T) {
 			args: args{
 				metrics: []*assessment.Metric{
 					{
-						Id: defaults.DefaultEUCSSecondLevelControlID136,
+						Id: testdata.MockAnotherSubControlID,
 					},
 					{
-						Id: defaults.DefaultEUCSSecondLevelControlID137,
+						Id: testdata.MockSubControlID,
 					},
 				},
 			},
-			want: []string{defaults.DefaultEUCSSecondLevelControlID136, defaults.DefaultEUCSSecondLevelControlID137},
+			want: []string{testdata.MockAnotherSubControlID, testdata.MockSubControlID},
 		},
 	}
 	for _, tt := range tests {
@@ -1140,10 +1140,10 @@ func Test_controlContains(t *testing.T) {
 			args: args{
 				controls: []*orchestrator.Control{
 					{
-						Id: defaults.DefaultEUCSSecondLevelControlID137,
+						Id: testdata.MockSubControlID,
 					},
 				},
-				controlId: defaults.DefaultEUCSSecondLevelControlID136,
+				controlId: testdata.MockAnotherSubControlID,
 			},
 			want: false,
 		},
@@ -1152,10 +1152,10 @@ func Test_controlContains(t *testing.T) {
 			args: args{
 				controls: []*orchestrator.Control{
 					{
-						Id: defaults.DefaultEUCSSecondLevelControlID136,
+						Id: testdata.MockAnotherSubControlID,
 					},
 				},
-				controlId: defaults.DefaultEUCSSecondLevelControlID136,
+				controlId: testdata.MockAnotherSubControlID,
 			},
 			want: true,
 		},
@@ -1199,12 +1199,12 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 		{
 			name: "Stop not existing scheduler job",
 			args: args{
-				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
+				schedulerTags: []string{fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID)},
 			},
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
 				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID136)},
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockAnotherSubControlID)},
 				schedulerRunning: true,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1214,14 +1214,14 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 		{
 			name: "Stopping two scheduler jobs",
 			args: args{
-				schedulerTags: []string{fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
+				schedulerTags: []string{fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID)},
 			},
 			fields: fields{
 				scheduler:        gocron.NewScheduler(time.UTC),
 				schedulerRunning: true,
 				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID136),
-					fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137)},
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockAnotherSubControlID),
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID)},
 			},
 			wantErr: assert.NoError,
 		},
@@ -1294,7 +1294,7 @@ func TestService_stopSchedulerJob(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				schedulerRunning: true,
-				schedulerTag:     fmt.Sprintf("%s-%s", defaults.DefaultTargetCloudServiceID, defaults.DefaultEUCSSecondLevelControlID137),
+				schedulerTag:     fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID),
 			},
 			fields: fields{
 				scheduler: gocron.NewScheduler(time.UTC),
@@ -1356,7 +1356,7 @@ func TestService_getControl(t *testing.T) {
 			name:        "orchestrator address is missing",
 			wantControl: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "missing address")
+				return assert.ErrorContains(t, err, "could not connect to orchestrator service:")
 			},
 		},
 		{
@@ -1554,16 +1554,16 @@ func TestService_addJobToScheduler(t *testing.T) {
 			args: args{
 				c: &orchestrator.Control{
 					Id:                "control_id",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					Name:              "control_id",
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
 				interval:           2,
 			},
 			wantErr: assert.NoError,
@@ -1576,17 +1576,17 @@ func TestService_addJobToScheduler(t *testing.T) {
 			args: args{
 				c: &orchestrator.Control{
 					Id:                "sub_control_id",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					Name:              "sub_control_id",
 					ParentControlId:   util.Ref("control_id"),
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
 				interval:           2,
 			},
 			wantErr: assert.NoError,
@@ -1599,17 +1599,17 @@ func TestService_addJobToScheduler(t *testing.T) {
 			args: args{
 				c: &orchestrator.Control{
 					Id:                "sub_control_id",
-					CategoryName:      defaults.DefaultEUCSCategoryName,
-					CategoryCatalogId: defaults.DefaultCatalogID,
+					CategoryName:      testdata.MockCategoryName,
+					CategoryCatalogId: testdata.MockCatalogID,
 					Name:              "sub_control_id",
 					ParentControlId:   util.Ref("control_id"),
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: defaults.DefaultTargetCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
 				interval:           0,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1683,7 +1683,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				wg: map[string]*WaitGroup{
-					defaults.DefaultTargetCloudServiceID + "-" + defaults.DefaultEUCSFirstLevelControlID13: {
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID: {
 						wg:      &sync.WaitGroup{},
 						wgMutex: sync.Mutex{},
 					},
@@ -1692,58 +1692,58 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 					"eval_1": {
 						Id:           "11111111-1111-1111-1111-111111111111",
 						Status:       evaluation.EvaluationResult_COMPLIANT,
-						CategoryName: defaults.DefaultEUCSCategoryName,
-						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						CategoryName: testdata.MockCategoryName,
+						ControlId:    testdata.MockControlID,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: defaults.DefaultTargetCloudServiceID,
-							CatalogId:      defaults.DefaultCatalogID,
-							AssuranceLevel: &defaults.AssuranceLevelHigh,
+							CloudServiceId: testdata.MockCloudServiceID,
+							CatalogId:      testdata.MockCatalogID,
+							AssuranceLevel: &testdata.AssuranceLevelHigh,
 						},
 					},
 					"eval_2": {
 						Id:           "22222222-2222-2222-2222-222222222222",
 						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-						CategoryName: defaults.DefaultEUCSCategoryName,
-						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						CategoryName: testdata.MockCategoryName,
+						ControlId:    testdata.MockControlID,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: defaults.DefaultTargetCloudServiceID,
-							CatalogId:      defaults.DefaultCatalogID,
-							AssuranceLevel: &defaults.AssuranceLevelHigh,
+							CloudServiceId: testdata.MockCloudServiceID,
+							CatalogId:      testdata.MockCatalogID,
+							AssuranceLevel: &testdata.AssuranceLevelHigh,
 						},
 					},
 
 					"eval_3": {
 						Id:           "33333333-3333-3333-3333-333333333333",
 						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-						CategoryName: defaults.DefaultEUCSCategoryName,
-						ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+						CategoryName: testdata.MockCategoryName,
+						ControlId:    testdata.MockControlID,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 							CloudServiceId: "33333333-3333-3333-3333-333333333333",
-							CatalogId:      defaults.DefaultCatalogID,
-							AssuranceLevel: &defaults.AssuranceLevelHigh,
+							CatalogId:      testdata.MockCatalogID,
+							AssuranceLevel: &testdata.AssuranceLevelHigh,
 						},
 					},
 				},
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName: defaults.DefaultEUCSCategoryName,
-				controlId:    defaults.DefaultEUCSFirstLevelControlID13,
-				schedulerTag: defaults.DefaultTargetCloudServiceID + "-" + defaults.DefaultEUCSFirstLevelControlID13,
+				categoryName: testdata.MockCategoryName,
+				controlId:    testdata.MockControlID,
+				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
 			newEvaluationResult: &evaluation.EvaluationResult{
 				Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-				CategoryName: defaults.DefaultEUCSCategoryName,
-				ControlId:    defaults.DefaultEUCSFirstLevelControlID13,
+				CategoryName: testdata.MockCategoryName,
+				ControlId:    testdata.MockControlID,
 				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 			},
 		},
@@ -1803,12 +1803,12 @@ func TestService_evaluateSecondLevelControl(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: defaults.DefaultTargetCloudServiceID,
-					CatalogId:      defaults.DefaultCatalogID,
-					AssuranceLevel: &defaults.AssuranceLevelHigh,
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName: defaults.DefaultEUCSCategoryName,
-				controlId:    defaults.DefaultEUCSSecondLevelControlID136,
+				categoryName: testdata.MockCategoryName,
+				controlId:    testdata.MockAnotherSubControlID,
 			},
 		},
 	}

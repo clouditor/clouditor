@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	MockOrchestratorAddress = "localhost:9090"
+
 	// Auth
 	MockAuthUser     = "clouditor"
 	MockAuthPassword = "clouditor"
@@ -23,20 +25,23 @@ const (
 	MockAnotherCloudServiceDescription = "This is another mock cloud service"
 
 	// Catalog
-	MockCatalogID                 = "Cat1234"
-	MockCatalogName               = "Mock Catalog"
-	MockCatalogDescription        = "This is a mock catalog"
-	MockCategoryName              = "Mock Category Name"
-	MockCategoryDescription       = "This is a mock category"
-	MockControlID                 = "Cont1234"
-	MockControlName               = "Mock Control Name"
-	MockControlDescription        = "This is a mock control"
-	MockSubControlID              = "Cont1234.1"
-	MockSubControlName            = "Mock Sub-Control Name"
-	MockSubControlDescription     = "This is a mock sub-control"
-	MockAnotherControlID          = "Cont4567"
-	MockAnotherControlName        = "Mock Another Control Name"
-	MockAnotherControlDescription = "This is a another mock control"
+	MockCatalogID                    = "Cat1234"
+	MockCatalogName                  = "Mock Catalog"
+	MockCatalogDescription           = "This is a mock catalog"
+	MockCategoryName                 = "Mock Category Name"
+	MockCategoryDescription          = "This is a mock category"
+	MockControlID                    = "Cont1234"
+	MockControlName                  = "Mock Control Name"
+	MockControlDescription           = "This is a mock control"
+	MockSubControlID                 = "Cont1234.1"
+	MockSubControlName               = "Mock Sub-Control Name"
+	MockSubControlDescription        = "This is a mock sub-control"
+	MockAnotherSubControlID          = "Cont1234.2"
+	MockAnotherSubControlName        = "Another Mock Sub-Control Name"
+	MockAnotherSubControlDescription = "This is another mock sub-control"
+	MockAnotherControlID             = "Cont4567"
+	MockAnotherControlName           = "Mock Another Control Name"
+	MockAnotherControlDescription    = "This is another mock control"
 
 	// Metric
 	MockMetricID          = "Mock Metric"

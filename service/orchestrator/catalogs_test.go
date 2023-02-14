@@ -552,7 +552,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				catalogsFile: "catalogs.json",
+				catalogsFile: "demo_catalogs.json",
 				storage:      testutil.NewInMemoryStorage(t),
 			},
 			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
