@@ -256,6 +256,8 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
+	log.Debugf("Evidence assessed with id %s' for Cloud Service ID '%s'.", req.Evidence.GetId(), req.Evidence.GetCloudServiceId())
+
 	return resp, nil
 }
 

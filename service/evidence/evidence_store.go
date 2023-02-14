@@ -120,7 +120,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	res = &evidence.StoreEvidenceResponse{}
 
-	log.Debugf("Evidence stored with id: %v", req.Evidence.GetId())
+	log.Debugf("Evidence stored with id %s' for Cloud Service ID '%s'.", req.Evidence.GetId(), req.Evidence.GetCloudServiceId())
 
 	return res, nil
 }
