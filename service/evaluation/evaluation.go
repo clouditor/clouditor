@@ -87,9 +87,10 @@ type Service struct {
 
 	storage persistence.Storage
 
-	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
-	// resources, such as evidences and assessment results.
-	authz service.AuthorizationStrategy
+	// TODO(all): Comment in once the evaluation results are stored in storage
+	// // authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// // resources, such as evidences and assessment results.
+	// authz service.AuthorizationStrategy
 }
 
 func init() {
@@ -343,7 +344,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 }
 
 // ListEvaluationResults is a method implementation of the assessment interface
-func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
+func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
 	var (
 		filtered_values []*evaluation.EvaluationResult
 		// TODO(all): Comment in once the evaluation results are stored in storage
@@ -401,11 +402,11 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 	// }
 
 	for _, v := range s.results {
-		if req.GetFilteredCloudServiceId() != "" && v.TargetOfEvaluation.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
+		if req.FilteredCloudServiceId != nil && v.TargetOfEvaluation.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 
-		if req.GetFilteredCloudServiceId() != "" && v.ControlId != req.GetFilteredControlId() {
+		if v.ControlId != req.GetFilteredControlId() {
 			continue
 		}
 

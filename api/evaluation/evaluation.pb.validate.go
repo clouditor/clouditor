@@ -70,10 +70,11 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	if m.FilteredCloudServiceId != nil {
 
-		if utf8.RuneCountInString(m.GetFilteredCloudServiceId()) < 1 {
-			err := ListEvaluationResultsRequestValidationError{
+		if err := m._validateUuid(m.GetFilteredCloudServiceId()); err != nil {
+			err = ListEvaluationResultsRequestValidationError{
 				field:  "FilteredCloudServiceId",
-				reason: "value length must be at least 1 runes",
+				reason: "value must be a valid UUID",
+				cause:  err,
 			}
 			if !all {
 				return err
@@ -100,6 +101,14 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return ListEvaluationResultsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *ListEvaluationResultsRequest) _validateUuid(uuid string) error {
+	if matched := _evaluation_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
