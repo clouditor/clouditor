@@ -30,6 +30,8 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
+	log.Debugf("Catalog created with name '%s'.", req.Catalog.GetName())
+
 	// Return catalog
 	return req.Catalog, nil
 }
@@ -94,6 +96,9 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	log.Debugf("Catalog updated with name '%s' and id '%s'.", req.Catalog.GetName(), req.Catalog.GetId())
+
 	return
 }
 
@@ -111,6 +116,8 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	log.Debugf("Catalog removed with id '%s'.", req.GetCatalogId())
 
 	return &emptypb.Empty{}, nil
 }
@@ -207,6 +214,8 @@ func (svc *Service) loadCatalogs() (err error) {
 	if err != nil {
 		log.Errorf("Error while saving catalog %v", err)
 	}
+
+	log.Debugf("Catalog loaded  with name '%s' and id '%s'.", catalogs[0].GetName(), catalogs[0].GetId())
 
 	return
 }

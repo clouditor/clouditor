@@ -86,6 +86,8 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	res = req.TargetOfEvaluation
 
+	log.Debugf("ToE created for Cloud Service ID '%s' and Catalog ID '%s'.", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
+
 	return
 }
 
@@ -145,6 +147,8 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
+	log.Debugf("ToE updated for Cloud Service ID '%s' and Catalog ID '%s'.", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
+
 	return
 }
 
@@ -169,6 +173,9 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		CatalogId:      req.GetCatalogId(),
 	}
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
+
+	log.Debugf("ToE removed for Cloud Service ID '%s' and Catalog ID '%s'.", req.GetCloudServiceId(), req.GetCatalogId())
+
 	return &emptypb.Empty{}, nil
 }
 

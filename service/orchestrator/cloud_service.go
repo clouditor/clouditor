@@ -67,6 +67,9 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 	}
 
 	go s.informHooks(ctx, res, nil)
+
+	log.Debugf("Cloud Service registered with name %s'.", req.CloudService.GetName())
+
 	return
 }
 
@@ -158,6 +161,9 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	go s.informHooks(ctx, response, nil)
+
+	log.Debugf("Cloud Service updated with name %s' and id '%s'.", req.CloudService.GetName(), req.CloudService.GetId())
+
 	return
 }
 
@@ -182,6 +188,9 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 	}
 
 	go s.informHooks(ctx, nil, nil)
+
+	log.Debugf("Cloud Service removed with id '%s'.", req.GetCloudServiceId())
+
 	return &emptypb.Empty{}, nil
 }
 

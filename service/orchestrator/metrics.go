@@ -201,6 +201,8 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
+	log.Debugf("Metric created with name '%s'.", req.Metric.GetName())
+
 	return
 }
 
@@ -239,6 +241,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 			MetricId: metric.Id,
 		}
 	}()
+
+	log.Debugf("Metric updated with id '%s'.", req.Metric.GetId())
 
 	return
 }
@@ -280,6 +284,8 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 			MetricId: metric.Id,
 		}
 	}()
+
+	log.Debugf("Metric implemenatation updated for metric id '%s'.", req.Implementation.GetMetricId())
 
 	return
 }
@@ -403,6 +409,8 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 
 	// Update response
 	res = req.Configuration
+
+	log.Debugf("Metric conifguration updated for metric id '%s' and Cloud Service ID '%s'.", req.GetMetricId(), req.GetCloudServiceId())
 
 	return
 }
