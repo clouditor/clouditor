@@ -4,6 +4,7 @@
         "name": "A demo catalog for testing purposes",
         "description": "A mock catalog for testing purposes",
         "assurance_levels": ["low", "medium", "high"],
+        "assurance_level": true,
         "categories": [
             {
                 "name": "Communication Security",
