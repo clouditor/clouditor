@@ -1,5 +1,6 @@
 package clouditor
 
+# TODO(anatheka): https://play.openpolicyagent.org/p/iNn3sOVG0Q
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
 operator = data.operator
 
@@ -34,10 +35,28 @@ compare(operator, target_value, actual_value) {
 	actual_value > target_value
 }
 
-# Params: target_values (multiple target values), actual_value (single actual value)
-isIn(target_values, actual_value) {
-	# Assess actual value with each compliant value in target values
-	actual_value == target_values[_]
+# Checks if the actual_value is in the list of target_values
+compare(operator, target_value, actual_value) {
+	operator == "isIn"
+	actual_value in target_value
+}
+
+# Checks if the list of actual_values is in the list of target_values
+compare(operator, target_values, actual_value) {
+	operator == "allIn"
+	isIn(target_values, actual_values)
+}
+
+# Checks if the actual_value is in the list of target_values
+compare(operator, target_values, actual_value) {
+	operator == "isIn"
+	actual_value in target_values
+}
+
+# Calls isIn and checks if one element of actual_values exists in the list of target_values
+compare(operator, target_values, actual_values) {
+	operator == "allIn"
+    isIn(target_values, actual_values)
 }
 
 # Params: target_values (multiple target values), actual_values (multiple actual values)
