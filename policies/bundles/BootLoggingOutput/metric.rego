@@ -1,6 +1,6 @@
 package clouditor.metrics.boot_logging_output
 
-import data.clouditor.isIn
+import data.clouditor.compare
 import input.bootLogging as logging
 
 default applicable = false
@@ -14,5 +14,5 @@ applicable {
 }
 
 compliant {
-	isIn(data.target_value, logging.loggingService)
+	compare(data.operator, data.target_value, logging.loggingService)
 }

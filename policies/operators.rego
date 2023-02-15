@@ -1,4 +1,6 @@
 package clouditor
+import future.keywords.in
+import future.keywords.if
 
 # TODO(anatheka): https://play.openpolicyagent.org/p/iNn3sOVG0Q
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
@@ -36,28 +38,23 @@ compare(operator, target_value, actual_value) {
 }
 
 # Checks if the actual_value is in the list of target_values
-compare(operator, target_value, actual_value) {
-	operator == "isIn"
-	actual_value in target_value
-}
-
-# Checks if the list of actual_values is in the list of target_values
-compare(operator, target_values, actual_value) {
-	operator == "allIn"
-	isIn(target_values, actual_values)
-}
-
-# Checks if the actual_value is in the list of target_values
 compare(operator, target_values, actual_value) {
 	operator == "isIn"
 	actual_value in target_values
 }
 
-# Calls isIn and checks if one element of actual_values exists in the list of target_values
+# Checks if one element of actual_values exists in target_values
 compare(operator, target_values, actual_values) {
-	operator == "allIn"
+	operator == "isIn"
     isIn(target_values, actual_values)
 }
+
+# TODO(all): Is it necessary, than we have to implement that.
+# # Checks if all elements of actual_values exists in target_values
+# compare(operator, target_values, actual_values) {
+# 	operator == "allIn"
+#     isIn(target_values, actual_values)
+# }
 
 # Params: target_values (multiple target values), actual_values (multiple actual values)
 isIn(target_values, actual_values) {
