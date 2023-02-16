@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/logging"
@@ -32,7 +31,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogCreateMessage(log, reflect.TypeOf(req.Catalog).String(), req.Catalog.GetId(), logging.LoglevelInfo, "", "")
+	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
 
 	// Return catalog
 	return req.Catalog, nil

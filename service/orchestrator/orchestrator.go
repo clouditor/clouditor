@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/api/runtime"
+	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -217,7 +218,7 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
 	}
 
-	log.Debugf("Certificate created for Cloud Service ID '%s'.", req.Certificate.GetCloudServiceId())
+	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
 
 	// Return certificate
 	return req.Certificate, nil

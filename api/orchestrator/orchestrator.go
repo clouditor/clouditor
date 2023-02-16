@@ -42,7 +42,7 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
-type LoggingRequest interface {
+type CreateLoggingRequest interface {
 	GetId() string
 	GetType() string
 	GetCloudServiceId() string
@@ -94,6 +94,30 @@ func (req *CreateTargetOfEvaluationRequest) GetType() string {
 
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
+func (req *CreateCertificateRequest) GetId() string {
+	return req.GetCertificate().GetId()
+}
+
+func (req *CreateCertificateRequest) GetType() string {
+	return reflect.TypeOf(req.Certificate).String()
+}
+
+func (req *CreateCertificateRequest) GetCloudServiceId() string {
+	return req.GetCertificate().GetCloudServiceId()
+}
+
+func (req *CreateMetricRequest) GetId() string {
+	return req.GetMetric().GetId()
+}
+
+func (req *CreateMetricRequest) GetType() string {
+	return reflect.TypeOf(req.Metric).String()
+}
+
+func (req *CreateMetricRequest) GetCloudServiceId() string {
+	return ""
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

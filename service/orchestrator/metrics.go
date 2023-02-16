@@ -35,6 +35,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -201,7 +202,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
-	log.Debugf("Metric created with name '%s'.", req.Metric.GetName())
+	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
 
 	return
 }

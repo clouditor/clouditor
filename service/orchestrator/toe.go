@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -86,7 +87,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	res = req.TargetOfEvaluation
 
-	log.Debugf("ToE created for Cloud Service ID '%s' and Catalog ID '%s'.", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
+	logging.LogCreateMessage(log, logging.LoglevelDebug, req, req.TargetOfEvaluation.GetCatalogId())
 
 	return
 }
