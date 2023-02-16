@@ -28,6 +28,7 @@ package logging
 import (
 	"fmt"
 
+	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,6 +37,11 @@ const (
 	LoglevelInfo  = "info"
 	LoglevelError = "error"
 )
+
+type LoggingMessage interface {
+	GetName() string
+	GetId() string
+}
 
 // LogCreateMessage creates a 'create' logging message with the given parameters
 //   - log *logrus.Entry
@@ -49,17 +55,17 @@ const (
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogCreateMessage(log *logrus.Entry, typ, id, loglevel, cloudServiceId, catalogId string) {
+func LogCreateMessage(log *logrus.Entry, loglevel string, req orchestrator.LoggingRequest, catalogId string) {
 	var (
 		message string
 	)
 
-	message = fmt.Sprintf("%s created with ID '%s'", typ, id)
+	message = fmt.Sprintf("%s created with ID '%s'", req.GetType(), req.GetId())
 
-	if cloudServiceId != "" && catalogId != "" {
-		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'.", message, cloudServiceId, catalogId)
-	} else if cloudServiceId != "" {
-		message = fmt.Sprintf("%s for Cloud Service '%s'", message, cloudServiceId)
+	if req.GetCloudServiceId() != "" && catalogId != "" {
+		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'.", message, req.GetCloudServiceId(), catalogId)
+	} else if req.GetCloudServiceId() != "" {
+		message = fmt.Sprintf("%s for Cloud Service '%s'", message, req.GetCloudServiceId())
 	}
 
 	switch loglevel {

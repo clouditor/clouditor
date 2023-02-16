@@ -27,6 +27,7 @@ package orchestrator
 
 import (
 	"context"
+	reflect "reflect"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -39,6 +40,12 @@ type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluat
 type CloudServiceRequest interface {
 	GetCloudServiceId() string
 	proto.Message
+}
+
+type LoggingRequest interface {
+	GetId() string
+	GetType() string
+	GetCloudServiceId() string
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
@@ -63,6 +70,30 @@ func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
 // the cloud service ID of the inner object.
 func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
 	return req.GetResult().GetCloudServiceId()
+}
+
+func (req *CreateCatalogRequest) GetId() string {
+	return req.GetCatalog().GetId()
+}
+
+func (req *CreateCatalogRequest) GetType() string {
+	return reflect.TypeOf(req.Catalog).String()
+}
+
+func (req *CreateCatalogRequest) GetCloudServiceId() string {
+	return ""
+}
+
+func (req *CreateTargetOfEvaluationRequest) GetId() string {
+	return ""
+}
+
+func (req *CreateTargetOfEvaluationRequest) GetType() string {
+	return reflect.TypeOf(req.TargetOfEvaluation).String()
+}
+
+func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
+	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`
