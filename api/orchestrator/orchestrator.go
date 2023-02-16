@@ -36,25 +36,31 @@ type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluat
 
 // CloudServiceRequest represents any kind of RPC request, that contains a
 // reference to a cloud service.
+//
+// Note: GetCloudServiceId() is already implemented by the generated protobuf
+// code for the following messages because they directly have a cloud_service id
+// field:
+//   - RemoveControlFromScopeRequest
+//   - ListControlsInScopeRequest
+//   - GetCloudServiceRequest
+//   - RemoveCloudServiceRequest
+//   - UpdateMetricConfigurationRequest
+//   - GetMetricConfigurationRequest
+//   - ListMetricConfigurationRequest
+//   - MetricChangeEvent
+//   - TargetOfEvaluation
+//   - RemoveTargetOfEvaluationRequest
+//   - GetTargetOfEvaluationRequest
+//   - ListTargetsOfEvaluationRequest
+//   - Certificate
+//
+// All other requests, especially in cases where the cloud service ID is
+// embedded in a sub-field need to explicitly implement this interface in order.
+// This interface is for example used by authorization checks.
 type CloudServiceRequest interface {
 	GetCloudServiceId() string
 	proto.Message
 }
-
-// GetCloudServiceId() already implemented for the following requests by protoc-gen-validate
-// * RemoveControlFromScopeRequest
-// * ListControlsInScopeRequest
-// * GetCloudServiceRequest
-// * RemoveCloudServiceRequest
-// * UpdateMetricConfigurationRequest
-// * GetMetricConfigurationRequest
-// * ListMetricConfigurationRequest
-// * MetricChangeEvent
-// * TargetOfEvaluation
-// * RemoveTargetOfEvaluationRequest
-// * GetTargetOfEvaluationRequest
-// * ListTargetsOfEvaluationRequest
-// * Certificate
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
@@ -83,6 +89,12 @@ func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
+	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 

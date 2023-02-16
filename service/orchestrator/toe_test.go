@@ -230,6 +230,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 func TestService_GetTargetOfEvaluation(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
+		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		req *orchestrator.GetTargetOfEvaluationRequest
@@ -245,6 +246,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "empty request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args:         args{req: nil},
 			wantResponse: assert.Nil,
@@ -257,6 +259,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "invalid request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: "",
@@ -280,6 +283,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic))
 					assert.NoError(t, err)
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testutil.TestCloudService2,
@@ -304,6 +308,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic))
 					assert.NoError(t, err)
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testdata.MockCloudServiceID,
@@ -325,6 +330,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			orchestratorService := Service{
 				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
 			}
 			res, err := orchestratorService.GetTargetOfEvaluation(context.Background(), tt.args.req)
 
