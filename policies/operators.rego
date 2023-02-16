@@ -1,7 +1,6 @@
 package clouditor
 import future.keywords.every # includes also in
 
-# TODO(anatheka): https://play.openpolicyagent.org/p/iNn3sOVG0Q
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
 operator = data.operator
 
