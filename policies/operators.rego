@@ -1,6 +1,5 @@
 package clouditor
-import future.keywords.in
-import future.keywords.if
+import future.keywords.every # includes also in
 
 # TODO(anatheka): https://play.openpolicyagent.org/p/iNn3sOVG0Q
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
@@ -37,27 +36,35 @@ compare(operator, target_value, actual_value) {
 	actual_value > target_value
 }
 
-# Checks if the actual_value is in the list of target_values
+# Checks if the actual_value (string) exists in target_values (array)
 compare(operator, target_values, actual_value) {
 	operator == "isIn"
+    # Check if the input value actual_value is a string, otherwise the compare function for array must be used
+    is_string(actual_value)
 	actual_value in target_values
 }
 
-# Checks if one element of actual_values exists in target_values
+# Checks if one element of actual_values (array) exists in target_values (array)
 compare(operator, target_values, actual_values) {
 	operator == "isIn"
-    isIn(target_values, actual_values)
+    is_array(actual_values)
+    some act_val in actual_values 
+    act_val in target_values
 }
 
-# TODO(all): Is it necessary, than we have to implement that.
-# # Checks if all elements of actual_values exists in target_values
-# compare(operator, target_values, actual_values) {
-# 	operator == "allIn"
-#     isIn(target_values, actual_values)
-# }
+# Checks if the actual_value (string) exists in target_values (array)
+compare(operator, target_values, actual_value) {
+	operator == "allIn"
+	# Check if the input value actual_value is a string, otherwise the compare function for array must be used
+    is_string(actual_value)
+    actual_value in target_values
+}
 
-# Params: target_values (multiple target values), actual_values (multiple actual values)
-isIn(target_values, actual_values) {
-	# Current implementation: It is enough that one output is one of target_values
-	actual_values[_] == target_values[_]
+# Checks if all elements of actual_values (array) exists in target_values (array)
+compare(operator, target_values, actual_values) {
+	operator == "allIn"
+    is_array(actual_values)
+    every act_val in actual_values {
+    	act_val in target_values
+    }
 }
