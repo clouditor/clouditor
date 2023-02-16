@@ -80,7 +80,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Store our mock catalog
-	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog(true)})
+	_, err = svc.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
 	if err != nil {
 		panic(err)
 	}

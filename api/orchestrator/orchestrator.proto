@@ -653,9 +653,6 @@ message Catalog {
   // DELEGATED status.
   bool all_in_scope = 5;
 
-  // Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
-  bool assurance_level = 6;
-
   // A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
   repeated string assurance_levels = 7 [
     (tagger.tags) = "gorm:\"serializer:json\"",

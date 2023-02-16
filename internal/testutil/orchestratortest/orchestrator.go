@@ -35,14 +35,13 @@ func NewCertificate() *orchestrator.Certificate {
 }
 
 // NewCatalog creates a mock catalog
-func NewCatalog(assuranceLevelUsed bool) *orchestrator.Catalog {
+func NewCatalog() *orchestrator.Catalog {
 	var mockCatalog = &orchestrator.Catalog{
 		Name:            testdata.MockCatalogName,
 		Id:              testdata.MockCatalogID,
 		Description:     testdata.MockCatalogDescription,
 		AllInScope:      true,
 		AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
-		AssuranceLevel:  assuranceLevelUsed,
 		Categories: []*orchestrator.Category{{
 			Name:        testdata.MockCategoryName,
 			Description: testdata.MockCategoryDescription,

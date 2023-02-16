@@ -4149,8 +4149,6 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AllInScope
 
-	// no validation rules for AssuranceLevel
-
 	if len(m.GetAssuranceLevels()) < 3 {
 		err := CatalogValidationError{
 			field:  "AssuranceLevels",

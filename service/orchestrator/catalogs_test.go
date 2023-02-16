@@ -24,8 +24,8 @@ import (
 
 func TestService_CreateCatalog(t *testing.T) {
 	// Mock catalogs
-	mockCatalog := orchestratortest.NewCatalog(true)
-	mockCatalogWithoutID := orchestratortest.NewCatalog(true)
+	mockCatalog := orchestratortest.NewCatalog()
+	mockCatalogWithoutID := orchestratortest.NewCatalog()
 	mockCatalogWithoutID.Id = ""
 
 	type args struct {
@@ -123,7 +123,7 @@ func TestService_GetCatalog(t *testing.T) {
 			name: "invalid request",
 			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				// Create Catalog
-				assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -145,7 +145,7 @@ func TestService_GetCatalog(t *testing.T) {
 			name: "catalog not found",
 			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				// Create Catalog
-				assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
 			args:         args{req: &orchestrator.GetCatalogRequest{CatalogId: "a"}},
 			wantResponse: assert.Nil,
@@ -158,12 +158,12 @@ func TestService_GetCatalog(t *testing.T) {
 			name: "valid",
 			fields: fields{storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				// Create Catalog
-				assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
 			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: testdata.MockCatalogID}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.Catalog)
-				want := orchestratortest.NewCatalog(true)
+				want := orchestratortest.NewCatalog()
 				assert.True(t, ok)
 				fmt.Println(res)
 				assert.Equal(t, 1, len(res.Categories))
@@ -231,7 +231,7 @@ func TestService_UpdateCatalog(t *testing.T) {
 	assert.ErrorContains(t, err, "catalog not found")
 
 	// 4th case: Certificate updated successfully
-	mockCatalog := orchestratortest.NewCatalog(true)
+	mockCatalog := orchestratortest.NewCatalog()
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 	if err != nil {
@@ -266,7 +266,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	mockCatalog := orchestratortest.NewCatalog(true)
+	mockCatalog := orchestratortest.NewCatalog()
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 
@@ -314,7 +314,7 @@ func TestService_GetCategory(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Create Catalog
-					assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args: args{
 				req: &orchestrator.GetCategoryRequest{CatalogId: "WrongCatalogID", CategoryName: testdata.MockCategoryName},
@@ -330,7 +330,7 @@ func TestService_GetCategory(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Create Catalog
-					assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args: args{
 				req: &orchestrator.GetCategoryRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName},
@@ -408,7 +408,7 @@ func TestService_GetControl(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Create Catalog
-					assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args:    args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: "WrongControlID"}},
 			wantRes: nil,
@@ -422,7 +422,7 @@ func TestService_GetControl(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Create Catalog
-					assert.NoError(t, s.Create(orchestratortest.NewCatalog(true)))
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID1}},
 			wantRes: &orchestrator.Control{

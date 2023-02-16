@@ -78,7 +78,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 		// If the catalog allows assurance levels, add only controls with the corresponsing assurance level.
 		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high include all control.
-		if c.AssuranceLevel {
+		if len(c.AssuranceLevels) > 0 {
 			req.TargetOfEvaluation.ControlsInScope, err = getControls(controls, c.GetAssuranceLevels(), req.TargetOfEvaluation.GetAssuranceLevel())
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "assurance level error: %v", err)

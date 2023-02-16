@@ -1465,9 +1465,6 @@ components:
                 allInScope:
                     type: boolean
                     description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
-                assuranceLevel:
-                    type: boolean
-                    description: Certain security catalogs allow the differentiation of their controls according to an assurance level. If the property assurance_level is set to true, the catalog is using the assurance level.
                 assuranceLevels:
                     type: array
                     items:
