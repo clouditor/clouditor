@@ -1,4 +1,5 @@
 package clouditor
+import future.keywords.every # includes also in
 
 # operator and target_value are declared here to add them to the output of each single policy (so assessment can use it)
 operator = data.operator
@@ -34,14 +35,35 @@ compare(operator, target_value, actual_value) {
 	actual_value > target_value
 }
 
-# Params: target_values (multiple target values), actual_value (single actual value)
-isIn(target_values, actual_value) {
-	# Assess actual value with each compliant value in target values
-	actual_value == target_values[_]
+# Checks if the actual_value (string) exists in target_values (array)
+compare(operator, target_values, actual_value) {
+	operator == "isIn"
+    # Check if the input value actual_value is a string, otherwise the compare function for array must be used
+    is_string(actual_value)
+	actual_value in target_values
 }
 
-# Params: target_values (multiple target values), actual_values (multiple actual values)
-isIn(target_values, actual_values) {
-	# Current implementation: It is enough that one output is one of target_values
-	actual_values[_] == target_values[_]
+# Checks if one element of actual_values (array) exists in target_values (array)
+compare(operator, target_values, actual_values) {
+	operator == "isIn"
+    is_array(actual_values)
+    some act_val in actual_values 
+    act_val in target_values
+}
+
+# Checks if the actual_value (string) exists in target_values (array)
+compare(operator, target_values, actual_value) {
+	operator == "allIn"
+	# Check if the input value actual_value is a string, otherwise the compare function for array must be used
+    is_string(actual_value)
+    actual_value in target_values
+}
+
+# Checks if all elements of actual_values (array) exists in target_values (array)
+compare(operator, target_values, actual_values) {
+	operator == "allIn"
+    is_array(actual_values)
+    every act_val in actual_values {
+    	act_val in target_values
+    }
 }
