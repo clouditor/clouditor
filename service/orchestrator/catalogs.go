@@ -217,7 +217,7 @@ func (svc *Service) loadCatalogs() (err error) {
 		log.Errorf("Error while saving catalog %v", err)
 	}
 
-	log.Debugf("Catalog loaded  with name '%s' and id '%s'.", catalogs[0].GetName(), catalogs[0].GetId())
+	log.Debugf("Catalog loaded with name '%s' and id '%s'.", catalogs[0].GetName(), catalogs[0].GetId())
 
 	return
 }

@@ -867,7 +867,7 @@ func (m *MetricConfiguration) validate(all bool) error {
 	if !_MetricConfiguration_Operator_Pattern.MatchString(m.GetOperator()) {
 		err := MetricConfigurationValidationError{
 			field:  "Operator",
-			reason: "value does not match regex pattern \"^(|<|>|<=|>=|==)$\"",
+			reason: "value does not match regex pattern \"^(|<|>|<=|>=|==|isIn|allIn)$\"",
 		}
 		if !all {
 			return err
@@ -1057,7 +1057,7 @@ var _ interface {
 	ErrorName() string
 } = MetricConfigurationValidationError{}
 
-var _MetricConfiguration_Operator_Pattern = regexp.MustCompile("^(|<|>|<=|>=|==)$")
+var _MetricConfiguration_Operator_Pattern = regexp.MustCompile("^(|<|>|<=|>=|==|isIn|allIn)$")
 
 // Validate checks the field values on MetricImplementation with the rules
 // defined in the proto definition for this message. If any rules are

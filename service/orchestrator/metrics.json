@@ -3,23 +3,16 @@
     "id": "AdminMFAEnabled"
   },
   {
-    "id": "IdentityPasswordPolicy"
+    "id": "AdminMixedDuties"
   },
   {
-    "id": "IdentityRecentActivity"
+    "id": "AnomalyDetectionEnabled"
   },
   {
-    "id": "AtRestEncryptionEnabled",
-    "name": "Storage Encryption: Enabled",
-    "category": "CKM-03",
-    "description": "This metric describes whether storage encryption is enabled",
-    "scale": 1,
-    "allowedValues": {
-      "values": [
-        false,
-        true
-      ]
-    }
+    "id": "AnomalyDetectionOutput"
+  },
+  {
+    "id": "AnonymousAuthentication"
   },
   {
     "id": "AtRestEncryptionAlgorithm",
@@ -36,6 +29,19 @@
     }
   },
   {
+    "id": "AtRestEncryptionEnabled",
+    "name": "Storage Encryption: Enabled",
+    "category": "CKM-03",
+    "description": "This metric describes whether storage encryption is enabled",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        false,
+        true
+      ]
+    }
+  },
+  {
     "id": "AutomaticUpdatesEnabled"
   },
   {
@@ -45,24 +51,24 @@
     "id": "AutomaticUpdatesSecurityOnly"
   },
   {
-    "id": "AnomalyDetectionEnabled"
-  },
-  {
-    "id": "AnonymousAuthentication"
-  },
-  {
     "id": "BootLoggingEnabled"
+  },
+  {
+    "id": "BootLoggingOutput"
   },
   {
     "id": "BootLoggingRetention"
   },
   {
-    "id": "RoleBroadAssignments"
-  },
-  {
     "id": "CustomerKeyEncryption"
   },
   {
+    "id": "IdentityPasswordPolicy"
+  },
+  {
+    "id": "IdentityRecentActivity"
+  },
+    {
     "id": "L3FirewallEnabled"
   },
   {
@@ -72,16 +78,28 @@
     "id": "MalwareProtectionEnabled"
   },
   {
-    "id": "AdminMixedDuties"
+    "id": "MalwareProtectionOutput"
   },
   {
     "id": "MutualAuthentication"
   },
   {
+    "id": "ObjectStoragePublicAccessDisabled"
+  },
+  {
     "id": "OSLoggingEnabled"
   },
   {
+    "id": "OSLoggingOutput"
+  },
+  {
     "id": "OSLoggingRetention"
+  },
+  {
+    "id": "ResourceInventory"
+  },
+  {
+    "id": "RoleBroadAssignments"
   },
   {
     "id": "RuntimeVersion"
@@ -91,21 +109,6 @@
   },
   {
     "id": "TLSVersion"
-  },
-  {
-    "id": "TransportEncryptionEnabled",
-    "name": "Transport Encryption: Enabled",
-    "category": "CKM-02",
-    "description": "This metric describes, whether transport encryption is turned on or not",
-    "scale": 1,
-    "range": {
-      "allowedValues": {
-        "values": [
-          false,
-          true
-        ]
-      }
-    }
   },
   {
     "id": "TransportEncryptionAlgorithm",
@@ -125,16 +128,25 @@
     }
   },
   {
+    "id": "TransportEncryptionEnabled",
+    "name": "Transport Encryption: Enabled",
+    "category": "CKM-02",
+    "description": "This metric describes, whether transport encryption is turned on or not",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
     "id": "TransportEncryptionEnforced",
     "category": "CKM-02"
   },
   {
     "id": "WebApplicationFirewallEnabled"
-  },
-  {
-    "id": "ResourceInventory"
-  },
-  {
-    "id": "ObjectStoragePublicAccessDisabled"
   }
 ]
