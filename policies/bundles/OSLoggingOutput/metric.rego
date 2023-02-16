@@ -1,6 +1,6 @@
 package clouditor.metrics.os_logging_output
 
-import data.clouditor.isIn
+import data.clouditor.compare
 
 default applicable = false
 
@@ -15,5 +15,5 @@ applicable {
 }
 
 compliant {
-	isIn(data.target_value, output)
+	compare(data.operator, data.target_value, output)
 }

@@ -98,7 +98,9 @@ components:
                     type: string
         StartDiscoveryRequest:
             type: object
-            properties: {}
+            properties:
+                resourceGroup:
+                    type: string
         StartDiscoveryResponse:
             type: object
             properties:

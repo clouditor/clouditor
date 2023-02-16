@@ -26,52 +26,35 @@
  */
 syntax = "proto3";
 
-package clouditor.discovery.v1;
+package clouditor.runtime.v1;
 
-import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
-option go_package = "api/discovery";
+option go_package = "clouditor.io/clouditor/api/runtime;runtime";
 
-// Discovers cloud resources and maps these properties to the format of the
-// ontology
-service Discovery {
-  // Starts discovering the cloud resources, exposed as REST.
-  rpc Start(StartDiscoveryRequest) returns (StartDiscoveryResponse) {
-    option (google.api.http) = {
-      post : "/v1/discovery/start"
-      body : "*"
-      response_body : "*"
-    };
-  };
+message Runtime {
+  // release_version is the latest Clouditor release version for this commit
+  optional string release_version = 1;
 
-  // Lists all evidences collected in the last run, exposed as REST.
-  rpc Query(QueryRequest) returns (QueryResponse) {
-    option (google.api.http) = {
-      post : "/v1/discovery/query"
-      body : "*"
-      response_body : "*"
-    };
-  }
+  // vcs is the used version control system
+  string vcs = 2;
+
+  // commit_hash is the current Clouditor commit hash
+  string commit_hash = 3;
+
+  // commit_time is the time of the Clouditor commit
+  google.protobuf.Timestamp commit_time = 4;
+
+  // golang_version is the used golang version
+  string golang_version = 5;
+
+  // dependency is a list of used runtime dependencies
+  repeated Dependency dependencies = 6;
 }
 
-message StartDiscoveryRequest {
-  optional string resource_group = 1; 
+message Dependency {
+  string path = 1;
+  string version = 2;
 }
 
-message StartDiscoveryResponse { bool successful = 1; }
-
-message QueryRequest {
-  optional string filtered_type = 1;
-  optional string filtered_cloud_service_id = 2;
-
-  int32 page_size = 10;
-  string page_token = 11;
-  string order_by = 12;
-  bool asc = 13;
-}
-
-message QueryResponse {
-  repeated google.protobuf.Value results = 1;
-  string next_page_token = 2;
-}
+message GetRuntimeInfoRequest {}

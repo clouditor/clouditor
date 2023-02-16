@@ -125,6 +125,8 @@ func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator
 
 	res = &orchestrator.StoreAssessmentResultResponse{}
 
+	log.Debugf("Assessment result stored with id %s' for Cloud Service ID '%s'.", req.Result.GetId(), req.Result.GetCloudServiceId())
+
 	return res, nil
 }
 

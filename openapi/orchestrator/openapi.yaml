@@ -1298,6 +1298,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/runtime_info:
+        get:
+            tags:
+                - Orchestrator
+            description: Get Runtime Information
+            operationId: Orchestrator_GetRuntimeInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Runtime'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/toes:
         get:
             tags:
@@ -1560,6 +1579,13 @@ components:
                     type: string
                     format: enum
             description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
+        Dependency:
+            type: object
+            properties:
+                path:
+                    type: string
+                version:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -1765,6 +1791,30 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        Runtime:
+            type: object
+            properties:
+                releaseVersion:
+                    type: string
+                    description: release_version is the latest Clouditor release version for this commit
+                vcs:
+                    type: string
+                    description: vcs is the used version control system
+                commitHash:
+                    type: string
+                    description: commit_hash is the current Clouditor commit hash
+                commitTime:
+                    type: string
+                    description: commit_time is the time of the Clouditor commit
+                    format: date-time
+                golangVersion:
+                    type: string
+                    description: golang_version is the used golang version
+                dependencies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Dependency'
+                    description: dependency is a list of used runtime dependencies
         State:
             type: object
             properties:
