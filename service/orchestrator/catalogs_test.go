@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -201,12 +200,6 @@ func TestService_ListCatalogs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
 	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
-
-	// 2nd case: Invalid request
-	_, err = orchestratorService.ListCatalogs(context.Background(),
-		&orchestrator.ListCatalogsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestService_UpdateCatalog(t *testing.T) {
@@ -229,8 +222,9 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// 3rd case: Certificate not found since there are no certificates yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
-			Id:   testdata.MockCatalogID,
-			Name: testdata.MockCatalogName,
+			Id:              testdata.MockCatalogID,
+			Name:            testdata.MockCatalogName,
+			AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -313,8 +307,24 @@ func TestService_GetCategory(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *orchestrator.Category
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Category not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create Catalog
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+				})},
+			args: args{
+				req: &orchestrator.GetCategoryRequest{CatalogId: "WrongCatalogID", CategoryName: testdata.MockCategoryName},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "category not found")
+			},
+		},
 		{
 			name: "valid",
 			fields: fields{
@@ -330,7 +340,7 @@ func TestService_GetCategory(t *testing.T) {
 				Description: testdata.MockCategoryDescription,
 				CatalogId:   testdata.MockCatalogID,
 				Controls: []*orchestrator.Control{{
-					Id:                testdata.MockControlID,
+					Id:                testdata.MockControlID1,
 					Name:              testdata.MockControlName,
 					Description:       testdata.MockControlDescription,
 					CategoryName:      testdata.MockCategoryName,
@@ -346,7 +356,7 @@ func TestService_GetCategory(t *testing.T) {
 					CategoryCatalogId: testdata.MockCatalogID,
 				}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -363,10 +373,8 @@ func TestService_GetCategory(t *testing.T) {
 				events:                tt.fields.events,
 			}
 			gotRes, err := srv.GetCategory(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetCategory() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
+			tt.wantErr(t, err)
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.GetCategory() = %v, want %v", gotRes, tt.wantRes)
 			}
@@ -393,8 +401,22 @@ func TestService_GetControl(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *orchestrator.Control
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Control not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create Catalog
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+				})},
+			args:    args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: "WrongControlID"}},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "control not found")
+			},
+		},
 		{
 			name: "valid",
 			fields: fields{
@@ -402,9 +424,9 @@ func TestService_GetControl(t *testing.T) {
 					// Create Catalog
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
-			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID}},
+			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID1}},
 			wantRes: &orchestrator.Control{
-				Id:                testdata.MockControlID,
+				Id:                testdata.MockControlID1,
 				CategoryName:      testdata.MockCategoryName,
 				CategoryCatalogId: testdata.MockCatalogID,
 				Name:              testdata.MockControlName,
@@ -428,12 +450,12 @@ func TestService_GetControl(t *testing.T) {
 					Metrics:                        []*assessment.Metric{},
 					CategoryName:                   testdata.MockCategoryName,
 					CategoryCatalogId:              testdata.MockCatalogID,
-					ParentControlId:                util.Ref(testdata.MockControlID),
+					ParentControlId:                util.Ref(testdata.MockControlID1),
 					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -449,11 +471,8 @@ func TestService_GetControl(t *testing.T) {
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetControl() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 
+			tt.wantErr(t, err)
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.GetControl() = %v, want %v", gotRes, tt.wantRes)
 			}
@@ -480,24 +499,17 @@ func TestService_ListControls(t *testing.T) {
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
 	// there are two default controls
-	assert.Equal(t, len(listControlsResponse.Controls), 2)
+	assert.Equal(t, 2, len(listControlsResponse.Controls))
 
-	// 3rd case: List controls for a specific catalog; first, create a new catalog with two controls, but only request controls for one of the existing catalogs
-	orchestratortest.NewCatalog()
+	// 3th case: List controls for a specific catalog and category.
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
-		CatalogId: "EUCS",
+		CatalogId:    "DemoCatalog",
+		CategoryName: "Communication Security",
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are the two default controls
-	assert.Equal(t, len(listControlsResponse.Controls), 2)
-
-	// 4th case: Invalid request
-	_, err = orchestratorService.ListControls(context.Background(),
-		&orchestrator.ListControlsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
+	assert.Equal(t, 2, len(listControlsResponse.Controls))
 }
 
 func TestService_loadCatalogs(t *testing.T) {

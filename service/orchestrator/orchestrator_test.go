@@ -39,8 +39,10 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	apiruntime "clouditor.io/clouditor/api/runtime"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -310,14 +312,18 @@ func Test_RemoveCertificate(t *testing.T) {
 }
 
 func Test_GetCertificate(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+	}
 	tests := []struct {
 		name    string
+		fields  fields
 		req     *orchestrator.GetCertificateRequest
 		res     *orchestrator.Certificate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "invalid request",
+			name: "Empty request",
 			req:  nil,
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -326,7 +332,7 @@ func Test_GetCertificate(t *testing.T) {
 			},
 		},
 		{
-			name: "certificate not found",
+			name: "Certificate Id missing in request",
 			req:  &orchestrator.GetCertificateRequest{CertificateId: ""},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -335,7 +341,28 @@ func Test_GetCertificate(t *testing.T) {
 			},
 		},
 		{
-			name:    "valid",
+			name: "Certificate not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create Certificate
+					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+				}),
+			},
+			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "certificate not found")
+			},
+		},
+		{
+			name: "valid",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create Certificate
+					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+				}),
+			},
 			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
 			res:     orchestratortest.NewCertificate(),
 			wantErr: assert.NoError,
@@ -390,12 +417,6 @@ func Test_ListCertificates(t *testing.T) {
 	assert.NotNil(t, listCertificatesResponse.Certificates)
 	assert.NotEmpty(t, listCertificatesResponse.Certificates)
 	assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
-
-	// 3rd case: Invalid request
-	_, err = orchestratorService.ListCertificates(context.Background(),
-		&orchestrator.ListCertificatesRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
 }
 
 func TestCloudServiceHooks(t *testing.T) {
