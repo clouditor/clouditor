@@ -339,6 +339,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		}
 	}
 
+	log.Debugf("Evaluation for control '%s' (%s) and Cloud Service '%s' stopped.", req.GetControlId(), req.GetCatalogId(), req.GetCloudServiceId())
 	resp = &evaluation.StopEvaluationResponse{}
 
 	return
