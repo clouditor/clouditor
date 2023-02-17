@@ -1860,7 +1860,7 @@ func TestService_evaluationResultForSecondControlLevel(t *testing.T) {
 			name: "Empty input",
 			args: args{},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get metrics from control and sub-controls for Cloud Serivce")
+				return assert.ErrorContains(t, err, "could not get metrics from control and sub-controls for Cloud Service")
 			},
 		},
 	}
