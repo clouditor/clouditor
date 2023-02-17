@@ -97,8 +97,9 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 		return nil, err
 	}
 
+	// TODO(all): Is it ok to use gorm.WithPreload("ControlsInScope") here?
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithPreload("ControlsInScope"), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
