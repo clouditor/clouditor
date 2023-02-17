@@ -36,6 +36,11 @@ const (
 	LoglevelDebug = "debug"
 	LoglevelInfo  = "info"
 	LoglevelError = "error"
+	Create        = "created"
+	Remove        = "removed"
+	Update        = "updated"
+	Register      = "registered"
+	Load          = "loaded"
 )
 
 type LoggingMessage interface {
@@ -43,24 +48,25 @@ type LoggingMessage interface {
 	GetId() string
 }
 
-// LogCreateMessage creates a 'create' logging message with the given parameters
+// LogMessage creates a logging message with the given parameters
 //   - log *logrus.Entry
 //   - loglevel the message must have (LoglevelDebug, LoglevelInfo, LoglevelError)
+//   - operation that is performed (Create, Remove, Update, Register, Load)
 //   - Optional. params must contain the catalog ID.
 //
 // The message looks like one of the following depending on the given information
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogCreateMessage(log *logrus.Entry, loglevel string, req orchestrator.CreateLoggingRequest, params ...string) {
+func LogMessage(log *logrus.Entry, loglevel, operation string, req orchestrator.CreateLoggingRequest, params ...string) {
 	var (
 		message string
 	)
 
 	if req.GetId() != "" {
-		message = fmt.Sprintf("%s created with ID '%s'", req.GetType(), req.GetId())
+		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), operation, req.GetId())
 	} else {
-		message = fmt.Sprintf("%s created", req.GetType())
+		message = fmt.Sprintf("%s %s", req.GetType(), operation)
 	}
 
 	if req.GetCloudServiceId() != "" && len(params) > 0 {
@@ -71,51 +77,10 @@ func LogCreateMessage(log *logrus.Entry, loglevel string, req orchestrator.Creat
 
 	switch loglevel {
 	case LoglevelDebug:
-		log.Debugf("%s.", message)
+		log.Debug("%s.", message)
 	case LoglevelInfo:
 		log.Infof("%s.", message)
 	case LoglevelError:
 		log.Errorf("%s.", message)
 	}
 }
-
-// DebugUpdate creates a debug logging message for update
-func DebugUpdate(t, id, name string) string {
-
-	return ""
-}
-
-// DebugRemove creates a debug logging message for remove
-func DebugRemove(t, id, name string) string {
-
-	return ""
-}
-
-// DebugUpdate creates a debug logging message for load
-func DebugLoad(t, id, name string) string {
-
-	return ""
-}
-
-// log.Debugf("Catalog created with name '%s'.", req.Catalog.GetName())
-// log.Debugf("Metric created with name '%s'.", req.Metric.GetName())
-// log.Debugf("Metric created with name '%s'.", req.Metric.GetName())
-// log.Debugf("Certificate created for Cloud Service ID '%s'.", req.Certificate.GetCloudServiceId())
-// log.Debugf("ToE created for Cloud Service ID '%s' and Catalog ID '%s'.", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
-
-// log.Debugf("Catalog updated with name '%s' and id '%s'.", req.Catalog.GetName(), req.Catalog.GetId())
-// log.Debugf("Cloud Service updated with name '%s' and id '%s'.", req.CloudService.GetName(), req.CloudService.GetId())
-// log.Debugf("Metric updated with id '%s'.", req.Metric.GetId())
-// log.Debugf("Metric implemenatation updated for metric id '%s'.", req.Implementation.GetMetricId())
-// log.Debugf("Metric conifguration updated for metric id '%s' and Cloud Service ID '%s'.", req.GetMetricId(), req.GetCloudServiceId())
-// log.Debugf("Certificate updated with id '%s' for Cloud Service ID '%s'.", req.Certificate.GetId(), req.Certificate.GetCloudServiceId())
-// log.Debugf("ToE updated for Cloud Service ID '%s' and Catalog ID '%s'.", req.TargetOfEvaluation.GetCloudServiceId(), req.TargetOfEvaluation.GetCatalogId())
-
-// log.Debugf("Catalog removed with id '%s'.", req.GetCatalogId())
-// log.Debugf("Cloud Service removed with id '%s'.", req.GetCloudServiceId())
-// log.Debugf("Certificate removed with id '%s'.", req.GetCertificateId())
-// log.Debugf("ToE removed for Cloud Service ID '%s' and Catalog ID '%s'.", req.GetCloudServiceId(), req.GetCatalogId())
-
-// log.Debugf("Catalog loaded with name '%s' and id '%s'.", catalogs[0].GetName(), catalogs[0].GetId())
-
-// log.Debugf("Cloud Service registered with name '%s'.", req.CloudService.GetName())

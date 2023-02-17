@@ -84,6 +84,30 @@ func (req *CreateCatalogRequest) GetCloudServiceId() string {
 	return ""
 }
 
+func (req *UpdateCatalogRequest) GetId() string {
+	return req.GetCatalog().GetId()
+}
+
+func (req *UpdateCatalogRequest) GetType() string {
+	return reflect.TypeOf(req.Catalog).String()
+}
+
+func (req *UpdateCatalogRequest) GetCloudServiceId() string {
+	return ""
+}
+
+func (req *RemoveCatalogRequest) GetId() string {
+	return req.GetCatalogId()
+}
+
+func (req *RemoveCatalogRequest) GetType() string {
+	return reflect.TypeOf(Catalog{}).String()
+}
+
+func (req *RemoveCatalogRequest) GetCloudServiceId() string {
+	return ""
+}
+
 func (req *CreateTargetOfEvaluationRequest) GetId() string {
 	return ""
 }
@@ -94,6 +118,26 @@ func (req *CreateTargetOfEvaluationRequest) GetType() string {
 
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
+func (req *UpdateTargetOfEvaluationRequest) GetId() string {
+	return ""
+}
+
+func (req *UpdateTargetOfEvaluationRequest) GetType() string {
+	return reflect.TypeOf(req.TargetOfEvaluation).String()
+}
+
+func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
+	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
+func (req *RemoveTargetOfEvaluationRequest) GetId() string {
+	return ""
+}
+
+func (req *RemoveTargetOfEvaluationRequest) GetType() string {
+	return reflect.TypeOf(TargetOfEvaluation{}).String()
 }
 
 func (req *CreateCertificateRequest) GetId() string {
@@ -108,6 +152,30 @@ func (req *CreateCertificateRequest) GetCloudServiceId() string {
 	return req.GetCertificate().GetCloudServiceId()
 }
 
+func (req *UpdateCertificateRequest) GetId() string {
+	return req.GetCertificate().GetId()
+}
+
+func (req *UpdateCertificateRequest) GetType() string {
+	return reflect.TypeOf(req.Certificate).String()
+}
+
+func (req *UpdateCertificateRequest) GetCloudServiceId() string {
+	return req.GetCertificate().GetCloudServiceId()
+}
+
+func (req *RemoveCertificateRequest) GetId() string {
+	return req.GetCertificateId()
+}
+
+func (req *RemoveCertificateRequest) GetType() string {
+	return reflect.TypeOf(Certificate{}).String()
+}
+
+func (req *RemoveCertificateRequest) GetCloudServiceId() string {
+	return ""
+}
+
 func (req *CreateMetricRequest) GetId() string {
 	return req.GetMetric().GetId()
 }
@@ -118,6 +186,66 @@ func (req *CreateMetricRequest) GetType() string {
 
 func (req *CreateMetricRequest) GetCloudServiceId() string {
 	return ""
+}
+
+func (req *UpdateMetricRequest) GetId() string {
+	return req.GetMetric().GetId()
+}
+
+func (req *UpdateMetricRequest) GetType() string {
+	return reflect.TypeOf(req.Metric).String()
+}
+
+func (req *UpdateMetricRequest) GetCloudServiceId() string {
+	return ""
+}
+
+func (req *UpdateMetricImplementationRequest) GetId() string {
+	return req.GetImplementation().GetMetricId()
+}
+
+func (req *UpdateMetricImplementationRequest) GetType() string {
+	return reflect.TypeOf(req.Implementation).String()
+}
+
+func (req *UpdateMetricImplementationRequest) GetCloudServiceId() string {
+	return ""
+}
+
+func (req *UpdateMetricConfigurationRequest) GetId() string {
+	return req.GetConfiguration().GetMetricId()
+}
+
+func (req *UpdateMetricConfigurationRequest) GetType() string {
+	return reflect.TypeOf(req.Configuration).String()
+}
+
+func (req *RegisterCloudServiceRequest) GetId() string {
+	return req.GetCloudService().GetId()
+}
+
+func (req *RegisterCloudServiceRequest) GetType() string {
+	return reflect.TypeOf(req.CloudService).String()
+}
+
+func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
+	return req.GetCloudService().GetId()
+}
+
+func (req *UpdateCloudServiceRequest) GetId() string {
+	return req.GetCloudService().GetId()
+}
+
+func (req *UpdateCloudServiceRequest) GetType() string {
+	return reflect.TypeOf(req.CloudService).String()
+}
+
+func (req *RemoveCloudServiceRequest) GetId() string {
+	return req.GetCloudServiceId()
+}
+
+func (req *RemoveCloudServiceRequest) GetType() string {
+	return reflect.TypeOf(CloudService{}).String()
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

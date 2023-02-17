@@ -31,7 +31,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Create, req)
 
 	// Return catalog
 	return req.Catalog, nil
@@ -98,7 +98,7 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	log.Debugf("Catalog updated with name '%s' and id '%s'.", req.Catalog.GetName(), req.Catalog.GetId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
 
 	return
 }
@@ -118,7 +118,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	log.Debugf("Catalog removed with id '%s'.", req.GetCatalogId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }
@@ -216,7 +216,7 @@ func (svc *Service) loadCatalogs() (err error) {
 		log.Errorf("Error while saving catalog %v", err)
 	}
 
-	log.Debugf("Catalog loaded with name '%s' and id '%s'.", catalogs[0].GetName(), catalogs[0].GetId())
+	log.Debugf("Catalog loaded with id '%s'.", catalogs[0].GetId())
 
 	return
 }

@@ -218,7 +218,7 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
 	}
 
-	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Create, req)
 
 	// Return certificate
 	return req.Certificate, nil
@@ -284,7 +284,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	log.Debugf("Certificate updated with id '%s' for Cloud Service ID '%s'.", req.Certificate.GetId(), req.Certificate.GetCloudServiceId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
 
 	return
 }
@@ -304,7 +304,7 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	log.Debugf("Certificate removed with id '%s'.", req.GetCertificateId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }

@@ -88,6 +88,9 @@ func (svc *Service) loadMetrics() (err error) {
 			log.Errorf("Error while saving metrics: %v", err)
 			continue
 		}
+
+		log.Debugf("Metric loaded with id '%s'.", m.GetId())
+
 	}
 
 	return
@@ -202,7 +205,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
-	logging.LogCreateMessage(log, logging.LoglevelDebug, req)
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Create, req)
 
 	return
 }
@@ -243,7 +246,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		}
 	}()
 
-	log.Debugf("Metric updated with id '%s'.", req.Metric.GetId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
 
 	return
 }
@@ -286,7 +289,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		}
 	}()
 
-	log.Debugf("Metric implemenatation updated for metric id '%s'.", req.Implementation.GetMetricId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
 
 	return
 }
@@ -411,7 +414,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Update response
 	res = req.Configuration
 
-	log.Debugf("Metric conifguration updated for metric id '%s' and Cloud Service ID '%s'.", req.GetMetricId(), req.GetCloudServiceId())
+	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
 
 	return
 }
