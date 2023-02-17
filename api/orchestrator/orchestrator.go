@@ -42,7 +42,7 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
-type CreateLoggingRequest interface {
+type LogRequest interface {
 	GetId() string
 	GetType() string
 	GetCloudServiceId() string
