@@ -48,7 +48,7 @@ type LoggingMessage interface {
 //   - loglevel the message must have (LoglevelDebug, LoglevelInfo, LoglevelError)
 //   - Optional. params must contain the catalog ID.
 //
-// The message looks like one of the following
+// The message looks like one of the following depending on the given information
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
@@ -57,10 +57,14 @@ func LogCreateMessage(log *logrus.Entry, loglevel string, req orchestrator.Creat
 		message string
 	)
 
-	message = fmt.Sprintf("%s created with ID '%s'", req.GetType(), req.GetId())
+	if req.GetId() != "" {
+		message = fmt.Sprintf("%s created with ID '%s'", req.GetType(), req.GetId())
+	} else {
+		message = fmt.Sprintf("%s created", req.GetType())
+	}
 
 	if req.GetCloudServiceId() != "" && len(params) > 0 {
-		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'.", message, req.GetCloudServiceId(), params[0])
+		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'", message, req.GetCloudServiceId(), params[0])
 	} else if req.GetCloudServiceId() != "" {
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, req.GetCloudServiceId())
 	}
