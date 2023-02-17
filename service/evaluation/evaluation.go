@@ -169,7 +169,7 @@ func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
-// StartEvaluation is a method implementation of the evaluation interface: It starts the evaluation for a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation periodically. If no inteval time is given, the default value of 5 minutes is used.
+// StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation. If no inteval time is given, the default value of 5 minutes is used.
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
 		schedulerTag string
@@ -277,6 +277,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	// Start scheduler jobs
 	s.scheduler.StartAsync()
 	log.Infof("Scheduler started...")
+	// TODO(anatheka): Check if a job has started and log.
 
 	resp = &evaluation.StartEvaluationResponse{}
 
@@ -406,7 +407,7 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 			continue
 		}
 
-		if v.ControlId != req.GetFilteredControlId() {
+		if req.FilteredControlId != nil && v.ControlId != req.GetFilteredControlId() {
 			continue
 		}
 
@@ -437,22 +438,22 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	if toe == nil {
 		err = errors.New("target of evaluation is invalid")
 	}
-	if parentSchedulerTag == "" {
-		err = errors.New("parent scheduler tag is invalid")
-	}
 	if interval == 0 {
 		err = errors.New("interval is invalid")
 	}
 	if err != nil {
 		log.Error(err)
-		return status.Errorf(codes.Internal, "%s", "evaluation cannot be scheduled")
+		return status.Errorf(codes.Internal, "%s: %v", "evaluation cannot be scheduled", err)
 	}
 
 	// schedulerTag is the tag for the given control
 	schedulerTag := createSchedulerTag(toe.GetCloudServiceId(), c.GetId())
 
-	// Regarding the control level the specific method is called every X minutes based on the given interval. We have to decide if the control is a sub-control that can be evaluated direclty or a parent control that has to wait for the results of the sub-controls.
-	if c.ParentControlId == nil { // parent control
+	// Regarding the control level the specific method is called every X minutes based on the given interval. We have to decide if a sub-control is started individually or a parent control that has to wait for the results of the sub-controls.
+	// If a parent control with its sub-controls is started, the parentSchedulerTag is empty and the ParentControlId is not set.
+	// If a sub-control is started individually the parentSchedulerTag is empty nd and ParentControlId is set.
+	//
+	if parentSchedulerTag == "" && c.ParentControlId == nil { // parent control
 		_, err = s.scheduler.
 			Every(interval).
 			Minute().
@@ -637,7 +638,7 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 	// Get metrics from control and sub-controls
 	metrics, err := s.getMetrics(catalogId, categoryName, controlId)
 	if err != nil {
-		err = fmt.Errorf("could not get metrics from control and sub-controls for Cloud Serivce '%s' from Orchestrator: %v", cloudServiceId, err)
+		err = fmt.Errorf("could not get metrics from control and sub-controls for Cloud Service '%s' from Orchestrator: %v", cloudServiceId, err)
 		return
 	}
 
