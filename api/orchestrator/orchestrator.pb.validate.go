@@ -4149,6 +4149,33 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AllInScope
 
+	if len(m.GetAssuranceLevels()) < 3 {
+		err := CatalogValidationError{
+			field:  "AssuranceLevels",
+			reason: "value must contain at least 3 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetAssuranceLevels() {
+		_, _ = idx, item
+
+		if !_Catalog_AssuranceLevels_Pattern.MatchString(item) {
+			err := CatalogValidationError{
+				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
@@ -4225,6 +4252,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CatalogValidationError{}
+
+var _Catalog_AssuranceLevels_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on Category with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -4596,6 +4625,21 @@ func (m *Control) validate(all bool) error {
 
 	}
 
+	if m.AssuranceLevel != nil {
+
+		if !_Control_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
+			err := ControlValidationError{
+				field:  "AssuranceLevel",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return ControlMultiError(errors)
 	}
@@ -4672,6 +4716,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ControlValidationError{}
+
+var _Control_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on TargetOfEvaluation with the rules
 // defined in the proto definition for this message. If any rules are
@@ -4768,7 +4814,7 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
 			err := TargetOfEvaluationValidationError{
 				field:  "AssuranceLevel",
-				reason: "value does not match regex pattern \"^(|basic|substantial|high)$\"",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
 			}
 			if !all {
 				return err
@@ -4866,7 +4912,7 @@ var _ interface {
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
 
-var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high)$")
+var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on ListControlsInScopeRequest with the
 // rules defined in the proto definition for this message. If any rules are

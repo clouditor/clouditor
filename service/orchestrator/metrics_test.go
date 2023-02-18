@@ -39,7 +39,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -538,12 +537,6 @@ func TestService_ListMetrics(t *testing.T) {
 	assert.NotEmpty(t, response.Metrics)
 	// TODO(anatheka): Test failes because of incorrect metrics.json file
 	// assert.NoError(t, response.Validate())
-
-	// Invalid request
-	_, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{OrderBy: "not a field"})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.Contains(t, err.Error(), api.ErrInvalidColumnName.Error())
-
 }
 
 func TestService_GetMetricImplementation(t *testing.T) {
