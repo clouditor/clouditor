@@ -179,7 +179,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetControlCommand()
-	err := cmd.RunE(nil, []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID})
+	err := cmd.RunE(nil, []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Control{}
@@ -188,7 +188,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, testdata.MockControlID, response.Id)
+	assert.Equal(t, testdata.MockControlID1, response.Id)
 }
 
 func toStruct(f float32) (s *structpb.Value) {

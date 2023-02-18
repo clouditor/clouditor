@@ -3,6 +3,7 @@
         "id": "DemoCatalog",
         "name": "A demo catalog for testing purposes",
         "description": "A mock catalog for testing purposes",
+        "assurance_levels": ["low", "medium", "high"],
         "categories": [
             {
                 "name": "Communication Security",

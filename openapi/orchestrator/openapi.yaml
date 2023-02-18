@@ -1465,6 +1465,11 @@ components:
                 allInScope:
                     type: boolean
                     description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
+                assuranceLevels:
+                    type: array
+                    items:
+                        type: string
+                    description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
         Category:
             type: object
             properties:
@@ -1556,6 +1561,9 @@ components:
                     type: string
                 parentControlCategoryCatalogId:
                     type: string
+                assuranceLevel:
+                    type: string
+                    description: An assurance level is not offered by every catalog, therefore it is optional.
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         ControlInScope:
             type: object
