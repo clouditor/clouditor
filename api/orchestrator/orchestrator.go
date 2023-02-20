@@ -152,6 +152,10 @@ func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
 	return &CloudService{Id: req.CloudServiceId}
 }
 
+func (req *StoreAssessmentResultRequest) GetPayload() proto.Message {
+	return req.Result
+}
+
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`
 func (*ControlInScope) TableName() string {
 	return "controls_in_scope"

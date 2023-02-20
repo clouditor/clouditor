@@ -41,6 +41,8 @@ const (
 	Remove
 	Update
 	Register
+	Store
+	Assess
 )
 
 // String returns the RequestType as string.
@@ -54,6 +56,10 @@ func (r RequestType) String() string {
 		return "updated"
 	case Register:
 		return "registered"
+	case Store:
+		return "stored"
+	case Assess:
+		return "assessed"
 	default:
 		return "unspecified"
 	}
