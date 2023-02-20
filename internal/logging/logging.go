@@ -37,32 +37,35 @@ import (
 type RequestType int
 
 const (
-	Create RequestType = iota
-	Remove
-	Update
+	Assess RequestType = iota
+	Add
+	Create
 	Register
+	Remove
 	Store
-	Assess
 	Send
+	Update
 )
 
 // String returns the RequestType as string.
 func (r RequestType) String() string {
 	switch r {
-	case Create:
-		return "created"
-	case Remove:
-		return "removed"
-	case Update:
-		return "updated"
-	case Register:
-		return "registered"
-	case Store:
-		return "stored"
 	case Assess:
 		return "assessed"
+	case Add:
+		return "added"
+	case Create:
+		return "created"
+	case Register:
+		return "registered"
+	case Remove:
+		return "removed"
+	case Store:
+		return "stored"
 	case Send:
 		return "sent"
+	case Update:
+		return "updated"
 	default:
 		return "unspecified"
 	}

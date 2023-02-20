@@ -280,6 +280,8 @@ func (svc *Service) AddControlToScope(ctx context.Context, req *orchestrator.Add
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_ADDED, ControlInScope: req.GetScope()}, nil)
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Add, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
+
 	return
 }
 
@@ -316,6 +318,8 @@ func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_UPDATED, ControlInScope: req.GetScope()}, nil)
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
+
 	return
 }
 
@@ -351,6 +355,8 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 	res = &emptypb.Empty{}
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("with Control ID '%s'", req.GetControlId()))
 
 	return
 }
