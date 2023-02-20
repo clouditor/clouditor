@@ -213,13 +213,6 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		// Retrieve the payload from the request. The request itself is usually
-		// a wrapper around the sent object.
-		payload := preq.GetPayload()
-		if !ok || payload == nil {
-			return
-		}
-
 		logging.LogRequest(s.log, logrus.DebugLevel, logging.Send, preq, fmt.Sprintf("%s (%s)", c.component, c.target))
 	}
 }
