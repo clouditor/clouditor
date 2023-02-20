@@ -220,7 +220,6 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		// Finally, check if we have an ID in the payload
 		logging.LogRequest(s.log, logrus.DebugLevel, logging.Send, preq)
 	}
 }
