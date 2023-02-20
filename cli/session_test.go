@@ -321,14 +321,14 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID, testdata.MockControlName, testdata.MockControlDescription))
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID1, testdata.MockControlName, testdata.MockControlDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {

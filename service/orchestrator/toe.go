@@ -55,6 +55,11 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
 	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
 	if err != nil {
@@ -74,9 +79,17 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 			return nil, err
 		}
 
-		// Make all controls in scope
-		// TODO: Certain catalogs differentiate between assurance levels
-		req.TargetOfEvaluation.ControlsInScope = controls
+		// If the catalog allows assurance levels, add only controls with the corresponsing assurance level.
+		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high include all control.
+		if len(c.AssuranceLevels) > 0 {
+			req.TargetOfEvaluation.ControlsInScope, err = getControls(controls, c.GetAssuranceLevels(), req.TargetOfEvaluation.GetAssuranceLevel())
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, "assurance level error: %v", err)
+			}
+		} else {
+			// The catalog does not allow assurance levels, add all controls.
+			req.TargetOfEvaluation.ControlsInScope = controls
+		}
 	}
 
 	// Create the ToE
@@ -96,11 +109,16 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 }
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
-func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
@@ -114,15 +132,29 @@ func (svc *Service) GetTargetOfEvaluation(_ context.Context, req *orchestrator.G
 }
 
 // ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
-func (svc *Service) ListTargetsOfEvaluation(_ context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
+func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
+	var conds = []any{gorm.WithPreload("ControlsInScope")}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	// Either the cloud_service_id or the catalog_id is set and the conds are added accordingly.
+	if req.GetCloudServiceId() != "" {
+		conds = append(conds, "cloud_service_id = ?", req.CloudServiceId)
+	} else if req.GetCatalogId() != "" {
+		conds = append(conds, "catalog_id = ?", req.CatalogId)
+	}
+
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, gorm.WithPreload("ControlsInScope"))
+	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -135,6 +167,11 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	res = req.TargetOfEvaluation
@@ -165,6 +202,11 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, err
 	}
 
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
@@ -185,21 +227,6 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	return &emptypb.Empty{}, nil
 }
 
-// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
-func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
-	s.hookMutex.RLock()
-	hooks := s.toeHooks
-	defer s.hookMutex.RUnlock()
-
-	// Inform our hook, if we have any
-	if len(hooks) > 0 {
-		for _, hook := range hooks {
-			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, event, err)
-		}
-	}
-}
-
 // RegisterToeHook registers the Target of Evaluation hook function
 func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) {
 	s.hookMutex.Lock()
@@ -208,6 +235,7 @@ func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) 
 }
 
 func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.ListControlsInScopeRequest) (res *orchestrator.ListControlsInScopeResponse, err error) {
+	var conds = []any{gorm.WithoutPreload()}
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -219,8 +247,10 @@ func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.L
 		return nil, service.ErrPermissionDenied
 	}
 
+	conds = append(conds, "target_of_evaluation_cloud_service_id = ? AND target_of_evaluation_catalog_id = ?", req.CloudServiceId, req.CatalogId)
+
 	res = new(orchestrator.ListControlsInScopeResponse)
-	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, gorm.WithoutPreload())
+	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -236,7 +266,7 @@ func (svc *Service) AddControlToScope(ctx context.Context, req *orchestrator.Add
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -264,7 +294,7 @@ func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -300,7 +330,7 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -326,4 +356,69 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
 
 	return
+}
+
+// getControls returns all controls based on the assurance level
+func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
+	var (
+		low    []*orchestrator.Control
+		medium []*orchestrator.Control
+		high   []*orchestrator.Control
+		c      = []*orchestrator.Control{}
+	)
+
+	// Check that levels and level is not empty
+	if len(levels) < 3 {
+		err := errors.New("assurance levels are empty")
+		return c, err
+	}
+
+	if level == "" {
+		err := errors.New("assurance level is empty")
+		return c, err
+	}
+
+	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.
+	for i := range controls {
+		switch controls[i].GetAssuranceLevel() {
+		case levels[0]:
+			low = append(low, controls[i])
+		case levels[1]:
+			medium = append(medium, controls[i])
+		case levels[2]:
+			high = append(high, controls[i])
+		default:
+			continue
+		}
+	}
+
+	// Add all needed controls based on the assurance level and return
+	switch level {
+	case levels[0]:
+		c = append(c, low...)
+	case levels[1]:
+		c = append(c, low...)
+		c = append(c, medium...)
+	case levels[2]:
+		c = append(c, low...)
+		c = append(c, medium...)
+		c = append(c, high...)
+	}
+
+	return c, nil
+}
+
+// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
+func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+	s.hookMutex.RLock()
+	hooks := s.toeHooks
+	defer s.hookMutex.RUnlock()
+
+	// Inform our hook, if we have any
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
+			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(ctx, event, err)
+		}
+	}
 }
