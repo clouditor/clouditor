@@ -92,21 +92,10 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
-	// If the request type is "Send" then the message must look different
-	if reqType == Send {
-		if ok && len(params) > 0 {
-			message = fmt.Sprintf("%T with ID '%s' %s to %s", req.GetPayload(), idreq.GetId(), reqType.String(), strings.Join(params, " "))
-		} else if !ok && len(params) > 0 {
-			message = fmt.Sprintf("%T %s to %s", req.GetPayload(), reqType.String(), strings.Join(params, " "))
-		} else {
-			message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
-		}
+	if ok {
+		message = fmt.Sprintf("%T with ID '%s' %s", req.GetPayload(), idreq.GetId(), reqType.String())
 	} else {
-		if ok {
-			message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), idreq.GetId())
-		} else {
-			message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
-		}
+		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
 	}
 
 	// Check, if it is a cloud service request. In this case we can append the
@@ -114,9 +103,14 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	csreq, ok := req.(request.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 {
-		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
+		message = fmt.Sprintf(" %s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
 	} else if ok {
-		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
+		message = fmt.Sprintf(" %s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
+	}
+
+	// This is just for log messages for streams
+	if reqType == Send && len(params) > 0 {
+		message = fmt.Sprintf(" %s %s", message, strings.Join(params, " "))
 	}
 
 	log.Logf(level, "%s.", message)
