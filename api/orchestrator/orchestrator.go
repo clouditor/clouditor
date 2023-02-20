@@ -112,11 +112,11 @@ func (req *RemoveCatalogRequest) GetPayloadID() string {
 	return req.GetCatalogId()
 }
 
-func (req *RemoveCatalogRequest) GetPayload() *Catalog {
+func (*RemoveCatalogRequest) GetPayload() *Catalog {
 	return &Catalog{}
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetPayloadID() string {
+func (*CreateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
@@ -128,7 +128,7 @@ func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetPayloadID() string {
+func (*UpdateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
@@ -140,11 +140,11 @@ func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetPayloadID() string {
+func (*RemoveTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
+func (*RemoveTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
 	return &TargetOfEvaluation{}
 }
 
@@ -176,7 +176,7 @@ func (req *RemoveCertificateRequest) GetPayloadID() string {
 	return req.GetCertificateId()
 }
 
-func (req *RemoveCertificateRequest) GetPayload() *Certificate {
+func (*RemoveCertificateRequest) GetPayload() *Certificate {
 	return &Certificate{}
 }
 
@@ -236,7 +236,7 @@ func (req *RemoveCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudServiceId()
 }
 
-func (req *RemoveCloudServiceRequest) GetPayload() *CloudService {
+func (*RemoveCloudServiceRequest) GetPayload() *CloudService {
 	return &CloudService{}
 }
 
