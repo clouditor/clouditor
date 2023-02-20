@@ -31,7 +31,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/logging"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
