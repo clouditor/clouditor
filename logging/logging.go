@@ -55,8 +55,8 @@ func LogMessage(log *logrus.Entry, loglevel logrus.Level, operation string, req 
 		message string
 	)
 
-	if req.GetId() != "" {
-		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), operation, req.GetId())
+	if req.GetPayloadID() != "" {
+		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), operation, req.GetPayloadID())
 	} else {
 		message = fmt.Sprintf("%s %s", req.GetType(), operation)
 	}

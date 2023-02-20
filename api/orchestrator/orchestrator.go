@@ -43,7 +43,7 @@ type CloudServiceRequest interface {
 }
 
 type LogRequest interface {
-	GetId() string
+	GetPayloadID() string
 	GetType() string
 	GetCloudServiceId() string
 }
@@ -72,7 +72,7 @@ func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
 	return req.GetResult().GetCloudServiceId()
 }
 
-func (req *CreateCatalogRequest) GetId() string {
+func (req *CreateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
@@ -84,7 +84,7 @@ func (req *CreateCatalogRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *UpdateCatalogRequest) GetId() string {
+func (req *UpdateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
@@ -96,7 +96,7 @@ func (req *UpdateCatalogRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *RemoveCatalogRequest) GetId() string {
+func (req *RemoveCatalogRequest) GetPayloadID() string {
 	return req.GetCatalogId()
 }
 
@@ -108,7 +108,7 @@ func (req *RemoveCatalogRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetId() string {
+func (req *CreateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
@@ -120,7 +120,7 @@ func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetId() string {
+func (req *UpdateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
@@ -132,7 +132,7 @@ func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetId() string {
+func (req *RemoveTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
@@ -140,7 +140,7 @@ func (req *RemoveTargetOfEvaluationRequest) GetType() string {
 	return reflect.TypeOf(TargetOfEvaluation{}).String()
 }
 
-func (req *CreateCertificateRequest) GetId() string {
+func (req *CreateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
@@ -152,7 +152,7 @@ func (req *CreateCertificateRequest) GetCloudServiceId() string {
 	return req.GetCertificate().GetCloudServiceId()
 }
 
-func (req *UpdateCertificateRequest) GetId() string {
+func (req *UpdateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
@@ -164,7 +164,7 @@ func (req *UpdateCertificateRequest) GetCloudServiceId() string {
 	return req.GetCertificate().GetCloudServiceId()
 }
 
-func (req *RemoveCertificateRequest) GetId() string {
+func (req *RemoveCertificateRequest) GetPayloadID() string {
 	return req.GetCertificateId()
 }
 
@@ -176,7 +176,7 @@ func (req *RemoveCertificateRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *CreateMetricRequest) GetId() string {
+func (req *CreateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
@@ -188,7 +188,7 @@ func (req *CreateMetricRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *UpdateMetricRequest) GetId() string {
+func (req *UpdateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
@@ -200,7 +200,7 @@ func (req *UpdateMetricRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *UpdateMetricImplementationRequest) GetId() string {
+func (req *UpdateMetricImplementationRequest) GetPayloadID() string {
 	return req.GetImplementation().GetMetricId()
 }
 
@@ -212,7 +212,7 @@ func (req *UpdateMetricImplementationRequest) GetCloudServiceId() string {
 	return ""
 }
 
-func (req *UpdateMetricConfigurationRequest) GetId() string {
+func (req *UpdateMetricConfigurationRequest) GetPayloadID() string {
 	return req.GetConfiguration().GetMetricId()
 }
 
@@ -220,7 +220,7 @@ func (req *UpdateMetricConfigurationRequest) GetType() string {
 	return reflect.TypeOf(req.Configuration).String()
 }
 
-func (req *RegisterCloudServiceRequest) GetId() string {
+func (req *RegisterCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
@@ -232,7 +232,7 @@ func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *UpdateCloudServiceRequest) GetId() string {
+func (req *UpdateCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
@@ -240,7 +240,7 @@ func (req *UpdateCloudServiceRequest) GetType() string {
 	return reflect.TypeOf(req.CloudService).String()
 }
 
-func (req *RemoveCloudServiceRequest) GetId() string {
+func (req *RemoveCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudServiceId()
 }
 
