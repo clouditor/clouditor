@@ -83,6 +83,14 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 		message string
 	)
 
+	// Check if inputs are available
+	if log == nil {
+		return
+	}
+	if req == nil {
+		return
+	}
+
 	// Retrieve the payload from the request. The request itself is usually
 	// a wrapper around the sent object.
 	payload := req.GetPayload()
@@ -92,7 +100,7 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
-	if ok {
+	if ok && idreq.GetId() != "" {
 		message = fmt.Sprintf("%T with ID '%s' %s", req.GetPayload(), idreq.GetId(), reqType.String())
 	} else {
 		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
@@ -102,9 +110,9 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// information about the target cloud service
 	csreq, ok := req.(request.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
-	if ok && len(params) > 0 {
+	if ok && len(params) > 0 && csreq.GetCloudServiceId() != "" {
 		message = fmt.Sprintf(" %s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
-	} else if ok {
+	} else if ok && csreq.GetCloudServiceId() != "" {
 		message = fmt.Sprintf(" %s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
