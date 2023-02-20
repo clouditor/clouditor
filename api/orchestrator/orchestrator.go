@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	reflect "reflect"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -42,9 +41,11 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
+type T any
+
 type LogRequest interface {
 	GetPayloadID() string
-	GetType() string
+	GetPayload() T
 	CloudServiceRequest
 }
 
@@ -76,8 +77,8 @@ func (req *CreateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
-func (req *CreateCatalogRequest) GetType() string {
-	return reflect.TypeOf(req.Catalog).String()
+func (req *CreateCatalogRequest) GetPayload() T {
+	return req.Catalog
 }
 
 func (req *CreateCatalogRequest) GetCloudServiceId() string {
@@ -88,8 +89,8 @@ func (req *UpdateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
-func (req *UpdateCatalogRequest) GetType() string {
-	return reflect.TypeOf(req.Catalog).String()
+func (req *UpdateCatalogRequest) GetPayload() T {
+	return req.Catalog
 }
 
 func (req *UpdateCatalogRequest) GetCloudServiceId() string {
@@ -100,8 +101,8 @@ func (req *RemoveCatalogRequest) GetPayloadID() string {
 	return req.GetCatalogId()
 }
 
-func (req *RemoveCatalogRequest) GetType() string {
-	return reflect.TypeOf(Catalog{}).String()
+func (req *RemoveCatalogRequest) GetPayload() T {
+	return Catalog{}
 }
 
 func (req *RemoveCatalogRequest) GetCloudServiceId() string {
@@ -112,8 +113,8 @@ func (req *CreateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetType() string {
-	return reflect.TypeOf(req.TargetOfEvaluation).String()
+func (req *CreateTargetOfEvaluationRequest) GetPayload() T {
+	return req.TargetOfEvaluation
 }
 
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
@@ -124,8 +125,8 @@ func (req *UpdateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetType() string {
-	return reflect.TypeOf(req.TargetOfEvaluation).String()
+func (req *UpdateTargetOfEvaluationRequest) GetPayload() T {
+	return req.TargetOfEvaluation
 }
 
 func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
@@ -136,16 +137,16 @@ func (req *RemoveTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetType() string {
-	return reflect.TypeOf(TargetOfEvaluation{}).String()
+func (req *RemoveTargetOfEvaluationRequest) GetPayload() T {
+	return TargetOfEvaluation{}
 }
 
 func (req *CreateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
-func (req *CreateCertificateRequest) GetType() string {
-	return reflect.TypeOf(req.Certificate).String()
+func (req *CreateCertificateRequest) GetPayload() T {
+	return req.Certificate
 }
 
 func (req *CreateCertificateRequest) GetCloudServiceId() string {
@@ -156,8 +157,8 @@ func (req *UpdateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
-func (req *UpdateCertificateRequest) GetType() string {
-	return reflect.TypeOf(req.Certificate).String()
+func (req *UpdateCertificateRequest) GetPayload() T {
+	return req.Certificate
 }
 
 func (req *UpdateCertificateRequest) GetCloudServiceId() string {
@@ -168,8 +169,8 @@ func (req *RemoveCertificateRequest) GetPayloadID() string {
 	return req.GetCertificateId()
 }
 
-func (req *RemoveCertificateRequest) GetType() string {
-	return reflect.TypeOf(Certificate{}).String()
+func (req *RemoveCertificateRequest) GetPayload() T {
+	return Certificate{}
 }
 
 func (req *RemoveCertificateRequest) GetCloudServiceId() string {
@@ -180,8 +181,8 @@ func (req *CreateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
-func (req *CreateMetricRequest) GetType() string {
-	return reflect.TypeOf(req.Metric).String()
+func (req *CreateMetricRequest) GetPayload() T {
+	return req.Metric
 }
 
 func (req *CreateMetricRequest) GetCloudServiceId() string {
@@ -192,8 +193,8 @@ func (req *UpdateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
-func (req *UpdateMetricRequest) GetType() string {
-	return reflect.TypeOf(req.Metric).String()
+func (req *UpdateMetricRequest) GetPayload() T {
+	return req.Metric
 }
 
 func (req *UpdateMetricRequest) GetCloudServiceId() string {
@@ -204,8 +205,8 @@ func (req *UpdateMetricImplementationRequest) GetPayloadID() string {
 	return req.GetImplementation().GetMetricId()
 }
 
-func (req *UpdateMetricImplementationRequest) GetType() string {
-	return reflect.TypeOf(req.Implementation).String()
+func (req *UpdateMetricImplementationRequest) GetPayload() T {
+	return req.Implementation
 }
 
 func (req *UpdateMetricImplementationRequest) GetCloudServiceId() string {
@@ -216,16 +217,16 @@ func (req *UpdateMetricConfigurationRequest) GetPayloadID() string {
 	return req.GetConfiguration().GetMetricId()
 }
 
-func (req *UpdateMetricConfigurationRequest) GetType() string {
-	return reflect.TypeOf(req.Configuration).String()
+func (req *UpdateMetricConfigurationRequest) GetPayload() T {
+	return req.Configuration
 }
 
 func (req *RegisterCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *RegisterCloudServiceRequest) GetType() string {
-	return reflect.TypeOf(req.CloudService).String()
+func (req *RegisterCloudServiceRequest) GetPayload() T {
+	return req.CloudService
 }
 
 func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
@@ -236,16 +237,16 @@ func (req *UpdateCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *UpdateCloudServiceRequest) GetType() string {
-	return reflect.TypeOf(req.CloudService).String()
+func (req *UpdateCloudServiceRequest) GetPayload() T {
+	return req.CloudService
 }
 
 func (req *RemoveCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudServiceId()
 }
 
-func (req *RemoveCloudServiceRequest) GetType() string {
-	return reflect.TypeOf(CloudService{}).String()
+func (req *RemoveCloudServiceRequest) GetPayload() T {
+	return CloudService{}
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

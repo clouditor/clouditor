@@ -78,9 +78,9 @@ func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, r
 	)
 
 	if req.GetPayloadID() != "" {
-		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), reqType.String(), req.GetPayloadID())
+		message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), req.GetPayloadID())
 	} else {
-		message = fmt.Sprintf("%s %s", req.GetType(), reqType.String())
+		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
 	}
 
 	csreq, ok := req.(orchestrator.CloudServiceRequest)
