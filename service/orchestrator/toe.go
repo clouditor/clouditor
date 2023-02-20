@@ -28,6 +28,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -88,7 +89,8 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	res = req.TargetOfEvaluation
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req, req.TargetOfEvaluation.GetCatalogId())
+	params := []string{fmt.Sprintf("and Catalog %s", req.TargetOfEvaluation.GetCatalogId())}
+	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req, params...)
 
 	return
 }
@@ -149,7 +151,8 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req, req.TargetOfEvaluation.GetCatalogId())
+	params := []string{fmt.Sprintf("and Catalog %s", req.TargetOfEvaluation.GetCatalogId())}
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req, params...)
 
 	return
 }
@@ -176,7 +179,8 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	}
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req, req.GetCatalogId())
+	params := []string{fmt.Sprintf("and Catalog %s", req.GetCatalogId())}
+	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req, params...)
 
 	return &emptypb.Empty{}, nil
 }

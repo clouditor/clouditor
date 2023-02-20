@@ -27,6 +27,7 @@ package logging
 
 import (
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
@@ -65,7 +66,7 @@ func (r RequestType) String() string {
 //   - log *logrus.Entry
 //   - loglevel the message must have (LoglevelDebug, LoglevelInfo, LoglevelError)
 //   - operation that is performed (Create, Remove, Update, Register, Load)
-//   - Optional. params must contain the catalog ID.
+//   - Optional. params for self-created string messages to be appended to the created log message. The elements do not need a space at the beginning of the message.
 //
 // The message looks like one of the following depending on the given information
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
@@ -83,8 +84,9 @@ func LogMessage(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, r
 	}
 
 	csreq, ok := req.(orchestrator.CloudServiceRequest)
+	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 {
-		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'", message, csreq.GetCloudServiceId(), params[0])
+		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
 	} else if ok {
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
