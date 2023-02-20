@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/api"
 	"github.com/sirupsen/logrus"
 )
@@ -74,24 +73,28 @@ func (r RequestType) String() string {
 
 // LogRequest creates a logging message with the given parameters
 //   - log *logrus.Entry
-//   - loglevel the message must have
+//   - level the message must have
 //   - reqType is the request type
 //   - Optional. params for self-created string messages to be appended to the created log message. The elements do not need a space at the beginning of the message.
 //
 // The message looks like one of the following depending on the given information
-//   - "*orchestrator.Catalog created with ID 'Cat1234'."
-//   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
-//   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
+//
+//	"*orchestrator.Catalog created with ID 'Cat1234'."
+//
+// or
+//
+//	"*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
+//
+// or
+//
+//	"*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
 func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
 
 	// Check if inputs are available
-	if log == nil {
-		return
-	}
-	if req == nil {
+	if log == nil || req == nil {
 		return
 	}
 
@@ -102,24 +105,27 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 		return
 	}
 
+	// We can retrieve the name via the proto descriptor. This should be
+	// sufficiently fast and also gives us the non-pointer type in comparison to
+	// the %T printf directive.
+	name := req.GetPayload().ProtoReflect().Descriptor().Name()
+
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
 	if ok && idreq.GetId() != "" {
-		message = fmt.Sprintf("%T with ID '%s' %s", req.GetPayload(), idreq.GetId(), reqType.String())
+		message = fmt.Sprintf("%s with ID '%s' %s", name, idreq.GetId(), reqType.String())
 	} else {
-		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
+		message = fmt.Sprintf("%s %s", name, reqType.String())
 	}
 
 	// Check, if it is a cloud service request. In this case we can append the
 	// information about the target cloud service. However, we only want to do
 	// that, if the payload type is not a cloud service itself.
-	cs, _ := payload.(*orchestrator.CloudService)
 	csreq, ok := req.(api.CloudServiceRequest)
-
 	// If params is not empty, the elements are joined and added to the message
-	if cs == nil && ok && len(params) > 0 {
+	if name != "CloudService" && ok && len(params) > 0 {
 		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
-	} else if cs == nil && ok {
+	} else if name != "CloudService" && ok {
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 

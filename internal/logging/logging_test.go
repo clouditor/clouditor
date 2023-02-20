@@ -118,7 +118,7 @@ func TestLogRequest(t *testing.T) {
 					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID},
 				},
 			},
-			want: "level=debug msg=*orchestrator.CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 	}
 	for _, tt := range tests {
