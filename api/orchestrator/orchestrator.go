@@ -28,6 +28,7 @@ package orchestrator
 import (
 	"context"
 
+	"clouditor.io/clouditor/api/assessment"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -62,9 +63,7 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
-type T any
-
-type LogRequest interface {
+type PayloadRequest[T proto.Message] interface {
 	GetPayloadID() string
 	GetPayload() T
 }
@@ -97,7 +96,7 @@ func (req *CreateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
-func (req *CreateCatalogRequest) GetPayload() T {
+func (req *CreateCatalogRequest) GetPayload() *Catalog {
 	return req.Catalog
 }
 
@@ -105,7 +104,7 @@ func (req *UpdateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
 
-func (req *UpdateCatalogRequest) GetPayload() T {
+func (req *UpdateCatalogRequest) GetPayload() *Catalog {
 	return req.Catalog
 }
 
@@ -113,15 +112,15 @@ func (req *RemoveCatalogRequest) GetPayloadID() string {
 	return req.GetCatalogId()
 }
 
-func (req *RemoveCatalogRequest) GetPayload() T {
-	return Catalog{}
+func (req *RemoveCatalogRequest) GetPayload() *Catalog {
+	return &Catalog{}
 }
 
 func (req *CreateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetPayload() T {
+func (req *CreateTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
 	return req.TargetOfEvaluation
 }
 
@@ -133,7 +132,7 @@ func (req *UpdateTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetPayload() T {
+func (req *UpdateTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
 	return req.TargetOfEvaluation
 }
 
@@ -145,15 +144,15 @@ func (req *RemoveTargetOfEvaluationRequest) GetPayloadID() string {
 	return ""
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetPayload() T {
-	return TargetOfEvaluation{}
+func (req *RemoveTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
+	return &TargetOfEvaluation{}
 }
 
 func (req *CreateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
-func (req *CreateCertificateRequest) GetPayload() T {
+func (req *CreateCertificateRequest) GetPayload() *Certificate {
 	return req.Certificate
 }
 
@@ -165,7 +164,7 @@ func (req *UpdateCertificateRequest) GetPayloadID() string {
 	return req.GetCertificate().GetId()
 }
 
-func (req *UpdateCertificateRequest) GetPayload() T {
+func (req *UpdateCertificateRequest) GetPayload() *Certificate {
 	return req.Certificate
 }
 
@@ -177,15 +176,15 @@ func (req *RemoveCertificateRequest) GetPayloadID() string {
 	return req.GetCertificateId()
 }
 
-func (req *RemoveCertificateRequest) GetPayload() T {
-	return Certificate{}
+func (req *RemoveCertificateRequest) GetPayload() *Certificate {
+	return &Certificate{}
 }
 
 func (req *CreateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
-func (req *CreateMetricRequest) GetPayload() T {
+func (req *CreateMetricRequest) GetPayload() *assessment.Metric {
 	return req.Metric
 }
 
@@ -193,7 +192,7 @@ func (req *UpdateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
-func (req *UpdateMetricRequest) GetPayload() T {
+func (req *UpdateMetricRequest) GetPayload() *assessment.Metric {
 	return req.Metric
 }
 
@@ -201,7 +200,7 @@ func (req *UpdateMetricImplementationRequest) GetPayloadID() string {
 	return req.GetImplementation().GetMetricId()
 }
 
-func (req *UpdateMetricImplementationRequest) GetPayload() T {
+func (req *UpdateMetricImplementationRequest) GetPayload() *assessment.MetricImplementation {
 	return req.Implementation
 }
 
@@ -209,7 +208,7 @@ func (req *UpdateMetricConfigurationRequest) GetPayloadID() string {
 	return req.GetConfiguration().GetMetricId()
 }
 
-func (req *UpdateMetricConfigurationRequest) GetPayload() T {
+func (req *UpdateMetricConfigurationRequest) GetPayload() *assessment.MetricConfiguration {
 	return req.Configuration
 }
 
@@ -217,7 +216,7 @@ func (req *RegisterCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *RegisterCloudServiceRequest) GetPayload() T {
+func (req *RegisterCloudServiceRequest) GetPayload() *CloudService {
 	return req.CloudService
 }
 
@@ -229,7 +228,7 @@ func (req *UpdateCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *UpdateCloudServiceRequest) GetPayload() T {
+func (req *UpdateCloudServiceRequest) GetPayload() *CloudService {
 	return req.CloudService
 }
 
@@ -237,8 +236,8 @@ func (req *RemoveCloudServiceRequest) GetPayloadID() string {
 	return req.GetCloudServiceId()
 }
 
-func (req *RemoveCloudServiceRequest) GetPayload() T {
-	return CloudService{}
+func (req *RemoveCloudServiceRequest) GetPayload() *CloudService {
+	return &CloudService{}
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

@@ -41,10 +41,9 @@ const (
 	Remove
 	Update
 	Register
-	Load
 )
 
-// String returns the string of the RequestType.
+// String returns the RequestType as string.
 func (r RequestType) String() string {
 	switch r {
 	case Create:
@@ -55,8 +54,6 @@ func (r RequestType) String() string {
 		return "updated"
 	case Register:
 		return "registered"
-	case Load:
-		return "loaded"
 	default:
 		return "unspecified"
 	}
@@ -64,15 +61,15 @@ func (r RequestType) String() string {
 
 // LogRequest creates a logging message with the given parameters
 //   - log *logrus.Entry
-//   - loglevel the message must have (LoglevelDebug, LoglevelInfo, LoglevelError)
-//   - operation that is performed (Create, Remove, Update, Register, Load)
+//   - loglevel the message must have
+//   - reqType is the request type
 //   - Optional. params for self-created string messages to be appended to the created log message. The elements do not need a space at the beginning of the message.
 //
 // The message looks like one of the following depending on the given information
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.LogRequest, params ...string) {
+func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
