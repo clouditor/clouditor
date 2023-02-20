@@ -70,7 +70,7 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 
 	go s.informHooks(ctx, res, nil)
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Register, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Register, req)
 
 	return
 }
@@ -164,7 +164,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 	go s.informHooks(ctx, response, nil)
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -191,7 +191,7 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 
 	go s.informHooks(ctx, nil, nil)
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }

@@ -62,7 +62,7 @@ func (r RequestType) String() string {
 	}
 }
 
-// LogMessage creates a logging message with the given parameters
+// LogRequest creates a logging message with the given parameters
 //   - log *logrus.Entry
 //   - loglevel the message must have (LoglevelDebug, LoglevelInfo, LoglevelError)
 //   - operation that is performed (Create, Remove, Update, Register, Load)
@@ -72,7 +72,7 @@ func (r RequestType) String() string {
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogMessage(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.LogRequest, params ...string) {
+func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.LogRequest, params ...string) {
 	var (
 		message string
 	)

@@ -206,7 +206,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
 
 	return
 }
@@ -247,7 +247,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		}
 	}()
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -290,7 +290,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		}
 	}()
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -415,7 +415,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Update response
 	res = req.Configuration
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }

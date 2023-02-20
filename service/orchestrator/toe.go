@@ -90,7 +90,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	res = req.TargetOfEvaluation
 
 	params := []string{fmt.Sprintf("and Catalog %s", req.TargetOfEvaluation.GetCatalogId())}
-	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req, params...)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req, params...)
 
 	return
 }
@@ -152,7 +152,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
 	params := []string{fmt.Sprintf("and Catalog %s", req.TargetOfEvaluation.GetCatalogId())}
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req, params...)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, params...)
 
 	return
 }
@@ -180,7 +180,7 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
 
 	params := []string{fmt.Sprintf("and Catalog %s", req.GetCatalogId())}
-	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req, params...)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, params...)
 
 	return &emptypb.Empty{}, nil
 }

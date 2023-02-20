@@ -32,7 +32,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
 
 	// Return catalog
 	return req.Catalog, nil
@@ -99,7 +99,7 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -119,7 +119,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }
