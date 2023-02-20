@@ -34,7 +34,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/request"
 )
 
 // RequestType specifies the type of request, usually CRUD.
@@ -54,7 +54,7 @@ var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")
 // checkers whether the current cloud service request can be fulfilled using the
 // supplied context (e.g., based on the authenticated user).
 type AuthorizationStrategy interface {
-	CheckAccess(ctx context.Context, typ RequestType, req api.CloudServiceRequest) bool
+	CheckAccess(ctx context.Context, typ RequestType, req request.CloudServiceRequest) bool
 	AllowedCloudServices(ctx context.Context) (all bool, IDs []string)
 }
 
@@ -65,7 +65,7 @@ type AuthorizationStrategyJWT struct {
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CloudServiceRequest) bool {
+func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req request.CloudServiceRequest) bool {
 	var list []string
 
 	// Retrieve the list of allowed cloud services. we never allow to retrieve
@@ -124,7 +124,7 @@ type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy. Returns true since
 // strategy is `AuthorizationStrategyAllowAll`
-func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ api.CloudServiceRequest) bool {
+func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ request.CloudServiceRequest) bool {
 	return true
 }
 

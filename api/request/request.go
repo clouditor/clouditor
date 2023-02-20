@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package api
+package request
 
 import "google.golang.org/protobuf/proto"
 

@@ -31,6 +31,8 @@ import (
 	"io"
 	"sync"
 
+	"clouditor.io/clouditor/api/request"
+	"clouditor.io/clouditor/internal/logging"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
@@ -206,7 +208,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		}
 
 		// We want to log some additional information about this stream and its payload
-		preq, ok := any(m).(PayloadRequest)
+		preq, ok := any(m).(request.PayloadRequest)
 		if !ok {
 			return
 		}
@@ -219,12 +221,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		}
 
 		// Finally, check if we have an ID in the payload
-		idreq, ok := payload.(interface{ GetId() string })
-		if ok {
-			s.log.Debugf("%T with id '%s' sent to %s (%s)", payload, idreq.GetId(), c.component, c.target)
-		} else {
-			s.log.Debugf("%T sent to %s (%s)", payload, c.component, c.target)
-		}
+		logging.LogRequest(s.log, logrus.DebugLevel, logging.Send, preq)
 	}
 }
 

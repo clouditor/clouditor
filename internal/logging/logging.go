@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/request"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,6 +43,7 @@ const (
 	Register
 	Store
 	Assess
+	Send
 )
 
 // String returns the RequestType as string.
@@ -60,6 +61,8 @@ func (r RequestType) String() string {
 		return "stored"
 	case Assess:
 		return "assessed"
+	case Send:
+		return "sent"
 	default:
 		return "unspecified"
 	}
@@ -75,7 +78,7 @@ func (r RequestType) String() string {
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
+func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req request.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
@@ -89,15 +92,26 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
-	if ok {
-		message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), idreq.GetId())
+	// If the request type is "Send" then the message must look different
+	if reqType == Send {
+		if ok && len(params) > 0 {
+			message = fmt.Sprintf("%T with ID '%s' %s to %s", req.GetPayload(), idreq.GetId(), reqType.String(), strings.Join(params, " "))
+		} else if !ok && len(params) > 0 {
+			message = fmt.Sprintf("%T %s to %s", req.GetPayload(), reqType.String(), strings.Join(params, " "))
+		} else {
+			message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
+		}
 	} else {
-		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
+		if ok {
+			message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), idreq.GetId())
+		} else {
+			message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
+		}
 	}
 
 	// Check, if it is a cloud service request. In this case we can append the
 	// information about the target cloud service
-	csreq, ok := req.(api.CloudServiceRequest)
+	csreq, ok := req.(request.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 {
 		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
