@@ -114,14 +114,14 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	csreq, ok := req.(request.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 && csreq.GetCloudServiceId() != "" {
-		message = fmt.Sprintf(" %s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
+		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
 	} else if ok && csreq.GetCloudServiceId() != "" {
-		message = fmt.Sprintf(" %s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
+		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
 	// This is just for log messages for streams
 	if reqType == Send && len(params) > 0 {
-		message = fmt.Sprintf(" %s %s", message, strings.Join(params, " "))
+		message = fmt.Sprintf("%s %s", message, strings.Join(params, " "))
 	}
 
 	log.Logf(level, "%s.", message)
