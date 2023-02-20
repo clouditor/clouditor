@@ -32,13 +32,34 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// RequestType specifies the type of request
+type RequestType int
+
 const (
-	Create   = "created"
-	Remove   = "removed"
-	Update   = "updated"
-	Register = "registered"
-	Load     = "loaded"
+	Create RequestType = iota
+	Remove
+	Update
+	Register
+	Load
 )
+
+// String returns the string of the RequestType.
+func (r RequestType) String() string {
+	switch r {
+	case Create:
+		return "created"
+	case Remove:
+		return "removed"
+	case Update:
+		return "updated"
+	case Register:
+		return "registered"
+	case Load:
+		return "loaded"
+	default:
+		return "unspecified"
+	}
+}
 
 // LogMessage creates a logging message with the given parameters
 //   - log *logrus.Entry
@@ -50,15 +71,15 @@ const (
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogMessage(log *logrus.Entry, loglevel logrus.Level, operation string, req orchestrator.LogRequest, params ...string) {
+func LogMessage(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.LogRequest, params ...string) {
 	var (
 		message string
 	)
 
 	if req.GetPayloadID() != "" {
-		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), operation, req.GetPayloadID())
+		message = fmt.Sprintf("%s %s with ID '%s'", req.GetType(), reqType.String(), req.GetPayloadID())
 	} else {
-		message = fmt.Sprintf("%s %s", req.GetType(), operation)
+		message = fmt.Sprintf("%s %s", req.GetType(), reqType.String())
 	}
 
 	csreq, ok := req.(orchestrator.CloudServiceRequest)

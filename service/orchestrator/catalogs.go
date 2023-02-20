@@ -32,7 +32,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req)
+	logging.LogMessage(log, logrus.InfoLevel, logging.Create, req)
 
 	// Return catalog
 	return req.Catalog, nil
