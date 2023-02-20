@@ -11,7 +11,7 @@ type PayloadRequest interface {
 	proto.Message
 }
 
-// // CloudServiceRequest represents any kind of RPC request, that contains a
+// CloudServiceRequest represents any kind of RPC request, that contains a
 // reference to a cloud service. Defined in internal/api to avoid cyclic
 // dependencies.
 type CloudServiceRequest interface {
