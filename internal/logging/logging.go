@@ -30,6 +30,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/internal/api"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -94,14 +95,14 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	)
 
 	// Check if inputs are available
-	if log == nil || req == nil {
+	if log == nil || util.IsNil(req) {
 		return
 	}
 
 	// Retrieve the payload from the request. The request itself is usually
 	// a wrapper around the sent object.
 	payload := req.GetPayload()
-	if payload == nil {
+	if util.IsNil(payload) {
 		return
 	}
 
