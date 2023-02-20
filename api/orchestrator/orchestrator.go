@@ -46,7 +46,6 @@ type T any
 type LogRequest interface {
 	GetPayloadID() string
 	GetPayload() T
-	CloudServiceRequest
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
@@ -81,10 +80,6 @@ func (req *CreateCatalogRequest) GetPayload() T {
 	return req.Catalog
 }
 
-func (req *CreateCatalogRequest) GetCloudServiceId() string {
-	return ""
-}
-
 func (req *UpdateCatalogRequest) GetPayloadID() string {
 	return req.GetCatalog().GetId()
 }
@@ -93,20 +88,12 @@ func (req *UpdateCatalogRequest) GetPayload() T {
 	return req.Catalog
 }
 
-func (req *UpdateCatalogRequest) GetCloudServiceId() string {
-	return ""
-}
-
 func (req *RemoveCatalogRequest) GetPayloadID() string {
 	return req.GetCatalogId()
 }
 
 func (req *RemoveCatalogRequest) GetPayload() T {
 	return Catalog{}
-}
-
-func (req *RemoveCatalogRequest) GetCloudServiceId() string {
-	return ""
 }
 
 func (req *CreateTargetOfEvaluationRequest) GetPayloadID() string {
@@ -173,20 +160,12 @@ func (req *RemoveCertificateRequest) GetPayload() T {
 	return Certificate{}
 }
 
-func (req *RemoveCertificateRequest) GetCloudServiceId() string {
-	return ""
-}
-
 func (req *CreateMetricRequest) GetPayloadID() string {
 	return req.GetMetric().GetId()
 }
 
 func (req *CreateMetricRequest) GetPayload() T {
 	return req.Metric
-}
-
-func (req *CreateMetricRequest) GetCloudServiceId() string {
-	return ""
 }
 
 func (req *UpdateMetricRequest) GetPayloadID() string {
@@ -197,20 +176,12 @@ func (req *UpdateMetricRequest) GetPayload() T {
 	return req.Metric
 }
 
-func (req *UpdateMetricRequest) GetCloudServiceId() string {
-	return ""
-}
-
 func (req *UpdateMetricImplementationRequest) GetPayloadID() string {
 	return req.GetImplementation().GetMetricId()
 }
 
 func (req *UpdateMetricImplementationRequest) GetPayload() T {
 	return req.Implementation
-}
-
-func (req *UpdateMetricImplementationRequest) GetCloudServiceId() string {
-	return ""
 }
 
 func (req *UpdateMetricConfigurationRequest) GetPayloadID() string {
