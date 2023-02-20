@@ -231,8 +231,8 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test service
-	service1 = &orchestrator.CloudService{Name: testdata.MockCloudServiceName}
-	service2 = &orchestrator.CloudService{Name: testdata.MockAnotherCloudServiceName}
+	service1 = &orchestrator.CloudService{Id: testdata.MockCloudServiceID, Name: testdata.MockCloudServiceName}
+	service2 = &orchestrator.CloudService{Id: testdata.MockAnotherCloudServiceID, Name: testdata.MockAnotherCloudServiceName}
 
 	// List should return empty list since no services are in DB yet
 	err = s.List(&services, "", true, 0, -1)
