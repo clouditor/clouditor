@@ -30,9 +30,9 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/api/request"
 	"clouditor.io/clouditor/internal/testutil"
 )
 
@@ -40,7 +40,7 @@ func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		typ RequestType
-		req request.CloudServiceRequest
+		req api.CloudServiceRequest
 	}
 	tests := []struct {
 		name string
@@ -109,7 +109,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		typ RequestType
-		req request.CloudServiceRequest
+		req api.CloudServiceRequest
 	}
 	tests := []struct {
 		name   string
