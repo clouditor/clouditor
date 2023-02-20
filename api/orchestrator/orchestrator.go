@@ -45,7 +45,7 @@ type CloudServiceRequest interface {
 type LogRequest interface {
 	GetPayloadID() string
 	GetType() string
-	GetCloudServiceId() string
+	CloudServiceRequest
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns

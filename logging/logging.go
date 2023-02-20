@@ -61,10 +61,11 @@ func LogMessage(log *logrus.Entry, loglevel logrus.Level, operation string, req 
 		message = fmt.Sprintf("%s %s", req.GetType(), operation)
 	}
 
-	if req.GetCloudServiceId() != "" && len(params) > 0 {
-		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'", message, req.GetCloudServiceId(), params[0])
-	} else if req.GetCloudServiceId() != "" {
-		message = fmt.Sprintf("%s for Cloud Service '%s'", message, req.GetCloudServiceId())
+	csreq, ok := req.(orchestrator.CloudServiceRequest)
+	if ok && len(params) > 0 {
+		message = fmt.Sprintf("%s for Cloud Service '%s' and Catalog '%s'", message, csreq.GetCloudServiceId(), params[0])
+	} else if ok {
+		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
 	switch loglevel {
