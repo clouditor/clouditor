@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"context"
 
-	"clouditor.io/clouditor/api/assessment"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -63,9 +62,8 @@ type CloudServiceRequest interface {
 	proto.Message
 }
 
-type PayloadRequest[T proto.Message] interface {
-	GetPayloadID() string
-	GetPayload() T
+type PayloadRequest interface {
+	GetPayload() proto.Message
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
@@ -92,152 +90,98 @@ func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
 	return req.GetResult().GetCloudServiceId()
 }
 
-func (req *CreateCatalogRequest) GetPayloadID() string {
-	return req.GetCatalog().GetId()
-}
-
-func (req *CreateCatalogRequest) GetPayload() *Catalog {
-	return req.Catalog
-}
-
-func (req *UpdateCatalogRequest) GetPayloadID() string {
-	return req.GetCatalog().GetId()
-}
-
-func (req *UpdateCatalogRequest) GetPayload() *Catalog {
-	return req.Catalog
-}
-
-func (req *RemoveCatalogRequest) GetPayloadID() string {
-	return req.GetCatalogId()
-}
-
-func (*RemoveCatalogRequest) GetPayload() *Catalog {
-	return &Catalog{}
-}
-
-func (*CreateTargetOfEvaluationRequest) GetPayloadID() string {
-	return ""
-}
-
-func (req *CreateTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
-	return req.TargetOfEvaluation
-}
-
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (*UpdateTargetOfEvaluationRequest) GetPayloadID() string {
-	return ""
-}
-
-func (req *UpdateTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
-	return req.TargetOfEvaluation
-}
-
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
 
-func (*RemoveTargetOfEvaluationRequest) GetPayloadID() string {
-	return ""
-}
-
-func (*RemoveTargetOfEvaluationRequest) GetPayload() *TargetOfEvaluation {
-	return &TargetOfEvaluation{}
-}
-
-func (req *CreateCertificateRequest) GetPayloadID() string {
-	return req.GetCertificate().GetId()
-}
-
-func (req *CreateCertificateRequest) GetPayload() *Certificate {
-	return req.Certificate
-}
-
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *CreateCertificateRequest) GetCloudServiceId() string {
 	return req.GetCertificate().GetCloudServiceId()
 }
 
-func (req *UpdateCertificateRequest) GetPayloadID() string {
-	return req.GetCertificate().GetId()
-}
-
-func (req *UpdateCertificateRequest) GetPayload() *Certificate {
-	return req.Certificate
-}
-
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *UpdateCertificateRequest) GetCloudServiceId() string {
 	return req.GetCertificate().GetCloudServiceId()
 }
 
-func (req *RemoveCertificateRequest) GetPayloadID() string {
-	return req.GetCertificateId()
-}
-
-func (*RemoveCertificateRequest) GetPayload() *Certificate {
-	return &Certificate{}
-}
-
-func (req *CreateMetricRequest) GetPayloadID() string {
-	return req.GetMetric().GetId()
-}
-
-func (req *CreateMetricRequest) GetPayload() *assessment.Metric {
-	return req.Metric
-}
-
-func (req *UpdateMetricRequest) GetPayloadID() string {
-	return req.GetMetric().GetId()
-}
-
-func (req *UpdateMetricRequest) GetPayload() *assessment.Metric {
-	return req.Metric
-}
-
-func (req *UpdateMetricImplementationRequest) GetPayloadID() string {
-	return req.GetImplementation().GetMetricId()
-}
-
-func (req *UpdateMetricImplementationRequest) GetPayload() *assessment.MetricImplementation {
-	return req.Implementation
-}
-
-func (req *UpdateMetricConfigurationRequest) GetPayloadID() string {
-	return req.GetConfiguration().GetMetricId()
-}
-
-func (req *UpdateMetricConfigurationRequest) GetPayload() *assessment.MetricConfiguration {
-	return req.Configuration
-}
-
-func (req *RegisterCloudServiceRequest) GetPayloadID() string {
-	return req.GetCloudService().GetId()
-}
-
-func (req *RegisterCloudServiceRequest) GetPayload() *CloudService {
-	return req.CloudService
-}
-
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
 func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
 	return req.GetCloudService().GetId()
 }
 
-func (req *UpdateCloudServiceRequest) GetPayloadID() string {
-	return req.GetCloudService().GetId()
+func (req *CreateCatalogRequest) GetPayload() proto.Message {
+	return req.Catalog
 }
 
-func (req *UpdateCloudServiceRequest) GetPayload() *CloudService {
+func (req *UpdateCatalogRequest) GetPayload() proto.Message {
+	return req.Catalog
+}
+
+func (req *RemoveCatalogRequest) GetPayload() proto.Message {
+	return &Catalog{Id: req.CatalogId}
+}
+
+func (req *CreateTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return req.TargetOfEvaluation
+}
+
+func (req *UpdateTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return req.TargetOfEvaluation
+}
+
+func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return &TargetOfEvaluation{CloudServiceId: req.CloudServiceId, CatalogId: req.CatalogId}
+}
+
+func (req *CreateCertificateRequest) GetPayload() proto.Message {
+	return req.Certificate
+}
+
+func (req *UpdateCertificateRequest) GetPayload() proto.Message {
+	return req.Certificate
+}
+
+func (req *RemoveCertificateRequest) GetPayload() proto.Message {
+	return &Certificate{Id: req.CertificateId}
+}
+
+func (req *CreateMetricRequest) GetPayload() proto.Message {
+	return req.Metric
+}
+
+func (req *UpdateMetricRequest) GetPayload() proto.Message {
+	return req.Metric
+}
+
+func (req *UpdateMetricImplementationRequest) GetPayload() proto.Message {
+	return req.Implementation
+}
+
+func (req *UpdateMetricConfigurationRequest) GetPayload() proto.Message {
+	return req.Configuration
+}
+
+func (req *RegisterCloudServiceRequest) GetPayload() proto.Message {
 	return req.CloudService
 }
 
-func (req *RemoveCloudServiceRequest) GetPayloadID() string {
-	return req.GetCloudServiceId()
+func (req *UpdateCloudServiceRequest) GetPayload() proto.Message {
+	return req.CloudService
 }
 
-func (*RemoveCloudServiceRequest) GetPayload() *CloudService {
-	return &CloudService{}
+func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
+	return &CloudService{Id: req.CloudServiceId}
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

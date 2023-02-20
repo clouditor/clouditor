@@ -69,17 +69,21 @@ func (r RequestType) String() string {
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, req orchestrator.PayloadRequest, params ...string) {
+func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req orchestrator.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
 
-	if req.GetPayloadID() != "" {
-		message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), req.GetPayloadID())
+	// Check, if our payload has an ID field
+	idreq, ok := req.(interface{ GetId() string })
+	if ok {
+		message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), idreq.GetId())
 	} else {
 		message = fmt.Sprintf("%T %s", req.GetPayload(), reqType.String())
 	}
 
+	// Check, if it is a cloud service request. In this case we can append the
+	// information about the target cloud service
 	csreq, ok := req.(orchestrator.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 {
@@ -88,12 +92,5 @@ func LogRequest(log *logrus.Entry, loglevel logrus.Level, reqType RequestType, r
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
-	switch loglevel {
-	case logrus.DebugLevel:
-		log.Debugf("%s.", message)
-	case logrus.InfoLevel:
-		log.Infof("%s.", message)
-	case logrus.ErrorLevel:
-		log.Errorf("%s.", message)
-	}
+	log.Logf(level, "%s.", message)
 }
