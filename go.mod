@@ -21,7 +21,7 @@ require (
 	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 	golang.org/x/oauth2 v0.5.0
-	google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.4.8
@@ -42,11 +42,11 @@ require (
 // runtime dependencies (AWS)
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.4
-	github.com/aws/aws-sdk-go-v2/config v1.18.13
+	github.com/aws/aws-sdk-go-v2/config v1.18.2
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.86.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.29.2
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.30.3
-	github.com/aws/aws-sdk-go-v2/service/sts v1.18.3
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.29.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.30.0
+	github.com/aws/aws-sdk-go-v2/service/sts v1.18.0
 	github.com/aws/smithy-go v1.13.5
 )
 
@@ -71,18 +71,18 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.13 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.22 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.2 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.19 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.28 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.22 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.29 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.20 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.26 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.23 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.22 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.22 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.22 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.12.2 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.6.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.21 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.11.25 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
