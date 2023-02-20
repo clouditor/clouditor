@@ -23,17 +23,16 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package request
+package api
 
-import "google.golang.org/protobuf/proto"
+import (
+	"clouditor.io/clouditor/internal/api"
+)
 
 // PayloadRequest describes any kind of requests that carries a certain payload.
 // This is for example a Create/Update request carrying an embedded message,
 // which should be updated or created.
-type PayloadRequest interface {
-	GetPayload() proto.Message
-	proto.Message
-}
+type PayloadRequest = api.PayloadRequest
 
 // CloudServiceRequest represents any kind of RPC request, that contains a
 // reference to a cloud service.
@@ -58,7 +57,4 @@ type PayloadRequest interface {
 // All other requests, especially in cases where the cloud service ID is
 // embedded in a sub-field need to explicitly implement this interface in order.
 // This interface is for example used by authorization checks.
-type CloudServiceRequest interface {
-	GetCloudServiceId() string
-	proto.Message
-}
+type CloudServiceRequest = api.CloudServiceRequest

@@ -26,7 +26,14 @@
 package logging
 
 import (
+	"bytes"
 	"testing"
+
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/api"
+	"clouditor.io/clouditor/internal/testdata"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestType_String(t *testing.T) {
@@ -86,6 +93,45 @@ func TestRequestType_String(t *testing.T) {
 			if got := tt.r.String(); got != tt.want {
 				t.Errorf("RequestType.String() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestLogRequest(t *testing.T) {
+	type args struct {
+		level   logrus.Level
+		reqType RequestType
+		req     api.PayloadRequest
+		params  []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Register cloud service",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Register,
+				req: &orchestrator.RegisterCloudServiceRequest{
+					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID},
+				},
+			},
+			want: "level=debug msg=*orchestrator.CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buffer bytes.Buffer
+			var log = &logrus.Entry{Logger: &logrus.Logger{Out: &buffer, Formatter: &logrus.TextFormatter{
+				DisableColors:    true,
+				DisableTimestamp: true,
+				DisableQuote:     true,
+			}, Level: logrus.DebugLevel}}
+			LogRequest(log, tt.args.level, tt.args.reqType, tt.args.req, tt.args.params...)
+
+			assert.Equal(t, tt.want, buffer.String())
 		})
 	}
 }

@@ -31,7 +31,6 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/api/request"
 	"clouditor.io/clouditor/internal/logging"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -208,7 +207,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 		}
 
 		// We want to log some additional information about this stream and its payload
-		preq, ok := any(m).(request.PayloadRequest)
+		preq, ok := any(m).(PayloadRequest)
 		if !ok {
 			return
 		}

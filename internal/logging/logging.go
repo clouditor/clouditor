@@ -29,7 +29,8 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api/request"
+	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/api"
 	"github.com/sirupsen/logrus"
 )
 
@@ -81,7 +82,7 @@ func (r RequestType) String() string {
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req request.PayloadRequest, params ...string) {
+func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
@@ -110,12 +111,15 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	}
 
 	// Check, if it is a cloud service request. In this case we can append the
-	// information about the target cloud service
-	csreq, ok := req.(request.CloudServiceRequest)
+	// information about the target cloud service. However, we only want to do
+	// that, if the payload type is not a cloud service itself.
+	cs, _ := payload.(*orchestrator.CloudService)
+	csreq, ok := req.(api.CloudServiceRequest)
+
 	// If params is not empty, the elements are joined and added to the message
-	if ok && len(params) > 0 && csreq.GetCloudServiceId() != "" {
+	if cs == nil && ok && len(params) > 0 {
 		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
-	} else if ok && csreq.GetCloudServiceId() != "" {
+	} else if cs == nil && ok {
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
