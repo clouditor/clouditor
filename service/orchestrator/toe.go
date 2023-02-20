@@ -35,6 +35,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,7 +88,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	res = req.TargetOfEvaluation
 
-	logging.LogMessage(log, logging.LoglevelInfo, logging.Create, req, req.TargetOfEvaluation.GetCatalogId())
+	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req, req.TargetOfEvaluation.GetCatalogId())
 
 	return
 }
@@ -148,7 +149,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
-	logging.LogMessage(log, logging.LoglevelInfo, logging.Update, req, req.TargetOfEvaluation.GetCatalogId())
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req, req.TargetOfEvaluation.GetCatalogId())
 
 	return
 }
@@ -175,7 +176,7 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	}
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
 
-	logging.LogMessage(log, logging.LoglevelInfo, logging.Remove, req, req.GetCatalogId())
+	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req, req.GetCatalogId())
 
 	return &emptypb.Empty{}, nil
 }

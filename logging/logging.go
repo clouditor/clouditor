@@ -33,14 +33,11 @@ import (
 )
 
 const (
-	LoglevelDebug = "debug"
-	LoglevelInfo  = "info"
-	LoglevelError = "error"
-	Create        = "created"
-	Remove        = "removed"
-	Update        = "updated"
-	Register      = "registered"
-	Load          = "loaded"
+	Create   = "created"
+	Remove   = "removed"
+	Update   = "updated"
+	Register = "registered"
+	Load     = "loaded"
 )
 
 // LogMessage creates a logging message with the given parameters
@@ -53,7 +50,7 @@ const (
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogMessage(log *logrus.Entry, loglevel, operation string, req orchestrator.LogRequest, params ...string) {
+func LogMessage(log *logrus.Entry, loglevel logrus.Level, operation string, req orchestrator.LogRequest, params ...string) {
 	var (
 		message string
 	)
@@ -71,11 +68,11 @@ func LogMessage(log *logrus.Entry, loglevel, operation string, req orchestrator.
 	}
 
 	switch loglevel {
-	case LoglevelDebug:
+	case logrus.DebugLevel:
 		log.Debugf("%s.", message)
-	case LoglevelInfo:
+	case logrus.InfoLevel:
 		log.Infof("%s.", message)
-	case LoglevelError:
+	case logrus.ErrorLevel:
 		log.Errorf("%s.", message)
 	}
 }

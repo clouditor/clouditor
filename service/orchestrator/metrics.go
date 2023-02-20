@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -205,7 +206,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Create, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req)
 
 	return
 }
@@ -246,7 +247,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		}
 	}()
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -289,7 +290,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		}
 	}()
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -414,7 +415,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Update response
 	res = req.Configuration
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }

@@ -11,6 +11,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -31,7 +32,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Create, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Create, req)
 
 	// Return catalog
 	return req.Catalog, nil
@@ -98,7 +99,7 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -118,7 +119,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Remove, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }

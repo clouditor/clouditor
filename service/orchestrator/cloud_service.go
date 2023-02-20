@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/service"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -69,7 +70,7 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 
 	go s.informHooks(ctx, res, nil)
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Register, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Register, req)
 
 	return
 }
@@ -163,7 +164,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 
 	go s.informHooks(ctx, response, nil)
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Update, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -190,7 +191,7 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 
 	go s.informHooks(ctx, nil, nil)
 
-	logging.LogMessage(log, logging.LoglevelDebug, logging.Remove, req)
+	logging.LogMessage(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }
