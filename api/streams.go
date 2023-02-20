@@ -213,7 +213,7 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 			return
 		}
 
-		logging.LogRequest(s.log, logrus.DebugLevel, logging.Send, preq, fmt.Sprintf("%s (%s)", c.component, c.target))
+		logging.LogRequest(s.log, logrus.DebugLevel, logging.Send, preq, fmt.Sprintf("to %s (%s)", c.component, c.target))
 	}
 }
 
