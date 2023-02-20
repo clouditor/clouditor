@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/api"
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,13 +69,20 @@ func (r RequestType) String() string {
 //   - "*orchestrator.Catalog created with ID 'Cat1234'."
 //   - "*orchestrator.Certificate created with ID 'Cert1234' for Cloud Service '00000000-0000-0000-0000-000000000000'."
 //   - "*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
-func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req orchestrator.PayloadRequest, params ...string) {
+func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
 		message string
 	)
 
+	// Retrieve the payload from the request. The request itself is usually
+	// a wrapper around the sent object.
+	payload := req.GetPayload()
+	if payload == nil {
+		return
+	}
+
 	// Check, if our payload has an ID field
-	idreq, ok := req.(interface{ GetId() string })
+	idreq, ok := payload.(interface{ GetId() string })
 	if ok {
 		message = fmt.Sprintf("%T %s with ID '%s'", req.GetPayload(), reqType.String(), idreq.GetId())
 	} else {
@@ -84,7 +91,7 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 
 	// Check, if it is a cloud service request. In this case we can append the
 	// information about the target cloud service
-	csreq, ok := req.(orchestrator.CloudServiceRequest)
+	csreq, ok := req.(api.CloudServiceRequest)
 	// If params is not empty, the elements are joined and added to the message
 	if ok && len(params) > 0 {
 		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
