@@ -29,8 +29,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/testdata"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
@@ -46,10 +46,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId: "TestMetric",
+					MetricId: testdata.MockMetricID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -61,11 +61,11 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       "TestMetric",
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -77,10 +77,10 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
-						TargetValue: &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
+						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 				},
 			},
@@ -92,13 +92,13 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       "TestMetric",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:       "<",
-						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "11111"}},
-						MetricId:       "TestMetric",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+						MetricId:       testdata.MockMetricID,
+						CloudServiceId: testdata.MockCloudServiceID,
 					},
 				},
 			},
@@ -126,7 +126,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId: "TestMetric",
+					MetricId: testdata.MockMetricID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -137,7 +137,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       "TestMetric",
+					MetricId:       testdata.MockMetricID,
 					CloudServiceId: "00000000000000000000",
 				},
 			},
@@ -149,7 +149,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -160,8 +160,8 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       "TestMetric",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
+					MetricId:       testdata.MockMetricID,
+					CloudServiceId: testdata.MockCloudServiceID,
 				},
 			},
 			wantErr: assert.NoError,
@@ -171,6 +171,303 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := tt.fields.Request
 			tt.wantErr(t, req.Validate())
+		})
+	}
+}
+
+func TestAddControlToScopeRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Scope *ControlInScope
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				&ControlInScope{
+					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &AddControlToScopeRequest{
+				Scope: tt.fields.Scope,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("AddControlToScopeRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateControlInScopeRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Scope *ControlInScope
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				&ControlInScope{
+					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateControlInScopeRequest{
+				Scope: tt.fields.Scope,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("AddControlToScopeRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		CloudService *CloudService
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				&CloudService{
+					Id: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateCloudServiceRequest{
+				CloudService: tt.fields.CloudService,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("UpdateCloudServiceRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStoreAssessmentResultRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Result *assessment.AssessmentResult
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Result: &assessment.AssessmentResult{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &StoreAssessmentResultRequest{
+				Result: tt.fields.Result,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("StoreAssessmentResultRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		TargetOfEvaluation *TargetOfEvaluation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				&TargetOfEvaluation{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &CreateTargetOfEvaluationRequest{
+				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("CreateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestControlInScope_TableName(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			name: "Happy path",
+			want: "controls_in_scope",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &ControlInScope{}
+			if got := c.TableName(); got != tt.want {
+				t.Errorf("ControlInScope.TableName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Certificate *Certificate
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Certificate: &Certificate{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &CreateCertificateRequest{
+				Certificate: tt.fields.Certificate,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("CreateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Certificate *Certificate
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Certificate: &Certificate{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateCertificateRequest{
+				Certificate: tt.fields.Certificate,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("UpdateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRegisterCloudServiceRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		CloudService *CloudService
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				CloudService: &CloudService{},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &RegisterCloudServiceRequest{
+				CloudService: tt.fields.CloudService,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("RegisterCloudServiceRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		TargetOfEvaluation *TargetOfEvaluation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				TargetOfEvaluation: &TargetOfEvaluation{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateTargetOfEvaluationRequest{
+				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("UpdateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

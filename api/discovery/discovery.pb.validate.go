@@ -57,6 +57,10 @@ func (m *StartDiscoveryRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.ResourceGroup != nil {
+		// no validation rules for ResourceGroup
+	}
+
 	if len(errors) > 0 {
 		return StartDiscoveryRequestMultiError(errors)
 	}

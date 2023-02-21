@@ -1,29 +1,31 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.20-alpine as builder
 
 WORKDIR /build
 
 ADD go.mod .
 ADD go.sum .
+# We need the .git folder for the git tag and commit hash for the Runtime API endpoint
+ADD .git .
 
-RUN apk update && apk add protobuf gcc libc-dev
+RUN apk update && apk add protobuf gcc libc-dev git
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go \
-    google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+RUN go install \
+    google.golang.org/protobuf/cmd/protoc-gen-go \
     github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
     github.com/google/gnostic/cmd/protoc-gen-openapi \
     github.com/srikrsna/protoc-gen-gotag
 
+RUN go install github.com/bufbuild/buf/cmd/buf@latest
+
 ADD . .
 
 RUN go generate ./...
-RUN go build -o /build/engine ./cmd/engine/engine.go
-RUN go build -o /build/cl cmd/cli/cl.go
+RUN go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/engine ./cmd/engine
+RUN go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/cl ./cmd/cli
 
 FROM alpine
 
 WORKDIR /app
-
-#RUN apk update && apk add gcc libc-dev
 
 COPY --from=builder /build/engine .
 COPY --from=builder /build/cl .

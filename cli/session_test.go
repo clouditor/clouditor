@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/service"
@@ -164,9 +165,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetMetrics(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetMetrics() got1 = %v, want %v", got1, tt.want1)
@@ -193,14 +192,14 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -214,9 +213,7 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCatalogs(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -243,25 +240,25 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "My name\ttest")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -275,9 +272,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCategory(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -304,36 +299,36 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cat1234\tMockCatalog: This is a mock catalog")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID},
+				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "My name\ttest")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "two args - return category",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, "Cont1234\tMock Control: This is a mock control")
+				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID1, testdata.MockControlName, testdata.MockControlDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{orchestratortest.MockCatalogID, orchestratortest.MockCategoryName, orchestratortest.MockControlID},
+				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1},
 				toComplete: "",
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -347,9 +342,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
@@ -386,9 +379,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCloudServices(tt.args.in0, tt.args.args, tt.args.toComplete)
 
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			tt.want(t, got)
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("TestValidArgsGetCloudServices() got1 = %v, want %v", got1, tt.want1)

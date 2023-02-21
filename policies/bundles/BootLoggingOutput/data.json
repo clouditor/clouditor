@@ -1,4 +1,4 @@
 {
-  "operator" : "==",
+  "operator" : "isIn",
   "target_value" : ["SomeResourceId1","SomeResourceId2"]
 }

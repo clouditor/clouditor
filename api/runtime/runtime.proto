@@ -26,15 +26,35 @@
  */
 syntax = "proto3";
 
-package clouditor.auth.v1;
+package clouditor.runtime.v1;
 
-option go_package = "api/auth";
+import "google/protobuf/timestamp.proto";
 
-// A clouditor user
-message User {
-  string username = 1;
-  string password = 2;
-  string email = 3;
-  string full_name = 4;
-  bool shadow = 5;
+option go_package = "clouditor.io/clouditor/api/runtime;runtime";
+
+message Runtime {
+  // release_version is the latest Clouditor release version for this commit
+  optional string release_version = 1;
+
+  // vcs is the used version control system
+  string vcs = 2;
+
+  // commit_hash is the current Clouditor commit hash
+  string commit_hash = 3;
+
+  // commit_time is the time of the Clouditor commit
+  google.protobuf.Timestamp commit_time = 4;
+
+  // golang_version is the used golang version
+  string golang_version = 5;
+
+  // dependency is a list of used runtime dependencies
+  repeated Dependency dependencies = 6;
 }
+
+message Dependency {
+  string path = 1;
+  string version = 2;
+}
+
+message GetRuntimeInfoRequest {}

@@ -6,7 +6,7 @@
         {
             "label": "go: build engine",
             "type": "shell",
-            "command": "go build cmd/engine/engine.go",
+            "command": "go build ./cmd/engine",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -18,7 +18,7 @@
         {
             "label": "go: build cli",
             "type": "shell",
-            "command": "go build cmd/cli/cl.go",
+            "command": "go build ./cmd/cli",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -30,7 +30,7 @@
         {
             "label": "go: install cli",
             "type": "shell",
-            "command": "go install cmd/cli/cl.go",
+            "command": "go install ./cmd/cli",
             "group": {
                 "kind": "build",
                 "isDefault": true

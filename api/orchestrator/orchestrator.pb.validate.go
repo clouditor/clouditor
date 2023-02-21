@@ -980,10 +980,6 @@ func (m *StoreAssessmentResultResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Status
-
-	// no validation rules for StatusMessage
-
 	if len(errors) > 0 {
 		return StoreAssessmentResultResponseMultiError(errors)
 	}
@@ -1064,6 +1060,113 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = StoreAssessmentResultResponseValidationError{}
+
+// Validate checks the field values on StoreAssessmentResultsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *StoreAssessmentResultsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StoreAssessmentResultsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// StoreAssessmentResultsResponseMultiError, or nil if none found.
+func (m *StoreAssessmentResultsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StoreAssessmentResultsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	// no validation rules for StatusMessage
+
+	if len(errors) > 0 {
+		return StoreAssessmentResultsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// StoreAssessmentResultsResponseMultiError is an error wrapping multiple
+// validation errors returned by StoreAssessmentResultsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type StoreAssessmentResultsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StoreAssessmentResultsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StoreAssessmentResultsResponseMultiError) AllErrors() []error { return m }
+
+// StoreAssessmentResultsResponseValidationError is the validation error
+// returned by StoreAssessmentResultsResponse.Validate if the designated
+// constraints aren't met.
+type StoreAssessmentResultsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StoreAssessmentResultsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StoreAssessmentResultsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StoreAssessmentResultsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StoreAssessmentResultsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StoreAssessmentResultsResponseValidationError) ErrorName() string {
+	return "StoreAssessmentResultsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e StoreAssessmentResultsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStoreAssessmentResultsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StoreAssessmentResultsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StoreAssessmentResultsResponseValidationError{}
 
 // Validate checks the field values on CreateMetricRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -4046,6 +4149,33 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AllInScope
 
+	if len(m.GetAssuranceLevels()) < 3 {
+		err := CatalogValidationError{
+			field:  "AssuranceLevels",
+			reason: "value must contain at least 3 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetAssuranceLevels() {
+		_, _ = idx, item
+
+		if !_Catalog_AssuranceLevels_Pattern.MatchString(item) {
+			err := CatalogValidationError{
+				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
@@ -4122,6 +4252,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CatalogValidationError{}
+
+var _Catalog_AssuranceLevels_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on Category with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -4493,6 +4625,21 @@ func (m *Control) validate(all bool) error {
 
 	}
 
+	if m.AssuranceLevel != nil {
+
+		if !_Control_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
+			err := ControlValidationError{
+				field:  "AssuranceLevel",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return ControlMultiError(errors)
 	}
@@ -4569,6 +4716,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ControlValidationError{}
+
+var _Control_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on TargetOfEvaluation with the rules
 // defined in the proto definition for this message. If any rules are
@@ -4665,7 +4814,7 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
 			err := TargetOfEvaluationValidationError{
 				field:  "AssuranceLevel",
-				reason: "value does not match regex pattern \"^(|basic|substantial|high)$\"",
+				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
 			}
 			if !all {
 				return err
@@ -4763,7 +4912,7 @@ var _ interface {
 	ErrorName() string
 } = TargetOfEvaluationValidationError{}
 
-var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high)$")
+var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on ListControlsInScopeRequest with the
 // rules defined in the proto definition for this message. If any rules are

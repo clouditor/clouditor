@@ -190,29 +190,24 @@ func TestService_StartDiscovery(t *testing.T) {
 
 			if tt.checkEvidence {
 				mockStream.Wait()
-
 				want, _ := tt.fields.discoverer.List()
 
 				got := mockStream.sentEvidences
 				assert.Equal(t, len(want), len(got))
 
 				// Retrieve the last one
-				e := got[len(got)-1]
-
-				// Check, if evidence was sent
-				assert.NotNil(t, e)
-				// Check if UUID has been created
-				assert.NotEmpty(t, e.Id)
-				// Check if cloud resources / properties are there
-				assert.NotEmpty(t, e.Resource)
-				// Check if ID of mockDiscovery's resource is mapped to resource id of the evidence
+				eWant := want[len(want)-1]
+				eGot := got[len(got)-1]
+				err := eGot.Validate()
+				assert.NotNil(t, eGot)
+				assert.NoError(t, err)
 
 				// Only the last element sent can be checked
-				assert.Equal(t, string(want[len(want)-1].GetID()), e.Resource.GetStructValue().AsMap()["id"].(string))
+				assert.Equal(t, string(eWant.GetID()), eGot.Resource.GetStructValue().AsMap()["id"].(string))
 
 				// Assert cloud service ID
-				assert.Equal(t, tt.fields.csID, e.CloudServiceId)
-				assert.Equal(t, tt.fields.csID, e.Resource.GetStructValue().AsMap()["serviceId"].(string))
+				assert.Equal(t, tt.fields.csID, eGot.CloudServiceId)
+				assert.Equal(t, tt.fields.csID, eGot.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}
@@ -548,17 +543,17 @@ func (m *mockAssessmentStream) Wait() {
 	m.wg.Wait()
 }
 
-func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidenceResponse, error) {
+func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, error) {
 	if m.counter == 0 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status:        assessment.AssessEvidenceResponse_FAILED,
+		return &assessment.AssessEvidencesResponse{
+			Status:        assessment.AssessEvidencesResponse_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
-		return &assessment.AssessEvidenceResponse{
-			Status: assessment.AssessEvidenceResponse_ASSESSED,
+		return &assessment.AssessEvidencesResponse{
+			Status: assessment.AssessEvidencesResponse_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF

@@ -228,6 +228,7 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 
 // Start starts discovery
 func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+	var opts = []azure.DiscoveryOption{}
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -250,13 +251,20 @@ func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryReques
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
+
+			// Add authorizer and cloudServiceID
+			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
+
+			// Check if resource group is given and append to discoverer
+			if req.GetResourceGroup() != "" {
+				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
+			}
+
 			discoverer = append(discoverer,
-				// For now, we do not want to discover the ARM template
-				// azure.NewAzureARMTemplateDiscovery(azure.WithAuthorizer(authorizer)),
-				azure.NewAzureComputeDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
-				azure.NewAzureStorageDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
-				azure.NewAzureNetworkDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)),
 				azure.NewAzureDefenderDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
+				azure.NewAzureComputeDiscovery(opts...),
+				azure.NewAzureStorageDiscovery(opts...),
+				azure.NewAzureNetworkDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {

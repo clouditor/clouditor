@@ -1298,6 +1298,25 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/runtime_info:
+        get:
+            tags:
+                - Orchestrator
+            description: Get Runtime Information
+            operationId: Orchestrator_GetRuntimeInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Runtime'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/toes:
         get:
             tags:
@@ -1446,6 +1465,11 @@ components:
                 allInScope:
                     type: boolean
                     description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
+                assuranceLevels:
+                    type: array
+                    items:
+                        type: string
+                    description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
         Category:
             type: object
             properties:
@@ -1537,6 +1561,9 @@ components:
                     type: string
                 parentControlCategoryCatalogId:
                     type: string
+                assuranceLevel:
+                    type: string
+                    description: An assurance level is not offered by every catalog, therefore it is optional.
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         ControlInScope:
             type: object
@@ -1554,12 +1581,19 @@ components:
                 monitoringStatus:
                     enum:
                         - MONITORING_STATUS_UNSPECIFIED
-                        - MONITORING_STATUS_CONTINUOUSLY_MONITORED
+                        - MONITORING_STATUS_AUTOMATICALLY_MONITORED
                         - MONITORING_STATUS_MANUALLY_MONITORED
                         - MONITORING_STATUS_DELEGATED
                     type: string
                     format: enum
             description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
+        Dependency:
+            type: object
+            properties:
+                path:
+                    type: string
+                version:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -1765,6 +1799,30 @@ components:
                 minMax:
                     $ref: '#/components/schemas/MinMax'
             description: A range resource representing the range of values
+        Runtime:
+            type: object
+            properties:
+                releaseVersion:
+                    type: string
+                    description: release_version is the latest Clouditor release version for this commit
+                vcs:
+                    type: string
+                    description: vcs is the used version control system
+                commitHash:
+                    type: string
+                    description: commit_hash is the current Clouditor commit hash
+                commitTime:
+                    type: string
+                    description: commit_time is the time of the Clouditor commit
+                    format: date-time
+                golangVersion:
+                    type: string
+                    description: golang_version is the used golang version
+                dependencies:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Dependency'
+                    description: dependency is a list of used runtime dependencies
         State:
             type: object
             properties:
@@ -1799,11 +1857,8 @@ components:
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
         StoreAssessmentResultResponse:
             type: object
-            properties:
-                status:
-                    type: boolean
-                statusMessage:
-                    type: string
+            properties: {}
+            description: StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
         TargetOfEvaluation:
             type: object
             properties:

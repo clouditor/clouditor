@@ -33,9 +33,11 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm/schema"
 
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -51,8 +53,7 @@ func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.V
 		ok bool
 	)
 
-	if fieldValue == nil || (reflect.ValueOf(fieldValue).Kind() == reflect.Pointer &&
-		reflect.ValueOf(fieldValue).IsNil()) {
+	if util.IsNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -94,7 +95,7 @@ func (AnySerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, 
 		ok bool
 	)
 
-	if fieldValue == nil {
+	if util.IsNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -130,5 +131,50 @@ func (AnySerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.
 	}
 
 	field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(&a))
+	return
+}
+
+// ValueSerializer is a GORM serializer that allows the serialization and deserialization of the
+// google.protobuf.Value protobuf message type.
+type ValueSerializer struct{}
+
+// Value implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerValuerInterface to indicate
+// how this struct will be saved into an SQL database field.
+func (ValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
+	var (
+		v  *structpb.Value
+		ok bool
+	)
+
+	if util.IsNil(fieldValue) {
+		return nil, nil
+	}
+
+	if v, ok = fieldValue.(*structpb.Value); !ok {
+		return nil, persistence.ErrUnsupportedType
+	}
+
+	return v.MarshalJSON()
+}
+
+// Scan implements https://pkg.go.dev/gorm.io/gorm/schema#SerializerInterface to indicate how
+// this struct can be loaded from an SQL database field.
+func (ValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+	v := new(structpb.Value)
+
+	if dbValue != nil {
+		switch d := dbValue.(type) {
+		case []byte:
+			err = v.UnmarshalJSON(d)
+			if err != nil {
+				return err
+			}
+		default:
+			return persistence.ErrUnsupportedType
+		}
+
+		field.ReflectValueOf(ctx, dst).Set(reflect.ValueOf(v))
+	}
+
 	return
 }

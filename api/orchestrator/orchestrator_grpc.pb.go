@@ -8,6 +8,7 @@ package orchestrator
 
 import (
 	assessment "clouditor.io/clouditor/api/assessment"
+	runtime "clouditor.io/clouditor/api/runtime"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -128,6 +129,8 @@ type OrchestratorClient interface {
 	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Removes a Target of Evaluation
 	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Get Runtime Information
+	GetRuntimeInfo(ctx context.Context, in *runtime.GetRuntimeInfoRequest, opts ...grpc.CallOption) (*runtime.Runtime, error)
 }
 
 type orchestratorClient struct {
@@ -203,7 +206,7 @@ func (c *orchestratorClient) StoreAssessmentResults(ctx context.Context, opts ..
 
 type Orchestrator_StoreAssessmentResultsClient interface {
 	Send(*StoreAssessmentResultRequest) error
-	Recv() (*StoreAssessmentResultResponse, error)
+	Recv() (*StoreAssessmentResultsResponse, error)
 	grpc.ClientStream
 }
 
@@ -215,8 +218,8 @@ func (x *orchestratorStoreAssessmentResultsClient) Send(m *StoreAssessmentResult
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultResponse, error) {
-	m := new(StoreAssessmentResultResponse)
+func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResultsResponse, error) {
+	m := new(StoreAssessmentResultsResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -588,6 +591,15 @@ func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *R
 	return out, nil
 }
 
+func (c *orchestratorClient) GetRuntimeInfo(ctx context.Context, in *runtime.GetRuntimeInfoRequest, opts ...grpc.CallOption) (*runtime.Runtime, error) {
+	out := new(runtime.Runtime)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrchestratorServer is the server API for Orchestrator service.
 // All implementations must embed UnimplementedOrchestratorServer
 // for forward compatibility
@@ -696,6 +708,8 @@ type OrchestratorServer interface {
 	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
 	// Removes a Target of Evaluation
 	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
+	// Get Runtime Information
+	GetRuntimeInfo(context.Context, *runtime.GetRuntimeInfoRequest) (*runtime.Runtime, error)
 	mustEmbedUnimplementedOrchestratorServer()
 }
 
@@ -838,6 +852,9 @@ func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context,
 func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
 }
+func (UnimplementedOrchestratorServer) GetRuntimeInfo(context.Context, *runtime.GetRuntimeInfoRequest) (*runtime.Runtime, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRuntimeInfo not implemented")
+}
 func (UnimplementedOrchestratorServer) mustEmbedUnimplementedOrchestratorServer() {}
 
 // UnsafeOrchestratorServer may be embedded to opt out of forward compatibility for this service.
@@ -964,7 +981,7 @@ func _Orchestrator_StoreAssessmentResults_Handler(srv interface{}, stream grpc.S
 }
 
 type Orchestrator_StoreAssessmentResultsServer interface {
-	Send(*StoreAssessmentResultResponse) error
+	Send(*StoreAssessmentResultsResponse) error
 	Recv() (*StoreAssessmentResultRequest, error)
 	grpc.ServerStream
 }
@@ -973,7 +990,7 @@ type orchestratorStoreAssessmentResultsServer struct {
 	grpc.ServerStream
 }
 
-func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultResponse) error {
+func (x *orchestratorStoreAssessmentResultsServer) Send(m *StoreAssessmentResultsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1672,6 +1689,24 @@ func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_GetRuntimeInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(runtime.GetRuntimeInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetRuntimeInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetRuntimeInfo(ctx, req.(*runtime.GetRuntimeInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Orchestrator_ServiceDesc is the grpc.ServiceDesc for Orchestrator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1850,6 +1885,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveTargetOfEvaluation",
 			Handler:    _Orchestrator_RemoveTargetOfEvaluation_Handler,
+		},
+		{
+			MethodName: "GetRuntimeInfo",
+			Handler:    _Orchestrator_GetRuntimeInfo_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

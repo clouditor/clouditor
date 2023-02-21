@@ -203,9 +203,9 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	log.Info("Welcome to new Clouditor 2.0")
+	var rt, _ = service.GetRuntimeInfo()
 
-	fmt.Println(`
+	fmt.Printf(`
            $$\                           $$\ $$\   $$\
            $$ |                          $$ |\__|  $$ |
   $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
@@ -214,7 +214,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
  $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- `)
+ 
+  Version %s
+  `, rt.VersionString())
+	fmt.Println()
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
@@ -264,7 +267,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			},
 		),
 	)
-	evidenceStoreService = service_evidenceStore.NewService()
+	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
 	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)

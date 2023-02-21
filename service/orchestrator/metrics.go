@@ -35,9 +35,11 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,6 +89,9 @@ func (svc *Service) loadMetrics() (err error) {
 			log.Errorf("Error while saving metrics: %v", err)
 			continue
 		}
+
+		log.Debugf("Metric loaded with id '%s'.", m.GetId())
+
 	}
 
 	return
@@ -201,6 +206,8 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 		}
 	}()
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
+
 	return
 }
 
@@ -239,6 +246,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 			MetricId: metric.Id,
 		}
 	}()
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -280,6 +289,8 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 			MetricId: metric.Id,
 		}
 	}()
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }
@@ -403,6 +414,8 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 
 	// Update response
 	res = req.Configuration
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
 	return
 }

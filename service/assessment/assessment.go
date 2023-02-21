@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 
@@ -96,7 +97,9 @@ type Service struct {
 	// hookMutex is used for (un)locking result hook calls
 	hookMutex sync.RWMutex
 
-	// Currently, results are just stored as a map (=in-memory). In the future, we will use a DB.
+	// results will contain all the assessment results of the current run. They will NOT be persisted to the storage,
+	// but should only be seen as debug information. The persisted assessment results will be stored in the
+	// Orchestrator.
 	results     map[string]*assessment.AssessmentResult
 	resultMutex sync.Mutex
 
@@ -229,12 +232,13 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
+	resp = &assessment.AssessEvidenceResponse{}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, err
 	}
 
 	// Validate evidence
@@ -250,19 +254,19 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
-		return res, status.Errorf(codes.Internal, "%v", err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	res = &assessment.AssessEvidenceResponse{}
+	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
 
-	return res, nil
+	return resp, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
 func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
-		res *assessment.AssessEvidenceResponse
+		res *assessment.AssessEvidencesResponse
 	)
 
 	for {
@@ -286,13 +290,13 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		_, err = svc.AssessEvidence(context.Background(), assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
-			res = &assessment.AssessEvidenceResponse{
-				Status:        assessment.AssessEvidenceResponse_FAILED,
+			res = &assessment.AssessEvidencesResponse{
+				Status:        assessment.AssessEvidencesResponse_FAILED,
 				StatusMessage: err.Error(),
 			}
 		} else {
-			res = &assessment.AssessEvidenceResponse{
-				Status: assessment.AssessEvidenceResponse_ASSESSED,
+			res = &assessment.AssessEvidencesResponse{
+				Status: assessment.AssessEvidencesResponse_ASSESSED,
 			}
 		}
 

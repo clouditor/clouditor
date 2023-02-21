@@ -48,7 +48,7 @@ type PaginationOpts struct {
 // DefaultPaginationOpts are sensible defaults for the pagination size.
 var DefaultPaginationOpts = PaginationOpts{
 	DefaultPageSize: 50,
-	MaxPageSize:     1000,
+	MaxPageSize:     1500,
 }
 
 // PaginateSlice is a helper function that helps to paginate a slice based on list requests. It parses the necessary

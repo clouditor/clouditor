@@ -31,7 +31,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"clouditor.io/clouditor/api/auth"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testutil/prototest"
 )
@@ -42,11 +41,6 @@ func TestGetFieldNames(t *testing.T) {
 	var (
 		fieldnames []string
 	)
-
-	// Successful
-	fieldnames = GetFieldNames(&auth.User{})
-	assert.Equal(t, []string{"username", "password", "email", "full_name", "shadow"}, fieldnames)
-	assert.Equal(t, reflect.ValueOf(auth.User{}).NumField()-3, len(fieldnames))
 
 	// Successful
 	fieldnames = GetFieldNames(&prototest.TestStruct{})

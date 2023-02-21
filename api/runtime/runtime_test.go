@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,31 +23,60 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package runtime
 
-// DeepCopy copies an interface[] array
-func DeepCopy(original []interface{}) []interface{} {
+import (
+	"testing"
+	"time"
 
-	var target []interface{}
+	"clouditor.io/clouditor/internal/util"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
 
-	for i := range original {
-		target = append(target, original[i])
+func TestRuntime_VersionString(t *testing.T) {
+	type fields struct {
+		ReleaseVersion *string
+		CommitHash     string
+		CommitTime     *timestamppb.Timestamp
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "release",
+			fields: fields{
+				ReleaseVersion: util.Ref("v2.0.0"),
+			},
+			want: "v2.0.0",
+		},
+		{
+			name: "pseudo-version",
+			fields: fields{
+				ReleaseVersion: nil,
+				CommitHash:     "1234567890ab",
+				CommitTime:     timestamppb.New(time.Unix(0, 0)),
+			},
+			want: "v0.0.0-19700101000000-1234567890ab",
+		},
+		{
+			name:   "no-version",
+			fields: fields{},
+			want:   "v0.0.0",
+		},
 	}
 
-	return target
-}
-
-// DeepCopyOfMap copies a map
-func DeepCopyOfMap(originalMap map[string]interface{}) map[string]interface{} {
-	targetMap := make(map[string]interface{})
-
-	for key, value := range originalMap {
-		if mapValue, ok := value.(map[string]interface{}); ok {
-			targetMap[key] = DeepCopyOfMap(mapValue)
-		} else {
-			targetMap[key] = value
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Runtime{
+				ReleaseVersion: tt.fields.ReleaseVersion,
+				CommitHash:     tt.fields.CommitHash,
+				CommitTime:     tt.fields.CommitTime,
+			}
+			if got := r.VersionString(); got != tt.want {
+				t.Errorf("Runtime.VersionString() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-
-	return targetMap
 }

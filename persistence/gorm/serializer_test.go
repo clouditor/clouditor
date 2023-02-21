@@ -1,3 +1,29 @@
+// Copyright 2016-2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//	         $$\                           $$\ $$\   $$\
+//	         $$ |                          $$ |\__|  $$ |
+//	$$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+//
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//
+//	\_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
 package gorm
 
 import (
@@ -36,7 +62,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 			},
 			want:    time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC),
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "nil field",
@@ -46,7 +72,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 				fieldValue: nil,
 			},
 			want:    nil,
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "field wrong type",
@@ -68,11 +94,7 @@ func TestTimestampSerializer_Value(t *testing.T) {
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TimestampSerializer.Value() = %v, want %v", got, tt.want)
@@ -110,11 +132,7 @@ func TestTimestampSerializer_Scan(t *testing.T) {
 			tr := TimestampSerializer{}
 			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
 		})
 	}
 }
@@ -163,7 +181,7 @@ func TestAnySerializer_Value(t *testing.T) {
 					"id":    "my-service",
 				})
 			},
-			wantErr: nil,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "nil field",
@@ -172,8 +190,8 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: nil,
 			},
-			want:    nil,
-			wantErr: nil,
+			want:    assert.Empty,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "field wrong type",
@@ -182,7 +200,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: "string",
 			},
-			want: nil,
+			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
 			},
@@ -195,17 +213,12 @@ func TestAnySerializer_Value(t *testing.T) {
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			// Validate the error via the ErrorAssertionFunc function
+			tt.wantErr(t, err, tt.args)
 
-			if !reflect.DeepEqual(got, tt.want) {
-				if tt.want != nil {
-					tt.want(t, got)
-				}
-			}
+			// Validate the response via the ValueAssertionFunc function
+			tt.want(t, got)
+
 		})
 	}
 }
@@ -239,11 +252,8 @@ func TestAnySerializer_Scan(t *testing.T) {
 			tr := AnySerializer{}
 			err := tr.Scan(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.dbValue)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err, tt.args)
-			} else {
-				assert.Nil(t, err)
-			}
+			tt.wantErr(t, err, tt.args)
+
 		})
 	}
 }
