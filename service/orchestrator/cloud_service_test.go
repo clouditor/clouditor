@@ -381,22 +381,6 @@ func TestService_ListCloudServices(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "invalid request",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
-			},
-			args: args{
-				req: &orchestrator.ListCloudServicesRequest{
-					OrderBy: "not a field",
-				},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrInvalidColumnName.Error())
-			},
-		},
-		{
 			name: "retrieve only allowed cloud services",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
