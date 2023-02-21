@@ -138,7 +138,7 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 	return list, nil
 }
 
-// TODO(anatheka): Which is rht right resource for the defender?
+// TODO(anatheka): Which is the right Ontology resource for the defender?
 func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*voc.Account, error) {
 	var (
 		inventoryOfAssetsEnabled bool
