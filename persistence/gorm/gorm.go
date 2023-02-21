@@ -264,6 +264,7 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 	if limit != -1 {
 		query = s.db.Limit(limit)
 	}
+
 	// Set direction to "descending"
 	if !asc {
 		orderDirection = "desc"
@@ -278,6 +279,10 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 	query, conds = applyPreload(query.Offset(offset), conds...)
 
 	return query.Order(orderStmt).Find(r, conds...).Error
+}
+
+func (s *storage) Raw(r any, query string, args ...any) error {
+	return s.db.Raw(query, args...).Scan(r).Error
 }
 
 func (s *storage) Count(r any, conds ...any) (count int64, err error) {

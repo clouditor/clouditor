@@ -190,7 +190,7 @@ var (
 		MetricId:       testdata.MockAnotherMetricID,
 		Compliant:      false,
 		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockResourceID,
+		ResourceId:     "my-other-resource",
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",
