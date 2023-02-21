@@ -880,16 +880,16 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
 		// 				ControlsInScope: []*orchestrator.Control{
 		// 					{
-		// 						Id:                testdata.MockControlID,
+		// 						Id:                testdata.MockControlID1,
 		// 						CategoryName:       testdata.MockCategoryName,
 		// 						CategoryCatalogId:  testdata.MockCatalogID,
-		// 						Name:              testdata.MockControlID,
+		// 						Name:              testdata.MockControlID1,
 		// 					},
 		// 				},
 		// 			},
 		// 		},
 		// 		schedulerRunning: false,
-		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, testdata.MockControlID),
+		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, testdata.MockControlID1),
 		// 	},
 		// 	wantResp: &evaluation.StartEvaluationResponse{Status: true},
 		// 	wantErr:  assert.NoError,
@@ -1683,7 +1683,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				wg: map[string]*WaitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID: {
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {
 						wg:      &sync.WaitGroup{},
 						wgMutex: sync.Mutex{},
 					},
@@ -1693,7 +1693,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 						Id:           "11111111-1111-1111-1111-111111111111",
 						Status:       evaluation.EvaluationResult_COMPLIANT,
 						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID,
+						ControlId:    testdata.MockControlID1,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 							CloudServiceId: testdata.MockCloudServiceID,
 							CatalogId:      testdata.MockCatalogID,
@@ -1704,7 +1704,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 						Id:           "22222222-2222-2222-2222-222222222222",
 						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
 						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID,
+						ControlId:    testdata.MockControlID1,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 							CloudServiceId: testdata.MockCloudServiceID,
 							CatalogId:      testdata.MockCatalogID,
@@ -1716,7 +1716,7 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 						Id:           "33333333-3333-3333-3333-333333333333",
 						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
 						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID,
+						ControlId:    testdata.MockControlID1,
 						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 							CloudServiceId: "33333333-3333-3333-3333-333333333333",
 							CatalogId:      testdata.MockCatalogID,
@@ -1732,14 +1732,14 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName: testdata.MockCategoryName,
-				controlId:    testdata.MockControlID,
-				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID,
+				controlId:    testdata.MockControlID1,
+				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
 			newEvaluationResult: &evaluation.EvaluationResult{
 				Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
 				CategoryName: testdata.MockCategoryName,
-				ControlId:    testdata.MockControlID,
+				ControlId:    testdata.MockControlID1,
 				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID,
 					CatalogId:      testdata.MockCatalogID,
