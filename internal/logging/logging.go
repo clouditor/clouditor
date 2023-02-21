@@ -130,10 +130,5 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
 	}
 
-	// This is just for log messages for streams
-	if reqType == Send && len(params) > 0 {
-		message = fmt.Sprintf("%s %s", message, strings.Join(params, " "))
-	}
-
 	log.Logf(level, "%s.", message)
 }

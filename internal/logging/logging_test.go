@@ -27,6 +27,7 @@ package logging
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -110,6 +111,26 @@ func TestLogRequest(t *testing.T) {
 		want string
 	}{
 		{
+			name: "Request missing",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Register,
+			},
+			want: "",
+		},
+		{
+			name: "Register cloud service",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Register,
+				req: &orchestrator.RegisterCloudServiceRequest{
+					CloudService: &orchestrator.CloudService{},
+				},
+			},
+			want: "level=debug msg=CloudService registered.\n",
+		},
+
+		{
 			name: "Register cloud service",
 			args: args{
 				level:   logrus.DebugLevel,
@@ -119,6 +140,35 @@ func TestLogRequest(t *testing.T) {
 				},
 			},
 			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+		},
+		{
+			name: "Create TargetOfEvaluation",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Update,
+				req: &orchestrator.UpdateTargetOfEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: testdata.MockCloudServiceID,
+						CatalogId:      testdata.MockCatalogID,
+					},
+				},
+			},
+			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111'.\n",
+		},
+		{
+			name: "Create TargetOfEvaluation with params",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Update,
+				req: &orchestrator.UpdateTargetOfEvaluationRequest{
+					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+						CloudServiceId: testdata.MockCloudServiceID,
+						CatalogId:      testdata.MockCatalogID,
+					},
+				},
+				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
+			},
+			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
 		},
 	}
 	for _, tt := range tests {
