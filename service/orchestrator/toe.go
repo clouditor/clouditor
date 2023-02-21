@@ -28,12 +28,15 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -98,6 +101,8 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_CREATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
 	res = req.TargetOfEvaluation
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req, fmt.Sprintf("and Catalog '%s'", req.TargetOfEvaluation.GetCatalogId()))
 
 	return
 }
@@ -182,6 +187,8 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("and Catalog '%s'", req.TargetOfEvaluation.GetCatalogId()))
+
 	return
 }
 
@@ -211,6 +218,9 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		CatalogId:      req.GetCatalogId(),
 	}
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
+
 	return &emptypb.Empty{}, nil
 }
 
@@ -270,6 +280,8 @@ func (svc *Service) AddControlToScope(ctx context.Context, req *orchestrator.Add
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_ADDED, ControlInScope: req.GetScope()}, nil)
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Add, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
+
 	return
 }
 
@@ -306,6 +318,8 @@ func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_UPDATED, ControlInScope: req.GetScope()}, nil)
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
+
 	return
 }
 
@@ -341,6 +355,8 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 	res = &emptypb.Empty{}
 
 	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("with Control ID '%s'", req.GetControlId()))
 
 	return
 }

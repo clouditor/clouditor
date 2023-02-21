@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/api/runtime"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -217,6 +218,8 @@ func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.Creat
 			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
 	}
 
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
+
 	// Return certificate
 	return req.Certificate, nil
 }
@@ -280,6 +283,9 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
+
 	return
 }
 
@@ -297,6 +303,8 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }

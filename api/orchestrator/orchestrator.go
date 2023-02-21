@@ -34,32 +34,34 @@ import (
 type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
 type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
 
-// CloudServiceRequest represents any kind of RPC request, that contains a
-// reference to a cloud service.
-//
-// Note: GetCloudServiceId() is already implemented by the generated protobuf
-// code for the following messages because they directly have a cloud_service id
-// field:
-//   - RemoveControlFromScopeRequest
-//   - ListControlsInScopeRequest
-//   - GetCloudServiceRequest
-//   - RemoveCloudServiceRequest
-//   - UpdateMetricConfigurationRequest
-//   - GetMetricConfigurationRequest
-//   - ListMetricConfigurationRequest
-//   - MetricChangeEvent
-//   - TargetOfEvaluation
-//   - RemoveTargetOfEvaluationRequest
-//   - GetTargetOfEvaluationRequest
-//   - ListTargetsOfEvaluationRequest
-//   - Certificate
-//
-// All other requests, especially in cases where the cloud service ID is
-// embedded in a sub-field need to explicitly implement this interface in order.
-// This interface is for example used by authorization checks.
-type CloudServiceRequest interface {
-	GetCloudServiceId() string
-	proto.Message
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
+	return req.GetResult().GetCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *CreateCertificateRequest) GetCloudServiceId() string {
+	return req.GetCertificate().GetCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateCertificateRequest) GetCloudServiceId() string {
+	return req.GetCertificate().GetCloudServiceId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
+	return req.GetCloudService().GetId()
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
+	return req.CloudService.GetId()
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
@@ -76,18 +78,6 @@ func (req *UpdateControlInScopeRequest) GetCloudServiceId() string {
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
-	return req.CloudService.GetId()
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
-	return req.GetResult().GetCloudServiceId()
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
 func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
 }
@@ -96,6 +86,98 @@ func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
 // the cloud service ID of the inner object.
 func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
 	return req.GetTargetOfEvaluation().GetCloudServiceId()
+}
+
+func (req *StoreAssessmentResultRequest) GetPayload() proto.Message {
+	return req.Result
+}
+
+func (req *RegisterAssessmentToolRequest) GetPayload() proto.Message {
+	return req.Tool
+}
+
+func (req *UpdateAssessmentToolRequest) GetPayload() proto.Message {
+	return req.Tool
+}
+
+func (req *DeregisterAssessmentToolRequest) GetPayload() proto.Message {
+	return &AssessmentTool{Id: req.ToolId}
+}
+
+func (req *CreateCatalogRequest) GetPayload() proto.Message {
+	return req.Catalog
+}
+
+func (req *UpdateCatalogRequest) GetPayload() proto.Message {
+	return req.Catalog
+}
+
+func (req *RemoveCatalogRequest) GetPayload() proto.Message {
+	return &Catalog{Id: req.CatalogId}
+}
+
+func (req *CreateCertificateRequest) GetPayload() proto.Message {
+	return req.Certificate
+}
+
+func (req *UpdateCertificateRequest) GetPayload() proto.Message {
+	return req.Certificate
+}
+
+func (req *RemoveCertificateRequest) GetPayload() proto.Message {
+	return &Certificate{Id: req.CertificateId}
+}
+
+func (req *RegisterCloudServiceRequest) GetPayload() proto.Message {
+	return req.CloudService
+}
+
+func (req *UpdateCloudServiceRequest) GetPayload() proto.Message {
+	return req.CloudService
+}
+
+func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
+	return &CloudService{Id: req.CloudServiceId}
+}
+
+func (req *AddControlToScopeRequest) GetPayload() proto.Message {
+	return req.Scope
+}
+
+func (req *UpdateControlInScopeRequest) GetPayload() proto.Message {
+	return req.Scope
+}
+
+func (req *RemoveControlFromScopeRequest) GetPayload() proto.Message {
+	return &ControlInScope{TargetOfEvaluationCloudServiceId: req.CloudServiceId, ControlId: req.ControlId}
+}
+
+func (req *CreateMetricRequest) GetPayload() proto.Message {
+	return req.Metric
+}
+
+func (req *UpdateMetricRequest) GetPayload() proto.Message {
+	return req.Metric
+}
+
+func (req *UpdateMetricConfigurationRequest) GetPayload() proto.Message {
+	return req.Configuration
+}
+
+func (req *UpdateMetricImplementationRequest) GetPayload() proto.Message {
+	return req.Implementation
+}
+
+func (req *CreateTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return req.TargetOfEvaluation
+}
+
+func (req *UpdateTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return req.TargetOfEvaluation
+}
+
+func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
+	return &TargetOfEvaluation{CloudServiceId: req.CloudServiceId, CatalogId: req.CatalogId}
 }
 
 // TableName overrides the table name used by ControlInScope to `controls_in_scope`

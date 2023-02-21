@@ -37,6 +37,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm/schema"
 
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -52,7 +53,7 @@ func (TimestampSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.V
 		ok bool
 	)
 
-	if isInterfaceNil(fieldValue) {
+	if util.IsNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -94,7 +95,7 @@ func (AnySerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value, 
 		ok bool
 	)
 
-	if isInterfaceNil(fieldValue) {
+	if util.IsNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -145,7 +146,7 @@ func (ValueSerializer) Value(_ context.Context, _ *schema.Field, _ reflect.Value
 		ok bool
 	)
 
-	if isInterfaceNil(fieldValue) {
+	if util.IsNil(fieldValue) {
 		return nil, nil
 	}
 
@@ -176,13 +177,4 @@ func (ValueSerializer) Scan(ctx context.Context, field *schema.Field, dst reflec
 	}
 
 	return
-}
-
-func isInterfaceNil(fieldValue interface{}) bool {
-	if fieldValue == nil || (reflect.ValueOf(fieldValue).Kind() == reflect.Pointer &&
-		reflect.ValueOf(fieldValue).IsNil()) {
-		return true
-	}
-
-	return false
 }
