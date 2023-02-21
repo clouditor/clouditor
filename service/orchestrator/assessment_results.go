@@ -32,12 +32,14 @@ import (
 	"io"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/service"
 )
 
@@ -125,7 +127,7 @@ func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator
 
 	res = &orchestrator.StoreAssessmentResultResponse{}
 
-	log.Debugf("Assessment result stored with id %s' for Cloud Service ID '%s'.", req.Result.GetId(), req.Result.GetCloudServiceId())
+	logging.LogRequest(log, logrus.DebugLevel, logging.Store, req)
 
 	return res, nil
 }

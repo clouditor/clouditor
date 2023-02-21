@@ -27,6 +27,8 @@ package assessment
 
 import (
 	"errors"
+
+	"google.golang.org/protobuf/proto"
 )
 
 type ResultHookFunc func(result *AssessmentResult, err error)
@@ -36,3 +38,7 @@ var (
 	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
+
+func (req *AssessEvidenceRequest) GetPayload() proto.Message {
+	return req.Evidence
+}

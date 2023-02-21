@@ -26,9 +26,8 @@
 package service
 
 import (
-	"reflect"
-
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/internal/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -47,7 +46,7 @@ func ValidateRequest(req IncomingRequest) (err error) {
 	// whether the *value* of the interface is nil. This can happen if nil is first assigned to a variable of a struct
 	// (pointer) that implements the interface. If this variable is then passed to the validate function, the req
 	// parameter is not nil, but the value of the interface representing it is.
-	if req == nil || reflect.ValueOf(req).IsNil() {
+	if util.IsNil(req) {
 		return status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
 	}
 

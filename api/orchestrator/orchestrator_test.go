@@ -349,3 +349,125 @@ func TestControlInScope_TableName(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Certificate *Certificate
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Certificate: &Certificate{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &CreateCertificateRequest{
+				Certificate: tt.fields.Certificate,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("CreateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		Certificate *Certificate
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				Certificate: &Certificate{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateCertificateRequest{
+				Certificate: tt.fields.Certificate,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("UpdateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRegisterCloudServiceRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		CloudService *CloudService
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				CloudService: &CloudService{},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &RegisterCloudServiceRequest{
+				CloudService: tt.fields.CloudService,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("RegisterCloudServiceRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
+	type fields struct {
+		TargetOfEvaluation *TargetOfEvaluation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				TargetOfEvaluation: &TargetOfEvaluation{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			want: testdata.MockCloudServiceID,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := &UpdateTargetOfEvaluationRequest{
+				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
+			}
+			if got := req.GetCloudServiceId(); got != tt.want {
+				t.Errorf("UpdateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

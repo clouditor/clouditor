@@ -25,6 +25,8 @@
 
 package util
 
+import "reflect"
+
 // Deref dereferences pointer values
 func Deref[T any](p *T) T {
 	var result T
@@ -38,4 +40,14 @@ func Deref[T any](p *T) T {
 // Ref references pointer values
 func Ref[T any](p T) *T {
 	return &p
+}
+
+// IsNil checks if an interface value is nil or if the value nil is assigned to it.
+func IsNil(value any) bool {
+	if value == nil || (reflect.ValueOf(value).Kind() == reflect.Pointer &&
+		reflect.ValueOf(value).IsNil()) {
+		return true
+	}
+
+	return false
 }

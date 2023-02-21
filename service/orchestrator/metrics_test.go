@@ -1185,7 +1185,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(t, config, i1)
+				return assert.True(t, proto.Equal(config, i1.(proto.Message)))
 			},
 		},
 		{
@@ -1226,7 +1226,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(t, config, i1)
+				return assert.True(t, proto.Equal(config, i1.(proto.Message)))
 			},
 		},
 	}

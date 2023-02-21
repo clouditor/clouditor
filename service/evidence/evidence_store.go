@@ -33,6 +33,7 @@ import (
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -120,7 +121,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 
 	res = &evidence.StoreEvidenceResponse{}
 
-	log.Debugf("Evidence stored with id %s' for Cloud Service ID '%s'.", req.Evidence.GetId(), req.Evidence.GetCloudServiceId())
+	logging.LogRequest(log, logrus.DebugLevel, logging.Store, req)
 
 	return res, nil
 }

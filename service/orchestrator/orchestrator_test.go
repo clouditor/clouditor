@@ -502,7 +502,7 @@ func TestCloudServiceHooks(t *testing.T) {
 				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+			if !proto.Equal(gotResp, tt.wantResp) {
 				t.Errorf("UpdateCloudService() gotResp = %v, want %v", gotResp, tt.wantResp)
 			}
 

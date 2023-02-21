@@ -29,6 +29,7 @@ import (
 	"errors"
 	"fmt"
 
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -129,4 +130,8 @@ func (evidence *Evidence) ResourceTypes() (types []string, err error) {
 	}
 
 	return
+}
+
+func (req *StoreEvidenceRequest) GetPayload() proto.Message {
+	return req.Evidence
 }

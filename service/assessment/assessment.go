@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 
@@ -256,7 +257,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	log.Debugf("Evidence assessed with id %s' for Cloud Service ID '%s'.", req.Evidence.GetId(), req.Evidence.GetCloudServiceId())
+	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
 
 	return resp, nil
 }

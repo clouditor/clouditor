@@ -31,10 +31,12 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -67,6 +69,9 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 	}
 
 	go s.informHooks(ctx, res, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Register, req)
+
 	return
 }
 
@@ -158,6 +163,9 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	go s.informHooks(ctx, response, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
+
 	return
 }
 
@@ -182,6 +190,9 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 	}
 
 	go s.informHooks(ctx, nil, nil)
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
+
 	return &emptypb.Empty{}, nil
 }
 

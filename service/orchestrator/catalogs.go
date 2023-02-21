@@ -7,9 +7,11 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,6 +31,8 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
 
 	// Return catalog
 	return req.Catalog, nil
@@ -94,6 +98,9 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
+
 	return
 }
 
@@ -111,6 +118,8 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }
@@ -207,6 +216,8 @@ func (svc *Service) loadCatalogs() (err error) {
 	if err != nil {
 		log.Errorf("Error while saving catalog %v", err)
 	}
+
+	log.Debugf("Catalog loaded with id '%s'.", catalogs[0].GetId())
 
 	return
 }

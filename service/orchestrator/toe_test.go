@@ -550,9 +550,8 @@ func TestToeHook(t *testing.T) {
 				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+			if !proto.Equal(gotResp, tt.wantResp) {
 				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
-
 			}
 			assert.Equal(t, 2, hookCallCounter)
 		})
@@ -851,7 +850,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			gotRes, err := svc.AddControlToScope(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err, tt.args)
 
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
@@ -973,7 +972,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 			assert.NoError(t, gotRes.Validate())
 			tt.wantErr(t, err, tt.args)
 
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
