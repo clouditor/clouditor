@@ -104,6 +104,10 @@ func (m *ListAssessmentResultsRequest) validate(all bool) error {
 		// no validation rules for FilteredCompliant
 	}
 
+	if m.LatestByResourceId != nil {
+		// no validation rules for LatestByResourceId
+	}
+
 	if len(errors) > 0 {
 		return ListAssessmentResultsRequestMultiError(errors)
 	}

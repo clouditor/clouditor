@@ -63,6 +63,7 @@ const (
 	MockResourceName        = "my-resource-name"
 	MockResourceStorageID   = voc.ResourceID("some-storage-service-id")
 	MockResourceStorageName = "some-storage-service-name"
+	MockAnotherResourceID   = "my-other-resource"
 
 	// Certificate
 	MockCertificateID          = "1234"
