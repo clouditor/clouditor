@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -468,6 +469,59 @@ func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			if got := req.GetCloudServiceId(); got != tt.want {
 				t.Errorf("UpdateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestListAssessmentResultsRequest_Validate(t *testing.T) {
+	type fields struct {
+		req *ListAssessmentResultsRequest
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Request is empty",
+			fields: fields{
+				&ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref("invalidCloudServiceId"),
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "No filtered cloud service id",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				req: &ListAssessmentResultsRequest{
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.fields.req.Validate()
+			tt.wantErr(t, err)
 		})
 	}
 }

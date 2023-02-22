@@ -91,7 +91,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -112,7 +111,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -134,7 +132,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -151,7 +148,6 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with empty results map",
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9090",
 				},
@@ -173,7 +169,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results: make(map[string]*assessment.AssessmentResult),
 				evidenceStoreAddress: grpcTarget{
 					target: "localhost:9091",
 				},
@@ -194,7 +189,6 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: &Service{
-				results:                 make(map[string]*assessment.AssessmentResult),
 				isEvidenceStoreDisabled: true,
 				evidenceStoreAddress: grpcTarget{
 					target: DefaultEvidenceStoreAddress,
@@ -507,7 +501,6 @@ func TestService_AssessEvidences(t *testing.T) {
 			)
 			s := Service{
 				resultHooks:                   tt.fields.ResultHooks,
-				results:                       tt.fields.results,
 				cachedConfigurations:          make(map[string]cachedConfiguration),
 				UnimplementedAssessmentServer: tt.fields.UnimplementedAssessmentServer,
 				evidenceStoreStreams:          tt.fields.evidenceStoreStreams,
@@ -657,215 +650,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.wantResp, gotResp)
-			assert.NotEmpty(t, s.results)
 			assert.Equal(t, hookCounts, hookCallCounter)
-		})
-	}
-}
-
-func TestService_ListAssessmentResults(t *testing.T) {
-	type fields struct {
-		evidenceStoreStreams  *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
-		evidenceStoreAddress  string
-		orchestratorStreams   *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
-		orchestratorClient    orchestrator.OrchestratorClient
-		orchestratorAddress   string
-		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
-		resultHooks           []assessment.ResultHookFunc
-		results               map[string]*assessment.AssessmentResult
-		cachedConfigurations  map[string]cachedConfiguration
-		authorizer            api.Authorizer
-		grpcOptsEvidenceStore []grpc.DialOption
-		grpcOptsOrchestrator  []grpc.DialOption
-		pe                    policies.PolicyEval
-	}
-	type args struct {
-		in0 context.Context
-		req *assessment.ListAssessmentResultsRequest
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantRes *assessment.ListAssessmentResultsResponse
-		wantErr bool
-	}{
-		{
-			name: "Missing request",
-			args: args{
-				req: nil,
-			},
-			wantRes: nil,
-			wantErr: true,
-		},
-		{
-			name: "Empty request",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"1": {
-						Id: "1",
-					},
-				},
-			},
-			args: args{
-				req: &assessment.ListAssessmentResultsRequest{},
-			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				NextPageToken: "",
-				Results: []*assessment.AssessmentResult{
-					{
-						Id: "1",
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "single page result",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"1": {
-						Id: "1",
-					},
-				},
-			},
-			args: args{
-				req: &assessment.ListAssessmentResultsRequest{},
-			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				NextPageToken: "",
-				Results: []*assessment.AssessmentResult{
-					{
-						Id: "1",
-					},
-				},
-			},
-		},
-		{
-			name: "multiple page result - first page",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
-					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
-					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
-					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
-					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
-				},
-			},
-			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
-					PageSize: 2,
-				},
-			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
-					{Id: "11111111-1111-1111-1111-111111111111"}, {Id: "22222222-2222-2222-2222-222222222222"},
-				},
-				NextPageToken: func() string {
-					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
-					return token
-				}(),
-			},
-		},
-		{
-			name: "multiple page result - second page",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
-					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
-					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
-					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
-					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
-				},
-			},
-			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
-					PageSize: 2,
-					PageToken: func() string {
-						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
-						return token
-					}(),
-				},
-			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
-					{Id: "33333333-3333-3333-3333-333333333333"}, {Id: "44444444-4444-4444-4444-444444444444"},
-				},
-				NextPageToken: func() string {
-					token, _ := (&api.PageToken{Start: 4, Size: 2}).Encode()
-					return token
-				}(),
-			},
-		},
-		{
-			name: "multiple page result - last page",
-			fields: fields{
-				results: map[string]*assessment.AssessmentResult{
-					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-					"55555555-5555-5555-5555-555555555555": {Id: "55555555-5555-5555-5555-555555555555"},
-					"66666666-6666-6666-6666-666666666666": {Id: "66666666-6666-6666-6666-666666666666"},
-					"77777777-7777-7777-7777-777777777777": {Id: "77777777-7777-7777-7777-777777777777"},
-					"88888888-8888-8888-8888-888888888888": {Id: "88888888-8888-8888-8888-888888888888"},
-					"99999999-9999-9999-9999-999999999999": {Id: "99999999-9999-9999-9999-999999999999"},
-				},
-			},
-			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
-					PageSize: 2,
-					PageToken: func() string {
-						token, _ := (&api.PageToken{Start: 8, Size: 2}).Encode()
-						return token
-					}(),
-				},
-			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
-				Results: []*assessment.AssessmentResult{
-					{Id: "99999999-9999-9999-9999-999999999999"},
-				},
-				NextPageToken: "",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStoreAddress: grpcTarget{
-					target: tt.fields.evidenceStoreAddress,
-					opts:   tt.fields.grpcOptsEvidenceStore,
-				},
-				orchestratorAddress: grpcTarget{
-					target: tt.fields.orchestratorAddress,
-					opts:   tt.fields.grpcOptsOrchestrator,
-				},
-				orchestratorStreams:  tt.fields.orchestratorStreams,
-				orchestratorClient:   tt.fields.orchestratorClient,
-				metricEventStream:    tt.fields.metricEventStream,
-				resultHooks:          tt.fields.resultHooks,
-				results:              tt.fields.results,
-				cachedConfigurations: tt.fields.cachedConfigurations,
-				authorizer:           tt.fields.authorizer,
-				pe:                   tt.fields.pe,
-			}
-			gotRes, err := s.ListAssessmentResults(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListAssessmentResults() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListAssessmentResults() = %v, want %v", gotRes, tt.wantRes)
-			}
 		})
 	}
 }
@@ -1129,11 +914,12 @@ func TestService_HandleEvidence(t *testing.T) {
 				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
 			}
 
-			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if a result is added to map
-			if !tt.wantErr(t, s.handleEvidence(tt.args.evidence, tt.args.resourceId), fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
-				assert.NotEmpty(t, s.results)
+			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
+			results, err := s.handleEvidence(tt.args.evidence, tt.args.resourceId)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
+				assert.NotEmpty(t, results)
 				// Check the result by validation
-				for _, result := range s.results {
+				for _, result := range results {
 					err := result.Validate()
 					assert.NoError(t, err)
 				}
@@ -1225,7 +1011,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 		orchestratorAddress   string
 		metricEventStream     orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks           []assessment.ResultHookFunc
-		results               map[string]*assessment.AssessmentResult
 		cachedConfigurations  map[string]cachedConfiguration
 		authorizer            api.Authorizer
 		grpcOptsEvidenceStore []grpc.DialOption
@@ -1267,7 +1052,6 @@ func TestService_recvEventsLoop(t *testing.T) {
 				orchestratorClient:   tt.fields.orchestratorClient,
 				metricEventStream:    tt.fields.metricEventStream,
 				resultHooks:          tt.fields.resultHooks,
-				results:              tt.fields.results,
 				cachedConfigurations: tt.fields.cachedConfigurations,
 				authorizer:           tt.fields.authorizer,
 			}
@@ -1313,7 +1097,6 @@ func TestService_MetricImplementation(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		metricEventStream             orchestrator.Orchestrator_SubscribeMetricChangeEventsClient
 		resultHooks                   []assessment.ResultHookFunc
-		results                       map[string]*assessment.AssessmentResult
 		cachedConfigurations          map[string]cachedConfiguration
 		authorizer                    api.Authorizer
 		pe                            policies.PolicyEval
@@ -1354,7 +1137,6 @@ func TestService_MetricImplementation(t *testing.T) {
 				orchestratorAddress:           tt.fields.orchestratorAddress,
 				metricEventStream:             tt.fields.metricEventStream,
 				resultHooks:                   tt.fields.resultHooks,
-				results:                       tt.fields.results,
 				cachedConfigurations:          tt.fields.cachedConfigurations,
 				authorizer:                    tt.fields.authorizer,
 				pe:                            tt.fields.pe,
