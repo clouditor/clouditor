@@ -213,41 +213,32 @@ func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType,
 
 	// Fetch new (or queued old) messages from the channel. This will block.
 	for m := range c.channel {
+		// We want to log some additional information about this stream and its
+		// payload. The logging functions are safe to call with a nil request,
+		// so we can avoid checking, if this succeeds
+		preq, _ := any(m).(PayloadRequest)
+
 		// Try to send the message in our stream
 		err = c.stream.SendMsg(m)
-		if errors.Is(err, io.EOF) {
-			s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
-
-			// Declare the stream as dead
-			c.dead = true
-
-			// Put the message back on the channel, so that it does not get lost
-			go func() {
-				c.channel <- m
-			}()
-			return
-		}
-
-		// Some other error than EOF occurred
 		if err != nil {
-			s.log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
+			if errors.Is(err, io.EOF) {
+				s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
+			} else {
+				// Some other error than EOF occurred
+				s.log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
 
-			// Close the stream gracefully. We can ignore any error resulting from the close here
-			_ = c.stream.CloseSend()
+				// Close the stream gracefully. We can ignore any error resulting from the close here
+				_ = c.stream.CloseSend()
+			}
 
 			// Declare the stream as dead
 			c.dead = true
 
 			// Put the message back on the channel, so that it does not get lost
 			go func() {
+				logging.LogRequest(s.log, logrus.DebugLevel, logging.Store, preq, fmt.Sprintf("back into queue for %s (%s)", c.component, c.target))
 				c.channel <- m
 			}()
-			return
-		}
-
-		// We want to log some additional information about this stream and its payload
-		preq, ok := any(m).(PayloadRequest)
-		if !ok {
 			return
 		}
 
