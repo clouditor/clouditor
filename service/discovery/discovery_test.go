@@ -27,7 +27,6 @@ package discovery
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -47,9 +46,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -82,7 +79,6 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
-				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
 				csID:              discovery.DefaultCloudServiceID,
 			},
@@ -96,7 +92,6 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
-				resources:         make(map[string]voc.IsCloudResource),
 				configurations:    make(map[discovery.Discoverer]*Configuration),
 				csID:              testutil.TestCloudService1,
 			},
@@ -123,6 +118,11 @@ func TestNewService(t *testing.T) {
 			assert.Empty(t, got.Events)
 			got.Events = nil
 			tt.want.Events = nil
+
+			// we cannot compare the storage, so we first check if it is not nil and then nil it
+			assert.NotNil(t, got.storage)
+			got.storage = nil
+			tt.want.storage = nil
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -217,56 +217,35 @@ func TestService_Query(t *testing.T) {
 	s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	type fields struct {
-		resources    map[string]voc.IsCloudResource
-		queryRequest *discovery.QueryRequest
+	type args struct {
+		req *discovery.QueryRequest
 	}
 	tests := []struct {
 		name string
-		fields
+		args
 		numberOfQueriedResources int
-		wantErr                  bool
+		wantErr                  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Err when unmarshalling",
-			fields: fields{
-				queryRequest: &discovery.QueryRequest{},
-				resources: map[string]voc.IsCloudResource{
-					"MockResourceId": wrongFormattedResource(),
-				},
-			},
-			numberOfQueriedResources: 1,
-			wantErr:                  true,
-		},
-		{
 			name:                     "Filter type",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: util.Ref("Compute")}},
-			numberOfQueriedResources: 0,
+			args:                     args{req: &discovery.QueryRequest{FilteredType: util.Ref("Storage")}},
+			numberOfQueriedResources: 1,
+			wantErr:                  assert.NoError,
 		},
 		{
 			name:                     "No filtering",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{}},
+			args:                     args{req: &discovery.QueryRequest{}},
 			numberOfQueriedResources: 2,
+			wantErr:                  assert.NoError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Add resources (bad formatted ones)
-			if res := tt.fields.resources; res != nil {
-				for k, v := range res {
-					s.resources[k] = v
-				}
-			}
-			response, err := s.Query(context.TODO(), &discovery.QueryRequest{FilteredType: tt.fields.queryRequest.FilteredType})
-			assert.Equal(t, tt.wantErr, err != nil)
-			if err != nil {
-				return
-			}
+			response, err := s.Query(context.TODO(), tt.args.req)
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
 		})
-		// If a bad resource was added it will be removed. Otherwise no-op
-		delete(s.resources, "MockResourceId")
 	}
 }
 
@@ -415,50 +394,6 @@ func TestService_Shutdown(t *testing.T) {
 
 	assert.False(t, service.scheduler.IsRunning())
 
-}
-
-// TestHandleError tests handleError (if all error cases are executed/printed)
-func TestHandleError(t *testing.T) {
-	type args struct {
-		err  error
-		dest string
-	}
-	tests := []struct {
-		name           string
-		args           args
-		wantErrSnippet string
-	}{
-		{
-			name: "handleInternalError",
-			args: args{
-				err:  status.Error(codes.Internal, "internal error"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "internal",
-		},
-		{
-			name: "handleInvalidError",
-			args: args{
-				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "invalid",
-		},
-		{
-			name: "handleSomeOtherErr",
-			args: args{
-				err:  errors.New("some other error"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "some other error",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := handleError(tt.args.err, tt.args.dest)
-			assert.Contains(t, err.Error(), tt.wantErrSnippet)
-		})
-	}
 }
 
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources

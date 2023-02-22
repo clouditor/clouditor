@@ -93,9 +93,21 @@ components:
                 results:
                     type: array
                     items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
+                        $ref: '#/components/schemas/Resource'
                 nextPageToken:
                     type: string
+        Resource:
+            type: object
+            properties:
+                id:
+                    type: string
+                cloudServiceId:
+                    type: string
+                resourceType:
+                    type: string
+                properties:
+                    $ref: '#/components/schemas/GoogleProtobufValue'
+            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons. We delegate JSON (un)marshalling of this struct directly to the inner value, so users of our REST API won't even notice that this wrapper exists.
         StartDiscoveryRequest:
             type: object
             properties:

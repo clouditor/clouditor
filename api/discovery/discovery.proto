@@ -30,6 +30,8 @@ package clouditor.discovery.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
+import "tagger/tagger.proto";
+import "validate/validate.proto";
 
 option go_package = "api/discovery";
 
@@ -55,9 +57,7 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest {
-  optional string resource_group = 1; 
-}
+message StartDiscoveryRequest { optional string resource_group = 1; }
 
 message StartDiscoveryResponse { bool successful = 1; }
 
@@ -72,6 +72,21 @@ message QueryRequest {
 }
 
 message QueryResponse {
-  repeated google.protobuf.Value results = 1;
+  repeated Resource results = 1;
   string next_page_token = 2;
+}
+
+// Resource is a wrapper around google.protobuf.Value that is needed for
+// persistence reasons. We delegate JSON (un)marshalling of this struct directly
+// to the inner value, so users of our REST API won't even notice that this
+// wrapper exists.
+message Resource {
+  string id = 1;
+  string cloud_service_id = 2;
+  string resource_type = 3;
+
+  google.protobuf.Value properties = 10 [
+    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
+    (validate.rules).message.required = true
+  ];
 }
