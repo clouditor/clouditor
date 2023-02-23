@@ -64,6 +64,8 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		return nil, service.ErrPermissionDenied
 	}
 
+	res = new(assessment.ListAssessmentResultsResponse)
+
 	var query []string
 	var args []any
 
@@ -91,15 +93,35 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		args = append(args, allowed)
 	}
 
-	// join query with AND and prepend the query
-	args = append([]any{strings.Join(query, " AND ")}, args...)
+	// If we want to have it grouped by resource ID, we need to do a raw query
+	if req.GetLatestByResourceId() {
+		// In the raw SQL, we need to build the whole WHERE statement
+		var where string
 
-	res = new(assessment.ListAssessmentResultsResponse)
+		if len(query) > 0 {
+			where = "WHERE " + strings.Join(query, " AND ")
+		}
 
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateStorage[*assessment.AssessmentResult](req, svc.storage, service.DefaultPaginationOpts, args...)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		// Execute the raw SQL statement
+		err = svc.storage.Raw(&res.Results,
+			fmt.Sprintf(`WITH sorted_results AS (
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id ORDER BY timestamp DESC) AS row_number
+				FROM assessment_results
+				%s
+		  	)
+		  	SELECT * FROM sorted_results WHERE row_number = 1;`, where), args...)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	} else {
+		// Join query with AND and prepend the query
+		args = append([]any{strings.Join(query, " AND ")}, args...)
+
+		// Paginate the results according to the request
+		res.Results, res.NextPageToken, err = service.PaginateStorage[*assessment.AssessmentResult](req, svc.storage, service.DefaultPaginationOpts, args...)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		}
 	}
 
 	return
