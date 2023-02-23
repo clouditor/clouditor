@@ -91,6 +91,7 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 	var (
 		list                     []voc.IsCloudResource
 		monitoringLogDataEnabled = true
+		securityAlertsEnabled    = true
 	)
 
 	// initialize defender client: to get the properties set for defender for cloud, we have to get the pricing information
@@ -116,9 +117,13 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 
 	// Get information if security monitoring is enabled for the subscription. The security monitoring is enabled for the subscription if all defender services are enabled.
 	for _, defender := range list {
-		defenderTest := defender.(*voc.Account)
-		if !defenderTest.InventoryOfAssets {
+		account := defender.(*voc.Account)
+		if !account.AccountLogging.MonitoringLogData {
 			monitoringLogDataEnabled = false
+			break
+		}
+		if !account.AccountLogging.SecurityAlerts {
+			securityAlertsEnabled = false
 			break
 		}
 	}
@@ -132,16 +137,18 @@ func (d *azureDefenderDiscovery) discoverDefender() ([]voc.IsCloudResource, erro
 			nil,
 			voc.AccountType,
 		),
-		MonitoringLogData: monitoringLogDataEnabled,
+		MonitoringAllLogData: monitoringLogDataEnabled,
+		SecurityAlertsForAll: securityAlertsEnabled,
 	})
 
 	return list, nil
 }
 
-// TODO(anatheka): Which is the right Ontology resource for the defender?
+// TODO(anatheka): Which is the right Ontology resource for the defender stuff?
 func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*voc.Account, error) {
 	var (
-		inventoryOfAssetsEnabled bool
+		monitoringLogData bool
+		securityAlerts    bool
 	)
 
 	if pricing == nil {
@@ -149,8 +156,13 @@ func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*
 	}
 
 	// TODO(all): Maybe we have to check here which pricing tier is used and based on that the specific features for, e.g., Storage, IoT, ARM are used. For now, we add for each defener one voc.Account object.
+	// If pricing is PricingTierStandard then security alerts are enabled and
 	if *pricing.Properties.PricingTier == armsecurity.PricingTierFree {
-		inventoryOfAssetsEnabled = false
+		monitoringLogData = false
+		securityAlerts = false
+	} else {
+		monitoringLogData = true
+		securityAlerts = true
 	}
 
 	// TODO(all): What should we use? Account or another Resource?
@@ -163,9 +175,20 @@ func (d *azureDefenderDiscovery) handleDefender(pricing *armsecurity.Pricing) (*
 			nil,
 			voc.AccountType,
 		),
-		InventoryOfAssets: inventoryOfAssetsEnabled,
+		AccountLogging: &voc.AccountLogging{
+			Logging: &voc.Logging{
+				Enabled:         true,
+				LoggingService:  []voc.ResourceID{voc.ResourceID(*pricing.ID)},
+				RetentionPeriod: 0, // TODO(all): TBD
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+			},
+			InventoryOfAssets: true, // Defender for X is enabled by default, with less functionality in the PricingTierFree
+			SecurityAlerts:    securityAlerts,
+			MonitoringLogData: monitoringLogData,
+		},
 	}, nil
-
 }
 
 // initDefenderClient creates the client if not already exists

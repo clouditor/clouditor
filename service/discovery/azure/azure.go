@@ -42,6 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	msgraphsdkgo "github.com/microsoftgraph/msgraph-sdk-go"
 
 	"github.com/sirupsen/logrus"
 
@@ -118,6 +119,8 @@ type clients struct {
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
 	defenderClient          *armsecurity.PricingsClient
+	healthClient            *msgraphsdkgo.GraphServiceClient
+	// healthClient            *armresourcegraph.Client
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
