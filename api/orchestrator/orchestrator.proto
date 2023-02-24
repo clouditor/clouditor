@@ -785,9 +785,9 @@ message ListControlsInScopeRequest {
   bool asc = 4;
 
   string cloud_service_id = 10
-      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
+      [ (validate.rules).string = {uuid : true} ];
   string catalog_id = 11
-      [ (validate.rules).string = {ignore_empty : true, min_len : 1} ];
+      [ (validate.rules).string = {min_len : 1} ];
 }
 
 message ListControlsInScopeResponse {
