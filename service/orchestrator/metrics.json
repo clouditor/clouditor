@@ -1,18 +1,67 @@
 [
   {
-    "id": "AdminMFAEnabled"
+    "id": "AdminMFAEnabled",
+    "name": "Admin's MFA: Enabled",
+    "description": "This metric is used to assess whether MFA for admins is enabled",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        "OTPBasedAuthentication",
+        "PasswordBasedAuthentication"
+      ]
+    }
   },
   {
-    "id": "AdminMixedDuties"
+    "id": "AdminMixedDuties",
+    "name": "Mixed Duties Applied To Admins",
+    "description": "This metric is used to assess whether Mixed Duties is applied appropriately",
+    "category": "",
+    "scale": 1,
+    "range": 
+    [
+        0.0,
+        1.0
+    ]
+    
   },
   {
-    "id": "AnomalyDetectionEnabled"
+    "id": "AnomalyDetectionEnabled",
+    "name": "Anomaly Detection: Enabled",
+    "description": "This metric is used to assess whether Anomaly Detection is enabled",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "AnomalyDetectionOutput"
+    "id": "AnomalyDetectionOutput",
+    "name": "Anomaly Detection: Output",
+    "description": "This metric is used to assess whether the output is ???",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        "*"
+      ]
+    }
   },
   {
-    "id": "AnonymousAuthentication"
+    "id": "AnonymousAuthentication",
+    "name": "Anonymous Authentication",
+    "description": "This metric is used to assess whether it is possible to authenticate anonymously",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
     "id": "AtRestEncryptionAlgorithm",
@@ -42,73 +91,304 @@
     }
   },
   {
-    "id": "AutomaticUpdatesEnabled"
+    "id": "AutomaticUpdatesEnabled",
+    "name": "Automatic Updates: Enabled",
+    "description": "This metric is used to assess whether automatic updates are enabled",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "AutomaticUpdatesInterval"
+    "id": "AutomaticUpdatesInterval",
+    "name": "Automatic Updates: Interval",
+    "description": "This metric is used to assess whether automatic updates are performed with sufficient frequency. In days.",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        1,
+        "*",
+        365
+      ]
+    }
   },
   {
-    "id": "AutomaticUpdatesSecurityOnly"
+    "id": "AutomaticUpdatesSecurityOnly",
+    "name": "Automatic Updates: Security Only",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "BootLoggingEnabled"
+    "id": "BootLoggingEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "BootLoggingOutput"
+    "id": "BootLoggingOutput",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "BootLoggingRetention"
+    "id": "BootLoggingRetention",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "CustomerKeyEncryption"
+    "id": "CustomerKeyEncryption",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "IdentityPasswordPolicy"
+    "id": "IdentityPasswordPolicy",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "IdentityRecentActivity"
+    "id": "IdentityRecentActivity",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
     {
-    "id": "L3FirewallEnabled"
+    "id": "L3FirewallEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "L3FirewallRestrictedPorts"
+    "id": "L3FirewallRestrictedPorts",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "MalwareProtectionEnabled"
+    "id": "MalwareProtectionEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "MalwareProtectionOutput"
+    "id": "MalwareProtectionOutput",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "MutualAuthentication"
+    "id": "MutualAuthentication",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "ObjectStoragePublicAccessDisabled"
+    "id": "ObjectStoragePublicAccessDisabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "OSLoggingEnabled"
+    "id": "OSLoggingEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "OSLoggingOutput"
+    "id": "OSLoggingOutput",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "OSLoggingRetention"
+    "id": "OSLoggingRetention",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "ResourceInventory"
+    "id": "ResourceInventory",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "RoleBroadAssignments"
+    "id": "RoleBroadAssignments",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "RuntimeVersion"
+    "id": "RuntimeVersion",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "SingleSignOnEnabled"
+    "id": "SingleSignOnEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "TLSVersion"
+    "id": "TLSVersion",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
     "id": "TransportEncryptionAlgorithm",
@@ -144,9 +424,28 @@
   },
   {
     "id": "TransportEncryptionEnforced",
-    "category": "CKM-02"
+    "name": "",
+    "description": "",
+    "category": "CKM-02",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   },
   {
-    "id": "WebApplicationFirewallEnabled"
+    "id": "WebApplicationFirewallEnabled",
+    "name": "",
+    "description": "",
+    "category": "",
+    "scale": 1,
+    "allowedValues": {
+      "values": [
+        true,
+        false
+      ]
+    }
   }
 ]
