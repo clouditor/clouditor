@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	sync "sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -38,6 +39,8 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testdata"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -47,16 +50,17 @@ func TestStreamsOf_GetStream(t *testing.T) {
 		target         string
 		component      string
 		additionalOpts []grpc.DialOption
-		init           InitFuncOf[*mockClientStream]
+		init           InitFuncOf[*recordedClientStream]
 	}
 	type fields struct {
-		channels map[string]*StreamChannelOf[*mockClientStream, proto.Message]
+		channels map[string]*StreamChannelOf[*recordedClientStream, proto.Message]
 	}
 	tests := []struct {
-		name    string
-		args    args
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
+		name     string
+		args     args
+		fields   fields
+		wantErr  assert.ErrorAssertionFunc
+		wantRcvd int
 	}{
 		{
 			name:   "missing init function",
@@ -75,7 +79,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			args: args{
 				target:    "localhost",
 				component: "mycomponent",
-				init: func(target string, additionalOpts ...grpc.DialOption) (m *mockClientStream, err error) {
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
 					return nil, ErrSomeError
 				},
 			},
@@ -88,28 +92,63 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			args: args{
 				target:    "mock:1234",
 				component: "mock component",
-				init: func(target string, additionalOpts ...grpc.DialOption) (m *mockClientStream, err error) {
-					return &mockClientStream{}, nil
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
+					return &recordedClientStream{}, nil
 				},
 			},
 			fields: fields{
-				channels: map[string]*StreamChannelOf[*mockClientStream, proto.Message]{},
+				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{},
 			},
+		},
+		{
+			name: "restarting stream",
+			fields: fields{
+				channels: map[string]*StreamChannelOf[*recordedClientStream, proto.Message]{
+					"mock:1234": {
+						dead: true,
+						channel: func() chan proto.Message {
+							// put 2 left over messages into the channel
+							var c = make(chan proto.Message)
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID}}
+							}()
+							go func() {
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockAnotherEvidenceID}}
+							}()
+							return c
+						}(),
+						target:    "mock:1234",
+						component: "mock",
+					},
+				},
+			},
+			args: args{
+				target:    "mock:1234",
+				component: "mock component",
+				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
+					return &recordedClientStream{}, nil
+				},
+			},
+			wantRcvd: 2,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &StreamsOf[*mockClientStream, proto.Message]{
+			s := &StreamsOf[*recordedClientStream, proto.Message]{
 				channels: tt.fields.channels,
 				log:      defaultLog(),
 			}
-			_, err := s.GetStream(tt.args.target, tt.args.component, tt.args.init, tt.args.additionalOpts...)
+			c, err := s.GetStream(tt.args.target, tt.args.component, tt.args.init, tt.args.additionalOpts...)
 
 			if tt.wantErr != nil {
 				tt.wantErr(t, err, tt.args)
 			} else {
 				assert.Nil(t, err)
+
+				// wait until our stream has received the wanted messages
+				c.stream.wg.Add(tt.wantRcvd)
+				c.stream.wg.Wait()
 			}
 		})
 	}
@@ -150,8 +189,8 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*StreamsOf[*mockClientStream, proto.Message])
 
-				// sendLoop should remove itself from the channels on error
-				return assert.Empty(t, s.channels)
+				// sendLoop should declare the channel dead
+				return assert.True(t, s.channels["test"].dead)
 			},
 		},
 		{
@@ -173,8 +212,8 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*StreamsOf[*mockClientStream, proto.Message])
 
-				// sendLoop should remove itself from the channels on error
-				return assert.Empty(t, s.channels)
+				// sendLoop should declare the channel dead
+				return assert.True(t, s.channels["test"].dead)
 			},
 		},
 	}
@@ -187,6 +226,9 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 				target:    tt.fields.target,
 				component: tt.fields.component,
 			}
+
+			// overwrite the stream channel to make sure we are dealing with the same stream object
+			tt.args.s.channels["test"] = c
 
 			// prepare something, otherwise the sendloop will block waiting for a message
 			go func() { c.Send(&mockMessage{}) }()
@@ -243,5 +285,17 @@ func (m mockClientStream) SendMsg(interface{}) error {
 }
 
 func (mockClientStream) RecvMsg(interface{}) error {
+	return nil
+}
+
+type recordedClientStream struct {
+	mockClientStream
+	recvd []proto.Message
+	wg    sync.WaitGroup
+}
+
+func (r *recordedClientStream) SendMsg(msg interface{}) error {
+	r.recvd = append(r.recvd, msg.(proto.Message))
+	r.wg.Done()
 	return nil
 }

@@ -26,6 +26,7 @@
 package logging
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -91,7 +92,7 @@ func (r RequestType) String() string {
 //	"*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
 func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
-		message string
+		buffer bytes.Buffer
 	)
 
 	// Check if inputs are available
@@ -114,21 +115,25 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// Check, if our payload has an ID field
 	idreq, ok := payload.(interface{ GetId() string })
 	if ok && idreq.GetId() != "" {
-		message = fmt.Sprintf("%s with ID '%s' %s", name, idreq.GetId(), reqType.String())
+		buffer.WriteString(fmt.Sprintf("%s with ID '%s' %s", name, idreq.GetId(), reqType.String()))
 	} else {
-		message = fmt.Sprintf("%s %s", name, reqType.String())
+		buffer.WriteString(fmt.Sprintf("%s %s", name, reqType.String()))
 	}
 
 	// Check, if it is a cloud service request. In this case we can append the
 	// information about the target cloud service. However, we only want to do
 	// that, if the payload type is not a cloud service itself.
 	csreq, ok := req.(api.CloudServiceRequest)
-	// If params is not empty, the elements are joined and added to the message
-	if name != "CloudService" && ok && len(params) > 0 {
-		message = fmt.Sprintf("%s for Cloud Service '%s' %s", message, csreq.GetCloudServiceId(), strings.Join(params, " "))
-	} else if name != "CloudService" && ok {
-		message = fmt.Sprintf("%s for Cloud Service '%s'", message, csreq.GetCloudServiceId())
+	if name != "CloudService" && ok {
+		buffer.WriteString(fmt.Sprintf(" for Cloud Service '%s'", csreq.GetCloudServiceId()))
 	}
 
-	log.Logf(level, "%s.", message)
+	// If params is not empty, the elements are joined and added to the message
+	if len(params) > 0 {
+		buffer.WriteString(" " + strings.Join(params, " "))
+	}
+
+	buffer.WriteString(".")
+
+	log.Log(level, buffer.String())
 }

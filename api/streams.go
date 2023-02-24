@@ -60,6 +60,9 @@ type StreamChannelOf[StreamType grpc.ClientStream, MsgType proto.Message] struct
 
 	// component name
 	component string
+
+	// dead specifies that this channel lost connection and needs to be re-started
+	dead bool
 }
 
 // InitFuncOf describes a function with type parameters that creates any kind of stream towards a gRPC server specified
@@ -127,6 +130,12 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component stri
 		if err != nil {
 			return nil, fmt.Errorf("could not add stream for %s with target '%s': %w", component, target, err)
 		}
+	} else if c.dead {
+		// We could have a dead stream that we need to restart. in this case, we can recycle a few things, e.g. the channel
+		c, err = s.restartStream(c, init, opts...)
+		if err != nil {
+			return nil, fmt.Errorf("could not restart stream for %s with target '%s': %w", c.component, c.target, err)
+		}
 	}
 
 	return c, nil
@@ -169,46 +178,67 @@ func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component stri
 	return c, nil
 }
 
-// removeStream deletes the channel from the stream map.
-func (s *StreamsOf[StreamType, MsgType]) removeStream(target string) {
-	s.log.Debugf("Removing stream channel for target %s", target)
+// restartStream restarts a stream to the given component and starts a goroutine for sending messages from the channel to the given component
+func (s *StreamsOf[StreamType, MsgType]) restartStream(c *StreamChannelOf[StreamType, MsgType], init InitFuncOf[StreamType], opts ...grpc.DialOption) (*StreamChannelOf[StreamType, MsgType], error) {
+	var err error
 
-	s.mutex.Lock()
-	delete(s.channels, target)
-	s.mutex.Unlock()
+	// We need an init func
+	if init == nil {
+		return nil, ErrMissingInitFunc
+	}
+
+	// Initialize the stream using our init function
+	c.stream, err = init(c.target, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("could not init stream: %w", err)
+	}
+
+	// Revive the stream
+	c.dead = false
+
+	s.log.Infof("Re-Established stream to %s (%s)", c.component, c.target)
+
+	// Start go routine for receiving messages from the stream (especially relevant for bi-directional streams).
+	go c.recvLoop(s)
+
+	// Start go routine for sending messages from the channel to the stream
+	go c.sendLoop(s)
+
+	return c, nil
 }
 
 // sendLoop continuously fetches new messages from the channel inside c and sends them to the appropriate stream.
 func (c *StreamChannelOf[StreamType, MsgType]) sendLoop(s *StreamsOf[StreamType, MsgType]) {
 	var err error
 
-	// Fetch new messages from channel (this will block)
+	// Fetch new (or queued old) messages from the channel. This will block.
 	for m := range c.channel {
+		// We want to log some additional information about this stream and its
+		// payload. The logging functions are safe to call with a nil request,
+		// so we can avoid checking, if this succeeds
+		preq, _ := any(m).(PayloadRequest)
+
 		// Try to send the message in our stream
 		err = c.stream.SendMsg(m)
-		if errors.Is(err, io.EOF) {
-			s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
-
-			// Remove the stream from our map and end this goroutine
-			s.removeStream(c.target)
-			return
-		}
-
-		// Some other error than EOF occurred
 		if err != nil {
-			s.log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
+			if errors.Is(err, io.EOF) {
+				s.log.Infof("Stream to %s (%s) closed with EOF", c.component, c.target)
+			} else {
+				// Some other error than EOF occurred
+				s.log.Errorf("Error when sending message to %s (%s): %v", c.component, c.target, err)
 
-			// Close the stream gracefully. We can ignore any error resulting from the close here
-			_ = c.stream.CloseSend()
+				// Close the stream gracefully. We can ignore any error resulting from the close here
+				_ = c.stream.CloseSend()
+			}
 
-			// Remove the stream from our map and end this goroutine
-			s.removeStream(c.target)
-			return
-		}
+			// Declare the stream as dead
+			c.dead = true
 
-		// We want to log some additional information about this stream and its payload
-		preq, ok := any(m).(PayloadRequest)
-		if !ok {
+			// Put the message back on the channel, so that it does not get lost
+			go func() {
+				logging.LogRequest(s.log, logrus.DebugLevel, logging.Store, preq, fmt.Sprintf("back into queue for %s (%s)", c.component, c.target))
+				c.channel <- m
+			}()
 			return
 		}
 

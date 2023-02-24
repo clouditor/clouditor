@@ -65,6 +65,11 @@ paths:
                     type: array
                     items:
                         type: string
+                - name: latestByResourceId
+                  in: query
+                  description: Optional. Latest results grouped results by resource_id.
+                  schema:
+                    type: boolean
                 - name: pageSize
                   in: query
                   schema:
