@@ -27,7 +27,6 @@ package evaluation
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -249,7 +248,7 @@ func Test_createSchedulerTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
+			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
 				t.Errorf("createSchedulerTag() = %v, want %v", got, tt.want)
 			}
 		})
@@ -874,23 +873,13 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 	args: args{
 		// 		in0: context.Background(),
 		// 		req: &evaluation.StartEvaluationRequest{
-		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId:  testdata.MockCloudServiceID,
-		// 				CatalogId:       testdata.MockCatalogID,
-		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
-		// 				ControlsInScope: []*orchestrator.Control{
-		// 					{
-		// 						Id:                testdata.MockControlID1,
-		// 						CategoryName:       testdata.MockCategoryName,
-		// 						CategoryCatalogId:  testdata.MockCatalogID,
-		// 						Name:              testdata.MockControlID1,
-		// 					},
-		// 				},
-		// 			},
+		// 			CloudServiceId: testdata.MockCloudServiceID,
+		// 			CatalogId:      testdata.MockCatalogID,
 		// 		},
 		// 		schedulerRunning: false,
-		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, testdata.MockControlID1),
+		// 		schedulerTag:     getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
 		// 	},
+
 		// 	wantResp: &evaluation.StartEvaluationResponse{Status: true},
 		// 	wantErr:  assert.NoError,
 		// },
@@ -1405,120 +1394,120 @@ func TestService_getControl(t *testing.T) {
 	}
 }
 
-func TestService_handleFindParentControlJobError(t *testing.T) {
-	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
-		wg                            map[string]*WaitGroup
-		results                       map[string]*evaluation.EvaluationResult
-		storage                       persistence.Storage
-		schedulerRunning              bool
-		schedulerTag                  string
-	}
-	type args struct {
-		err            error
-		cloudServiceId string
-		controlId      string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "empty error input",
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "can not be stopped because the control is a sub-control of the evaluated control")
-			},
-		},
-		{
-			name: "Scheduler job not existing",
-			fields: fields{
-				schedulerRunning: true,
-				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
-				scheduler:        gocron.NewScheduler(time.UTC),
-			},
-			args: args{
-				err:            errors.New("no jobs found with given tag"),
-				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-				controlId:      "test_control_id",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
-			},
-		},
-		{
-			name: "Job not found with tag",
-			fields: fields{
-				schedulerRunning: true,
-				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
-				scheduler:        gocron.NewScheduler(time.UTC),
-			},
-			args: args{
-				err:            errors.New("no jobs found with given tag"),
-				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-				controlId:      "test_control_id",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
-			},
-		},
-		{
-			name:   "error code unexpected",
-			fields: fields{},
-			args: args{
-				err:            errors.New("another not known error"),
-				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-				controlId:      "test_control_id",
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error when stopping scheduler job for cloud service id '00000000-0000-0000-0000-000000000000' with control id 'test_control_id'")
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				schedulerRunning: true,
-				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_control_id",
-				scheduler:        gocron.NewScheduler(time.UTC),
-			},
-			args: args{
-				err:            errors.New("no jobs found with given tag"),
-				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-				controlId:      "test_control_id",
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
-				results:                       tt.fields.results,
-				storage:                       tt.fields.storage,
-			}
+// func TestService_handleFindParentControlJobError(t *testing.T) {
+// 	type fields struct {
+// 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
+// 		orchestratorClient            orchestrator.OrchestratorClient
+// 		orchestratorAddress           grpcTarget
+// 		authorizer                    api.Authorizer
+// 		scheduler                     *gocron.Scheduler
+// 		wg                            map[string]*WaitGroup
+// 		results                       map[string]*evaluation.EvaluationResult
+// 		storage                       persistence.Storage
+// 		schedulerRunning              bool
+// 		schedulerTag                  string
+// 	}
+// 	type args struct {
+// 		err            error
+// 		cloudServiceId string
+// 		controlId      string
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		fields  fields
+// 		args    args
+// 		wantErr assert.ErrorAssertionFunc
+// 	}{
+// 		{
+// 			name: "empty error input",
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				return assert.ErrorContains(t, err, "can not be stopped because the control is a sub-control of the evaluated control")
+// 			},
+// 		},
+// 		{
+// 			name: "Scheduler job not existing",
+// 			fields: fields{
+// 				schedulerRunning: true,
+// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
+// 				scheduler:        gocron.NewScheduler(time.UTC),
+// 			},
+// 			args: args{
+// 				err:            errors.New("no jobs found with given tag"),
+// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
+// 				controlId:      "test_control_id",
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
+// 			},
+// 		},
+// 		{
+// 			name: "Job not found with tag",
+// 			fields: fields{
+// 				schedulerRunning: true,
+// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
+// 				scheduler:        gocron.NewScheduler(time.UTC),
+// 			},
+// 			args: args{
+// 				err:            errors.New("no jobs found with given tag"),
+// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
+// 				controlId:      "test_control_id",
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
+// 			},
+// 		},
+// 		{
+// 			name:   "error code unexpected",
+// 			fields: fields{},
+// 			args: args{
+// 				err:            errors.New("another not known error"),
+// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
+// 				controlId:      "test_control_id",
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				return assert.ErrorContains(t, err, "error when stopping scheduler job for cloud service id '00000000-0000-0000-0000-000000000000' with control id 'test_control_id'")
+// 			},
+// 		},
+// 		{
+// 			name: "Happy path",
+// 			fields: fields{
+// 				schedulerRunning: true,
+// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_control_id",
+// 				scheduler:        gocron.NewScheduler(time.UTC),
+// 			},
+// 			args: args{
+// 				err:            errors.New("no jobs found with given tag"),
+// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
+// 				controlId:      "test_control_id",
+// 			},
+// 			wantErr: assert.NoError,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			s := &Service{
+// 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
+// 				orchestratorClient:            tt.fields.orchestratorClient,
+// 				orchestratorAddress:           tt.fields.orchestratorAddress,
+// 				authorizer:                    tt.fields.authorizer,
+// 				scheduler:                     tt.fields.scheduler,
+// 				wg:                            tt.fields.wg,
+// 				results:                       tt.fields.results,
+// 				storage:                       tt.fields.storage,
+// 			}
 
-			// Start the scheduler
-			if tt.fields.schedulerRunning == true {
-				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
-				require.NoError(t, err)
+// 			// Start the scheduler
+// 			if tt.fields.schedulerRunning == true {
+// 				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+// 				require.NoError(t, err)
 
-			}
+// 			}
 
-			err := s.stopJobAndHandleError(tt.args.err, tt.args.cloudServiceId, tt.args.controlId)
-			tt.wantErr(t, err)
-		})
-	}
-}
+// 			err := s.stopJobAndHandleError(tt.args.err, tt.args.cloudServiceId, tt.args.controlId)
+// 			tt.wantErr(t, err)
+// 		})
+// 	}
+// }
 
 func TestService_addJobToScheduler(t *testing.T) {
 	type fields struct {

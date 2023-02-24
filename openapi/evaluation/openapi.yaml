@@ -60,16 +60,6 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: controlId
-                  in: query
-                  description: The control ID
-                  schema:
-                    type: string
-                - name: categoryName
-                  in: query
-                  description: The category the control ID belongs to
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK
@@ -208,6 +198,9 @@ components:
                     type: string
                 parentControlCategoryCatalogId:
                     type: string
+                assuranceLevel:
+                    type: string
+                    description: An assurance level is not offered by every catalog, therefore it is optional.
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         EvaluationResult:
             type: object

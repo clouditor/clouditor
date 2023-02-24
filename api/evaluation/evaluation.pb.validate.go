@@ -626,28 +626,6 @@ func (m *StopEvaluationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetControlId()) < 1 {
-		err := StopEvaluationRequestValidationError{
-			field:  "ControlId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
-		err := StopEvaluationRequestValidationError{
-			field:  "CategoryName",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if len(errors) > 0 {
 		return StopEvaluationRequestMultiError(errors)
 	}

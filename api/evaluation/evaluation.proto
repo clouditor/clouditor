@@ -105,14 +105,6 @@ message StopEvaluationRequest {
 
   string catalog_id = 2
     [ (validate.rules).string.min_len = 1 ]; 
-  
-  // The control ID 
-  string control_id = 3
-    [(validate.rules).string.min_len = 1];
-
-  // The category the control ID belongs to 
-  string category_name = 4
-    [(validate.rules).string.min_len = 1]; 
 }
 
 message StopEvaluationResponse {}
