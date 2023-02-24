@@ -109,6 +109,8 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
 func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+	var conds = []any{gorm.WithPreload("ControlsInScope")}
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -122,7 +124,8 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 
 	response = new(orchestrator.TargetOfEvaluation)
 	// TODO(all): Is it ok to use gorm.WithPreload("ControlsInScope") here?
-	err = svc.storage.Get(response, gorm.WithPreload("ControlsInScope"), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	conds = append(conds, "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, conds...)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {

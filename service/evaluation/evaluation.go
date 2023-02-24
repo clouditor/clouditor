@@ -209,13 +209,25 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
+	// // Get Controls in Scope for evaluation
+	// // TODO(anatheka): Use ListControlsInScope!!!!! WEITERMACHEN
+	// controlsInScopeRes, err := s.orchestratorClient.ListControlsInScope(context.Background(), &orchestrator.ListControlsInScopeRequest{
+	// 	CloudServiceId: req.GetCloudServiceId(),
+	// 	CatalogId:      req.GetCatalogId(),
+	// })
+	// if err != nil {
+	// 	err = fmt.Errorf("could not get Controls in Scope: %v", err)
+	// 	log.Error(err)
+	// 	return nil, status.Errorf(codes.Internal, "%s", err)
+	// }
+
 	log.Info("Starting evaluation ...")
 
 	// Scheduler tags must be unique to find the jobs by tag name
 	s.scheduler.TagsUnique()
 
 	// Add the controls_in_scope of the target_of_evaluation including their sub-controls to the scheduler
-	for _, control := range toe.GetControlsInScope() {
+	for _, control := range toe.ControlsInScope {
 		var (
 			controls []*orchestrator.Control
 
@@ -272,13 +284,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 	// Start scheduler jobs
 	s.scheduler.StartAsync()
-	log.Infof("Scheduler started...")
-	jobsCreated, err := s.scheduler.FindJobsByTag(req.GetCloudServiceId()) // TODO funktioniert nicht
-	if len(jobsCreated) > 0 {
-		log.Debugf("Scheduler started with %d jobs.", len(jobsCreated))
-	} else {
-		log.Debugf("No scheduler jobs started: %v", err)
-	}
+	log.Infof("Evaluation started.")
 
 	resp = &evaluation.StartEvaluationResponse{}
 
@@ -313,22 +319,26 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Stop all controls in the list controls_in_scope
+	errorControlIds := []string{}
 	for _, control := range toe.ControlsInScope {
 		// Check if the control is a parent control
 		if control.ParentControlId == nil {
 			// Control is a parent control, stop the scheduler job for the control and all sub-controls
 			err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetCloudServiceId()))
-			if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-				err = fmt.Errorf("evaluation for cloud service id '%s' with control '%s' not running", req.GetCloudServiceId(), control.GetId())
+			if err != nil && !strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
 				log.Error(err)
-				err = status.Errorf(codes.FailedPrecondition, "%v", err)
-				continue
-			} else if err != nil {
-				err = fmt.Errorf("error when stopping scheduler job for control id '%s'", control.GetId())
-				log.Error(err)
-				err = status.Errorf(codes.Internal, "%v", err)
-				continue
+				errorControlIds = append(errorControlIds, control.GetId())
 			}
+			// TODO(anatheka). Do we need the whole logging here?
+			// if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
+			// 	err = fmt.Errorf("evaluation for cloud service id '%s' with control '%s' not running", req.GetCloudServiceId(), control.GetId())
+			// 	log.Error(err)
+			// 	continue
+			// } else if err != nil {
+			// 	err = fmt.Errorf("error when stopping scheduler job for control id '%s'", control.GetId())
+			// 	log.Error(err)
+			// 	continue
+			// }
 
 			// TODO(anatheka): WEITERMACHEN!!! How do we have to delete the WaitGroup? We have to wait until the sub-controls evaluation is finished
 
@@ -339,8 +349,9 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 			err = s.stopSchedulerJob(schedulerTag)
 			// err = s.stopJobAndHandleError(req.GetCloudServiceId(), control.GetId())
 			// No need of further error handling
-			if err != nil {
-				return
+			if err != nil && !strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
+				log.Error(err)
+				errorControlIds = append(errorControlIds, control.GetId())
 			}
 		}
 	}
@@ -377,7 +388,12 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	// 	}
 	// }
 
-	log.Debugf("Evaluation for Cloud Service '%s' and Catalog '%s' stopped.", req.GetCloudServiceId(), req.GetCatalogId())
+	if len(errorControlIds) > 0 {
+		log.Infof("Error stopping scheduler for Controls '%v' for Cloud Service '%s'.", strings.Join(errorControlIds, ", "), req.GetCloudServiceId())
+	} else {
+		log.Infof("Evaluation for Cloud Service '%s' and Catalog '%s' stopped.", req.GetCloudServiceId(), req.GetCatalogId())
+	}
+
 	resp = &evaluation.StopEvaluationResponse{}
 
 	return
@@ -515,42 +531,12 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	return
 }
 
-// // stopJobAndHandleError handles the scheduler.FindJobsByTag() error for the parent control id and stops the scheduler job.
-// func (s *Service) stopJobAndHandleError(cloudServiceId, controlId string) (err error) {
-// 	var schedulerTag string
-
-// 	// Get scheduler tag for control and check if scheduler job for control is running
-// 	schedulerTag = createSchedulerTag(cloudServiceId, controlId)
-// 	_, err = s.scheduler.FindJobsByTag(schedulerTag)
-// 	if err == nil {
-// 		// Scheduler job is running and could be stopped
-// 		err = s.stopSchedulerJob(schedulerTag)
-// 		if err == nil {
-// 			log.Debugf("Scheduler job for Cloud Service id '%s' with control id '%s' stopped.", cloudServiceId, controlId)
-// 			return nil
-// 		}
-// 	} else if strings.Contains(err.Error(), "no jobs found with given tag") {
-// 		// Scheduler job does not exist
-// 		err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", cloudServiceId, controlId)
-// 		log.Error(err)
-// 		return status.Errorf(codes.NotFound, err.Error())
-// 	} else {
-// 		// This is the error message in case a job can be stopped but an error has occurred.
-// 		err = fmt.Errorf("error when stopping scheduler job for cloud service id '%s' with control id '%s'", cloudServiceId, controlId)
-// 		log.Error(err)
-// 		return status.Errorf(codes.Internal, err.Error())
-// 	}
-
-// 	return
-// }
-
 // stopSchedulerJob stops a scheduler job for the given scheduler tag
 func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
 	// Delete the job from the scheduler
 	err = s.scheduler.RemoveByTag(schedulerTag)
 	if err != nil {
 		err = fmt.Errorf("error when removing job for tag '%s' from scheduler: %v", schedulerTag, err)
-		log.Error(err)
 		return
 	}
 
@@ -624,13 +610,11 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	s.results[result.Id] = result
 	s.resultMutex.Unlock()
 
-	log.Infof("Evaluation result for ControlID '%s' with ID '%s' stored.", controlId, result.Id)
+	log.Debugf("Evaluation result for ControlID '%s' with ID '%s' stored.", controlId, result.Id)
 }
 
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
 func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentSchedulerTag string) {
-	log.Infof("Start sub-control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
-
 	var (
 		result *evaluation.EvaluationResult
 		err    error
@@ -761,7 +745,6 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 	control, err := s.getControl(catalogId, categoryName, controlId)
 	if err != nil {
 		err = fmt.Errorf("could not get control for control id {%s}: %v", controlId, err)
-		log.Error(err)
 		return
 	}
 
@@ -774,7 +757,6 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 		subControlMetrics, err = s.getMetricsFromSubdontrols(control)
 		if err != nil {
 			err = fmt.Errorf("error getting metrics from sub-controls: %v", err)
-			log.Error(err)
 			return
 		}
 
