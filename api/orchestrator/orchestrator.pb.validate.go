@@ -4944,35 +4944,27 @@ func (m *ListControlsInScopeRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
-	if m.GetCloudServiceId() != "" {
-
-		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
-			err = ListControlsInScopeRequestValidationError{
-				field:  "CloudServiceId",
-				reason: "value must be a valid UUID",
-				cause:  err,
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = ListControlsInScopeRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
 		}
-
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
-	if m.GetCatalogId() != "" {
-
-		if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
-			err := ListControlsInScopeRequestValidationError{
-				field:  "CatalogId",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+		err := ListControlsInScopeRequestValidationError{
+			field:  "CatalogId",
+			reason: "value length must be at least 1 runes",
 		}
-
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {

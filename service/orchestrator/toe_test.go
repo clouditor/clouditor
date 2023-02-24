@@ -574,7 +574,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Invalid request",
+			name: "Empty request",
 			args: args{
 				ctx: context.Background(),
 				req: nil,
@@ -582,6 +582,20 @@ func TestService_ListControlsInScope(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, codes.InvalidArgument, status.Code(err))
+			},
+		},
+		{
+			name: "Missing request property",
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.ListControlsInScopeRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "invalid ListControlsInScopeRequest.CatalogId: value length must be at least 1 runes")
 			},
 		},
 		{
@@ -685,6 +699,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListControlsInScopeRequest{
 					CloudServiceId: testutil.TestCloudService2,
+					CatalogId:      testdata.MockCatalogID,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
