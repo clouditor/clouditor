@@ -2,7 +2,7 @@
   {
     "id": "AdminMFAEnabled",
     "name": "Admin's MFA: Enabled",
-    "description": "This metric is used to assess whether MFA for admins is enabled",
+    "description": "This metric is used to assess if MFA for admins is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -15,7 +15,7 @@
   {
     "id": "AdminMixedDuties",
     "name": "Mixed Duties Applied To Admins",
-    "description": "This metric is used to assess whether Mixed Duties is applied appropriately",
+    "description": "This metric is used to assess if Mixed Duties is applied appropriately",
     "category": "",
     "scale": 1,
     "range": 
@@ -28,7 +28,7 @@
   {
     "id": "AnomalyDetectionEnabled",
     "name": "Anomaly Detection: Enabled",
-    "description": "This metric is used to assess whether Anomaly Detection is enabled",
+    "description": "This metric is used to assess if Anomaly Detection is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -41,7 +41,7 @@
   {
     "id": "AnomalyDetectionOutput",
     "name": "Anomaly Detection: Output",
-    "description": "This metric is used to assess whether the output is ???",
+    "description": "This metric is used to assess if the output is ???",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -53,7 +53,7 @@
   {
     "id": "AnonymousAuthentication",
     "name": "Anonymous Authentication",
-    "description": "This metric is used to assess whether it is possible to authenticate anonymously",
+    "description": "This metric is used to assess if it is possible to authenticate anonymously",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -81,7 +81,7 @@
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
     "category": "CKM-03",
-    "description": "This metric describes whether storage encryption is enabled",
+    "description": "This metric describes if storage encryption is enabled",
     "scale": 1,
     "allowedValues": {
       "values": [
@@ -93,7 +93,7 @@
   {
     "id": "AutomaticUpdatesEnabled",
     "name": "Automatic Updates: Enabled",
-    "description": "This metric is used to assess whether automatic updates are enabled",
+    "description": "This metric is used to assess if automatic updates are enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -106,7 +106,7 @@
   {
     "id": "AutomaticUpdatesInterval",
     "name": "Automatic Updates: Interval",
-    "description": "This metric is used to assess whether automatic updates are performed with sufficient frequency. In days.",
+    "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -120,7 +120,7 @@
   {
     "id": "AutomaticUpdatesSecurityOnly",
     "name": "Automatic Updates: Security Only",
-    "description": "",
+    "description": "This metric is used to assess if only security updates are performed",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -132,8 +132,8 @@
   },
   {
     "id": "BootLoggingEnabled",
-    "name": "",
-    "description": "",
+    "name": "Boot Logging: Enabled",
+    "description": "This metric is used to assess if boot logs are enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -145,21 +145,20 @@
   },
   {
     "id": "BootLoggingOutput",
-    "name": "",
-    "description": "",
+    "name": "Boot Logging: Output",
+    "description": "This metric is used to assess the output destination of boot logs",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "BootLoggingRetention",
     "name": "",
-    "description": "",
+    "description": "This metric is used to assess the configured log retention (days)",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -171,8 +170,8 @@
   },
   {
     "id": "CustomerKeyEncryption",
-    "name": "",
-    "description": "",
+    "name": "Storage Encryption: Customer Key Encryption",
+    "description": "This metric is used to assess if encryption is done via customer keys",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -184,8 +183,8 @@
   },
   {
     "id": "IdentityPasswordPolicy",
-    "name": "",
-    "description": "",
+    "name": "Identity: Password Policy",
+    "description": "This metric is used to assess if a password policy is in place",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -197,21 +196,22 @@
   },
   {
     "id": "IdentityRecentActivity",
-    "name": "",
-    "description": "",
+    "name": "Identity: Recent Activity",
+    "description": "This metric is used to assess if a user is still active (days)",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        0,
+        "*",
+        365
       ]
     }
   },
     {
     "id": "L3FirewallEnabled",
-    "name": "",
-    "description": "",
+    "name": "L3 Firewall: Enabled",
+    "description": "This metric is used to assess if a L3 firewall is in place",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -223,21 +223,20 @@
   },
   {
     "id": "L3FirewallRestrictedPorts",
-    "name": "",
-    "description": "",
+    "name": "L3 Firewall: Restricted Ports",
+    "description": "This metric is used to assess the restricted ports of a L3 firewall",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "MalwareProtectionEnabled",
-    "name": "",
-    "description": "",
+    "name": "Malware Protection: Enabled",
+    "description": "This metric is used to assess if Malware Protection is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -249,34 +248,32 @@
   },
   {
     "id": "MalwareProtectionOutput",
-    "name": "",
-    "description": "",
+    "name": "Malware Protection: Output",
+    "description": "This metric is used to assess to which service the Malware Protection results are sent",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "MutualAuthentication",
-    "name": "",
-    "description": "",
+    "name": "Mutual Authentication",
+    "description": "This metric is used to assess if mutual authentication, including client certificate, has been enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "ObjectStoragePublicAccessDisabled",
-    "name": "",
-    "description": "",
+    "name": "Object Storage: Public Access Disabled",
+    "description": "This metric is used to assess if public acess is disabled for a object storage",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -288,8 +285,8 @@
   },
   {
     "id": "OSLoggingEnabled",
-    "name": "",
-    "description": "",
+    "name": "OS Logging: Enabled",
+    "description": "This metric is used to assess if OS logging is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -301,34 +298,34 @@
   },
   {
     "id": "OSLoggingOutput",
-    "name": "",
-    "description": "",
+    "name": "OS Logging: Output",
+    "description": "This metric is used to assess to which service the OS logs are sent",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "OSLoggingRetention",
-    "name": "",
-    "description": "",
+    "name": "OS Logging: Retention",
+    "description": "This metric is used to assess the configured OS log retention (days)",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        0,
+        "*",
+        365
       ]
     }
   },
   {
     "id": "ResourceInventory",
-    "name": "",
-    "description": "",
+    "name": "Resource Inventory",
+    "description": "This metric is used to assess if an inventory is set up for resources",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -340,34 +337,34 @@
   },
   {
     "id": "RoleBroadAssignments",
-    "name": "",
-    "description": "",
+    "name": "Role Broad Assignments",
+    "description": "This metric is used to assess the broad assignments of roles",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        0.1,
+        "*",
+        1.0
       ]
     }
   },
   {
     "id": "RuntimeVersion",
-    "name": "",
-    "description": "",
+    "name": "Runtime Version",
+    "description": "This metric is used to assess the runtime version of a given programming language",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "*"
       ]
     }
   },
   {
     "id": "SingleSignOnEnabled",
-    "name": "",
-    "description": "",
+    "name": "Single Sign On Enabled",
+    "description": "This metric is used to assess if SSO is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
@@ -379,14 +376,16 @@
   },
   {
     "id": "TLSVersion",
-    "name": "",
-    "description": "",
+    "name": "TLS Version",
+    "description": "This metric is used to assess the TLS version used for transfer data",
     "category": "",
     "scale": 1,
     "allowedValues": {
       "values": [
-        true,
-        false
+        "TLS 1.0",
+        "TLS 1.1",
+        "TLS 1.2",
+        "TLS 1.3"
       ]
     }
   },
@@ -394,7 +393,7 @@
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
     "category": "CKM-02",
-    "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
+    "description": "This metric describes, if a up-to-date transport encryption protocol version is used",
     "scale": 1,
     "range": {
       "order": {
@@ -411,7 +410,7 @@
     "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
     "category": "CKM-02",
-    "description": "This metric describes, whether transport encryption is turned on or not",
+    "description": "This metric describes, if transport encryption is turned on",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -424,8 +423,8 @@
   },
   {
     "id": "TransportEncryptionEnforced",
-    "name": "",
-    "description": "",
+    "name": "Transport Encryption: Enforced",
+    "description": "This metric is used to assess if if transport encryption is enforced",
     "category": "CKM-02",
     "scale": 1,
     "allowedValues": {
@@ -437,8 +436,8 @@
   },
   {
     "id": "WebApplicationFirewallEnabled",
-    "name": "",
-    "description": "",
+    "name": "Web Application Firewall: Enabled",
+    "description": "This metric is used to assess if Web Application Firewall is enabled",
     "category": "",
     "scale": 1,
     "allowedValues": {
