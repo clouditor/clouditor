@@ -99,7 +99,7 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*as
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
 
