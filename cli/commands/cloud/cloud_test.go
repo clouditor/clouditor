@@ -225,7 +225,6 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 
 	viper.Set("id", target.Id)
 	viper.Set("name", notDefault)
-	//viper.Set("description", "newD")
 
 	cmd := NewUpdateCloudServiceCommand()
 	err = cmd.RunE(nil, []string{})
