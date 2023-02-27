@@ -420,13 +420,15 @@
     "description": "This metric is used to assess the TLS version used for transfer data",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "1.0",
-        "1.1",
-        "1.2",
-        "1.3"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "1.0",
+          "1.1",
+          "1.2",
+          "1.3"
+        ]
+      }
     }
   },
   {
