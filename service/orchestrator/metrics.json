@@ -17,7 +17,7 @@
     "name": "Mixed Duties Applied To Admins",
     "description": "This metric is used to assess if Mixed Duties is applied appropriately",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "range": 
     [
         0.0,
@@ -108,7 +108,7 @@
     "name": "Automatic Updates: Interval",
     "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "allowedValues": {
       "values": [
         1,
@@ -160,7 +160,7 @@
     "name": "",
     "description": "This metric is used to assess the configured log retention (days)",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "allowedValues": {
       "values": [
         true,
@@ -199,7 +199,7 @@
     "name": "Identity: Recent Activity",
     "description": "This metric is used to assess if a user is still active (days)",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "allowedValues": {
       "values": [
         0,
@@ -313,7 +313,7 @@
     "name": "OS Logging: Retention",
     "description": "This metric is used to assess the configured OS log retention (days)",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "allowedValues": {
       "values": [
         0,
@@ -340,7 +340,7 @@
     "name": "Role Broad Assignments",
     "description": "This metric is used to assess the broad assignments of roles",
     "category": "",
-    "scale": 1,
+    "scale": 3,
     "allowedValues": {
       "values": [
         0.1,
