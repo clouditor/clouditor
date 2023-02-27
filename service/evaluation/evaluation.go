@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"golang.org/x/oauth2/clientcredentials"
@@ -667,6 +668,7 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 		assessmentResults, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
 			FilteredCloudServiceId: &cloudServiceId,
 			FilteredMetricId:       getMetricIds(metrics),
+			LatestByResourceId:     util.Ref(true),
 		}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 			return res.Results
 		})
