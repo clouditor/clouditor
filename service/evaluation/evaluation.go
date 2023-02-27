@@ -210,25 +210,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	// // Get Controls in Scope for evaluation
-	// // TODO(anatheka): Use ListControlsInScope!!!!! WEITERMACHEN
-	// controlsInScopeRes, err := s.orchestratorClient.ListControlsInScope(context.Background(), &orchestrator.ListControlsInScopeRequest{
-	// 	CloudServiceId: req.GetCloudServiceId(),
-	// 	CatalogId:      req.GetCatalogId(),
-	// })
-	// if err != nil {
-	// 	err = fmt.Errorf("could not get Controls in Scope: %v", err)
-	// 	log.Error(err)
-	// 	return nil, status.Errorf(codes.Internal, "%s", err)
-	// }
-
 	log.Info("Starting evaluation ...")
 
 	// Scheduler tags must be unique to find the jobs by tag name
 	s.scheduler.TagsUnique()
 
-	// Add the controls_in_scope of the target_of_evaluation including their sub-controls to the scheduler
-	for _, control := range toe.ControlsInScope {
+	// Add the controls_in_scope of the target_of_evaluation including their sub-controls to the scheduler. The parent control has to wait for the evaluation of the sub-controls. That's why we need to know how much sub-controls are available and define the waitGroup with the number of the corresponding sub-controls. The controls_in_scope are not stored in a hierarchy, so we have to get the parent control and find all related sub-controls.
+	controlsInScope := toe.GetControlsInScope()
+	for _, control := range controlsInScope {
 		var (
 			controls []*orchestrator.Control
 
@@ -237,12 +226,20 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		)
 
 		// If the control does not have sub-controls don't start a scheduler.
-		if control.ParentControlId == nil && len(control.GetControls()) == 0 {
+		if control.ParentControlId != nil {
 			continue
 		}
 
-		// The schedulerTag of the current control
-		schedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
+		// Collect control including sub-controls from the controls_in_scope slice to start them later as scheduler jobs
+		controls = append(controls, control)
+		for i := range controlsInScope {
+			if controlsInScope[i].GetParentControlId() == control.GetId() {
+				controls = append(controls, controlsInScope[i])
+			}
+		}
+
+		// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
+		parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
 
 		// Check if scheduler job for current control_id is already running
 		jobs, err := s.scheduler.FindJobsByTag(schedulerTag)
@@ -252,24 +249,16 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 		}
 
-		// Collect control including sub-controls to start them later as scheduler jobs
-		controls = append(controls, control)
-		controls = append(controls, control.GetControls()...)
-
 		// Add number of sub-controls to the WaitGroup. For the control (e.g., OPS-13) we have to wait until all the sub-controls (e.g., OPS-13.1) are ready.
 		// Control is a parent control if no parentControlId exists.
-		if control.ParentControlId == nil {
-			s.wg[schedulerTag] = &WaitGroup{
-				wg:      &sync.WaitGroup{},
-				wgMutex: sync.Mutex{},
-			}
-			s.wg[schedulerTag].wgMutex.Lock()
-			s.wg[schedulerTag].wg.Add(len(control.GetControls()))
-			s.wg[schedulerTag].wgMutex.Unlock()
-
-			// parentSchedulerTag is the tag for the parent control, that is only needed if a control (e.g., OPS-13) is scheduled
-			parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
+		s.wg[schedulerTag] = &WaitGroup{
+			wg:      &sync.WaitGroup{},
+			wgMutex: sync.Mutex{},
 		}
+		s.wg[schedulerTag].wgMutex.Lock()
+		// The controls list contains also the parent control itself and must be minimized by 1.
+		s.wg[schedulerTag].wg.Add(len(controls) - 1)
+		s.wg[schedulerTag].wgMutex.Unlock()
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
@@ -356,38 +345,6 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 			}
 		}
 	}
-
-	// // Currently, we can only stop the evaluation for controls or sub-controls that are started individually. We are not able to stop a single sub-control for a started parent control, e.g., OPS-13 is started with it's sub-controls OPS-13.1, OPS-13.2 and OPS-13.3 than it is not possible only to stop OPS-13.2.
-	// // Check if the control is a parent control
-	// if control.ParentControlId == nil {
-	// 	// Control is a parent control, stop the scheduler job for the control and all sub-controls
-	// 	err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetCloudServiceId()))
-	// 	if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-	// 		err = fmt.Errorf("evaluation for cloud service id '%s' with '%s' not running", req.GetCloudServiceId(), req.GetControlId())
-	// 		log.Error(err)
-	// 		err = status.Errorf(codes.FailedPrecondition, "%v", err)
-	// 		return
-	// 	} else if err != nil {
-	// 		err = fmt.Errorf("error when stopping scheduler job for control id '%s'", control.GetId())
-	// 		log.Error(err)
-	// 		err = status.Errorf(codes.Internal, "%v", err)
-	// 		return
-	// 	}
-
-	// 	// TODO(anatheka): WEITERMACHEN!!! How do we have to delete the WaitGroup? We have to wait until the sub-controls evaluation is finished
-
-	// 	log.Infof("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
-	// } else {
-	// 	// Control is a sub-control, check if the parent control is scheduled
-	// 	schedulerTag = createSchedulerTag(req.CloudServiceId, *control.ParentControlId)
-	// 	_, err = s.scheduler.FindJobsByTag(schedulerTag)
-
-	// 	err = s.stopJobAndHandleError(err, req.GetCloudServiceId(), req.GetControlId())
-	// 	// No need of further error handling
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// }
 
 	if len(errorControlIds) > 0 {
 		log.Infof("Error stopping scheduler for Controls '%v' for Cloud Service '%s'.", strings.Join(errorControlIds, ", "), req.GetCloudServiceId())
