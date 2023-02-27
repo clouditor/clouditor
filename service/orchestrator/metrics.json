@@ -77,12 +77,14 @@
     "description": "This metric describes the algorithm of a storage encryption block cipher",
     "category": "CKM-03",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "AES128",
-        "AES256",
-        ""
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "AES128",
+          "AES256",
+          ""
+        ]
+      }
     }
   },
   {
@@ -393,10 +395,12 @@
     "description": "This metric is used to assess the runtime version of a given programming language",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {

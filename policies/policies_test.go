@@ -32,13 +32,15 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/internal/testutil/clitest"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/internal/testutil/clitest"
+
 	"github.com/stretchr/testify/assert"
+
+	"clouditor.io/clouditor/api/assessment"
 )
 
 const (
@@ -77,6 +79,14 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("error in JSON marshal: %w", err)
 	}
+	for _, m := range metrics {
+		if m.Scale == assessment.Metric_SCALE_UNSPECIFIED {
+			return nil, fmt.Errorf("no scale specified for metric '%s'", m.Name)
+		}
+		if m.Range == nil {
+			return nil, fmt.Errorf("no range specified for metric '%s'", m.Name)
+		}
+	}
 
 	return
 }
@@ -99,7 +109,7 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*as
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
 
