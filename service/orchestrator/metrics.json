@@ -5,11 +5,13 @@
     "description": "This metric is used to assess if MFA for admins is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "OTPBasedAuthentication",
-        "PasswordBasedAuthentication"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "OTPBasedAuthentication",
+          "PasswordBasedAuthentication"
+        ]
+      }
     }
   },
   {
@@ -18,12 +20,12 @@
     "description": "This metric is used to assess if Mixed Duties is applied appropriately",
     "category": "",
     "scale": 3,
-    "range": 
-    [
-        0.0,
-        1.0
-    ]
-    
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 1
+      }
+    }
   },
   {
     "id": "AnomalyDetectionEnabled",
@@ -31,11 +33,13 @@
     "description": "This metric is used to assess if Anomaly Detection is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -44,10 +48,12 @@
     "description": "This metric is used to assess if the output is ???",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -56,11 +62,13 @@
     "description": "This metric is used to assess if it is possible to authenticate anonymously",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -83,11 +91,13 @@
     "category": "CKM-03",
     "description": "This metric describes if storage encryption is enabled",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        false,
-        true
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -96,11 +106,13 @@
     "description": "This metric is used to assess if automatic updates are enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -109,12 +121,11 @@
     "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
     "category": "",
     "scale": 3,
-    "allowedValues": {
-      "values": [
-        1,
-        "*",
-        365
-      ]
+    "range": {
+      "minMax": {
+        "min": 1,
+        "max": 365
+      }
     }
   },
   {
@@ -123,11 +134,13 @@
     "description": "This metric is used to assess if only security updates are performed",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -136,11 +149,13 @@
     "description": "This metric is used to assess if boot logs are enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -149,10 +164,12 @@
     "description": "This metric is used to assess the output destination of boot logs",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -161,11 +178,13 @@
     "description": "This metric is used to assess the configured log retention (days)",
     "category": "",
     "scale": 3,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -174,11 +193,13 @@
     "description": "This metric is used to assess if encryption is done via customer keys",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -187,11 +208,13 @@
     "description": "This metric is used to assess if a password policy is in place",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -200,12 +223,11 @@
     "description": "This metric is used to assess if a user is still active (days)",
     "category": "",
     "scale": 3,
-    "allowedValues": {
-      "values": [
-        0,
-        "*",
-        365
-      ]
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 365
+      }
     }
   },
     {
@@ -214,12 +236,14 @@
     "description": "This metric is used to assess if a L3 firewall is in place",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
-    }
+      "range": {
+        "allowedValues": {
+          "values": [
+            true,
+            false
+          ]
+        }
+      }
   },
   {
     "id": "L3FirewallRestrictedPorts",
@@ -227,10 +251,12 @@
     "description": "This metric is used to assess the restricted ports of a L3 firewall",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -239,11 +265,13 @@
     "description": "This metric is used to assess if Malware Protection is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -252,10 +280,12 @@
     "description": "This metric is used to assess to which service the Malware Protection results are sent",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -264,10 +294,12 @@
     "description": "This metric is used to assess if mutual authentication, including client certificate, has been enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -276,11 +308,13 @@
     "description": "This metric is used to assess if public acess is disabled for a object storage",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -289,11 +323,13 @@
     "description": "This metric is used to assess if OS logging is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -302,10 +338,12 @@
     "description": "This metric is used to assess to which service the OS logs are sent",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "*"
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
     }
   },
   {
@@ -314,12 +352,11 @@
     "description": "This metric is used to assess the configured OS log retention (days)",
     "category": "",
     "scale": 3,
-    "allowedValues": {
-      "values": [
-        0,
-        "*",
-        365
-      ]
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 365
+      }
     }
   },
   {
@@ -328,11 +365,13 @@
     "description": "This metric is used to assess if an inventory is set up for resources",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -341,12 +380,11 @@
     "description": "This metric is used to assess the broad assignments of roles",
     "category": "",
     "scale": 3,
-    "allowedValues": {
-      "values": [
-        0.1,
-        "*",
-        1.0
-      ]
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 1
+      }
     }
   },
   {
@@ -367,11 +405,13 @@
     "description": "This metric is used to assess if SSO is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -427,11 +467,13 @@
     "description": "This metric is used to assess if if transport encryption is enforced",
     "category": "CKM-02",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
@@ -440,11 +482,13 @@
     "description": "This metric is used to assess if Web Application Firewall is enabled",
     "category": "",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        true,
-        false
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   }
 ]
