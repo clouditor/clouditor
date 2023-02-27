@@ -483,8 +483,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.Equal(t, 2, len(resources))
 
 	expectedResourceNames := []string{mockBucket1, "mockbucket2", "mockbucket3"}
-	//expectedResourceAtRestEncryptions := []bool{true, true, false}
-	//expectedResourceTransportEncryptions := []bool{true, false, false}
+
 	// Check first element: voc.ObjectStorage
 	log.Println("Testing name for resource (bucket)", 1)
 	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
