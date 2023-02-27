@@ -422,10 +422,10 @@
     "scale": 1,
     "allowedValues": {
       "values": [
-        "TLS 1.0",
-        "TLS 1.1",
-        "TLS 1.2",
-        "TLS 1.3"
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3"
       ]
     }
   },
@@ -438,10 +438,7 @@
     "range": {
       "order": {
         "values": [
-          "TLS 1.0",
-          "TLS 1.1",
-          "TLS 1.2",
-          "TLS 1.3"
+          "TLS"
         ]
       }
     }
