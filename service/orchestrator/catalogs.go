@@ -223,17 +223,27 @@ func (svc *Service) loadCatalogs() (err error) {
 }
 
 func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, err error) {
-	var b []byte
+	var (
+		b []byte
+	)
 
-	log.Infof("Loading catalogs from %s", svc.catalogsFile)
-	b, err = f.ReadFile(svc.catalogsFile)
-	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
-	}
+	// Get catalog for each file
+	for _, catalogFile := range svc.catalogsFiles {
+		var catalog []orchestrator.Catalog
+		log.Infof("Loading catalogs from %s", catalogFile)
+		b, err = f.ReadFile(catalogFile)
+		if err != nil {
+			return nil, fmt.Errorf("error while loading %s: %w", catalogFile, err)
+		}
 
-	err = json.Unmarshal(b, &catalogs)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+		err = json.Unmarshal(b, &catalog)
+		if err != nil {
+			return nil, fmt.Errorf("error in JSON marshal: %w", err)
+		}
+
+		for i := range catalog {
+			catalogs = append(catalogs, &catalog[i])
+		}
 	}
 
 	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
@@ -247,5 +257,6 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 			}
 		}
 	}
+
 	return
 }

@@ -49,7 +49,7 @@ import (
 var f embed.FS
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultCatalogsFile = "catalogs.json"
+var DefaultCatalogsFile = "example_catalog_1.json"
 
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
@@ -82,7 +82,7 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	catalogsFile string
+	catalogsFiles []string
 
 	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
 	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
@@ -118,7 +118,7 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 // WithCatalogsFile can be used to load a different catalogs file
 func WithCatalogsFile(file string) ServiceOption {
 	return func(s *Service) {
-		s.catalogsFile = file
+		s.catalogsFiles = append(s.catalogsFiles, file)
 	}
 }
 
@@ -147,9 +147,9 @@ func WithAuthorizationStrategyJWT(key string) ServiceOption {
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		metricsFile:  DefaultMetricsFile,
-		catalogsFile: DefaultCatalogsFile,
-		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
+		metricsFile:   DefaultMetricsFile,
+		catalogsFiles: []string{},
+		events:        make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -163,6 +163,11 @@ func NewService(opts ...ServiceOption) *Service {
 		if err != nil {
 			log.Errorf("Could not initialize the storage: %v", err)
 		}
+	}
+
+	// Default to a default catalog if no catalog file and catalogs function exists
+	if len(s.catalogsFiles) == 0 && s.loadCatalogsFunc == nil {
+		s.catalogsFiles = append(s.catalogsFiles, DefaultCatalogsFile)
 	}
 
 	// Default to an allow-all authorization strategy
