@@ -14,14 +14,14 @@
         "name": "Category 1",
         "catalog_id": "Example Catalog 2",
         "description": "This is the first category with 3 controls and 6 sub-controls each with the assurance levels basic, substantial and high",
-        "Category1-Controls": [
+        "controls": [
           {
             "id": "Category1-Control-01",
             "category_name": "Category 1",
             "category_catalog_id": "Example Catalog 2",
             "name": "Category1-Control-01",
             "description": "This is the first control from the first category.",
-            "Category1-Controls": [
+            "controls": [
               {
                 "id": "Category1-Control-01.1",
                 "category_name": "Example Category 1",
@@ -37,7 +37,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -51,7 +51,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -190,7 +190,7 @@
             "category_catalog_id": "Example Catalog 2",
             "name": "Category1-Control-02",
             "description": "This is the second control from the first category.",
-            "Category1-Controls": [
+            "controls": [
               {
                 "id": "Category1-Control-02.1",
                 "category_name": "Example Category 1",
@@ -228,7 +228,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -242,7 +242,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -320,7 +320,7 @@
             "category_catalog_id": "Example Catalog 2",
             "name": "Category1-Control-03",
             "description": "This is the third control from the first category.",
-            "Category1-Controls": [
+            "controls": [
               {
                 "id": "Category1-Control-03.1",
                 "category_name": "Example Category 1",
@@ -336,7 +336,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -406,7 +406,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -420,7 +420,7 @@
                     "category": "Category 1",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -549,7 +549,7 @@
                     "category": "Category 2",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -563,7 +563,7 @@
                     "category": "Category 2",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -634,7 +634,7 @@
                     "category": "Category 2",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -648,7 +648,7 @@
                     "category": "Category 2",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -791,7 +791,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -805,7 +805,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -857,7 +857,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -894,7 +894,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
@@ -969,7 +969,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "n/a"
                         ]
@@ -983,7 +983,7 @@
                     "category": "Category 3",
                     "scale": 1,
                     "range": {
-                      "albasicedValues": {
+                      "allowedValues": {
                         "values": [
                           "year"
                         ]
