@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
@@ -238,13 +239,13 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 		log.Infof("Loading catalogs from %s", fileList[i])
 		b, err = f.ReadFile(fileList[i])
 		if err != nil {
-			log.Debug("error while loading %s: %v", fileList[i], err)
+			log.Errorf("error while loading %s: %v", fileList[i], err)
 			continue
 		}
 
 		err = json.Unmarshal(b, &catalog)
 		if err != nil {
-			log.Debug("error in JSON marshal for file %s: %v", fileList[i], err)
+			log.Errorf("error in JSON marshal for file %s: %v", fileList[i], err)
 			continue
 		}
 
@@ -268,7 +269,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	return
 }
 
-// readFolder reads the filenames in the given folder
+// readFolder returns all json files in the given folder
 func readFolder(folder string) ([]string, error) {
 	var (
 		list []string
@@ -280,7 +281,9 @@ func readFolder(folder string) ([]string, error) {
 	}
 
 	for i := range files {
-		list = append(list, files[i].Name())
+		if strings.HasSuffix(files[i].Name(), ".json") {
+			list = append(list, files[i].Name())
+		}
 	}
 
 	return list, nil
