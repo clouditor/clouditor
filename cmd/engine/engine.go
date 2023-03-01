@@ -255,7 +255,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			}),
 	)
 
-	// Add storage option to opts
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
 	assessmentService = service_assessment.NewService(
