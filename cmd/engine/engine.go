@@ -92,11 +92,6 @@ const (
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
 	DashboardURLFlag                 = "dashboard-url"
-	LoadExampleCatalogsFlag          = "load-example-catalogs"
-	ExampleCatalog1                  = "example_catalog_1.json"
-	ExampleCatalog2                  = "example_catalog_2.json"
-	ExampleCatalog3                  = "example_catalog_3.json"
-	ExampleCatalog4                  = "example_catalog_4.json"
 
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
@@ -115,7 +110,6 @@ const (
 	DefaultCreateDefaultTarget                 = true
 	DefaultDiscoveryAutoStart                  = false
 	DefaultDashboardURL                        = "http://localhost:8080"
-	DefaultLoadExampleCatalogs                 = false
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -171,7 +165,6 @@ func init() {
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
-	engineCmd.Flags().Bool(LoadExampleCatalogsFlag, DefaultLoadExampleCatalogs, "Loads 4 example catalogs.")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -199,8 +192,6 @@ func init() {
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
-	_ = viper.BindPFlag(LoadExampleCatalogsFlag, engineCmd.Flags().Lookup(LoadExampleCatalogsFlag))
-
 }
 
 func initConfig() {
@@ -254,16 +245,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		providers = viper.GetStringSlice(DiscoveryProviderFlag)
 	}
 
-	// If catalogs flag is set, load all example catalog files
-	if viper.GetBool(LoadExampleCatalogsFlag) {
-		orchestratorOpts = []service_orchestrator.ServiceOption{
-			service_orchestrator.WithCatalogsFile(ExampleCatalog1),
-			service_orchestrator.WithCatalogsFile(ExampleCatalog2),
-			service_orchestrator.WithCatalogsFile(ExampleCatalog3),
-			service_orchestrator.WithCatalogsFile(ExampleCatalog4),
-		}
-	}
-
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithProviders(providers),
 		service_discovery.WithOAuth2Authorizer(
@@ -276,8 +257,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	)
 
 	// Add storage option to opts
-	orchestratorOpts = append(orchestratorOpts, service_orchestrator.WithStorage(db))
-	orchestratorService = service_orchestrator.NewService(orchestratorOpts...)
+	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(
