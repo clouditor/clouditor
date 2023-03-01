@@ -194,12 +194,12 @@ func TestService_ListCatalogs(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs"))
 	// 1st case: Default catalogs stored
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
+	assert.Equal(t, len(listCatalogsResponse.Catalogs), 4)
 }
 
 func TestService_UpdateCatalog(t *testing.T) {
@@ -253,7 +253,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 		err                  error
 		listCatalogsResponse *orchestrator.ListCatalogsResponse
 	)
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs/emptyTestFolder"))
 
 	// 1st case: Empty catalog ID error
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: ""})
@@ -270,21 +270,21 @@ func TestService_RemoveCatalog(t *testing.T) {
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 
-	// There are two catalogs in the db now (one default plus NewCatalog)
+	// There is one catalog in the db now (one default plus NewCatalog)
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 2, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 
 	// Remove record
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: mockCatalog.Id})
 	assert.NoError(t, err)
 
-	// There are two records left in the DB
+	// There is no record left in the DB
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 0, len(listCatalogsResponse.Catalogs))
 }
 
 func TestService_GetCategory(t *testing.T) {
@@ -368,7 +368,7 @@ func TestService_GetCategory(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFile,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
@@ -389,7 +389,7 @@ func TestService_GetControl(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 	}
 	type args struct {
@@ -467,7 +467,7 @@ func TestService_GetControl(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
@@ -493,23 +493,23 @@ func TestService_ListControls(t *testing.T) {
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
 
-	// 2nd case: Two controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
+	// 2nd case: 50 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are two default controls
-	assert.Equal(t, 2, len(listControlsResponse.Controls))
+	// there are 50 default controls
+	assert.Equal(t, 50, len(listControlsResponse.Controls))
 
 	// 3th case: List controls for a specific catalog and category.
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
-		CatalogId:    "DemoCatalog",
-		CategoryName: "Communication Security",
+		CatalogId:    "Example Catalog 1",
+		CategoryName: "Category 1",
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	assert.Equal(t, 2, len(listControlsResponse.Controls))
+	assert.Equal(t, 21, len(listControlsResponse.Controls))
 }
 
 func TestService_loadCatalogs(t *testing.T) {
@@ -518,7 +518,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -541,8 +541,8 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "storage error",
 			fields: fields{
-				catalogsFile: "catalogs.json",
-				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
+				catalogsFolder: "internal/testcatalogs/emptyTestFolder",
+				storage:        &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
 			wantResult: assert.NotEmpty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -564,15 +564,15 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				catalogsFile: "catalogs.json",
-				storage:      testutil.NewInMemoryStorage(t),
+				catalogsFolder: "internal/testcatalogs",
+				storage:        testutil.NewInMemoryStorage(t),
 			},
 			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				svc, ok := i.(*Service)
 				assert.True(t, ok)
 
 				catalog := new(orchestrator.Catalog)
-				err := svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "DemoCatalog")
+				err := svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "Example Catalog 1")
 				assert.NoError(t, err)
 
 				err = catalog.Validate()
@@ -589,7 +589,7 @@ func TestService_loadCatalogs(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}

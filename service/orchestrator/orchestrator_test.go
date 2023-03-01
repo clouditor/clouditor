@@ -105,7 +105,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with catalogs file",
 			args: args{
-				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
+				opts: []ServiceOption{WithCatalogsFolder("catalogsFolder.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -113,7 +113,7 @@ func TestNewService(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(tt, "catalogsfile.json", service.catalogsFile)
+				return assert.Equal(tt, "catalogsFolder.json", service.catalogsFolder)
 			},
 		},
 		{

@@ -219,7 +219,7 @@ func (svc *Service) loadCatalogs() (err error) {
 		log.Errorf("Error while saving catalog %v", err)
 	}
 
-	log.Debugf("Catalog loaded with id '%s'.", catalogs[0].GetId())
+	log.Debug("Catalogs sucessfully stored.")
 
 	return
 }
@@ -233,10 +233,11 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	// Get all filenames
 	fileList, err = readFolder(svc.catalogsFolder)
 
+	log.Infof("Loading catalogs from files %s.", strings.Join(fileList, ", "))
+
 	// Get catalog for each file
 	for i := range fileList {
 		var catalog []orchestrator.Catalog
-		log.Infof("Loading catalogs from %s", fileList[i])
 		b, err = f.ReadFile(fileList[i])
 		if err != nil {
 			log.Errorf("error while loading %s: %v", fileList[i], err)
