@@ -1,0 +1,1102 @@
+[
+  {
+    "id": "Example Catalog 2",
+    "name": "Example Catalog 2",
+    "description": "This is an example catalog for testing purposes. The catalog contains 3 categories with controls, sub-controls, metrics, all_in_scope enabled and the assurance levels basic, substantial and high are used.",
+    "all_in_scope": true,
+    "assurance_levels": [
+      "basic",
+      "substantial",
+      "high"
+    ],
+    "categories": [
+      {
+        "name": "Category 1",
+        "catalog_id": "Example Catalog 2",
+        "description": "This is the first category with 3 controls and 6 sub-controls each with the assurance levels basic, substantial and high",
+        "controls": [
+          {
+            "id": "Category1-Control-01",
+            "category_name": "Category 1",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category1-Control-01",
+            "description": "This is the first control from the first category.",
+            "controls": [
+              {
+                "id": "Category1-Control-01.1",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.1",
+                "description": "This is a sub-control from the first control in the first category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-01.2",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.2",
+                "description": "This is a sub-control from the first control in the first category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-01.3",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.3",
+                "description": "This is a sub-control from the first control in the first category.",
+                "assurance_level": "high",
+                "metrics": [
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-01.4",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.4",
+                "description": "This is a sub-control from the first control in the first category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-01.5",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.5",
+                "description": "This is a sub-control from the first control in the first category.",
+                "assurance_level": "substantial",
+                "metrics": [
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-01.6",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-01.6",
+                "description": "This is the third sub-control from the first control in the first category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category1-Control-01",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category1-Control-02",
+            "category_name": "Category 1",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category1-Control-02",
+            "description": "This is the second control from the first category.",
+            "controls": [
+              {
+                "id": "Category1-Control-02.1",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.1",
+                "description": "This is a sub-control from the second control in the first category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-02.2",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.2",
+                "description": "This is a sub-control from the second control in the first category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-02.3",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.3",
+                "description": "This is a sub-control from the second control in the first category.",
+                "assurance_level": "high",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-02.4",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.4",
+                "description": "This is a sub-control from the second control in the first category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-02.5",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.5",
+                "description": "This is a sub-control from the second control in the first category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-02.6",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-02.6",
+                "description": "This is the third sub-control from the second control in the first category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category1-Control-02",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category1-Control-03",
+            "category_name": "Category 1",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category1-Control-03",
+            "description": "This is the third control from the first category.",
+            "controls": [
+              {
+                "id": "Category1-Control-03.1",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.1",
+                "description": "This is a sub-control from the third control in the first category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-03.2",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.2",
+                "description": "This is a sub-control from the third control in the first category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-03.3",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.3",
+                "description": "This is a sub-control from the third control in the first category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-03.4",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.4",
+                "description": "This is a sub-control from the third control in the first category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-03.5",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.5",
+                "description": "This is a sub-control from the third control in the first category.",
+                "assurance_level": "substantial",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 1",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category1-Control-03.6",
+                "category_name": "Example Category 1",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category1-Control-03.6",
+                "description": "This is the third sub-control from the third control in the first category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category1-Control-03",
+                "parent_control_category_name": "Category 1",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Category 2",
+        "catalog_id": "Example Catalog 2",
+        "description": "This is the second category with 3 controls and 6 sub-controls each with the assurance levels basic, substantial and high",
+        "controls": [
+          {
+            "id": "Category2-Control-01",
+            "category_name": "Category 2",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category2-Control-01",
+            "description": "This is the first control from the second category.",
+            "controls": [
+              {
+                "id": "Category2-Control-01.1",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.1",
+                "description": "This is a sub-control from the first control in the second category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-01.2",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.2",
+                "description": "This is a sub-control from the first control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-01.3",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.3",
+                "description": "This is a sub-control from the first control in the second category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-01.4",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.4",
+                "description": "This is a sub-control from the first control in the second category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-01.5",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.5",
+                "description": "This is a sub-control from the first control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-01.6",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-01.6",
+                "description": "This is the third sub-control from the first control in the second category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category2-Control-01",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category2-Control-02",
+            "category_name": "Category 2",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category2-Control-02",
+            "description": "This is the second control from the second category.",
+            "controls": [
+              {
+                "id": "Category2-Control-02.1",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.1",
+                "description": "This is a sub-control from the second control in the second category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-02.2",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.2",
+                "description": "This is a sub-control from the second control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-02.3",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.3",
+                "description": "This is a sub-control from the second control in the second category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-02.4",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.4",
+                "description": "This is a sub-control from the second control in the second category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-02.5",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.5",
+                "description": "This is a sub-control from the second control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-02.6",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-02.6",
+                "description": "This is the third sub-control from the second control in the second category.",
+                "assurance_level": "high",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 2",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category2-Control-02",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category2-Control-03",
+            "category_name": "Category 2",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category2-Control-03",
+            "description": "This is the third control from the second category.",
+            "controls": [
+              {
+                "id": "Category2-Control-03.1",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.1",
+                "description": "This is a sub-control from the third control in the second category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-03.2",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.2",
+                "description": "This is a sub-control from the third control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-03.3",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.3",
+                "description": "This is a sub-control from the third control in the second category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-03.4",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.4",
+                "description": "This is a sub-control from the third control in the second category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-03.5",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.5",
+                "description": "This is a sub-control from the third control in the second category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category2-Control-03.6",
+                "category_name": "Example Category 2",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category2-Control-03.6",
+                "description": "This is the third sub-control from the third control in the second category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category2-Control-03",
+                "parent_control_category_name": "Category 2",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Category 3",
+        "catalog_id": "Example Catalog 2",
+        "description": "This is the third category with 3 controls and sub-controls each with different assurance levels.",
+        "controls": [
+          {
+            "id": "Category3-Control-01",
+            "category_name": "Category 3",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category3-Control-01",
+            "description": "This is the first control from the third category.",
+            "controls": [
+              {
+                "id": "Category3-Control-01.1",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-01.1",
+                "description": "This is a sub-control from the first control in the third category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category3-Control-01",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-01.2",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-01.2",
+                "description": "This is a sub-control from the first control in the third category.",
+                "assurance_level": "substantial",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category3-Control-01",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-01.3",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-01.3",
+                "description": "This is a sub-control from the first control in the third category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category3-Control-01",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-01.4",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-01.4",
+                "description": "This is a sub-control from the first control in the third category.",
+                "assurance_level": "basic",
+                "metrics": [
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category3-Control-01",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-01.5",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-01.5",
+                "description": "This is a sub-control from the first control in the third category.",
+                "assurance_level": "substantial",
+                "metrics": [
+                  {
+                    "id": "Metric01",
+                    "name": "Metric01",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "n/a"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric02",
+                    "name": "Metric02",
+                    "description": "A metric with albasiced values",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "allowedValues": {
+                        "values": [
+                          "year"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric03",
+                    "name": "Metric03",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "order": {
+                        "values": [
+                          false,
+                          true
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "Metric04",
+                    "name": "Metric04",
+                    "description": "A metric with ordered values.",
+                    "category": "Category 3",
+                    "scale": 1,
+                    "range": {
+                      "minmax": {}
+                    }
+                  }
+                ],
+                "parent_control_id": "Category3-Control-01",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category3-Control-02",
+            "category_name": "Category 3",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category3-Control-02",
+            "description": "This is the second control from the third category.",
+            "controls": [
+              {
+                "id": "Category3-Control-02.1",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-02.1",
+                "description": "This is a sub-control from the second control in the third category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category3-Control-02",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-02.2",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-02.2",
+                "description": "This is a sub-control from the second control in the third category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category3-Control-02",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-02.3",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-02.3",
+                "description": "This is a sub-control from the second control in the third category.",
+                "assurance_level": "high",
+                "parent_control_id": "Category3-Control-02",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              },
+              {
+                "id": "Category3-Control-02.4",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-02.4",
+                "description": "This is a sub-control from the second control in the third category.",
+                "assurance_level": "substantial",
+                "parent_control_id": "Category3-Control-02",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          },
+          {
+            "id": "Category3-Control-03",
+            "category_name": "Category 3",
+            "category_catalog_id": "Example Catalog 2",
+            "name": "Category3-Control-03",
+            "description": "This is the third control from the third category.",
+            "controls": [
+              {
+                "id": "Category3-Control-03.1",
+                "category_name": "Example Category 3",
+                "category_catalog_id": "Example Catalog 2",
+                "name": "Category3-Control-03.1",
+                "description": "This is a sub-control from the third control in the third category.",
+                "assurance_level": "basic",
+                "parent_control_id": "Category3-Control-03",
+                "parent_control_category_name": "Category 3",
+                "parent_control_category_catalog_id": "Example Catalog 2"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

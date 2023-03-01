@@ -122,7 +122,6 @@ var (
 	evidenceStoreService evidence.EvidenceStoreServer
 	db                   persistence.Storage
 	providers            []string
-	orchestratorOpts     []service_orchestrator.ServiceOption
 
 	log *logrus.Entry
 )
