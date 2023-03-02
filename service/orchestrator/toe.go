@@ -443,21 +443,6 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 	return dedupControls, nil
 }
 
-// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
-func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
-	s.hookMutex.RLock()
-	hooks := s.toeHooks
-	defer s.hookMutex.RUnlock()
-
-	// Inform our hook, if we have any
-	if len(hooks) > 0 {
-		for _, hook := range hooks {
-			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, event, err)
-		}
-	}
-}
-
 // deduplicate removes all duplicates
 func deduplicate(result []*orchestrator.Control) []*orchestrator.Control {
 	// Sort slice by ID
