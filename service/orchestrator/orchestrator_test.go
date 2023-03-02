@@ -384,9 +384,11 @@ func Test_GetCertificate(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
-				// Compare timestamp. We have to cut off the microseconds, otherwise an error is returned.
-				tt.res.States[0].Timestamp = strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
-				res.States[0].Timestamp = strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				// Compare timestamp. We have to cut off the microseconds and seconds, otherwise an error can be returned.
+				t1 := strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
+				tt.res.States[0].Timestamp = t1[:len(t1)-3]
+				t2 := strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				res.States[0].Timestamp = t2[:len(t2)-3]
 				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
 		})
