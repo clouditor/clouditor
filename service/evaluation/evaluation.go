@@ -170,7 +170,7 @@ func (s *Service) Authorizer() api.Authorizer {
 	return s.authorizer
 }
 
-// StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation. If no inteval time is given, the default value of 5 minutes is used.
+// StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation. If no inteval time is given, the default value is used.
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
 		schedulerTag string
@@ -216,7 +216,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	s.scheduler.TagsUnique()
 
 	// Add the controls_in_scope of the target_of_evaluation including their sub-controls to the scheduler. The parent control has to wait for the evaluation of the sub-controls. That's why we need to know how much sub-controls are available and define the waitGroup with the number of the corresponding sub-controls. The controls_in_scope are not stored in a hierarchy, so we have to get the parent control and find all related sub-controls.
-	controlsInScope := toe.GetControlsInScope()
+	controlsInScope := getControlsInScopeHierarchy(toe.GetControlsInScope())
 	for _, control := range controlsInScope {
 		var (
 			controls []*orchestrator.Control
@@ -232,11 +232,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Collect control including sub-controls from the controls_in_scope slice to start them later as scheduler jobs
 		controls = append(controls, control)
-		for i := range controlsInScope {
-			if controlsInScope[i].GetParentControlId() == control.GetId() {
-				controls = append(controls, controlsInScope[i])
-			}
-		}
+		controls = append(controls, control.GetControls()...)
 
 		// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
 		parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
@@ -281,7 +277,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	return
 }
 
-// StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation.
+// StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a TargetOfEvaluation.
 func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
 
 	var (
@@ -319,30 +315,19 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 				log.Error(err)
 				errorControlIds = append(errorControlIds, control.GetId())
 			}
-			// TODO(anatheka). Do we need the whole logging here?
-			// if err != nil && strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-			// 	err = fmt.Errorf("evaluation for cloud service id '%s' with control '%s' not running", req.GetCloudServiceId(), control.GetId())
-			// 	log.Error(err)
-			// 	continue
-			// } else if err != nil {
-			// 	err = fmt.Errorf("error when stopping scheduler job for control id '%s'", control.GetId())
-			// 	log.Error(err)
-			// 	continue
-			// }
 
-			// TODO(anatheka): WEITERMACHEN!!! How do we have to delete the WaitGroup? We have to wait until the sub-controls evaluation is finished
-
-			log.Infof("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
+			log.Debugf("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
 		} else {
 			// Control is a sub-control
 			schedulerTag = getSchedulerTag(req.GetCloudServiceId(), control.GetId())
 			err = s.stopSchedulerJob(schedulerTag)
-			// err = s.stopJobAndHandleError(req.GetCloudServiceId(), control.GetId())
 			// No need of further error handling
 			if err != nil && !strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
 				log.Error(err)
 				errorControlIds = append(errorControlIds, control.GetId())
 			}
+
+			log.Debugf("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
 		}
 	}
 
@@ -416,7 +401,7 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 	// }
 
 	for _, v := range s.results {
-		if req.FilteredCloudServiceId != nil && v.TargetOfEvaluation.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
+		if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
 			continue
 		}
 
@@ -456,7 +441,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	}
 	if err != nil {
 		log.Error(err)
-		return status.Errorf(codes.Internal, "%s: %v", "evaluation cannot be scheduled", err)
+		return status.Errorf(codes.Internal, "evaluation cannot be scheduled: %v", err)
 	}
 
 	// schedulerTag is the tag for the given control
@@ -464,7 +449,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 
 	// Regarding the control level the specific method is called every X minutes based on the given interval. We have to decide if a sub-control is started individually or a parent control that has to wait for the results of the sub-controls.
 	// If a parent control with its sub-controls is started, the parentSchedulerTag is empty and the ParentControlId is not set.
-	// If a sub-control is started individually the parentSchedulerTag is empty nd and ParentControlId is set.
+	// If a sub-control is started individually the parentSchedulerTag is empty and ParentControlId is set.
 	if parentSchedulerTag == "" && c.ParentControlId == nil { // parent control
 		_, err = s.scheduler.
 			Every(interval).
@@ -491,10 +476,10 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 
 // stopSchedulerJob stops a scheduler job for the given scheduler tag
 func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
-	// Delete the job from the scheduler
+	// Remove job for tag from the scheduler
 	err = s.scheduler.RemoveByTag(schedulerTag)
 	if err != nil {
-		err = fmt.Errorf("error when removing job for tag '%s' from scheduler: %v", schedulerTag, err)
+		err = fmt.Errorf("error while removing job for tag '%s' from scheduler: %v", schedulerTag, err)
 		return
 	}
 
@@ -503,7 +488,7 @@ func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
 
 // stopSchedulerJobs stops all scheduler jobs for the given scheduler tags
 func (s *Service) stopSchedulerJobs(schedulerTags []string) (err error) {
-	// Delete the job from the scheduler
+	// Remove all job for given tags from the scheduler
 	for _, schedulerTag := range schedulerTags {
 		err = s.stopSchedulerJob(schedulerTag)
 		if err != nil {
@@ -519,7 +504,7 @@ func (s *Service) stopSchedulerJobs(schedulerTags []string) (err error) {
 func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
 		status                        = evaluation.EvaluationResult_STATUS_UNSPECIFIED
-		nonCompliantAssessmentResults []*assessment.AssessmentResult
+		nonCompliantAssessmentResults []string
 		result                        *evaluation.EvaluationResult
 	)
 
@@ -530,6 +515,8 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
+		FilteredControlId:      &controlId,
+		// TODO(all): If evaluation results are stored in DB: getLastedByControlID or similar.
 	})
 	if err != nil {
 		err = fmt.Errorf("error list evaluation results: %v", err)
@@ -542,28 +529,27 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	s.wg[schedulerTag].wg.Add(len(subControls))
 	s.wg[schedulerTag].wgMutex.Unlock()
 
-	// Find all needed evaluation results and calculate compliant status and add non-compliant assessment results
 	for _, r := range evaluations.Results {
-		if controlContains(toe.GetControlsInScope(), r.GetControlId()) && r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
+		if r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
 			status = evaluation.EvaluationResult_COMPLIANT
 		} else {
 			status = evaluation.EvaluationResult_NOT_COMPLIANT
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.FailingAssessmentResults...)
+			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultsId()...)
 		}
 	}
 
 	// Create evaluation result
-	// TODO(all): Store in DB
 	result = &evaluation.EvaluationResult{
-		Id:                       uuid.NewString(),
-		Timestamp:                timestamppb.Now(),
-		CategoryName:             categoryName,
-		ControlId:                controlId,
-		TargetOfEvaluation:       toe,
-		Status:                   status,
-		FailingAssessmentResults: nonCompliantAssessmentResults,
+		Id:                         uuid.NewString(),
+		Timestamp:                  timestamppb.Now(),
+		CategoryName:               categoryName,
+		ControlId:                  controlId,
+		CloudServiceId:             toe.GetCloudServiceId(),
+		Status:                     status,
+		FailingAssessmentResultsId: nonCompliantAssessmentResults,
 	}
 
+	// TODO(all): Store in DB
 	s.resultMutex.Lock()
 	s.results[result.Id] = result
 	s.resultMutex.Unlock()
@@ -586,6 +572,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		log.Debug("No evaluation result created")
 	} else {
 
+		//TODO(all): Store in DB
 		s.resultMutex.Lock()
 		s.results[result.Id] = result
 		s.resultMutex.Unlock()
@@ -594,7 +581,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 	}
 
 	// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
-	if parentSchedulerTag != "" {
+	if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
 		s.wg[parentSchedulerTag].wgMutex.Lock()
 		s.wg[parentSchedulerTag].wg.Done()
 		s.wg[parentSchedulerTag].wgMutex.Unlock()
@@ -603,25 +590,24 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 
 // evaluationResultForSubcontrol return the evaluation result for the sub-control, e.g. OPS-13.7
 // TODO(anatheka): Refactor cloudServiceId, etc. with toe.*
-func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (result *evaluation.EvaluationResult, err error) {
+func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (eval *evaluation.EvaluationResult, err error) {
 	var (
 		assessmentResults []*assessment.AssessmentResult
 	)
 
 	// Get metrics from control and sub-controls
-	metrics, err := s.getMetrics(catalogId, categoryName, controlId)
+	metrics, err := s.getAllMetricsFromControl(catalogId, categoryName, controlId)
 	if err != nil {
-		err = fmt.Errorf("could not get metrics from control and sub-controls for Cloud Service '%s' from Orchestrator: %v", cloudServiceId, err)
+		err = fmt.Errorf("could not get metrics for controlID '%s' for Cloud Service '%s' from Orchestrator: %v", controlId, cloudServiceId, err)
 		return
 	}
 
 	// TODO(anatheka): Is the evaluation result COMPLIANT or should it be UNSPECIFIED if no metrics exist for the control?
 	// Currently, the evaluation continues when no metrics exist and the evaluation result becomes COMPLIANT.
 	if len(metrics) != 0 {
-		// Get assessment results filtered for
+		// Get latest assessment_results by resource_id filtered by
 		// * cloud service id
 		// * metric ids
-		// TODO(anatheka): Change to getLastAssessmentResult
 		assessmentResults, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
 			FilteredCloudServiceId: &cloudServiceId,
 			FilteredMetricId:       getMetricIds(metrics),
@@ -632,55 +618,59 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 
 		if err != nil || len(assessmentResults) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
-			err = fmt.Errorf("could not get assessment results for Cloud Service ID '%s' from Orchestrator: %v", cloudServiceId, err)
+			err = fmt.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", cloudServiceId, getMetricIds(metrics), err)
+			return nil, err
+		} else if len(assessmentResults) == 0 {
+			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
+			err = fmt.Errorf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", cloudServiceId, getMetricIds(metrics))
 			return nil, err
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")
 	}
 
-	// Here the actual evaluation takes place. We check if all asssessment results are compliant or not. If at least one assessment result is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment results are stored in a separate list.
-	// TODO(anatheka): Do we want the whole assessment result in evaluationResult.FailingAssessmentResults or only the IDs?
-	var nonCompliantAssessmentResults []*assessment.AssessmentResult
-	status := evaluation.EvaluationResult_PENDING
-	for _, elem := range assessmentResults {
-		if !elem.Compliant {
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, elem)
-			status = evaluation.EvaluationResult_NOT_COMPLIANT
+	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If at least one assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
+
+	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id together for evaluation
+	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
+	for _, result := range assessmentResultsMap {
+		var nonCompliantAssessmentResults []string
+		status := evaluation.EvaluationResult_PENDING
+
+		// If no assessment_results are available continue
+		if len(result) == 0 {
+			continue
 		}
-	}
 
-	// If no assessment results are available for the metric, the evaluation status is set to compliant
-	// TODO(anatheka): Or should we set it to UNSPECIFIED? What does it mean if we have no assessment results?
-	if status == evaluation.EvaluationResult_PENDING {
-		status = evaluation.EvaluationResult_COMPLIANT
-	}
+		for i := range result {
+			if !result[i].Compliant {
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, result[i].GetId()) // It does not matter which element is used here, since they all have the same resource_id.
+				status = evaluation.EvaluationResult_NOT_COMPLIANT
+			}
+		}
 
-	// Create evaluation result
-	// TODO(all): Store in DB
-	result = &evaluation.EvaluationResult{
-		Id:                       uuid.NewString(),
-		Timestamp:                timestamppb.Now(),
-		CategoryName:             categoryName,
-		ControlId:                controlId,
-		TargetOfEvaluation:       toe,
-		Status:                   status,
-		FailingAssessmentResults: nonCompliantAssessmentResults,
+		// If no assessment results are available for the metric, no evaluation result is created
+		if status == evaluation.EvaluationResult_PENDING {
+			log.Debugf("No assessment results for resource '%s' available.", result[0].GetResourceId())
+			continue
+		}
+
+		// Create evaluation result
+		// TODO(all): Store in DB
+		eval = &evaluation.EvaluationResult{
+			Id:                         uuid.NewString(),
+			Timestamp:                  timestamppb.Now(),
+			CategoryName:               categoryName,
+			ControlId:                  controlId,
+			CloudServiceId:             toe.GetCloudServiceId(),
+			CatalogId:                  toe.GetCatalogId(),
+			ResourceId:                 result[0].GetResourceId(), // It does not matter which element is used here, since they all have the same resource_id.
+			Status:                     status,
+			FailingAssessmentResultsId: nonCompliantAssessmentResults,
+		}
 	}
 
 	return
-}
-
-// TODO(anatheka): Move to internals?
-// controlContains return true if the given control id is a sub-control of the controls slice
-func controlContains(controls []*orchestrator.Control, controlId string) bool {
-	for _, c := range controls {
-		if c.GetId() == controlId {
-			return true
-		}
-	}
-
-	return false
 }
 
 // getMetricIds returns the metric Ids for the given metrics
@@ -694,11 +684,9 @@ func getMetricIds(metrics []*assessment.Metric) []string {
 	return metricIds
 }
 
-// getMetrics returns all metrics from a given controlId
+// getAllMetricsFromControl returns all metrics from a given controlId
 // For now a control has either sub-controls or metrics. If the control has sub-controls, get also all metrics from the sub-controls.
-// TODO(anatheka): Is it possible that a control has sub-controls and metrics?
-// TODO(anatheka): Refactor catalogId, etc.?
-func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics []*assessment.Metric, err error) {
+func (s *Service) getAllMetricsFromControl(catalogId, categoryName, controlId string) (metrics []*assessment.Metric, err error) {
 	var subControlMetrics []*assessment.Metric
 
 	control, err := s.getControl(catalogId, categoryName, controlId)
@@ -713,7 +701,7 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 	// Add sub-control metrics to the metric list if exist
 	if len(control.Controls) != 0 {
 		// Get the metrics from the next sub-control
-		subControlMetrics, err = s.getMetricsFromSubdontrols(control)
+		subControlMetrics, err = s.getMetricsFromSubcontrols(control)
 		if err != nil {
 			err = fmt.Errorf("error getting metrics from sub-controls: %v", err)
 			return
@@ -725,8 +713,8 @@ func (s *Service) getMetrics(catalogId, categoryName, controlId string) (metrics
 	return
 }
 
-// getMetricsFromSubdontrols returns a list of metrics from the sub-controls.
-func (s *Service) getMetricsFromSubdontrols(control *orchestrator.Control) (metrics []*assessment.Metric, err error) {
+// getMetricsFromSubcontrols returns a list of metrics from the sub-controls.
+func (s *Service) getMetricsFromSubcontrols(control *orchestrator.Control) (metrics []*assessment.Metric, err error) {
 	var subcontrol *orchestrator.Control
 
 	if control == nil {
@@ -745,7 +733,7 @@ func (s *Service) getMetricsFromSubdontrols(control *orchestrator.Control) (metr
 	return
 }
 
-// getAllControlIdsFromControl returns a list with the control id and the sub-control ids.
+// getAllControlIdsFromControl returns a list with the control and the sub-control ids.
 func getAllControlIdsFromControl(control *orchestrator.Control) []string {
 	// controlIds := make([]string, 0)
 	var controlIds []string
@@ -821,4 +809,37 @@ func getSchedulerTagsForControlIds(controlIds []string, cloudServiceId string) (
 	}
 
 	return
+}
+
+// getControlsInScopeHierarchy return a controls list as hierarchy regarding the parent and sub-controls.
+func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHierarchy []*orchestrator.Control) {
+	var temp = make(map[string]*orchestrator.Control)
+
+	for i := range controls {
+		if controls[i].ParentControlId == nil {
+			temp[controls[i].GetId()] = controls[i]
+		}
+	}
+
+	for i := range controls {
+		if controls[i].ParentControlId != nil {
+			temp[controls[i].GetParentControlId()].Controls = append(temp[controls[i].GetParentControlId()].Controls, controls[i])
+		}
+	}
+
+	for i := range temp {
+		controlsHierarchy = append(controlsHierarchy, temp[i])
+	}
+
+	return
+}
+
+func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
+	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
+
+	for i := range results {
+		hierarchyResults[results[i].GetId()] = append(hierarchyResults[results[i].GetId()], results[i])
+	}
+
+	return hierarchyResults
 }

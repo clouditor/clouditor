@@ -110,12 +110,29 @@ message StopEvaluationRequest {
 message StopEvaluationResponse {}
  
 // A evaluation result resource, representing the result after evaluating the cloud service with a specific control
+// cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
 message EvaluationResult {
   // Evaluation result id
   string id = 1
     [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
 
-  enum EvaluationStatus {
+  // The Cloud Service ID the evaluation belongs to
+  string cloud_service_id = 2
+  [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
+
+  // The category the control belongs to 
+  string category_name = 3
+    [(validate.rules).string.min_len = 1]; 
+
+  // The catalog the control belongs to 
+  string catalog_id = 4
+    [(validate.rules).string.min_len = 1]; 
+
+  // The evaluated resource 
+  string resource_id = 5
+    [(validate.rules).string.min_len = 1]; 
+  
+    enum EvaluationStatus {
     STATUS_UNSPECIFIED = 0;
     COMPLIANT = 1;
     NOT_COMPLIANT = 2;
@@ -123,26 +140,18 @@ message EvaluationResult {
   }
   
   // Evaluation status
-  EvaluationStatus status = 2
+  EvaluationStatus status = 6
     [(validate.rules).enum.defined_only = true];
   
-  // The category the control belongs to 
-  string category_name = 3
-    [(validate.rules).string.min_len = 1]; 
-
-  // Reference to the control id the evaluation was based on
-  string control_id = 4
+  // The control id the evaluation was based on
+  string control_id = 7
     [(validate.rules).string.min_len = 1];
-
+  
   // Time of evaluation
-  google.protobuf.Timestamp timestamp = 5
+  google.protobuf.Timestamp timestamp = 8
     [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
-  // Reference to the target of evaluation the evaluation was based on
-  clouditor.orchestrator.v1.TargetOfEvaluation target_of_evaluation = 6
-    [(validate.rules).message.required = true];
-
   // List of assessment results because of which the evaluation status is not 'compliant'
-  repeated clouditor.assessment.v1.AssessmentResult failing_assessment_results = 7
+  repeated string failing_assessment_results_id = 9
     [(validate.rules).repeated.items.message.required = true];
 }

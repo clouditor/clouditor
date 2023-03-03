@@ -854,10 +854,26 @@ func (m *EvaluationResult) validate(all bool) error {
 
 	}
 
-	if _, ok := EvaluationResult_EvaluationStatus_name[int32(m.GetStatus())]; !ok {
+	if m.GetCloudServiceId() != "" {
+
+		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+			err = EvaluationResultValidationError{
+				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
 		err := EvaluationResultValidationError{
-			field:  "Status",
-			reason: "value must be one of the defined enum values",
+			field:  "CategoryName",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
@@ -865,10 +881,32 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
 		err := EvaluationResultValidationError{
-			field:  "CategoryName",
+			field:  "CatalogId",
 			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetResourceId()) < 1 {
+		err := EvaluationResultValidationError{
+			field:  "ResourceId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := EvaluationResult_EvaluationStatus_name[int32(m.GetStatus())]; !ok {
+		err := EvaluationResultValidationError{
+			field:  "Status",
+			reason: "value must be one of the defined enum values",
 		}
 		if !all {
 			return err
@@ -914,91 +952,6 @@ func (m *EvaluationResult) validate(all bool) error {
 				cause:  err,
 			}
 		}
-	}
-
-	if m.GetTargetOfEvaluation() == nil {
-		err := EvaluationResultValidationError{
-			field:  "TargetOfEvaluation",
-			reason: "value is required",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if all {
-		switch v := interface{}(m.GetTargetOfEvaluation()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EvaluationResultValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EvaluationResultValidationError{
-					field:  "TargetOfEvaluation",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTargetOfEvaluation()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EvaluationResultValidationError{
-				field:  "TargetOfEvaluation",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	for idx, item := range m.GetFailingAssessmentResults() {
-		_, _ = idx, item
-
-		if item == nil {
-			err := EvaluationResultValidationError{
-				field:  fmt.Sprintf("FailingAssessmentResults[%v]", idx),
-				reason: "value is required",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, EvaluationResultValidationError{
-						field:  fmt.Sprintf("FailingAssessmentResults[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, EvaluationResultValidationError{
-						field:  fmt.Sprintf("FailingAssessmentResults[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return EvaluationResultValidationError{
-					field:  fmt.Sprintf("FailingAssessmentResults[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
 	}
 
 	if len(errors) > 0 {

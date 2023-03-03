@@ -121,93 +121,24 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        AllowedValues:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Defines a range
-        AssessmentResult:
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: Assessment result id
-                timestamp:
-                    type: string
-                    description: Time of assessment
-                    format: date-time
-                metricId:
-                    type: string
-                    description: Reference to the metric the assessment was based on
-                metricConfiguration:
-                    $ref: '#/components/schemas/MetricConfiguration'
-                compliant:
-                    type: boolean
-                    description: 'Compliant case: true or false'
-                evidenceId:
-                    type: string
-                    description: Reference to the assessed evidence
-                resourceId:
-                    type: string
-                    description: Reference to the resource of the assessed evidence
-                resourceTypes:
-                    type: array
-                    items:
-                        type: string
-                    description: Resource types
-                nonComplianceComments:
-                    type: string
-                    description: Some comments on the reason for non-compliance
-                cloudServiceId:
-                    type: string
-                    description: The cloud service which this assessment result belongs to
-            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
-        Control:
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
-                categoryName:
-                    type: string
-                categoryCatalogId:
-                    type: string
-                name:
-                    type: string
-                    description: Human-readable name of the control
-                description:
-                    type: string
-                    description: Description of the control
-                controls:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Control'
-                    description: List of sub - controls -     this is in accordance with the OSCAL model.
-                metrics:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Metric'
-                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
-                parentControlId:
-                    type: string
-                    description: Reference to the parent category this control belongs to.
-                parentControlCategoryName:
-                    type: string
-                parentControlCategoryCatalogId:
-                    type: string
-                assuranceLevel:
-                    type: string
-                    description: An assurance level is not offered by every catalog, therefore it is optional.
-            description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
         EvaluationResult:
             type: object
             properties:
                 id:
                     type: string
                     description: Evaluation result id
+                cloudServiceId:
+                    type: string
+                    description: The Cloud Service ID the evaluation belongs to
+                categoryName:
+                    type: string
+                    description: The category the control belongs to
+                catalogId:
+                    type: string
+                    description: The catalog the control belongs to
+                resourceId:
+                    type: string
+                    description: The evaluated resource
                 status:
                     enum:
                         - STATUS_UNSPECIFIED
@@ -217,24 +148,19 @@ components:
                     type: string
                     description: Evaluation status
                     format: enum
-                categoryName:
-                    type: string
-                    description: The category the control belongs to
                 controlId:
                     type: string
-                    description: Reference to the control id the evaluation was based on
+                    description: The control id the evaluation was based on
                 timestamp:
                     type: string
                     description: Time of evaluation
                     format: date-time
-                targetOfEvaluation:
-                    $ref: '#/components/schemas/TargetOfEvaluation'
-                failingAssessmentResults:
+                failingAssessmentResultsId:
                     type: array
                     items:
-                        $ref: '#/components/schemas/AssessmentResult'
+                        type: string
                     description: List of assessment results because of which the evaluation status is not 'compliant'
-            description: A evaluation result resource, representing the result after evaluating the cloud service with a specific control
+            description: A evaluation result resource, representing the result after evaluating the cloud service with a specific control cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
         GoogleProtobufAny:
             type: object
             properties:
@@ -243,8 +169,6 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        GoogleProtobufValue:
-            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         ListEvaluationResultsResponse:
             type: object
             properties:
@@ -254,112 +178,6 @@ components:
                         $ref: '#/components/schemas/EvaluationResult'
                 nextPageToken:
                     type: string
-        Metric:
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: Required. The unique identifier of the metric.
-                name:
-                    type: string
-                    description: Required. The human readable name of the metric.
-                description:
-                    type: string
-                    description: The description of the metric
-                category:
-                    type: string
-                    description: The reference to control catalog category or domain
-                scale:
-                    enum:
-                        - SCALE_UNSPECIFIED
-                        - NOMINAL
-                        - ORDINAL
-                        - METRIC
-                    type: string
-                    description: The scale of this metric, e.g. categories, ranked data or metric values.
-                    format: enum
-                range:
-                    $ref: '#/components/schemas/Range'
-                interval:
-                    type: integer
-                    description: The interval in seconds the evidences must be collected for the respective metric. For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
-                    format: int64
-                implementation:
-                    $ref: '#/components/schemas/MetricImplementation'
-            description: A metric resource
-        MetricConfiguration:
-            type: object
-            properties:
-                operator:
-                    type: string
-                    description: The operator to compare the metric, such as == or >
-                targetValue:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
-                isDefault:
-                    type: boolean
-                    description: Whether this configuration is a default configuration
-                updatedAt:
-                    type: string
-                    description: The last time of update
-                    format: date-time
-                metricId:
-                    type: string
-                    description: The metric this configuration belongs to
-                cloudServiceId:
-                    type: string
-                    description: The service this configuration belongs to
-            description: Defines the operator and a target value for an individual metric
-        MetricImplementation:
-            type: object
-            properties:
-                metricId:
-                    type: string
-                    description: The metric which is implemented
-                lang:
-                    enum:
-                        - LANGUAGE_UNSPECIFIED
-                        - LANGUAGE_REGO
-                    type: string
-                    description: The language this metric is implemented in
-                    format: enum
-                code:
-                    type: string
-                    description: The actual implementation
-                updatedAt:
-                    type: string
-                    description: The last time of update
-                    format: date-time
-            description: MetricImplementation defines the implementation of an individual metric.
-        MinMax:
-            type: object
-            properties:
-                min:
-                    type: integer
-                    description: Required.
-                    format: int64
-                max:
-                    type: integer
-                    description: Required.
-                    format: int64
-            description: Defines a range of values through a (inclusive) minimum and a maximum
-        Order:
-            type: object
-            properties:
-                values:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Defines a range of values in a pre-defined order from the lowest to the highest.
-        Range:
-            type: object
-            properties:
-                allowedValues:
-                    $ref: '#/components/schemas/AllowedValues'
-                order:
-                    $ref: '#/components/schemas/Order'
-                minMax:
-                    $ref: '#/components/schemas/MinMax'
-            description: A range resource representing the range of values
         StartEvaluationResponse:
             type: object
             properties:
@@ -386,21 +204,5 @@ components:
         StopEvaluationResponse:
             type: object
             properties: {}
-        TargetOfEvaluation:
-            type: object
-            properties:
-                cloudServiceId:
-                    type: string
-                catalogId:
-                    type: string
-                assuranceLevel:
-                    type: string
-                    description: an assurance level is not offered by every catalog, therefore it is optional
-                controlsInScope:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Control'
-                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation. Note: Because of limitations of our ORM framework, this field only contains a list of controls that are in scope of the target, but not the actual meta-data associated it with it (which is of message type ControlInScope). In order to retrieve the meta-data of the controls, the RPC ListControlsInScope (or the associated REST path) must be called.'
-            description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Evaluation
