@@ -1,9 +1,9 @@
 # `metrics.json`: Format of metrics (see metric.proto for more details)
-| Field | Description |
-| ----------- | ----------------- |
-| id   | The ID of metric. Must not contain spaces.  |
-| name     | A more readable name    |
-| description  | A short description |
-| category  | The control of the catalog |
-| scale  | 1 for nominal data, 2 for ordinal data and 3 for numbers |
-| range | Depending on scale: "allowedValues" for nominal, "order" for ordinal and "minMax" for numbers|
+| Field | Type                                                                                                                    | Description                                                                                                                                                                            |
+| ----------- |-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| id   | string                                                                                                                  | The ID of metric. Must not contain spaces.                                                                                                                                             |
+| name     | string                                                                                                                  | A more readable name                                                                                                                                                                   |
+| description  | string                                                                                                                  | A short description                                                                                                                                                                    |
+| category  | string                                                                                                                  | The control of the catalog                                                                                                                                                             |
+| scale  | int                                                                                                                     | 1 for nominal data, 2 for ordinal data and 3 for numbers                                                                                                                               |
+| range | Depending on scale: \<allowedValues\> for nominal (range = 1), \<order\> for ordinal (2) and \<minMax\> for numbers (3) | The range is defined either as list (`"allowedValues": [value1, value 2, ...]` or `"order": [value1, value 2, ...]`) or with min/max values (`"minMax": {"min": <int>, "max": <int>}`) |

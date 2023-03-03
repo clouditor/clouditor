@@ -45,7 +45,7 @@
   {
     "id": "AnomalyDetectionOutput",
     "name": "Anomaly Detection: Output",
-    "description": "This metric is used to assess if the output is ???",
+    "description": "This metric is used to assess if the output is ",
     "category": "",
     "scale": 1,
     "range": {
@@ -74,7 +74,7 @@
   {
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
-    "description": "This metric describes the algorithm of a storage encryption block cipher",
+    "description": "This metric is used to assess the algorithm of a storage encryption block cipher",
     "category": "CKM-03",
     "scale": 1,
     "range": {
@@ -91,7 +91,7 @@
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
     "category": "CKM-03",
-    "description": "This metric describes if storage encryption is enabled",
+    "description": "This metric is used to assess if storage encryption is enabled",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -181,11 +181,9 @@
     "category": "",
     "scale": 3,
     "range": {
-      "allowedValues": {
-        "values": [
-          true,
-          false
-        ]
+      "minMax": {
+        "min": 0,
+        "max": 365
       }
     }
   },
@@ -297,11 +295,10 @@
     "category": "",
     "scale": 1,
     "range": {
-      "allowedValues": {
-        "values": [
-          "*"
-        ]
-      }
+      "allowedValues" : [
+        true,
+        false
+      ]
     }
   },
   {
