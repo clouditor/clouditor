@@ -209,17 +209,17 @@ func TestService_UpdateCatalog(t *testing.T) {
 	)
 	orchestratorService := NewService()
 
-	// 1st case: Certificate is nil
+	// 1st case: Catalog is nil
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 2nd case: Certificate ID is nil
+	// 2nd case: Catalog ID is nil
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: catalog,
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
-	// 3rd case: Certificate not found since there are no certificates yet
+	// 3rd case: Catalog not found since there are no catalogs yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
 			Id:              testdata.MockCatalogID,
@@ -230,7 +230,7 @@ func TestService_UpdateCatalog(t *testing.T) {
 	assert.Equal(t, codes.NotFound, status.Code(err))
 	assert.ErrorContains(t, err, "catalog not found")
 
-	// 4th case: Certificate updated successfully
+	// 4th case: Catalog updated successfully
 	mockCatalog := orchestratortest.NewCatalog()
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
@@ -238,7 +238,7 @@ func TestService_UpdateCatalog(t *testing.T) {
 		return
 	}
 
-	// update the certificate's description and send the update request
+	// update the Catalog's description and send the update request
 	mockCatalog.Description = "new description"
 	catalog, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: mockCatalog,
