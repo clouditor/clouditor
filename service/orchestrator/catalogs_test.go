@@ -486,7 +486,7 @@ func TestService_ListControls(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs"))
 	// 1st case: No Controls stored
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
