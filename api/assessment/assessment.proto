@@ -84,7 +84,7 @@ message ListAssessmentResultsRequest {
   repeated string filtered_metric_id = 3
       [ (validate.rules).repeated .items.string.min_len = 1 ];
 
-  // Optional. Latest results grouped by resource_id.
+  // Optional. Latest results grouped by resource_id and metric_id.
   optional bool latest_by_resource_id = 4;
 
   int32 page_size = 10;

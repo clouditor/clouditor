@@ -180,7 +180,7 @@ var (
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockMetricID,
+			MetricId:       testdata.MockAnotherMetricID,
 			CloudServiceId: testdata.MockCloudServiceID,
 		},
 	}
