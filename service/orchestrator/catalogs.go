@@ -223,7 +223,7 @@ func (svc *Service) loadCatalogs() (err error) {
 		log.Errorf("Error while saving catalog %v", err)
 	}
 
-	log.Debug("Catalogs sucessfully stored.")
+	log.Debug("Catalogs successfully stored.")
 
 	return
 }
