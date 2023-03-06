@@ -39,7 +39,9 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -89,9 +91,9 @@ type Service struct {
 	storage persistence.Storage
 
 	// TODO(all): Comment in once the evaluation results are stored in storage
-	// // authz defines our authorization strategy, e.g., which user can access which cloud service and associated
-	// // resources, such as evidences and assessment results.
-	// authz service.AuthorizationStrategy
+	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// resources, such as evidences and assessment results.
+	authz service.AuthorizationStrategy
 }
 
 func init() {
@@ -134,6 +136,7 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Op
 
 // NewService creates a new Evaluation service
 func NewService(opts ...service.Option[Service]) *Service {
+	var err error
 	s := Service{
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
@@ -148,14 +151,18 @@ func NewService(opts ...service.Option[Service]) *Service {
 		o(&s)
 	}
 
-	// TODO(lebogg): Implement persistence storage
-	// // Default to an in-memory storage, if nothing was explicitly set
-	// if s.storage == nil {
-	// 	s.storage, err = inmemory.NewStorage()
-	// 	if err != nil {
-	// 		log.Errorf("Could not initialize the storage: %v", err)
-	// 	}
-	// }
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+
+	// Default to an allow-all authorization strategy
+	if s.authz == nil {
+		s.authz = &service.AuthorizationStrategyAllowAll{}
+	}
 
 	return &s
 }
@@ -343,14 +350,14 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 }
 
 // ListEvaluationResults is a method implementation of the assessment interface
-func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
+func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
 	var (
 		filtered_values []*evaluation.EvaluationResult
 		// TODO(all): Comment in once the evaluation results are stored in storage
-		// allowed         []string
-		// all             bool
-		// query           []string
-		// args            []any
+		allowed []string
+		all     bool
+		query   []string
+		args    []any
 	)
 
 	// Validate request
@@ -360,57 +367,58 @@ func (s *Service) ListEvaluationResults(_ context.Context, req *evaluation.ListE
 	}
 
 	// TODO(all): Comment in once the evaluation results are stored in storage
-	// // Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions to our storage request, if we are allowed to see all cloud services.
-	// all, allowed = s.authz.AllowedCloudServices(ctx)
+	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions to our storage request, if we are allowed to see all cloud services.
+	all, allowed = s.authz.AllowedCloudServices(ctx)
 
-	// // The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
-	// // unless one can access *all* the cloud services.
-	// if !all && req.FilteredCloudServiceId != nil && !slices.Contains(allowed, req.GetFilteredCloudServiceId()) {
-	// 	return nil, service.ErrPermissionDenied
-	// }
-
-	// // Filtering evaluation results by
-	// // * cloud service ID
-	// // * control ID
-	// if req.GetFilteredCloudServiceId() != "" {
-	// 	query = append(query, "cloud_service_id = ?")
-	// 	args = append(args, req.GetFilteredCloudServiceId())
-	// }
-	// if req.GetFilteredControlId() != "" {
-	// 	query = append(query, "control_id = ?")
-	// 	args = append(args, req.GetFilteredControlId())
-	// }
-
-	// // In any case, we need to make sure that we only select assessment results of cloud services that we have access to (if we do not have access to all)
-	// if !all {
-	// 	query = append(query, "cloud_service_id IN ?")
-	// 	args = append(args, allowed)
-	// }
-
-	// // join query with AND and prepend the query
-	// args = append([]any{strings.Join(query, " AND ")}, args...)
-
-	// res = new(evaluation.ListEvaluationResultsResponse)
-
-	// // Paginate the results according to the request
-	// res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, s.storage, service.DefaultPaginationOpts, args...)
-	// if err != nil {
-	// 	err = fmt.Errorf("could not paginate evaluation results: %v", err)
-	// 	log.Error(err)
-	// 	return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	// }
-
-	for _, v := range s.results {
-		if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
-			continue
-		}
-
-		if req.FilteredControlId != nil && v.ControlId != req.GetFilteredControlId() {
-			continue
-		}
-
-		filtered_values = append(filtered_values, v)
+	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
+	// unless one can access *all* the cloud services.
+	if !all && req.FilteredCloudServiceId != nil && !slices.Contains(allowed, req.GetFilteredCloudServiceId()) {
+		return nil, service.ErrPermissionDenied
 	}
+
+	// Filtering evaluation results by
+	// * cloud service ID
+	// * control ID
+	if req.GetFilteredCloudServiceId() != "" {
+		query = append(query, "cloud_service_id = ?")
+		args = append(args, req.GetFilteredCloudServiceId())
+	}
+	if req.GetFilteredControlId() != "" {
+		query = append(query, "control_id = ?")
+		args = append(args, req.GetFilteredControlId())
+	}
+
+	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to (if we do not have access to all)
+	if !all {
+		query = append(query, "cloud_service_id IN ?")
+		args = append(args, allowed)
+	}
+
+	// join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	res = new(evaluation.ListEvaluationResultsResponse)
+
+	// Paginate the results according to the request
+	res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, s.storage, service.DefaultPaginationOpts, args...)
+	if err != nil {
+		err = fmt.Errorf("could not paginate evaluation results: %v", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+
+	// TODO(anatheka): If the DB is used, we don't need that anymore.
+	// for _, v := range s.results {
+	// 	if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
+	// 		continue
+	// 	}
+
+	// 	if req.FilteredControlId != nil && v.ControlId != req.GetFilteredControlId() {
+	// 		continue
+	// 	}
+
+	// 	filtered_values = append(filtered_values, v)
+	// }
 
 	res = new(evaluation.ListEvaluationResultsResponse)
 
@@ -553,6 +561,11 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	}
 
 	// TODO(all): Store in DB
+	err = s.storage.Create(result)
+	if err != nil {
+		log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result.GetResourceId(), controlId, err)
+		return
+	}
 	s.resultMutex.Lock()
 	s.results[result.Id] = result
 	s.resultMutex.Unlock()
@@ -575,7 +588,12 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		log.Debug("No evaluation result created")
 	} else {
 
-		//TODO(all): Store in DB
+		// TODO(all): Store in DB
+		err = s.storage.Create(result)
+		if err != nil {
+			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result.GetResourceId(), controlId, err)
+			return
+		}
 		s.resultMutex.Lock()
 		s.results[result.Id] = result
 		s.resultMutex.Unlock()

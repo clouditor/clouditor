@@ -140,8 +140,9 @@ message EvaluationResult {
   }
   
   // Evaluation status
-  EvaluationStatus status = 6
-    [(validate.rules).enum.defined_only = true];
+  EvaluationStatus status = 6 [
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (validate.rules).enum.defined_only = true];
   
   // The control id the evaluation was based on
   string control_id = 7
