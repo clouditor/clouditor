@@ -444,7 +444,7 @@ func TestService_GetControl(t *testing.T) {
 							}}}},
 				}},
 				Controls: []*orchestrator.Control{{
-					Id:                             testdata.MockSubControlID,
+					Id:                             testdata.MockSubControlID11,
 					Name:                           testdata.MockSubControlName,
 					Description:                    testdata.MockSubControlDescription,
 					Metrics:                        []*assessment.Metric{},
