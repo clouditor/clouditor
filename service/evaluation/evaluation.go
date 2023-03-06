@@ -352,7 +352,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 // ListEvaluationResults is a method implementation of the assessment interface
 func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
 	var (
-		filtered_values []*evaluation.EvaluationResult
+		// filtered_values []*evaluation.EvaluationResult
 		// TODO(all): Comment in once the evaluation results are stored in storage
 		allowed []string
 		all     bool
@@ -388,7 +388,7 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		args = append(args, req.GetFilteredControlId())
 	}
 
-	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to (if we do not have access to all)
+	// In any case, we need to make sure that we only select evaluation results of cloud services that we have access to (if we do not have access to all)
 	if !all {
 		query = append(query, "cloud_service_id IN ?")
 		args = append(args, allowed)
@@ -405,31 +405,6 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		err = fmt.Errorf("could not paginate evaluation results: %v", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
-
-	// TODO(anatheka): If the DB is used, we don't need that anymore.
-	// for _, v := range s.results {
-	// 	if req.FilteredCloudServiceId != nil && v.GetCloudServiceId() != req.GetFilteredCloudServiceId() {
-	// 		continue
-	// 	}
-
-	// 	if req.FilteredControlId != nil && v.ControlId != req.GetFilteredControlId() {
-	// 		continue
-	// 	}
-
-	// 	filtered_values = append(filtered_values, v)
-	// }
-
-	res = new(evaluation.ListEvaluationResultsResponse)
-
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateSlice(req, filtered_values, func(a *evaluation.EvaluationResult, b *evaluation.EvaluationResult) bool {
-		return a.Id < b.Id
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		err = fmt.Errorf("could not paginate evaluation results: %v", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	return
