@@ -186,6 +186,9 @@ func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListContro
 	if req.CategoryName != "" && req.CatalogId != "" {
 		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
 			service.DefaultPaginationOpts, "category_name = ? AND category_catalog_id = ?", req.CategoryName, req.CatalogId)
+	} else if req.CatalogId != "" {
+		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
+			service.DefaultPaginationOpts, "category_catalog_id = ?", req.CatalogId)
 	} else {
 		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
 			service.DefaultPaginationOpts)
