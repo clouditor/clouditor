@@ -31,7 +31,6 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"testing"
 
@@ -384,9 +383,10 @@ func Test_GetCertificate(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
-				// Compare timestamp. We have to cut off the microseconds, otherwise an error is returned.
-				tt.res.States[0].Timestamp = strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
-				res.States[0].Timestamp = strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				// Check if timestamp is available and delete for comparison.
+				assert.NotEmpty(t, res.States[0].GetTimestamp())
+				res.States[0].Timestamp = ""
+				tt.res.States[0].Timestamp = ""
 				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
 		})
