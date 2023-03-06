@@ -84,6 +84,9 @@ message ListAssessmentResultsRequest {
   repeated string filtered_metric_id = 3
       [ (validate.rules).repeated .items.string.min_len = 1 ];
 
+  // Optional. Latest results grouped by resource_id and metric_id.
+  optional bool latest_by_resource_id = 4;
+
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
@@ -104,10 +107,15 @@ message AssessEvidenceRequest {
       [ (validate.rules).message.required = true ];
 }
 
-// AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+// AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
+// RPC and therefore requires a response message according to the style
+// convention. Since no return values are required, this is empty.
 message AssessEvidenceResponse {}
 
-// AssessEvidencesResponse belongs to AssessEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling. 
+// AssessEvidencesResponse belongs to AssessEvidences, which uses a custom
+// bidirectional streaming RPC and therefore requires a response message
+// according to the style convention. The bidirectional streaming needs the
+// status and its message in the response for error handling.
 message AssessEvidencesResponse {
   enum AssessmentStatus {
     ASSESSMENT_STATUS_UNSPECIFIED = 0;

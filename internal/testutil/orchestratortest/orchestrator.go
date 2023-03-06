@@ -179,7 +179,7 @@ var (
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockMetricID,
+			MetricId:       testdata.MockAnotherMetricID,
 			CloudServiceId: testdata.MockCloudServiceID,
 		},
 	}
@@ -190,7 +190,7 @@ var (
 		MetricId:       testdata.MockAnotherMetricID,
 		Compliant:      false,
 		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockResourceID,
+		ResourceId:     testdata.MockAnotherResourceID,
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",

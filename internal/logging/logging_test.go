@@ -30,6 +30,8 @@ import (
 	"fmt"
 	"testing"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/api"
 	"clouditor.io/clouditor/internal/testdata"
@@ -169,6 +171,16 @@ func TestLogRequest(t *testing.T) {
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
 			},
 			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
+		},
+		{
+			name: "Send Evidence to queue",
+			args: args{
+				level:   logrus.DebugLevel,
+				reqType: Store,
+				req:     &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID}},
+				params:  []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
+			},
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {

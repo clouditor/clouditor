@@ -348,6 +348,50 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
 			},
 		},
+		{
+			name: "grouped by resource ID",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					LatestByResourceId: util.Ref(true),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					orchestratortest.MockAssessmentResult4,
+					orchestratortest.MockAssessmentResult3,
+					orchestratortest.MockAssessmentResult1,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "grouped by resource ID with filter",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &assessment.ListAssessmentResultsRequest{
+					LatestByResourceId:     util.Ref(true),
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+				},
+			},
+			wantRes: &assessment.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					orchestratortest.MockAssessmentResult3,
+					orchestratortest.MockAssessmentResult1,
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
