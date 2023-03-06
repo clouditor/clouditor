@@ -513,6 +513,7 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	// Wait till all sub-controls are evaluated
 	s.wg[schedulerTag].wg.Wait()
 
+	// TODO(anatheka): How do we have to check the resourceID?
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
 		FilteredControlId:      &controlId,
@@ -545,6 +546,8 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		CategoryName:               categoryName,
 		ControlId:                  controlId,
 		CloudServiceId:             toe.GetCloudServiceId(),
+		CatalogId:                  toe.GetCatalogId(),
+		ResourceId:                 evaluations.Results[0].ResourceId, // It does not matter which element is used here, since they all have the same resource_id.
 		Status:                     status,
 		FailingAssessmentResultsId: nonCompliantAssessmentResults,
 	}
@@ -598,7 +601,7 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 	// Get metrics from control and sub-controls
 	metrics, err := s.getAllMetricsFromControl(catalogId, categoryName, controlId)
 	if err != nil {
-		err = fmt.Errorf("could not get metrics for controlID '%s' for Cloud Service '%s' from Orchestrator: %v", controlId, cloudServiceId, err)
+		err = fmt.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, cloudServiceId, err)
 		return
 	}
 

@@ -279,28 +279,20 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			name: "Filter cloud service id",
 			fields: fields{results: map[string]*evaluation.EvaluationResult{
 				"11111111-1111-1111-1111-111111111111": {
-					Id: "11111111-1111-1111-1111-111111111111",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "11111111-1111-1111-1111-111111111111",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 				"22222222-2222-2222-2222-222222222222": {
-					Id: "22222222-2222-2222-2222-222222222222",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "22222222-2222-2222-2222-222222222222",
+					CloudServiceId: "99999999-9999-9999-9999-999999999999",
 				},
 				"33333333-3333-3333-3333-333333333333": {
-					Id: "33333333-3333-3333-3333-333333333333",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "33333333-3333-3333-3333-333333333333",
+					CloudServiceId: "99999999-9999-9999-9999-999999999999",
 				},
 				"44444444-4444-4444-4444-444444444444": {
-					Id: "44444444-4444-4444-4444-444444444444",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "44444444-4444-4444-4444-444444444444",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			}},
 			args: args{
@@ -312,16 +304,12 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					{
-						Id: "11111111-1111-1111-1111-111111111111",
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						},
+						Id:             "11111111-1111-1111-1111-111111111111",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					},
 					{
-						Id: "44444444-4444-4444-4444-444444444444",
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						},
+						Id:             "44444444-4444-4444-4444-444444444444",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					},
 				},
 			},
@@ -331,32 +319,24 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			name: "Filter control id",
 			fields: fields{results: map[string]*evaluation.EvaluationResult{
 				"11111111-1111-1111-1111-111111111111": {
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ControlId: "control 1",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ControlId:      "control 1",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 				"22222222-2222-2222-2222-222222222222": {
-					Id:        "22222222-2222-2222-2222-222222222222",
-					ControlId: "control 1",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "22222222-2222-2222-2222-222222222222",
+					ControlId:      "control 1",
+					CloudServiceId: "99999999-9999-9999-9999-999999999999",
 				},
 				"33333333-3333-3333-3333-333333333333": {
-					Id:        "33333333-3333-3333-3333-333333333333",
-					ControlId: "control 2",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "33333333-3333-3333-3333-333333333333",
+					ControlId:      "control 2",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 				"44444444-4444-4444-4444-444444444444": {
-					Id:        "44444444-4444-4444-4444-444444444444",
-					ControlId: "control 2",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "44444444-4444-4444-4444-444444444444",
+					ControlId:      "control 2",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			}},
 			args: args{
@@ -368,18 +348,15 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					{
-						Id:        "11111111-1111-1111-1111-111111111111",
-						ControlId: "control 1",
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						},
+						Id:             "11111111-1111-1111-1111-111111111111",
+						ControlId:      "control 1",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					},
 					{
 						Id:        "22222222-2222-2222-2222-222222222222",
 						ControlId: "control 1",
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "99999999-9999-9999-9999-999999999999",
-						},
+
+						CloudServiceId: "99999999-9999-9999-9999-999999999999",
 					},
 				},
 			},
@@ -389,32 +366,24 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			name: "Filter cloud service id and control id",
 			fields: fields{results: map[string]*evaluation.EvaluationResult{
 				"11111111-1111-1111-1111-111111111111": {
-					Id:        "11111111-1111-1111-1111-111111111111",
-					ControlId: "control 1",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "11111111-1111-1111-1111-111111111111",
+					ControlId:      "control 1",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 				"22222222-2222-2222-2222-222222222222": {
-					Id:        "22222222-2222-2222-2222-222222222222",
-					ControlId: "control 1",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "22222222-2222-2222-2222-222222222222",
+					ControlId:      "control 1",
+					CloudServiceId: "99999999-9999-9999-9999-999999999999",
 				},
 				"33333333-3333-3333-3333-333333333333": {
-					Id:        "33333333-3333-3333-3333-333333333333",
-					ControlId: "control 2",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					Id:             "33333333-3333-3333-3333-333333333333",
+					ControlId:      "control 2",
+					CloudServiceId: "99999999-9999-9999-9999-999999999999",
 				},
 				"44444444-4444-4444-4444-444444444444": {
-					Id:        "44444444-4444-4444-4444-444444444444",
-					ControlId: "control 2",
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					Id:             "44444444-4444-4444-4444-444444444444",
+					ControlId:      "control 2",
+					CloudServiceId: "00000000-0000-0000-0000-000000000000",
 				},
 			}},
 			args: args{
@@ -427,11 +396,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					{
-						Id:        "11111111-1111-1111-1111-111111111111",
-						ControlId: "control 1",
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "00000000-0000-0000-0000-000000000000",
-						},
+						Id:             "11111111-1111-1111-1111-111111111111",
+						ControlId:      "control 1",
+						CloudServiceId: "00000000-0000-0000-0000-000000000000",
 					},
 				},
 			},
@@ -684,7 +651,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
-			gotMetrics, err := s.getMetricsFromSubdontrols(tt.args.control)
+			gotMetrics, err := s.getMetricsFromSubcontrols(tt.args.control)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err)
 			}
@@ -1009,7 +976,7 @@ func Test_getSchedulerTagsForControlIds(t *testing.T) {
 	}
 }
 
-func TestService_getMetrics(t *testing.T) {
+func TestService_getAllMetricsFromControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestratorClient            orchestrator.OrchestratorClient
@@ -1064,7 +1031,7 @@ func TestService_getMetrics(t *testing.T) {
 				results:                       tt.fields.results,
 				storage:                       tt.fields.storage,
 			}
-			gotMetrics, err := s.getMetrics(tt.args.catalogId, tt.args.categoryName, tt.args.controlId)
+			gotMetrics, err := s.getAllMetricsFromControl(tt.args.catalogId, tt.args.categoryName, tt.args.controlId)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantMetrics, gotMetrics)
 		})
@@ -1109,55 +1076,6 @@ func Test_getMetricIds(t *testing.T) {
 	}
 }
 
-func Test_controlContains(t *testing.T) {
-	type args struct {
-		controls  []*orchestrator.Control
-		controlId string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "Empty input",
-			args: args{},
-			want: false,
-		},
-		{
-			name: "Contols list does not contain control ID",
-			args: args{
-				controls: []*orchestrator.Control{
-					{
-						Id: testdata.MockSubControlID,
-					},
-				},
-				controlId: testdata.MockAnotherSubControlID,
-			},
-			want: false,
-		},
-		{
-			name: "Contols list contains control ID",
-			args: args{
-				controls: []*orchestrator.Control{
-					{
-						Id: testdata.MockAnotherSubControlID,
-					},
-				},
-				controlId: testdata.MockAnotherSubControlID,
-			},
-			want: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := controlContains(tt.args.controls, tt.args.controlId); got != tt.want {
-				t.Errorf("controlContains() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestService_stopSchedulerJobs(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
@@ -1197,7 +1115,7 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 				schedulerRunning: true,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error when removing job for tag")
+				return assert.ErrorContains(t, err, "error while removing job for tag")
 			},
 		},
 		{
@@ -1394,121 +1312,6 @@ func TestService_getControl(t *testing.T) {
 	}
 }
 
-// func TestService_handleFindParentControlJobError(t *testing.T) {
-// 	type fields struct {
-// 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-// 		orchestratorClient            orchestrator.OrchestratorClient
-// 		orchestratorAddress           grpcTarget
-// 		authorizer                    api.Authorizer
-// 		scheduler                     *gocron.Scheduler
-// 		wg                            map[string]*WaitGroup
-// 		results                       map[string]*evaluation.EvaluationResult
-// 		storage                       persistence.Storage
-// 		schedulerRunning              bool
-// 		schedulerTag                  string
-// 	}
-// 	type args struct {
-// 		err            error
-// 		cloudServiceId string
-// 		controlId      string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "empty error input",
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "can not be stopped because the control is a sub-control of the evaluated control")
-// 			},
-// 		},
-// 		{
-// 			name: "Scheduler job not existing",
-// 			fields: fields{
-// 				schedulerRunning: true,
-// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
-// 				scheduler:        gocron.NewScheduler(time.UTC),
-// 			},
-// 			args: args{
-// 				err:            errors.New("no jobs found with given tag"),
-// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-// 				controlId:      "test_control_id",
-// 			},
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
-// 			},
-// 		},
-// 		{
-// 			name: "Job not found with tag",
-// 			fields: fields{
-// 				schedulerRunning: true,
-// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_false_control_id",
-// 				scheduler:        gocron.NewScheduler(time.UTC),
-// 			},
-// 			args: args{
-// 				err:            errors.New("no jobs found with given tag"),
-// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-// 				controlId:      "test_control_id",
-// 			},
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "evaluation for cloud service id '00000000-0000-0000-0000-000000000000' with 'test_control_id' not running")
-// 			},
-// 		},
-// 		{
-// 			name:   "error code unexpected",
-// 			fields: fields{},
-// 			args: args{
-// 				err:            errors.New("another not known error"),
-// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-// 				controlId:      "test_control_id",
-// 			},
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "error when stopping scheduler job for cloud service id '00000000-0000-0000-0000-000000000000' with control id 'test_control_id'")
-// 			},
-// 		},
-// 		{
-// 			name: "Happy path",
-// 			fields: fields{
-// 				schedulerRunning: true,
-// 				schedulerTag:     "00000000-0000-0000-0000-000000000000-test_control_id",
-// 				scheduler:        gocron.NewScheduler(time.UTC),
-// 			},
-// 			args: args{
-// 				err:            errors.New("no jobs found with given tag"),
-// 				cloudServiceId: "00000000-0000-0000-0000-000000000000",
-// 				controlId:      "test_control_id",
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := &Service{
-// 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-// 				orchestratorClient:            tt.fields.orchestratorClient,
-// 				orchestratorAddress:           tt.fields.orchestratorAddress,
-// 				authorizer:                    tt.fields.authorizer,
-// 				scheduler:                     tt.fields.scheduler,
-// 				wg:                            tt.fields.wg,
-// 				results:                       tt.fields.results,
-// 				storage:                       tt.fields.storage,
-// 			}
-
-// 			// Start the scheduler
-// 			if tt.fields.schedulerRunning == true {
-// 				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
-// 				require.NoError(t, err)
-
-// 			}
-
-// 			err := s.stopJobAndHandleError(tt.args.err, tt.args.cloudServiceId, tt.args.controlId)
-// 			tt.wantErr(t, err)
-// 		})
-// 	}
-// }
-
 func TestService_addJobToScheduler(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
@@ -1663,10 +1466,11 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 		subControls  []*orchestrator.Control
 	}
 	tests := []struct {
-		name                string
-		fields              fields
-		args                args
-		newEvaluationResult *evaluation.EvaluationResult
+		name                 string
+		fields               fields
+		args                 args
+		newEvaluationResults []*evaluation.EvaluationResult
+		want                 assert.ValueAssertionFunc
 	}{
 		{
 			name: "Happy path",
@@ -1679,38 +1483,35 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 				},
 				results: map[string]*evaluation.EvaluationResult{
 					"eval_1": {
-						Id:           "11111111-1111-1111-1111-111111111111",
-						Status:       evaluation.EvaluationResult_COMPLIANT,
-						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID1,
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: testdata.MockCloudServiceID,
-							CatalogId:      testdata.MockCatalogID,
-							AssuranceLevel: &testdata.AssuranceLevelHigh,
-						},
+						Id:                         "11111111-1111-1111-1111-111111111111",
+						Status:                     evaluation.EvaluationResult_COMPLIANT,
+						CategoryName:               testdata.MockCategoryName,
+						ControlId:                  testdata.MockControlID1,
+						ResourceId:                 "TestResource1",
+						FailingAssessmentResultsId: []string{},
+						CloudServiceId:             testdata.MockCloudServiceID,
+						CatalogId:                  testdata.MockCatalogID,
 					},
 					"eval_2": {
-						Id:           "22222222-2222-2222-2222-222222222222",
-						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID1,
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: testdata.MockCloudServiceID,
-							CatalogId:      testdata.MockCatalogID,
-							AssuranceLevel: &testdata.AssuranceLevelHigh,
-						},
+						Id:                         "11111111-1111-1111-1111-111111111111",
+						Status:                     evaluation.EvaluationResult_NOT_COMPLIANT,
+						CategoryName:               testdata.MockCategoryName,
+						ControlId:                  testdata.MockControlID1,
+						ResourceId:                 "TestResource1",
+						FailingAssessmentResultsId: []string{},
+						CloudServiceId:             testdata.MockCloudServiceID,
+						CatalogId:                  testdata.MockCatalogID,
 					},
 
 					"eval_3": {
-						Id:           "33333333-3333-3333-3333-333333333333",
-						Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-						CategoryName: testdata.MockCategoryName,
-						ControlId:    testdata.MockControlID1,
-						TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-							CloudServiceId: "33333333-3333-3333-3333-333333333333",
-							CatalogId:      testdata.MockCatalogID,
-							AssuranceLevel: &testdata.AssuranceLevelHigh,
-						},
+						Id:                         "33333333-3333-3333-3333-333333333333",
+						Status:                     evaluation.EvaluationResult_COMPLIANT,
+						CategoryName:               testdata.MockCategoryName,
+						ControlId:                  testdata.MockControlID1,
+						ResourceId:                 "TestResource2",
+						FailingAssessmentResultsId: []string{},
+						CloudServiceId:             "33333333-3333-3333-3333-333333333333",
+						CatalogId:                  testdata.MockCatalogID,
 					},
 				},
 			},
@@ -1725,15 +1526,49 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
-			newEvaluationResult: &evaluation.EvaluationResult{
-				Status:       evaluation.EvaluationResult_NOT_COMPLIANT,
-				CategoryName: testdata.MockCategoryName,
-				ControlId:    testdata.MockControlID1,
-				TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+			newEvaluationResults: []*evaluation.EvaluationResult{
+				{
+					Status:                     evaluation.EvaluationResult_NOT_COMPLIANT,
+					CategoryName:               testdata.MockCategoryName,
+					ControlId:                  testdata.MockControlID1,
+					CloudServiceId:             "11111111-1111-1111-1111-111111111111",
+					CatalogId:                  testdata.MockCatalogID,
+					ResourceId:                 "TestResource1",
+					FailingAssessmentResultsId: []string{},
 				},
+				{
+					Status:                     evaluation.EvaluationResult_COMPLIANT,
+					CategoryName:               testdata.MockCategoryName,
+					ControlId:                  testdata.MockControlID1,
+					CloudServiceId:             "33333333-3333-3333-3333-333333333333",
+					CatalogId:                  testdata.MockCatalogID,
+					ResourceId:                 "TestResource2",
+					FailingAssessmentResultsId: []string{},
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if assert.False(tt, ok) {
+					return false
+				}
+
+				newEvalResults, ok := i2[0].([]*evaluation.EvaluationResult)
+				if assert.False(tt, ok) {
+					return false
+				}
+
+				// Check the two new evaluation results
+				count := 0
+				for _, e := range service.results {
+					count++
+					if count > 2 {
+						e.Id = ""
+						assert.Equal(t, e, newEvalResults[count-3])
+					}
+				}
+
+				return assert.Equal(t, 5, len(service.results))
+
 			},
 		},
 	}
@@ -1752,11 +1587,13 @@ func TestService_evaluateFirstLevelControl(t *testing.T) {
 
 			s.evaluateControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.schedulerTag, tt.args.subControls)
 
-			assert.Equal(t, 4, len(s.results))
+			assert.Equal(t, 5, len(s.results))
 			// Check if the evaluatation results (and the new one) have no validation error
 			for _, eval := range s.results {
 				assert.NoError(t, eval.Validate())
 			}
+
+			tt.want(t, s, tt.newEvaluationResults)
 			assert.NotEmpty(t, s.wg[tt.args.schedulerTag])
 		})
 	}
@@ -1849,7 +1686,7 @@ func TestService_evaluationResultForSecondControlLevel(t *testing.T) {
 			name: "Empty input",
 			args: args{},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get metrics from control and sub-controls for Cloud Service")
+				return assert.ErrorContains(t, err, "could not get metrics for control")
 			},
 		},
 	}
