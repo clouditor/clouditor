@@ -93,7 +93,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		args = append(args, allowed)
 	}
 
-	// If we want to have it grouped by resource ID, we need to do a raw query
+	// If we want to have it grouped by resource ID (and metric ID), we need to do a raw query
 	if req.GetLatestByResourceId() {
 		// In the raw SQL, we need to build the whole WHERE statement
 		var where string
@@ -105,7 +105,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		// Execute the raw SQL statement
 		err = svc.storage.Raw(&res.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
-				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id ORDER BY timestamp DESC) AS row_number
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id, metric_id ORDER BY timestamp DESC) AS row_number
 				FROM assessment_results
 				%s
 		  	)
