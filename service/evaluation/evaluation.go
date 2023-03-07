@@ -362,10 +362,11 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 	var (
 		// filtered_values []*evaluation.EvaluationResult
 		// TODO(all): Comment in once the evaluation results are stored in storage
-		allowed []string
-		all     bool
-		query   []string
-		args    []any
+		allowed   []string
+		all       bool
+		query     []string
+		partition []string
+		args      []any
 	)
 
 	// Validate request
@@ -398,6 +399,7 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		args = append(args, req.GetFilteredControlId())
 	}
 	if req.GetFilteredSubControls() != "" {
+		partition = append(partition, "control_id")
 		query = append(query, "control_id LIKE ?")
 		args = append(args, fmt.Sprintf("%s%%", req.GetFilteredSubControls()))
 	}
@@ -409,40 +411,27 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 	}
 
 	// If we want to have it grouped by resource ID, we need to do a raw query
-	if req.GetLatestByResourceId() && req.GetFilteredSubControls() == "" {
+	if req.GetLatestByResourceId() {
 		// In the raw SQL, we need to build the whole WHERE statement
 		var where string
+		var p = ""
 
 		if len(query) > 0 {
 			where = "WHERE " + strings.Join(query, " AND ")
+		}
+
+		if len(partition) > 0 {
+			p = ", " + strings.Join(partition, ",")
 		}
 
 		// Execute the raw SQL statement
 		err = s.storage.Raw(&res.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
-				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id ORDER BY timestamp DESC) AS row_number
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id %s ORDER BY timestamp DESC) AS row_number
 				FROM evaluation_results
 				%s
 		  	)
-		  	SELECT * FROM sorted_results WHERE row_number = 1;`, where), args...)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "database error: %v", err)
-		}
-	} else if req.GetLatestByResourceId() && req.GetFilteredSubControls() != "" {
-		// In the raw SQL, we need to build the whole WHERE statement
-		var where string
-
-		if len(query) > 0 {
-			where = "WHERE " + strings.Join(query, " AND ")
-		}
-
-		// Execute the raw SQL statement
-		err = s.storage.Raw(&res.Results, fmt.Sprintf(`WITH sorted_results AS (
-			SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id, control_id ORDER BY timestamp DESC) AS row_number
-			FROM evaluation_results
-			%s
-		  )
-		  SELECT * FROM sorted_results WHERE row_number = 1;`, where), args...)
+		  	SELECT * FROM sorted_results WHERE row_number = 1;`, p, where), args...)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "database error: %v", err)
 		}
@@ -538,9 +527,8 @@ func (s *Service) stopSchedulerJobs(schedulerTags []string) (err error) {
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
-		status                        = evaluation.EvaluationResult_STATUS_UNSPECIFIED
-		nonCompliantAssessmentResults []string
-		result                        *evaluation.EvaluationResult
+		status     = evaluation.EvaluationResult_STATUS_UNSPECIFIED
+		evalResult *evaluation.EvaluationResult
 	)
 
 	log.Infof("Start control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
@@ -553,10 +541,9 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	s.wg[schedulerTag].wg.Add(len(subControls))
 	s.wg[schedulerTag].wgMutex.Unlock()
 
-	// TODO(anatheka): How do we have to check the resourceID?
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
-		FilteredSubControls:    &controlId,
+		FilteredSubControls:    util.Ref(fmt.Sprintf("%s.", controlId)), // We only need the sub-controls for the evaluation. // TODO(anatheka): change that, in other catalogs maybe it's not that easy to get the sub-control by name
 		LatestByResourceId:     util.Ref(true),
 	})
 	if err != nil {
@@ -569,41 +556,47 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	if len(evaluations.Results) == 0 {
 		return
 	}
-	for _, r := range evaluations.Results {
-		if r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
-			status = evaluation.EvaluationResult_COMPLIANT
-		} else {
-			status = evaluation.EvaluationResult_NOT_COMPLIANT
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultsId()...)
+
+	// Get a map of the evaluation results, so that we have all evaluation results for a specific resource_id together for evaluation
+	evaluationResultsMap := getEvaluationResultMap(evaluations.Results)
+	for resourceID, eval := range evaluationResultsMap {
+		var nonCompliantAssessmentResults = []string{}
+
+		for _, r := range eval {
+			if r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
+				status = evaluation.EvaluationResult_COMPLIANT
+			} else {
+				status = evaluation.EvaluationResult_NOT_COMPLIANT
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultsId()...)
+			}
 		}
+
+		// Create evaluation result
+		evalResult = &evaluation.EvaluationResult{
+			Id:                         uuid.NewString(),
+			Timestamp:                  timestamppb.Now(),
+			CategoryName:               categoryName,
+			ControlId:                  controlId,
+			CloudServiceId:             toe.GetCloudServiceId(),
+			CatalogId:                  toe.GetCatalogId(),
+			ResourceId:                 resourceID,
+			Status:                     status,
+			FailingAssessmentResultsId: nonCompliantAssessmentResults,
+		}
+
+		err = s.storage.Create(evalResult)
+		if err != nil {
+			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", evalResult.GetResourceId(), controlId, err)
+			return
+		}
+
+		s.resultMutex.Lock()
+		s.results[evalResult.Id] = evalResult
+		s.resultMutex.Unlock()
+
+		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), evalResult.Id)
+
 	}
-
-	// Create evaluation result
-	result = &evaluation.EvaluationResult{
-		Id:                         uuid.NewString(),
-		Timestamp:                  timestamppb.Now(),
-		CategoryName:               categoryName,
-		ControlId:                  controlId,
-		CloudServiceId:             toe.GetCloudServiceId(),
-		CatalogId:                  toe.GetCatalogId(),
-		ResourceId:                 evaluations.Results[0].ResourceId, // It does not matter which element is used here, since they all have the same resource_id.
-		Status:                     status,
-		FailingAssessmentResultsId: nonCompliantAssessmentResults,
-	}
-
-	// TODO(all): Store in DB
-	err = s.storage.Create(result)
-	if err != nil {
-		log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result.GetResourceId(), controlId, err)
-		return
-	}
-
-	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), result.Id)
-
-	s.resultMutex.Lock()
-	s.results[result.Id] = result
-	s.resultMutex.Unlock()
-
 }
 
 // TODO(anatheka): Refacotr this method and evaluationResultForSubcontrol
@@ -673,11 +666,11 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 
 	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If at least one assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
 
-	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
+	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id together for evaluation
 	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
 	for _, result := range assessmentResultsMap {
-		var nonCompliantAssessmentResults []string
-		status := evaluation.EvaluationResult_PENDING
+		var nonCompliantAssessmentResults = []string{}
+		var status = evaluation.EvaluationResult_PENDING
 
 		// If no assessment_results are available continue
 		if len(result) == 0 {
@@ -686,7 +679,7 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 
 		for i := range result {
 			if !result[i].Compliant {
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, result[i].GetId()) // It does not matter which element is used here, since they all have the same resource_id.
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, result[i].GetId())
 				status = evaluation.EvaluationResult_NOT_COMPLIANT
 			}
 		}
@@ -698,7 +691,6 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 		}
 
 		// Create evaluation result
-		// TODO(all): Store in DB
 		eval = &evaluation.EvaluationResult{
 			Id:                         uuid.NewString(),
 			Timestamp:                  timestamppb.Now(),
@@ -890,6 +882,17 @@ func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHier
 // getAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2 different metrics.
 func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
+
+	for i := range results {
+		hierarchyResults[results[i].GetResourceId()] = append(hierarchyResults[results[i].GetResourceId()], results[i])
+	}
+
+	return hierarchyResults
+}
+
+// getEvaluationResultMap returns a map with the resource_id as key and the evaluation results as a value slice. We need that map if we have more than one evaluation_result for the parent control evaluation, e.g., if we have two evaluation_results for OPS-01.1H and OPS-01.2H.
+func getEvaluationResultMap(results []*evaluation.EvaluationResult) map[string][]*evaluation.EvaluationResult {
+	var hierarchyResults = make(map[string][]*evaluation.EvaluationResult)
 
 	for i := range results {
 		hierarchyResults[results[i].GetResourceId()] = append(hierarchyResults[results[i].GetResourceId()], results[i])
