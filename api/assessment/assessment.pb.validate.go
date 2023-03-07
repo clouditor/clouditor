@@ -38,6 +38,304 @@ var (
 // define the regex for a UUID once up-front
 var _assessment_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
+// Validate checks the field values on ListAssessmentResultsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListAssessmentResultsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListAssessmentResultsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListAssessmentResultsRequestMultiError, or nil if none found.
+func (m *ListAssessmentResultsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListAssessmentResultsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetFilteredMetricId() {
+		_, _ = idx, item
+
+		if utf8.RuneCountInString(item) < 1 {
+			err := ListAssessmentResultsRequestValidationError{
+				field:  fmt.Sprintf("FilteredMetricId[%v]", idx),
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	// no validation rules for PageSize
+
+	// no validation rules for PageToken
+
+	// no validation rules for OrderBy
+
+	// no validation rules for Asc
+
+	if m.FilteredCloudServiceId != nil {
+
+		if err := m._validateUuid(m.GetFilteredCloudServiceId()); err != nil {
+			err = ListAssessmentResultsRequestValidationError{
+				field:  "FilteredCloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.FilteredCompliant != nil {
+		// no validation rules for FilteredCompliant
+	}
+
+	if m.LatestByResourceId != nil {
+		// no validation rules for LatestByResourceId
+	}
+
+	if len(errors) > 0 {
+		return ListAssessmentResultsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *ListAssessmentResultsRequest) _validateUuid(uuid string) error {
+	if matched := _assessment_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// ListAssessmentResultsRequestMultiError is an error wrapping multiple
+// validation errors returned by ListAssessmentResultsRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListAssessmentResultsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListAssessmentResultsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListAssessmentResultsRequestMultiError) AllErrors() []error { return m }
+
+// ListAssessmentResultsRequestValidationError is the validation error returned
+// by ListAssessmentResultsRequest.Validate if the designated constraints
+// aren't met.
+type ListAssessmentResultsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListAssessmentResultsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListAssessmentResultsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListAssessmentResultsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListAssessmentResultsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListAssessmentResultsRequestValidationError) ErrorName() string {
+	return "ListAssessmentResultsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListAssessmentResultsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListAssessmentResultsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListAssessmentResultsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListAssessmentResultsRequestValidationError{}
+
+// Validate checks the field values on ListAssessmentResultsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListAssessmentResultsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListAssessmentResultsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListAssessmentResultsResponseMultiError, or nil if none found.
+func (m *ListAssessmentResultsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListAssessmentResultsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetResults() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListAssessmentResultsResponseValidationError{
+						field:  fmt.Sprintf("Results[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListAssessmentResultsResponseValidationError{
+						field:  fmt.Sprintf("Results[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListAssessmentResultsResponseValidationError{
+					field:  fmt.Sprintf("Results[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for NextPageToken
+
+	if len(errors) > 0 {
+		return ListAssessmentResultsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListAssessmentResultsResponseMultiError is an error wrapping multiple
+// validation errors returned by ListAssessmentResultsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListAssessmentResultsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListAssessmentResultsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListAssessmentResultsResponseMultiError) AllErrors() []error { return m }
+
+// ListAssessmentResultsResponseValidationError is the validation error
+// returned by ListAssessmentResultsResponse.Validate if the designated
+// constraints aren't met.
+type ListAssessmentResultsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListAssessmentResultsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListAssessmentResultsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListAssessmentResultsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListAssessmentResultsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListAssessmentResultsResponseValidationError) ErrorName() string {
+	return "ListAssessmentResultsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListAssessmentResultsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListAssessmentResultsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListAssessmentResultsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListAssessmentResultsResponseValidationError{}
+
 // Validate checks the field values on ConfigureAssessmentRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

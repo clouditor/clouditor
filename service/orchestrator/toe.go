@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -395,7 +396,7 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		}
 	}
 
-	// Add all needed controls based on the assurance level and return
+	// Add all needed controls based on the assurance level
 	switch level {
 	case levels[0]:
 		c = append(c, low...)
@@ -408,7 +409,19 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		c = append(c, high...)
 	}
 
-	return c, nil
+	// Add parent controls to the sub-control included in the list. That results in duplicates that we can remove later.
+	for i := range c {
+		for j := range controls {
+			if c[i].GetParentControlId() == controls[j].GetId() {
+				c = append(c, controls[j])
+			}
+		}
+	}
+
+	// Deduplicate controls
+	dedupControls := deduplicate(c)
+
+	return dedupControls, nil
 }
 
 // informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
@@ -424,4 +437,21 @@ func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.Target
 			hook(ctx, event, err)
 		}
 	}
+}
+
+// deduplicate removes all duplicates
+func deduplicate(result []*orchestrator.Control) []*orchestrator.Control {
+	// Sort slice by ID
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].GetId() > result[j].GetId()
+	})
+
+	// Compare elements and delete if it is a duplicate
+	for i := len(result) - 1; i > 0; i-- {
+		if result[i] == result[i-1] {
+			result = append(result[:i], result[i+1:]...)
+		}
+	}
+
+	return result
 }
