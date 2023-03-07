@@ -36,112 +36,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/assessment/results:
-        get:
-            tags:
-                - Assessment
-            description: |-
-                List all assessment results of all cloud services the requester can access.
-                 Optionally, further filters of specific cloud services, metrics or the
-                 compliance status can be specified.
-
-                 Part of the public API, also exposed as REST.
-            operationId: Assessment_ListAssessmentResults
-            parameters:
-                - name: filteredCloudServiceId
-                  in: query
-                  description: Optional. List only assessment results of a specific cloud service.
-                  schema:
-                    type: string
-                - name: filteredCompliant
-                  in: query
-                  description: Optional. List only compliant assessment results.
-                  schema:
-                    type: boolean
-                - name: filteredMetricId
-                  in: query
-                  description: Optional. List only assessment results of a specific metric id.
-                  schema:
-                    type: array
-                    items:
-                        type: string
-                - name: latestByResourceId
-                  in: query
-                  description: Optional. Latest results grouped by resource_id.
-                  schema:
-                    type: boolean
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListAssessmentResultsResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         AssessEvidenceResponse:
             type: object
             properties: {}
             description: AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
-        AssessmentResult:
-            type: object
-            properties:
-                id:
-                    type: string
-                    description: Assessment result id
-                timestamp:
-                    type: string
-                    description: Time of assessment
-                    format: date-time
-                metricId:
-                    type: string
-                    description: Reference to the metric the assessment was based on
-                metricConfiguration:
-                    $ref: '#/components/schemas/MetricConfiguration'
-                compliant:
-                    type: boolean
-                    description: 'Compliant case: true or false'
-                evidenceId:
-                    type: string
-                    description: Reference to the assessed evidence
-                resourceId:
-                    type: string
-                    description: Reference to the resource of the assessed evidence
-                resourceTypes:
-                    type: array
-                    items:
-                        type: string
-                    description: Resource types
-                nonComplianceComments:
-                    type: string
-                    description: Some comments on the reason for non-compliance
-                cloudServiceId:
-                    type: string
-                    description: The cloud service which this assessment result belongs to
-            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         Evidence:
             type: object
             properties:
@@ -174,37 +74,6 @@ components:
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GoogleProtobufValue:
             description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
-        ListAssessmentResultsResponse:
-            type: object
-            properties:
-                results:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/AssessmentResult'
-                nextPageToken:
-                    type: string
-        MetricConfiguration:
-            type: object
-            properties:
-                operator:
-                    type: string
-                    description: The operator to compare the metric, such as == or >
-                targetValue:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
-                isDefault:
-                    type: boolean
-                    description: Whether this configuration is a default configuration
-                updatedAt:
-                    type: string
-                    description: The last time of update
-                    format: date-time
-                metricId:
-                    type: string
-                    description: The metric this configuration belongs to
-                cloudServiceId:
-                    type: string
-                    description: The service this configuration belongs to
-            description: Defines the operator and a target value for an individual metric
         Status:
             type: object
             properties:

@@ -97,12 +97,6 @@ type Service struct {
 	// hookMutex is used for (un)locking result hook calls
 	hookMutex sync.RWMutex
 
-	// results will contain all the assessment results of the current run. They will NOT be persisted to the storage,
-	// but should only be seen as debug information. The persisted assessment results will be stored in the
-	// Orchestrator.
-	results     map[string]*assessment.AssessmentResult
-	resultMutex sync.Mutex
-
 	// cachedConfigurations holds cached metric configurations for faster access with key being the corresponding
 	// metric name
 	cachedConfigurations map[string]cachedConfiguration
@@ -185,7 +179,6 @@ func WithRegoPackageName(pkg string) service.Option[Service] {
 // NewService creates a new assessment service with default values.
 func NewService(opts ...service.Option[Service]) *Service {
 	s := &Service{
-		results:              make(map[string]*assessment.AssessmentResult),
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -250,7 +243,7 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 	}
 
 	// Assess evidence
-	err = svc.handleEvidence(req.Evidence, resourceId)
+	_, err = svc.handleEvidence(req.Evidence, resourceId)
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
@@ -316,7 +309,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (err error) {
+func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (results []*assessment.AssessmentResult, err error) {
 	var types []string
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
@@ -328,7 +321,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 
 		go svc.informHooks(nil, newError)
 
-		return newError
+		return nil, newError
 	}
 
 	// Send evidence via Evidence Store stream if sending evidences is not disabled
@@ -340,7 +333,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 
 			go svc.informHooks(nil, err)
 
-			return err
+			return nil, err
 		}
 		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 	}
@@ -352,17 +345,17 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 
 		go svc.informHooks(nil, err)
 
-		return err
+		return nil, err
 	}
 
-	for i, data := range evaluations {
+	for _, data := range evaluations {
 		metricID := data.MetricID
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
 
 		types, err = ev.ResourceTypes()
 		if err != nil {
-			return fmt.Errorf("could not extract resource types from evidence: %w", err)
+			return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
 		}
 
 		result := &assessment.AssessmentResult{
@@ -378,19 +371,16 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (er
 			NonComplianceComments: "No comments so far",
 		}
 
-		svc.resultMutex.Lock()
-		// Just a little hack to quickly enable multiple results per resource
-		svc.results[fmt.Sprintf("%s-%d", resourceId, i)] = result
-		svc.resultMutex.Unlock()
-
 		// Inform hooks about new assessment result
 		go svc.informHooks(result, nil)
 
 		// Send assessment result in orchestratorChannel
 		channelOrchestrator.Send(&orchestrator.StoreAssessmentResultRequest{Result: result})
+
+		results = append(results, result)
 	}
 
-	return nil
+	return results, nil
 }
 
 // informHooks informs the registered hook functions
@@ -406,27 +396,6 @@ func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) 
 			hook(result, err)
 		}
 	}
-}
-
-// ListAssessmentResults is a method implementation of the assessment interface
-func (svc *Service) ListAssessmentResults(_ context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	res = new(assessment.ListAssessmentResultsResponse)
-
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateMapValues(req, svc.results, func(a *assessment.AssessmentResult, b *assessment.AssessmentResult) bool {
-		return a.Id < b.Id
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
-
-	return
 }
 
 func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
