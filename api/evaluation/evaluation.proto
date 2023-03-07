@@ -68,9 +68,15 @@ message ListEvaluationResultsRequest {
     [ (validate.rules).string.uuid = true ];
 
   // Optional. List only evaluation results for a specific control id.
-
   optional string filtered_control_id = 2
     [(validate.rules).string.min_len = 1];
+
+  // Optional. List only sub-control evaluation results for a specific control id.
+  optional string filtered_sub_controls = 3
+    [(validate.rules).string.min_len = 1];
+
+  // Optional. Latest results grouped by resource_id and metric_id.
+  optional bool latest_by_resource_id = 4;
 
   int32 page_size = 10;
   string page_token = 11;

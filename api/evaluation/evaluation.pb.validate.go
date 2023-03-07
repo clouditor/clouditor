@@ -99,6 +99,25 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	}
 
+	if m.FilteredSubControls != nil {
+
+		if utf8.RuneCountInString(m.GetFilteredSubControls()) < 1 {
+			err := ListEvaluationResultsRequestValidationError{
+				field:  "FilteredSubControls",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.LatestByResourceId != nil {
+		// no validation rules for LatestByResourceId
+	}
+
 	if len(errors) > 0 {
 		return ListEvaluationResultsRequestMultiError(errors)
 	}
