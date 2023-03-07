@@ -390,6 +390,7 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 	// Filtering evaluation results by
 	// * cloud service ID
 	// * control ID
+	// * sub-controls
 	if req.GetFilteredCloudServiceId() != "" {
 		query = append(query, "cloud_service_id = ?")
 		args = append(args, req.GetFilteredCloudServiceId())
@@ -398,6 +399,8 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		query = append(query, "control_id = ?")
 		args = append(args, req.GetFilteredControlId())
 	}
+
+	// TODO(anatheka): change that, in other catalogs maybe it's not that easy to get the sub-control by name
 	if req.GetFilteredSubControls() != "" {
 		partition = append(partition, "control_id")
 		query = append(query, "control_id LIKE ?")
@@ -543,7 +546,7 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
-		FilteredSubControls:    util.Ref(fmt.Sprintf("%s.", controlId)), // We only need the sub-controls for the evaluation. // TODO(anatheka): change that, in other catalogs maybe it's not that easy to get the sub-control by name
+		FilteredSubControls:    util.Ref(fmt.Sprintf("%s.", controlId)), // We only need the sub-controls for the evaluation.
 		LatestByResourceId:     util.Ref(true),
 	})
 	if err != nil {
@@ -603,70 +606,50 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
 func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentSchedulerTag string) {
 	var (
-		result *evaluation.EvaluationResult
-		err    error
-	)
-
-	result, err = s.evaluationResultForSubcontrol(toe.GetCloudServiceId(), toe.GetCatalogId(), categoryName, controlId, toe)
-	if err != nil {
-		err = fmt.Errorf("error creating evaluation result: %v", err)
-		log.Error(err)
-	} else if result == nil {
-		log.Debug("No evaluation result created")
-	}
-
-	// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
-	if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
-		s.wg[parentSchedulerTag].wgMutex.Lock()
-		s.wg[parentSchedulerTag].wg.Done()
-		s.wg[parentSchedulerTag].wgMutex.Unlock()
-	}
-}
-
-// evaluationResultForSubcontrol return the evaluation result for the sub-control, e.g. OPS-13.7
-// TODO(anatheka): Refactor cloudServiceId, etc. with toe.*
-func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categoryName, controlId string, toe *orchestrator.TargetOfEvaluation) (eval *evaluation.EvaluationResult, err error) {
-	var (
+		eval              *evaluation.EvaluationResult
+		err               error
 		assessmentResults []*assessment.AssessmentResult
 	)
 
 	// Get metrics from control and sub-controls
-	metrics, err := s.getAllMetricsFromControl(catalogId, categoryName, controlId)
+	metrics, err := s.getAllMetricsFromControl(toe.GetCatalogId(), categoryName, controlId)
 	if err != nil {
-		err = fmt.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, cloudServiceId, err)
+		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, toe.GetCloudServiceId(), err)
+		// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
+		if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
+			s.wg[parentSchedulerTag].wgMutex.Lock()
+			s.wg[parentSchedulerTag].wg.Done()
+			s.wg[parentSchedulerTag].wgMutex.Unlock()
+		}
 		return
 	}
 
-	// TODO(anatheka): Is the evaluation result COMPLIANT or should it be UNSPECIFIED if no metrics exist for the control?
-	// Currently, the evaluation continues when no metrics exist and the evaluation result becomes COMPLIANT.
 	if len(metrics) != 0 {
 		// Get latest assessment_results by resource_id filtered by
 		// * cloud service id
 		// * metric ids
 		assessmentResults, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
-			FilteredCloudServiceId: &cloudServiceId,
+			FilteredCloudServiceId: &toe.CloudServiceId,
 			FilteredMetricId:       getMetricIds(metrics),
 			LatestByResourceId:     util.Ref(true),
 		}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 			return res.Results
 		})
 
-		if err != nil || len(assessmentResults) == 0 {
+		if err != nil {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
-			err = fmt.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", cloudServiceId, getMetricIds(metrics), err)
-			return nil, err
+			log.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", toe.GetCloudServiceId(), getMetricIds(metrics), err)
 		} else if len(assessmentResults) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is only a temporary network problem
-			err = fmt.Errorf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", cloudServiceId, getMetricIds(metrics))
-			return nil, err
+			log.Debugf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", toe.GetCloudServiceId(), getMetricIds(metrics))
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")
 	}
 
-	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If at least one assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
+	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If the latest assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
 
-	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id together for evaluation
+	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
 	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
 	for _, result := range assessmentResultsMap {
 		var nonCompliantAssessmentResults = []string{}
@@ -715,7 +698,12 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), eval.Id)
 	}
 
-	return
+	// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
+	if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
+		s.wg[parentSchedulerTag].wgMutex.Lock()
+		s.wg[parentSchedulerTag].wg.Done()
+		s.wg[parentSchedulerTag].wgMutex.Unlock()
+	}
 }
 
 // getMetricIds returns the metric Ids for the given metrics
