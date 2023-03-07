@@ -241,9 +241,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		controls = append(controls, control)
 		controls = append(controls, control.GetControls()...)
 
-		// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
-		parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
-
 		// Check if scheduler job for current control_id is already running
 		jobs, err := s.scheduler.FindJobsByTag(schedulerTag)
 		if len(jobs) > 0 && err == nil {
@@ -252,19 +249,30 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 		}
 
+		// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
+		parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetId())
+
 		// Add number of sub-controls to the WaitGroup. For the control (e.g., OPS-13) we have to wait until all the sub-controls (e.g., OPS-13.1) are ready.
 		// Control is a parent control if no parentControlId exists.
-		s.wg[schedulerTag] = &WaitGroup{
+		s.wg[parentSchedulerTag] = &WaitGroup{
 			wg:      &sync.WaitGroup{},
 			wgMutex: sync.Mutex{},
 		}
-		s.wg[schedulerTag].wgMutex.Lock()
-		// The controls list contains also the parent control itself and must be minimized by 1.
-		s.wg[schedulerTag].wg.Add(len(controls) - 1)
-		s.wg[schedulerTag].wgMutex.Unlock()
+		s.wg[parentSchedulerTag].wgMutex.Lock()
+		// The controls list contains also the parent control itself and must be minimized by 1 for the parent_control_id.
+		s.wg[parentSchedulerTag].wg.Add(len(controls) - 1)
+		s.wg[parentSchedulerTag].wgMutex.Unlock()
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
+			//TODO WEITERMACHEN!!!
+			// If the control is a sub-control create parentSchedulerTag
+			if control.GetParentControlId() == "" {
+				parentSchedulerTag = ""
+			} else {
+				// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
+				parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), control.GetParentControlId())
+			}
 			err = s.addJobToScheduler(control, toe, parentSchedulerTag, interval)
 			// We can return the error as it is
 			if err != nil {
@@ -376,6 +384,8 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		return nil, service.ErrPermissionDenied
 	}
 
+	res = new(evaluation.ListEvaluationResultsResponse)
+
 	// Filtering evaluation results by
 	// * cloud service ID
 	// * control ID
@@ -387,6 +397,10 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		query = append(query, "control_id = ?")
 		args = append(args, req.GetFilteredControlId())
 	}
+	if req.GetFilteredSubControls() != "" {
+		query = append(query, "control_id LIKE ?")
+		args = append(args, fmt.Sprintf("%s%%", req.GetFilteredSubControls()))
+	}
 
 	// In any case, we need to make sure that we only select evaluation results of cloud services that we have access to (if we do not have access to all)
 	if !all {
@@ -394,17 +408,55 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		args = append(args, allowed)
 	}
 
-	// join query with AND and prepend the query
-	args = append([]any{strings.Join(query, " AND ")}, args...)
+	// If we want to have it grouped by resource ID, we need to do a raw query
+	if req.GetLatestByResourceId() && req.GetFilteredSubControls() == "" {
+		// In the raw SQL, we need to build the whole WHERE statement
+		var where string
 
-	res = new(evaluation.ListEvaluationResultsResponse)
+		if len(query) > 0 {
+			where = "WHERE " + strings.Join(query, " AND ")
+		}
 
-	// Paginate the results according to the request
-	res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, s.storage, service.DefaultPaginationOpts, args...)
-	if err != nil {
-		err = fmt.Errorf("could not paginate evaluation results: %v", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		// Execute the raw SQL statement
+		err = s.storage.Raw(&res.Results,
+			fmt.Sprintf(`WITH sorted_results AS (
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id ORDER BY timestamp DESC) AS row_number
+				FROM evaluation_results
+				%s
+		  	)
+		  	SELECT * FROM sorted_results WHERE row_number = 1;`, where), args...)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	} else if req.GetLatestByResourceId() && req.GetFilteredSubControls() != "" {
+		// In the raw SQL, we need to build the whole WHERE statement
+		var where string
+
+		if len(query) > 0 {
+			where = "WHERE " + strings.Join(query, " AND ")
+		}
+
+		// Execute the raw SQL statement
+		err = s.storage.Raw(&res.Results, fmt.Sprintf(`WITH sorted_results AS (
+			SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id, control_id ORDER BY timestamp DESC) AS row_number
+			FROM evaluation_results
+			%s
+		  )
+		  SELECT * FROM sorted_results WHERE row_number = 1;`, where), args...)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	} else {
+		// join query with AND and prepend the query
+		args = append([]any{strings.Join(query, " AND ")}, args...)
+
+		// Paginate the results according to the request
+		res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, s.storage, service.DefaultPaginationOpts, args...)
+		if err != nil {
+			err = fmt.Errorf("could not paginate evaluation results: %v", err)
+			log.Error(err)
+			return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		}
 	}
 
 	return
@@ -496,11 +548,16 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	// Wait till all sub-controls are evaluated
 	s.wg[schedulerTag].wg.Wait()
 
+	// For the next iteration set wg again to the number of sub-controls
+	s.wg[schedulerTag].wgMutex.Lock()
+	s.wg[schedulerTag].wg.Add(len(subControls))
+	s.wg[schedulerTag].wgMutex.Unlock()
+
 	// TODO(anatheka): How do we have to check the resourceID?
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
-		FilteredControlId:      &controlId,
-		// TODO(all): If evaluation results are stored in DB: getLastedByControlID or similar.
+		FilteredSubControls:    &controlId,
+		LatestByResourceId:     util.Ref(true),
 	})
 	if err != nil {
 		err = fmt.Errorf("error list evaluation results: %v", err)
@@ -508,11 +565,10 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		return
 	}
 
-	// For the next iteration set wg again to the number of sub-controls
-	s.wg[schedulerTag].wgMutex.Lock()
-	s.wg[schedulerTag].wg.Add(len(subControls))
-	s.wg[schedulerTag].wgMutex.Unlock()
-
+	// If no evaluation results for the sub-controls are available return and do not create a new evaluation result
+	if len(evaluations.Results) == 0 {
+		return
+	}
 	for _, r := range evaluations.Results {
 		if r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
 			status = evaluation.EvaluationResult_COMPLIANT
@@ -541,13 +597,16 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result.GetResourceId(), controlId, err)
 		return
 	}
+
+	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), result.Id)
+
 	s.resultMutex.Lock()
 	s.results[result.Id] = result
 	s.resultMutex.Unlock()
 
-	log.Debugf("Evaluation result for ControlID '%s' with ID '%s' stored.", controlId, result.Id)
 }
 
+// TODO(anatheka): Refacotr this method and evaluationResultForSubcontrol
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
 func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentSchedulerTag string) {
 	var (
@@ -561,19 +620,6 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		log.Error(err)
 	} else if result == nil {
 		log.Debug("No evaluation result created")
-	} else {
-
-		// TODO(all): Store in DB
-		err = s.storage.Create(result)
-		if err != nil {
-			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result.GetResourceId(), controlId, err)
-			return
-		}
-		s.resultMutex.Lock()
-		s.results[result.Id] = result
-		s.resultMutex.Unlock()
-
-		log.Infof("Evaluation result for Cloud Service '%s' and ControlID '%s' stored with ID '%s'.", toe.GetCloudServiceId(), controlId, result.Id)
 	}
 
 	// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
@@ -627,7 +673,7 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 
 	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If at least one assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
 
-	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id together for evaluation
+	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
 	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
 	for _, result := range assessmentResultsMap {
 		var nonCompliantAssessmentResults []string
@@ -664,6 +710,17 @@ func (s *Service) evaluationResultForSubcontrol(cloudServiceId, catalogId, categ
 			Status:                     status,
 			FailingAssessmentResultsId: nonCompliantAssessmentResults,
 		}
+
+		err = s.storage.Create(eval)
+		if err != nil {
+			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result[0].GetResourceId(), controlId, err)
+			continue
+		}
+		s.resultMutex.Lock()
+		s.results[eval.Id] = eval
+		s.resultMutex.Unlock()
+
+		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), eval.Id)
 	}
 
 	return
@@ -830,11 +887,12 @@ func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHier
 	return
 }
 
+// getAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2 different metrics.
 func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
 
 	for i := range results {
-		hierarchyResults[results[i].GetId()] = append(hierarchyResults[results[i].GetId()], results[i])
+		hierarchyResults[results[i].GetResourceId()] = append(hierarchyResults[results[i].GetResourceId()], results[i])
 	}
 
 	return hierarchyResults
