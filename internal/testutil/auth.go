@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	TestAuthUser     = "clouditor"
-	TestAuthPassword = "clouditor"
-
+	TestAuthUser         = "clouditor"
+	TestAuthPassword     = "clouditor"
+	TestCustomClaims     = "cloudserviceid"
+	TestAllowAllClaims   = "cladmin"
 	TestAuthClientID     = "client"
 	TestAuthClientSecret = "secret"
 
-	TestCustomClaims      = "cloudserviceid"
 	TestCloudService1     = "11111111-1111-1111-1111-111111111111"
 	TestCloudService2     = "22222222-2222-2222-2222-222222222222"
 	TestCloudServiceName1 = "My Cloud Service 1"

@@ -60,7 +60,8 @@ type AuthorizationStrategy interface {
 // AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of cloud service IDs to be in a specific JWT
 // claim key.
 type AuthorizationStrategyJWT struct {
-	Key string
+	CloudServicesKey string
+	AllowAllKey      string
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
@@ -100,8 +101,13 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		return false, nil
 	}
 
+	// Let's look for an allow all key
+	if b, ok := claims[a.AllowAllKey].(bool); ok && b {
+		return true, nil
+	}
+
 	// We are looking for an array claim
-	if l, ok = claims[a.Key].([]interface{}); !ok {
+	if l, ok = claims[a.CloudServicesKey].([]interface{}); !ok {
 		log.Debug("Retrieving allowed cloud services from token failed: specified claims key is not an array", err)
 		return false, nil
 	}
