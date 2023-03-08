@@ -33,7 +33,7 @@ paths:
                         type: string
                 - name: latestByResourceId
                   in: query
-                  description: Optional. Latest results grouped by resource_id and metric_id.
+                  description: Optional. Latest results grouped by resource_id.
                   schema:
                     type: boolean
                 - name: pageSize
