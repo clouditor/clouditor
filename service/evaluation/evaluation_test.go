@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -42,6 +43,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/evaluationtest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -1726,6 +1728,166 @@ func Test_getSchedulerTag(t *testing.T) {
 			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
 				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_getEvaluationResultMap(t *testing.T) {
+	type args struct {
+		results []*evaluation.EvaluationResult
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			args: args{results: []*evaluation.EvaluationResult{}},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				return assert.Empty(t, gotResults)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				results: evaluationtest.MockEvaluationResults,
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				wantResults := map[string][]*evaluation.EvaluationResult{
+					testdata.MockResourceID: {
+						evaluationtest.MockEvaluationResult6,
+						evaluationtest.MockEvaluationResult5,
+						evaluationtest.MockEvaluationResult4,
+						evaluationtest.MockEvaluationResult3,
+						evaluationtest.MockEvaluationResult2,
+						evaluationtest.MockEvaluationResult22,
+						evaluationtest.MockEvaluationResult1,
+					},
+					testdata.MockAnotherResourceID: {
+						evaluationtest.MockEvaluationResult8,
+						evaluationtest.MockEvaluationResult7,
+					},
+				}
+
+				for _, r := range gotResults {
+					sort.SliceStable(r, func(i, j int) bool {
+						return r[i].GetId() < r[j].GetId()
+					})
+				}
+				for _, r := range wantResults {
+					sort.SliceStable(r, func(i, j int) bool {
+						return r[i].GetId() < r[j].GetId()
+					})
+				}
+
+				assert.Equal(t, len(gotResults), len(wantResults))
+
+				for key, results := range gotResults {
+					if !assert.Equal(t, len(results), len(wantResults[key])) {
+						return false
+					}
+					for i := range results {
+						reflect.DeepEqual(results[i], wantResults[key][i])
+					}
+				}
+
+				return true
+			},
+			//
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getEvaluationResultMap(tt.args.results)
+
+			tt.want(t, got)
+		})
+	}
+}
+
+func Test_getAssessmentResultMap(t *testing.T) {
+	type args struct {
+		results []*assessment.AssessmentResult
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			args: args{results: []*assessment.AssessmentResult{}},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.(map[string][]*assessment.AssessmentResult)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				return assert.Empty(t, gotResults)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				results: orchestratortest.MockAssessmentResults,
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.(map[string][]*assessment.AssessmentResult)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				wantResults := map[string][]*assessment.AssessmentResult{
+					testdata.MockResourceID: {
+						orchestratortest.MockAssessmentResult1,
+						orchestratortest.MockAssessmentResult2,
+						orchestratortest.MockAssessmentResult3,
+					},
+					testdata.MockAnotherResourceID: {
+						orchestratortest.MockAssessmentResult4,
+					},
+				}
+
+				for _, r := range gotResults {
+					sort.SliceStable(r, func(i, j int) bool {
+						return r[i].GetId() < r[j].GetId()
+					})
+				}
+				for _, r := range wantResults {
+					sort.SliceStable(r, func(i, j int) bool {
+						return r[i].GetId() < r[j].GetId()
+					})
+				}
+
+				assert.Equal(t, len(gotResults), len(wantResults))
+
+				for key, results := range gotResults {
+					if !assert.Equal(t, len(results), len(wantResults[key])) {
+						return false
+					}
+					for i := range results {
+						reflect.DeepEqual(results[i], wantResults[key][i])
+					}
+				}
+
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getAssessmentResultMap(tt.args.results)
+
+			tt.want(t, got)
 		})
 	}
 }
