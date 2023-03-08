@@ -105,6 +105,7 @@ func TestAuthorizationStrategyAllowAll_AllowedCloudServices(t *testing.T) {
 func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 	type fields struct {
 		CloudServicesKey string
+		AllowAllKey      string
 	}
 	type args struct {
 		ctx context.Context
@@ -124,6 +125,18 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
+				typ: AccessRead,
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			},
+			want: true,
+		},
+		{
+			name: "valid context, allow all",
+			fields: fields{
+				AllowAllKey: testutil.TestAllowAllClaims,
+			},
+			args: args{
+				ctx: testutil.TestContextAllowAll,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
 			},
@@ -183,6 +196,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyJWT{
 				CloudServicesKey: tt.fields.CloudServicesKey,
+				AllowAllKey:      tt.fields.AllowAllKey,
 			}
 			if got := a.CheckAccess(tt.args.ctx, tt.args.typ, tt.args.req); got != tt.want {
 				t.Errorf("AuthorizationStrategyJWT.CheckAccess() = %v, want %v", got, tt.want)

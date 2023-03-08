@@ -66,11 +66,18 @@ type AuthorizationStrategyJWT struct {
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
 func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CloudServiceRequest) bool {
-	var list []string
+	var (
+		list []string
+		all  bool
+	)
 
 	// Retrieve the list of allowed cloud services. we never allow to retrieve
 	// "all" services with the token strategy.
-	_, list = a.AllowedCloudServices(ctx)
+	all, list = a.AllowedCloudServices(ctx)
+
+	if all {
+		return true
+	}
 
 	return slices.Contains(list, req.GetCloudServiceId())
 }
