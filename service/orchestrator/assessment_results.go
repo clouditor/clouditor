@@ -44,7 +44,7 @@ import (
 )
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
-func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.ListAssessmentResultsRequest) (res *assessment.ListAssessmentResultsResponse, err error) {
+func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator.ListAssessmentResultsRequest) (res *orchestrator.ListAssessmentResultsResponse, err error) {
 	var allowed []string
 	var all bool
 
@@ -64,7 +64,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *assessment.L
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = new(assessment.ListAssessmentResultsResponse)
+	res = new(orchestrator.ListAssessmentResultsResponse)
 
 	var query []string
 	var args []any
