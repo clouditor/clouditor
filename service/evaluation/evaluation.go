@@ -572,11 +572,11 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		// Get latest assessment_results by resource_id filtered by
 		// * cloud service id
 		// * metric ids
-		assessmentResults, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{
+		assessmentResults, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
 			FilteredCloudServiceId: &toe.CloudServiceId,
 			FilteredMetricId:       getMetricIds(metrics),
 			LatestByResourceId:     util.Ref(true),
-		}, s.orchestratorClient.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+		}, s.orchestratorClient.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 			return res.Results
 		})
 

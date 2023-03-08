@@ -437,27 +437,10 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		}
 	}
 
-  // Deduplicate controls
+	// Deduplicate controls
 	dedupControls := deduplicate(c)
 
 	return dedupControls, nil
-}
-
-// deduplicate removes all duplicates
-func deduplicate(result []*orchestrator.Control) []*orchestrator.Control {
-	// Sort slice by ID
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].GetId() > result[j].GetId()
-	})
-
-	// Compare elements and delete if it is a duplicate
-	for i := len(result) - 1; i > 0; i-- {
-		if result[i] == result[i-1] {
-			result = append(result[:i], result[i+1:]...)
-		}
-	}
-
-	return result
 }
 
 // deduplicate removes all duplicates
