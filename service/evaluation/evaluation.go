@@ -84,15 +84,14 @@ type Service struct {
 	// wg is used for a control that waits for its sub-controls to be evaluated
 	wg map[string]*WaitGroup
 
-	// Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
-	results     map[string]*evaluation.EvaluationResult
-	resultMutex sync.Mutex
+	// // Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
+	// results     map[string]*evaluation.EvaluationResult
+	// resultMutex sync.Mutex
 
 	storage persistence.Storage
 
-	// TODO(all): Comment in once the evaluation results are stored in storage
 	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
-	// resources, such as evidences and assessment results.
+	// resources, such as evaluation results.
 	authz service.AuthorizationStrategy
 }
 
@@ -141,7 +140,6 @@ func NewService(opts ...service.Option[Service]) *Service {
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
 		},
-		results:   make(map[string]*evaluation.EvaluationResult),
 		scheduler: gocron.NewScheduler(time.UTC),
 		wg:        make(map[string]*WaitGroup),
 	}
@@ -265,7 +263,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
-			//TODO WEITERMACHEN!!!
 			// If the control is a sub-control create parentSchedulerTag
 			if control.GetParentControlId() == "" {
 				parentSchedulerTag = ""
@@ -296,7 +293,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
 
 	var (
-		schedulerTag string
+		schedulerTags []string
 		// control      *orchestrator.Control
 		toe *orchestrator.TargetOfEvaluation
 	)
@@ -320,36 +317,15 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// Stop all controls in the list controls_in_scope
-	errorControlIds := []string{}
 	for _, control := range toe.ControlsInScope {
-		// Check if the control is a parent control
+		// Check if the control is a parent control and stop all scheduler jobs for the parent and its sub-controls. Sub-controls are always started with its parent control and not individually.
 		if control.ParentControlId == nil {
-			// Control is a parent control, stop the scheduler job for the control and all sub-controls
-			err = s.stopSchedulerJobs(getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetCloudServiceId()))
-			if err != nil && !strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-				log.Error(err)
-				errorControlIds = append(errorControlIds, control.GetId())
-			}
-
-			log.Debugf("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
+			// Control is a parent control, stop the scheduler job for the parent control and all sub-controls
+			schedulerTags = getSchedulerTagsForControlIds(getAllControlIdsFromControl(control), req.GetCloudServiceId())
 		} else {
-			// Control is a sub-control
-			schedulerTag = getSchedulerTag(req.GetCloudServiceId(), control.GetId())
-			err = s.stopSchedulerJob(schedulerTag)
-			// No need of further error handling
-			if err != nil && !strings.Contains(err.Error(), gocron.ErrJobNotFoundWithTag.Error()) {
-				log.Error(err)
-				errorControlIds = append(errorControlIds, control.GetId())
-			}
-
-			log.Debugf("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", req.GetCloudServiceId(), control.GetId())
+			continue
 		}
-	}
-
-	if len(errorControlIds) > 0 {
-		log.Infof("Error stopping scheduler for Controls '%v' for Cloud Service '%s'.", strings.Join(errorControlIds, ", "), req.GetCloudServiceId())
-	} else {
-		log.Infof("Evaluation for Cloud Service '%s' and Catalog '%s' stopped.", req.GetCloudServiceId(), req.GetCatalogId())
+		s.stopSchedulerJobs(req.GetCloudServiceId(), control.GetId(), schedulerTags)
 	}
 
 	resp = &evaluation.StopEvaluationResponse{}
@@ -361,7 +337,6 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
 	var (
 		// filtered_values []*evaluation.EvaluationResult
-		// TODO(all): Comment in once the evaluation results are stored in storage
 		allowed   []string
 		all       bool
 		query     []string
@@ -375,7 +350,6 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		return nil, err
 	}
 
-	// TODO(all): Comment in once the evaluation results are stored in storage
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions to our storage request, if we are allowed to see all cloud services.
 	all, allowed = s.authz.AllowedCloudServices(ctx)
 
@@ -501,31 +475,6 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	return
 }
 
-// stopSchedulerJob stops a scheduler job for the given scheduler tag
-func (s *Service) stopSchedulerJob(schedulerTag string) (err error) {
-	// Remove job for tag from the scheduler
-	err = s.scheduler.RemoveByTag(schedulerTag)
-	if err != nil {
-		err = fmt.Errorf("error while removing job for tag '%s' from scheduler: %v", schedulerTag, err)
-		return
-	}
-
-	return
-}
-
-// stopSchedulerJobs stops all scheduler jobs for the given scheduler tags
-func (s *Service) stopSchedulerJobs(schedulerTags []string) (err error) {
-	// Remove all job for given tags from the scheduler
-	for _, schedulerTag := range schedulerTags {
-		err = s.stopSchedulerJob(schedulerTag)
-		if err != nil {
-			return
-		}
-	}
-
-	return
-}
-
 // evaluateControl evaluates a control, e.g., OPS-13. Therefere, the method needs to wait till all sub-controls (e.g., OPS-13.1) are evaluated.
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
@@ -593,16 +542,11 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 			return
 		}
 
-		s.resultMutex.Lock()
-		s.results[evalResult.Id] = evalResult
-		s.resultMutex.Unlock()
-
 		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), evalResult.Id)
 
 	}
 }
 
-// TODO(anatheka): Refacotr this method and evaluationResultForSubcontrol
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
 func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentSchedulerTag string) {
 	var (
@@ -691,9 +635,6 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result[0].GetResourceId(), controlId, err)
 			continue
 		}
-		s.resultMutex.Lock()
-		s.results[eval.Id] = eval
-		s.resultMutex.Unlock()
 
 		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), eval.Id)
 	}
@@ -704,6 +645,22 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		s.wg[parentSchedulerTag].wg.Done()
 		s.wg[parentSchedulerTag].wgMutex.Unlock()
 	}
+}
+
+// stopSchedulerJobs stops all scheduler jobs for the given scheduler tags
+func (s *Service) stopSchedulerJobs(cloudServiceId, controlId string, schedulerTags []string) (err error) {
+	// Remove all job for given tags from the scheduler
+	for _, schedulerTag := range schedulerTags {
+		// Remove job for tag from the scheduler
+		err = s.scheduler.RemoveByTag(schedulerTag)
+		if err != nil {
+			log.Errorf("error while removing job for tag '%s' from scheduler: %v", schedulerTag, err)
+			continue
+		}
+		log.Debugf("Evaluation stopped for Cloud Service ID '%s' with Control ID '%s'", cloudServiceId, controlId)
+	}
+
+	return
 }
 
 // getMetricIds returns the metric Ids for the given metrics
