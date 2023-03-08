@@ -2251,7 +2251,7 @@ type ListAssessmentResultsRequest struct {
 	FilteredCompliant *bool `protobuf:"varint,2,opt,name=filtered_compliant,json=filteredCompliant,proto3,oneof" json:"filtered_compliant,omitempty"`
 	// Optional. List only assessment results of a specific metric id.
 	FilteredMetricId []string `protobuf:"bytes,3,rep,name=filtered_metric_id,json=filteredMetricId,proto3" json:"filtered_metric_id,omitempty"`
-	// Optional. Latest results grouped by resource_id.
+	// Optional. Latest results grouped by resource_id and metric_id.
 	LatestByResourceId *bool  `protobuf:"varint,4,opt,name=latest_by_resource_id,json=latestByResourceId,proto3,oneof" json:"latest_by_resource_id,omitempty"`
 	PageSize           int32  `protobuf:"varint,10,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken          string `protobuf:"bytes,11,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
