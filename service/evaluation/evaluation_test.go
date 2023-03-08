@@ -77,14 +77,13 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
+				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress("localhost:1234"))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
+					target: "localhost:1234",
 				},
-				scheduler: gocron.NewScheduler(time.UTC),
-				wg:        make(map[string]*WaitGroup),
+				wg: make(map[string]*WaitGroup),
 			},
 		},
 		{
@@ -94,9 +93,8 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: "localhost:9090",
+					target: testdata.MockOrchestratorAddress,
 				},
-				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 				wg:         make(map[string]*WaitGroup),
 			},
@@ -108,9 +106,8 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: "localhost:9090",
+					target: testdata.MockOrchestratorAddress,
 				},
-				scheduler:  gocron.NewScheduler(time.UTC),
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 				wg:         make(map[string]*WaitGroup),
 			},
@@ -122,10 +119,9 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: "localhost:9090",
+					target: testdata.MockOrchestratorAddress,
 				},
-				scheduler: gocron.NewScheduler(time.UTC),
-				wg:        make(map[string]*WaitGroup),
+				wg: make(map[string]*WaitGroup),
 			},
 		},
 	}
@@ -133,11 +129,23 @@ func TestNewService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
 
-			// Check if scheduler ist initialized and then remove
-			if tt.want.scheduler != nil {
-				assert.NotEmpty(t, tt.want.scheduler)
+			// Check if scheduler is initialized and then remove
+			if got.scheduler != nil {
+				assert.NotEmpty(t, got.scheduler)
 				tt.want.scheduler = nil
 				got.scheduler = nil
+			}
+			// Check if storage is initialized and then remove
+			if got.storage != nil {
+				assert.NotNil(t, got.storage)
+				tt.want.storage = nil
+				got.storage = nil
+			}
+			// Check if authz is initialized and then remove
+			if got.authz != nil {
+				assert.NotNil(t, got.authz)
+				tt.want.authz = nil
+				got.authz = nil
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
@@ -259,8 +267,8 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		results                       map[string]*evaluation.EvaluationResult
 		storage                       persistence.Storage
+		authz                         service.AuthorizationStrategy
 	}
 	type args struct {
 		in0 context.Context
@@ -274,142 +282,167 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Filter cloud service id",
-			fields: fields{results: map[string]*evaluation.EvaluationResult{
-				"11111111-1111-1111-1111-111111111111": {
-					Id:             "11111111-1111-1111-1111-111111111111",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-				"22222222-2222-2222-2222-222222222222": {
-					Id:             "22222222-2222-2222-2222-222222222222",
-					CloudServiceId: "99999999-9999-9999-9999-999999999999",
-				},
-				"33333333-3333-3333-3333-333333333333": {
-					Id:             "33333333-3333-3333-3333-333333333333",
-					CloudServiceId: "99999999-9999-9999-9999-999999999999",
-				},
-				"44444444-4444-4444-4444-444444444444": {
-					Id:             "44444444-4444-4444-4444-444444444444",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-			}},
+			name: "Missing request",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return false
+			},
+		},
+		{
+			name: "Filter latest_by_resource_id, control_id, sub_controls, cloud_service_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
+					LatestByResourceId:     util.Ref(true),
+					FilteredControlId:      util.Ref(testdata.MockSubControlID11),
+					FilteredSubControls:    util.Ref(testdata.MockControlID1),
+					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
-					{
-						Id:             "44444444-4444-4444-4444-444444444444",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					evaluationtest.MockEvaluationResult22,
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter control id",
-			fields: fields{results: map[string]*evaluation.EvaluationResult{
-				"11111111-1111-1111-1111-111111111111": {
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ControlId:      "control 1",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-				"22222222-2222-2222-2222-222222222222": {
-					Id:             "22222222-2222-2222-2222-222222222222",
-					ControlId:      "control 1",
-					CloudServiceId: "99999999-9999-9999-9999-999999999999",
-				},
-				"33333333-3333-3333-3333-333333333333": {
-					Id:             "33333333-3333-3333-3333-333333333333",
-					ControlId:      "control 2",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-				"44444444-4444-4444-4444-444444444444": {
-					Id:             "44444444-4444-4444-4444-444444444444",
-					ControlId:      "control 2",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-			}},
+			name: "Filter latest_by_resource_id and control_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					FilteredControlId: util.Ref("control 1"),
+					LatestByResourceId: util.Ref(true),
+					FilteredControlId:  util.Ref(testdata.MockSubControlID11),
 				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						ControlId:      "control 1",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
-					{
-						Id:        "22222222-2222-2222-2222-222222222222",
-						ControlId: "control 1",
-
-						CloudServiceId: "99999999-9999-9999-9999-999999999999",
-					},
+					evaluationtest.MockEvaluationResult8,
+					evaluationtest.MockEvaluationResult22,
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter cloud service id and control id",
-			fields: fields{results: map[string]*evaluation.EvaluationResult{
-				"11111111-1111-1111-1111-111111111111": {
-					Id:             "11111111-1111-1111-1111-111111111111",
-					ControlId:      "control 1",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-				"22222222-2222-2222-2222-222222222222": {
-					Id:             "22222222-2222-2222-2222-222222222222",
-					ControlId:      "control 1",
-					CloudServiceId: "99999999-9999-9999-9999-999999999999",
-				},
-				"33333333-3333-3333-3333-333333333333": {
-					Id:             "33333333-3333-3333-3333-333333333333",
-					ControlId:      "control 2",
-					CloudServiceId: "99999999-9999-9999-9999-999999999999",
-				},
-				"44444444-4444-4444-4444-444444444444": {
-					Id:             "44444444-4444-4444-4444-444444444444",
-					ControlId:      "control 2",
-					CloudServiceId: "00000000-0000-0000-0000-000000000000",
-				},
-			}},
+			name: "Filter latest_by_resource_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
-					FilteredCloudServiceId: util.Ref("00000000-0000-0000-0000-000000000000"),
-					FilteredControlId:      util.Ref("control 1"),
-				},
+				req: &evaluation.ListEvaluationResultsRequest{LatestByResourceId: util.Ref(true)},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					{
-						Id:             "11111111-1111-1111-1111-111111111111",
-						ControlId:      "control 1",
-						CloudServiceId: "00000000-0000-0000-0000-000000000000",
-					},
+					evaluationtest.MockEvaluationResult7,
+					evaluationtest.MockEvaluationResult1,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Filter control_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{FilteredControlId: util.Ref(testdata.MockControlID1)},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult7,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Filter sub-controls - get all sub-control evaluation results for a given control",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{FilteredSubControls: util.Ref(testdata.MockControlID1)},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult2,
+					evaluationtest.MockEvaluationResult22,
+					evaluationtest.MockEvaluationResult3,
+					evaluationtest.MockEvaluationResult7,
+					evaluationtest.MockEvaluationResult8,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Filter cloud_service_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID)},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult2,
+					evaluationtest.MockEvaluationResult22,
+					evaluationtest.MockEvaluationResult3,
+					evaluationtest.MockEvaluationResult4,
+					evaluationtest.MockEvaluationResult5,
+					evaluationtest.MockEvaluationResult6,
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "multiple page result - first page",
-			fields: fields{results: map[string]*evaluation.EvaluationResult{
-				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-				"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-				"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-				"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-			}},
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
@@ -418,12 +451,8 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					{
-						Id: "11111111-1111-1111-1111-111111111111",
-					},
-					{
-						Id: "22222222-2222-2222-2222-222222222222",
-					},
+					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult2,
 				},
 				NextPageToken: func() string {
 					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
@@ -434,30 +463,27 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		},
 		{
 			name: "multiple page result - second page",
-			fields: fields{results: map[string]*evaluation.EvaluationResult{
-				"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-				"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-				"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-				"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-			}},
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					PageSize: 2,
+					PageSize: 6,
 					PageToken: func() string {
-						token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
+						token, _ := (&api.PageToken{Start: 6, Size: 4}).Encode()
 						return token
 					}(),
 				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					{
-						Id: "33333333-3333-3333-3333-333333333333",
-					},
-					{
-						Id: "44444444-4444-4444-4444-444444444444",
-					},
+					evaluationtest.MockEvaluationResult6,
+					evaluationtest.MockEvaluationResult7,
+					evaluationtest.MockEvaluationResult8,
 				},
 			},
 			wantErr: assert.NoError,
@@ -465,32 +491,17 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		{
 			name: "List all results",
 			fields: fields{
-				results: map[string]*evaluation.EvaluationResult{
-					"11111111-1111-1111-1111-111111111111": {Id: "11111111-1111-1111-1111-111111111111"},
-					"22222222-2222-2222-2222-222222222222": {Id: "22222222-2222-2222-2222-222222222222"},
-					"33333333-3333-3333-3333-333333333333": {Id: "33333333-3333-3333-3333-333333333333"},
-					"44444444-4444-4444-4444-444444444444": {Id: "44444444-4444-4444-4444-444444444444"},
-				},
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
-				Results: []*evaluation.EvaluationResult{
-					{
-						Id: "11111111-1111-1111-1111-111111111111",
-					},
-					{
-						Id: "22222222-2222-2222-2222-222222222222",
-					},
-					{
-						Id: "33333333-3333-3333-3333-333333333333",
-					},
-					{
-						Id: "44444444-4444-4444-4444-444444444444",
-					},
-				},
+				Results: evaluationtest.MockEvaluationResults,
 			},
 			wantErr: assert.NoError,
 		},
@@ -503,6 +514,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				orchestratorAddress:           tt.fields.orchestratorAddress,
 				authorizer:                    tt.fields.authorizer,
 				storage:                       tt.fields.storage,
+				authz:                         tt.fields.authz,
 			}
 			gotRes, err := s.ListEvaluationResults(tt.args.in0, tt.args.req)
 
@@ -1557,9 +1569,9 @@ func TestService_evaluateControl(t *testing.T) {
 
 				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, 6, len(evalResults.Results))
+				assert.Equal(t, 7, len(evalResults.Results))
 
-				createdResult := evalResults.Results[5]
+				createdResult := evalResults.Results[len(evalResults.Results)-1]
 
 				// Delete ID and timestamp from the evaluation results
 				assert.NotEmpty(t, createdResult.GetId())

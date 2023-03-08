@@ -31,6 +31,17 @@ var (
 		ControlId:                  testdata.MockSubControlID11,
 		FailingAssessmentResultsId: []string{},
 	}
+	MockEvaluationResult22 = &evaluation.EvaluationResult{
+		Id:                         testdata.MockEvaluationResult9ID,
+		Timestamp:                  timestamppb.New(time.Unix(5, 0)),
+		CloudServiceId:             testdata.MockCloudServiceID,
+		CategoryName:               testdata.MockCategoryName,
+		CatalogId:                  testdata.MockCatalogID,
+		ResourceId:                 testdata.MockResourceID,
+		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		ControlId:                  testdata.MockSubControlID11,
+		FailingAssessmentResultsId: []string{},
+	}
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult3ID,
 		Timestamp:                  timestamppb.New(time.Unix(1, 0)),
@@ -81,23 +92,23 @@ var (
 		CloudServiceId:             testdata.MockAnotherCloudServiceID,
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
-		ResourceId:                 testdata.MockResourceID,
+		ResourceId:                 testdata.MockAnotherResourceID,
 		Status:                     evaluation.EvaluationResult_COMPLIANT,
 		ControlId:                  testdata.MockControlID1,
 		FailingAssessmentResultsId: []string{},
 	}
 	MockEvaluationResult8 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult8ID,
-		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
+		Timestamp:                  timestamppb.New(time.Unix(2, 0)),
 		CloudServiceId:             testdata.MockAnotherCloudServiceID,
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
-		ResourceId:                 testdata.MockResourceID,
+		ResourceId:                 testdata.MockAnotherResourceID,
 		Status:                     evaluation.EvaluationResult_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
 		FailingAssessmentResultsId: []string{},
 	}
-	MockEvaluationResults = []*evaluation.EvaluationResult{MockEvaluationResult1, MockEvaluationResult2, MockEvaluationResult3, MockEvaluationResult4, MockEvaluationResult5, MockEvaluationResult6, MockEvaluationResult7, MockEvaluationResult8}
+	MockEvaluationResults = []*evaluation.EvaluationResult{MockEvaluationResult1, MockEvaluationResult2, MockEvaluationResult22, MockEvaluationResult3, MockEvaluationResult4, MockEvaluationResult5, MockEvaluationResult6, MockEvaluationResult7, MockEvaluationResult8}
 
-	MockEvaluationResultsWithoutResultsForParentControl = []*evaluation.EvaluationResult{MockEvaluationResult2, MockEvaluationResult3, MockEvaluationResult5, MockEvaluationResult6, MockEvaluationResult8}
+	MockEvaluationResultsWithoutResultsForParentControl = []*evaluation.EvaluationResult{MockEvaluationResult2, MockEvaluationResult22, MockEvaluationResult3, MockEvaluationResult5, MockEvaluationResult6, MockEvaluationResult8}
 )
