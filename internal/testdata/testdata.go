@@ -38,7 +38,9 @@ const (
 	MockControlName                  = "Mock Control Name"
 	MockControlDescription           = "This is a mock control"
 	MockSubControlID11               = "Cont1.1"
+	MockSubControlID12               = "Cont1.2"
 	MockSubControlID21               = "Cont2.1"
+	MockSubControlID22               = "Cont2.2"
 	MockSubControlID31               = "Cont3.1"
 	MockSubControlID32               = "Cont3.2"
 	MockAnotherControlID             = "Cont4567"
@@ -91,6 +93,16 @@ const (
 	MockAssessmentResult2ID = "22222222-2222-2222-2222-222222222222"
 	MockAssessmentResult3ID = "33333333-3333-3333-3333-333333333333"
 	MockAssessmentResult4ID = "44444444-4444-4444-4444-444444444444"
+
+	// Evaluation Results
+	MockEvaluationResult1ID = "11111111-1111-1111-1111-111111111111"
+	MockEvaluationResult2ID = "22222222-2222-2222-2222-222222222222"
+	MockEvaluationResult3ID = "33333333-3333-3333-3333-333333333333"
+	MockEvaluationResult4ID = "44444444-4444-4444-4444-444444444444"
+	MockEvaluationResult5ID = "55555555-5555-5555-5555-555555555555"
+	MockEvaluationResult6ID = "66666666-6666-6666-6666-666666666666"
+	MockEvaluationResult7ID = "77777777-7777-7777-7777-777777777777"
+	MockEvaluationResult8ID = "88888888-8888-8888-8888-888888888888"
 )
 
 var (
