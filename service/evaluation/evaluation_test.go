@@ -1187,7 +1187,7 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 				}
 			}
 
-			s.stopSchedulerJobs(tt.args.cloudServiceId, tt.args.controlId, tt.args.schedulerTags)
+			_ = s.stopSchedulerJobs(tt.args.cloudServiceId, tt.args.controlId, tt.args.schedulerTags)
 			tt.want(t, s)
 			if tt.fields.schedulerRunning {
 				jobs := s.scheduler.Jobs()

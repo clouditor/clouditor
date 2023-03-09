@@ -178,9 +178,10 @@ func (s *Service) Authorizer() api.Authorizer {
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation. If no inteval time is given, the default value is used.
 func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
-		schedulerTag string
-		interval     int
-		toe          *orchestrator.TargetOfEvaluation
+		schedulerTag       string
+		parentSchedulerTag string
+		interval           int
+		toe                *orchestrator.TargetOfEvaluation
 	)
 
 	// Validate request
@@ -225,10 +226,10 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	for _, control := range controlsInScope {
 		var (
 			controls []*orchestrator.Control
-
-			// The parent control scheduler tag
-			parentSchedulerTag = ""
 		)
+
+		// The parent control scheduler tag always must be set to ""
+		parentSchedulerTag = ""
 
 		// If the control does not have sub-controls don't start a scheduler.
 		if control.ParentControlId != nil {
@@ -828,8 +829,8 @@ func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHier
 func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
 
-	for i := range results {
-		hierarchyResults[results[i].GetResourceId()] = append(hierarchyResults[results[i].GetResourceId()], results[i])
+	for _, result := range results {
+		hierarchyResults[result.GetResourceId()] = append(hierarchyResults[result.GetResourceId()], result)
 	}
 
 	return hierarchyResults
