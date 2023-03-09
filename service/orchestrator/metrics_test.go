@@ -146,7 +146,9 @@ func Test_loadMetricImplementation(t *testing.T) {
 			wantImpl: &assessment.MetricImplementation{
 				MetricId: testdata.MockMetricID,
 				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
-				Code: `package clouditor.metrics.admin_mfa_enabled
+				Code: `# METADATA
+# title: MFA_Enabled
+package clouditor.metrics.admin_mfa_enabled
 
 import data.clouditor.compare
 import future.keywords.every
