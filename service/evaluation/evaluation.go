@@ -325,7 +325,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 		} else {
 			continue
 		}
-		s.stopSchedulerJobs(req.GetCloudServiceId(), control.GetId(), schedulerTags)
+		_ = s.stopSchedulerJobs(req.GetCloudServiceId(), control.GetId(), schedulerTags)
 	}
 
 	resp = &evaluation.StopEvaluationResponse{}
