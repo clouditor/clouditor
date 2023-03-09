@@ -101,13 +101,16 @@ components:
             properties:
                 id:
                     type: string
+                    description: Id contains a unique ID for each resource. This is specific for the cloud provider this resource was gathered for and can for example be a resource URL.
                 cloudServiceId:
                     type: string
+                    description: CloudServiceId is the UUID for the cloud service to which this resource belongs to.
                 resourceType:
                     type: string
+                    description: ResourceType contains a comma seperated string of resource types according to our ontology.
                 properties:
                     $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons. We delegate JSON (un)marshalling of this struct directly to the inner value, so users of our REST API won't even notice that this wrapper exists.
+            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons.
         StartDiscoveryRequest:
             type: object
             properties:

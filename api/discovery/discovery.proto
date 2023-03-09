@@ -77,14 +77,21 @@ message QueryResponse {
 }
 
 // Resource is a wrapper around google.protobuf.Value that is needed for
-// persistence reasons. We delegate JSON (un)marshalling of this struct directly
-// to the inner value, so users of our REST API won't even notice that this
-// wrapper exists.
+// persistence reasons.
 message Resource {
-  string id = 1;
-  string cloud_service_id = 2;
-  string resource_type = 3;
+  // Id contains a unique ID for each resource. This is specific for the cloud
+  // provider this resource was gathered for and can for example be a resource
+  // URL.
+  string id = 1 [ (validate.rules).string.uuid = true ];
+  // CloudServiceId is the UUID for the cloud service to which this resource
+  // belongs to.
+  string cloud_service_id = 2 [ (validate.rules).string.min_len = 1 ];
+  // ResourceType contains a comma seperated string of resource types according
+  // to our ontology.
+  string resource_type = 3 [ (validate.rules).string.min_len = 1 ];
 
+  // Properties contains a protobuf struct that describe the resource in the
+  // terms of our Clouditor ontology.
   google.protobuf.Value properties = 10 [
     (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
     (validate.rules).message.required = true
