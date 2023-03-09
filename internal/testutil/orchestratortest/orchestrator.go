@@ -449,6 +449,17 @@ var (
 			},
 		}},
 	}
+	MockControlsInScopeSubControl4 = &orchestrator.Control{
+		Id:                             testdata.MockSubControlID32,
+		Name:                           testdata.MockControlName,
+		CategoryName:                   testdata.MockCategoryName,
+		CategoryCatalogId:              testdata.MockCatalogID,
+		Description:                    testdata.MockControlDescription,
+		AssuranceLevel:                 &testdata.AssuranceLevelSubstantial,
+		ParentControlId:                util.Ref(testdata.MockControlID3),
+		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
+		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+	}
 	MockControlsInScope5 = &orchestrator.Control{
 		Id:                testdata.MockControlID5,
 		Name:              testdata.MockControlName,
@@ -472,17 +483,6 @@ var (
 				},
 			},
 		}},
-	}
-	MockControlsInScopeSubControl4 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID32,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelSubstantial,
-		ParentControlId:                util.Ref(testdata.MockControlID3),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 	}
 	MockControlsInScope = []*orchestrator.Control{MockControlsInScope1, MockControlsInScopeSubControl1, MockControlsInScope2, MockControlsInScopeSubControl2, MockControlsInScope3, MockControlsInScopeSubControl3, MockControlsInScope4, MockControlsInScope5, MockControlsInScopeSubControl4}
 )

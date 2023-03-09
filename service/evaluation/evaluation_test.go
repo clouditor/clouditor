@@ -1891,3 +1891,72 @@ func Test_getAssessmentResultMap(t *testing.T) {
 		})
 	}
 }
+
+func Test_getControlsInScopeHierarchy(t *testing.T) {
+	type args struct {
+		controls []*orchestrator.Control
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			args: args{controls: []*orchestrator.Control{}},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.([]*orchestrator.Control)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				return assert.Empty(t, gotResults)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				controls: orchestratortest.MockControlsInScope,
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				gotResults, ok := i1.([]*orchestrator.Control)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				wantResults := []*orchestrator.Control{
+					orchestratortest.MockControlsInScope5,
+					orchestratortest.MockControlsInScope4,
+					orchestratortest.MockControlsInScope3,
+					orchestratortest.MockControlsInScope2,
+					orchestratortest.MockControlsInScope1,
+				}
+				wantResults[3].Controls = append(wantResults[3].Controls, orchestratortest.MockControlsInScopeSubControl1)
+				wantResults[2].Controls = append(wantResults[2].Controls, orchestratortest.MockControlsInScopeSubControl2)
+				wantResults[1].Controls = append(wantResults[1].Controls, orchestratortest.MockControlsInScopeSubControl3)
+				wantResults[0].Controls = append(wantResults[0].Controls, orchestratortest.MockControlsInScopeSubControl4)
+
+				// Sort lists
+				sort.SliceStable(gotResults, func(i, j int) bool {
+					return gotResults[i].GetId() < gotResults[j].GetId()
+				})
+				sort.SliceStable(wantResults, func(i, j int) bool {
+					return wantResults[i].GetId() < wantResults[j].GetId()
+				})
+				assert.Equal(t, len(wantResults), len(gotResults))
+
+				for i := range gotResults {
+					reflect.DeepEqual(gotResults[i], wantResults[i])
+				}
+
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotControlsHierarchy := getControlsInScopeHierarchy(tt.args.controls)
+
+			tt.want(t, gotControlsHierarchy)
+		})
+	}
+}
