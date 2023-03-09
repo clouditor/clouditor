@@ -839,8 +839,8 @@ func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][
 func getEvaluationResultMap(results []*evaluation.EvaluationResult) map[string][]*evaluation.EvaluationResult {
 	var hierarchyResults = make(map[string][]*evaluation.EvaluationResult)
 
-	for i := range results {
-		hierarchyResults[results[i].GetResourceId()] = append(hierarchyResults[results[i].GetResourceId()], results[i])
+	for _, result := range results {
+		hierarchyResults[result.GetResourceId()] = append(hierarchyResults[result.GetResourceId()], result)
 	}
 
 	return hierarchyResults
