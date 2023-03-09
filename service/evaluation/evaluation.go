@@ -228,9 +228,6 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 			controls []*orchestrator.Control
 		)
 
-		// The parent control scheduler tag always must be set to ""
-		parentSchedulerTag = ""
-
 		// If the control does not have sub-controls don't start a scheduler.
 		if control.ParentControlId != nil {
 			continue
