@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -203,25 +204,27 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	res = new(evidence.ListEvidencesResponse)
 
 	var query []string
-	var args []any
 
 	// Apply filter options
 	if req.GetFilter() != nil {
 		filter := req.GetFilter()
 		if filter.GetCloudServiceId() != "" {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, filter.GetCloudServiceId())
+			conds = append(conds, filter.GetCloudServiceId())
 		}
 		if filter.GetToolId() != "" {
 			query = append(query, "tool_id = ?")
-			args = append(args, filter.GetToolId())
+			conds = append(conds, filter.GetToolId())
 		}
 	}
 
+	// Join query with AND and prepend the query
+	conds = append([]any{strings.Join(query, " AND ")}, conds...)
+
 	// Paginate the evidences according to the request
-	// TODO
 	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
