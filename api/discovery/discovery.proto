@@ -85,7 +85,7 @@ message Resource {
   string id = 1 [ (validate.rules).string.uuid = true ];
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
-  string cloud_service_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
   // ResourceType contains a comma seperated string of resource types according
   // to our ontology.
   string resource_type = 3 [ (validate.rules).string.min_len = 1 ];
