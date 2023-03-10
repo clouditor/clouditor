@@ -202,7 +202,24 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	res = new(evidence.ListEvidencesResponse)
 
+	var query []string
+	var args []any
+
+	// Apply filter options
+	if req.GetFilter() != nil {
+		filter := req.GetFilter()
+		if filter.GetCloudServiceId() != "" {
+			query = append(query, "cloud_service_id = ?")
+			args = append(args, filter.GetCloudServiceId())
+		}
+		if filter.GetToolId() != "" {
+			query = append(query, "tool_id = ?")
+			args = append(args, filter.GetToolId())
+		}
+	}
+
 	// Paginate the evidences according to the request
+	// TODO
 	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
 	if err != nil {

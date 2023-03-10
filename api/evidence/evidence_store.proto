@@ -85,7 +85,14 @@ message ListEvidencesRequest {
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
+  Filter filter = 5;
 }
+
+message Filter {
+  string cloud_service_id = 1;
+  string tool_id = 2;
+}
+
 message ListEvidencesResponse {
   repeated Evidence evidences = 1;
   string next_page_token = 2;
