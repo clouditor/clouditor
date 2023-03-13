@@ -291,20 +291,58 @@ func TestService_StoreEvidences(t *testing.T) {
 }
 
 // TestListEvidences tests List req
+/*func TestService_ListEvidences(t *testing.T) {
+	// TODO(oxisto): Convert this test to a table test
+	s := NewService()
+	err := s.storage.Create(&evidence.Evidence{
+		Id:             testdata.MockEvidenceID,
+		CloudServiceId: testdata.MockCloudServiceID,
+		Timestamp:      timestamppb.Now(),
+		Raw:            util.Ref(""),
+		Resource:       structpb.NewNullValue(),
+	})
+	assert.NoError(t, err)
+	err = s.storage.Create(&evidence.Evidence{
+		Id:             testdata.MockAnotherEvidenceID,
+		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		Timestamp:      timestamppb.Now(),
+		Raw:            util.Ref(""),
+		Resource:       structpb.NewNullValue(),
+	})
+	assert.NoError(t, err)
+
+	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(resp.Evidences))
+
+	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
+
+	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(resp.Evidences))
+}*/
 func TestService_ListEvidences(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
 	type args struct {
 		in0 context.Context
 		req *evidence.ListEvidencesRequest
 	}
 	tests := []struct {
 		name     string
+		fields   fields
 		args     args
 		wantResp *evidence.ListEvidencesResponse
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name:     "",
-			args:     args{},
+			name: "Create New Evidence",
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{},
+			},
 			wantErr:  assert.NoError,
 			wantResp: &evidence.ListEvidencesResponse{},
 		},
