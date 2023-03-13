@@ -365,14 +365,12 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 // getControls returns all controls based on the assurance level
 func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
 	var (
-		low    []*orchestrator.Control
-		medium []*orchestrator.Control
-		high   []*orchestrator.Control
-		c      = []*orchestrator.Control{}
+		levelControls = make(map[string][]*orchestrator.Control)
+		c             = []*orchestrator.Control{}
 	)
 
 	// Check that levels and level is not empty
-	if len(levels) < 3 {
+	if len(levels) == 0 {
 		err := errors.New("assurance levels are empty")
 		return c, err
 	}
@@ -382,31 +380,22 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		return c, err
 	}
 
-	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.
-	for i := range controls {
-		switch controls[i].GetAssuranceLevel() {
-		case levels[0]:
-			low = append(low, controls[i])
-		case levels[1]:
-			medium = append(medium, controls[i])
-		case levels[2]:
-			high = append(high, controls[i])
-		default:
+	// Add controls based on their assurance level to the map. If a controls is not defined regarding the assurance level it is dropped.
+	for i, control := range controls {
+		if control.AssuranceLevel == nil {
 			continue
 		}
+		levelControls[controls[i].GetAssuranceLevel()] = append(levelControls[controls[i].GetAssuranceLevel()], control)
 	}
 
 	// Add all needed controls based on the assurance level
-	switch level {
-	case levels[0]:
-		c = append(c, low...)
-	case levels[1]:
-		c = append(c, low...)
-		c = append(c, medium...)
-	case levels[2]:
-		c = append(c, low...)
-		c = append(c, medium...)
-		c = append(c, high...)
+	for i := range levels {
+		if level == levels[i] {
+			c = append(c, levelControls[levels[i]]...)
+			break
+		} else {
+			c = append(c, levelControls[levels[i]]...)
+		}
 	}
 
 	// Add parent controls to the sub-control included in the list. That results in duplicates that we can remove later.
