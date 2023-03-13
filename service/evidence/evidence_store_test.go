@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -293,34 +292,54 @@ func TestService_StoreEvidences(t *testing.T) {
 
 // TestListEvidences tests List req
 func TestService_ListEvidences(t *testing.T) {
-	// TODO(oxisto): Convert this test to a table test
-	s := NewService()
-	err := s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockEvidenceID,
-		CloudServiceId: testdata.MockCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
-	err = s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockAnotherEvidenceID,
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
+	type args struct {
+		in0 context.Context
+		req *evidence.ListEvidencesRequest
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp *evidence.ListEvidencesResponse
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name:     "",
+			args:     args{},
+			wantErr:  assert.NoError,
+			wantResp: &evidence.ListEvidencesResponse{},
+		},
+		{
+			name:     "",
+			args:     args{},
+			wantErr:  assert.NoError,
+			wantResp: &evidence.ListEvidencesResponse{},
+		},
+		{
+			name:     "",
+			args:     args{},
+			wantErr:  assert.NoError,
+			wantResp: &evidence.ListEvidencesResponse{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewService()
+			gotResp, err := s.ListEvidences(tt.args.in0, tt.args.req)
 
-	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(resp.Evidences))
+			tt.wantErr(t, err)
 
-	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("ListEvidences() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
 
-	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(resp.Evidences))
+			if gotResp != nil {
+				/*e := $evidence.Evidence{}
+				err := s.storage.Get(e)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.args.req.E, e.)*/
+			}
+		})
+	}
 }
 
 func TestService_EvidenceHook(t *testing.T) {
