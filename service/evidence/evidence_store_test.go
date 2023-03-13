@@ -26,6 +26,7 @@
 package evidences
 
 import (
+	"clouditor.io/clouditor/internal/testutil/evidencetest"
 	"context"
 	"errors"
 	"fmt"
@@ -291,36 +292,6 @@ func TestService_StoreEvidences(t *testing.T) {
 }
 
 // TestListEvidences tests List req
-/*func TestService_ListEvidences(t *testing.T) {
-	// TODO(oxisto): Convert this test to a table test
-	s := NewService()
-	err := s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockEvidenceID,
-		CloudServiceId: testdata.MockCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
-	err = s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockAnotherEvidenceID,
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
-
-	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(resp.Evidences))
-
-	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
-
-	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(resp.Evidences))
-}*/
 func TestService_ListEvidences(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
@@ -338,23 +309,21 @@ func TestService_ListEvidences(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Create New Evidence",
+			name:   "Create New Evidence",
+			fields: fields{},
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.ListEvidencesRequest{},
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest1.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest1.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest1.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest1.Asc,
+					Filter: &evidence.Filter{
+						CloudServiceId: evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId,
+						ToolId:         evidencetest.MockListEvidenceRequest1.Filter.ToolId,
+					},
+				},
 			},
-			wantErr:  assert.NoError,
-			wantResp: &evidence.ListEvidencesResponse{},
-		},
-		{
-			name:     "",
-			args:     args{},
-			wantErr:  assert.NoError,
-			wantResp: &evidence.ListEvidencesResponse{},
-		},
-		{
-			name:     "",
-			args:     args{},
 			wantErr:  assert.NoError,
 			wantResp: &evidence.ListEvidencesResponse{},
 		},

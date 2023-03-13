@@ -60,6 +60,14 @@ const (
 	MockEvidenceToolID        = "Mock Tool ID"
 	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
 	MockAnotherEvidenceToolID = "Another Mock Tool ID"
+	MockPageSize              = 1
+	MockAnotherPageSize       = 2
+	MockPageToken             = "ABC-DEF-GHI"
+	MockAnotherPageToken      = "GHI-DEF-ABC"
+	MockOrderBy               = "cloud_service_id1"
+	MockAnotherOrderBy        = "cloud_service_id2"
+	MockAsc                   = true
+	MockAnotherAsc            = false
 
 	// Resource
 	MockResourceID          = "my-resource-id"
