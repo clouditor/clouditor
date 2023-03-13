@@ -390,11 +390,9 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 
 	// Add all needed controls based on the assurance level
 	for i := range levels {
+		c = append(c, levelControls[levels[i]]...)
 		if level == levels[i] {
-			c = append(c, levelControls[levels[i]]...)
 			break
-		} else {
-			c = append(c, levelControls[levels[i]]...)
 		}
 	}
 
