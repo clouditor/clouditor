@@ -58,6 +58,14 @@ paths:
                   in: query
                   schema:
                     type: boolean
+                - name: filter.cloudServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.toolId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
