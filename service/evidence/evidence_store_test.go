@@ -324,8 +324,12 @@ func TestService_ListEvidences(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  assert.NoError,
-			wantResp: &evidence.ListEvidencesResponse{},
+			wantErr: assert.NoError,
+			wantResp: &evidence.ListEvidencesResponse{
+				Evidences: []*evidence.Evidence{
+					evidencetest.MockEvidence1,
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
