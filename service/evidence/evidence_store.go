@@ -218,6 +218,12 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		}
 	}
 
+	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to
+	if !all {
+		query = append(query, "cloud_service_id IN ?")
+		conds = append(conds, allowed)
+	}
+
 	// Join query with AND and prepend the query
 	conds = append([]any{strings.Join(query, " AND ")}, conds...)
 

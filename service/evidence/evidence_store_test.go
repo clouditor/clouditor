@@ -309,8 +309,12 @@ func TestService_ListEvidences(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "Create New Evidence",
-			fields: fields{},
+			name: "Create New Evidence",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockListEvidenceRequest1))
+				}),
+			},
 			args: args{
 				in0: context.TODO(),
 				req: &evidence.ListEvidencesRequest{
