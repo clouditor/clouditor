@@ -311,6 +311,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Create New Evidence",
 			fields: fields{
+				authz: &service.AuthorizationStrategyAllowAll{},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockListEvidenceRequest1))
 				}),
