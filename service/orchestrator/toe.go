@@ -365,14 +365,12 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 // getControls returns all controls based on the assurance level
 func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
 	var (
-		low    []*orchestrator.Control
-		medium []*orchestrator.Control
-		high   []*orchestrator.Control
-		c      = []*orchestrator.Control{}
+		levelControls = make(map[string][]*orchestrator.Control)
+		c             = []*orchestrator.Control{}
 	)
 
 	// Check that levels and level is not empty
-	if len(levels) < 3 {
+	if len(levels) == 0 {
 		err := errors.New("assurance levels are empty")
 		return c, err
 	}
@@ -382,31 +380,21 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		return c, err
 	}
 
-	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.
-	for i := range controls {
-		switch controls[i].GetAssuranceLevel() {
-		case levels[0]:
-			low = append(low, controls[i])
-		case levels[1]:
-			medium = append(medium, controls[i])
-		case levels[2]:
-			high = append(high, controls[i])
-		default:
+	// Add controls based on their assurance level to the map. If a controls is not defined regarding the assurance level it is dropped.
+	for _, control := range controls {
+		if control.AssuranceLevel == nil {
 			continue
 		}
+		levelControls[control.GetAssuranceLevel()] = append(levelControls[control.GetAssuranceLevel()], control)
 	}
 
-	// Add all needed controls based on the assurance level
-	switch level {
-	case levels[0]:
-		c = append(c, low...)
-	case levels[1]:
-		c = append(c, low...)
-		c = append(c, medium...)
-	case levels[2]:
-		c = append(c, low...)
-		c = append(c, medium...)
-		c = append(c, high...)
+	// Add all needed controls based on the assurance level.
+	// Note: The assurance levels must be sorted in ascending order, e.g., low, medium, high, because the controls of the lower assurance levels must be present in the higger assurance levels. If this is not the case, the controls with assurance levels low will not be included in medium.
+	for i := range levels {
+		c = append(c, levelControls[levels[i]]...)
+		if level == levels[i] {
+			break
+		}
 	}
 
 	// Add parent controls to the sub-control included in the list. That results in duplicates that we can remove later.

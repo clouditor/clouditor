@@ -1136,33 +1136,43 @@ func Test_getControls(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path with assurance level basic",
+			name: "Happy path with assurance level basic (1 assurance level)",
+			args: args{
+				controls:        orchestratortest.MockControlsInScope,
+				level:           testdata.AssuranceLevelHigh,
+				assuranceLevels: []string{testdata.AssuranceLevelHigh},
+			},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl32},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path with assurance level basic (3 assurance level)",
 			args: args{
 				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelBasic,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl1, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl2},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with assurance level substantial",
+			name: "Happy path with assurance level substantial (3 assurance level)",
 			args: args{
 				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelSubstantial,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl1, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl2, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl3, orchestratortest.MockControlsInScopeSubControl4},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl31},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with assurance level high",
+			name: "Happy path with assurance level high (3 assurance level)",
 			args: args{
 				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelHigh,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl1, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl2, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl3, orchestratortest.MockControlsInScope4, orchestratortest.MockControlsInScopeSubControl4},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl31, orchestratortest.MockControlsInScopeSubControl32},
 			wantErr: assert.NoError,
 		},
 	}
