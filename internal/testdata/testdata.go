@@ -60,12 +60,12 @@ const (
 	MockEvidenceToolID           = "Mock Tool ID"
 	MockAnotherEvidenceID        = "22222222-2222-2222-2222-222222222222"
 	MockAnotherEvidenceToolID    = "Another Mock Tool ID"
-	MockEvidencePageSize         = 1
+	MockEvidencePageSize         = 0
 	MockAnotherEvidencePageSize  = 2
-	MockEvidencePageToken        = "dG9rZW4="
-	MockAnotherEvidencePageToken = "dG9rZW5="
-	MockEvidenceOrderBy          = "cloud_service_id1"
-	MockAnotherEvidenceOrderBy   = "cloud_service_id2"
+	MockEvidencePageToken        = ""
+	MockAnotherEvidencePageToken = ""
+	MockEvidenceOrderBy          = ""
+	MockAnotherEvidenceOrderBy   = ""
 	MockEvidenceAsc              = true
 	MockAnotherEvidenceAsc       = false
 

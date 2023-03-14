@@ -305,7 +305,7 @@ func TestService_ListEvidences(t *testing.T) {
 		name     string
 		fields   fields
 		args     args
-		wantResp *evidence.ListEvidencesResponse
+		wantResp assert.ValueAssertionFunc
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
@@ -313,7 +313,8 @@ func TestService_ListEvidences(t *testing.T) {
 			fields: fields{
 				authz: &service.AuthorizationStrategyAllowAll{},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&evidencetest.MockListEvidenceRequest1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
 				}),
 			},
 			args: args{
@@ -330,10 +331,16 @@ func TestService_ListEvidences(t *testing.T) {
 				},
 			},
 			wantErr: assert.NoError,
-			wantResp: &evidence.ListEvidencesResponse{
-				Evidences: []*evidence.Evidence{
-					evidencetest.MockEvidence1,
-				},
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
+
+				for _, r := range res.Evidences {
+					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
+				}
+
+				return true
 			},
 		},
 	}
@@ -346,13 +353,7 @@ func TestService_ListEvidences(t *testing.T) {
 
 			gotRes, err := svc.ListEvidences(currentTest.args.in0, currentTest.args.req)
 			currentTest.wantErr(t, err)
-
-			if currentTest.wantResp == nil {
-				assert.Nil(t, gotRes)
-			} else {
-				assert.NoError(t, gotRes.Validate())
-				assert.Equal(t, currentTest.wantResp, gotRes)
-			}
+			currentTest.wantResp(t, gotRes)
 		})
 	}
 }

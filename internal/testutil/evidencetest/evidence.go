@@ -40,4 +40,12 @@ var (
 		Raw:            util.Ref(""),
 		Resource:       structpb.NewNullValue(),
 	}
+	MockEvidence2 = &evidence.Evidence{
+		Id:             testdata.MockAnotherEvidenceID,
+		Timestamp:      timestamppb.Now(),
+		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		ToolId:         testdata.MockAnotherEvidenceToolID,
+		Raw:            util.Ref(""),
+		Resource:       structpb.NewNullValue(),
+	}
 )
