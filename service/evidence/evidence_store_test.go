@@ -336,22 +336,21 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-			gotResp, err := s.ListEvidences(tt.args.in0, tt.args.req)
-
-			tt.wantErr(t, err)
-
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("ListEvidences() gotResp = %v, want %v", gotResp, tt.wantResp)
+	for _, currentTest := range tests {
+		t.Run(currentTest.name, func(t *testing.T) {
+			svc := &Service{
+				storage: currentTest.fields.storage,
+				authz:   currentTest.fields.authz,
 			}
 
-			if gotResp != nil {
-				/*e := $evidence.Evidence{}
-				err := s.storage.Get(e)
-				assert.NoError(t, err)
-				assert.Equal(t, tt.args.req.E, e.)*/
+			gotRes, err := svc.ListEvidences(currentTest.args.in0, currentTest.args.req)
+			currentTest.wantErr(t, err)
+
+			if currentTest.wantResp == nil {
+				assert.Nil(t, gotRes)
+			} else {
+				assert.NoError(t, gotRes.Validate())
+				assert.Equal(t, currentTest.wantResp, gotRes)
 			}
 		})
 	}

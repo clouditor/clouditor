@@ -190,7 +190,6 @@ func (x *StoreEvidencesResponse) GetStatusMessage() string {
 	return ""
 }
 
-// TODO(luis-gasparschroeder): Start here
 type ListEvidencesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
