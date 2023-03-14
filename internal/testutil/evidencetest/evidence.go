@@ -10,20 +10,20 @@ import (
 
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
-		PageSize:  testdata.MockPageSize,
-		PageToken: testdata.MockPageToken,
-		OrderBy:   testdata.MockOrderBy,
-		Asc:       testdata.MockAsc,
+		PageSize:  testdata.MockEvidencePageSize,
+		PageToken: testdata.MockEvidencePageToken,
+		OrderBy:   testdata.MockEvidenceOrderBy,
+		Asc:       testdata.MockEvidenceAsc,
 		Filter: &evidence.Filter{
 			CloudServiceId: testdata.MockCloudServiceID,
 			ToolId:         testdata.MockEvidenceToolID,
 		},
 	}
 	MockListEvidenceRequest2 = &evidence.ListEvidencesRequest{
-		PageSize:  testdata.MockAnotherPageSize,
-		PageToken: testdata.MockAnotherPageToken,
-		OrderBy:   testdata.MockAnotherOrderBy,
-		Asc:       testdata.MockAnotherAsc,
+		PageSize:  testdata.MockAnotherEvidencePageSize,
+		PageToken: testdata.MockAnotherEvidencePageToken,
+		OrderBy:   testdata.MockAnotherEvidenceOrderBy,
+		Asc:       testdata.MockAnotherEvidenceAsc,
 		Filter: &evidence.Filter{
 			CloudServiceId: testdata.MockAnotherCloudServiceID,
 			ToolId:         testdata.MockAnotherEvidenceToolID,

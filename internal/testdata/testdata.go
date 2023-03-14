@@ -56,18 +56,18 @@ const (
 	MockAssessmentResultNonComplianceComment = "non_compliance_comment"
 
 	// Evidence
-	MockEvidenceID            = "11111111-1111-1111-1111-111111111111"
-	MockEvidenceToolID        = "Mock Tool ID"
-	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
-	MockAnotherEvidenceToolID = "Another Mock Tool ID"
-	MockPageSize              = 1
-	MockAnotherPageSize       = 2
-	MockPageToken             = "ABC-DEF-GHI"
-	MockAnotherPageToken      = "GHI-DEF-ABC"
-	MockOrderBy               = "cloud_service_id1"
-	MockAnotherOrderBy        = "cloud_service_id2"
-	MockAsc                   = true
-	MockAnotherAsc            = false
+	MockEvidenceID               = "11111111-1111-1111-1111-111111111111"
+	MockEvidenceToolID           = "Mock Tool ID"
+	MockAnotherEvidenceID        = "22222222-2222-2222-2222-222222222222"
+	MockAnotherEvidenceToolID    = "Another Mock Tool ID"
+	MockEvidencePageSize         = 1
+	MockAnotherEvidencePageSize  = 2
+	MockEvidencePageToken        = "dG9rZW4="
+	MockAnotherEvidencePageToken = "dG9rZW5="
+	MockEvidenceOrderBy          = "cloud_service_id1"
+	MockAnotherEvidenceOrderBy   = "cloud_service_id2"
+	MockEvidenceAsc              = true
+	MockAnotherEvidenceAsc       = false
 
 	// Resource
 	MockResourceID          = "my-resource-id"
