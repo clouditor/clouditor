@@ -381,14 +381,15 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 	}
 
 	// Add controls based on their assurance level to the map. If a controls is not defined regarding the assurance level it is dropped.
-	for i, control := range controls {
+	for _, control := range controls {
 		if control.AssuranceLevel == nil {
 			continue
 		}
-		levelControls[controls[i].GetAssuranceLevel()] = append(levelControls[controls[i].GetAssuranceLevel()], control)
+		levelControls[control.GetAssuranceLevel()] = append(levelControls[control.GetAssuranceLevel()], control)
 	}
 
-	// Add all needed controls based on the assurance level
+	// Add all needed controls based on the assurance level.
+	// Note: The assurance levels must be sorted in ascending order, e.g., low, medium, high, because the controls of the lower assurance levels must be present in the higger assurance levels. If this is not the case, the controls with assurance levels low will not be included in medium.
 	for i := range levels {
 		c = append(c, levelControls[levels[i]]...)
 		if level == levels[i] {
