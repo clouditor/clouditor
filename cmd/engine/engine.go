@@ -249,17 +249,19 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		providers = viper.GetStringSlice(DiscoveryProviderFlag)
 	}
 
-	discoveryService = service_discovery.NewService(
-		service_discovery.WithProviders(providers),
-		service_discovery.WithStorage(db),
-		service_discovery.WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
-			}),
-	)
+	if discoveryService == nil {
+		discoveryService = service_discovery.NewService(
+			service_discovery.WithProviders(providers),
+			service_discovery.WithStorage(db),
+			service_discovery.WithOAuth2Authorizer(
+				// Configure the OAuth 2.0 client credentials for this service
+				&clientcredentials.Config{
+					ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
+					ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
+					TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
+				}),
+		)
+	}
 
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
@@ -399,12 +401,16 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
 
 	// Automatically start the discovery, if we have this flag enabled
-	if viper.GetBool(DiscoveryAutoStartFlag) {
+	getBool := viper.GetBool(DiscoveryAutoStartFlag)
+	if getBool {
 		go func() {
+			log.Info("Before GetReadyChannel")
 			<-rest.GetReadyChannel()
+			log.Info("Before Discovery Start")
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
 			})
+			log.Info("After Discovery Start")
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
 			}
