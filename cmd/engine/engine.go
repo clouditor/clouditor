@@ -311,7 +311,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	authConfig := service.ConfigureAuth(service.WithJWKSURL(viper.GetString(APIJWKSURLFlag)))
-	defer authConfig.Jwks.EndBackground()
+	defer func() {
+		if authConfig.Jwks != nil {
+			authConfig.Jwks.EndBackground()
+		}
+	}()
 
 	server = grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
@@ -367,7 +371,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					viper.GetString(ServiceOAuth2ClientIDFlag),
 					"",
 				),
-				// Createa a default user for logging in
+				// Create a default user for logging in
 				login.WithLoginPage(
 					login.WithUser(
 						viper.GetString(APIDefaultUserFlag),
@@ -404,13 +408,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	getBool := viper.GetBool(DiscoveryAutoStartFlag)
 	if getBool {
 		go func() {
-			log.Info("Before GetReadyChannel")
 			<-rest.GetReadyChannel()
-			log.Info("Before Discovery Start")
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
 			})
-			log.Info("After Discovery Start")
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
 			}

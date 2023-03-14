@@ -103,15 +103,24 @@ func Test_doCMDWithDiscovery(t *testing.T) {
 	viper.Set(DiscoveryAutoStartFlag, true)
 	viper.Set(DiscoveryResourceGroupFlag, "SomeResourceGroup")
 
+	// To guarantee the execution of the assertion on `doCmd` below
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	// Create discovery mock including a WG to avoid the server being stopped before discovery.start is finished
 	mock := &discoveryMock{}
 	discoveryService = mock
 	mock.wg.Add(1)
 	go func() {
 		err := doCmd(nil, nil)
 		assert.NoError(t, err)
+		wg.Done()
 	}()
+	// Wait until discovery.Start was called and then stop the server
 	mock.wg.Wait()
 	server.Stop()
+	// Wait until assertion of `doCmd` is finished
+	wg.Wait()
 
 }
 
@@ -121,7 +130,6 @@ type discoveryMock struct {
 }
 
 func (d *discoveryMock) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (res *discovery.StartDiscoveryResponse, err error) {
-	log.Info("Discovery Start")
 	defer d.wg.Done()
 	res = &discovery.StartDiscoveryResponse{Successful: true}
 	return
