@@ -761,9 +761,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyJWT{
-					Key: testutil.TestCustomClaims,
-				},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,

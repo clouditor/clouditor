@@ -43,6 +43,7 @@ paths:
             parameters:
                 - name: pageSize
                   in: query
+                  description: 'page_size: 0 = default, > 0 = set value'
                   schema:
                     type: integer
                     format: int32

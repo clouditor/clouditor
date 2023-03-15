@@ -50,7 +50,7 @@ type Authorizer interface {
 	Authorize() (err error)
 }
 
-// NewResource creates a new resource.
+// NewResource creates a new voc resource.
 func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string) *voc.Resource {
 	return &voc.Resource{
 		ID:           ID,

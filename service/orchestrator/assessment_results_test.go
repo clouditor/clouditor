@@ -118,7 +118,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -138,7 +138,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -158,7 +158,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -179,7 +179,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -201,7 +201,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -268,7 +268,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -290,7 +290,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
