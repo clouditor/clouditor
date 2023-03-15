@@ -249,19 +249,17 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		providers = viper.GetStringSlice(DiscoveryProviderFlag)
 	}
 
-	if discoveryService == nil {
-		discoveryService = service_discovery.NewService(
-			service_discovery.WithProviders(providers),
-			service_discovery.WithStorage(db),
-			service_discovery.WithOAuth2Authorizer(
-				// Configure the OAuth 2.0 client credentials for this service
-				&clientcredentials.Config{
-					ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
-					ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
-					TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
-				}),
-		)
-	}
+	discoveryService = service_discovery.NewService(
+		service_discovery.WithProviders(providers),
+		service_discovery.WithStorage(db),
+		service_discovery.WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
+			}),
+	)
 
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
@@ -311,11 +309,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	authConfig := service.ConfigureAuth(service.WithJWKSURL(viper.GetString(APIJWKSURLFlag)))
-	defer func() {
-		if authConfig.Jwks != nil {
-			authConfig.Jwks.EndBackground()
-		}
-	}()
+	defer authConfig.Jwks.EndBackground()
 
 	server = grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
@@ -371,7 +365,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					viper.GetString(ServiceOAuth2ClientIDFlag),
 					"",
 				),
-				// Create a default user for logging in
+				// Createa a default user for logging in
 				login.WithLoginPage(
 					login.WithUser(
 						viper.GetString(APIDefaultUserFlag),
@@ -405,8 +399,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
 
 	// Automatically start the discovery, if we have this flag enabled
-	getBool := viper.GetBool(DiscoveryAutoStartFlag)
-	if getBool {
+	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{

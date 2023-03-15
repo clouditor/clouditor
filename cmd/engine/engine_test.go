@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
 	"os"
-	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
@@ -90,51 +87,4 @@ func Test_doCmd(t *testing.T) {
 			}
 		})
 	}
-}
-
-func Test_doCMDWithDiscovery(t *testing.T) {
-	// Reset Viper flags set by previous tests
-	viper.Reset()
-	// Set Viper flags
-	viper.Set(DBInMemoryFlag, true)
-	viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
-	viper.Set(APIHTTPPortFlag, 0)
-	viper.Set(APIgRPCPortFlag, 0)
-	viper.Set(DiscoveryAutoStartFlag, true)
-	viper.Set(DiscoveryResourceGroupFlag, "SomeResourceGroup")
-
-	// To guarantee the execution of the assertion on `doCmd` below
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	// Create discovery mock including a WG to avoid the server being stopped before discovery.start is finished
-	mock := &discoveryMock{}
-	discoveryService = mock
-	mock.wg.Add(1)
-	go func() {
-		err := doCmd(nil, nil)
-		assert.NoError(t, err)
-		wg.Done()
-	}()
-	// Wait until discovery.Start was called and then stop the server
-	mock.wg.Wait()
-	server.Stop()
-	// Wait until assertion of `doCmd` is finished
-	wg.Wait()
-
-}
-
-type discoveryMock struct {
-	discovery.UnimplementedDiscoveryServer
-	wg sync.WaitGroup
-}
-
-func (d *discoveryMock) Start(_ context.Context, _ *discovery.StartDiscoveryRequest) (res *discovery.StartDiscoveryResponse, err error) {
-	defer d.wg.Done()
-	res = &discovery.StartDiscoveryResponse{Successful: true}
-	return
-}
-
-func (d *discoveryMock) Query(_ context.Context, _ *discovery.QueryRequest) (*discovery.QueryResponse, error) {
-	return nil, nil
 }
