@@ -204,3 +204,102 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
+	type fields struct {
+		CloudServicesKey string
+		AllowAllKey      string
+	}
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantAll  bool
+		wantList []string
+	}{
+		{
+			name: "valid context",
+			fields: fields{
+				CloudServicesKey: testutil.TestCustomClaims,
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+			},
+			wantAll:  false,
+			wantList: []string{testutil.TestCloudService1},
+		},
+		{
+			name: "valid context, allow all",
+			fields: fields{
+				AllowAllKey: testutil.TestAllowAllClaims,
+			},
+			args: args{
+				ctx: testutil.TestContextAllowAll,
+			},
+			wantAll:  true,
+			wantList: nil,
+		},
+		{
+			name: "valid context, wrong claim",
+			fields: fields{
+				CloudServicesKey: "sub",
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+			},
+			wantAll:  false,
+			wantList: nil,
+		},
+		{
+			name: "valid context, ignore non-string",
+			fields: fields{
+				CloudServicesKey: "other",
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+			},
+			wantAll:  false,
+			wantList: nil,
+		},
+		{
+			name: "missing token",
+			fields: fields{
+				CloudServicesKey: testutil.TestCustomClaims,
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			wantAll:  false,
+			wantList: nil,
+		},
+		{
+			name: "broken token",
+			fields: fields{
+				CloudServicesKey: testutil.TestCustomClaims,
+			},
+			args: args{
+				ctx: testutil.TestBrokenContext,
+			},
+			wantAll:  false,
+			wantList: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AuthorizationStrategyJWT{
+				CloudServicesKey: tt.fields.CloudServicesKey,
+				AllowAllKey:      tt.fields.AllowAllKey,
+			}
+			gotAll, gotList := a.AllowedCloudServices(tt.args.ctx)
+			if gotAll != tt.wantAll {
+				t.Errorf("AuthorizationStrategyJWT.AllowedCloudServices() gotAll = %v, want %v", gotAll, tt.wantAll)
+			}
+			if !reflect.DeepEqual(gotList, tt.wantList) {
+				t.Errorf("AuthorizationStrategyJWT.AllowedCloudServices() gotList = %v, want %v", gotList, tt.wantList)
+			}
+		})
+	}
+}
