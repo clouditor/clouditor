@@ -408,7 +408,7 @@
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
     "category": "CKM-02",
-    "description": "This metric describes, if a up-to-date transport encryption protocol is used",
+    "description": "This metric is used to assess if a up-to-date transport encryption protocol is used",
     "scale": 1,
     "range": {
       "order": {
@@ -422,7 +422,7 @@
     "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
     "category": "CKM-02",
-    "description": "This metric describes, if transport encryption is turned on",
+    "description": "This metric is used if transport encryption is enabled",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -436,7 +436,7 @@
   {
     "id": "TransportEncryptionEnforced",
     "name": "Transport Encryption: Enforced",
-    "description": "This metric is used to assess if if transport encryption is enforced",
+    "description": "This metric is used to assess if transport encryption is enforced",
     "category": "CKM-02",
     "scale": 1,
     "range": {
