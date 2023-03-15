@@ -121,7 +121,7 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, 
 }
 
 func JWKSURL(port uint16) string {
-	return fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)
+	return fmt.Sprintf("http://localhost:%d/v1/certs", port)
 }
 
 func TokenURL(port uint16) string {

@@ -76,7 +76,7 @@ type AuthConfig struct {
 }
 
 // DefaultJWKSURL is the default JWKS url pointing to a local authentication server.
-const DefaultJWKSURL = "http://localhost:8080/.well-known/jwks.json"
+const DefaultJWKSURL = "http://localhost:8080/v1/auth/certs"
 
 // AuthOption is a function-style option type to fine-tune authentication
 type AuthOption func(*AuthConfig)
