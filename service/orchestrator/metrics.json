@@ -42,7 +42,7 @@
   {
     "id": "AnomalyDetectionOutput",
     "name": "Anomaly Detection: Output",
-    "description": "This metric is used to assess if the output is ",
+    "description": "This metric is used to assess if the output (results) of the anomaly detection is valid",
     "scale": 1,
     "range": {
       "allowedValues": {
