@@ -58,13 +58,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *assessment.ListAssessmentResultsRequest
+		req *orchestrator.ListAssessmentResultsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *assessment.ListAssessmentResultsResponse
+		wantRes *orchestrator.ListAssessmentResultsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -86,9 +86,9 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{},
+				req: &orchestrator.ListAssessmentResultsRequest{},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{},
 			},
 			wantErr: assert.NoError,
@@ -102,8 +102,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				}),
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
-			args: args{req: &assessment.ListAssessmentResultsRequest{}},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			args: args{req: &orchestrator.ListAssessmentResultsRequest{}},
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 					orchestratortest.MockAssessmentResult2,
@@ -118,13 +118,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{},
+				req: &orchestrator.ListAssessmentResultsRequest{},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 				},
@@ -138,11 +138,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
 				},
 			},
@@ -158,15 +158,15 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 				},
@@ -179,16 +179,16 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredCompliant:      util.Ref(true),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 				},
@@ -201,16 +201,16 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredCompliant:      util.Ref(false),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult3,
 				},
@@ -227,11 +227,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCompliant: util.Ref(true),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 					orchestratortest.MockAssessmentResult2,
@@ -250,11 +250,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCompliant: util.Ref(false),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult3,
 					orchestratortest.MockAssessmentResult4,
@@ -268,16 +268,16 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredMetricId:       []string{testdata.MockMetricID},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 				},
@@ -290,16 +290,16 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 					FilteredMetricId:       []string{testdata.MockMetricID, testdata.MockAnotherMetricID},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 					orchestratortest.MockAssessmentResult3,
@@ -317,11 +317,11 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredMetricId: []string{testdata.MockMetricID},
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
 					orchestratortest.MockAssessmentResult2,
@@ -339,7 +339,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					FilteredCloudServiceId: util.Ref("testCloudServiceID"),
 				},
 			},
@@ -357,13 +357,14 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					LatestByResourceId: util.Ref(true),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult4,
+					orchestratortest.MockAssessmentResult3,
 					orchestratortest.MockAssessmentResult1,
 				},
 			},
@@ -378,13 +379,14 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					LatestByResourceId:     util.Ref(true),
 					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
 				},
 			},
-			wantRes: &assessment.ListAssessmentResultsResponse{
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
+					orchestratortest.MockAssessmentResult3,
 					orchestratortest.MockAssessmentResult1,
 				},
 			},

@@ -29,6 +29,7 @@ import (
 	"context"
 	"reflect"
 	"runtime"
+	"sort"
 	"sync"
 	"testing"
 
@@ -626,7 +627,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
 					{
-						ControlId:                        testdata.MockSubControlID,
+						ControlId:                        testdata.MockSubControlID11,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -679,7 +680,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
 					{
-						ControlId:                        testdata.MockSubControlID,
+						ControlId:                        testdata.MockSubControlID11,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -693,7 +694,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -836,7 +837,7 @@ func TestService_AddControlToScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
@@ -957,7 +958,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
@@ -1061,7 +1062,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
@@ -1114,7 +1115,7 @@ func Test_getControls(t *testing.T) {
 		{
 			name: "List of assurance levels unspecified",
 			args: args{
-				controls:        orchestratortest.MockControls,
+				controls:        orchestratortest.MockControlsInScope,
 				assuranceLevels: []string{},
 			},
 			want: []*orchestrator.Control{},
@@ -1125,7 +1126,7 @@ func Test_getControls(t *testing.T) {
 		{
 			name: "Assurance level unspecified",
 			args: args{
-				controls:        orchestratortest.MockControls,
+				controls:        orchestratortest.MockControlsInScope,
 				level:           "",
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
@@ -1135,39 +1136,57 @@ func Test_getControls(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path with assurance level basic",
+			name: "Happy path with assurance level basic (1 assurance level)",
 			args: args{
-				controls:        orchestratortest.MockControls,
+				controls:        orchestratortest.MockControlsInScope,
+				level:           testdata.AssuranceLevelHigh,
+				assuranceLevels: []string{testdata.AssuranceLevelHigh},
+			},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl32},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path with assurance level basic (3 assurance level)",
+			args: args{
+				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelBasic,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControl2},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with assurance level substantial",
+			name: "Happy path with assurance level substantial (3 assurance level)",
 			args: args{
-				controls:        orchestratortest.MockControls,
+				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelSubstantial,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl31},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with assurance level high",
+			name: "Happy path with assurance level high (3 assurance level)",
 			args: args{
-				controls:        orchestratortest.MockControls,
+				controls:        orchestratortest.MockControlsInScope,
 				level:           testdata.AssuranceLevelHigh,
 				assuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 			},
-			want:    []*orchestrator.Control{orchestratortest.MockControl2, orchestratortest.MockControl3, orchestratortest.MockControl4},
+			want:    []*orchestrator.Control{orchestratortest.MockControlsInScope1, orchestratortest.MockControlsInScopeSubControl11, orchestratortest.MockControlsInScope2, orchestratortest.MockControlsInScopeSubControl21, orchestratortest.MockControlsInScope3, orchestratortest.MockControlsInScopeSubControl31, orchestratortest.MockControlsInScopeSubControl32},
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getControls(tt.args.controls, tt.args.assuranceLevels, tt.args.level)
+
+			// Sort slices
+			sort.Slice(tt.want, func(i, j int) bool {
+				return tt.want[i].GetId() > tt.want[j].GetId()
+			})
+			sort.Slice(got, func(i, j int) bool {
+				return got[i].GetId() > got[j].GetId()
+			})
 
 			assert.Equal(t, tt.want, got)
 			tt.wantErr(t, err)

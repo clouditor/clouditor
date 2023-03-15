@@ -159,7 +159,7 @@ func TestService_GetCloudService(t *testing.T) {
 		},
 		{
 			name: "permission denied",
-			svc:  NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims)),
+			svc:  NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims, testutil.TestAllowAllClaims)),
 			ctx:  testutil.TestContextOnlyService1,
 			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			res:  nil,
@@ -170,7 +170,7 @@ func TestService_GetCloudService(t *testing.T) {
 		},
 		{
 			name: "permission granted",
-			svc: NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+			svc: NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims, testutil.TestAllowAllClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.CloudService{
 					Id:   testutil.TestCloudService1,
 					Name: "service1",
@@ -210,7 +210,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 		cloudService *orchestrator.CloudService
 		err          error
 	)
-	orchestratorService := NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims))
+	orchestratorService := NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims, testutil.TestAllowAllClaims))
 
 	// 1st case: Service is nil
 	_, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{})
@@ -394,7 +394,7 @@ func TestService_ListCloudServices(t *testing.T) {
 						Name: testdata.MockCloudServiceName,
 					})
 				}),
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,

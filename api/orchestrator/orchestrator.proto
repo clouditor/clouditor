@@ -98,9 +98,8 @@ service Orchestrator {
       returns (stream StoreAssessmentResultsResponse);
 
   // List all assessment results. Part of the public API, also exposed as REST.
-  rpc ListAssessmentResults(
-      clouditor.assessment.v1.ListAssessmentResultsRequest)
-      returns (clouditor.assessment.v1.ListAssessmentResultsResponse) {
+  rpc ListAssessmentResults(ListAssessmentResultsRequest)
+      returns (ListAssessmentResultsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results"
     };
@@ -614,7 +613,7 @@ message AssessmentTool {
 
   // a list of metrics that this tool can assess, referred by their ids
   repeated string available_metrics = 4
-      [ (validate.rules).repeated.items.string.min_len = 1 ];
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
 }
 
 message CloudService {
@@ -627,12 +626,12 @@ message CloudService {
 
   repeated Catalog catalogs_in_scope = 4 [
     (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 }
 
@@ -645,7 +644,7 @@ message Catalog {
 
   repeated Category categories = 4 [
     (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 
   // Certain security catalogs do not allow to select the scope of the controls,
@@ -653,17 +652,15 @@ message Catalog {
   // DELEGATED status.
   bool all_in_scope = 5;
 
-  // A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
+  // A list of the assurance levels, e.g., basic, substantial and high for the
+  // EUCS catalog.
   repeated string assurance_levels = 7 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated = {
-      min_items: 3
-      items: {
-        string: {
-          pattern: "^(|basic|substantial|high|low|medium)$"
-        }
-      }
-    }];
+      min_items : 3
+      items : {string : {pattern : "^(|basic|substantial|high|low|medium)$"}}
+    }
+  ];
 }
 
 message Category {
@@ -684,7 +681,7 @@ message Category {
     (tagger.tags) =
         "gorm:\"foreignKey:category_name,category_"
         "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 }
 
@@ -720,7 +717,7 @@ message Control {
     (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
                     "category_name,parent_control_category_catalog_id;"
                     "references=id,category_name;category_catalog_id\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 
   // metrics contains either a list of reference to metrics - in this case only
@@ -729,7 +726,7 @@ message Control {
   repeated clouditor.assessment.v1.Metric metrics = 7 [
     (tagger.tags) =
         "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
 
   // Reference to the parent category this control belongs to.
@@ -739,9 +736,11 @@ message Control {
   optional string parent_control_category_catalog_id = 10
       [ (validate.rules).string.min_len = 1 ];
 
-  // An assurance level is not offered by every catalog, therefore it is optional.
+  // An assurance level is not offered by every catalog, therefore it is
+  // optional.
   optional string assurance_level = 11
-    [(validate.rules).string.pattern = "^(|basic|substantial|high|low|medium)$"];
+      [ (validate.rules).string.pattern =
+            "^(|basic|substantial|high|low|medium)$" ];
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -753,13 +752,14 @@ message TargetOfEvaluation {
   ];
   string catalog_id = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1 
+    (validate.rules).string.min_len = 1
   ];
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3
-    [(validate.rules).string.pattern = "^(|basic|substantial|high|low|medium)$"];
+      [ (validate.rules).string.pattern =
+            "^(|basic|substantial|high|low|medium)$" ];
 
   // the controls that are in scope of this ToE. Note: For some security
   // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
@@ -774,8 +774,31 @@ message TargetOfEvaluation {
   repeated Control controls_in_scope = 4 [
     (tagger.tags) = "gorm:\"many2many:controls_in_scope;"
                     "constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated.items.message.required = true
+    (validate.rules).repeated .items.message.required = true
   ];
+}
+
+message ListAssessmentResultsRequest {
+  // Optional. List only assessment results of a specific cloud service.
+  optional string filtered_cloud_service_id = 1
+      [ (validate.rules).string.uuid = true ];
+  // Optional. List only compliant assessment results.
+  optional bool filtered_compliant = 2;
+  // Optional. List only assessment results of a specific metric id.
+  repeated string filtered_metric_id = 3
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
+
+  // Optional. Latest results grouped by resource_id and metric_id.
+  optional bool latest_by_resource_id = 4;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+message ListAssessmentResultsResponse {
+  repeated clouditor.assessment.v1.AssessmentResult results = 1;
+  string next_page_token = 2;
 }
 
 message ListControlsInScopeRequest {

@@ -13,7 +13,6 @@ import (
 	"io"
 	"net/http"
 
-	"clouditor.io/clouditor/api/assessment"
 	runtime_0 "clouditor.io/clouditor/api/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
@@ -314,7 +313,7 @@ var (
 )
 
 func request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq assessment.ListAssessmentResultsRequest
+	var protoReq ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -330,7 +329,7 @@ func request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler
 }
 
 func local_request_Orchestrator_ListAssessmentResults_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq assessment.ListAssessmentResultsRequest
+	var protoReq ListAssessmentResultsRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

@@ -112,7 +112,7 @@ func TestNewListResultsCommand(t *testing.T) {
 	err := cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &orchestrator.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)

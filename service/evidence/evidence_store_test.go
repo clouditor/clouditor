@@ -316,7 +316,7 @@ func TestService_ListEvidences(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(resp.Evidences))
 
-	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
+	s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims}
 
 	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
 	assert.NoError(t, err)
@@ -619,9 +619,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyJWT{
-					Key: testutil.TestCustomClaims,
-				},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,

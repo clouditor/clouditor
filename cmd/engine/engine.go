@@ -246,6 +246,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithProviders(providers),
+		service_discovery.WithStorage(db),
 		service_discovery.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
 			&clientcredentials.Config{
