@@ -3,7 +3,6 @@
     "id": "AdminMFAEnabled",
     "name": "Admin's MFA: Enabled",
     "description": "This metric is used to assess if MFA for admins is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -18,7 +17,6 @@
     "id": "AdminMixedDuties",
     "name": "Mixed Duties Applied To Admins",
     "description": "This metric is used to assess if Mixed Duties is applied appropriately",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -31,7 +29,6 @@
     "id": "AnomalyDetectionEnabled",
     "name": "Anomaly Detection: Enabled",
     "description": "This metric is used to assess if Anomaly Detection is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -46,7 +43,6 @@
     "id": "AnomalyDetectionOutput",
     "name": "Anomaly Detection: Output",
     "description": "This metric is used to assess if the output is ",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -60,7 +56,6 @@
     "id": "AnonymousAuthentication",
     "name": "Anonymous Authentication",
     "description": "This metric is used to assess if it is possible to authenticate anonymously",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -106,7 +101,6 @@
     "id": "AutomaticUpdatesEnabled",
     "name": "Automatic Updates: Enabled",
     "description": "This metric is used to assess if automatic updates are enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -121,7 +115,6 @@
     "id": "AutomaticUpdatesInterval",
     "name": "Automatic Updates: Interval",
     "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -134,7 +127,6 @@
     "id": "AutomaticUpdatesSecurityOnly",
     "name": "Automatic Updates: Security Only",
     "description": "This metric is used to assess if only security updates are performed",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -149,7 +141,6 @@
     "id": "BootLoggingEnabled",
     "name": "Boot Logging: Enabled",
     "description": "This metric is used to assess if boot logs are enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -164,7 +155,6 @@
     "id": "BootLoggingOutput",
     "name": "Boot Logging: Output",
     "description": "This metric is used to assess the output destination of boot logs",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -178,7 +168,6 @@
     "id": "BootLoggingRetention",
     "name": "",
     "description": "This metric is used to assess the configured log retention (days)",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -191,7 +180,6 @@
     "id": "CustomerKeyEncryption",
     "name": "Storage Encryption: Customer Key Encryption",
     "description": "This metric is used to assess if encryption is done via customer keys",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -206,7 +194,6 @@
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -221,7 +208,6 @@
     "id": "IdentityRecentActivity",
     "name": "Identity: Recent Activity",
     "description": "This metric is used to assess if a user is still active (days)",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -234,7 +220,6 @@
     "id": "L3FirewallEnabled",
     "name": "L3 Firewall: Enabled",
     "description": "This metric is used to assess if a L3 firewall is in place",
-    "category": "",
     "scale": 1,
       "range": {
         "allowedValues": {
@@ -249,7 +234,6 @@
     "id": "L3FirewallRestrictedPorts",
     "name": "L3 Firewall: Restricted Ports",
     "description": "This metric is used to assess the restricted ports of a L3 firewall",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -263,7 +247,6 @@
     "id": "MalwareProtectionEnabled",
     "name": "Malware Protection: Enabled",
     "description": "This metric is used to assess if Malware Protection is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -278,7 +261,6 @@
     "id": "MalwareProtectionOutput",
     "name": "Malware Protection: Output",
     "description": "This metric is used to assess to which service the Malware Protection results are sent",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -292,7 +274,6 @@
     "id": "MutualAuthentication",
     "name": "Mutual Authentication",
     "description": "This metric is used to assess if mutual authentication, including client certificate, has been enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues" : [
@@ -305,7 +286,6 @@
     "id": "ObjectStoragePublicAccessDisabled",
     "name": "Object Storage: Public Access Disabled",
     "description": "This metric is used to assess if public acess is disabled for a object storage",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -320,7 +300,6 @@
     "id": "OSLoggingEnabled",
     "name": "OS Logging: Enabled",
     "description": "This metric is used to assess if OS logging is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -335,7 +314,6 @@
     "id": "OSLoggingOutput",
     "name": "OS Logging: Output",
     "description": "This metric is used to assess to which service the OS logs are sent",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -349,7 +327,6 @@
     "id": "OSLoggingRetention",
     "name": "OS Logging: Retention",
     "description": "This metric is used to assess the configured OS log retention (days)",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -362,7 +339,6 @@
     "id": "ResourceInventory",
     "name": "Resource Inventory",
     "description": "This metric is used to assess if an inventory is set up for resources",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -377,7 +353,6 @@
     "id": "RoleBroadAssignments",
     "name": "Role Broad Assignments",
     "description": "This metric is used to assess the broad assignments of roles",
-    "category": "",
     "scale": 3,
     "range": {
       "minMax": {
@@ -390,7 +365,6 @@
     "id": "RuntimeVersion",
     "name": "Runtime Version",
     "description": "This metric is used to assess the runtime version of a given programming language",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -404,7 +378,6 @@
     "id": "SingleSignOnEnabled",
     "name": "Single Sign On Enabled",
     "description": "This metric is used to assess if SSO is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -419,7 +392,6 @@
     "id": "TLSVersion",
     "name": "TLS Version",
     "description": "This metric is used to assess the TLS version used for transfer data",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -480,7 +452,6 @@
     "id": "WebApplicationFirewallEnabled",
     "name": "Web Application Firewall: Enabled",
     "description": "This metric is used to assess if Web Application Firewall is enabled",
-    "category": "",
     "scale": 1,
     "range": {
       "allowedValues": {
