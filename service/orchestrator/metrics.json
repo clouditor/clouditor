@@ -408,7 +408,7 @@
     "id": "TransportEncryptionAlgorithm",
     "name": "Transport Encryption: Protocol Version",
     "category": "CKM-02",
-    "description": "This metric describes, if a up-to-date transport encryption protocol version is used",
+    "description": "This metric describes, if a up-to-date transport encryption protocol is used",
     "scale": 1,
     "range": {
       "order": {
