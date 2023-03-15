@@ -309,7 +309,7 @@ func TestService_ListEvidences(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Create New Evidence",
+			name: "Successful Filter Of Evidences",
 			fields: fields{
 				authz: &service.AuthorizationStrategyAllowAll{},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -342,6 +342,15 @@ func TestService_ListEvidences(t *testing.T) {
 
 				return true
 			},
+		},
+		{
+			name: "ValidateRequest() error handled correctly when req equals nil",
+			args: args{
+				in0: context.TODO(),
+				req: nil,
+			},
+			wantErr:  assert.Error,
+			wantResp: assert.Nil,
 		},
 	}
 	for _, currentTest := range tests {
