@@ -94,7 +94,7 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, 
 	var nl net.Listener
 
 	// create a new socket for HTTP communication
-	nl, err = net.Listen("tcp", ":0")
+	nl, err = net.Listen("tcp", "localhost:0")
 	if err != nil {
 		return nil, 0, fmt.Errorf("could not listen: %w", err)
 	}
