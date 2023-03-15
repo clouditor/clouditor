@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	TestAuthUser     = "clouditor"
-	TestAuthPassword = "clouditor"
-
+	TestAuthUser         = "clouditor"
+	TestAuthPassword     = "clouditor"
+	TestCustomClaims     = "cloudserviceid"
+	TestAllowAllClaims   = "cladmin"
 	TestAuthClientID     = "client"
 	TestAuthClientSecret = "secret"
 
-	TestCustomClaims      = "cloudserviceid"
 	TestCloudService1     = "11111111-1111-1111-1111-111111111111"
 	TestCloudService2     = "22222222-2222-2222-2222-222222222222"
 	TestCloudServiceName1 = "My Cloud Service 1"
@@ -31,6 +31,9 @@ var (
 	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
 	// 11111111-1111-1111-1111-111111111111
 	TestContextOnlyService1 context.Context
+
+	// TestContextOnlyService1 is an incoming context with a JWT that allows access to all cloud services
+	TestContextAllowAll context.Context
 
 	// TestBrokenContext contains an invalid JWT
 	TestBrokenContext = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
@@ -45,6 +48,12 @@ var (
 			TestCloudService1,
 		},
 		"other": []int{1, 2},
+	}
+
+	// TestClaimsOnlyService1 contains claims that authorize the user for all cloud services.
+	TestClaimsAllowAll = jwt.MapClaims{
+		"sub":     "me",
+		"cladmin": true,
 	}
 )
 
@@ -64,6 +73,17 @@ func init() {
 
 	// Create a context containing our token
 	TestContextOnlyService1 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer " + t,
+	}))
+
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, &TestClaimsAllowAll)
+	t, err = token.SignedString([]byte("mykey"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a context containing our token
+	TestContextAllowAll = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
 		"authorization": "bearer " + t,
 	}))
 }
