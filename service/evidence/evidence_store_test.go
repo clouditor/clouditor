@@ -344,6 +344,78 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
+			name: "Only Cloud_Service_Id filter applied, when Tool_Id filter off",
+			fields: fields{
+				authz: &service.AuthorizationStrategyAllowAll{},
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest1.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest1.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest1.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest1.Asc,
+					Filter: &evidence.Filter{
+						CloudServiceId: evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
+
+				assert.Equal(t, 1, len(res.Evidences))
+
+				for _, r := range res.Evidences {
+					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Only Tool_Id filter applied, when Cloud_Service_Id filter off",
+			fields: fields{
+				authz: &service.AuthorizationStrategyAllowAll{},
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						ToolId: evidencetest.MockListEvidenceRequest2.Filter.ToolId,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
+
+				assert.Equal(t, 1, len(res.Evidences))
+
+				for _, r := range res.Evidences {
+					assert.Equal(t, evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
+				}
+
+				return true
+			},
+		},
+		{
 			name: "ValidateRequest() error handled correctly when req equals nil",
 			args: args{
 				in0: context.TODO(),
