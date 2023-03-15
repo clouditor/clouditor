@@ -694,7 +694,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
@@ -837,7 +837,7 @@ func TestService_AddControlToScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
@@ -958,7 +958,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
@@ -1062,7 +1062,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims},
+				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
 			},
 			args: args{
 				in0: testutil.TestContextOnlyService1,
