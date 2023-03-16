@@ -27,6 +27,7 @@ package evidences
 
 import (
 	"clouditor.io/clouditor/internal/testutil/evidencetest"
+	"clouditor.io/clouditor/internal/util"
 	"context"
 	"errors"
 	"fmt"
@@ -447,6 +448,40 @@ func TestService_ListEvidences(t *testing.T) {
 			args: args{
 				in0: nil,
 				req: nil,
+			},
+			wantErr:  assert.Error,
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Wrong Input handled correctly (tool_id not UUID)",
+			args: args{
+				in0: nil,
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						ToolId: util.Ref("No UUID Fromat"),
+					},
+				},
+			},
+			wantErr:  assert.Error,
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Wrong Input handled correctly (cloud_service_id not UUID)",
+			args: args{
+				in0: nil,
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						CloudServiceId: util.Ref("No UUID Fromat"),
+					},
+				},
 			},
 			wantErr:  assert.Error,
 			wantResp: assert.Nil,
