@@ -89,8 +89,8 @@ message ListEvidencesRequest {
 }
 
 message Filter {
-  string cloud_service_id = 1;
-  string tool_id = 2;
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];;
+  string tool_id = 2 [ (validate.rules).string.uuid = true ];;
 }
 
 message ListEvidencesResponse {

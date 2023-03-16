@@ -548,12 +548,40 @@ func (m *Filter) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for CloudServiceId
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = FilterValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ToolId
+	if err := m._validateUuid(m.GetToolId()); err != nil {
+		err = FilterValidationError{
+			field:  "ToolId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return FilterMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *Filter) _validateUuid(uuid string) error {
+	if matched := _evidence_store_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
