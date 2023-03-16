@@ -10,23 +10,15 @@ import (
 
 var (
 	MockListEvidenceRequest1 = &evidence.ListEvidencesRequest{
-		PageSize:  testdata.MockEvidencePageSize,
-		PageToken: testdata.MockEvidencePageToken,
-		OrderBy:   testdata.MockEvidenceOrderBy,
-		Asc:       testdata.MockEvidenceAsc,
 		Filter: &evidence.Filter{
-			CloudServiceId: testdata.MockCloudServiceID,
-			ToolId:         testdata.MockEvidenceToolID,
+			CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+			ToolId:         util.Ref(testdata.MockEvidenceToolID),
 		},
 	}
 	MockListEvidenceRequest2 = &evidence.ListEvidencesRequest{
-		PageSize:  testdata.MockAnotherEvidencePageSize,
-		PageToken: testdata.MockAnotherEvidencePageToken,
-		OrderBy:   testdata.MockAnotherEvidenceOrderBy,
-		Asc:       testdata.MockAnotherEvidenceAsc,
 		Filter: &evidence.Filter{
-			CloudServiceId: testdata.MockAnotherCloudServiceID,
-			ToolId:         testdata.MockAnotherEvidenceToolID,
+			CloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
+			ToolId:         util.Ref(testdata.MockAnotherEvidenceToolID),
 		},
 	}
 )

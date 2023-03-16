@@ -548,28 +548,36 @@ func (m *Filter) validate(all bool) error {
 
 	var errors []error
 
-	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
-		err = FilterValidationError{
-			field:  "CloudServiceId",
-			reason: "value must be a valid UUID",
-			cause:  err,
+	if m.CloudServiceId != nil {
+
+		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+			err = FilterValidationError{
+				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
-	if err := m._validateUuid(m.GetToolId()); err != nil {
-		err = FilterValidationError{
-			field:  "ToolId",
-			reason: "value must be a valid UUID",
-			cause:  err,
+	if m.ToolId != nil {
+
+		if err := m._validateUuid(m.GetToolId()); err != nil {
+			err = FilterValidationError{
+				field:  "ToolId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	if len(errors) > 0 {

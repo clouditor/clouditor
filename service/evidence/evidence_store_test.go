@@ -336,8 +336,8 @@ func TestService_ListEvidences(t *testing.T) {
 				assert.True(t, ok)
 
 				for _, r := range res.Evidences {
-					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
-					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
 				}
 
 				return true
@@ -372,8 +372,8 @@ func TestService_ListEvidences(t *testing.T) {
 				assert.Equal(t, 1, len(res.Evidences))
 
 				for _, r := range res.Evidences {
-					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
-					assert.Equal(t, evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
 				}
 
 				return true
@@ -407,9 +407,10 @@ func TestService_ListEvidences(t *testing.T) {
 
 				assert.Equal(t, 1, len(res.Evidences))
 
+				// Loop through all received evidences and check whether tool and service ids are correct.
 				for _, r := range res.Evidences {
-					assert.Equal(t, evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
-					assert.Equal(t, evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
 				}
 
 				return true

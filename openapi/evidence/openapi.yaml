@@ -43,7 +43,7 @@ paths:
             parameters:
                 - name: pageSize
                   in: query
-                  description: 'page_size: 0 = default, > 0 = set value'
+                  description: 'page_size: 0 = default (50 is default value), > 0 = set value (i.e. page_size = 5 -> SQL-Limit = 5)'
                   schema:
                     type: integer
                     format: int32
