@@ -27,6 +27,7 @@ package evidences
 
 import (
 	"clouditor.io/clouditor/internal/testutil/evidencetest"
+	"clouditor.io/clouditor/internal/testutil/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"context"
 	"errors"
@@ -481,6 +482,26 @@ func TestService_ListEvidences(t *testing.T) {
 					Filter: &evidence.Filter{
 						CloudServiceId: util.Ref("No UUID Fromat"),
 					},
+				},
+			},
+			wantErr:  assert.Error,
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Handle pagination error correctly",
+			fields: fields{
+				authz: &service.AuthorizationStrategyAllowAll{},
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   "Wrong Input",
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
 				},
 			},
 			wantErr:  assert.Error,
