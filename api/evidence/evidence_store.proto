@@ -88,6 +88,7 @@ message ListEvidencesRequest {
   Filter filter = 5;
 }
 
+// Allows specifying Filters for ListEvidencesRequest
 message Filter {
   string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];;
   string tool_id = 2 [ (validate.rules).string.uuid = true ];;
