@@ -71,3 +71,47 @@ cl login <host:grpcPort>
 ### Command Completion
 
 The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.
+
+## Common Issues
+
+<details>
+<summary>Could not find protoc plugin for...</summary>
+
+#### Error Message
+Failure: plugin grpc-gateway: could not find protoc plugin for name grpc-gateway -<br>
+please make sure protoc-gen-grpc-gateway is installed and present on your $PATH
+
+#### Solution
+
+```bash
+go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+
+go install "github.com/envoyproxy/protoc-gen-validate"
+go install "github.com/google/addlicense"
+go install "github.com/google/gnostic/cmd/protoc-gen-openapi"
+go install "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
+go install "github.com/srikrsna/protoc-gen-gotag"
+
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+</details>
+
+<details>
+<summary>Invalid field found for struct...</summary>
+
+#### Error Message
+[Error] invalid field found for struct clouditor.io/clouditor/api/orchestrator.Control's field Controls: define a valid foreign key for relations or implement the Valuer/Scanner interface <br>
+Error: could not create storage: error during join-table: invalid field found for struct clouditor.io/clouditor/api/orchestrator.Control's field Controls: define a valid foreign key for relations or implement the Valuer/Scanner interface <br>
+(Might occur after buf generate)
+
+
+#### Solution
+
+
+```bash
+go generate ./...
+```
+
+</details>
