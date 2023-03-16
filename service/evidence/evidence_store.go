@@ -187,11 +187,6 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		allowed []string
 		conds   []any
 	)
-	// Validate Input
-	if ctx == nil || req == nil {
-		return nil, errors.New("bad Input")
-	}
-
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
