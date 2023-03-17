@@ -889,6 +889,17 @@ func (m *EvaluationResult) validate(all bool) error {
 
 	}
 
+	if utf8.RuneCountInString(m.GetControlId()) < 1 {
+		err := EvaluationResultValidationError{
+			field:  "ControlId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
 		err := EvaluationResultValidationError{
 			field:  "CategoryName",
@@ -926,17 +937,6 @@ func (m *EvaluationResult) validate(all bool) error {
 		err := EvaluationResultValidationError{
 			field:  "Status",
 			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlId()) < 1 {
-		err := EvaluationResultValidationError{
-			field:  "ControlId",
-			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err

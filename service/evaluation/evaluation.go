@@ -68,7 +68,7 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-type WaitGroup struct {
+type waitGroup struct {
 	wg      *sync.WaitGroup
 	wgMutex sync.Mutex
 }
@@ -82,7 +82,7 @@ type Service struct {
 	scheduler           *gocron.Scheduler
 
 	// wg is used for a control that waits for its sub-controls to be evaluated
-	wg map[string]*WaitGroup
+	wg map[string]*waitGroup
 
 	// // Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
 	// results     map[string]*evaluation.EvaluationResult
@@ -141,7 +141,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 			target: DefaultOrchestratorAddress,
 		},
 		scheduler: gocron.NewScheduler(time.UTC),
-		wg:        make(map[string]*WaitGroup),
+		wg:        make(map[string]*waitGroup),
 	}
 
 	// Apply service options
@@ -250,7 +250,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Add number of sub-controls to the WaitGroup. For the control (e.g., OPS-13) we have to wait until all the sub-controls (e.g., OPS-13.1) are ready.
 		// Control is a parent control if no parentControlId exists.
-		s.wg[parentSchedulerTag] = &WaitGroup{
+		s.wg[parentSchedulerTag] = &waitGroup{
 			wg:      &sync.WaitGroup{},
 			wgMutex: sync.Mutex{},
 		}
@@ -477,7 +477,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
-		status     = evaluation.EvaluationResult_STATUS_UNSPECIFIED
+		status     = evaluation.EvaluationResult_EVALUATION_STATUS_UNSPECIFIED
 		evalResult *evaluation.EvaluationResult
 	)
 
@@ -513,11 +513,11 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		var nonCompliantAssessmentResults = []string{}
 
 		for _, r := range eval {
-			if r.Status == evaluation.EvaluationResult_COMPLIANT && status != evaluation.EvaluationResult_NOT_COMPLIANT {
-				status = evaluation.EvaluationResult_COMPLIANT
+			if r.Status == evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT {
+				status = evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT
 			} else {
-				status = evaluation.EvaluationResult_NOT_COMPLIANT
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultsId()...)
+				status = evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 			}
 		}
 
@@ -531,7 +531,7 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 			CatalogId:                  toe.GetCatalogId(),
 			ResourceId:                 resourceID,
 			Status:                     status,
-			FailingAssessmentResultsId: nonCompliantAssessmentResults,
+			FailingAssessmentResultIds: nonCompliantAssessmentResults,
 		}
 
 		err = s.storage.Create(evalResult)
@@ -593,25 +593,25 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 
 	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
 	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
-	for _, result := range assessmentResultsMap {
+	for key, results := range assessmentResultsMap {
 		var nonCompliantAssessmentResults = []string{}
-		var status = evaluation.EvaluationResult_PENDING
+		var status = evaluation.EvaluationResult_EVALUATION_STATUS_PENDING
 
 		// If no assessment_results are available continue
-		if len(result) == 0 {
+		if len(results) == 0 {
 			continue
 		}
 
-		for i := range result {
-			if !result[i].Compliant {
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, result[i].GetId())
-				status = evaluation.EvaluationResult_NOT_COMPLIANT
+		for i := range results {
+			if !results[i].Compliant {
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, results[i].GetId())
+				status = evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT
 			}
 		}
 
 		// If no assessment results are available for the metric, no evaluation result is created
-		if status == evaluation.EvaluationResult_PENDING {
-			log.Debugf("No assessment results for resource '%s' available.", result[0].GetResourceId())
+		if status == evaluation.EvaluationResult_EVALUATION_STATUS_PENDING {
+			log.Debugf("No assessment results for resource '%s' available.", results[0].GetResourceId())
 			continue
 		}
 
@@ -623,14 +623,14 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 			ControlId:                  controlId,
 			CloudServiceId:             toe.GetCloudServiceId(),
 			CatalogId:                  toe.GetCatalogId(),
-			ResourceId:                 result[0].GetResourceId(), // It does not matter which element is used here, since they all have the same resource_id.
+			ResourceId:                 key,
 			Status:                     status,
-			FailingAssessmentResultsId: nonCompliantAssessmentResults,
+			FailingAssessmentResultIds: nonCompliantAssessmentResults,
 		}
 
 		err = s.storage.Create(eval)
 		if err != nil {
-			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", result[0].GetResourceId(), controlId, err)
+			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", results[0].GetResourceId(), controlId, err)
 			continue
 		}
 

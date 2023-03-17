@@ -126,39 +126,40 @@ message EvaluationResult {
   string cloud_service_id = 2
   [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
 
+  // The control id the evaluation was based on
+  string control_id = 3
+    [(validate.rules).string.min_len = 1];
+  
   // The category the control belongs to 
-  string category_name = 3
+  string category_name = 4
     [(validate.rules).string.min_len = 1]; 
 
   // The catalog the control belongs to 
-  string catalog_id = 4
+  string catalog_id = 5
     [(validate.rules).string.min_len = 1]; 
 
   // The evaluated resource 
-  string resource_id = 5
+  string resource_id = 6
     [(validate.rules).string.min_len = 1]; 
   
     enum EvaluationStatus {
-    STATUS_UNSPECIFIED = 0;
-    COMPLIANT = 1;
-    NOT_COMPLIANT = 2;
-    PENDING = 3;
+    EVALUATION_STATUS_UNSPECIFIED = 0;
+    EVALUATION_STATUS_COMPLIANT = 1;
+    EVALUATION_STATUS_NOT_COMPLIANT = 2;
+    EVALUATION_STATUS_PENDING = 3;
   }
   
   // Evaluation status
-  EvaluationStatus status = 6 
+  EvaluationStatus status = 7 
     [(validate.rules).enum.defined_only = true];
   
-  // The control id the evaluation was based on
-  string control_id = 7
-    [(validate.rules).string.min_len = 1];
   
   // Time of evaluation
   google.protobuf.Timestamp timestamp = 8
     [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // List of assessment results because of which the evaluation status is not 'compliant'
-  repeated string failing_assessment_results_id = 9 [
+  repeated string failing_assessment_result_ids = 9 [
       (tagger.tags) = "gorm:\"serializer:json\"",
       (validate.rules).repeated.items.message.required = true];
 }

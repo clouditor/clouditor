@@ -141,6 +141,9 @@ components:
                 cloudServiceId:
                     type: string
                     description: The Cloud Service ID the evaluation belongs to
+                controlId:
+                    type: string
+                    description: The control id the evaluation was based on
                 categoryName:
                     type: string
                     description: The category the control belongs to
@@ -152,21 +155,18 @@ components:
                     description: The evaluated resource
                 status:
                     enum:
-                        - STATUS_UNSPECIFIED
-                        - COMPLIANT
-                        - NOT_COMPLIANT
-                        - PENDING
+                        - EVALUATION_STATUS_UNSPECIFIED
+                        - EVALUATION_STATUS_COMPLIANT
+                        - EVALUATION_STATUS_NOT_COMPLIANT
+                        - EVALUATION_STATUS_PENDING
                     type: string
                     description: Evaluation status
                     format: enum
-                controlId:
-                    type: string
-                    description: The control id the evaluation was based on
                 timestamp:
                     type: string
                     description: Time of evaluation
                     format: date-time
-                failingAssessmentResultsId:
+                failingAssessmentResultIds:
                     type: array
                     items:
                         type: string

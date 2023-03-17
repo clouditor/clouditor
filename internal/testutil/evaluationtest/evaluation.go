@@ -16,9 +16,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_NOT_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:                  testdata.MockControlID1,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult2 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult2ID,
@@ -27,9 +27,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult22 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult9ID,
@@ -38,9 +38,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult3ID,
@@ -49,9 +49,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_NOT_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID12,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult4 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult4ID,
@@ -60,9 +60,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockControlID2,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult5 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult5ID,
@@ -71,9 +71,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID21,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult6 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult6ID,
@@ -82,9 +82,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID22,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult7 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult7ID,
@@ -93,9 +93,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockAnotherResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockControlID1,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult8 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult8ID,
@@ -104,9 +104,9 @@ var (
 		CategoryName:               testdata.MockCategoryName,
 		CatalogId:                  testdata.MockCatalogID,
 		ResourceId:                 testdata.MockAnotherResourceID,
-		Status:                     evaluation.EvaluationResult_COMPLIANT,
+		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
-		FailingAssessmentResultsId: []string{},
+		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResults = []*evaluation.EvaluationResult{MockEvaluationResult1, MockEvaluationResult2, MockEvaluationResult22, MockEvaluationResult3, MockEvaluationResult4, MockEvaluationResult5, MockEvaluationResult6, MockEvaluationResult7, MockEvaluationResult8}
 
