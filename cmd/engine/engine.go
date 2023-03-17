@@ -41,6 +41,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	commands_login "clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/internal/auth"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/logging/formatter"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -93,6 +94,7 @@ const (
 	CreateDefaultTarget              = "target-default-create"
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
+	DiscoveryResourceGroupFlag       = "discovery-resource-group"
 	DashboardURLFlag                 = "dashboard-url"
 
 	DefaultAPIDefaultUser                      = "clouditor"
@@ -111,6 +113,7 @@ const (
 	DefaultDBInMemory                          = false
 	DefaultCreateDefaultTarget                 = true
 	DefaultDiscoveryAutoStart                  = false
+	DefaultDiscoveryResourceGroup              = ""
 	DefaultDashboardURL                        = "http://localhost:8080"
 
 	EnvPrefix = "CLOUDITOR"
@@ -167,6 +170,7 @@ func init() {
 	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
+	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
@@ -194,6 +198,7 @@ func init() {
 	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
+	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
 }
 
@@ -250,6 +255,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	discoveryService = service_discovery.NewService(
 		service_discovery.WithProviders(providers),
+		service_discovery.WithStorage(db),
 		service_discovery.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
 			&clientcredentials.Config{
@@ -370,7 +376,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 					"",
 					fmt.Sprintf("%s/callback", viper.GetString(DashboardURLFlag)),
 				),
-				// Createa a confidential client with default credentials for our services
+				// Create a confidential client with default credentials for our services
 				oauth2.WithClient(
 					viper.GetString(ServiceOAuth2ClientIDFlag),
 					viper.GetString(ServiceOAuth2ClientIDFlag),
@@ -413,7 +419,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
-			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{})
+			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
+				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
+			})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
 			}

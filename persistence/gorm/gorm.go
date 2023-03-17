@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evaluation"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -64,13 +65,14 @@ type storage struct {
 
 // DefaultTypes contains a list of internal types that need to be migrated by default
 var DefaultTypes = []any{
-	&orchestrator.CloudService{},
 	&assessment.MetricImplementation{},
 	&assessment.Metric{},
 	&assessment.AssessmentResult{},
+	&discovery.Resource{},
+	&evidence.Evidence{},
+	&orchestrator.CloudService{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
-	&evidence.Evidence{},
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},

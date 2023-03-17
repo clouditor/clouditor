@@ -29,14 +29,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
-	"sync"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -46,7 +47,6 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/maps"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -100,15 +100,13 @@ type Service struct {
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessmentAddress grpcTarget
 
-	resources map[string]voc.IsCloudResource
+	storage persistence.Storage
+
 	scheduler *gocron.Scheduler
 
 	authorizer api.Authorizer
 
 	providers []string
-
-	// Mutex for resources
-	resourceMutex sync.RWMutex
 
 	Events chan *DiscoveryEvent
 
@@ -168,13 +166,20 @@ func WithProviders(providersList []string) ServiceOption {
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
+}
+
 func NewService(opts ...ServiceOption) *Service {
+	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessmentAddress: grpcTarget{
 			target: DefaultAssessmentAddress,
 		},
-		resources:      make(map[string]voc.IsCloudResource),
 		scheduler:      gocron.NewScheduler(time.UTC),
 		configurations: make(map[discovery.Discoverer]*Configuration),
 		Events:         make(chan *DiscoveryEvent),
@@ -184,6 +189,14 @@ func NewService(opts ...ServiceOption) *Service {
 	// Apply any options
 	for _, o := range opts {
 		o(s)
+	}
+
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
 	}
 
 	return s
@@ -351,10 +364,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		// Set the cloud service ID to the one of the discoverer
 		resource.SetServiceID(svc.csID)
 
-		svc.resourceMutex.Lock()
-		svc.resources[string(resource.GetID())] = resource
-		svc.resourceMutex.Unlock()
-
 		var (
 			v *structpb.Value
 		)
@@ -362,6 +371,21 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		v, err = voc.ToStruct(resource)
 		if err != nil {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
+		}
+
+		// Build a resource struct. This will hold the latest sync state of the
+		// resource for our storage layer.
+		r := &discovery.Resource{
+			Id:             string(resource.GetID()),
+			ResourceType:   strings.Join(resource.GetType(), ","),
+			CloudServiceId: resource.GetServiceID(),
+			Properties:     v,
+		}
+
+		// Persist the latest state of the resource
+		err = svc.storage.Save(&r, "id = ?", r.Id)
+		if err != nil {
+			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
 		// TODO(all): What is the raw type in our case?
@@ -387,67 +411,33 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 }
 
 func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
-	var r []*structpb.Value
-	var resources []voc.IsCloudResource
-
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	resources = maps.Values(svc.resources)
-	sort.Slice(resources, func(i, j int) bool {
-		return resources[i].GetID() < resources[j].GetID()
-	})
+	var query []string
+	var args []any
 
-	for _, v := range resources {
-		var resource *structpb.Value
-
-		if req.FilteredType != nil && !v.HasType(req.GetFilteredType()) {
-			continue
-		}
-
-		if req.FilteredCloudServiceId != nil && v.GetServiceID() != req.GetFilteredCloudServiceId() {
-			continue
-		}
-
-		resource, err = voc.ToStruct(v)
-		if err != nil {
-			log.Errorf("Error during JSON unmarshal: %v", err)
-			return nil, status.Error(codes.Internal, "error during JSON unmarshal")
-		}
-
-		r = append(r, resource)
+	// Filtering the resources by
+	// * cloud service ID
+	// * resource type
+	if req.FilteredCloudServiceId != nil {
+		query = append(query, "cloud_service_id = ?")
+		args = append(args, req.GetFilteredCloudServiceId())
+	}
+	if req.FilteredType != nil {
+		query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
+		args = append(args, req.GetFilteredType()+",%", "%,"+req.GetFilteredType()+",%", "%,"+req.GetFilteredType())
 	}
 
 	res = new(discovery.QueryResponse)
 
-	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
-		if req.OrderBy == "creation_time" {
-			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
-		} else {
-			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
-		}
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
 
-	res.Results = r
+	res.Results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
-}
-
-// handleError prints out the error according to the status code
-func handleError(err error, dest string) error {
-	prefix := "could not send evidence to " + dest
-	if status.Code(err) == codes.Internal {
-		return fmt.Errorf("%s. Internal error on the server side: %w", prefix, err)
-	} else if status.Code(err) == codes.InvalidArgument {
-		return fmt.Errorf("invalid evidence - provide evidence in the right format: %w", err)
-	} else {
-		return err
-	}
 }

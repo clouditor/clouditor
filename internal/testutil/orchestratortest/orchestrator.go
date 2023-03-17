@@ -347,7 +347,7 @@ var (
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
 	}
-	MockControlsInScopeSubControl1 = &orchestrator.Control{
+	MockControlsInScopeSubControl11 = &orchestrator.Control{
 		Id:                             testdata.MockSubControlID11,
 		Name:                           testdata.MockControlName,
 		CategoryName:                   testdata.MockCategoryName,
@@ -380,7 +380,7 @@ var (
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
 	}
-	MockControlsInScopeSubControl2 = &orchestrator.Control{
+	MockControlsInScopeSubControl21 = &orchestrator.Control{
 		Id:                             testdata.MockSubControlID21,
 		Name:                           testdata.MockControlName,
 		CategoryName:                   testdata.MockCategoryName,
@@ -414,7 +414,7 @@ var (
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
 	}
-	MockControlsInScopeSubControl3 = &orchestrator.Control{
+	MockControlsInScopeSubControl31 = &orchestrator.Control{
 		Id:                             testdata.MockSubControlID31,
 		Name:                           testdata.MockControlName,
 		CategoryName:                   testdata.MockCategoryName,
@@ -425,29 +425,24 @@ var (
 		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 	}
+	MockControlsInScopeSubControl32 = &orchestrator.Control{
+		Id:                             testdata.MockSubControlID32,
+		Name:                           testdata.MockControlName,
+		CategoryName:                   testdata.MockCategoryName,
+		CategoryCatalogId:              testdata.MockCatalogID,
+		Description:                    testdata.MockControlDescription,
+		AssuranceLevel:                 &testdata.AssuranceLevelHigh,
+		ParentControlId:                util.Ref(testdata.MockControlID3),
+		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
+		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+	}
 	MockControlsInScope4 = &orchestrator.Control{
 		Id:                testdata.MockControlID4,
 		Name:              testdata.MockControlName,
 		CategoryName:      testdata.MockCategoryName,
 		CategoryCatalogId: testdata.MockCatalogID,
 		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    &testdata.AssuranceLevelHigh,
-		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
-		}},
+		Metrics:           []*assessment.Metric{},
 	}
 	MockControlsInScopeSubControl4 = &orchestrator.Control{
 		Id:                             testdata.MockSubControlID32,
@@ -484,5 +479,6 @@ var (
 			},
 		}},
 	}
-	MockControlsInScope = []*orchestrator.Control{MockControlsInScope1, MockControlsInScopeSubControl1, MockControlsInScope2, MockControlsInScopeSubControl2, MockControlsInScope3, MockControlsInScopeSubControl3, MockControlsInScope4, MockControlsInScope5, MockControlsInScopeSubControl4}
+	}
+	MockControlsInScope = []*orchestrator.Control{MockControlsInScope1, MockControlsInScopeSubControl11, MockControlsInScope2, MockControlsInScopeSubControl21, MockControlsInScope3, MockControlsInScopeSubControl31, MockControlsInScope4, MockControlsInScope5, MockControlsInScopeSubControl32}
 )
