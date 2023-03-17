@@ -479,6 +479,5 @@ var (
 			},
 		}},
 	}
-	}
 	MockControlsInScope = []*orchestrator.Control{MockControlsInScope1, MockControlsInScopeSubControl11, MockControlsInScope2, MockControlsInScopeSubControl21, MockControlsInScope3, MockControlsInScopeSubControl31, MockControlsInScope4, MockControlsInScope5, MockControlsInScopeSubControl32}
 )

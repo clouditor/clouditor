@@ -1930,10 +1930,10 @@ func Test_getControlsInScopeHierarchy(t *testing.T) {
 					orchestratortest.MockControlsInScope2,
 					orchestratortest.MockControlsInScope1,
 				}
-				wantResults[3].Controls = append(wantResults[3].Controls, orchestratortest.MockControlsInScopeSubControl1)
-				wantResults[2].Controls = append(wantResults[2].Controls, orchestratortest.MockControlsInScopeSubControl2)
-				wantResults[1].Controls = append(wantResults[1].Controls, orchestratortest.MockControlsInScopeSubControl3)
-				wantResults[0].Controls = append(wantResults[0].Controls, orchestratortest.MockControlsInScopeSubControl4)
+				wantResults[3].Controls = append(wantResults[3].Controls, orchestratortest.MockControlsInScopeSubControl11)
+				wantResults[2].Controls = append(wantResults[2].Controls, orchestratortest.MockControlsInScopeSubControl21)
+				wantResults[1].Controls = append(wantResults[1].Controls, orchestratortest.MockControlsInScopeSubControl31)
+				wantResults[0].Controls = append(wantResults[0].Controls, orchestratortest.MockControlsInScopeSubControl32)
 
 				// Sort lists
 				sort.SliceStable(gotResults, func(i, j int) bool {
