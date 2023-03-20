@@ -43,7 +43,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2 v1.17.6
 	github.com/aws/aws-sdk-go-v2/config v1.18.2
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.89.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.90.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.30.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.30.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.0
