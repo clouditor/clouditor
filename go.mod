@@ -6,7 +6,7 @@ go 1.19
 require (
 	github.com/MicahParks/keyfunc v1.9.0
 	github.com/glebarez/sqlite v1.7.0
-	github.com/go-co-op/gocron v1.18.0
+	github.com/go-co-op/gocron v1.19.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
