@@ -94,9 +94,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: |-
-                TODO (2)
-                 Get one assessment result by ID
+            description: Get one assessment result by ID
             operationId: Orchestrator_GetAssessmentResult
             parameters:
                 - name: id
@@ -104,23 +102,6 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
             responses:
                 "200":
                     description: OK

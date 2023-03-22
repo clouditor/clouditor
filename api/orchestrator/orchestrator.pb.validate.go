@@ -4938,14 +4938,6 @@ func (m *AssessmentResultRequest) validate(all bool) error {
 
 	// no validation rules for Id
 
-	// no validation rules for PageSize
-
-	// no validation rules for PageToken
-
-	// no validation rules for OrderBy
-
-	// no validation rules for Asc
-
 	if len(errors) > 0 {
 		return AssessmentResultRequestMultiError(errors)
 	}

@@ -97,7 +97,6 @@ service Orchestrator {
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultsResponse);
 
-  // TODO (2)
   // Get one assessment result by ID
   rpc GetAssessmentResult(AssessmentResultRequest)
       returns (clouditor.assessment.v1.AssessmentResult) {
@@ -787,13 +786,8 @@ message TargetOfEvaluation {
   ];
 }
 
-// TODO (1)
 message AssessmentResultRequest {
   string id = 1;
-  int32 page_size = 2;
-  string page_token = 3;
-  string order_by = 4;
-  bool asc = 5;
 }
 
 message ListAssessmentResultsRequest {
