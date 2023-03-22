@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
@@ -43,35 +44,29 @@ import (
 	"clouditor.io/clouditor/service"
 )
 
+// GetAssessmentResult gets one assessment result by id
 func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (*assessment.AssessmentResult, error) {
+	var conds []any
+
 	// Validate request
-	/*err := service.ValidateRequest(req)
+	err := service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all cloud services.
-	//all, allowed := svc.authz.AllowedCloudServices(ctx)
+	conds = []any{"id = ?", req.Id}
 
 	res := new(assessment.AssessmentResult)
 
-	var query []string
-	var args []any
+	err = svc.storage.Get(res, conds...)
 
-	query = append(query, "id = ?")
-	args = append(args, req.Id)
-
-	args = append([]any{strings.Join(query, " AND ")}, args...)
-
-	// Paginate the results according to the request
-	res, res., err = service.PaginateStorage[*assessment.AssessmentResult](req, svc.storage, service.DefaultPaginationOpts, args...)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "evidence not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	return res, err*/
-	return nil, nil
+	return res, err
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
