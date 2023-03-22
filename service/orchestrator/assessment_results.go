@@ -43,6 +43,37 @@ import (
 	"clouditor.io/clouditor/service"
 )
 
+func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (*assessment.AssessmentResult, error) {
+	// Validate request
+	/*err := service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all cloud services.
+	//all, allowed := svc.authz.AllowedCloudServices(ctx)
+
+	res := new(assessment.AssessmentResult)
+
+	var query []string
+	var args []any
+
+	query = append(query, "id = ?")
+	args = append(args, req.Id)
+
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	// Paginate the results according to the request
+	res, res., err = service.PaginateStorage[*assessment.AssessmentResult](req, svc.storage, service.DefaultPaginationOpts, args...)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+
+	return res, err*/
+	return nil, nil
+}
+
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator.ListAssessmentResultsRequest) (res *orchestrator.ListAssessmentResultsResponse, err error) {
 	var allowed []string
