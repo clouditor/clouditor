@@ -45,16 +45,16 @@ import (
 )
 
 // GetAssessmentResult gets one assessment result by id
-func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (*assessment.AssessmentResult, error) {
+func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
 
 	// Validate request
-	err := service.ValidateRequest(req)
+	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// Fetch result
-	res := new(assessment.AssessmentResult)
+	res = new(assessment.AssessmentResult)
 	err = svc.storage.Get(res, "Id = ?", req.Id)
 
 	if errors.Is(err, persistence.ErrRecordNotFound) {
