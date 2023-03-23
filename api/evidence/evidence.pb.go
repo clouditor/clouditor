@@ -59,7 +59,7 @@ type Evidence struct {
 	// the ID in a uuid format
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// time of evidence creation
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:time"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// Reference to a service this evidence was gathered from
 	CloudServiceId string `protobuf:"bytes,3,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty"`
 	// Reference to the tool which provided the evidence
@@ -69,7 +69,7 @@ type Evidence struct {
 	Raw *string `protobuf:"bytes,5,opt,name=raw,proto3,oneof" json:"raw,omitempty"`
 	// Semantic representation of the Cloud resource according to our defined
 	// ontology
-	Resource *structpb.Value `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty" gorm:"serializer:valuepb;type:json"`
+	Resource *structpb.Value `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty"`
 }
 
 func (x *Evidence) Reset() {
