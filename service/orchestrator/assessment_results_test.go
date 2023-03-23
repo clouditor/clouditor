@@ -51,6 +51,44 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func TestService_GetAssessmentResult(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.AssessmentResultRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListAssessmentResultsResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.GetAssessmentResult(tt.args.ctx, tt.args.req)
+			tt.wantErr(t, err)
+
+			if tt.wantRes == nil {
+				assert.Nil(t, gotRes)
+			} else {
+				assert.NoError(t, gotRes.Validate())
+				assert.Equal(t, tt.wantRes, gotRes)
+			}
+		})
+	}
+}
+
 func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
