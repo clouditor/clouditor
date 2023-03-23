@@ -72,8 +72,9 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 			},
-			args: args{},
-			res:  nil,
+			args:    args{},
+			res:     nil,
+			wantErr: assert.Error,
 		},
 		{
 			name: "record found in database",
