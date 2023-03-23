@@ -88,6 +88,19 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			res:     orchestratortest.MockAssessmentResult1,
 			wantErr: assert.NoError,
 		},
+		{
+			name: "record not found in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
+				}),
+			},
+			args:    args{req: orchestratortest.MockAssessmentResultRequest1},
+			req:     orchestratortest.MockAssessmentResultRequest1,
+			res:     nil,
+			wantErr: assert.Error,
+		},
 	}
 
 	for _, tt := range tests {
