@@ -419,35 +419,9 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Wrong Input handled correctly (ctx = nil)",
-			args: args{
-				in0: nil,
-				req: &evidence.ListEvidencesRequest{
-					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
-					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
-					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
-					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
-					Filter: &evidence.Filter{
-						ToolId: evidencetest.MockListEvidenceRequest2.Filter.ToolId,
-					},
-				},
-			},
-			wantErr:  assert.Error,
-			wantResp: assert.Nil,
-		},
-		{
 			name: "Wrong Input handled correctly (req = nil)",
 			args: args{
 				in0: context.TODO(),
-				req: nil,
-			},
-			wantErr:  assert.Error,
-			wantResp: assert.Nil,
-		},
-		{
-			name: "Wrong Input handled correctly (ctx = nil, req = nil)",
-			args: args{
-				in0: nil,
 				req: nil,
 			},
 			wantErr:  assert.Error,

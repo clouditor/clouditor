@@ -384,11 +384,11 @@ type AssessmentResult struct {
 	// Assessment result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Time of assessment
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:time"`
 	// Reference to the metric the assessment was based on
 	MetricId string `protobuf:"bytes,3,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// Data corresponding to the metric by the given metric id
-	MetricConfiguration *MetricConfiguration `protobuf:"bytes,4,opt,name=metric_configuration,json=metricConfiguration,proto3" json:"metric_configuration,omitempty"`
+	MetricConfiguration *MetricConfiguration `protobuf:"bytes,4,opt,name=metric_configuration,json=metricConfiguration,proto3" json:"metric_configuration,omitempty" gorm:"serializer:json"`
 	// Compliant case: true or false
 	Compliant bool `protobuf:"varint,5,opt,name=compliant,proto3" json:"compliant,omitempty"`
 	// Reference to the assessed evidence
@@ -396,7 +396,7 @@ type AssessmentResult struct {
 	// Reference to the resource of the assessed evidence
 	ResourceId string `protobuf:"bytes,7,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
 	// Resource types
-	ResourceTypes []string `protobuf:"bytes,8,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty"`
+	ResourceTypes []string `protobuf:"bytes,8,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty" gorm:"serializer:json"`
 	// Some comments on the reason for non-compliance
 	NonComplianceComments string `protobuf:"bytes,9,opt,name=non_compliance_comments,json=nonComplianceComments,proto3" json:"non_compliance_comments,omitempty"`
 	// The cloud service which this assessment result belongs to

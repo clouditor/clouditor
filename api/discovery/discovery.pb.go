@@ -305,7 +305,7 @@ type Resource struct {
 	ResourceType string `protobuf:"bytes,3,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
 	// Properties contains a protobuf struct that describe the resource in the
 	// terms of our Clouditor ontology.
-	Properties *structpb.Value `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty"`
+	Properties *structpb.Value `protobuf:"bytes,10,opt,name=properties,proto3" json:"properties,omitempty" gorm:"serializer:valuepb;type:json"`
 }
 
 func (x *Resource) Reset() {
