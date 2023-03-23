@@ -61,7 +61,7 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.A
 	err = svc.storage.Get(res, conds...)
 
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "evidence not found")
+		return nil, status.Errorf(codes.NotFound, "assessment result not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
