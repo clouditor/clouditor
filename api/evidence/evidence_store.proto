@@ -85,7 +85,7 @@ message ListEvidencesRequest {
   string page_token = 2;
   string order_by = 3;
   bool asc = 4;
-  Filter filter = 5;
+  optional Filter filter = 5;
 }
 
 // Allows specifying Filters for ListEvidencesRequest
