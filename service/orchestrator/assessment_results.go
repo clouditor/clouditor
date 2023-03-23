@@ -46,7 +46,6 @@ import (
 
 // GetAssessmentResult gets one assessment result by id
 func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (*assessment.AssessmentResult, error) {
-	var conds []any
 
 	// Validate request
 	err := service.ValidateRequest(req)
@@ -54,18 +53,15 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.A
 		return nil, err
 	}
 
-	conds = []any{"id = ?", req.Id}
-
+	// Fetch result
 	res := new(assessment.AssessmentResult)
-
-	err = svc.storage.Get(res, conds...)
+	err = svc.storage.Get(res, "Id = ?", req.Id)
 
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "assessment result not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-
 	return res, err
 }
 

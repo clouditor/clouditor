@@ -64,10 +64,33 @@ func TestService_GetAssessmentResult(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ListAssessmentResultsResponse
+		wantRes *assessment.AssessmentResult
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{},
+		{
+			name: "request is missing",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args:    args{},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "empty request")
+			},
+		},
+		{
+			name: "record found in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResultRequest1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResultRequest2))
+				}),
+			},
+			args:    args{req: orchestratortest.MockAssessmentResultRequest1},
+			wantRes: orchestratortest.MockAssessmentResult1,
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
