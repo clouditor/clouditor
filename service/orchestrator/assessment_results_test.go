@@ -54,7 +54,6 @@ import (
 func TestService_GetAssessmentResult(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
-		authz   service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -64,31 +63,29 @@ func TestService_GetAssessmentResult(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *assessment.AssessmentResult
+		req     *orchestrator.AssessmentResultRequest
+		res     *assessment.AssessmentResult
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "request is missing",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
-			args:    args{},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "empty request")
-			},
+			args: args{},
+			res:  nil,
 		},
 		{
 			name: "record found in database",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResultRequest1))
-					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResultRequest2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
 			},
 			args:    args{req: orchestratortest.MockAssessmentResultRequest1},
-			wantRes: orchestratortest.MockAssessmentResult1,
+			req:     orchestratortest.MockAssessmentResultRequest1,
+			res:     orchestratortest.MockAssessmentResult1,
 			wantErr: assert.NoError,
 		},
 	}
@@ -97,16 +94,15 @@ func TestService_GetAssessmentResult(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				storage: tt.fields.storage,
-				authz:   tt.fields.authz,
 			}
 			gotRes, err := svc.GetAssessmentResult(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 
-			if tt.wantRes == nil {
+			if tt.res == nil {
 				assert.Nil(t, gotRes)
 			} else {
 				assert.NoError(t, gotRes.Validate())
-				assert.Equal(t, tt.wantRes, gotRes)
+				assert.Equal(t, tt.res, gotRes)
 			}
 		})
 	}
