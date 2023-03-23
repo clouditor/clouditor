@@ -192,10 +192,6 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	if err != nil {
 		return nil, err
 	}
-	// Validate context
-	if ctx == nil {
-		return nil, errors.New("ctx Was Nil")
-	}
 
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all cloud services.
