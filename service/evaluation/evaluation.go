@@ -585,8 +585,10 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
 	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
 	for key, results := range assessmentResultsMap {
-		var nonCompliantAssessmentResults = []string{}
-		var status = evaluation.EvaluationResult_EVALUATION_STATUS_PENDING
+		var (
+			nonCompliantAssessmentResults []string
+			status                        evaluation.EvaluationResult_EvaluationStatus
+		)
 
 		// If no assessment_results are available continue
 		if len(results) == 0 {
