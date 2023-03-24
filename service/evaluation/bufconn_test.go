@@ -30,32 +30,33 @@ import (
 	"net"
 
 	"clouditor.io/clouditor/api/orchestrator"
-
+	"clouditor.io/clouditor/persistence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
 
 const DefaultBufferSize = 1024 * 1024
 
-var (
-	bufConnListener *bufconn.Listener
-)
+func newBufConnDialer(storage persistence.Storage) func(context.Context, string) (net.Conn, error) {
+	lis, _, _ := startBufConnServer(storage)
 
-func bufConnDialer(context.Context, string) (net.Conn, error) {
-	return bufConnListener.Dial()
+	return func(ctx context.Context, s string) (net.Conn, error) {
+		return lis.Dial()
+	}
 }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
 // real functionality of the following services for testing purposes:
 // * Auth
 // * Orchestrator
-func startBufConnServer() (*grpc.Server, *service_orchestrator.Service) {
-	bufConnListener = bufconn.Listen(DefaultBufferSize)
+func startBufConnServer(storage persistence.Storage) (*bufconn.Listener, *grpc.Server, *service_orchestrator.Service) {
+	bufConnListener := bufconn.Listen(DefaultBufferSize)
 
 	server := grpc.NewServer()
 
-	orchestratorService := service_orchestrator.NewService()
+	orchestratorService := service_orchestrator.NewService(service_orchestrator.WithStorage(storage))
 	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
 
 	go func() {
@@ -64,5 +65,5 @@ func startBufConnServer() (*grpc.Server, *service_orchestrator.Service) {
 		}
 	}()
 
-	return server, orchestratorService
+	return bufConnListener, server, orchestratorService
 }

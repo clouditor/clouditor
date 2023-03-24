@@ -57,24 +57,22 @@ import (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	server, orch := startBufConnServer()
-	orch.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
-	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: orchestratortest.MockAssessmentResult1,
-	})
-	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: orchestratortest.MockAssessmentResult2,
-	})
-	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: orchestratortest.MockAssessmentResult3,
-	})
-	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
-		Result: orchestratortest.MockAssessmentResult4,
-	})
+	/*	server, orch := startBufConnServer()
+		orch.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
+		orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+			Result: orchestratortest.MockAssessmentResult1,
+		})
+		orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+			Result: orchestratortest.MockAssessmentResult2,
+		})
+		orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+			Result: orchestratortest.MockAssessmentResult3,
+		})
+		orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+			Result: orchestratortest.MockAssessmentResult4,
+		})*/
 
 	code := m.Run()
-
-	server.Stop()
 
 	os.Exit(code)
 }
@@ -1300,7 +1298,7 @@ func TestService_getControl(t *testing.T) {
 
 			// Mock streams for target services
 			if tt.fields.hasOrchestratorStream {
-				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
+				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))}
 			} else {
 				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
 			}
@@ -1645,8 +1643,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
 				orchestratorAddress: grpcTarget{
-					target: "bufconn",
-					opts:   []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+					})))},
 				},
 			},
 			args: args{
