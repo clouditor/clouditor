@@ -97,7 +97,7 @@ service Orchestrator {
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultsResponse);
 
-  // Get one assessment result by ID
+  // Get an assessment result by ID
   rpc GetAssessmentResult(AssessmentResultRequest)
       returns (clouditor.assessment.v1.AssessmentResult) {
     option (google.api.http) = {

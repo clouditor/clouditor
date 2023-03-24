@@ -136,9 +136,6 @@ var (
 	MockAssessmentResultRequest1 = &orchestrator.AssessmentResultRequest{
 		Id: testdata.MockAssessmentResult1ID,
 	}
-	MockAssessmentResultRequest2 = &orchestrator.AssessmentResultRequest{
-		Id: testdata.MockAssessmentResult2ID,
-	}
 )
 
 var (
