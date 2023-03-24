@@ -423,7 +423,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Permission denied (cloud service id not allowed)",
 			fields: fields{
-				authz: newAuthorizationStrategy([]string{testdata.MockCloudServiceID}),
+				authz: newAuthorizationStrategy([]string{testdata.MockCloudServiceID}), // allow only MockCloudServiceID
 			},
 			args: args{
 				in0: context.TODO(),
@@ -434,8 +434,8 @@ func TestService_ListEvidences(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, status.Code(err), codes.PermissionDenied)
-				return assert.Contains(t, err.Error(), service.ErrPermissionDenied.Error())
+				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockAnotherCloudServiceID is not allowed
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 			wantResp: assert.Nil,
 		},
@@ -445,7 +445,10 @@ func TestService_ListEvidences(t *testing.T) {
 				in0: context.TODO(),
 				req: nil,
 			},
-			wantErr:  assert.Error,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
 			wantResp: assert.Nil,
 		},
 		{
@@ -462,7 +465,9 @@ func TestService_ListEvidences(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  assert.Error,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
 			wantResp: assert.Nil,
 		},
 		{
@@ -479,11 +484,13 @@ func TestService_ListEvidences(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  assert.Error,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
 			wantResp: assert.Nil,
 		},
 		{
-			name: "Handle pagination error correctly",
+			name: "DB (pagination) error",
 			fields: fields{
 				authz: &service.AuthorizationStrategyAllowAll{},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -499,7 +506,10 @@ func TestService_ListEvidences(t *testing.T) {
 					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
 				},
 			},
-			wantErr:  assert.Error,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "could not paginate results")
+				return assert.Equal(t, status.Code(err), codes.Internal)
+			},
 			wantResp: assert.Nil,
 		},
 	}
