@@ -68,10 +68,10 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-type waitGroup struct {
-	wg      *sync.WaitGroup
-	wgMutex sync.Mutex
-}
+// type waitGroup struct {
+// 	wg      *sync.WaitGroup
+// 	wgMutex sync.Mutex
+// }
 
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
@@ -82,7 +82,7 @@ type Service struct {
 	scheduler           *gocron.Scheduler
 
 	// wg is used for a control that waits for its sub-controls to be evaluated
-	wg map[string]*waitGroup
+	wg map[string]*sync.WaitGroup
 
 	// // Currently, evaluation results are just stored as a map (=in-memory). In the future, we will use a DB.
 	// results     map[string]*evaluation.EvaluationResult
@@ -141,7 +141,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 			target: DefaultOrchestratorAddress,
 		},
 		scheduler: gocron.NewScheduler(time.UTC),
-		wg:        make(map[string]*waitGroup),
+		wg:        make(map[string]*sync.WaitGroup),
 	}
 
 	// Apply service options
@@ -250,14 +250,9 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 		// Add number of sub-controls to the WaitGroup. For the control (e.g., OPS-13) we have to wait until all the sub-controls (e.g., OPS-13.1) are ready.
 		// Control is a parent control if no parentControlId exists.
-		s.wg[parentSchedulerTag] = &waitGroup{
-			wg:      &sync.WaitGroup{},
-			wgMutex: sync.Mutex{},
-		}
-		s.wg[parentSchedulerTag].wgMutex.Lock()
+		s.wg[parentSchedulerTag] = &sync.WaitGroup{}
 		// The controls list contains also the parent control itself and must be minimized by 1 for the parent_control_id.
-		s.wg[parentSchedulerTag].wg.Add(len(controls) - 1)
-		s.wg[parentSchedulerTag].wgMutex.Unlock()
+		s.wg[parentSchedulerTag].Add(len(controls) - 1)
 
 		// Add control including sub-controls to the scheduler
 		for _, control := range controls {
@@ -484,12 +479,10 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	log.Infof("Start control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'", toe.CloudServiceId, toe.CatalogId, controlId)
 
 	// Wait till all sub-controls are evaluated
-	s.wg[schedulerTag].wg.Wait()
+	s.wg[schedulerTag].Wait()
 
 	// For the next iteration set wg again to the number of sub-controls
-	s.wg[schedulerTag].wgMutex.Lock()
-	s.wg[schedulerTag].wg.Add(len(subControls))
-	s.wg[schedulerTag].wgMutex.Unlock()
+	s.wg[schedulerTag].Add(len(subControls))
 
 	evaluations, err := s.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{
 		FilteredCloudServiceId: &toe.CloudServiceId,
@@ -559,9 +552,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, toe.GetCloudServiceId(), err)
 		// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
 		if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
-			s.wg[parentSchedulerTag].wgMutex.Lock()
-			s.wg[parentSchedulerTag].wg.Done()
-			s.wg[parentSchedulerTag].wgMutex.Unlock()
+			s.wg[parentSchedulerTag].Done()
 		}
 		return
 	}
@@ -639,9 +630,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 
 	// If the parentSchedulerTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
 	if parentSchedulerTag != "" && s.wg[parentSchedulerTag] != nil {
-		s.wg[parentSchedulerTag].wgMutex.Lock()
-		s.wg[parentSchedulerTag].wg.Done()
-		s.wg[parentSchedulerTag].wgMutex.Unlock()
+		s.wg[parentSchedulerTag].Done()
 	}
 }
 

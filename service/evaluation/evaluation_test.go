@@ -85,7 +85,7 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: "localhost:1234",
 				},
-				wg: make(map[string]*waitGroup),
+				wg: make(map[string]*sync.WaitGroup),
 			},
 		},
 		{
@@ -98,7 +98,7 @@ func TestNewService(t *testing.T) {
 					target: testdata.MockOrchestratorAddress,
 				},
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-				wg:         make(map[string]*waitGroup),
+				wg:         make(map[string]*sync.WaitGroup),
 			},
 		},
 		{
@@ -111,7 +111,7 @@ func TestNewService(t *testing.T) {
 					target: testdata.MockOrchestratorAddress,
 				},
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-				wg:         make(map[string]*waitGroup),
+				wg:         make(map[string]*sync.WaitGroup),
 			},
 		},
 		{
@@ -123,7 +123,7 @@ func TestNewService(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					target: testdata.MockOrchestratorAddress,
 				},
-				wg: make(map[string]*waitGroup),
+				wg: make(map[string]*sync.WaitGroup),
 			},
 		},
 	}
@@ -818,7 +818,7 @@ func TestService_StartEvaluation(t *testing.T) {
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 	}
 	type args struct {
 		in0              context.Context
@@ -837,7 +837,7 @@ func TestService_StartEvaluation(t *testing.T) {
 		// 	name: "Start scheduler job for one control",
 		// 	fields: fields{
 		// 		scheduler:           gocron.NewScheduler(time.UTC),
-		// 		wg:                  make(map[string]*WaitGroup),
+		// 		wg:                  make(map[string]*sync.WaitGroup),
 		// 		results:             make(map[string]*evaluation.EvaluationResult),
 		// 		orchestratorAddress: grpcTarget{target: DefaultOrchestratorAddress},
 		// 	},
@@ -986,7 +986,7 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 	}
 	type args struct {
@@ -1084,7 +1084,7 @@ func TestService_stopSchedulerJobs(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		schedulerTags                 []string
 		schedulerRunning              bool
@@ -1204,7 +1204,7 @@ func TestService_getControl(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		hasOrchestratorStream         bool
 	}
@@ -1309,7 +1309,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		schedulerRunning              bool
 		schedulerTag                  string
@@ -1442,7 +1442,7 @@ func TestService_evaluateControl(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
 	}
@@ -1463,11 +1463,8 @@ func TestService_evaluateControl(t *testing.T) {
 		{
 			name: "AuthZ error",
 			fields: fields{
-				wg: map[string]*waitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {
-						wg:      &sync.WaitGroup{},
-						wgMutex: sync.Mutex{},
-					},
+				wg: map[string]*sync.WaitGroup{
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
@@ -1500,11 +1497,8 @@ func TestService_evaluateControl(t *testing.T) {
 		{
 			name: "No evaluation results for evaluation available",
 			fields: fields{
-				wg: map[string]*waitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {
-						wg:      &sync.WaitGroup{},
-						wgMutex: sync.Mutex{},
-					},
+				wg: map[string]*sync.WaitGroup{
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1535,11 +1529,8 @@ func TestService_evaluateControl(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				wg: map[string]*waitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {
-						wg:      &sync.WaitGroup{},
-						wgMutex: sync.Mutex{},
-					},
+				wg: map[string]*sync.WaitGroup{
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
@@ -1613,7 +1604,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
 		scheduler                     *gocron.Scheduler
-		wg                            map[string]*waitGroup
+		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
 		newEvaluationResults          []*evaluation.EvaluationResult
@@ -1637,11 +1628,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			fields: fields{
 				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
 				wgCounter:    2,
-				wg: map[string]*waitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {
-						wg:      &sync.WaitGroup{},
-						wgMutex: sync.Mutex{},
-					},
+				wg: map[string]*sync.WaitGroup{
+					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
 				},
 				storage:              testutil.NewInMemoryStorage(t),
 				authz:                &service.AuthorizationStrategyAllowAll{},
@@ -1682,7 +1670,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				authz:                         tt.fields.authz,
 			}
 
-			tt.fields.wg[tt.fields.schedulerTag].wg.Add(tt.fields.wgCounter)
+			tt.fields.wg[tt.fields.schedulerTag].Add(tt.fields.wgCounter)
 			s.evaluateSubcontrol(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
 
 			tt.want(t, s)
