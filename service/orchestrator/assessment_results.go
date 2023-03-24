@@ -45,12 +45,12 @@ import (
 )
 
 // GetAssessmentResult gets one assessment result by id
-func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.AssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+func (svc *Service) GetAssessmentResult(_ context.Context, req *orchestrator.AssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
 
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// Fetch result
@@ -62,7 +62,7 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.A
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-	return res, err
+	return
 }
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
