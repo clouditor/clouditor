@@ -48,8 +48,7 @@ import (
 func (svc *Service) GetAssessmentResult(_ context.Context, req *orchestrator.AssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
 
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
+	if service.ValidateRequest(req) != nil {
 		return
 	}
 
