@@ -321,16 +321,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 			args: args{
 				in0: context.TODO(),
-				req: &evidence.ListEvidencesRequest{
-					PageSize:  evidencetest.MockListEvidenceRequest1.PageSize,
-					PageToken: evidencetest.MockListEvidenceRequest1.PageToken,
-					OrderBy:   evidencetest.MockListEvidenceRequest1.OrderBy,
-					Asc:       evidencetest.MockListEvidenceRequest1.Asc,
-					Filter: &evidence.Filter{
-						CloudServiceId: evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId,
-						ToolId:         evidencetest.MockListEvidenceRequest1.Filter.ToolId,
-					},
-				},
+				req: evidencetest.MockListEvidenceRequest1,
 			},
 			wantErr: assert.NoError,
 			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
