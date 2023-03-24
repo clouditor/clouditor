@@ -107,6 +107,19 @@ func TestService_GetAssessmentResult(t *testing.T) {
 				return assert.ErrorContains(t, err, "assessment result not found")
 			},
 		},
+		{
+			name: "database error handling",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{req: orchestratortest.MockAssessmentResultRequest1},
+			req:  orchestratortest.MockAssessmentResultRequest1,
+			res:  nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.Contains(t, err.Error(), ErrSomeError.Error())
+			},
+		},
 	}
 
 	for _, tt := range tests {
