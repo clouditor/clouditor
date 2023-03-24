@@ -205,15 +205,14 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	var query []string
 
 	// Apply filter options
-	if req.GetFilter() != nil {
-		filter := req.GetFilter()
-		if filter.GetCloudServiceId() != "" {
+	if filter := req.GetFilter(); filter != nil {
+		if cloudServiceId := filter.GetCloudServiceId(); cloudServiceId != "" {
 			query = append(query, "cloud_service_id = ?")
-			conds = append(conds, filter.GetCloudServiceId())
+			conds = append(conds, cloudServiceId)
 		}
-		if filter.GetToolId() != "" {
+		if toolId := filter.GetToolId(); toolId != "" {
 			query = append(query, "tool_id = ?")
-			conds = append(conds, filter.GetToolId())
+			conds = append(conds, toolId)
 		}
 	}
 
