@@ -53,23 +53,22 @@ func NewCatalog() *orchestrator.Catalog {
 				CategoryName:      testdata.MockCategoryName,
 				CategoryCatalogId: testdata.MockCatalogID,
 				Description:       testdata.MockControlDescription,
-				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-							Values: []*structpb.Value{
-								structpb.NewBoolValue(false),
-								structpb.NewBoolValue(true),
-							}}}},
-				}},
 				Controls: []*orchestrator.Control{{
-					Id:                testdata.MockSubControlID11,
-					Name:              testdata.MockSubControlName,
-					Description:       testdata.MockSubControlDescription,
-					Metrics:           []*assessment.Metric{},
+					Id:          testdata.MockSubControlID11,
+					Name:        testdata.MockSubControlName,
+					Description: testdata.MockSubControlDescription,
+					Metrics: []*assessment.Metric{{
+						Id:          testdata.MockMetricID,
+						Name:        testdata.MockMetricName,
+						Description: testdata.MockMetricDescription,
+						Scale:       assessment.Metric_ORDINAL,
+						Range: &assessment.Range{
+							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+								Values: []*structpb.Value{
+									structpb.NewBoolValue(false),
+									structpb.NewBoolValue(true),
+								}}}},
+					}},
 					CategoryName:      testdata.MockCategoryName,
 					CategoryCatalogId: testdata.MockCatalogID,
 				}},

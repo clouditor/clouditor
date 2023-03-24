@@ -57,7 +57,20 @@ import (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	server, _ := startBufConnServer()
+	server, orch := startBufConnServer()
+	orch.CreateCatalog(context.TODO(), &orchestrator.CreateCatalogRequest{Catalog: orchestratortest.NewCatalog()})
+	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: orchestratortest.MockAssessmentResult1,
+	})
+	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: orchestratortest.MockAssessmentResult2,
+	})
+	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: orchestratortest.MockAssessmentResult3,
+	})
+	orch.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
+		Result: orchestratortest.MockAssessmentResult4,
+	})
 
 	code := m.Run()
 
@@ -1599,17 +1612,15 @@ func TestService_evaluateControl(t *testing.T) {
 
 func TestService_evaluateSubcontrol(t *testing.T) {
 	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
-		storage                       persistence.Storage
-		authz                         service.AuthorizationStrategy
-		newEvaluationResults          []*evaluation.EvaluationResult
-		schedulerTag                  string
-		wgCounter                     int
+		orchestratorClient  orchestrator.OrchestratorClient
+		orchestratorAddress grpcTarget
+		authorizer          api.Authorizer
+		scheduler           *gocron.Scheduler
+		wg                  map[string]*sync.WaitGroup
+		storage             persistence.Storage
+		authz               service.AuthorizationStrategy
+		schedulerTag        string
+		wgCounter           int
 	}
 	type args struct {
 		toe                *orchestrator.TargetOfEvaluation
@@ -1624,16 +1635,19 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		want   assert.ValueAssertionFunc
 	}{
 		{
-			name: "Error getting metrics",
+			name: "Happy path",
 			fields: fields{
-				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
+				schedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
+					getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1): {},
 				},
-				storage:              testutil.NewInMemoryStorage(t),
-				authz:                &service.AuthorizationStrategyAllowAll{},
-				newEvaluationResults: nil,
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+				orchestratorAddress: grpcTarget{
+					target: "bufconn",
+					opts:   []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
+				},
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
@@ -1642,7 +1656,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockControlID1,
+				controlId:          testdata.MockSubControlID11,
 				parentSchedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1653,22 +1667,24 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 
 				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 1, len(evalResults.Results))
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
-				storage:                       tt.fields.storage,
-				authz:                         tt.fields.authz,
+				orchestratorClient:  tt.fields.orchestratorClient,
+				orchestratorAddress: tt.fields.orchestratorAddress,
+				authorizer:          tt.fields.authorizer,
+				scheduler:           tt.fields.scheduler,
+				wg:                  tt.fields.wg,
+				storage:             tt.fields.storage,
+				authz:               tt.fields.authz,
 			}
+
+			err := s.initOrchestratorClient()
+			assert.NoError(t, err)
 
 			tt.fields.wg[tt.fields.schedulerTag].Add(tt.fields.wgCounter)
 			s.evaluateSubcontrol(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)

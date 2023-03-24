@@ -593,17 +593,15 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 			continue
 		}
 
+		// Otherwise, there are some results and first we assume that everything
+		// is compliant, unless someone proves it otherwise
+		status = evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT
+
 		for i := range results {
 			if !results[i].Compliant {
 				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, results[i].GetId())
 				status = evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT
 			}
-		}
-
-		// If no assessment results are available for the metric, no evaluation result is created
-		if status == evaluation.EvaluationResult_EVALUATION_STATUS_PENDING {
-			log.Debugf("No assessment results for resource '%s' available.", results[0].GetResourceId())
-			continue
 		}
 
 		// Create evaluation result

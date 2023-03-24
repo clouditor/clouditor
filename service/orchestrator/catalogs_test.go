@@ -19,7 +19,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestService_CreateCatalog(t *testing.T) {
@@ -431,23 +430,11 @@ func TestService_GetControl(t *testing.T) {
 				CategoryCatalogId: testdata.MockCatalogID,
 				Name:              testdata.MockControlName,
 				Description:       testdata.MockControlDescription,
-				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-							Values: []*structpb.Value{
-								structpb.NewBoolValue(false),
-								structpb.NewBoolValue(true),
-							}}}},
-				}},
 				Controls: []*orchestrator.Control{{
 					Id:                             testdata.MockSubControlID11,
 					Name:                           testdata.MockSubControlName,
 					Description:                    testdata.MockSubControlDescription,
-					Metrics:                        []*assessment.Metric{},
+					Metrics:                        []*assessment.Metric{}, // metrics on sub-controls are not returned
 					CategoryName:                   testdata.MockCategoryName,
 					CategoryCatalogId:              testdata.MockCatalogID,
 					ParentControlId:                util.Ref(testdata.MockControlID1),
