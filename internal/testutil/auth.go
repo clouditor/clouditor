@@ -93,9 +93,18 @@ func init() {
 func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, err error) {
 	var nl net.Listener
 
-	srv = oauth2.NewServer(":0",
+	// create a new socket for HTTP communication
+	nl, err = net.Listen("tcp", "localhost:0")
+	if err != nil {
+		return nil, 0, fmt.Errorf("could not listen: %w", err)
+	}
+
+	port = nl.Addr().(*net.TCPAddr).AddrPort().Port()
+
+	srv = oauth2.NewServer(fmt.Sprintf(":%d", port),
 		oauth2.WithClient("cli", "", "http://localhost:10000/callback"),
 		oauth2.WithClient(TestAuthClientID, TestAuthClientSecret, ""),
+		oauth2.WithPublicURL(fmt.Sprintf("http://localhost:%d", port)),
 		login.WithLoginPage(
 			login.WithUser(TestAuthUser, TestAuthPassword),
 			login.WithBaseURL("/v1/auth"),
@@ -104,24 +113,17 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, 
 
 	// simulate the /v1/auth endpoints
 	srv.Handler.(*http.ServeMux).Handle("/v1/auth/token", http.StripPrefix("/v1/auth", srv.Handler))
-
-	// create a new socket for HTTP communication
-	nl, err = net.Listen("tcp", srv.Addr)
-	if err != nil {
-		return nil, 0, fmt.Errorf("could not listen: %w", err)
-	}
+	srv.Handler.(*http.ServeMux).Handle("/v1/auth/certs", http.StripPrefix("/v1/auth", srv.Handler))
 
 	go func() {
 		_ = srv.Serve(nl)
 	}()
 
-	port = nl.Addr().(*net.TCPAddr).AddrPort().Port()
-
 	return srv, port, nil
 }
 
 func JWKSURL(port uint16) string {
-	return fmt.Sprintf("http://localhost:%d/.well-known/jwks.json", port)
+	return fmt.Sprintf("http://localhost:%d/v1/auth/certs", port)
 }
 
 func TokenURL(port uint16) string {

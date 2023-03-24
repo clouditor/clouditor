@@ -93,6 +93,12 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		s      string
 	)
 
+	// Check, if the context is nil
+	if ctx == nil {
+		log.Debugf("Retrieving allowed cloud services failed because of an empty context")
+		return false, nil
+	}
+
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
 	if err != nil {
