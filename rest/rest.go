@@ -56,6 +56,9 @@ var (
 	// srv holds the global http.Server of our REST API.
 	srv *http.Server
 
+	// httpPort holds the used HTTP port of the http.Server
+	httpPort uint16
+
 	// sock holds the listener socket of our REST API.
 	sock net.Listener
 
@@ -149,16 +152,17 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 	return func(cc *corsConfig, sm *runtime.ServeMux) {
 		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
 			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
-		}))
+		}), oauth2.WithPublicURL(fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)))
 
 		authSrv := oauth2.NewServer("", opts...)
 		authHandler := func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			http.StripPrefix("/v1/auth", authSrv.Handler).ServeHTTP(w, r)
 		}
 
-		WithAdditionalHandler("GET", "/.well-known/jwks.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			authSrv.Handler.(*http.ServeMux).ServeHTTP(w, r)
+		WithAdditionalHandler("GET", "/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			authSrv.Handler.ServeHTTP(w, r)
 		})(cc, sm)
+		WithAdditionalHandler("GET", "/v1/auth/certs", authHandler)(cc, sm)
 		WithAdditionalHandler("GET", "/v1/auth/login", authHandler)(cc, sm)
 		WithAdditionalHandler("GET", "/v1/auth/authorize", authHandler)(cc, sm)
 		WithAdditionalHandler("POST", "/v1/auth/login", authHandler)(cc, sm)
@@ -168,9 +172,11 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort uint16, httpPort uint16, serverOpts ...ServerConfigOption) (err error) {
+func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...ServerConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	httpPort = port
 
 	mux := runtime.NewServeMux()
 

@@ -286,6 +286,13 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 			wantAll:  false,
 			wantList: nil,
 		},
+		{
+			name:     "nil context",
+			fields:   fields{},
+			args:     args{ctx: nil},
+			wantAll:  false,
+			wantList: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
