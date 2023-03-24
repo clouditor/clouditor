@@ -56,18 +56,10 @@ const (
 	MockAssessmentResultNonComplianceComment = "non_compliance_comment"
 
 	// Evidence
-	MockEvidenceID               = "11111111-1111-1111-1111-111111111111"
-	MockEvidenceToolID           = "39d85e98-c3da-11ed-afa1-0242ac120002"
-	MockAnotherEvidenceID        = "22222222-2222-2222-2222-222222222222"
-	MockAnotherEvidenceToolID    = "49d85e98-c3da-11ed-afa1-0242ac120002"
-	MockEvidencePageSize         = 0
-	MockAnotherEvidencePageSize  = 2
-	MockEvidencePageToken        = ""
-	MockAnotherEvidencePageToken = ""
-	MockEvidenceOrderBy          = ""
-	MockAnotherEvidenceOrderBy   = ""
-	MockEvidenceAsc              = true
-	MockAnotherEvidenceAsc       = false
+	MockEvidenceID            = "11111111-1111-1111-1111-111111111111"
+	MockEvidenceToolID        = "39d85e98-c3da-11ed-afa1-0242ac120002"
+	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
+	MockAnotherEvidenceToolID = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Resource
 	MockResourceID          = "my-resource-id"
