@@ -482,16 +482,16 @@ func TestService_ListEvidences(t *testing.T) {
 			wantResp: assert.Nil,
 		},
 	}
-	for _, currentTest := range tests {
-		t.Run(currentTest.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				storage: currentTest.fields.storage,
-				authz:   currentTest.fields.authz,
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
 			}
 
-			gotRes, err := svc.ListEvidences(currentTest.args.in0, currentTest.args.req)
-			currentTest.wantErr(t, err)
-			currentTest.wantResp(t, gotRes)
+			gotRes, err := svc.ListEvidences(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err)
+			tt.wantResp(t, gotRes)
 		})
 	}
 }
