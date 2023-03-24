@@ -29,6 +29,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"reflect"
 	"runtime"
@@ -74,7 +76,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 			args:    args{},
 			res:     nil,
-			wantErr: assert.Error,
+			wantErr: assert.NoError,
 		},
 		{
 			name: "record found in database",
@@ -97,10 +99,13 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
 			},
-			args:    args{req: orchestratortest.MockAssessmentResultRequest1},
-			req:     orchestratortest.MockAssessmentResultRequest1,
-			res:     nil,
-			wantErr: assert.Error,
+			args: args{req: orchestratortest.MockAssessmentResultRequest1},
+			req:  orchestratortest.MockAssessmentResultRequest1,
+			res:  nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "assessment result not found")
+			},
 		},
 	}
 
