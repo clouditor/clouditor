@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/exp/slices"
 	"io"
 	"strings"
 	"sync"
@@ -196,8 +197,8 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all {
-		conds = append(conds, "cloud_service_id IN ?", allowed)
+	if !all && req.GetFilter().GetCloudServiceId() != "" && !slices.Contains(allowed, req.GetFilter().GetCloudServiceId()) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	res = new(evidence.ListEvidencesResponse)
