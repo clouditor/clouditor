@@ -98,7 +98,7 @@ service Orchestrator {
       returns (stream StoreAssessmentResultsResponse);
 
   // Get an assessment result by ID
-  rpc GetAssessmentResult(AssessmentResultRequest)
+  rpc GetAssessmentResult(GetAssessmentResultRequest)
       returns (clouditor.assessment.v1.AssessmentResult) {
     option (google.api.http) = {
       get : "/v1/orchestrator/assessment_results/{id}"
@@ -786,7 +786,7 @@ message TargetOfEvaluation {
   ];
 }
 
-message AssessmentResultRequest {
+message GetAssessmentResultRequest {
   string id = 1
       [ (validate.rules).string.uuid = true ];
 }

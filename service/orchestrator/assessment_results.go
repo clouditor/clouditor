@@ -45,7 +45,7 @@ import (
 )
 
 // GetAssessmentResult gets one assessment result by id
-func (svc *Service) GetAssessmentResult(_ context.Context, req *orchestrator.AssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+func (svc *Service) GetAssessmentResult(_ context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
 
 	// Validate request
 	if service.ValidateRequest(req) != nil {

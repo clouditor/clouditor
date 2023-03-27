@@ -4914,22 +4914,22 @@ var _ interface {
 
 var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
-// Validate checks the field values on AssessmentResultRequest with the rules
-// defined in the proto definition for this message. If any rules are
+// Validate checks the field values on GetAssessmentResultRequest with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *AssessmentResultRequest) Validate() error {
+func (m *GetAssessmentResultRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on AssessmentResultRequest with the
+// ValidateAll checks the field values on GetAssessmentResultRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// AssessmentResultRequestMultiError, or nil if none found.
-func (m *AssessmentResultRequest) ValidateAll() error {
+// GetAssessmentResultRequestMultiError, or nil if none found.
+func (m *GetAssessmentResultRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *AssessmentResultRequest) validate(all bool) error {
+func (m *GetAssessmentResultRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -4937,7 +4937,7 @@ func (m *AssessmentResultRequest) validate(all bool) error {
 	var errors []error
 
 	if err := m._validateUuid(m.GetId()); err != nil {
-		err = AssessmentResultRequestValidationError{
+		err = GetAssessmentResultRequestValidationError{
 			field:  "Id",
 			reason: "value must be a valid UUID",
 			cause:  err,
@@ -4949,13 +4949,13 @@ func (m *AssessmentResultRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return AssessmentResultRequestMultiError(errors)
+		return GetAssessmentResultRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-func (m *AssessmentResultRequest) _validateUuid(uuid string) error {
+func (m *GetAssessmentResultRequest) _validateUuid(uuid string) error {
 	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
 		return errors.New("invalid uuid format")
 	}
@@ -4963,13 +4963,13 @@ func (m *AssessmentResultRequest) _validateUuid(uuid string) error {
 	return nil
 }
 
-// AssessmentResultRequestMultiError is an error wrapping multiple validation
-// errors returned by AssessmentResultRequest.ValidateAll() if the designated
-// constraints aren't met.
-type AssessmentResultRequestMultiError []error
+// GetAssessmentResultRequestMultiError is an error wrapping multiple
+// validation errors returned by GetAssessmentResultRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetAssessmentResultRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m AssessmentResultRequestMultiError) Error() string {
+func (m GetAssessmentResultRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -4978,11 +4978,11 @@ func (m AssessmentResultRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m AssessmentResultRequestMultiError) AllErrors() []error { return m }
+func (m GetAssessmentResultRequestMultiError) AllErrors() []error { return m }
 
-// AssessmentResultRequestValidationError is the validation error returned by
-// AssessmentResultRequest.Validate if the designated constraints aren't met.
-type AssessmentResultRequestValidationError struct {
+// GetAssessmentResultRequestValidationError is the validation error returned
+// by GetAssessmentResultRequest.Validate if the designated constraints aren't met.
+type GetAssessmentResultRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -4990,24 +4990,24 @@ type AssessmentResultRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e AssessmentResultRequestValidationError) Field() string { return e.field }
+func (e GetAssessmentResultRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e AssessmentResultRequestValidationError) Reason() string { return e.reason }
+func (e GetAssessmentResultRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e AssessmentResultRequestValidationError) Cause() error { return e.cause }
+func (e GetAssessmentResultRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e AssessmentResultRequestValidationError) Key() bool { return e.key }
+func (e GetAssessmentResultRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e AssessmentResultRequestValidationError) ErrorName() string {
-	return "AssessmentResultRequestValidationError"
+func (e GetAssessmentResultRequestValidationError) ErrorName() string {
+	return "GetAssessmentResultRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e AssessmentResultRequestValidationError) Error() string {
+func (e GetAssessmentResultRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -5019,14 +5019,14 @@ func (e AssessmentResultRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sAssessmentResultRequest.%s: %s%s",
+		"invalid %sGetAssessmentResultRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = AssessmentResultRequestValidationError{}
+var _ error = GetAssessmentResultRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -5034,7 +5034,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = AssessmentResultRequestValidationError{}
+} = GetAssessmentResultRequestValidationError{}
 
 // Validate checks the field values on ListAssessmentResultsRequest with the
 // rules defined in the proto definition for this message. If any rules are

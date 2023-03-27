@@ -309,7 +309,7 @@ func local_request_Orchestrator_StoreAssessmentResult_0(ctx context.Context, mar
 }
 
 func request_Orchestrator_GetAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, client OrchestratorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq AssessmentResultRequest
+	var protoReq GetAssessmentResultRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -335,7 +335,7 @@ func request_Orchestrator_GetAssessmentResult_0(ctx context.Context, marshaler r
 }
 
 func local_request_Orchestrator_GetAssessmentResult_0(ctx context.Context, marshaler runtime.Marshaler, server OrchestratorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq AssessmentResultRequest
+	var protoReq GetAssessmentResultRequest
 	var metadata runtime.ServerMetadata
 
 	var (
