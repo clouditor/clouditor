@@ -136,9 +136,6 @@ var (
 	MockAssessmentResultRequest1 = &orchestrator.GetAssessmentResultRequest{
 		Id: testdata.MockAssessmentResult1ID,
 	}
-)
-
-var (
 	MockAssessmentResult1 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult1ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
