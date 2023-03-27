@@ -143,20 +143,17 @@ func TestNewService(t *testing.T) {
 			got := NewService(tt.args.opts...)
 
 			// Check if scheduler is initialized and then remove
-			if got.scheduler != nil {
-				assert.NotEmpty(t, got.scheduler)
+			if assert.NotNil(t, got.scheduler) {
 				tt.want.scheduler = nil
 				got.scheduler = nil
 			}
 			// Check if storage is initialized and then remove
-			if got.storage != nil {
-				assert.NotNil(t, got.storage)
+			if assert.NotNil(t, got.storage) {
 				tt.want.storage = nil
 				got.storage = nil
 			}
 			// Check if authz is initialized and then remove
-			if got.authz != nil {
-				assert.NotNil(t, got.authz)
+			if assert.NotNil(t, got.authz) {
 				tt.want.authz = nil
 				got.authz = nil
 			}
@@ -235,6 +232,7 @@ func TestService_Authorizer(t *testing.T) {
 func Test_createSchedulerTag(t *testing.T) {
 	type args struct {
 		cloudServiceId string
+		catalogId      string
 		controlId      string
 	}
 	tests := []struct {
@@ -246,6 +244,7 @@ func Test_createSchedulerTag(t *testing.T) {
 			name: "Input controlId empty",
 			args: args{
 				controlId: testdata.MockSubControlID,
+				catalogId: testdata.MockCatalogID,
 			},
 			want: "",
 		},
@@ -253,6 +252,15 @@ func Test_createSchedulerTag(t *testing.T) {
 			name: "Input cloudServiceId empty",
 			args: args{
 				cloudServiceId: testdata.MockCloudServiceID,
+				catalogId:      testdata.MockCatalogID,
+			},
+			want: "",
+		},
+		{
+			name: "Input catalogId empty",
+			args: args{
+				cloudServiceId: testdata.MockCloudServiceID,
+				controlId:      testdata.MockSubControlID,
 			},
 			want: "",
 		},
@@ -260,14 +268,15 @@ func Test_createSchedulerTag(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				cloudServiceId: testdata.MockCloudServiceID,
+				catalogId:      testdata.MockCatalogID,
 				controlId:      testdata.MockSubControlID,
 			},
-			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID),
+			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockSubControlID),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
+			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("createSchedulerTag() = %v, want %v", got, tt.want)
 			}
 		})
@@ -684,7 +693,7 @@ func TestService_StopEvaluation(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		storage                       persistence.Storage
 	}
 	type args struct {
@@ -747,7 +756,7 @@ func TestService_StopEvaluation(t *testing.T) {
 
 			// Start the scheduler
 			if tt.args.schedulerRunning == true {
-				_, err := s.scheduler.Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				_, err := s.scheduler[getToeTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())].Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
 				require.NoError(t, err)
 
 			}
@@ -760,74 +769,13 @@ func TestService_StopEvaluation(t *testing.T) {
 	}
 }
 
-func Test_getAllControlIdsFromControl(t *testing.T) {
-	type args struct {
-		control *orchestrator.Control
-	}
-	tests := []struct {
-		name           string
-		args           args
-		wantControlIds []string
-	}{
-		{
-			name:           "Control is missing",
-			wantControlIds: []string{},
-		},
-		{
-			name: "Control has no sub-controls",
-			args: args{
-				&orchestrator.Control{
-					Id:                "testId-1",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "testId-1",
-					Description:       "test test test",
-					Controls:          []*orchestrator.Control{},
-				},
-			},
-			wantControlIds: []string{"testId-1"},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				&orchestrator.Control{
-					Id:                "testId-1",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "testId-1",
-					Description:       "test test test",
-					Controls: []*orchestrator.Control{
-						{
-							Id: "testId-1.1",
-						},
-						{
-							Id: "testId-1.2",
-						},
-						{
-							Id: "testId-1.3",
-						},
-					},
-				},
-			},
-			wantControlIds: []string{"testId-1", "testId-1.1", "testId-1.2", "testId-1.3"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if gotControlIds := getAllControlIdsFromControl(tt.args.control); !reflect.DeepEqual(gotControlIds, tt.wantControlIds) {
-				t.Errorf("getAllControlIdsFromControl() = %v, want %v", gotControlIds, tt.wantControlIds)
-			}
-		})
-	}
-}
-
 func TestService_StartEvaluation(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		storage                       persistence.Storage
 		wg                            map[string]*sync.WaitGroup
 	}
@@ -932,7 +880,7 @@ func TestService_StartEvaluation(t *testing.T) {
 
 			// Start the scheduler if needed
 			if tt.args.schedulerRunning {
-				_, err := s.scheduler.Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				_, err := s.scheduler[getToeTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())].Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
 				require.NoError(t, err)
 			}
 
@@ -945,58 +893,13 @@ func TestService_StartEvaluation(t *testing.T) {
 	}
 }
 
-func Test_getSchedulerTagsForControlIds(t *testing.T) {
-	type args struct {
-		controlIds     []string
-		cloudServiceId string
-	}
-	tests := []struct {
-		name              string
-		args              args
-		wantSchedulerTags []string
-	}{
-		{
-			name: "Empty cloud service id",
-			args: args{
-				controlIds: []string{"OPS-13", "OPS-13.2", "OPS-13.3"},
-			},
-			wantSchedulerTags: []string{},
-		},
-		{
-			name: "Empty control ids",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
-			},
-			wantSchedulerTags: []string{},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				controlIds:     []string{"OPS-13", "OPS-13.2", "OPS-13.3"},
-				cloudServiceId: testdata.MockCloudServiceID,
-			},
-			wantSchedulerTags: []string{
-				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13"),
-				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13.2"),
-				fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, "OPS-13.3")},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if gotSchedulerTags := getSchedulerTagsForControlIds(tt.args.controlIds, tt.args.cloudServiceId); !reflect.DeepEqual(gotSchedulerTags, tt.wantSchedulerTags) {
-				t.Errorf("getSchedulerTagsForControlIds() = %v, want %v", gotSchedulerTags, tt.wantSchedulerTags)
-			}
-		})
-	}
-}
-
 func TestService_getAllMetricsFromControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 	}
@@ -1088,133 +991,13 @@ func Test_getMetricIds(t *testing.T) {
 	}
 }
 
-func TestService_stopSchedulerJobs(t *testing.T) {
-	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
-		storage                       persistence.Storage
-		schedulerTags                 []string
-		schedulerRunning              bool
-	}
-	type args struct {
-		schedulerTags  []string
-		cloudServiceId string
-		controlId      string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.ValueAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			args: args{},
-			fields: fields{
-				scheduler:        gocron.NewScheduler(time.UTC),
-				schedulerRunning: true,
-				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockAnotherSubControlID),
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID)},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 2, len(service.scheduler.Jobs()))
-
-			},
-		},
-		{
-			name: "Stop not existing scheduler job",
-			args: args{
-				schedulerTags:  []string{fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockControlID2)},
-				cloudServiceId: testdata.MockCloudServiceID,
-				controlId:      testdata.MockControlID2,
-			},
-			fields: fields{
-				scheduler: gocron.NewScheduler(time.UTC),
-				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockControlID1)},
-				schedulerRunning: true,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 1, len(service.scheduler.Jobs()))
-
-			},
-		},
-		{
-			name: "Stopping two scheduler jobs",
-			args: args{
-				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockControlID1),
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID11)},
-			},
-			fields: fields{
-				scheduler:        gocron.NewScheduler(time.UTC),
-				schedulerRunning: true,
-				schedulerTags: []string{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockControlID1),
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockSubControlID11)},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Empty(t, len(service.scheduler.Jobs()))
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
-				storage:                       tt.fields.storage,
-			}
-
-			// Start the scheduler
-			if tt.fields.schedulerRunning == true {
-				for _, tag := range tt.fields.schedulerTags {
-					_, err := s.scheduler.Every(1).Day().Tag(tag).Do(func() { fmt.Println("Scheduler") })
-					require.NoError(t, err)
-				}
-			}
-
-			_ = s.stopSchedulerJobs(tt.args.cloudServiceId, tt.args.controlId, tt.args.schedulerTags)
-			tt.want(t, s)
-			if tt.fields.schedulerRunning {
-				jobs := s.scheduler.Jobs()
-				assert.NotContains(t, jobs, tt.args.schedulerTags)
-			}
-		})
-	}
-}
-
 func TestService_getControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		hasOrchestratorStream         bool
@@ -1319,7 +1102,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		schedulerRunning              bool
@@ -1341,7 +1124,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		{
 			name: "Add scheduler job for first level Control",
 			fields: fields{
-				scheduler: gocron.NewScheduler(time.UTC),
+				scheduler: make(map[string]*gocron.Scheduler),
 			},
 			args: args{
 				c: &orchestrator.Control{
@@ -1363,7 +1146,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		{
 			name: "Add scheduler job for second level Control",
 			fields: fields{
-				scheduler: gocron.NewScheduler(time.UTC),
+				scheduler: make(map[string]*gocron.Scheduler),
 			},
 			args: args{
 				c: &orchestrator.Control{
@@ -1386,7 +1169,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		{
 			name: "Interval invalid",
 			fields: fields{
-				scheduler: gocron.NewScheduler(time.UTC),
+				scheduler: make(map[string]*gocron.Scheduler),
 			},
 			args: args{
 				c: &orchestrator.Control{
@@ -1428,17 +1211,21 @@ func TestService_addJobToScheduler(t *testing.T) {
 				storage:                       tt.fields.storage,
 			}
 
+			toeTag := getToeTag(tt.args.toe.GetCloudServiceId(), tt.args.toe.GetCatalogId())
 			// Start the scheduler
 			if tt.fields.schedulerRunning == true {
-				_, err := s.scheduler.Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
+				_, err := s.scheduler[toeTag].Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
 				require.NoError(t, err)
+			}
+			if tt.fields.scheduler != nil {
+				tt.fields.scheduler[toeTag] = gocron.NewScheduler(time.UTC)
 			}
 
 			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag, tt.args.interval)
 			tt.wantErr(t, err)
 
 			if err == nil {
-				tags, err := s.scheduler.FindJobsByTag()
+				tags, err := s.scheduler[toeTag].FindJobsByTag()
 				assert.NoError(t, err)
 				assert.NotEmpty(t, tags)
 			}
@@ -1452,7 +1239,7 @@ func TestService_evaluateControl(t *testing.T) {
 		orchestratorClient            orchestrator.OrchestratorClient
 		orchestratorAddress           grpcTarget
 		authorizer                    api.Authorizer
-		scheduler                     *gocron.Scheduler
+		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
@@ -1613,7 +1400,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		orchestratorClient  orchestrator.OrchestratorClient
 		orchestratorAddress grpcTarget
 		authorizer          api.Authorizer
-		scheduler           *gocron.Scheduler
+		scheduler           map[string]*gocron.Scheduler
 		wg                  map[string]*sync.WaitGroup
 		storage             persistence.Storage
 		authz               service.AuthorizationStrategy
@@ -1635,10 +1422,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				schedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
+				schedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1): {},
+					getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1657,7 +1444,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
+				parentSchedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1697,6 +1484,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 func Test_getSchedulerTag(t *testing.T) {
 	type args struct {
 		cloudServiceId string
+		catalogId      string
 		controlId      string
 	}
 	tests := []struct {
@@ -1708,6 +1496,7 @@ func Test_getSchedulerTag(t *testing.T) {
 			name: "cloud_service_id empty",
 			args: args{
 				controlId: testdata.MockControlID1,
+				catalogId: testdata.MockCatalogID,
 			},
 			want: "",
 		},
@@ -1715,6 +1504,15 @@ func Test_getSchedulerTag(t *testing.T) {
 			name: "control_id empty",
 			args: args{
 				cloudServiceId: testdata.MockCloudServiceID,
+				catalogId:      testdata.MockCatalogID,
+			},
+			want: "",
+		},
+		{
+			name: "catalog_id empty",
+			args: args{
+				cloudServiceId: testdata.MockCloudServiceID,
+				controlId:      testdata.MockControlID1,
 			},
 			want: "",
 		},
@@ -1723,13 +1521,14 @@ func Test_getSchedulerTag(t *testing.T) {
 			args: args{
 				cloudServiceId: testdata.MockCloudServiceID,
 				controlId:      testdata.MockControlID1,
+				catalogId:      testdata.MockCatalogID,
 			},
-			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockControlID1),
+			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.controlId); got != tt.want {
+			if got := getSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
 			}
 		})

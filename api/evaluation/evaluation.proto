@@ -63,15 +63,15 @@
 }
 
 message ListEvaluationResultsRequest {
-  // Optional. List only evaluation results for a specific cloud service.
+  // Optional. Lists only evaluation results for a specific cloud service.
   optional string filtered_cloud_service_id = 1
     [ (validate.rules).string.uuid = true ];
 
-  // Optional. List only evaluation results for a specific control id.
+  // Optional. Lists only evaluation results for a specific control id.
   optional string filtered_control_id = 2
     [(validate.rules).string.min_len = 1];
 
-  // Optional. List evaluation results for a specific control id and its sub-controls.
+  // Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
   optional string filtered_sub_controls = 3
     [(validate.rules).string.min_len = 1];
 

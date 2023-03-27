@@ -82,17 +82,17 @@ paths:
             parameters:
                 - name: filteredCloudServiceId
                   in: query
-                  description: Optional. List only evaluation results for a specific cloud service.
+                  description: Optional. Lists only evaluation results for a specific cloud service.
                   schema:
                     type: string
                 - name: filteredControlId
                   in: query
-                  description: Optional. List only evaluation results for a specific control id.
+                  description: Optional. Lists only evaluation results for a specific control id.
                   schema:
                     type: string
                 - name: filteredSubControls
                   in: query
-                  description: Optional. List evaluation results for a specific control id and its sub-controls.
+                  description: Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
                   schema:
                     type: string
                 - name: latestByResourceId
