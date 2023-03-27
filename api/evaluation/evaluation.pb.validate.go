@@ -900,9 +900,9 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCategoryName()) < 1 {
+	if utf8.RuneCountInString(m.GetControlCategoryName()) < 1 {
 		err := EvaluationResultValidationError{
-			field:  "CategoryName",
+			field:  "ControlCategoryName",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -911,9 +911,9 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+	if utf8.RuneCountInString(m.GetControlCatalogId()) < 1 {
 		err := EvaluationResultValidationError{
-			field:  "CatalogId",
+			field:  "ControlCatalogId",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

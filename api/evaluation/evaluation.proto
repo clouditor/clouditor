@@ -130,12 +130,12 @@ message EvaluationResult {
   string control_id = 3
     [(validate.rules).string.min_len = 1];
   
-  // The category the control belongs to 
-  string category_name = 4
+  // The category the evaluated control belongs to
+  string control_category_name = 4
     [(validate.rules).string.min_len = 1]; 
 
-  // The catalog the control belongs to 
-  string catalog_id = 5
+  // The catalog the evaluated control belongs to
+  string control_catalog_id = 5
     [(validate.rules).string.min_len = 1]; 
 
   // The evaluated resource 
