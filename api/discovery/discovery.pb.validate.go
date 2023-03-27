@@ -533,10 +533,11 @@ func (m *Resource) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCloudServiceId()) < 1 {
-		err := ResourceValidationError{
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = ResourceValidationError{
 			field:  "CloudServiceId",
-			reason: "value length must be at least 1 runes",
+			reason: "value must be a valid UUID",
+			cause:  err,
 		}
 		if !all {
 			return err
