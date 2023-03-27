@@ -41,24 +41,24 @@
  service Evaluation {
   // Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
-  option (google.api.http) = {
+    option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
     };
-    } 
+  }
 
   // StopEvaluation stops the evaluation for the given target of evaluation
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
-  option (google.api.http) = {
+    option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
-      };
-  } 
+    };
+  }
 
   // List all evaluation results. Part of the public API, also exposed as REST.
   rpc ListEvaluationResults(ListEvaluationResultsRequest)
       returns (ListEvaluationResultsResponse) {
-      option (google.api.http) = {
-          get : "/v1/evaluation/results"
-      };
+    option (google.api.http) = {
+      get : "/v1/evaluation/results"
+    };
   }
 }
 
@@ -71,7 +71,7 @@ message ListEvaluationResultsRequest {
   optional string filtered_control_id = 2
     [(validate.rules).string.min_len = 1];
 
-  // Optional. List only sub-control evaluation results for a specific control id.
+  // Optional. List evaluation results for a specific control id and its sub-controls.
   optional string filtered_sub_controls = 3
     [(validate.rules).string.min_len = 1];
 

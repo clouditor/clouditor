@@ -113,7 +113,7 @@ type ListEvaluationResultsRequest struct {
 	FilteredCloudServiceId *string `protobuf:"bytes,1,opt,name=filtered_cloud_service_id,json=filteredCloudServiceId,proto3,oneof" json:"filtered_cloud_service_id,omitempty"`
 	// Optional. List only evaluation results for a specific control id.
 	FilteredControlId *string `protobuf:"bytes,2,opt,name=filtered_control_id,json=filteredControlId,proto3,oneof" json:"filtered_control_id,omitempty"`
-	// Optional. List only sub-control evaluation results for a specific control id.
+	// Optional. List evaluation results for a specific control id and its sub-controls.
 	FilteredSubControls *string `protobuf:"bytes,3,opt,name=filtered_sub_controls,json=filteredSubControls,proto3,oneof" json:"filtered_sub_controls,omitempty"`
 	// Optional. Latest results grouped by resource_id and metric_id.
 	LatestByResourceId *bool  `protobuf:"varint,4,opt,name=latest_by_resource_id,json=latestByResourceId,proto3,oneof" json:"latest_by_resource_id,omitempty"`

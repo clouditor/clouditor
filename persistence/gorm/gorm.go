@@ -31,8 +31,8 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
