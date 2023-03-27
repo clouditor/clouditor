@@ -26,7 +26,6 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
@@ -41,6 +40,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 )
 

@@ -29,8 +29,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"io"
 	"reflect"
 	"runtime"
@@ -48,7 +46,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -59,13 +59,13 @@ func TestService_GetAssessmentResult(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.AssessmentResultRequest
+		req *orchestrator.GetAssessmentResultRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		req     *orchestrator.AssessmentResultRequest
+		req     *orchestrator.GetAssessmentResultRequest
 		res     *assessment.AssessmentResult
 		wantErr assert.ErrorAssertionFunc
 	}{
