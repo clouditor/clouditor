@@ -4948,6 +4948,18 @@ func (m *GetAssessmentResultRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = GetAssessmentResultRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return GetAssessmentResultRequestMultiError(errors)
 	}

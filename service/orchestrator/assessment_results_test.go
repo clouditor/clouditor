@@ -56,9 +56,9 @@ import (
 func TestService_GetAssessmentResult(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
+		authz   service.AuthorizationStrategy
 	}
 	type args struct {
-		ctx context.Context
 		req *orchestrator.GetAssessmentResultRequest
 	}
 	tests := []struct {
@@ -85,6 +85,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args:    args{req: orchestratortest.MockAssessmentResultRequest1},
 			req:     orchestratortest.MockAssessmentResultRequest1,
@@ -98,10 +99,13 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
 			},
-			args: args{req: orchestratortest.MockAssessmentResultRequest1},
-			req:  orchestratortest.MockAssessmentResultRequest1,
-			res:  nil,
+			args: args{
+				req: orchestratortest.MockAssessmentResultRequest1,
+			},
+			req: orchestratortest.MockAssessmentResultRequest1,
+			res: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, "assessment result not found")
@@ -111,6 +115,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			name: "database error handling",
 			fields: fields{
 				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: orchestratortest.MockAssessmentResultRequest1},
 			req:  orchestratortest.MockAssessmentResultRequest1,
@@ -126,8 +131,9 @@ func TestService_GetAssessmentResult(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
 				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
 			}
-			gotRes, err := svc.GetAssessmentResult(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.GetAssessmentResult(context.Background(), tt.args.req)
 			tt.wantErr(t, err)
 
 			if tt.res == nil {

@@ -45,11 +45,16 @@ import (
 )
 
 // GetAssessmentResult gets one assessment result by id
-func (svc *Service) GetAssessmentResult(_ context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
 
 	// Validate request
 	if service.ValidateRequest(req) != nil {
 		return
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// Fetch result
