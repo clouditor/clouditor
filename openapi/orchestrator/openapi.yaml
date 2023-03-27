@@ -94,7 +94,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Get one assessment result by ID
+            description: Get an assessment result by ID
             operationId: Orchestrator_GetAssessmentResult
             parameters:
                 - name: id

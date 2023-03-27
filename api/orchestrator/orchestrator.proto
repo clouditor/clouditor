@@ -787,7 +787,8 @@ message TargetOfEvaluation {
 }
 
 message AssessmentResultRequest {
-  string id = 1;
+  string id = 1
+      [ (validate.rules).string.uuid = true ];
 }
 
 message ListAssessmentResultsRequest {

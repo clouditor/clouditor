@@ -42,7 +42,7 @@ type OrchestratorClient interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
-	// Get one assessment result by ID
+	// Get an assessment result by ID
 	GetAssessmentResult(ctx context.Context, in *AssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
@@ -632,7 +632,7 @@ type OrchestratorServer interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
-	// Get one assessment result by ID
+	// Get an assessment result by ID
 	GetAssessmentResult(context.Context, *AssessmentResultRequest) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
 	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
