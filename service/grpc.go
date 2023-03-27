@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -79,10 +78,10 @@ func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Li
 
 	// We also add our authentication middleware, because we usually add additional service later
 	srv = grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
+		grpc.ChainUnaryInterceptor(
 			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), UnaryReflectionFilter),
 		),
-		grpc_middleware.WithStreamServerChain(
+		grpc.ChainStreamInterceptor(
 			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), StreamReflectionFilter),
 		),
 	)
