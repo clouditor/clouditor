@@ -157,7 +157,7 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-require github.com/envoyproxy/protoc-gen-validate v0.9.1
+require github.com/envoyproxy/protoc-gen-validate v0.10.1
 
 require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
@@ -165,9 +165,10 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/jackc/pgx/v5 v5.3.0 // indirect
+	github.com/lyft/protoc-gen-star/v2 v2.0.1 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/mod v0.9.0 // indirect
+	golang.org/x/tools v0.7.0 // indirect
 )
 
 retract v1.4.7
