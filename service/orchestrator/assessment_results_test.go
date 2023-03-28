@@ -130,6 +130,24 @@ func TestService_GetAssessmentResult(t *testing.T) {
 				return assert.Contains(t, err.Error(), ErrSomeError.Error())
 			},
 		},
+		{
+			name: "permission denied because of non authorized cloud_service_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
+				}),
+				authz: newAuthorizationStrategy([]string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+			},
+			args: args{
+				req: orchestratortest.MockAssessmentResultRequest2,
+			},
+			req: orchestratortest.MockAssessmentResultRequest1,
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), "access denied")
+			},
+		},
 	}
 
 	for _, tt := range tests {
