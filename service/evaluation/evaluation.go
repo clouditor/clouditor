@@ -68,11 +68,6 @@ type grpcTarget struct {
 	opts   []grpc.DialOption
 }
 
-// type waitGroup struct {
-// 	wg      *sync.WaitGroup
-// 	wgMutex sync.Mutex
-// }
-
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
@@ -535,6 +530,11 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 		assessmentResults []*assessment.AssessmentResult
 	)
 
+	if toe == nil || categoryName == "" || controlId == "" || parentSchedulerTag == "" {
+		log.Errorf("input is missing")
+		return
+	}
+
 	// Get metrics from control and sub-controls
 	metrics, err := s.getAllMetricsFromControl(toe.GetCatalogId(), categoryName, controlId)
 	if err != nil {
@@ -685,7 +685,6 @@ func (s *Service) getMetricsFromSubcontrols(control *orchestrator.Control) (metr
 
 // getControl returns the control for the given control_id.
 func (s *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
-
 	if s.orchestratorClient == nil {
 		err := s.initOrchestratorClient()
 		if err != nil {

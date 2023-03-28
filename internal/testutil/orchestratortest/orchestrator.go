@@ -47,38 +47,10 @@ func NewCatalog() *orchestrator.Catalog {
 			Name:        testdata.MockCategoryName,
 			Description: testdata.MockCategoryDescription,
 			CatalogId:   testdata.MockCatalogID,
-			Controls: []*orchestrator.Control{{
-				Id:                testdata.MockControlID1,
-				Name:              testdata.MockControlName,
-				CategoryName:      testdata.MockCategoryName,
-				CategoryCatalogId: testdata.MockCatalogID,
-				Description:       testdata.MockControlDescription,
-				Controls: []*orchestrator.Control{{
-					Id:          testdata.MockSubControlID11,
-					Name:        testdata.MockSubControlName,
-					Description: testdata.MockSubControlDescription,
-					Metrics: []*assessment.Metric{{
-						Id:          testdata.MockMetricID,
-						Name:        testdata.MockMetricName,
-						Description: testdata.MockMetricDescription,
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					}},
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-				}},
+			Controls: []*orchestrator.Control{
+				MockControl1,
+				MockControl2,
 			},
-				{
-					Id:                testdata.MockAnotherControlID,
-					Name:              testdata.MockAnotherControlName,
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-				}},
 		}}}
 
 	return mockCatalog
@@ -211,10 +183,10 @@ var (
 		Controls: []*orchestrator.Control{
 			{
 				Id:                             testdata.MockSubControlID11,
-				Name:                           testdata.MockControlName,
+				Name:                           testdata.MockSubControlName,
 				CategoryName:                   testdata.MockCategoryName,
 				CategoryCatalogId:              testdata.MockCatalogID,
-				Description:                    testdata.MockControlDescription,
+				Description:                    testdata.MockSubControlDescription,
 				AssuranceLevel:                 &testdata.AssuranceLevelBasic,
 				ParentControlId:                util.Ref(testdata.MockControlID1),
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
