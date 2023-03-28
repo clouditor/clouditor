@@ -1,8 +1,9 @@
 package testdata
 
 import (
-	"clouditor.io/clouditor/voc"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"clouditor.io/clouditor/voc"
 )
 
 const (
