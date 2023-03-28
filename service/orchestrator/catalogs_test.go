@@ -338,22 +338,24 @@ func TestService_GetCategory(t *testing.T) {
 				Name:        testdata.MockCategoryName,
 				Description: testdata.MockCategoryDescription,
 				CatalogId:   testdata.MockCatalogID,
-				Controls: []*orchestrator.Control{{
-					Id:                testdata.MockControlID1,
-					Name:              testdata.MockControlName,
-					Description:       testdata.MockControlDescription,
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					// at this level, we will not have the metrics
-					Metrics: []*assessment.Metric{},
-					// at this level, we will not have the sub-controls
-					Controls: []*orchestrator.Control{},
-				}, {
-					Id:                testdata.MockAnotherControlID,
-					Name:              testdata.MockAnotherControlName,
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-				}},
+				Controls: []*orchestrator.Control{
+					{
+						Id:                testdata.MockControlID1,
+						Name:              testdata.MockControlName,
+						CategoryName:      testdata.MockCategoryName,
+						CategoryCatalogId: testdata.MockCatalogID,
+						Description:       testdata.MockControlDescription,
+						Controls:          []*orchestrator.Control{},
+					},
+					{
+						Id:                testdata.MockControlID2,
+						Name:              testdata.MockControlName,
+						CategoryName:      testdata.MockCategoryName,
+						CategoryCatalogId: testdata.MockCatalogID,
+						Description:       testdata.MockControlDescription,
+						Controls:          []*orchestrator.Control{},
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -437,6 +439,7 @@ func TestService_GetControl(t *testing.T) {
 					Metrics:                        []*assessment.Metric{}, // metrics on sub-controls are not returned
 					CategoryName:                   testdata.MockCategoryName,
 					CategoryCatalogId:              testdata.MockCatalogID,
+					AssuranceLevel:                 &testdata.AssuranceLevelBasic,
 					ParentControlId:                util.Ref(testdata.MockControlID1),
 					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
