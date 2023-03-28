@@ -423,13 +423,13 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
-	if req.FilteredCloudServiceId != nil {
+	if req.Filter.CloudServiceId != nil {
 		query = append(query, "cloud_service_id = ?")
-		args = append(args, req.GetFilteredCloudServiceId())
+		args = append(args, req.Filter.GetCloudServiceId())
 	}
-	if req.FilteredType != nil {
+	if req.Filter.Type != nil {
 		query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
-		args = append(args, req.GetFilteredType()+",%", "%,"+req.GetFilteredType()+",%", "%,"+req.GetFilteredType())
+		args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
 	}
 
 	res = new(discovery.QueryResponse)

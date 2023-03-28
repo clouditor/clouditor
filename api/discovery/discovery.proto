@@ -62,13 +62,16 @@ message StartDiscoveryRequest { optional string resource_group = 1; }
 message StartDiscoveryResponse { bool successful = 1; }
 
 message QueryRequest {
-  optional string filtered_type = 1;
-  optional string filtered_cloud_service_id = 2;
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  optional Filter filter = 5;
+}
 
-  int32 page_size = 10;
-  string page_token = 11;
-  string order_by = 12;
-  bool asc = 13;
+message Filter {
+  optional string type = 1;
+  optional string cloud_service_id = 2;
 }
 
 message QueryResponse {

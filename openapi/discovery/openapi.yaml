@@ -61,6 +61,13 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        Filter:
+            type: object
+            properties:
+                type:
+                    type: string
+                cloudServiceId:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -74,10 +81,6 @@ components:
         QueryRequest:
             type: object
             properties:
-                filteredType:
-                    type: string
-                filteredCloudServiceId:
-                    type: string
                 pageSize:
                     type: integer
                     format: int32
@@ -87,6 +90,8 @@ components:
                     type: string
                 asc:
                     type: boolean
+                filter:
+                    $ref: '#/components/schemas/Filter'
         QueryResponse:
             type: object
             properties:
