@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
@@ -40,21 +41,16 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
-	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 )
 
 // GetAssessmentResult gets one assessment result by id
 func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+	var allowed []string
 
 	// Validate request
-	if service.ValidateRequest(req) != nil {
+	if err = service.ValidateRequest(req); err != nil {
 		return
-	}
-
-	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
-		return nil, service.ErrPermissionDenied
 	}
 
 	// Fetch result
@@ -66,6 +62,13 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
+
+	// Check if res cloud_service_id is within allowed
+	_, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !slices.Contains(allowed, res.CloudServiceId) {
+		return nil, service.ErrPermissionDenied
+	}
+
 	return
 }
 
