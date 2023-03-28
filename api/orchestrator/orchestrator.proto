@@ -449,14 +449,25 @@ message RegisterAssessmentToolRequest {
 }
 
 message ListAssessmentToolsRequest {
-  // Optional. Filter tools by metric id.
-  optional string filter_metric_id = 1 [ (validate.rules).string.min_len = 1 ];
-
-  int32 page_size = 2;
-  string page_token = 3;
-  string order_by = 4;
-  bool asc = 5;
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  optional Filter filter = 5;
 }
+
+message Filter {
+  // Optional. List only assessment results of a specific cloud service.
+  optional string cloud_service_id = 1
+    [ (validate.rules).string.uuid = true ];
+  // Optional. List only compliant assessment results.
+  optional bool compliant = 2;
+  // Optional. List only assessment results of a specific metric id.
+  repeated string metric_ids = 3
+    [ (validate.rules).repeated .items.string.min_len = 1 ];
+  optional string metric_id = 4 [ (validate.rules).string.min_len = 1 ];
+}
+
 message ListAssessmentToolsResponse {
   repeated AssessmentTool tools = 1;
   string next_page_token = 2;
@@ -779,23 +790,15 @@ message TargetOfEvaluation {
 }
 
 message ListAssessmentResultsRequest {
-  // Optional. List only assessment results of a specific cloud service.
-  optional string filtered_cloud_service_id = 1
-      [ (validate.rules).string.uuid = true ];
-  // Optional. List only compliant assessment results.
-  optional bool filtered_compliant = 2;
-  // Optional. List only assessment results of a specific metric id.
-  repeated string filtered_metric_id = 3
-      [ (validate.rules).repeated .items.string.min_len = 1 ];
-
+  int32 page_size = 1;
+  string page_token = 2;
+  string order_by = 3;
+  bool asc = 4;
+  optional Filter filter = 5;
   // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 4;
-
-  int32 page_size = 10;
-  string page_token = 11;
-  string order_by = 12;
-  bool asc = 13;
+  optional bool latest_by_resource_id = 6;
 }
+
 message ListAssessmentResultsResponse {
   repeated clouditor.assessment.v1.AssessmentResult results = 1;
   string next_page_token = 2;

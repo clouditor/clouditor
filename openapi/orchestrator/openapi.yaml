@@ -14,28 +14,6 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             parameters:
-                - name: filteredCloudServiceId
-                  in: query
-                  description: Optional. List only assessment results of a specific cloud service.
-                  schema:
-                    type: string
-                - name: filteredCompliant
-                  in: query
-                  description: Optional. List only compliant assessment results.
-                  schema:
-                    type: boolean
-                - name: filteredMetricId
-                  in: query
-                  description: Optional. List only assessment results of a specific metric id.
-                  schema:
-                    type: array
-                    items:
-                        type: string
-                - name: latestByResourceId
-                  in: query
-                  description: Optional. Latest results grouped by resource_id and metric_id.
-                  schema:
-                    type: boolean
                 - name: pageSize
                   in: query
                   schema:
@@ -51,6 +29,32 @@ paths:
                     type: string
                 - name: asc
                   in: query
+                  schema:
+                    type: boolean
+                - name: filter.cloudServiceId
+                  in: query
+                  description: Optional. List only assessment results of a specific cloud service.
+                  schema:
+                    type: string
+                - name: filter.compliant
+                  in: query
+                  description: Optional. List only compliant assessment results.
+                  schema:
+                    type: boolean
+                - name: filter.metricIds
+                  in: query
+                  description: Optional. List only assessment results of a specific metric id.
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: filter.metricId
+                  in: query
+                  schema:
+                    type: string
+                - name: latestByResourceId
+                  in: query
+                  description: Optional. Latest results grouped by resource_id and metric_id.
                   schema:
                     type: boolean
             responses:
@@ -99,11 +103,6 @@ paths:
                  passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
-                - name: filterMetricId
-                  in: query
-                  description: Optional. Filter tools by metric id.
-                  schema:
-                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -121,6 +120,27 @@ paths:
                   in: query
                   schema:
                     type: boolean
+                - name: filter.cloudServiceId
+                  in: query
+                  description: Optional. List only assessment results of a specific cloud service.
+                  schema:
+                    type: string
+                - name: filter.compliant
+                  in: query
+                  description: Optional. List only compliant assessment results.
+                  schema:
+                    type: boolean
+                - name: filter.metricIds
+                  in: query
+                  description: Optional. List only assessment results of a specific metric id.
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: filter.metricId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
