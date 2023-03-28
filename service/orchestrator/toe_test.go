@@ -815,7 +815,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockAnotherControlID,
+						ControlId:                        testdata.MockControlID2,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -825,7 +825,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				},
 			},
 			wantRes: &orchestrator.ControlInScope{
-				ControlId:                        testdata.MockAnotherControlID,
+				ControlId:                        testdata.MockControlID2,
 				ControlCategoryName:              testdata.MockCategoryName,
 				ControlCategoryCatalogId:         testdata.MockCatalogID,
 				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -863,11 +863,12 @@ func TestService_AddControlToScope(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
+
 			gotRes, err := svc.AddControlToScope(tt.args.in0, tt.args.req)
-			tt.wantErr(t, err, tt.args)
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
+				t.Errorf("Service.AddControlToScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}
