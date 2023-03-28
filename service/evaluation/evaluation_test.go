@@ -1756,7 +1756,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				schedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
-				wgCounter:    2,
+				wgCounter:    1,
 				wg: map[string]*sync.WaitGroup{
 					getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
