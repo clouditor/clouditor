@@ -76,9 +76,11 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 			},
-			args:    args{},
-			res:     nil,
-			wantErr: assert.NoError,
+			args: args{},
+			res:  nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), "empty request")
+			},
 		},
 		{
 			name: "record found in database",
