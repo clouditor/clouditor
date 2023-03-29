@@ -1696,7 +1696,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
 				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))},
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					})))},
 				},
 			},
 			args: args{
@@ -1737,6 +1739,43 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				},
+				categoryName:       testdata.MockCategoryName,
+				controlId:          testdata.MockSubControlID11,
+				parentSchedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+				assert.NoError(t, err)
+				return assert.Equal(t, 0, len(evalResults.Results))
+			},
+		},
+		{
+			name: "error getting assessment results",
+			fields: fields{
+				schedulerTag: getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				wgCounter:    1,
+				wg: map[string]*sync.WaitGroup{
+					getSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+				},
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+				orchestratorAddress: grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+					})))},
+				},
+			},
+			args: args{
+				toe: &orchestrator.TargetOfEvaluation{
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
