@@ -1271,13 +1271,16 @@ func TestService_getControl(t *testing.T) {
 
 				// We need to truncate the metric from the control because the control is only returned with its sub-control but without the sub-control's metric.
 				wantControl := orchestratortest.MockControl1
+				tmpMetrics := wantControl.Controls[0].Metrics
 				wantControl.Controls[0].Metrics = nil
 
 				if !proto.Equal(gotControl, wantControl) {
 					t.Errorf("Service.GetControl() = %v, want %v", gotControl, wantControl)
+					wantControl.Controls[0].Metrics = tmpMetrics
 					return false
 				}
 
+				wantControl.Controls[0].Metrics = tmpMetrics
 				return true
 			},
 			wantErr: assert.NoError,
