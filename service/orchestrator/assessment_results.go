@@ -60,7 +60,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 
 	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && req.Filter.CloudServiceId != nil && !slices.Contains(allowed, req.Filter.GetCloudServiceId()) {
+	if !all && req.Filter != nil && req.Filter.CloudServiceId != nil && !slices.Contains(allowed, req.Filter.GetCloudServiceId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -73,17 +73,19 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * cloud service ID
 	// * compliant status
 	// * metric ID
-	if req.Filter.CloudServiceId != nil {
-		query = append(query, "cloud_service_id = ?")
-		args = append(args, req.Filter.GetCloudServiceId())
-	}
-	if req.Filter.Compliant != nil {
-		query = append(query, "compliant = ?")
-		args = append(args, req.Filter.GetCompliant())
-	}
-	if req.Filter.MetricId != nil {
-		query = append(query, "metric_id IN ?")
-		args = append(args, req.Filter.GetMetricIds())
+	if req.Filter != nil {
+		if req.Filter.CloudServiceId != nil {
+			query = append(query, "cloud_service_id = ?")
+			args = append(args, req.Filter.GetCloudServiceId())
+		}
+		if req.Filter.Compliant != nil {
+			query = append(query, "compliant = ?")
+			args = append(args, req.Filter.GetCompliant())
+		}
+		if req.Filter.MetricId != nil {
+			query = append(query, "metric_id IN ?")
+			args = append(args, req.Filter.GetMetricIds())
+		}
 	}
 
 	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to

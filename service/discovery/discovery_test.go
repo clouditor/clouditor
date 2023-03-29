@@ -227,8 +227,12 @@ func TestService_Query(t *testing.T) {
 		wantErr                  assert.ErrorAssertionFunc
 	}{
 		{
-			name:                     "Filter type",
-			args:                     args{req: &discovery.QueryRequest{FilteredType: util.Ref("Storage")}},
+			name: "Filter type",
+			args: args{req: &discovery.QueryRequest{
+				Filter: &discovery.Filter{
+					Type: util.Ref("Storage"),
+				},
+			}},
 			numberOfQueriedResources: 1,
 			wantErr:                  assert.NoError,
 		},
