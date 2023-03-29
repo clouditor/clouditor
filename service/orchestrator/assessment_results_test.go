@@ -35,6 +35,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -46,10 +47,129 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func TestService_GetAssessmentResult(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.GetAssessmentResultRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		req     *orchestrator.GetAssessmentResultRequest
+		res     *assessment.AssessmentResult
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "request is missing",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{},
+			res:  nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), "empty request")
+			},
+		},
+		{
+			name: "record found in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+				}),
+				authz: newAuthorizationStrategy([]string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+			},
+			args: args{
+				req: orchestratortest.MockAssessmentResultRequest1,
+			},
+			req:     orchestratortest.MockAssessmentResultRequest1,
+			res:     orchestratortest.MockAssessmentResult1,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "record not found in database",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: testutil.TestContextOnlyService1,
+				req: orchestratortest.MockAssessmentResultRequest1,
+			},
+			req: orchestratortest.MockAssessmentResultRequest1,
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "assessment result not found")
+			},
+		},
+		{
+			name: "database error handling",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{req: orchestratortest.MockAssessmentResultRequest1},
+			req:  orchestratortest.MockAssessmentResultRequest1,
+			res:  nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.Contains(t, err.Error(), ErrSomeError.Error())
+			},
+		},
+		{
+			name: "permission denied because of non authorized cloud_service_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
+				}),
+				authz: newAuthorizationStrategy([]string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+			},
+			args: args{
+				req: orchestratortest.MockAssessmentResultRequest2,
+			},
+			req: orchestratortest.MockAssessmentResultRequest1,
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), "access denied")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.GetAssessmentResult(context.Background(), tt.args.req)
+			tt.wantErr(t, err)
+
+			if tt.res == nil {
+				assert.Nil(t, gotRes)
+			} else {
+				assert.NoError(t, gotRes.Validate())
+				assert.Equal(t, tt.res, gotRes)
+			}
+		})
+	}
+}
 
 func TestService_ListAssessmentResults(t *testing.T) {
 	type fields struct {
@@ -912,4 +1032,23 @@ func createMockStreamWithRecvErr(requests []*orchestrator.StoreAssessmentResultR
 
 	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultsResponse, len(requests))
 	return m
+}
+
+func newAuthorizationStrategy(cloudServiceIDs []string) service.AuthorizationStrategy {
+	return &AuthorizationStrategyMock{
+		cloudServiceIDs: cloudServiceIDs,
+	}
+}
+
+type AuthorizationStrategyMock struct {
+	cloudServiceIDs []string
+}
+
+func (*AuthorizationStrategyMock) CheckAccess(_ context.Context, _ service.RequestType, _ api.CloudServiceRequest) bool {
+	// Not needed (yet)
+	panic("implement me")
+}
+
+func (s *AuthorizationStrategyMock) AllowedCloudServices(_ context.Context) (all bool, IDs []string) {
+	return false, s.cloudServiceIDs
 }

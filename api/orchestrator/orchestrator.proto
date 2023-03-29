@@ -97,6 +97,14 @@ service Orchestrator {
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultsResponse);
 
+  // Get an assessment result by ID
+  rpc GetAssessmentResult(GetAssessmentResultRequest)
+      returns (clouditor.assessment.v1.AssessmentResult) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/assessment_results/{id}"
+    };
+  }
+
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
       returns (ListAssessmentResultsResponse) {
@@ -787,6 +795,11 @@ message TargetOfEvaluation {
                     "constraint:OnDelete:CASCADE\"",
     (validate.rules).repeated .items.message.required = true
   ];
+}
+
+message GetAssessmentResultRequest {
+  string id = 1
+      [ (validate.rules).string.uuid = true ];
 }
 
 message ListAssessmentResultsRequest {
