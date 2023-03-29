@@ -1,6 +1,7 @@
 ignore:
   - "**/*.pb.go" # ignore protoc generated files
   - "**/*.pb.*.go" # ignore protoc-gen-* generated files
+  - "cmd/engine/engine.go" # ignore main
 coverage:
   range: "70...85"
   status:
