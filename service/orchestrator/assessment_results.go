@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
@@ -42,6 +43,34 @@ import (
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/service"
 )
+
+// GetAssessmentResult gets one assessment result by id
+func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+	var allowed []string
+
+	// Validate request
+	if err = service.ValidateRequest(req); err != nil {
+		return
+	}
+
+	// Fetch result
+	res = new(assessment.AssessmentResult)
+	err = svc.storage.Get(res, "Id = ?", req.Id)
+
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "assessment result not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	// Check if res cloud_service_id is within allowed
+	_, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !slices.Contains(allowed, res.CloudServiceId) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	return
+}
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator.ListAssessmentResultsRequest) (res *orchestrator.ListAssessmentResultsResponse, err error) {

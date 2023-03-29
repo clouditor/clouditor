@@ -4914,6 +4914,128 @@ var _ interface {
 
 var _TargetOfEvaluation_AssuranceLevel_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
+// Validate checks the field values on GetAssessmentResultRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetAssessmentResultRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetAssessmentResultRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetAssessmentResultRequestMultiError, or nil if none found.
+func (m *GetAssessmentResultRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetAssessmentResultRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if err := m._validateUuid(m.GetId()); err != nil {
+		err = GetAssessmentResultRequestValidationError{
+			field:  "Id",
+			reason: "value must be a valid UUID",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetAssessmentResultRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *GetAssessmentResultRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// GetAssessmentResultRequestMultiError is an error wrapping multiple
+// validation errors returned by GetAssessmentResultRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetAssessmentResultRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetAssessmentResultRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetAssessmentResultRequestMultiError) AllErrors() []error { return m }
+
+// GetAssessmentResultRequestValidationError is the validation error returned
+// by GetAssessmentResultRequest.Validate if the designated constraints aren't met.
+type GetAssessmentResultRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetAssessmentResultRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetAssessmentResultRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetAssessmentResultRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetAssessmentResultRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetAssessmentResultRequestValidationError) ErrorName() string {
+	return "GetAssessmentResultRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetAssessmentResultRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetAssessmentResultRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetAssessmentResultRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetAssessmentResultRequestValidationError{}
+
 // Validate checks the field values on ListAssessmentResultsRequest with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
