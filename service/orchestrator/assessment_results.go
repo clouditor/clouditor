@@ -111,7 +111,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 			query = append(query, "compliant = ?")
 			args = append(args, req.Filter.GetCompliant())
 		}
-		if req.Filter.MetricId != nil {
+		if req.Filter.MetricIds != nil {
 			query = append(query, "metric_id IN ?")
 			args = append(args, req.Filter.GetMetricIds())
 		}

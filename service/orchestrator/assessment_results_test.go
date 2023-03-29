@@ -334,7 +334,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
-						Compliant:      util.Ref(true),
+						Compliant:      util.Ref(false),
 					},
 				},
 			},
@@ -382,7 +382,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
-						Compliant: util.Ref(true),
+						Compliant: util.Ref(false),
 					},
 				},
 			},
@@ -407,13 +407,14 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
-						MetricIds:      []string{testdata.MockMetricID},
+						MetricIds:      []string{testdata.MockMetricID, testdata.MockAnotherMetricID},
 					},
 				},
 			},
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult3,
 				},
 			},
 			wantErr: assert.NoError,
@@ -455,8 +456,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
-						MetricIds:      []string{testdata.MockMetricID},
+						MetricIds: []string{testdata.MockMetricID},
 					},
 				},
 			},
@@ -480,13 +480,13 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
-						CloudServiceId: util.Ref("testCloudServiceID"),
+						CloudServiceId: util.Ref("No Valid UUID"),
 					},
 				},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "value must be a valid UUID")
 			},
 		},
 		{
