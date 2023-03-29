@@ -804,123 +804,199 @@ func TestService_StopEvaluation(t *testing.T) {
 
 func TestService_StartEvaluation(t *testing.T) {
 	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		storage                       persistence.Storage
-		wg                            map[string]*sync.WaitGroup
+		orchestratorClient  orchestrator.OrchestratorClient
+		orchestratorAddress grpcTarget
+		authorizer          api.Authorizer
+		scheduler           map[string]*gocron.Scheduler
+		storage             persistence.Storage
+		authz               service.AuthorizationStrategy
+		wg                  map[string]*sync.WaitGroup
 	}
 	type args struct {
-		in0              context.Context
-		req              *evaluation.StartEvaluationRequest
-		schedulerTag     string
-		schedulerRunning bool
+		in0 context.Context
+		req *evaluation.StartEvaluationRequest
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantResp *evaluation.StartEvaluationResponse
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Start scheduler job for one control",
-		// 	fields: fields{
-		// 		scheduler:           gocron.NewScheduler(time.UTC),
-		// 		wg:                  make(map[string]*sync.WaitGroup),
-		// 		results:             make(map[string]*evaluation.EvaluationResult),
-		// 		orchestratorAddress: grpcTarget{target: DefaultOrchestratorAddress},
-		// 	},
-		// 	args: args{
-		// 		in0: context.Background(),
-		// 		req: &evaluation.StartEvaluationRequest{
-		// 			CloudServiceId: testdata.MockCloudServiceID,
-		// 			CatalogId:      testdata.MockCatalogID,
-		// 		},
-		// 		schedulerRunning: false,
-		// 		schedulerTag:     getSchedulerTag(testdata.MockCloudServiceID, testdata.MockControlID1),
-		// 	},
-
-		// 	wantResp: &evaluation.StartEvaluationResponse{Status: true},
-		// 	wantErr:  assert.NoError,
-		// },
-		// {
-		// 	name: "Scheduler job for one control already running",
-		// 	fields: fields{
-		// 		scheduler: gocron.NewScheduler(time.UTC),
-		// 		wg: map[string]*WaitGroup{
-		// 			fmt.Sprintf("%s-%s",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13): {
-		// 				wg:      &sync.WaitGroup{},
-		// 				wgMutex: sync.Mutex{},
-		// 			},
-		// 		},
-		// 		results: make(map[string]*evaluation.EvaluationResult),
-		// 	},
-		// 	args: args{
-		// 		in0: context.Background(),
-		// 		req: &evaluation.StartEvaluationRequest{
-		// 			TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-		// 				CloudServiceId:  testdata.MockCloudServiceID,
-		// 				CatalogId:       testdata.MockCatalogID,
-		// 				AssuranceLevel: &testdata.AssuranceLevelHigh,
-		// 				ControlsInScope: []*orchestrator.Control{
-		// 					{
-		// 						Id:                defaults.DefaultEUCSUpperLevelControlID13,
-		// 						CategoryName:       testdata.MockCategoryName,
-		// 						CategoryCatalogId:  testdata.MockCatalogID,
-		// 						Name:              defaults.DefaultEUCSUpperLevelControlID13,
-		// 					},
-		// 				},
-		// 			},
-		// 		},
-		// 		schedulerRunning: true,
-		// 		schedulerTag:     createSchedulerTag( testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
-		// 	},
-		// 	wantResp: &evaluation.StartEvaluationResponse{
-		// 		Status:        false,
-		// 		StatusMessage: fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13),
-		// 	},
-		// 	wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for cloud service id '%s' and control id '%s' already started",  testdata.MockCloudServiceID, defaults.DefaultEUCSUpperLevelControlID13))
-		// 	},
-		// },
 		{
 			name: "ToE missing in request",
 			args: args{
-				in0:              context.Background(),
-				schedulerRunning: false,
-				req:              &evaluation.StartEvaluationRequest{},
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{},
 			},
-			wantResp: nil,
+			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "invalid StartEvaluationRequest.CloudServiceId: value must be a valid UUID")
 			},
+		},
+		{
+			name: "error init orchestrator client",
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					Interval:       proto.Int32(5),
+				},
+			},
+			want: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not set orchestrator client:")
+			},
+		},
+		{
+			name: "error get ToE",
+			fields: fields{
+				orchestratorAddress: grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))},
+				},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					Interval:       proto.Int32(5),
+				},
+			},
+			want: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get target of evaluation:")
+			},
+		},
+		{
+			name: "scheduler for control started already",
+			fields: fields{
+				orchestratorAddress: grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+					})))},
+				},
+				scheduler: map[string]*gocron.Scheduler{
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
+				},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					Interval:       proto.Int32(5),
+				},
+			},
+			want: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Cloud Service ")
+			},
+		},
+		{
+			name: "No controls_in_scope and no scheduler added",
+			fields: fields{
+				orchestratorAddress: grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluationWithoutControlsInScope(testdata.AssuranceLevelBasic)))
+						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+					})))},
+				},
+				scheduler: make(map[string]*gocron.Scheduler),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				_, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				gotResp, ok := i2[0].(*evaluation.StartEvaluationResponse)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				return assert.Empty(t, gotResp)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: scheduler added",
+			fields: fields{
+				orchestratorAddress: grpcTarget{
+					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+					})))},
+				},
+				scheduler: make(map[string]*gocron.Scheduler),
+				wg:        make(map[string]*sync.WaitGroup),
+				authz:     &service.AuthorizationStrategyAllowAll{},
+				storage:   testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				gotResp, ok := i2[0].(*evaluation.StartEvaluationResponse)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				assert.Empty(t, gotResp)
+
+				toeTag := getToeTag(testdata.MockCloudServiceID, testdata.MockCatalogID)
+				return assert.Equal(t, 2, len(s.scheduler[toeTag].Jobs()))
+			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				storage:                       tt.fields.storage,
-				wg:                            tt.fields.wg,
+				orchestratorClient:  tt.fields.orchestratorClient,
+				orchestratorAddress: tt.fields.orchestratorAddress,
+				authorizer:          tt.fields.authorizer,
+				scheduler:           tt.fields.scheduler,
+				storage:             tt.fields.storage,
+				wg:                  tt.fields.wg,
+				authz:               tt.fields.authz,
 			}
 
-			// Start the scheduler if needed
-			if tt.args.schedulerRunning {
-				_, err := s.scheduler[getToeTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())].Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
-				require.NoError(t, err)
+			toeTag := getToeTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())
+			// Start the scheduler
+			if len(tt.fields.scheduler) != 0 {
+				tt.fields.scheduler[toeTag] = gocron.NewScheduler(time.UTC)
+				_, err := s.scheduler[toeTag].Every(1).Day().Tag(getSchedulerTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId(), testdata.MockCatalogID)).Do(func() { fmt.Println("Scheduler") })
+				assert.NoError(t, err)
+				s.scheduler[toeTag].StartAsync()
 			}
 
 			gotResp, err := s.StartEvaluation(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StartEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
+
+			if tt.want != nil {
+				tt.want(t, s, gotResp)
 			}
 		})
 	}
