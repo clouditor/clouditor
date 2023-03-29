@@ -68,17 +68,40 @@ func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluati
 	}
 
 	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation
-	toe.ControlsInScope = []*orchestrator.Control{{
-		Id:                testdata.MockControlID1,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Name:              testdata.MockControlName,
-	}, {
-		Id:                testdata.MockSubControlID11,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Name:              testdata.MockSubControlName,
-	}}
+	toe.ControlsInScope = []*orchestrator.Control{
+		{
+			Id:                testdata.MockControlID1,
+			CategoryName:      testdata.MockCategoryName,
+			CategoryCatalogId: testdata.MockCatalogID,
+			Name:              testdata.MockControlName,
+			Description:       testdata.MockControlDescription,
+		},
+		{
+			Id:                             testdata.MockSubControlID11,
+			CategoryName:                   testdata.MockCategoryName,
+			CategoryCatalogId:              testdata.MockCatalogID,
+			Name:                           testdata.MockSubControlName,
+			Description:                    testdata.MockSubControlDescription,
+			ParentControlId:                util.Ref(testdata.MockControlID1),
+			ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
+			ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+			AssuranceLevel:                 &testdata.AssuranceLevelBasic,
+		},
+	}
+
+	return toe
+}
+
+// NewTargetOfEvaluationWithoutControlsInScope creates a new Target of Evaluation without controls_in_scope. The assurance level is set if available.
+func NewTargetOfEvaluationWithoutControlsInScope(assuranceLevel string) *orchestrator.TargetOfEvaluation {
+	var toe = &orchestrator.TargetOfEvaluation{
+		CloudServiceId: testdata.MockCloudServiceID,
+		CatalogId:      testdata.MockCatalogID,
+	}
+
+	if assuranceLevel != "" {
+		toe.AssuranceLevel = &assuranceLevel
+	}
 
 	return toe
 }
