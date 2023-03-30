@@ -104,6 +104,7 @@ type Service struct {
 	authz service.AuthorizationStrategy
 
 	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
+	// TODO(oxisto): replace this with storage queries
 	evidenceResourceMap map[string]*evidence.Evidence
 	em                  sync.RWMutex
 
@@ -161,6 +162,7 @@ func (l *leftOverRequest) WaitAndHandle() {
 
 			for _, r := range l.Evidence.RelatedResourceIds {
 				l.s.em.RLock()
+
 				e, ok := l.s.evidenceResourceMap[r]
 				l.s.em.RUnlock()
 

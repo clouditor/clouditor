@@ -50,14 +50,10 @@ func Test_regoEval_Eval(t *testing.T) {
 		pkg     string
 	}
 	type args struct {
-<<<<<<< HEAD
 		resource   voc.IsCloudResource
 		evidenceID string
 		src        MetricsSource
-=======
-		src     MetricsSource
-		related map[string]*structpb.Value
->>>>>>> 178e6296 (Preparing asssement of related evidences)
+		related    map[string]*structpb.Value
 	}
 	tests := []struct {
 		name       string
@@ -302,6 +298,12 @@ func Test_regoEval_Eval(t *testing.T) {
 		{
 			name: "VM: Related Evidence",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
@@ -311,9 +313,7 @@ func Test_regoEval_Eval(t *testing.T) {
 					BlockStorage: []voc.ResourceID{testdata.MockResourceStorageID},
 				},
 				evidenceID: mockVM1EvidenceID,
-			},
-			args: args{
-				src: &mockMetricsSource{t: t},
+				src:        &mockMetricsSource{t: t},
 				related: map[string]*structpb.Value{
 					mockBlockStorage1ID: testutil.ToStruct(&voc.BlockStorage{
 						Storage: &voc.Storage{
@@ -330,13 +330,15 @@ func Test_regoEval_Eval(t *testing.T) {
 				},
 			},
 			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
 				"BootLoggingEnabled":                  false,
-				"BootLoggingSecureTransport":          false,
 				"BootLoggingRetention":                false,
 				"MalwareProtectionEnabled":            false,
 				"OSLoggingEnabled":                    false,
-				"OSLoggingSecureTransport":            false,
 				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
 				"VirtualMachineDiskEncryptionEnabled": true,
 			},
 			wantErr: false,
