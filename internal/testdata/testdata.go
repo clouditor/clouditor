@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	MockOrchestratorAddress = "localhost:9090"
+	MockOrchestratorAddress = "bufnet"
 
 	// Auth
 	MockAuthUser     = "clouditor"
@@ -53,7 +53,6 @@ const (
 	MockAnotherSubControlID          = "Cont1234.2"
 	MockAnotherSubControlName        = "Another Mock Sub-Control Name"
 	MockAnotherSubControlDescription = "This is another mock sub-control"
-
 
 	// Metric
 	MockMetricID          = "Mock Metric"

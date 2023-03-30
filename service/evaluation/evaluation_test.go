@@ -97,7 +97,7 @@ func TestNewService(t *testing.T) {
 			want: &Service{
 				storage: testutil.NewInMemoryStorage(t),
 				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
+					target: DefaultOrchestratorAddress,
 				},
 				wg: make(map[string]*sync.WaitGroup),
 			},
@@ -105,11 +105,11 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress("localhost:1234"))},
+				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: "localhost:1234",
+					target: testdata.MockOrchestratorAddress,
 				},
 				wg: make(map[string]*sync.WaitGroup),
 			},
@@ -121,7 +121,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
+					target: DefaultOrchestratorAddress,
 				},
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 				wg:         make(map[string]*sync.WaitGroup),
@@ -134,7 +134,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
+					target: DefaultOrchestratorAddress,
 				},
 				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
 				wg:         make(map[string]*sync.WaitGroup),
@@ -147,7 +147,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: &Service{
 				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
+					target: DefaultOrchestratorAddress,
 				},
 				wg: make(map[string]*sync.WaitGroup),
 			},
