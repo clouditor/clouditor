@@ -16,7 +16,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT,
+		Status:                     *evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT.Enum(),
 		ControlId:                  testdata.MockControlID1,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -27,7 +27,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -38,7 +38,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -49,7 +49,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID12,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -60,7 +60,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockControlID2,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -71,7 +71,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID21,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -82,7 +82,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID22,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -93,7 +93,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockAnotherResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockControlID1,
 		FailingAssessmentResultIds: []string{},
 	}
@@ -104,7 +104,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockAnotherResourceID,
-		Status:                     evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
 		FailingAssessmentResultIds: []string{},
 	}

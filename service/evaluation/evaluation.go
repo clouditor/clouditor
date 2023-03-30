@@ -456,7 +456,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
-		status     = evaluation.EvaluationResult_EVALUATION_STATUS_UNSPECIFIED
+		status     = evaluation.EvaluationStatus_EVALUATION_STATUS_UNSPECIFIED
 		evalResult *evaluation.EvaluationResult
 	)
 
@@ -490,10 +490,10 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		var nonCompliantAssessmentResults = []string{}
 
 		for _, r := range eval {
-			if r.Status == evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT {
-				status = evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT
+			if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT {
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
 			} else {
-				status = evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 			}
 		}
@@ -576,7 +576,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 	for key, results := range assessmentResultsMap {
 		var (
 			nonCompliantAssessmentResults []string
-			status                        evaluation.EvaluationResult_EvaluationStatus
+			status                        evaluation.EvaluationStatus
 		)
 
 		// If no assessment_results are available continue
@@ -586,12 +586,12 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 
 		// Otherwise, there are some results and first we assume that everything
 		// is compliant, unless someone proves it otherwise
-		status = evaluation.EvaluationResult_EVALUATION_STATUS_COMPLIANT
+		status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
 
 		for i := range results {
 			if !results[i].Compliant {
 				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, results[i].GetId())
-				status = evaluation.EvaluationResult_EVALUATION_STATUS_NOT_COMPLIANT
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 			}
 		}
 

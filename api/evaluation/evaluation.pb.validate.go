@@ -933,7 +933,7 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := EvaluationResult_EvaluationStatus_name[int32(m.GetStatus())]; !ok {
+	if _, ok := EvaluationStatus_name[int32(m.GetStatus())]; !ok {
 		err := EvaluationResultValidationError{
 			field:  "Status",
 			reason: "value must be one of the defined enum values",

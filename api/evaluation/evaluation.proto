@@ -142,13 +142,6 @@ message EvaluationResult {
   string resource_id = 6
     [(validate.rules).string.min_len = 1]; 
   
-    enum EvaluationStatus {
-    EVALUATION_STATUS_UNSPECIFIED = 0;
-    EVALUATION_STATUS_COMPLIANT = 1;
-    EVALUATION_STATUS_NOT_COMPLIANT = 2;
-    EVALUATION_STATUS_PENDING = 3;
-  }
-  
   // Evaluation status
   EvaluationStatus status = 7 
     [(validate.rules).enum.defined_only = true];
@@ -162,4 +155,11 @@ message EvaluationResult {
   repeated string failing_assessment_result_ids = 9 [
       (tagger.tags) = "gorm:\"serializer:json\"",
       (validate.rules).repeated.items.message.required = true];
+}
+
+enum EvaluationStatus {
+  EVALUATION_STATUS_UNSPECIFIED = 0;
+  EVALUATION_STATUS_COMPLIANT = 1;
+  EVALUATION_STATUS_NOT_COMPLIANT = 2;
+  EVALUATION_STATUS_PENDING = 3;
 }
