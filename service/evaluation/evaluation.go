@@ -208,7 +208,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	}
 
 	// toeTag is the tag for the scheduler that contains the scheduler jobs for the specific ToE
-	toeTag = getToeTag(req.GetCloudServiceId(), req.GetCatalogId())
+	toeTag = createToeTag(req.GetCloudServiceId(), req.GetCatalogId())
 
 	// Check if scheduler for ToE has started already
 	if s.scheduler != nil && s.scheduler[toeTag] != nil && s.scheduler[toeTag].IsRunning() {
@@ -226,7 +226,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	s.scheduler[toeTag].TagsUnique()
 
 	// Add the controls_in_scope of the target_of_evaluation including their sub-controls to the scheduler. The parent control has to wait for the evaluation of the sub-controls. That's why we need to know how much sub-controls are available and define the waitGroup with the number of the corresponding sub-controls. The controls_in_scope are not stored in a hierarchy, so we have to get the parent control and find all related sub-controls.
-	controlsInScope := getControlsInScopeHierarchy(toe.GetControlsInScope())
+	controlsInScope := createControlsInScopeHierarchy(toe.GetControlsInScope())
 	for _, control := range controlsInScope {
 		var (
 			controls []*orchestrator.Control
@@ -242,7 +242,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		controls = append(controls, control.GetControls()...)
 
 		// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
-		parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), control.GetId())
+		parentSchedulerTag = createSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), control.GetId())
 
 		// Add number of sub-controls to the WaitGroup. For the control (e.g., OPS-13) we have to wait until all the sub-controls (e.g., OPS-13.1) are ready.
 		// Control is a parent control if no parentControlId exists.
@@ -257,7 +257,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 				parentSchedulerTag = ""
 			} else {
 				// parentSchedulerTag is the tag for the parent control (e.g., OPS-13)
-				parentSchedulerTag = getSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), control.GetParentControlId())
+				parentSchedulerTag = createSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), control.GetParentControlId())
 			}
 			err = s.addJobToScheduler(control, toe, parentSchedulerTag, interval)
 			// We can return the error as it is
@@ -290,7 +290,7 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	}
 
 	// toeTag is the tag for the scheduler that contains the scheduler jobs for the specific ToE
-	toeTag = getToeTag(req.GetCloudServiceId(), req.GetCatalogId())
+	toeTag = createToeTag(req.GetCloudServiceId(), req.GetCatalogId())
 
 	// Stop scheduler for given Cloud Service
 	if _, ok := s.scheduler[toeTag]; ok {
@@ -426,9 +426,9 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 	}
 
 	// schedulerTag is the tag for the given control
-	schedulerTag := getSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), c.GetId())
+	schedulerTag := createSchedulerTag(toe.GetCloudServiceId(), toe.GetCatalogId(), c.GetId())
 	// toeTag is the tag for the scheduler that contains the scheduler jobs for the specific ToE
-	toeTag := getToeTag(toe.GetCloudServiceId(), toe.GetCatalogId())
+	toeTag := createToeTag(toe.GetCloudServiceId(), toe.GetCatalogId())
 
 	// Regarding the control level the specific method is called every X minutes based on the given interval. We have to decide if a sub-control is started individually or a parent control that has to wait for the results of the sub-controls.
 	// If a parent control with its sub-controls is started, the parentSchedulerTag is empty and the ParentControlId is not set.
@@ -490,7 +490,7 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 	}
 
 	// Get a map of the evaluation results, so that we have all evaluation results for a specific resource_id together for evaluation
-	evaluationResultsMap := getEvaluationResultMap(evaluations.Results)
+	evaluationResultsMap := createEvaluationResultMap(evaluations.Results)
 	for resourceID, eval := range evaluationResultsMap {
 		var nonCompliantAssessmentResults = []string{}
 
@@ -577,7 +577,7 @@ func (s *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categ
 	// Here the actual evaluation takes place. For every resource_id we check if the asssessment results are compliant. If the latest assessment result per resource_id is not compliant the whole evaluation status is set to NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
 
 	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and metric_id together for evaluation
-	assessmentResultsMap := getAssessmentResultMap(assessmentResults)
+	assessmentResultsMap := createAssessmentResultMap(assessmentResults)
 	for key, results := range assessmentResultsMap {
 		var (
 			nonCompliantAssessmentResults []string
@@ -726,24 +726,24 @@ func (s *Service) initOrchestratorClient() error {
 	return nil
 }
 
-// getToeTag creates a tag for the scheduler in the format 'cloud_service_id-catalog_id' ('00000000-0000-0000-0000-000000000000-EUCS')
-func getToeTag(cloudServiceId, catalogId string) string {
+// createToeTag creates a tag for the scheduler in the format 'cloud_service_id-catalog_id' ('00000000-0000-0000-0000-000000000000-EUCS')
+func createToeTag(cloudServiceId, catalogId string) string {
 	if cloudServiceId == "" || catalogId == "" {
 		return ""
 	}
 	return fmt.Sprintf("%s-%s", cloudServiceId, catalogId)
 }
 
-// getSchedulerTag creates the scheduler tag for a given cloud_service_id and control_id.
-func getSchedulerTag(cloudServiceId, catalogId, controlId string) string {
+// createSchedulerTag creates the scheduler tag for a given cloud_service_id and control_id.
+func createSchedulerTag(cloudServiceId, catalogId, controlId string) string {
 	if cloudServiceId == "" || controlId == "" || catalogId == "" {
 		return ""
 	}
 	return fmt.Sprintf("%s-%s-%s", cloudServiceId, catalogId, controlId)
 }
 
-// getControlsInScopeHierarchy return a controls list as hierarchy regarding the parent and sub-controls.
-func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHierarchy []*orchestrator.Control) {
+// createControlsInScopeHierarchy return a controls list as hierarchy regarding the parent and sub-controls.
+func createControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHierarchy []*orchestrator.Control) {
 	var temp = make(map[string]*orchestrator.Control)
 
 	for i := range controls {
@@ -765,8 +765,8 @@ func getControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsHier
 	return
 }
 
-// getAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2 different metrics.
-func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
+// createAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2 different metrics.
+func createAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
 
 	for _, result := range results {
@@ -776,8 +776,8 @@ func getAssessmentResultMap(results []*assessment.AssessmentResult) map[string][
 	return hierarchyResults
 }
 
-// getEvaluationResultMap returns a map with the resource_id as key and the evaluation results as a value slice. We need that map if we have more than one evaluation_result for the parent control evaluation, e.g., if we have two evaluation_results for OPS-01.1H and OPS-01.2H.
-func getEvaluationResultMap(results []*evaluation.EvaluationResult) map[string][]*evaluation.EvaluationResult {
+// createEvaluationResultMap returns a map with the resource_id as key and the evaluation results as a value slice. We need that map if we have more than one evaluation_result for the parent control evaluation, e.g., if we have two evaluation_results for OPS-01.1H and OPS-01.2H.
+func createEvaluationResultMap(results []*evaluation.EvaluationResult) map[string][]*evaluation.EvaluationResult {
 	var hierarchyResults = make(map[string][]*evaluation.EvaluationResult)
 
 	for _, result := range results {
