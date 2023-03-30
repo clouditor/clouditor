@@ -1,8 +1,9 @@
 package testdata
 
 import (
-	"clouditor.io/clouditor/voc"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"clouditor.io/clouditor/voc"
 )
 
 const (
@@ -57,9 +58,9 @@ const (
 
 	// Evidence
 	MockEvidenceID            = "11111111-1111-1111-1111-111111111111"
-	MockEvidenceToolID        = "Mock Tool ID"
+	MockEvidenceToolID        = "39d85e98-c3da-11ed-afa1-0242ac120002"
 	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
-	MockAnotherEvidenceToolID = "Another Mock Tool ID"
+	MockAnotherEvidenceToolID = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Resource
 	MockResourceID          = "my-resource-id"

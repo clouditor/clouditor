@@ -133,6 +133,12 @@ func NewAnotherCloudService() *orchestrator.CloudService {
 }
 
 var (
+	MockAssessmentResultRequest1 = &orchestrator.GetAssessmentResultRequest{
+		Id: testdata.MockAssessmentResult1ID,
+	}
+	MockAssessmentResultRequest2 = &orchestrator.GetAssessmentResultRequest{
+		Id: testdata.MockAssessmentResult2ID,
+	}
 	MockAssessmentResult1 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult1ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
