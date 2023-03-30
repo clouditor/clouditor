@@ -280,21 +280,26 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 
 // StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a TargetOfEvaluation.
 func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
-
 	var toeTag string
 
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
-		return
+		return nil, err
 	}
 
 	// toeTag is the tag for the scheduler that contains the scheduler jobs for the specific ToE
 	toeTag = getToeTag(req.GetCloudServiceId(), req.GetCatalogId())
 
 	// Stop scheduler for given Cloud Service
-	s.scheduler[toeTag].Stop()
+	if _, ok := s.scheduler[toeTag]; ok {
+		s.scheduler[toeTag].Stop()
+	} else {
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Catalog '%s' not running", req.GetCloudServiceId(), req.GetCatalogId())
+		log.Error(err)
+		return nil, status.Errorf(codes.NotFound, "%v", err)
+	}
 
 	if !s.scheduler[toeTag].IsRunning() {
 		delete(s.scheduler, toeTag)

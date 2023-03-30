@@ -757,6 +757,25 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 		},
 		{
+			name: "Evaluation not running",
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+				},
+				schedulerRunning: false,
+			},
+			fields: fields{
+				scheduler: make(map[string]*gocron.Scheduler),
+				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service '%s' and Catalog '%s' not running", testdata.MockCloudServiceID, testdata.MockCatalogID))
+			},
+		},
+		{
 			name: "Happy path",
 			args: args{
 				in0: context.Background(),
