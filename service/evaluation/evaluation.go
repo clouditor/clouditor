@@ -734,12 +734,12 @@ func createToeTag(cloudServiceId, catalogId string) string {
 	return fmt.Sprintf("%s-%s", cloudServiceId, catalogId)
 }
 
-// createSchedulerTag creates the scheduler tag for a given cloud_service_id and control_id.
-func createSchedulerTag(cloudServiceId, catalogId, controlId string) string {
-	if cloudServiceId == "" || controlId == "" || catalogId == "" {
+// createSchedulerTag creates the scheduler tag for a given catalog_id, category_name and control_id.
+func createSchedulerTag(catalogId, categoryName, controlId string) string {
+	if catalogId == "" || categoryName == "" || controlId == "" {
 		return ""
 	}
-	return fmt.Sprintf("%s-%s-%s", cloudServiceId, catalogId, controlId)
+	return fmt.Sprintf("%s-%s-%s", catalogId, categoryName, controlId)
 }
 
 // createControlsInScopeHierarchy return a controls list as hierarchy regarding the parent and sub-controls.
