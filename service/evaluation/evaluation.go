@@ -191,7 +191,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	// Get orchestrator client. The orchestrator client is used to retrieve necessary information from the Orchestrator, such as assessment_results, controls or targets_of_evaluation.
 	err = s.initOrchestratorClient()
 	if err != nil {
-		err = fmt.Errorf("could not set orchestrator client: %v", err)
+		err = fmt.Errorf("could not set orchestrator client: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -202,7 +202,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 		CatalogId:      req.GetCatalogId(),
 	})
 	if err != nil {
-		err = fmt.Errorf("could not get target of evaluation: %v", err)
+		err = fmt.Errorf("could not get target of evaluation: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -399,7 +399,7 @@ func (s *Service) ListEvaluationResults(ctx context.Context, req *evaluation.Lis
 		// Paginate the results according to the request
 		res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, s.storage, service.DefaultPaginationOpts, args...)
 		if err != nil {
-			err = fmt.Errorf("could not paginate evaluation results: %v", err)
+			err = fmt.Errorf("could not paginate evaluation results: %w", err)
 			log.Error(err)
 			return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 		}
@@ -447,7 +447,7 @@ func (s *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.T
 			Do(s.evaluateSubcontrol, toe, c.GetCategoryName(), c.GetId(), parentSchedulerTag)
 	}
 	if err != nil {
-		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled: %v", toe.GetCloudServiceId(), c.GetId(), err)
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled: %w", toe.GetCloudServiceId(), c.GetId(), err)
 		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", err)
 	}
@@ -479,7 +479,7 @@ func (s *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, category
 		LatestByResourceId:     util.Ref(true),
 	})
 	if err != nil {
-		err = fmt.Errorf("error list evaluation results: %v", err)
+		err = fmt.Errorf("error list evaluation results: %w", err)
 		log.Error(err)
 		return
 	}
@@ -646,7 +646,7 @@ func (s *Service) getAllMetricsFromControl(catalogId, categoryName, controlId st
 
 	control, err := s.getControl(catalogId, categoryName, controlId)
 	if err != nil {
-		err = fmt.Errorf("could not get control for control id {%s}: %v", controlId, err)
+		err = fmt.Errorf("could not get control for control id {%s}: %w", controlId, err)
 		return
 	}
 
@@ -658,7 +658,7 @@ func (s *Service) getAllMetricsFromControl(catalogId, categoryName, controlId st
 		// Get the metrics from the next sub-control
 		subControlMetrics, err = s.getMetricsFromSubcontrols(control)
 		if err != nil {
-			err = fmt.Errorf("error getting metrics from sub-controls: %v", err)
+			err = fmt.Errorf("error getting metrics from sub-controls: %w", err)
 			return
 		}
 
