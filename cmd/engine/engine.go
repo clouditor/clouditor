@@ -288,6 +288,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
 			},
 		),
+		service_evaluation.WithStorage(db),
 	)
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
