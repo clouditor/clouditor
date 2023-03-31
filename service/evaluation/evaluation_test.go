@@ -296,7 +296,7 @@ func Test_createSchedulerTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
+			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("createSchedulerTag() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1062,7 +1062,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				}
 				assert.Empty(t, gotResp)
 
-				toeTag := createToeTag(testdata.MockCloudServiceID, testdata.MockCatalogID)
+				toeTag := createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID)
 				return assert.Equal(t, 2, len(s.scheduler[toeTag].Jobs()))
 			},
 			wantErr: assert.NoError,
@@ -1081,11 +1081,11 @@ func TestService_StartEvaluation(t *testing.T) {
 				catalogControls:     tt.fields.catalogControls,
 			}
 
-			toeTag := createToeTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())
+			toeTag := createSchedulerTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())
 			// Start the scheduler
 			if len(tt.fields.scheduler) != 0 {
 				tt.fields.scheduler[toeTag] = gocron.NewScheduler(time.UTC)
-				_, err := s.scheduler[toeTag].Every(1).Day().Tag(createSchedulerTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId(), testdata.MockCatalogID)).Do(func() { fmt.Println("Scheduler") })
+				_, err := s.scheduler[toeTag].Every(1).Day().Tag(createJobTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId(), testdata.MockCatalogID)).Do(func() { fmt.Println("Scheduler") })
 				assert.NoError(t, err)
 				s.scheduler[toeTag].StartAsync()
 			}
@@ -1515,7 +1515,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 				storage:                       tt.fields.storage,
 			}
 
-			toeTag := createToeTag(tt.args.toe.GetCloudServiceId(), tt.args.toe.GetCatalogId())
+			toeTag := createSchedulerTag(tt.args.toe.GetCloudServiceId(), tt.args.toe.GetCatalogId())
 			// Start the scheduler
 			if tt.fields.schedulerRunning == true {
 				_, err := s.scheduler[toeTag].Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
@@ -1727,7 +1727,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "ToE input empty", // we do not check the other input parameters
 			fields: fields{
-				schedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
@@ -1738,13 +1738,13 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				authz:     &service.AuthorizationStrategyAllowAll{},
 				wgCounter: 2,
 				wg: map[string]*sync.WaitGroup{
-					createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 			},
 			args: args{
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockControlID1,
-				parentSchedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1760,10 +1760,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "no assessment results available",
 			fields: fields{
-				schedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1781,7 +1781,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1797,10 +1797,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting metrics",
 			fields: fields{
-				schedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1816,7 +1816,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1832,10 +1832,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting assessment results",
 			fields: fields{
-				schedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    1,
 				wg: map[string]*sync.WaitGroup{
-					createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1853,7 +1853,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1869,10 +1869,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				schedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    1,
 				wg: map[string]*sync.WaitGroup{
-					createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1897,7 +1897,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1984,7 +1984,7 @@ func Test_getSchedulerTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
+			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
 			}
 		})
@@ -2255,7 +2255,7 @@ func Test_getToeTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := createToeTag(tt.args.cloudServiceId, tt.args.catalogId); got != tt.want {
+			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId); got != tt.want {
 				t.Errorf("getToeTag() = %v, want %v", got, tt.want)
 			}
 		})
