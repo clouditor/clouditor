@@ -53,7 +53,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log *logrus.Entry
+var (
+	log                      *logrus.Entry
+	ErrCatalogIdIsMissing    = errors.New("catalog_id is missing")
+	ErrCategoryNameIsMissing = errors.New("category_name is missing")
+	ErrControlIdIsMissing    = errors.New("control_id is missing")
+	ErrControlNotAvailable   = errors.New("control not available")
+)
 
 const (
 	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator service.
@@ -79,11 +85,15 @@ type Service struct {
 	// wg is used for a control that waits for its sub-controls to be evaluated
 	wg map[string]*sync.WaitGroup
 
-	storage persistence.Storage
-
 	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
 	// resources, such as evaluation results.
 	authz service.AuthorizationStrategy
+
+	storage persistence.Storage
+
+	// controls stores the catalog controls so that they do not always have to be retrieved from Orchestrators getControl endpoint
+	// map[catalog_id][category_name-control_id]*orchestrator.Control
+	catalogControls map[string]map[string]*orchestrator.Control
 }
 
 func init() {
@@ -131,8 +141,9 @@ func NewService(opts ...service.Option[Service]) *Service {
 		orchestratorAddress: grpcTarget{
 			target: DefaultOrchestratorAddress,
 		},
-		scheduler: make(map[string]*gocron.Scheduler),
-		wg:        make(map[string]*sync.WaitGroup),
+		scheduler:       make(map[string]*gocron.Scheduler),
+		wg:              make(map[string]*sync.WaitGroup),
+		catalogControls: make(map[string]map[string]*orchestrator.Control),
 	}
 
 	// Apply service options
@@ -192,6 +203,14 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	err = s.initOrchestratorClient()
 	if err != nil {
 		err = fmt.Errorf("could not set orchestrator client: %w", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
+	// Get all Controls from Orchestrator for the evaluation
+	err = s.cacheControls(req.GetCatalogId())
+	if err != nil {
+		err = fmt.Errorf("could not cache controls: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -688,20 +707,63 @@ func (s *Service) getMetricsFromSubcontrols(control *orchestrator.Control) (metr
 	return
 }
 
-// getControl returns the control for the given control_id.
-func (s *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
+// cacheControls caches the catalog controls for the given catalog.
+func (s *Service) cacheControls(catalogId string) error {
+	var (
+		err  error
+		tag  string
+		resp *orchestrator.ListControlsResponse
+	)
+
+	if catalogId == "" {
+		return ErrCatalogIdIsMissing
+	}
+
 	if s.orchestratorClient == nil {
-		err := s.initOrchestratorClient()
+		err = s.initOrchestratorClient()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	control, err = s.orchestratorClient.GetControl(context.Background(), &orchestrator.GetControlRequest{
-		CatalogId:    catalogId,
-		CategoryName: categoryName,
-		ControlId:    controlId,
+	// Get controls for given catalog
+	resp, err = s.orchestratorClient.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+		CatalogId: catalogId,
 	})
+	if err != nil {
+		return err
+	}
+
+	if len(resp.Controls) == 0 {
+		return fmt.Errorf("no controls for catalog '%s' available", catalogId)
+	}
+
+	// Store controls in map
+	s.catalogControls[catalogId] = make(map[string]*orchestrator.Control)
+	for _, control := range resp.Controls {
+		tag = fmt.Sprintf("%s-%s", control.GetCategoryName(), control.GetId())
+		s.catalogControls[catalogId][tag] = control
+	}
+
+	return nil
+}
+
+// getControl returns the control for the given catalogID, CategoryName and controlID.
+func (s *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
+	if catalogId == "" {
+		return nil, ErrCatalogIdIsMissing
+	} else if categoryName == "" {
+		return nil, ErrCategoryNameIsMissing
+	} else if controlId == "" {
+		return nil, ErrControlIdIsMissing
+	}
+
+	tag := fmt.Sprintf("%s-%s", categoryName, controlId)
+
+	control, ok := s.catalogControls[catalogId][tag]
+	if !ok {
+		return nil, ErrControlNotAvailable
+	}
 
 	return
 }

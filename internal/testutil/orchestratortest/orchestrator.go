@@ -237,6 +237,33 @@ var (
 					},
 				}}},
 		}}
+	MockControl11 = &orchestrator.Control{
+		Id:                             testdata.MockSubControlID11,
+		Name:                           testdata.MockSubControlName,
+		CategoryName:                   testdata.MockCategoryName,
+		CategoryCatalogId:              testdata.MockCatalogID,
+		Description:                    testdata.MockSubControlDescription,
+		AssuranceLevel:                 &testdata.AssuranceLevelBasic,
+		ParentControlId:                util.Ref(testdata.MockControlID1),
+		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
+		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+		Metrics: []*assessment.Metric{{
+			Id:          testdata.MockMetricID,
+			Name:        testdata.MockMetricName,
+			Description: testdata.MockMetricDescription,
+			Scale:       assessment.Metric_ORDINAL,
+			Range: &assessment.Range{
+				Range: &assessment.Range_AllowedValues{
+					AllowedValues: &assessment.AllowedValues{
+						Values: []*structpb.Value{
+							structpb.NewBoolValue(false),
+							structpb.NewBoolValue(true),
+						},
+					},
+				},
+			},
+		},
+		}}
 	MockControl2 = &orchestrator.Control{
 		Id:                testdata.MockControlID2,
 		Name:              testdata.MockControlName,
@@ -337,6 +364,14 @@ var (
 				},
 			},
 		}},
+	}
+	// Control without sub-control
+	MockControl6 = &orchestrator.Control{
+		Id:                testdata.MockControlID1,
+		Name:              testdata.MockControlName,
+		CategoryName:      testdata.MockCategoryName,
+		CategoryCatalogId: testdata.MockCatalogID,
+		Description:       testdata.MockControlDescription,
 	}
 	MockControls = []*orchestrator.Control{MockControl1, MockControl2, MockControl3, MockControl4, MockControl5}
 
