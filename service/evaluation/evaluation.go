@@ -290,7 +290,7 @@ func (s *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEval
 			}
 		}
 
-		log.Infof("Evaluate Control ID '%s' for Cloud Service '%s' every 5 minutes...", control.GetId(), toe.GetCloudServiceId())
+		log.Infof("Scheduled to evaluate control ID '%s' for cloud service '%s' every 5 minutes...", control.GetId(), toe.GetCloudServiceId())
 	}
 
 	// Start scheduler jobs
