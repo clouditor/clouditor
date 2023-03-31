@@ -189,7 +189,7 @@ func (s *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEval
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
@@ -309,7 +309,6 @@ func (s *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvalua
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
-		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return nil, err
 	}
 
