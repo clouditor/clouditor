@@ -35,6 +35,6 @@ func (a *AuthorizationStrategyMock) CheckAccess(ctx context.Context, _ service.R
 	return slices.Contains(list, req.GetCloudServiceId())
 }
 
-func (s *AuthorizationStrategyMock) AllowedCloudServices(_ context.Context) (all bool, IDs []string) {
-	return false, s.cloudServiceIDs
+func (a *AuthorizationStrategyMock) AllowedCloudServices(_ context.Context) (all bool, IDs []string) {
+	return a.all, a.cloudServiceIDs
 }
