@@ -734,8 +734,8 @@ func TestService_StopEvaluation(t *testing.T) {
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		storage                       persistence.Storage
-
-		toeTag string
+		authz                         service.AuthorizationStrategy
+		toeTag                        string
 	}
 	type args struct {
 		in0              context.Context
@@ -751,7 +751,7 @@ func TestService_StopEvaluation(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "ToE in request is missing",
+			name: "Request input missing",
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{},
@@ -759,6 +759,23 @@ func TestService_StopEvaluation(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "invalid StopEvaluationRequest.CloudServiceId: value must be a valid UUID")
+			},
+		},
+		{
+			name: "Not authorized",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{
+					CloudServiceId: testdata.MockCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
 			},
 		},
 		{
@@ -773,6 +790,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			fields: fields{
 				scheduler: make(map[string]*gocron.Scheduler),
+				authz:     &service.AuthorizationStrategyAllowAll{},
 				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
 			},
 			wantRes: nil,
@@ -794,6 +812,7 @@ func TestService_StopEvaluation(t *testing.T) {
 				scheduler: map[string]*gocron.Scheduler{
 					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
 				},
+				authz:  &service.AuthorizationStrategyAllowAll{},
 				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
 			},
 			wantRes: &evaluation.StopEvaluationResponse{},
@@ -809,6 +828,7 @@ func TestService_StopEvaluation(t *testing.T) {
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				storage:                       tt.fields.storage,
+				authz:                         tt.fields.authz,
 			}
 
 			// Start the scheduler
@@ -849,7 +869,7 @@ func TestService_StartEvaluation(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "ToE missing in request",
+			name: "Request input missing",
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{},
@@ -860,7 +880,28 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 		},
 		{
+			name: "Not authorized",
+			fields: fields{
+				authz: &service.AuthorizationStrategyJWT{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StartEvaluationRequest{
+					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CatalogId:      testdata.MockCatalogID,
+					Interval:       proto.Int32(5),
+				},
+			},
+			want: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+		{
 			name: "error init orchestrator client",
+			fields: fields{
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
@@ -880,6 +921,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))},
 				},
+				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{
@@ -903,6 +945,7 @@ func TestService_StartEvaluation(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					})))},
 				},
+				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{
@@ -931,6 +974,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				scheduler: map[string]*gocron.Scheduler{
 					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
 				},
+				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{
@@ -958,6 +1002,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					})))},
 				},
 				scheduler:       make(map[string]*gocron.Scheduler),
+				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{

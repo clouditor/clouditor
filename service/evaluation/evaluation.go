@@ -178,7 +178,7 @@ func (s *Service) Authorizer() api.Authorizer {
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a cloud service and the given controls_in_scope (e.g., EUCS OPS-13, EUCS OPS-13.2) in the target_of_evaluation. If no inteval time is given, the default value is used.
-func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
+func (s *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
 		parentSchedulerTag string
 		interval           int
@@ -190,6 +190,11 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessCreate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// Set the interval to the default value if not set. If the interval is set to 0, the default interval is used.
@@ -298,7 +303,7 @@ func (s *Service) StartEvaluation(_ context.Context, req *evaluation.StartEvalua
 }
 
 // StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a TargetOfEvaluation.
-func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
+func (s *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
 	var toeTag string
 
 	// Validate request
@@ -306,6 +311,11 @@ func (s *Service) StopEvaluation(_ context.Context, req *evaluation.StopEvaluati
 	if err != nil {
 		err = status.Errorf(codes.InvalidArgument, "%v", err)
 		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessCreate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// toeTag is the tag for the scheduler that contains the scheduler jobs for the specific ToE
