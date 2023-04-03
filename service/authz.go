@@ -71,8 +71,7 @@ func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestTyp
 		all  bool
 	)
 
-	// Retrieve the list of allowed cloud services. we never allow to retrieve
-	// "all" services with the token strategy.
+	// Retrieve the list of allowed cloud services.
 	all, list = a.AllowedCloudServices(ctx)
 
 	if all {
