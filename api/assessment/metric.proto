@@ -38,22 +38,22 @@ option go_package = "clouditor.io/clouditor/api/assessment";
 // A metric resource
 message Metric {
   // Required. The unique identifier of the metric.
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  string id = 10 [ (validate.rules).string.min_len = 1 ];
 
   // Required. The human readable name of the metric.
-  string name = 2 [ (validate.rules).string.min_len = 1 ];
+  string name = 11 [ (validate.rules).string.min_len = 1 ];
 
   // The description of the metric
-  string description = 3;
+  string description = 12;
 
   // The reference to control catalog category or domain
-  string category = 4;
+  string category = 13;
 
   // The scale of this metric, e.g. categories, ranked data or metric values.
-  Scale scale = 5 [ (validate.rules).enum.defined_only = true ];
+  Scale scale = 14 [ (validate.rules).enum.defined_only = true ];
 
   // The range of this metric. Depending on the scale.
-  Range range = 6 [ (validate.rules).message.required = true ];
+  Range range = 15 [ (validate.rules).message.required = true ];
 
   // The values a Scale accepts
   enum Scale {
@@ -67,11 +67,11 @@ message Metric {
   // metric. For now, we are not able to use google.protobuf.Duration because it
   // is converted to a custom object in OpenAPI
   // (https://github.com/google/gnostic/issues/351)
-  int64 interval = 7;
+  int64 interval = 16;
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
-  optional MetricImplementation implementation = 8;
+  optional MetricImplementation implementation = 17;
 }
 
 // A range resource representing the range of values
@@ -79,57 +79,57 @@ message Range {
   // Required.
   oneof range {
     // used for nominal scale
-    AllowedValues allowed_values = 1;
+    AllowedValues allowed_values = 10;
 
     // used for ordinal scale
-    Order order = 2;
+    Order order = 11;
 
     // used for metric scale
-    MinMax min_max = 3;
+    MinMax min_max = 12;
   }
 }
 
 // Defines a range of values through a (inclusive) minimum and a maximum
 message MinMax {
   // Required.
-  int64 min = 1;
+  int64 min = 10;
   // Required.
-  int64 max = 2;
+  int64 max = 11;
 }
 
 // Defines a range
-message AllowedValues { repeated google.protobuf.Value values = 1; }
+message AllowedValues { repeated google.protobuf.Value values = 10; }
 
 // Defines a range of values in a pre-defined order from the lowest to the
 // highest.
-message Order { repeated google.protobuf.Value values = 1; }
+message Order { repeated google.protobuf.Value values = 10; }
 
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1 [ (validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$" ];
+  string operator = 10 [ (validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$" ];
 
   // The target value
-  google.protobuf.Value target_value = 2 [
+  google.protobuf.Value target_value = 11 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).message.required = true
   ];
 
   // Whether this configuration is a default configuration
-  bool is_default = 3;
+  bool is_default = 12;
 
   // The last time of update
-  google.protobuf.Timestamp updated_at = 4
+  google.protobuf.Timestamp updated_at = 13
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
   // The metric this configuration belongs to
-  string metric_id = 5 [
+  string metric_id = 14 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (validate.rules).string.min_len = 1
   ];
 
   // The service this configuration belongs to
-  string cloud_service_id = 6 [
+  string cloud_service_id = 15 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (validate.rules).string.uuid = true
   ];
@@ -138,7 +138,7 @@ message MetricConfiguration {
 // MetricImplementation defines the implementation of an individual metric.
 message MetricImplementation {
   // The metric which is implemented
-  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 10 [ (validate.rules).string.min_len = 1 ];
 
   enum Language {
     LANGUAGE_UNSPECIFIED = 0;
@@ -146,12 +146,12 @@ message MetricImplementation {
   };
 
   // The language this metric is implemented in
-  Language lang = 2 [ (validate.rules).enum.defined_only = true ];
+  Language lang = 11 [ (validate.rules).enum.defined_only = true ];
 
   // The actual implementation
-  string code = 3 [ (validate.rules).string.min_len = 1 ];
+  string code = 12 [ (validate.rules).string.min_len = 1 ];
 
   // The last time of update
-  google.protobuf.Timestamp updated_at = 4
+  google.protobuf.Timestamp updated_at = 13
       [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 }

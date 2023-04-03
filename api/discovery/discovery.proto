@@ -57,26 +57,26 @@ service Discovery {
   }
 }
 
-message StartDiscoveryRequest { optional string resource_group = 1; }
+message StartDiscoveryRequest { optional string resource_group = 10; }
 
-message StartDiscoveryResponse { bool successful = 1; }
+message StartDiscoveryResponse { bool successful = 10; }
 
 message QueryRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-  optional Filter filter = 5;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+  optional Filter filter = 14;
 }
 
 message Filter {
-  optional string type = 1;
-  optional string cloud_service_id = 2;
+  optional string type = 10;
+  optional string cloud_service_id = 11;
 }
 
 message QueryResponse {
-  repeated Resource results = 1;
-  string next_page_token = 2;
+  repeated Resource results = 10;
+  string next_page_token = 11;
 }
 
 // Resource is a wrapper around google.protobuf.Value that is needed for
@@ -85,17 +85,17 @@ message Resource {
   // Id contains a unique ID for each resource. This is specific for the cloud
   // provider this resource was gathered for and can for example be a resource
   // URL.
-  string id = 1 [ (validate.rules).string.uuid = true ];
+  string id = 10 [ (validate.rules).string.uuid = true ];
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
-  string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 11 [ (validate.rules).string.uuid = true ];
   // ResourceType contains a comma seperated string of resource types according
   // to our ontology.
-  string resource_type = 3 [ (validate.rules).string.min_len = 1 ];
+  string resource_type = 12 [ (validate.rules).string.min_len = 1 ];
 
   // Properties contains a protobuf struct that describe the resource in the
   // terms of our Clouditor ontology.
-  google.protobuf.Value properties = 10 [
+  google.protobuf.Value properties = 13 [
     (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
     (validate.rules).message.required = true
   ];

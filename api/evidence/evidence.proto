@@ -38,27 +38,27 @@ option go_package = "clouditor.io/clouditor/api/evidence";
 // An evidence resource
 message Evidence {
   // the ID in a uuid format
-  string id = 1 [ (validate.rules).string.uuid = true ];
+  string id = 10 [ (validate.rules).string.uuid = true ];
 
   // time of evidence creation
-  google.protobuf.Timestamp timestamp = 2 [
+  google.protobuf.Timestamp timestamp = 11 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
     (validate.rules).timestamp.required = true
   ];
 
   // Reference to a service this evidence was gathered from
-  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 12 [ (validate.rules).string.uuid = true ];
 
   // Reference to the tool which provided the evidence
-  string tool_id = 4 [ (validate.rules).string.min_len = 1 ];
+  string tool_id = 13 [ (validate.rules).string.min_len = 1 ];
 
   // Optional. Contains the evidence in its original form without following a
   // defined schema, e.g. the raw JSON
-  optional string raw = 5 [ (validate.rules).string.min_len = 1 ];
+  optional string raw = 14 [ (validate.rules).string.min_len = 1 ];
 
   // Semantic representation of the Cloud resource according to our defined
   // ontology
-  google.protobuf.Value resource = 6 [
+  google.protobuf.Value resource = 15 [
     (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
     (validate.rules).message.required = true
   ];

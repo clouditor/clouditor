@@ -67,7 +67,7 @@ service EvidenceStore {
 }
 
 message StoreEvidenceRequest {
-  Evidence evidence = 1 [ (validate.rules).message.required = true ];
+  Evidence evidence = 10 [ (validate.rules).message.required = true ];
 }
 
 // StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
@@ -75,30 +75,30 @@ message StoreEvidenceResponse {}
 
 // StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling. 
 message StoreEvidencesResponse {
-  bool status = 1;
-  string status_message = 2;
+  bool status = 10;
+  string status_message = 11;
 }
 
 message ListEvidencesRequest {
   // page_size: 0 = default (50 is default value), > 0 = set value (i.e. page_size = 5 -> SQL-Limit = 5)
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-  optional Filter filter = 5;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+  optional Filter filter = 14;
 }
 
 // Allows specifying Filters for ListEvidencesRequest
 message Filter {
-  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];;
-  optional string tool_id = 2 [ (validate.rules).string.uuid = true ];;
+  optional string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];;
+  optional string tool_id = 11 [ (validate.rules).string.uuid = true ];;
 }
 
 message ListEvidencesResponse {
-  repeated Evidence evidences = 1;
-  string next_page_token = 2;
+  repeated Evidence evidences = 10;
+  string next_page_token = 11;
 }
 
 message GetEvidenceRequest {
-  string evidence_id = 1 [ (validate.rules).string.uuid = true ];
+  string evidence_id = 10 [ (validate.rules).string.uuid = true ];
 }
