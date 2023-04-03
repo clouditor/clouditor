@@ -67,7 +67,6 @@ func TestService_GetAssessmentResult(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		req     *orchestrator.GetAssessmentResultRequest
 		res     *assessment.AssessmentResult
 		wantErr assert.ErrorAssertionFunc
 	}{
@@ -83,20 +82,23 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 		},
 		{
-			name: "record found in database",
+			name: "permission denied because of non authorized cloud_service_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
 			},
 			args: args{
-				req: orchestratortest.MockAssessmentResultRequest1,
+				req: orchestratortest.MockAssessmentResultRequest2,
+				ctx: testutil.TestContextOnlyService1,
 			},
-			req:     orchestratortest.MockAssessmentResultRequest1,
-			res:     orchestratortest.MockAssessmentResult1,
-			wantErr: assert.NoError,
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
 		},
 		{
 			name: "record not found in database",
@@ -111,7 +113,6 @@ func TestService_GetAssessmentResult(t *testing.T) {
 				ctx: testutil.TestContextOnlyService1,
 				req: orchestratortest.MockAssessmentResultRequest1,
 			},
-			req: orchestratortest.MockAssessmentResultRequest1,
 			res: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
@@ -125,7 +126,6 @@ func TestService_GetAssessmentResult(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: orchestratortest.MockAssessmentResultRequest1},
-			req:  orchestratortest.MockAssessmentResultRequest1,
 			res:  nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
@@ -133,22 +133,36 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 		},
 		{
-			name: "permission denied because of non authorized cloud_service_id",
+			name: "Happy path with 'allow all key'",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
+			},
+			args: args{
+				req: orchestratortest.MockAssessmentResultRequest1,
+			},
+			res:     orchestratortest.MockAssessmentResult1,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path with allowed cloud_service_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
 			},
 			args: args{
-				req: orchestratortest.MockAssessmentResultRequest2,
+				req: orchestratortest.MockAssessmentResultRequest1,
 			},
-			req: orchestratortest.MockAssessmentResultRequest1,
-			res: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Contains(t, err.Error(), "access denied")
-			},
+			res:     orchestratortest.MockAssessmentResult1,
+			wantErr: assert.NoError,
 		},
 	}
 
