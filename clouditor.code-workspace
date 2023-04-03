@@ -48,6 +48,7 @@
 			"protobuf",
 			"protoc",
 			"Rego",
+			"servicetest",
 			"sirupsen",
 			"stretchr",
 			"structpb",
