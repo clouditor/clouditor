@@ -292,7 +292,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testdata.MockCloudServiceID,
-				CatalogId:      "Cat1234",
+				CatalogId:      "Cat123456789",
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
