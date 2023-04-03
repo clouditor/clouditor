@@ -35,12 +35,12 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -89,7 +89,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: newAuthorizationStrategy([]string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest1,
@@ -139,7 +139,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: newAuthorizationStrategy([]string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest2,
@@ -1009,23 +1009,4 @@ func createMockStreamWithRecvErr(requests []*orchestrator.StoreAssessmentResultR
 
 	m.SentFromServer = make(chan *orchestrator.StoreAssessmentResultsResponse, len(requests))
 	return m
-}
-
-func newAuthorizationStrategy(cloudServiceIDs []string) service.AuthorizationStrategy {
-	return &AuthorizationStrategyMock{
-		cloudServiceIDs: cloudServiceIDs,
-	}
-}
-
-type AuthorizationStrategyMock struct {
-	cloudServiceIDs []string
-}
-
-func (*AuthorizationStrategyMock) CheckAccess(_ context.Context, _ service.RequestType, _ api.CloudServiceRequest) bool {
-	// Not needed (yet)
-	panic("implement me")
-}
-
-func (s *AuthorizationStrategyMock) AllowedCloudServices(_ context.Context) (all bool, IDs []string) {
-	return false, s.cloudServiceIDs
 }

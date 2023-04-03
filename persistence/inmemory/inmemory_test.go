@@ -5,7 +5,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"github.com/stretchr/testify/assert"
 )
 
