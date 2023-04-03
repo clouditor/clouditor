@@ -164,7 +164,7 @@ func TestService_GetCloudService(t *testing.T) {
 			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "access denied") &&
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
 					assert.Equal(t, codes.PermissionDenied, status.Code(err))
 			},
 		},

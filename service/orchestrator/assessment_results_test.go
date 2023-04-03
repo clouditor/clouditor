@@ -97,7 +97,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 			res: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Contains(t, err.Error(), "access denied")
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 		},
 		{
