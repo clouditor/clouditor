@@ -48,7 +48,7 @@ service Discovery {
   };
 
   // Lists all evidences collected in the last run, exposed as REST.
-  rpc Query(QueryRequest) returns (QueryResponse) {
+  rpc Query(ListResourceRequest) returns (QueryResponse) {
     option (google.api.http) = {
       post : "/v1/discovery/query"
       body : "*"
@@ -61,7 +61,7 @@ message StartDiscoveryRequest { optional string resource_group = 10; }
 
 message StartDiscoveryResponse { bool successful = 10; }
 
-message QueryRequest {
+message ListResourceRequest {
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
