@@ -42,7 +42,8 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/server"
+	"clouditor.io/clouditor/server/rest"
 	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
@@ -55,7 +56,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -110,7 +110,7 @@ const (
 )
 
 var (
-	srv                  *grpc.Server
+	srv                  *server.Server
 	discoveryService     discovery.DiscoveryServer
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    assessment.AssessmentServer
@@ -140,7 +140,7 @@ func init() {
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
-	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
+	engineCmd.Flags().String(APIJWKSURLFlag, server.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
 	engineCmd.Flags().String(ServiceOAuth2ClientSecretFlag, DefaultServiceOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
@@ -348,14 +348,14 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
 
 	// Start the gRPC server
-	_, srv, err = service.StartGRPCServer(
+	_, srv, err = server.StartGRPCServer(
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
 		viper.GetString(APIJWKSURLFlag),
-		service.WithDiscovery(discoveryService),
-		service.WithOrchestrator(orchestratorService),
-		service.WithAssessment(assessmentService),
-		service.WithEvidenceStore(evidenceStoreService),
-		service.WithReflection(),
+		server.WithDiscovery(discoveryService),
+		server.WithOrchestrator(orchestratorService),
+		server.WithAssessment(assessmentService),
+		server.WithEvidenceStore(evidenceStoreService),
+		server.WithReflection(),
 	)
 	if err != nil {
 		log.Errorf("Failed to serve gRPC endpoint: %s", err)

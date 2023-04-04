@@ -35,7 +35,7 @@ import (
 
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
@@ -44,15 +44,15 @@ import (
 )
 
 var (
-	sock   net.Listener
-	server *grpc.Server
+	sock net.Listener
+	srv  *grpc.Server
 )
 
 func TestMain(m *testing.M) {
 	var (
 		err error
 	)
-	sock, server, err = service.StartGRPCServer("127.0.0.1:0", "")
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", "")
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +73,7 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 
 	defer sock.Close()
-	defer server.Stop()
+	defer srv.Stop()
 
 	dir, err = os.MkdirTemp(os.TempDir(), ".clouditor")
 	assert.NoError(t, err)

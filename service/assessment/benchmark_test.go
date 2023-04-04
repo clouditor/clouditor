@@ -12,7 +12,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
@@ -36,7 +36,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 	orchestratorService := service_orchestrator.NewService()
 	evidenceService := service_evidence.NewService()
 
-	sock, srv, err = service.StartGRPCServer("127.0.0.1:0", "", service.WithOrchestrator(orchestratorService), service.WithEvidenceStore(evidenceService))
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", "", server.WithOrchestrator(orchestratorService), server.WithEvidenceStore(evidenceService))
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Error while creating gRPC server: %v", err)
 	}

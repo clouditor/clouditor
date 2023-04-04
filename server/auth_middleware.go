@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package server
 
 import (
 	"context"
@@ -97,17 +97,17 @@ func WithPublicKey(publicKey *ecdsa.PublicKey) AuthOption {
 	}
 }
 
-// authContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
+// AuthContextKeyType is a key type that is used in context.WithValue to store the token info in the RPC context.
 // It should exclusively be used with the value of AuthContextKey.
 //
 // Why is this needed? To avoid conflicts, the string type should not be used directly but they should be type-aliased.
-type authContextKeyType string
+type AuthContextKeyType string
 
 // AuthContextKey is a key used in RPC context to retrieve the token info with using context.Value.
-const AuthContextKey = authContextKeyType("token")
+const AuthContextKey = AuthContextKeyType("token")
 
-// ConfigureAuth creates a new AuthConfig, which can be used in gRPC middleware to provide an authentication layer.
-func ConfigureAuth(opts ...AuthOption) *AuthConfig {
+// NewAuthConfig creates a new AuthConfig, which can be used in gRPC middleware to provide an authentication layer.
+func NewAuthConfig(opts ...AuthOption) *AuthConfig {
 	var config = &AuthConfig{
 		jwksURL: DefaultJWKSURL,
 	}

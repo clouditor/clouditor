@@ -25,5 +25,13 @@
 
 package service
 
+import "github.com/sirupsen/logrus"
+
+var log *logrus.Entry
+
+func init() {
+	log = logrus.WithField("component", "service")
+}
+
 // Option is a functional option type to configure services.
 type Option[T any] func(*T)

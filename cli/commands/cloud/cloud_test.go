@@ -33,7 +33,7 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
@@ -75,7 +75,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	cli.Output = &b
@@ -104,7 +104,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	_, err = svc.CreateDefaultTargetCloudService()
@@ -137,7 +137,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
@@ -174,7 +174,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
@@ -215,7 +215,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
@@ -251,7 +251,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	tmpDir, auth, srv = startServer(service.WithOrchestrator(svc))
+	tmpDir, auth, srv = startServer(server.WithOrchestrator(svc))
 	defer cleanup(tmpDir, srv, auth)
 
 	target, err = svc.CreateDefaultTargetCloudService()
@@ -276,7 +276,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 // startServer starts a gRPC server with an orchestrator and auth service. We don't do it in TestMain since you
 // can only register a service - once before server.serve(). And we do need to add new Orchestrator service because
 // the DB won't be reset otherwise.
-func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oauth2.AuthorizationServer, srv *grpc.Server) {
+func startServer(opts ...server.StartGRPCServerOption) (tmpDir string, auth *oauth2.AuthorizationServer, srv *grpc.Server) {
 	var (
 		err      error
 		grpcPort uint16
@@ -289,7 +289,7 @@ func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oa
 		panic(err)
 	}
 
-	sock, srv, err = service.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
 	if err != nil {
 		panic(err)
 	}

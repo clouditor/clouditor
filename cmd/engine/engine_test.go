@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/server/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

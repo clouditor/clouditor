@@ -39,7 +39,7 @@ import (
 
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
@@ -57,7 +57,7 @@ var (
 func TestMain(m *testing.M) {
 	var (
 		err      error
-		server   *grpc.Server
+		srv      *grpc.Server
 		sock     net.Listener
 		authPort uint16
 	)
@@ -70,7 +70,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Start at least an orchestrator service, so that we have something to forward
-	sock, server, err = service.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), service.WithOrchestrator(service_orchestrator.NewService()))
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), server.WithOrchestrator(service_orchestrator.NewService()))
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +80,7 @@ func TestMain(m *testing.M) {
 	exit := m.Run()
 
 	sock.Close()
-	server.Stop()
+	srv.Stop()
 
 	os.Exit(exit)
 }

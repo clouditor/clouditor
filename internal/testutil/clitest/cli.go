@@ -11,8 +11,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/service"
-
+	"clouditor.io/clouditor/server"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -75,7 +74,7 @@ func PrepareSession(authPort uint16, authSrv *oauth2.AuthorizationServer, grpcUR
 //
 // Since this function is primarily used in a TestMain and no testing.T object is available at this
 // point, this function WILL panic on errors.
-func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) {
+func RunCLITest(m *testing.M, opts ...server.StartGRPCServerOption) (code int) {
 	var (
 		err      error
 		tmpDir   string
@@ -83,7 +82,7 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 		authPort uint16
 		grpcPort uint16
 		sock     net.Listener
-		server   *grpc.Server
+		srv      *grpc.Server
 	)
 
 	auth, authPort, err = testutil.StartAuthenticationServer()
@@ -91,7 +90,7 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 		panic(err)
 	}
 
-	sock, server, err = service.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -106,7 +105,7 @@ func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) 
 	code = m.Run()
 
 	sock.Close()
-	server.Stop()
+	srv.Stop()
 
 	// Remove temporary session directory
 	os.RemoveAll(tmpDir)

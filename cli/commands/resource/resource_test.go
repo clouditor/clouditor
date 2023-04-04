@@ -36,7 +36,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	"clouditor.io/clouditor/voc"
 
@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 	svc := service_discovery.NewService()
 	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	os.Exit(clitest.RunCLITest(m, service.WithDiscovery(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithDiscovery(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
