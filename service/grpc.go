@@ -30,10 +30,16 @@ import (
 	"fmt"
 	"net"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging/formatter"
+
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -43,6 +49,12 @@ type StartGRPCServerOption func(srv *grpc.Server)
 func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
 	return func(srv *grpc.Server) {
 		orchestrator.RegisterOrchestratorServer(srv, svc)
+	}
+}
+
+func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		assessment.RegisterAssessmentServer(srv, svc)
 	}
 }
 
@@ -58,9 +70,13 @@ func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	}
 }
 
-func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
-	var addr = "127.0.0.1:0"
+func WithReflection() StartGRPCServerOption {
+	return func(srv *grpc.Server) {
+		reflection.Register(srv)
+	}
+}
 
+func StartGRPCServer(addr string, jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", addr)
 	if err != nil {
@@ -69,17 +85,27 @@ func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Li
 
 	authConfig := ConfigureAuth(WithJWKSURL(jwksURL))
 
+	grpcLogger := logrus.New()
+	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
+
+	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more
+	// appropriate
+	// grpc_logrus.ReplaceGrpcLogger(grpcLoggerEntry)
+
 	// We also add our authentication middleware, because we usually add additional service later
 	srv = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
 			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), UnaryReflectionFilter),
 		),
 		grpc.ChainStreamInterceptor(
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
 			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), StreamReflectionFilter),
 		),
 	)
-
-	reflection.Register(srv)
 
 	for _, o := range opts {
 		o(srv)

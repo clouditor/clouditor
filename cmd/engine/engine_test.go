@@ -7,7 +7,6 @@ import (
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -76,7 +75,7 @@ func Test_doCmd(t *testing.T) {
 			success := <-rest.GetReadyChannel()
 
 			if success {
-				assert.NotNil(t, server)
+				assert.NotNil(t, srv)
 				assert.NotNil(t, discoveryService)
 				assert.NotNil(t, assessmentService)
 				assert.NotNil(t, evidenceStoreService)

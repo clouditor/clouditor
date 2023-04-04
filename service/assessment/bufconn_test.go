@@ -26,9 +26,10 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"net"
+
+	"clouditor.io/clouditor/api/orchestrator"
 
 	"clouditor.io/clouditor/api/evidence"
 	service_evidence "clouditor.io/clouditor/service/evidence"

@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	var (
 		err error
 	)
-	sock, server, err = service.StartGRPCServer("")
+	sock, server, err = service.StartGRPCServer("127.0.0.1:0", "")
 	if err != nil {
 		panic(err)
 	}

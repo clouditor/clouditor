@@ -43,7 +43,7 @@ import (
 func TestMain(m *testing.M) {
 	svc := service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc), service.WithReflection()))
 }
 
 func TestReflectionNoAuth(t *testing.T) {

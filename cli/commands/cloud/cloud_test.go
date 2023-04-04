@@ -289,7 +289,7 @@ func startServer(opts ...service.StartGRPCServerOption) (tmpDir string, auth *oa
 		panic(err)
 	}
 
-	sock, srv, err = service.StartGRPCServer(testutil.JWKSURL(authPort), opts...)
+	sock, srv, err = service.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
 	if err != nil {
 		panic(err)
 	}
