@@ -86,6 +86,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 			}
 
 			client = discovery.NewDiscoveryClient(session)
+
 			req = discovery.ListResourcesRequest{
 				PageSize:  0,
 				PageToken: "",
