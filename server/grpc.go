@@ -148,12 +148,12 @@ func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter f
 	}
 }
 
-// unaryReflectionFilter is a filter that ignores calls to the reflection endpoint
+// UnaryReflectionFilter is a filter that ignores calls to the reflection endpoint
 func UnaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
 	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
 }
 
-// streamReflectionFilter is a filter that ignores calls to the reflection endpoint
+// StreamReflectionFilter is a filter that ignores calls to the reflection endpoint
 func StreamReflectionFilter(info *grpc.StreamServerInfo) bool {
 	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
 }
