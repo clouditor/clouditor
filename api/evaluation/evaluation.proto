@@ -48,7 +48,7 @@
     };
   }
 
-  // StopEvaluation stops the evaluation for the given target of evaluation
+  // StopEvaluation stops the evaluation for the given target of evaluation. Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
