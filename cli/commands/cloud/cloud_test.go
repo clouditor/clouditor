@@ -73,7 +73,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		cli.Output = &b
 
 		cmd := NewRegisterCloudServiceCommand()
@@ -86,6 +86,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 		assert.NoError(t, err)
 		return assert.Equal(t, "not_default", response.Name)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
 
 func TestListCloudServicesCommand(t *testing.T) {
@@ -98,7 +99,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		_, err = svc.CreateDefaultTargetCloudService()
 		assert.NoError(t, err)
 
@@ -114,6 +115,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 		assert.NoError(t, err)
 		return assert.NotEmpty(t, response.Services)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
 
 func TestGetCloudServiceCommand(t *testing.T) {
@@ -127,7 +129,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		target, err = svc.CreateDefaultTargetCloudService()
 
 		fmt.Println("target:", target)
@@ -147,6 +149,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 		assert.NoError(t, err)
 		return assert.Equal(t, target.Id, response.Id)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
 
 func TestRemoveCloudServicesCommand(t *testing.T) {
@@ -160,7 +163,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		target, err = svc.CreateDefaultTargetCloudService()
 		assert.NoError(t, err)
 
@@ -180,6 +183,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 
 		return assert.NoError(t, err)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
 
 func TestUpdateCloudServiceCommand(t *testing.T) {
@@ -197,7 +201,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		target, err = svc.CreateDefaultTargetCloudService()
 		assert.NoError(t, err)
 
@@ -217,6 +221,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		assert.Equal(t, target.Id, response.Id)
 		return assert.Equal(t, notDefault, response.Name)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
 
 func TestGetMetricConfiguration(t *testing.T) {
@@ -229,7 +234,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	)
 
 	svc = service_orchestrator.NewService()
-	clitest.RunCLITestFunc(func() bool {
+	_, err = clitest.RunCLITestFunc(func() bool {
 		target, err = svc.CreateDefaultTargetCloudService()
 		assert.NoError(t, err)
 		// target should be not nil since there are no stored cloud services yet
@@ -248,4 +253,5 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 		return assert.NoError(t, err)
 	}, server.WithOrchestrator(svc))
+	assert.NoError(t, err)
 }
