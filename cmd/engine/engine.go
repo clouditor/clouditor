@@ -350,7 +350,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// Start the gRPC server
 	_, srv, err = server.StartGRPCServer(
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		viper.GetString(APIJWKSURLFlag),
+		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
 		server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),

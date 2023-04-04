@@ -70,7 +70,10 @@ func TestMain(m *testing.M) {
 	}
 
 	// Start at least an orchestrator service, so that we have something to forward
-	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), server.WithOrchestrator(service_orchestrator.NewService()))
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0",
+		server.WithJWKS(testutil.JWKSURL(authPort)),
+		server.WithOrchestrator(service_orchestrator.NewService()),
+	)
 	if err != nil {
 		panic(err)
 	}

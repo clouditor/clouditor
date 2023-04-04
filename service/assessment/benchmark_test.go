@@ -12,7 +12,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/server"
+	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"clouditor.io/clouditor/voc"
@@ -27,19 +27,30 @@ func createEvidences(n int, m int, b *testing.B) int {
 		wg   sync.WaitGroup
 		err  error
 		sock net.Listener
-		srv  *grpc.Server
 		port uint16
 	)
 
 	logrus.SetLevel(logrus.PanicLevel)
 
-	orchestratorService := service_orchestrator.NewService()
-	evidenceService := service_evidence.NewService()
+	srv := grpc.NewServer()
 
-	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", "", server.WithOrchestrator(orchestratorService), server.WithEvidenceStore(evidenceService))
-	if err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Error while creating gRPC server: %v", err)
+	orchestratorService := service_orchestrator.NewService()
+	orchestrator.RegisterOrchestratorServer(srv, orchestratorService)
+
+	evidenceService := service_evidence.NewService()
+	evidence.RegisterEvidenceStoreServer(srv, evidenceService)
+
+	sock, err = net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		b.Errorf("could not listen: %v", err)
 	}
+
+	go func() {
+		err := srv.Serve(sock)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error while creating gRPC server: %v", err)
+		}
+	}()
 	defer srv.Stop()
 
 	wg.Add(n * m * 7)

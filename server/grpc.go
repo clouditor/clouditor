@@ -45,46 +45,46 @@ import (
 )
 
 type Server = grpc.Server
-type StartGRPCServerOption func(srv *Server)
+type StartGRPCServerOption func(srv *Server, ac *AuthConfig)
 
 func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		orchestrator.RegisterOrchestratorServer(srv, svc)
 	}
 }
 
 func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		assessment.RegisterAssessmentServer(srv, svc)
 	}
 }
 
 func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		evidence.RegisterEvidenceStoreServer(srv, svc)
 	}
 }
 
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		discovery.RegisterDiscoveryServer(srv, svc)
 	}
 }
 
 func WithReflection() StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		reflection.Register(srv)
 	}
 }
 
-func StartGRPCServer(addr string, jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
+func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", addr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authConfig := NewAuthConfig(WithJWKSURL(jwksURL))
+	var authConfig AuthConfig
 
 	grpcLogger := logrus.New()
 	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
@@ -99,17 +99,17 @@ func StartGRPCServer(addr string, jwksURL string, opts ...StartGRPCServerOption)
 		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-			unaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), unaryReflectionFilter),
+			unaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc()), unaryReflectionFilter),
 		),
 		grpc.ChainStreamInterceptor(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			streamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), streamReflectionFilter),
+			streamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc()), streamReflectionFilter),
 		),
 	)
 
 	for _, o := range opts {
-		o(srv)
+		o(srv, &authConfig)
 	}
 
 	go func() {

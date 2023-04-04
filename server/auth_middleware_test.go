@@ -23,22 +23,22 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package server_test
+package server
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"testing"
 
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/server"
-
-	oauth2 "github.com/oxisto/oauth2go"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/stretchr/testify/assert"
 )
 
 func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
@@ -48,7 +48,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	claims, ok := ctx.Value(server.AuthContextKey).(*server.OpenIDConnectClaim)
+	claims, ok := ctx.Value(AuthContextKey).(*OpenIDConnectClaim)
 	if !ok {
 		tt.Errorf("Token value in context not a JWT claims object")
 		return false
@@ -79,24 +79,27 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, token)
 
-	type configureArgs struct {
-		opts []server.AuthOption
+	type fields struct {
+		jwksURL   string
+		useJWKS   bool
+		publicKey *ecdsa.PublicKey
 	}
 	type args struct {
 		ctx context.Context
 	}
 	tests := []struct {
-		name          string
-		configureArgs configureArgs
-		args          args
-		wantJWKS      bool
-		wantCtx       assert.ValueAssertionFunc
-		wantErr       assert.ErrorAssertionFunc
+		name     string
+		fields   fields
+		args     args
+		wantJWKS bool
+		wantCtx  assert.ValueAssertionFunc
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Request with valid bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []server.AuthOption{server.WithJWKSURL(testutil.JWKSURL(port))},
+			fields: fields{
+				jwksURL: testutil.JWKSURL(port),
+				useJWKS: true,
 			},
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", token.AccessToken)}}),
@@ -105,8 +108,9 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		},
 		{
 			name: "Request with invalid bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []server.AuthOption{server.WithJWKSURL(testutil.JWKSURL(port))},
+			fields: fields{
+				jwksURL: testutil.JWKSURL(port),
+				useJWKS: true,
 			},
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{"bearer not_really"}}),
@@ -117,8 +121,9 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		},
 		{
 			name: "Request without bearer token using JWKS",
-			configureArgs: configureArgs{
-				opts: []server.AuthOption{server.WithJWKSURL(testutil.JWKSURL(port))},
+			fields: fields{
+				jwksURL: testutil.JWKSURL(port),
+				useJWKS: true,
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -129,8 +134,8 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		},
 		{
 			name: "Request with valid bearer token using a public key",
-			configureArgs: configureArgs{
-				opts: []server.AuthOption{server.WithPublicKey(authSrv.PublicKeys()[0])},
+			fields: fields{
+				publicKey: authSrv.PublicKeys()[0],
 			},
 			args: args{
 				ctx: metadata.NewIncomingContext(context.TODO(), metadata.MD{"Authorization": []string{fmt.Sprintf("bearer %s", token.AccessToken)}}),
@@ -139,8 +144,8 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		},
 		{
 			name: "Request without bearer token using a public key",
-			configureArgs: configureArgs{
-				opts: []server.AuthOption{server.WithPublicKey(authSrv.PublicKeys()[0])},
+			fields: fields{
+				publicKey: authSrv.PublicKeys()[0],
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -153,11 +158,15 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			config := server.NewAuthConfig(tt.configureArgs.opts...)
-			got, err := config.AuthFunc(tt.args.ctx)
+			config := &AuthConfig{
+				jwksURL:   tt.fields.jwksURL,
+				useJWKS:   tt.fields.useJWKS,
+				publicKey: tt.fields.publicKey,
+			}
+			got, err := config.AuthFunc()(tt.args.ctx)
 
 			if tt.wantJWKS {
-				assert.NotNil(t, config.Jwks)
+				assert.NotNil(t, config.jwks)
 			}
 
 			if tt.wantErr != nil {

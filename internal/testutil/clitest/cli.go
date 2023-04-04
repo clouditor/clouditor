@@ -90,7 +90,10 @@ func RunCLITest(m *testing.M, opts ...server.StartGRPCServerOption) (code int) {
 		panic(err)
 	}
 
-	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", testutil.JWKSURL(authPort), opts...)
+	// Make sure, we are using authentication for the tests
+	opts = append(opts, server.WithJWKS(testutil.JWKSURL(authPort)))
+
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", opts...)
 	if err != nil {
 		panic(err)
 	}
