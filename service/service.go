@@ -25,7 +25,9 @@
 
 package service
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+)
 
 var log *logrus.Entry
 
