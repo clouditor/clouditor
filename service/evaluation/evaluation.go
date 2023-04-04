@@ -297,7 +297,7 @@ func (s *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEval
 	s.scheduler[schedulerTag].StartAsync()
 	log.Infof("Evaluation started.")
 
-	resp = &evaluation.StartEvaluationResponse{}
+	resp = &evaluation.StartEvaluationResponse{Successful: true}
 
 	return
 }

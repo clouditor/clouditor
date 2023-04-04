@@ -516,9 +516,7 @@ func (m *StartEvaluationResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Status
-
-	// no validation rules for StatusMessage
+	// no validation rules for Successful
 
 	if len(errors) > 0 {
 		return StartEvaluationResponseMultiError(errors)

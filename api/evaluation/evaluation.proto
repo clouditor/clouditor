@@ -37,7 +37,7 @@
 
  option go_package = "clouditor.io/clouditor/api/evaluation";
 
- // This service represents the Evaluation Interface
+ // Manages the evaluation of Clouditor's assessment results
  service Evaluation {
   // Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
@@ -101,8 +101,7 @@ message StartEvaluationRequest {
 }
 
 message StartEvaluationResponse {
-  bool status = 1; 
-  string status_message = 2; 
+  bool successful = 1; 
 }
 
 message StopEvaluationRequest {

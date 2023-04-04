@@ -4,7 +4,7 @@
 openapi: 3.0.3
 info:
     title: Evaluation API
-    description: This service represents the Evaluation Interface
+    description: Manages the evaluation of Clouditor's assessment results
     version: 0.0.1
 paths:
     /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/start:
@@ -192,10 +192,8 @@ components:
         StartEvaluationResponse:
             type: object
             properties:
-                status:
+                successful:
                     type: boolean
-                statusMessage:
-                    type: string
         Status:
             type: object
             properties:
