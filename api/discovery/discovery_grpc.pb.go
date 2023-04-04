@@ -25,7 +25,7 @@ type DiscoveryClient interface {
 	// Starts discovering the cloud resources, exposed as REST.
 	Start(ctx context.Context, in *StartDiscoveryRequest, opts ...grpc.CallOption) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run, exposed as REST.
-	Query(ctx context.Context, in *ListResourceRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
 }
 
 type discoveryClient struct {
@@ -45,7 +45,7 @@ func (c *discoveryClient) Start(ctx context.Context, in *StartDiscoveryRequest, 
 	return out, nil
 }
 
-func (c *discoveryClient) Query(ctx context.Context, in *ListResourceRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
+func (c *discoveryClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
 	out := new(QueryResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.discovery.v1.Discovery/Query", in, out, opts...)
 	if err != nil {
@@ -61,7 +61,7 @@ type DiscoveryServer interface {
 	// Starts discovering the cloud resources, exposed as REST.
 	Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run, exposed as REST.
-	Query(context.Context, *ListResourceRequest) (*QueryResponse, error)
+	Query(context.Context, *QueryRequest) (*QueryResponse, error)
 	mustEmbedUnimplementedDiscoveryServer()
 }
 
@@ -72,7 +72,7 @@ type UnimplementedDiscoveryServer struct {
 func (UnimplementedDiscoveryServer) Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
 }
-func (UnimplementedDiscoveryServer) Query(context.Context, *ListResourceRequest) (*QueryResponse, error) {
+func (UnimplementedDiscoveryServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
 }
 func (UnimplementedDiscoveryServer) mustEmbedUnimplementedDiscoveryServer() {}
@@ -107,7 +107,7 @@ func _Discovery_Start_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Discovery_Query_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListResourceRequest)
+	in := new(QueryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func _Discovery_Query_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/clouditor.discovery.v1.Discovery/Query",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DiscoveryServer).Query(ctx, req.(*ListResourceRequest))
+		return srv.(DiscoveryServer).Query(ctx, req.(*QueryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

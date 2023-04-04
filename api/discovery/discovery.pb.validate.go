@@ -248,22 +248,22 @@ var _ interface {
 	ErrorName() string
 } = StartDiscoveryResponseValidationError{}
 
-// Validate checks the field values on ListResourceRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListResourceRequest) Validate() error {
+// Validate checks the field values on QueryRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *QueryRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListResourceRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListResourceRequestMultiError, or nil if none found.
-func (m *ListResourceRequest) ValidateAll() error {
+// ValidateAll checks the field values on QueryRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in QueryRequestMultiError, or
+// nil if none found.
+func (m *QueryRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListResourceRequest) validate(all bool) error {
+func (m *QueryRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -284,7 +284,7 @@ func (m *ListResourceRequest) validate(all bool) error {
 			switch v := interface{}(m.GetFilter()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListResourceRequestValidationError{
+					errors = append(errors, QueryRequestValidationError{
 						field:  "Filter",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -292,7 +292,7 @@ func (m *ListResourceRequest) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, ListResourceRequestValidationError{
+					errors = append(errors, QueryRequestValidationError{
 						field:  "Filter",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -301,7 +301,7 @@ func (m *ListResourceRequest) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetFilter()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return ListResourceRequestValidationError{
+				return QueryRequestValidationError{
 					field:  "Filter",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -312,19 +312,18 @@ func (m *ListResourceRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ListResourceRequestMultiError(errors)
+		return QueryRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListResourceRequestMultiError is an error wrapping multiple validation
-// errors returned by ListResourceRequest.ValidateAll() if the designated
-// constraints aren't met.
-type ListResourceRequestMultiError []error
+// QueryRequestMultiError is an error wrapping multiple validation errors
+// returned by QueryRequest.ValidateAll() if the designated constraints aren't met.
+type QueryRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListResourceRequestMultiError) Error() string {
+func (m QueryRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -333,11 +332,11 @@ func (m ListResourceRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListResourceRequestMultiError) AllErrors() []error { return m }
+func (m QueryRequestMultiError) AllErrors() []error { return m }
 
-// ListResourceRequestValidationError is the validation error returned by
-// ListResourceRequest.Validate if the designated constraints aren't met.
-type ListResourceRequestValidationError struct {
+// QueryRequestValidationError is the validation error returned by
+// QueryRequest.Validate if the designated constraints aren't met.
+type QueryRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -345,24 +344,22 @@ type ListResourceRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListResourceRequestValidationError) Field() string { return e.field }
+func (e QueryRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListResourceRequestValidationError) Reason() string { return e.reason }
+func (e QueryRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListResourceRequestValidationError) Cause() error { return e.cause }
+func (e QueryRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListResourceRequestValidationError) Key() bool { return e.key }
+func (e QueryRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListResourceRequestValidationError) ErrorName() string {
-	return "ListResourceRequestValidationError"
-}
+func (e QueryRequestValidationError) ErrorName() string { return "QueryRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ListResourceRequestValidationError) Error() string {
+func (e QueryRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -374,14 +371,14 @@ func (e ListResourceRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListResourceRequest.%s: %s%s",
+		"invalid %sQueryRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListResourceRequestValidationError{}
+var _ error = QueryRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -389,7 +386,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListResourceRequestValidationError{}
+} = QueryRequestValidationError{}
 
 // Validate checks the field values on Filter with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

@@ -19,7 +19,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ListResourceRequest'
+                            $ref: '#/components/schemas/QueryRequest'
                 required: true
             responses:
                 "200":
@@ -78,7 +78,7 @@ components:
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GoogleProtobufValue:
             description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
-        ListResourceRequest:
+        QueryRequest:
             type: object
             properties:
                 pageSize:

@@ -4928,10 +4928,10 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCatalogId()) < 12 {
+	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
 		err := TargetOfEvaluationValidationError{
 			field:  "CatalogId",
-			reason: "value length must be at least 12 runes",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err

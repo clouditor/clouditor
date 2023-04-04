@@ -31,6 +31,6 @@ package clouditor.v1;
 option go_package = "clouditor.io/clouditor/api;api";
 
 message PageToken {
-  int64 start = 10;
-  int32 size = 11;
+  int64 start = 1;
+  int32 size = 2;
 }

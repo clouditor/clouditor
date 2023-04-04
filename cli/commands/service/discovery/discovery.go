@@ -77,11 +77,11 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				client  discovery.DiscoveryClient
 				res     *discovery.QueryResponse
 				results []*discovery.Resource
-				req     discovery.ListResourceRequest
+				req     discovery.QueryRequest
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate!\n")
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
 				return nil
 			}
 
@@ -91,7 +91,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				req.Filter.Type = &args[0]
 			}
 
-			results, err = api.ListAllPaginated(&discovery.ListResourceRequest{}, client.Query, func(res *discovery.QueryResponse) []*discovery.Resource {
+			results, err = api.ListAllPaginated(&discovery.QueryRequest{}, client.Query, func(res *discovery.QueryResponse) []*discovery.Resource {
 				return res.Results
 			})
 

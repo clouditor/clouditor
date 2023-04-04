@@ -410,7 +410,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (svc *Service) Query(_ context.Context, req *discovery.ListResourceRequest) (res *discovery.QueryResponse, err error) {
+func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {

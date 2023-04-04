@@ -170,7 +170,7 @@ func TestLogRequest(t *testing.T) {
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
 			},
-			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat123456789'.\n",
+			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
 		},
 		{
 			name: "Send Evidence to queue",

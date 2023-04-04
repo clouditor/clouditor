@@ -65,10 +65,10 @@ service Assessment {
 message ConfigureAssessmentRequest {}
 message ConfigureAssessmentResponse {}
 
-message CalculateComplianceRequest { string control_id = 10; }
+message CalculateComplianceRequest { string control_id = 1; }
 
 message AssessEvidenceRequest {
-  clouditor.evidence.v1.Evidence evidence = 10
+  clouditor.evidence.v1.Evidence evidence = 1
       [ (validate.rules).message.required = true ];
 }
 
@@ -88,52 +88,52 @@ message AssessEvidencesResponse {
     ASSESSED = 2;
     FAILED = 3;
   }
-  AssessmentStatus status = 10;
+  AssessmentStatus status = 1;
 
-  string status_message = 11;
+  string status_message = 2;
 }
 
 // A result resource, representing the result after assessing the cloud resource
 // with id resource_id.
 message AssessmentResult {
   // Assessment result id
-  string id = 10 [ (validate.rules).string.uuid = true ];
+  string id = 1 [ (validate.rules).string.uuid = true ];
 
   // Time of assessment
-  google.protobuf.Timestamp timestamp = 11 [
+  google.protobuf.Timestamp timestamp = 2 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
     (validate.rules).timestamp.required = true
   ];
 
   // Reference to the metric the assessment was based on
-  string metric_id = 12 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 3 [ (validate.rules).string.min_len = 1 ];
 
   // Data corresponding to the metric by the given metric id
-  MetricConfiguration metric_configuration = 13 [
+  MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).message.required = true
   ];
 
   // Compliant case: true or false
-  bool compliant = 14;
+  bool compliant = 5;
 
   // Reference to the assessed evidence
-  string evidence_id = 15 [ (validate.rules).string.uuid = true ];
+  string evidence_id = 6 [ (validate.rules).string.uuid = true ];
 
   // Reference to the resource of the assessed evidence
-  string resource_id = 16 [ (validate.rules).string.min_len = 1 ];
+  string resource_id = 7 [ (validate.rules).string.min_len = 1 ];
 
   // Resource types
-  repeated string resource_types = 17 [
+  repeated string resource_types = 8 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated .min_items = 1
   ];
 
   // Some comments on the reason for non-compliance
-  string non_compliance_comments = 18;
+  string non_compliance_comments = 9;
 
   // The cloud service which this assessment result belongs to
-  string cloud_service_id = 19 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
 }
 
 /*

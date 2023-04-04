@@ -34,27 +34,27 @@ option go_package = "clouditor.io/clouditor/api/runtime;runtime";
 
 message Runtime {
   // release_version is the latest Clouditor release version for this commit
-  optional string release_version = 10;
+  optional string release_version = 1;
 
   // vcs is the used version control system
-  string vcs = 11;
+  string vcs = 2;
 
   // commit_hash is the current Clouditor commit hash
-  string commit_hash = 12;
+  string commit_hash = 3;
 
   // commit_time is the time of the Clouditor commit
-  google.protobuf.Timestamp commit_time = 13;
+  google.protobuf.Timestamp commit_time = 4;
 
   // golang_version is the used golang version
-  string golang_version = 14;
+  string golang_version = 5;
 
   // dependency is a list of used runtime dependencies
-  repeated Dependency dependencies = 15;
+  repeated Dependency dependencies = 6;
 }
 
 message Dependency {
-  string path = 10;
-  string version = 11;
+  string path = 1;
+  string version = 2;
 }
 
 message GetRuntimeInfoRequest {}

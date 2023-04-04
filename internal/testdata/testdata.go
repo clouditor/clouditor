@@ -24,7 +24,7 @@ const (
 	MockAnotherCloudServiceDescription = "This is another mock cloud service"
 
 	// Catalog
-	MockCatalogID                 = "Cat123456789"
+	MockCatalogID                 = "Cat1234"
 	MockCatalogName               = "Mock Catalog"
 	MockCatalogDescription        = "This is a mock catalog"
 	MockCategoryName              = "Mock Category Name"
