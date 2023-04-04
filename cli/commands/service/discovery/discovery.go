@@ -75,7 +75,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  discovery.DiscoveryClient
-				res     *discovery.QueryResponse
+				res     *discovery.ListResourcesResponse
 				results []*discovery.Resource
 				req     discovery.ListResourcesRequest
 			)
@@ -99,12 +99,12 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				req.Filter.Type = &args[0]
 			}
 
-			results, err = api.ListAllPaginated(&req, client.Query, func(res *discovery.QueryResponse) []*discovery.Resource {
+			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.Query, func(res *discovery.ListResourcesResponse) []*discovery.Resource {
 				return res.Results
 			})
 
 			// Build a response with all results
-			res = &discovery.QueryResponse{
+			res = &discovery.ListResourcesResponse{
 				Results: results,
 			}
 
