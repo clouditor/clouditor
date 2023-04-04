@@ -43,6 +43,8 @@
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
+      body : "*"
+      response_body : "*"
     };
   }
 
