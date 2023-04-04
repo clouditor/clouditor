@@ -99,7 +99,7 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				req.Filter.Type = &args[0]
 			}
 
-			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.Query, func(res *discovery.QueryResponse) []*discovery.Resource {
+			results, err = api.ListAllPaginated(&req, client.Query, func(res *discovery.QueryResponse) []*discovery.Resource {
 				return res.Results
 			})
 
