@@ -81,6 +81,8 @@ components:
         ListResourcesRequest:
             type: object
             properties:
+                filter:
+                    $ref: '#/components/schemas/Filter'
                 pageSize:
                     type: integer
                     format: int32
@@ -90,8 +92,6 @@ components:
                     type: string
                 asc:
                     type: boolean
-                filter:
-                    $ref: '#/components/schemas/Filter'
         QueryResponse:
             type: object
             properties:

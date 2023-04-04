@@ -14,23 +14,6 @@ paths:
             description: List all assessment results. Part of the public API, also exposed as REST.
             operationId: Orchestrator_ListAssessmentResults
             parameters:
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
                 - name: filter.cloudServiceId
                   in: query
                   description: Optional. List only assessment results of a specific cloud service.
@@ -52,6 +35,23 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
                 - name: latestByResourceId
                   in: query
                   description: Optional. Latest results grouped by resource_id and metric_id.
@@ -128,23 +128,6 @@ paths:
                  passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
                 - name: filter.cloudServiceId
                   in: query
                   description: Optional. List only assessment results of a specific cloud service.
@@ -166,6 +149,23 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK

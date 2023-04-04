@@ -457,11 +457,12 @@ message RegisterAssessmentToolRequest {
 }
 
 message ListAssessmentToolsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-  optional Filter filter = 5;
+  optional Filter filter = 1;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message Filter {
@@ -527,10 +528,10 @@ message GetMetricRequest {
 }
 
 message ListMetricsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListMetricsResponse {
@@ -555,10 +556,10 @@ message RemoveCloudServiceRequest {
 }
 
 message ListCloudServicesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 message ListCloudServicesResponse {
   repeated CloudService services = 1;
@@ -581,7 +582,7 @@ message GetMetricConfigurationRequest {
 }
 
 message ListMetricConfigurationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
 }
 
 message ListMetricConfigurationResponse {
@@ -803,13 +804,14 @@ message GetAssessmentResultRequest {
 }
 
 message ListAssessmentResultsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-  optional Filter filter = 5;
+  optional Filter filter = 1;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
   // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 6;
+  optional bool latest_by_resource_id = 14;
 }
 
 message ListAssessmentResultsResponse {
@@ -818,14 +820,13 @@ message ListAssessmentResultsResponse {
 }
 
 message ListControlsInScopeRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-
-  string cloud_service_id = 10
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+  string cloud_service_id = 14
       [ (validate.rules).string = {uuid : true} ];
-  string catalog_id = 11
+  string catalog_id = 15
       [ (validate.rules).string = {min_len : 1} ];
 }
 
@@ -912,18 +913,18 @@ message GetTargetOfEvaluationRequest {
 }
 
 message ListTargetsOfEvaluationRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
   // specified, return all Targets of Evaluation that evaluate the given service
   // for any catalog
-  string cloud_service_id = 5;
+  string cloud_service_id = 14;
   // when the catalog is specified, return all Targets of Evaluation that
   // evaluate the given catalog for any service
-  string catalog_id = 6;
+  string catalog_id = 15;
 }
 
 message ListTargetsOfEvaluationResponse {
@@ -941,10 +942,10 @@ message GetCertificateRequest {
 }
 
 message ListCertificatesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 message ListCertificatesResponse {
   repeated Certificate certificates = 1;
@@ -968,10 +969,10 @@ message GetCatalogRequest {
 }
 
 message ListCatalogsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListCatalogsResponse {
@@ -995,10 +996,10 @@ message GetControlRequest {
 }
 
 message ListControlsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 
   // return either all controls or only the controls of the specified category
   string catalog_id = 5;
