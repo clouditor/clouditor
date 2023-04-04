@@ -77,7 +77,9 @@ func WithReflection() StartGRPCServerOption {
 	}
 }
 
-func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
+// StartGRPCServer starts a gRPC server listening on the given address. The server can be configured using the supplied
+// opts, e.g., to register various Clouditor services.
+func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *Server, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", addr)
 	if err != nil {
@@ -99,12 +101,12 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-			unaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc()), unaryReflectionFilter),
+			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc()), UnaryReflectionFilter),
 		),
 		grpc.ChainStreamInterceptor(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			streamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc()), streamReflectionFilter),
+			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc()), StreamReflectionFilter),
 		),
 	)
 
@@ -120,9 +122,9 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 	return sock, srv, nil
 }
 
-// unaryServerInterceptorWithFilter wraps a grpc.UnaryServerInterceptor and only invokes the interceptor, if the filter
+// UnaryServerInterceptorWithFilter wraps a grpc.UnaryServerInterceptor and only invokes the interceptor, if the filter
 // function does not return true.
-func unaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter func(info *grpc.UnaryServerInfo) bool) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter func(info *grpc.UnaryServerInfo) bool) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
 		if filter(info) {
@@ -133,9 +135,9 @@ func unaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter fun
 	}
 }
 
-// streamServerInterceptorWithFilter wraps a grpc.StreamServerInterceptor and only invokes the interceptor, if the
+// StreamServerInterceptorWithFilter wraps a grpc.StreamServerInterceptor and only invokes the interceptor, if the
 // filter function does not return true.
-func streamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter func(info *grpc.StreamServerInfo) bool) grpc.StreamServerInterceptor {
+func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter func(info *grpc.StreamServerInfo) bool) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
 		if filter(info) {
@@ -147,11 +149,11 @@ func streamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter f
 }
 
 // unaryReflectionFilter is a filter that ignores calls to the reflection endpoint
-func unaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
+func UnaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
 	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
 }
 
 // streamReflectionFilter is a filter that ignores calls to the reflection endpoint
-func streamReflectionFilter(info *grpc.StreamServerInfo) bool {
+func StreamReflectionFilter(info *grpc.StreamServerInfo) bool {
 	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo"
 }

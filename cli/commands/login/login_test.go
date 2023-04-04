@@ -27,7 +27,6 @@ package login
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"testing"
@@ -35,28 +34,13 @@ import (
 
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/server"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-)
-
-var (
-	sock net.Listener
-	srv  *grpc.Server
 )
 
 func TestMain(m *testing.M) {
-	var (
-		err error
-	)
-	sock, srv, err = server.StartGRPCServer("127.0.0.1:0")
-	if err != nil {
-		panic(err)
-	}
-
 	os.Exit(m.Run())
 }
 
@@ -71,9 +55,6 @@ func TestLogin(t *testing.T) {
 
 	authSrv, port, err = testutil.StartAuthenticationServer()
 	assert.NoError(t, err)
-
-	defer sock.Close()
-	defer srv.Stop()
 
 	dir, err = os.MkdirTemp(os.TempDir(), ".clouditor")
 	assert.NoError(t, err)
@@ -109,7 +90,7 @@ func TestLogin(t *testing.T) {
 			}
 		}()
 
-		err = cmd.RunE(nil, []string{fmt.Sprintf("localhost:%d", sock.Addr().(*net.TCPAddr).AddrPort().Port())})
+		err = cmd.RunE(nil, []string{"localhost:9090"})
 		assert.NoError(t, err)
 		done <- true
 	}()
