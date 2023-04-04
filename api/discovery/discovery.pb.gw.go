@@ -66,7 +66,7 @@ func local_request_Discovery_Start_0(ctx context.Context, marshaler runtime.Mars
 }
 
 func request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler, client DiscoveryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryRequest
+	var protoReq ListResourcesRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -83,7 +83,7 @@ func request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler,
 }
 
 func local_request_Discovery_Query_0(ctx context.Context, marshaler runtime.Marshaler, server DiscoveryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryRequest
+	var protoReq ListResourcesRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
