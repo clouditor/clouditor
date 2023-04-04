@@ -218,7 +218,7 @@ func TestService_Query(t *testing.T) {
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
 	type args struct {
-		req *discovery.QueryRequest
+		req *discovery.ListResourcesRequest
 	}
 	tests := []struct {
 		name string
@@ -227,14 +227,18 @@ func TestService_Query(t *testing.T) {
 		wantErr                  assert.ErrorAssertionFunc
 	}{
 		{
-			name:                     "Filter type",
-			args:                     args{req: &discovery.QueryRequest{FilteredType: util.Ref("Storage")}},
+			name: "Filter type",
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.Filter{
+					Type: util.Ref("Storage"),
+				},
+			}},
 			numberOfQueriedResources: 1,
 			wantErr:                  assert.NoError,
 		},
 		{
 			name:                     "No filtering",
-			args:                     args{req: &discovery.QueryRequest{}},
+			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
 			wantErr:                  assert.NoError,
 		},
