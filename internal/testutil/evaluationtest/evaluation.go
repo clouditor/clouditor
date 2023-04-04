@@ -16,7 +16,7 @@ var (
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		ResourceId:                 testdata.MockResourceID,
-		Status:                     *evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT.Enum(),
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:                  testdata.MockControlID1,
 		FailingAssessmentResultIds: []string{},
 	}
