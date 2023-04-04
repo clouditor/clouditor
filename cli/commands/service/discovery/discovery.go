@@ -87,6 +87,14 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 
 			client = discovery.NewDiscoveryClient(session)
 
+			req = discovery.ListResourcesRequest{
+				PageSize:  0,
+				PageToken: "",
+				OrderBy:   "",
+				Asc:       false,
+				Filter:    &discovery.Filter{},
+			}
+
 			if len(args) > 0 {
 				req.Filter.Type = &args[0]
 			}
