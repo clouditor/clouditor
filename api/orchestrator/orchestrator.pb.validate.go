@@ -5520,14 +5520,6 @@ func (m *ListControlsInScopeRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for PageSize
-
-	// no validation rules for PageToken
-
-	// no validation rules for OrderBy
-
-	// no validation rules for Asc
-
 	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
 		err = ListControlsInScopeRequestValidationError{
 			field:  "CloudServiceId",
@@ -5550,6 +5542,14 @@ func (m *ListControlsInScopeRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for PageSize
+
+	// no validation rules for PageToken
+
+	// no validation rules for OrderBy
+
+	// no validation rules for Asc
 
 	if len(errors) > 0 {
 		return ListControlsInScopeRequestMultiError(errors)
@@ -6800,6 +6800,10 @@ func (m *ListTargetsOfEvaluationRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for CloudServiceId
+
+	// no validation rules for CatalogId
+
 	// no validation rules for PageSize
 
 	// no validation rules for PageToken
@@ -6807,10 +6811,6 @@ func (m *ListTargetsOfEvaluationRequest) validate(all bool) error {
 	// no validation rules for OrderBy
 
 	// no validation rules for Asc
-
-	// no validation rules for CloudServiceId
-
-	// no validation rules for CatalogId
 
 	if len(errors) > 0 {
 		return ListTargetsOfEvaluationRequestMultiError(errors)
@@ -8717,6 +8717,10 @@ func (m *ListControlsRequest) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for CatalogId
+
+	// no validation rules for CategoryName
+
 	// no validation rules for PageSize
 
 	// no validation rules for PageToken
@@ -8724,10 +8728,6 @@ func (m *ListControlsRequest) validate(all bool) error {
 	// no validation rules for OrderBy
 
 	// no validation rules for Asc
-
-	// no validation rules for CatalogId
-
-	// no validation rules for CategoryName
 
 	if len(errors) > 0 {
 		return ListControlsRequestMultiError(errors)

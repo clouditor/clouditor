@@ -35,6 +35,11 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: latestByResourceId
+                  in: query
+                  description: Optional. Latest results grouped by resource_id and metric_id.
+                  schema:
+                    type: boolean
                 - name: pageSize
                   in: query
                   schema:
@@ -50,11 +55,6 @@ paths:
                     type: string
                 - name: asc
                   in: query
-                  schema:
-                    type: boolean
-                - name: latestByResourceId
-                  in: query
-                  description: Optional. Latest results grouped by resource_id and metric_id.
                   schema:
                     type: boolean
             responses:
@@ -1136,6 +1136,15 @@ paths:
                  in this category are returned.
             operationId: Orchestrator_ListControls
             parameters:
+                - name: catalogId
+                  in: query
+                  description: return either all controls or only the controls of the specified category
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -1153,15 +1162,6 @@ paths:
                   in: query
                   schema:
                     type: boolean
-                - name: catalogId
-                  in: query
-                  description: return either all controls or only the controls of the specified category
-                  schema:
-                    type: string
-                - name: categoryName
-                  in: query
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK
@@ -1374,6 +1374,16 @@ paths:
             description: Lists all Targets of Evaluation
             operationId: Orchestrator_ListTargetsOfEvaluation
             parameters:
+                - name: cloudServiceId
+                  in: query
+                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all Targets of Evaluation that evaluate the given service for any catalog
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: query
+                  description: when the catalog is specified, return all Targets of Evaluation that evaluate the given catalog for any service
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -1391,16 +1401,6 @@ paths:
                   in: query
                   schema:
                     type: boolean
-                - name: cloudServiceId
-                  in: query
-                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all Targets of Evaluation that evaluate the given service for any catalog
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: query
-                  description: when the catalog is specified, return all Targets of Evaluation that evaluate the given catalog for any service
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK

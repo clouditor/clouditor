@@ -27,7 +27,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/QueryResponse'
+                                $ref: '#/components/schemas/ListResourcesResponse'
                 default:
                     description: Default error response
                     content:
@@ -92,7 +92,7 @@ components:
                     type: string
                 asc:
                     type: boolean
-        QueryResponse:
+        ListResourcesResponse:
             type: object
             properties:
                 results:

@@ -497,22 +497,22 @@ var _ interface {
 	ErrorName() string
 } = FilterValidationError{}
 
-// Validate checks the field values on QueryResponse with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *QueryResponse) Validate() error {
+// Validate checks the field values on ListResourcesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListResourcesResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on QueryResponse with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in QueryResponseMultiError, or
-// nil if none found.
-func (m *QueryResponse) ValidateAll() error {
+// ValidateAll checks the field values on ListResourcesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListResourcesResponseMultiError, or nil if none found.
+func (m *ListResourcesResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *QueryResponse) validate(all bool) error {
+func (m *ListResourcesResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -526,7 +526,7 @@ func (m *QueryResponse) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, QueryResponseValidationError{
+					errors = append(errors, ListResourcesResponseValidationError{
 						field:  fmt.Sprintf("Results[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -534,7 +534,7 @@ func (m *QueryResponse) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, QueryResponseValidationError{
+					errors = append(errors, ListResourcesResponseValidationError{
 						field:  fmt.Sprintf("Results[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -543,7 +543,7 @@ func (m *QueryResponse) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return QueryResponseValidationError{
+				return ListResourcesResponseValidationError{
 					field:  fmt.Sprintf("Results[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -556,19 +556,19 @@ func (m *QueryResponse) validate(all bool) error {
 	// no validation rules for NextPageToken
 
 	if len(errors) > 0 {
-		return QueryResponseMultiError(errors)
+		return ListResourcesResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// QueryResponseMultiError is an error wrapping multiple validation errors
-// returned by QueryResponse.ValidateAll() if the designated constraints
-// aren't met.
-type QueryResponseMultiError []error
+// ListResourcesResponseMultiError is an error wrapping multiple validation
+// errors returned by ListResourcesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListResourcesResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m QueryResponseMultiError) Error() string {
+func (m ListResourcesResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -577,11 +577,11 @@ func (m QueryResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m QueryResponseMultiError) AllErrors() []error { return m }
+func (m ListResourcesResponseMultiError) AllErrors() []error { return m }
 
-// QueryResponseValidationError is the validation error returned by
-// QueryResponse.Validate if the designated constraints aren't met.
-type QueryResponseValidationError struct {
+// ListResourcesResponseValidationError is the validation error returned by
+// ListResourcesResponse.Validate if the designated constraints aren't met.
+type ListResourcesResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -589,22 +589,24 @@ type QueryResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e QueryResponseValidationError) Field() string { return e.field }
+func (e ListResourcesResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e QueryResponseValidationError) Reason() string { return e.reason }
+func (e ListResourcesResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e QueryResponseValidationError) Cause() error { return e.cause }
+func (e ListResourcesResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e QueryResponseValidationError) Key() bool { return e.key }
+func (e ListResourcesResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e QueryResponseValidationError) ErrorName() string { return "QueryResponseValidationError" }
+func (e ListResourcesResponseValidationError) ErrorName() string {
+	return "ListResourcesResponseValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e QueryResponseValidationError) Error() string {
+func (e ListResourcesResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -616,14 +618,14 @@ func (e QueryResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sQueryResponse.%s: %s%s",
+		"invalid %sListResourcesResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = QueryResponseValidationError{}
+var _ error = ListResourcesResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -631,7 +633,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = QueryResponseValidationError{}
+} = ListResourcesResponseValidationError{}
 
 // Validate checks the field values on Resource with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

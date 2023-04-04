@@ -25,7 +25,7 @@ type DiscoveryClient interface {
 	// Starts discovering the cloud resources, exposed as REST.
 	Start(ctx context.Context, in *StartDiscoveryRequest, opts ...grpc.CallOption) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run, exposed as REST.
-	Query(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	Query(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*ListResourcesResponse, error)
 }
 
 type discoveryClient struct {
@@ -45,8 +45,8 @@ func (c *discoveryClient) Start(ctx context.Context, in *StartDiscoveryRequest, 
 	return out, nil
 }
 
-func (c *discoveryClient) Query(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
-	out := new(QueryResponse)
+func (c *discoveryClient) Query(ctx context.Context, in *ListResourcesRequest, opts ...grpc.CallOption) (*ListResourcesResponse, error) {
+	out := new(ListResourcesResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.discovery.v1.Discovery/Query", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ type DiscoveryServer interface {
 	// Starts discovering the cloud resources, exposed as REST.
 	Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error)
 	// Lists all evidences collected in the last run, exposed as REST.
-	Query(context.Context, *ListResourcesRequest) (*QueryResponse, error)
+	Query(context.Context, *ListResourcesRequest) (*ListResourcesResponse, error)
 	mustEmbedUnimplementedDiscoveryServer()
 }
 
@@ -72,7 +72,7 @@ type UnimplementedDiscoveryServer struct {
 func (UnimplementedDiscoveryServer) Start(context.Context, *StartDiscoveryRequest) (*StartDiscoveryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Start not implemented")
 }
-func (UnimplementedDiscoveryServer) Query(context.Context, *ListResourcesRequest) (*QueryResponse, error) {
+func (UnimplementedDiscoveryServer) Query(context.Context, *ListResourcesRequest) (*ListResourcesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
 }
 func (UnimplementedDiscoveryServer) mustEmbedUnimplementedDiscoveryServer() {}

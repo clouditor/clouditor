@@ -410,7 +410,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest) (res *discovery.QueryResponse, err error) {
+func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -434,7 +434,7 @@ func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest
 		}
 	}
 
-	res = new(discovery.QueryResponse)
+	res = new(discovery.ListResourcesResponse)
 
 	// Join query with AND and prepend the query
 	args = append([]any{strings.Join(query, " AND ")}, args...)

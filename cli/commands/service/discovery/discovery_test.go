@@ -77,7 +77,7 @@ func TestNewQueryDiscoveryCommandNoArgs(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &discovery.QueryResponse{}
+	var response = &discovery.ListResourcesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
@@ -95,7 +95,7 @@ func TestNewQueryDiscoveryCommandWithArgs(t *testing.T) {
 	err = cmd.RunE(nil, []string{"Test Command"})
 	assert.NoError(t, err)
 
-	var response = &discovery.QueryResponse{}
+	var response = &discovery.ListResourcesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
