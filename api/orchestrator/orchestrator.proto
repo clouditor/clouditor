@@ -467,13 +467,12 @@ message ListAssessmentToolsRequest {
 
 message Filter {
   // Optional. List only assessment results of a specific cloud service.
-  optional string cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
+  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
   // Optional. List only compliant assessment results.
   optional bool compliant = 2;
   // Optional. List only assessment results of a specific metric id.
   repeated string metric_ids = 3
-    [ (validate.rules).repeated .items.string.min_len = 1 ];
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
   optional string metric_id = 4 [ (validate.rules).string.min_len = 1 ];
 }
 
@@ -799,19 +798,18 @@ message TargetOfEvaluation {
 }
 
 message GetAssessmentResultRequest {
-  string id = 1
-      [ (validate.rules).string.uuid = true ];
+  string id = 1 [ (validate.rules).string.uuid = true ];
 }
 
 message ListAssessmentResultsRequest {
   optional Filter filter = 1;
+  // Optional. Latest results grouped by resource_id and metric_id.
+  optional bool latest_by_resource_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
-  // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 14;
 }
 
 message ListAssessmentResultsResponse {
@@ -820,14 +818,13 @@ message ListAssessmentResultsResponse {
 }
 
 message ListControlsInScopeRequest {
+  string cloud_service_id = 1 [ (validate.rules).string = {uuid : true} ];
+  string catalog_id = 2 [ (validate.rules).string = {min_len : 1} ];
+
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
-  string cloud_service_id = 14
-      [ (validate.rules).string = {uuid : true} ];
-  string catalog_id = 15
-      [ (validate.rules).string = {min_len : 1} ];
 }
 
 message ListControlsInScopeResponse {
@@ -913,18 +910,19 @@ message GetTargetOfEvaluationRequest {
 }
 
 message ListTargetsOfEvaluationRequest {
-  int32 page_size = 10;
-  string page_token = 11;
-  string order_by = 12;
-  bool asc = 13;
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
   // specified, return all Targets of Evaluation that evaluate the given service
   // for any catalog
-  string cloud_service_id = 14;
+  string cloud_service_id = 1;
   // when the catalog is specified, return all Targets of Evaluation that
   // evaluate the given catalog for any service
-  string catalog_id = 15;
+  string catalog_id = 2;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListTargetsOfEvaluationResponse {
@@ -996,14 +994,14 @@ message GetControlRequest {
 }
 
 message ListControlsRequest {
+  // return either all controls or only the controls of the specified category
+  string catalog_id = 1;
+  string category_name = 2;
+
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
-
-  // return either all controls or only the controls of the specified category
-  string catalog_id = 5;
-  string category_name = 6;
 }
 
 message ListControlsResponse {
