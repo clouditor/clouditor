@@ -26,12 +26,13 @@
 package orchestrator
 
 import (
-	"clouditor.io/clouditor/persistence"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"strings"
+
+	"clouditor.io/clouditor/persistence"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
@@ -46,7 +47,10 @@ import (
 
 // GetAssessmentResult gets one assessment result by id
 func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
-	var allowed []string
+	var (
+		all     bool
+		allowed []string
+	)
 
 	// Validate request
 	if err = service.ValidateRequest(req); err != nil {
@@ -63,9 +67,12 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Check if res cloud_service_id is within allowed
-	_, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !slices.Contains(allowed, res.CloudServiceId) {
+	// Check if cloud_service_id in assessment_result is within allowed or one can access *all* the cloud services
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+
+	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
+	// unless one can access *all* the cloud services.
+	if !all && !slices.Contains(allowed, res.GetCloudServiceId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
