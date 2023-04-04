@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvaluationClient interface {
-	// Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
+	// Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error)
 	// StopEvaluation stops the evaluation for the given target of evaluation
 	StopEvaluation(ctx context.Context, in *StopEvaluationRequest, opts ...grpc.CallOption) (*StopEvaluationResponse, error)
@@ -69,7 +69,7 @@ func (c *evaluationClient) ListEvaluationResults(ctx context.Context, in *ListEv
 // All implementations must embed UnimplementedEvaluationServer
 // for forward compatibility
 type EvaluationServer interface {
-	// Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
+	// Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error)
 	// StopEvaluation stops the evaluation for the given target of evaluation
 	StopEvaluation(context.Context, *StopEvaluationRequest) (*StopEvaluationResponse, error)

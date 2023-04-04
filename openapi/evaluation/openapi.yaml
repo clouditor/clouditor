@@ -11,7 +11,7 @@ paths:
         post:
             tags:
                 - Evaluation
-            description: Evaluates periodically all assessment results of an cloud service id based on the given catalog id.
+            description: Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
                 - name: cloudServiceId

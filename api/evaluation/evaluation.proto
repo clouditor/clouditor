@@ -64,6 +64,31 @@
   }
 }
 
+message StartEvaluationRequest {
+  string cloud_service_id = 1
+    [ (validate.rules).string.uuid = true ];
+  string catalog_id = 2
+    [ (validate.rules).string.min_len = 1 ]; 
+
+  // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
+  optional int32 interval = 3
+    [ (validate.rules).int32.gt = 0 ];
+}
+
+message StartEvaluationResponse {
+  bool successful = 1; 
+}
+
+message StopEvaluationRequest {
+  string cloud_service_id = 1
+    [ (validate.rules).string.uuid = true ];
+
+  string catalog_id = 2
+    [ (validate.rules).string.min_len = 1 ]; 
+}
+
+message StopEvaluationResponse {}
+
 message ListEvaluationResultsRequest {
   // Optional. Lists only evaluation results for a specific cloud service.
   optional string filtered_cloud_service_id = 1
@@ -90,31 +115,6 @@ message ListEvaluationResultsResponse {
   repeated EvaluationResult results = 1;
   string next_page_token = 2;
 }
-
-message StartEvaluationRequest {
-  string cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
-  string catalog_id = 2
-    [ (validate.rules).string.min_len = 1 ]; 
-
-  // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-  optional int32 interval = 3
-    [ (validate.rules).int32.gt = 0 ];
-}
-
-message StartEvaluationResponse {
-  bool successful = 1; 
-}
-
-message StopEvaluationRequest {
-  string cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
-
-  string catalog_id = 2
-    [ (validate.rules).string.min_len = 1 ]; 
-}
-
-message StopEvaluationResponse {}
  
 // A evaluation result resource, representing the result after evaluating the cloud service with a specific control
 // cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
