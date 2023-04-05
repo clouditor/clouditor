@@ -67,7 +67,7 @@ func TestAddCommands(t *testing.T) {
 	t.Errorf("No query command was added")
 }
 
-func TestNewQueryDiscoveryCommand(t *testing.T) {
+func TestNewQueryDiscoveryCommandNoArgs(t *testing.T) {
 	var err error
 	var b bytes.Buffer
 
@@ -77,12 +77,29 @@ func TestNewQueryDiscoveryCommand(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &discovery.QueryResponse{}
+	var response = &discovery.ListResourcesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Results)
+}
+
+func TestNewQueryDiscoveryCommandWithArgs(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewQueryDiscoveryCommand()
+	err = cmd.RunE(nil, []string{"Test Command"})
+	assert.NoError(t, err)
+
+	var response = &discovery.ListResourcesResponse{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
 }
 
 // Mocking code below is copied from clouditor.io/service/discovery

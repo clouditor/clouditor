@@ -19,7 +19,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/QueryRequest'
+                            $ref: '#/components/schemas/ListResourcesRequest'
                 required: true
             responses:
                 "200":
@@ -27,7 +27,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/QueryResponse'
+                                $ref: '#/components/schemas/ListResourcesResponse'
                 default:
                     description: Default error response
                     content:
@@ -61,6 +61,13 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        Filter:
+            type: object
+            properties:
+                type:
+                    type: string
+                cloudServiceId:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -71,13 +78,11 @@ components:
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GoogleProtobufValue:
             description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
-        QueryRequest:
+        ListResourcesRequest:
             type: object
             properties:
-                filteredType:
-                    type: string
-                filteredCloudServiceId:
-                    type: string
+                filter:
+                    $ref: '#/components/schemas/Filter'
                 pageSize:
                     type: integer
                     format: int32
@@ -87,7 +92,7 @@ components:
                     type: string
                 asc:
                     type: boolean
-        QueryResponse:
+        ListResourcesResponse:
             type: object
             properties:
                 results:
