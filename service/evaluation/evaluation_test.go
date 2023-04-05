@@ -1022,7 +1022,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				if !assert.True(tt, ok) {
 					return false
 				}
-				return assert.Empty(t, gotResp)
+				return assert.True(t, gotResp.Successful)
 			},
 			wantErr: assert.NoError,
 		},
@@ -1060,7 +1060,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				if !assert.True(tt, ok) {
 					return false
 				}
-				assert.Empty(t, gotResp)
+				assert.True(t, gotResp.Successful)
 
 				toeTag := createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID)
 				return assert.Equal(t, 2, len(s.scheduler[toeTag].Jobs()))
