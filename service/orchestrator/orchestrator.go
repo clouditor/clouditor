@@ -243,7 +243,7 @@ func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCerti
 }
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
-func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
+func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -257,6 +257,18 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
+
+	// Only list certificates user is authorized to see
+	var certificateSlice []*orchestrator.Certificate
+	for i := range res.Certificates {
+		if svc.authz.CheckAccess(ctx, service.AccessRead, res.Certificates[i]) {
+			certificateSlice = append(certificateSlice, res.Certificates[i])
+		}
+	}
+
+	res.Certificates = make([]*orchestrator.Certificate, len(certificateSlice))
+	copy(res.Certificates, certificateSlice)
+
 	return
 }
 
