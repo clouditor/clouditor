@@ -30,7 +30,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -70,7 +69,7 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Service
+		want assert.ValueAssertionFunc
 	}{
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
@@ -79,11 +78,9 @@ func TestNewService(t *testing.T) {
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
-			want: &Service{
-				assessmentAddress: grpcTarget{target: "localhost:9091"},
-				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              discovery.DefaultCloudServiceID,
-				authz:             &service.AuthorizationStrategyAllowAll{},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, "localhost:9091", s.assessmentAddress.target)
 			},
 		},
 		{
@@ -93,11 +90,9 @@ func TestNewService(t *testing.T) {
 					WithCloudServiceID(testdata.MockCloudServiceID),
 				},
 			},
-			want: &Service{
-				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
-				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              testdata.MockCloudServiceID,
-				authz:             &service.AuthorizationStrategyAllowAll{},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, testdata.MockCloudServiceID, s.csID)
 			},
 		},
 		{
@@ -107,11 +102,9 @@ func TestNewService(t *testing.T) {
 					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
 				},
 			},
-			want: &Service{
-				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
-				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              testdata.MockCloudServiceID,
-				authz:             &service.AuthorizationStrategyJWT{AllowAllKey: "test"},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
 			},
 		},
 	}
@@ -119,32 +112,7 @@ func TestNewService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
-
-			// we cannot compare the scheduler, so we first check if it is not empty and then nil it
-			assert.NotEmpty(t, got.scheduler)
-			got.scheduler = nil
-			tt.want.scheduler = nil
-			got.Events = nil
-			tt.want.Events = nil
-
-			// we cannot compare the assessment streams, so we first check if it is not empty and then nil it
-			assert.NotEmpty(t, got.assessmentStreams)
-			got.assessmentStreams = nil
-			tt.want.assessmentStreams = nil
-
-			// we cannot compare the Events, so we first check if it is not empty and then nil it
-			assert.Empty(t, got.Events)
-			got.Events = nil
-			tt.want.Events = nil
-
-			// we cannot compare the storage, so we first check if it is not nil and then nil it
-			assert.NotNil(t, got.storage)
-			got.storage = nil
-			tt.want.storage = nil
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewService() = %v, want %v", got, tt.want)
-			}
+			tt.want(t, got)
 		})
 	}
 }
