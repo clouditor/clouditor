@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
@@ -81,6 +82,7 @@ func TestNewService(t *testing.T) {
 				assessmentAddress: grpcTarget{target: "localhost:9091"},
 				configurations:    make(map[discovery.Discoverer]*Configuration),
 				csID:              discovery.DefaultCloudServiceID,
+				authz:             &service.AuthorizationStrategyAllowAll{},
 			},
 		},
 		{
@@ -94,6 +96,21 @@ func TestNewService(t *testing.T) {
 				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
 				configurations:    make(map[discovery.Discoverer]*Configuration),
 				csID:              testdata.MockCloudServiceID,
+				authz:             &service.AuthorizationStrategyAllowAll{},
+			},
+		},
+		{
+			name: "Create service with option 'WithAuthorizationStrategy'",
+			args: args{
+				opts: []ServiceOption{
+					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
+				},
+			},
+			want: &Service{
+				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
+				configurations:    make(map[discovery.Discoverer]*Configuration),
+				csID:              testdata.MockCloudServiceID,
+				authz:             &service.AuthorizationStrategyJWT{AllowAllKey: "test"},
 			},
 		},
 	}
@@ -213,7 +230,7 @@ func TestService_StartDiscovery(t *testing.T) {
 	}
 }
 
-func TestService_Query(t *testing.T) {
+func TestService_ListResources(t *testing.T) {
 	s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
 	s.StartDiscovery(mockDiscoverer{testCase: 2})
 
@@ -229,7 +246,7 @@ func TestService_Query(t *testing.T) {
 		{
 			name: "Filter type",
 			args: args{req: &discovery.ListResourcesRequest{
-				Filter: &discovery.Filter{
+				Filter: &discovery.ListResourcesRequest_Filter{
 					Type: util.Ref("Storage"),
 				},
 			}},
@@ -246,7 +263,7 @@ func TestService_Query(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response, err := s.Query(context.TODO(), tt.args.req)
+			response, err := s.ListResources(context.TODO(), tt.args.req)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
 		})

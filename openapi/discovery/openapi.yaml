@@ -14,7 +14,7 @@ paths:
             tags:
                 - Discovery
             description: Lists all evidences collected in the last run, exposed as REST.
-            operationId: Discovery_Query
+            operationId: Discovery_ListResources
             requestBody:
                 content:
                     application/json:
@@ -61,13 +61,6 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        Filter:
-            type: object
-            properties:
-                type:
-                    type: string
-                cloudServiceId:
-                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -82,7 +75,7 @@ components:
             type: object
             properties:
                 filter:
-                    $ref: '#/components/schemas/Filter'
+                    $ref: '#/components/schemas/ListResourcesRequest_Filter'
                 pageSize:
                     type: integer
                     format: int32
@@ -92,6 +85,13 @@ components:
                     type: string
                 asc:
                     type: boolean
+        ListResourcesRequest_Filter:
+            type: object
+            properties:
+                type:
+                    type: string
+                cloudServiceId:
+                    type: string
         ListResourcesResponse:
             type: object
             properties:
