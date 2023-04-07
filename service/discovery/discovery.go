@@ -376,9 +376,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Set the cloud service ID to the one of the discoverer
-		resource.SetServiceID(svc.csID)
-
 		var (
 			v *structpb.Value
 		)
@@ -439,15 +436,15 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		return nil, err
 	}
 
-	// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
-		return nil, service.ErrPermissionDenied
-	}
-
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
 	if req.Filter != nil {
+		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+			return nil, service.ErrPermissionDenied
+		}
+
 		if req.Filter.CloudServiceId != nil {
 			query = append(query, "cloud_service_id = ?")
 			args = append(args, req.Filter.GetCloudServiceId())
@@ -458,7 +455,11 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		}
 	}
 
-	// We need to further restrict our query according to the cloud service we are allowed to "see."
+	// We need to further restrict our query according to the cloud service we are allowed to "see.".
+	//
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
+	//  and once above in CheckAccess.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
 	if !all {
 		query = append(query, "cloud_service_id IN ?")
 		args = append(args, allowed)
