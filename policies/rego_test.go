@@ -31,9 +31,11 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -42,18 +44,15 @@ import (
 
 func Test_regoEval_Eval(t *testing.T) {
 	type fields struct {
-		// TODO(oxisto): move to args
-		resource voc.IsCloudResource
-		// TODO(oxisto): move to args
-		evidenceID string
-
 		qc      *queryCache
 		mrtc    *metricsCache
 		storage persistence.Storage
 		pkg     string
 	}
 	type args struct {
-		src MetricsSource
+		resource   voc.IsCloudResource
+		evidenceID string
+		src        MetricsSource
 	}
 	tests := []struct {
 		name       string
@@ -66,6 +65,12 @@ func Test_regoEval_Eval(t *testing.T) {
 		{
 			name: "ObjectStorage: Compliant Case",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -84,12 +89,8 @@ func Test_regoEval_Eval(t *testing.T) {
 					},
 				},
 				evidenceID: mockObjStorage1EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
+				src:        &mockMetricsSource{t: t},
 			},
-			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm":         true,
@@ -102,6 +103,12 @@ func Test_regoEval_Eval(t *testing.T) {
 		}, {
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -118,12 +125,8 @@ func Test_regoEval_Eval(t *testing.T) {
 					PublicAccess: true,
 				},
 				evidenceID: mockObjStorage2EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
+				src:        &mockMetricsSource{t: t},
 			},
-			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm":         false,
@@ -137,6 +140,12 @@ func Test_regoEval_Eval(t *testing.T) {
 		{
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
 				resource: voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -156,12 +165,8 @@ func Test_regoEval_Eval(t *testing.T) {
 					PublicAccess: true,
 				},
 				evidenceID: mockObjStorage2EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
+				src:        &mockMetricsSource{t: t},
 			},
-			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
 			compliant: map[string]bool{
 				"AtRestEncryptionAlgorithm":         false,
@@ -175,6 +180,13 @@ func Test_regoEval_Eval(t *testing.T) {
 		{
 			name: "VM: Compliant Case",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				src: &mockMetricsSource{t: t},
 				resource: voc.VirtualMachine{
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:      true,
@@ -215,12 +227,7 @@ func Test_regoEval_Eval(t *testing.T) {
 					},
 				},
 				evidenceID: mockVM1EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
 			},
-			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":      true,
@@ -240,6 +247,12 @@ func Test_regoEval_Eval(t *testing.T) {
 		{
 			name: "VM: Non-Compliant Case",
 			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
 				resource: voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
@@ -263,12 +276,8 @@ func Test_regoEval_Eval(t *testing.T) {
 					},
 				},
 				evidenceID: mockVM2EvidenceID,
-				qc:         newQueryCache(),
-				mrtc:       &metricsCache{m: make(map[string][]string)},
-				storage:    testutil.NewInMemoryStorage(t),
-				pkg:        DefaultRegoPackage,
+				src:        &mockMetricsSource{t: t},
 			},
-			args:       args{src: &mockMetricsSource{t: t}},
 			applicable: true,
 			compliant: map[string]bool{
 				"AutomaticUpdatesEnabled":      false,
@@ -287,7 +296,7 @@ func Test_regoEval_Eval(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		resource, err := voc.ToStruct(tt.fields.resource)
+		resource, err := voc.ToStruct(tt.args.resource)
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			pe := regoEval{
@@ -296,7 +305,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:  tt.fields.pkg,
 			}
 			results, err := pe.Eval(&evidence.Evidence{
-				Id:       tt.fields.evidenceID,
+				Id:       tt.args.evidenceID,
 				Resource: resource,
 			}, tt.args.src)
 

@@ -93,7 +93,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest2,
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 			},
 			res: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -107,10 +107,10 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: orchestratortest.MockAssessmentResultRequest1,
 			},
 			res: nil,
@@ -123,7 +123,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			name: "database error handling",
 			fields: fields{
 				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: orchestratortest.MockAssessmentResultRequest1},
 			res:  nil,
@@ -205,7 +205,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "request is missing",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args:    args{},
 			wantRes: nil,
@@ -217,7 +217,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			name: "request is empty",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{},
@@ -234,7 +234,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.ListAssessmentResultsRequest{}},
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
@@ -252,10 +252,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{},
 			},
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
@@ -272,10 +272,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
@@ -294,10 +294,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
@@ -317,10 +317,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
@@ -341,10 +341,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
@@ -365,10 +365,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						Compliant: util.Ref(true),
@@ -390,10 +390,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						Compliant: util.Ref(false),
@@ -414,10 +414,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
@@ -439,10 +439,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
@@ -464,10 +464,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						MetricIds: []string{testdata.MockMetricID},
@@ -488,10 +488,10 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
 					Filter: &orchestrator.Filter{
 						CloudServiceId: util.Ref("No Valid UUID"),
@@ -509,7 +509,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{
@@ -531,7 +531,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{

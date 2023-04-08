@@ -29,14 +29,14 @@ import (
 	"net/http"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-
 	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
 )
 
 type mockNetworkSender struct {

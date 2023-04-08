@@ -34,8 +34,75 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
+	"github.com/golang-jwt/jwt/v4"
+	"google.golang.org/grpc/metadata"
 )
+
+const (
+	TestCustomClaims   = "cloudserviceid"
+	TestAllowAllClaims = "cladmin"
+)
+
+var (
+	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
+	// 11111111-1111-1111-1111-111111111111
+	TestContextOnlyService1 context.Context
+
+	// TestContextOnlyService1 is an incoming context with a JWT that allows access to all cloud services
+	TestContextAllowAll context.Context
+
+	// TestBrokenContext contains an invalid JWT
+	TestBrokenContext = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer what",
+	}))
+
+	// TestClaimsOnlyService1 contains claims that authorize the user for the cloud service
+	// 11111111-1111-1111-1111-111111111111.
+	TestClaimsOnlyService1 = jwt.MapClaims{
+		"sub": "me",
+		"cloudserviceid": []string{
+			testdata.MockCloudServiceID,
+		},
+		"other": []int{1, 2},
+	}
+
+	// TestClaimsOnlyService1 contains claims that authorize the user for all cloud services.
+	TestClaimsAllowAll = jwt.MapClaims{
+		"sub":     "me",
+		"cladmin": true,
+	}
+)
+
+func init() {
+	var (
+		err   error
+		token *jwt.Token
+		t     string
+	)
+
+	// Create a new token instead of hard-coding one
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, &TestClaimsOnlyService1)
+	t, err = token.SignedString([]byte("mykey"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a context containing our token
+	TestContextOnlyService1 = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer " + t,
+	}))
+
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, &TestClaimsAllowAll)
+	t, err = token.SignedString([]byte("mykey"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a context containing our token
+	TestContextAllowAll = metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{
+		"authorization": "bearer " + t,
+	}))
+}
 
 func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 	type args struct {
@@ -122,10 +189,10 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		{
 			name: "valid context",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			},
@@ -134,10 +201,10 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		{
 			name: "valid context, allow all",
 			fields: fields{
-				AllowAllKey: testutil.TestAllowAllClaims,
+				AllowAllKey: TestAllowAllClaims,
 			},
 			args: args{
-				ctx: testutil.TestContextAllowAll,
+				ctx: TestContextAllowAll,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			},
@@ -149,7 +216,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 				CloudServicesKey: "sub",
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			},
@@ -161,7 +228,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 				CloudServicesKey: "other",
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			},
@@ -170,7 +237,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		{
 			name: "missing token",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -182,10 +249,10 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		{
 			name: "broken token",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
-				ctx: testutil.TestBrokenContext,
+				ctx: TestBrokenContext,
 				typ: AccessRead,
 				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			},
@@ -224,10 +291,10 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "valid context",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 			},
 			wantAll:  false,
 			wantList: []string{testdata.MockCloudServiceID},
@@ -235,10 +302,10 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "valid context, allow all",
 			fields: fields{
-				AllowAllKey: testutil.TestAllowAllClaims,
+				AllowAllKey: TestAllowAllClaims,
 			},
 			args: args{
-				ctx: testutil.TestContextAllowAll,
+				ctx: TestContextAllowAll,
 			},
 			wantAll:  true,
 			wantList: nil,
@@ -249,7 +316,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 				CloudServicesKey: "sub",
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 			},
 			wantAll:  false,
 			wantList: nil,
@@ -260,7 +327,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 				CloudServicesKey: "other",
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: TestContextOnlyService1,
 			},
 			wantAll:  false,
 			wantList: nil,
@@ -268,7 +335,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "missing token",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -279,10 +346,10 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "broken token",
 			fields: fields{
-				CloudServicesKey: testutil.TestCustomClaims,
+				CloudServicesKey: TestCustomClaims,
 			},
 			args: args{
-				ctx: testutil.TestBrokenContext,
+				ctx: TestBrokenContext,
 			},
 			wantAll:  false,
 			wantList: nil,

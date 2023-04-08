@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -90,7 +91,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "Error getting catalog",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
@@ -111,7 +112,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					err = s.Create(catalogWithoutAssuranceLevelList)
 					assert.NoError(t, err)
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(""),
@@ -150,7 +151,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewCatalog())
 					assert.NoError(t, err)
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
@@ -226,7 +227,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "empty request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args:         args{req: nil},
 			wantResponse: assert.Nil,
@@ -239,7 +240,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "invalid request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: "",
@@ -263,7 +264,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic))
 					assert.NoError(t, err)
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testdata.MockAnotherCloudServiceID,
@@ -288,7 +289,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 					err = s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic))
 					assert.NoError(t, err)
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testdata.MockCloudServiceID,
@@ -607,7 +608,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -660,7 +661,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 					}))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -694,10 +695,9 @@ func TestService_ListControlsInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListControlsInScopeRequest{
 					CloudServiceId: testdata.MockAnotherCloudServiceID,
 					CatalogId:      testdata.MockCatalogID,
@@ -759,7 +759,7 @@ func TestService_AddControlToScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -782,7 +782,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			name: "ToE not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -809,7 +809,7 @@ func TestService_AddControlToScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -837,10 +837,10 @@ func TestService_AddControlToScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				in0: testutil.TestContextOnlyService1,
+				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
@@ -907,7 +907,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -936,7 +936,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 			name: "ToE not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -958,10 +958,10 @@ func TestService_UpdateControlInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				in0: testutil.TestContextOnlyService1,
+				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
 						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
@@ -1027,7 +1027,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -1044,7 +1044,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			name: "ToE not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -1062,10 +1062,10 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims},
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 			},
 			args: args{
-				in0: testutil.TestContextOnlyService1,
+				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
 					CloudServiceId:      testdata.MockAnotherCloudServiceID,
 					ControlId:           testdata.MockControlID1,

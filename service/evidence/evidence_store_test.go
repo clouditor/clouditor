@@ -342,7 +342,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Only Cloud_Service_Id filter applied, when Tool_Id filter off",
 			fields: fields{
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
@@ -378,7 +378,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Only Tool_Id filter applied, when Cloud_Service_Id filter off",
 			fields: fields{
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
@@ -484,7 +484,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "DB (pagination) error",
 			fields: fields{
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
 				}),
@@ -815,10 +815,10 @@ func TestService_GetEvidence(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyJWT{CloudServicesKey: testutil.TestCustomClaims, AllowAllKey: testutil.TestAllowAllClaims},
+				authz: servicetest.NewAuthorizationStrategy(false),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &evidence.GetEvidenceRequest{
 					EvidenceId: testdata.MockEvidenceID,
 				},
@@ -841,7 +841,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -858,7 +858,7 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "invalid UUID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -875,7 +875,7 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "evidence not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
