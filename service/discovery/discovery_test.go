@@ -307,6 +307,7 @@ func TestService_Start(t *testing.T) {
 
 	type fields struct {
 		envVariables []envVariable
+		authz        service.AuthorizationStrategy
 	}
 
 	tests := []struct {
@@ -319,7 +320,10 @@ func TestService_Start(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
-			name:           "No Azure authorizer",
+			name: "No Azure authorizer",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
@@ -329,6 +333,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Azure authorizer from ENV",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
 				envVariables: []envVariable{
 					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
 					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
@@ -358,6 +363,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "No K8s authorizer",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the K8S authorizer fails
 					{
@@ -376,6 +382,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Request with 2 providers",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
 					{
@@ -392,8 +399,10 @@ func TestService_Start(t *testing.T) {
 			wantErrMessage: "could not authenticate to",
 		},
 		{
-			name:           "Empty request",
-			fields:         fields{},
+			name: "Empty request",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
@@ -401,19 +410,33 @@ func TestService_Start(t *testing.T) {
 			wantErrMessage: "",
 		},
 		{
-			name:           "Request with wrong provider name",
-			fields:         fields{},
+			name: "Request with wrong provider name",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true, nil),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "provider falseProvider not known",
 		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockAnotherCloudServiceID}),
+			},
+			req:            &discovery.StartDiscoveryRequest{},
+			providers:      []string{},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "access denied",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(WithProviders(tt.providers))
+			s.authz = tt.fields.authz
 
 			for _, env := range tt.fields.envVariables {
 				if env.hasEnvVariable {

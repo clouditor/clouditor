@@ -50,9 +50,7 @@ service Discovery {
   // Lists all evidences collected in the last run, exposed as REST.
   rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
     option (google.api.http) = {
-      post : "/v1/discovery/query"
-      body : "*"
-      response_body : "*"
+      get : "/v1/discovery/resources"
     };
   }
 }
