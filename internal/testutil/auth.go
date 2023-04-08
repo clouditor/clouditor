@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	"clouditor.io/clouditor/internal/testdata"
 	"github.com/golang-jwt/jwt/v4"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
@@ -20,11 +21,6 @@ const (
 	TestAllowAllClaims   = "cladmin"
 	TestAuthClientID     = "client"
 	TestAuthClientSecret = "secret"
-
-	TestCloudService1     = "11111111-1111-1111-1111-111111111111"
-	TestCloudService2     = "22222222-2222-2222-2222-222222222222"
-	TestCloudServiceName1 = "My Cloud Service 1"
-	TestCloudServiceName2 = "My Cloud Service 2"
 )
 
 var (
@@ -45,7 +41,7 @@ var (
 	TestClaimsOnlyService1 = jwt.MapClaims{
 		"sub": "me",
 		"cloudserviceid": []string{
-			TestCloudService1,
+			testdata.MockCloudServiceID,
 		},
 		"other": []int{1, 2},
 	}

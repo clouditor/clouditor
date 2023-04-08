@@ -172,14 +172,14 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "permission granted",
 			svc: NewService(WithAuthorizationStrategyJWT(testutil.TestCustomClaims, testutil.TestAllowAllClaims), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.CloudService{
-					Id:   testutil.TestCloudService1,
+					Id:   testdata.MockCloudServiceID,
 					Name: "service1",
 				})
 			}))),
 			ctx: testutil.TestContextOnlyService1,
-			req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testutil.TestCloudService1},
+			req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
 			res: &orchestrator.CloudService{
-				Id:   testutil.TestCloudService1,
+				Id:   testdata.MockCloudServiceID,
 				Name: "service1",
 			},
 			wantErr: assert.NoError,
@@ -225,7 +225,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	// 3rd case: Service not found since there are no services yet
 	_, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{
 		CloudService: &orchestrator.CloudService{
-			Id:          testutil.TestCloudService1,
+			Id:          testdata.MockCloudServiceID,
 			Name:        DefaultTargetCloudServiceName,
 			Description: DefaultTargetCloudServiceDescription,
 		},
@@ -234,7 +234,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 
 	// 4th case: Service updated successfully
 	err = orchestratorService.storage.Create(&orchestrator.CloudService{
-		Id:          testutil.TestCloudService1,
+		Id:          testdata.MockCloudServiceID,
 		Name:        DefaultTargetCloudServiceName,
 		Description: DefaultTargetCloudServiceDescription,
 	})
@@ -244,7 +244,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	}
 	cloudService, err = orchestratorService.UpdateCloudService(testutil.TestContextOnlyService1, &orchestrator.UpdateCloudServiceRequest{
 		CloudService: &orchestrator.CloudService{
-			Id:          testutil.TestCloudService1,
+			Id:          testdata.MockCloudServiceID,
 			Name:        "NewName",
 			Description: "",
 		},

@@ -316,7 +316,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Successful Filter Of Evidences (with allowed cloud service)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, []string{evidencetest.MockEvidence1.CloudServiceId}),
+				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
@@ -415,7 +415,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Permission denied (cloud service id not allowed)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockCloudServiceID}), // allow only MockCloudServiceID
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID), // allow only MockCloudServiceID
 			},
 			args: args{
 				in0: context.TODO(),

@@ -266,7 +266,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: testutil.TestCloudService2,
+				CloudServiceId: testdata.MockAnotherCloudServiceID,
 				CatalogId:      testdata.MockCatalogID,
 			}},
 			wantResponse: assert.Nil,
@@ -699,7 +699,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: testutil.TestContextOnlyService1,
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: testutil.TestCloudService2,
+					CloudServiceId: testdata.MockAnotherCloudServiceID,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -843,7 +843,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: testutil.TestContextOnlyService1,
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
@@ -964,7 +964,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				in0: testutil.TestContextOnlyService1,
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						TargetOfEvaluationCloudServiceId: testutil.TestCloudService2,
+						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
@@ -1067,7 +1067,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			args: args{
 				in0: testutil.TestContextOnlyService1,
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					CloudServiceId:      testutil.TestCloudService2,
+					CloudServiceId:      testdata.MockAnotherCloudServiceID,
 					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
 					CatalogId:           testdata.MockCatalogID,

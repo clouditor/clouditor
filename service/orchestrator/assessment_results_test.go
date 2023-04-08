@@ -89,7 +89,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CloudServiceId),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest2,
@@ -140,7 +140,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest1,
@@ -156,7 +156,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult2))
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult3))
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, []string{orchestratortest.MockAssessmentResult1.CloudServiceId}),
+				authz: servicetest.NewAuthorizationStrategy(false, orchestratortest.MockAssessmentResult1.CloudServiceId),
 			},
 			args: args{
 				req: orchestratortest.MockAssessmentResultRequest1,
