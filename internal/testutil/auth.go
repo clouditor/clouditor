@@ -5,16 +5,11 @@ import (
 	"net"
 	"net/http"
 
+	"clouditor.io/clouditor/internal/testdata"
+
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
 	"golang.org/x/oauth2/clientcredentials"
-)
-
-const (
-	TestAuthUser         = "clouditor"
-	TestAuthPassword     = "clouditor"
-	TestAuthClientID     = "client"
-	TestAuthClientSecret = "secret"
 )
 
 // StartAuthenticationServer starts an authentication server on a random port with
@@ -32,10 +27,10 @@ func StartAuthenticationServer() (srv *oauth2.AuthorizationServer, port uint16, 
 
 	srv = oauth2.NewServer(fmt.Sprintf(":%d", port),
 		oauth2.WithClient("cli", "", "http://localhost:10000/callback"),
-		oauth2.WithClient(TestAuthClientID, TestAuthClientSecret, ""),
+		oauth2.WithClient(testdata.MockAuthClientID, testdata.MockAuthClientSecret, ""),
 		oauth2.WithPublicURL(fmt.Sprintf("http://localhost:%d", port)),
 		login.WithLoginPage(
-			login.WithUser(TestAuthUser, TestAuthPassword),
+			login.WithUser(testdata.MockAuthUser, testdata.MockAuthPassword),
 			login.WithBaseURL("/v1/auth"),
 		),
 	)
@@ -65,8 +60,8 @@ func AuthURL(port uint16) string {
 
 func AuthClientConfig(port uint16) *clientcredentials.Config {
 	return &clientcredentials.Config{
-		ClientID:     TestAuthClientID,
-		ClientSecret: TestAuthClientSecret,
+		ClientID:     testdata.MockAuthClientID,
+		ClientSecret: testdata.MockAuthClientSecret,
 		TokenURL:     TokenURL(port),
 	}
 }

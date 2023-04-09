@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 
 	oauth2 "github.com/oxisto/oauth2go"
@@ -52,7 +53,7 @@ func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) b
 		return false
 	}
 
-	if claims.Subject != testutil.TestAuthClientID {
+	if claims.Subject != testdata.MockAuthClientID {
 		tt.Errorf("Subject is not correct")
 		return true
 	}
@@ -73,7 +74,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 	defer authSrv.Close()
 
 	// Some pre-work to retrieve a valid token
-	token, err := authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
+	token, err := authSrv.GenerateToken(testdata.MockAuthClientID, 0, 0)
 	assert.NoError(t, err)
 	assert.NotNil(t, token)
 
