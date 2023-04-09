@@ -455,7 +455,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		}
 	}
 
-	// We need to further restrict our query according to the cloud service we are allowed to "see.".
+	// We need to further restrict our query according to the cloud service we are allowed to "see".
 	//
 	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
 	//  and once above in CheckAccess.
