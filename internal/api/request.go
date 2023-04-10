@@ -16,5 +16,4 @@ type PayloadRequest interface {
 // dependencies.
 type CloudServiceRequest interface {
 	GetCloudServiceId() string
-	proto.Message
 }

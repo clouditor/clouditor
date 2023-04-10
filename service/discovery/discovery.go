@@ -79,7 +79,7 @@ const (
 	DiscovererFinished
 )
 
-// DiscoveryEvent represents an event that is ommited if certain situations happen in the discoverer (defined by
+// DiscoveryEvent represents an event that is emitted if certain situations happen in the discoverer (defined by
 // [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
 // the future.
 type DiscoveryEvent struct {
@@ -105,6 +105,8 @@ type Service struct {
 	scheduler *gocron.Scheduler
 
 	authorizer api.Authorizer
+
+	authz service.AuthorizationStrategy
 
 	providers []string
 
@@ -173,6 +175,13 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+	return func(s *Service) {
+		s.authz = authz
+	}
+}
+
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := &Service{
@@ -184,6 +193,7 @@ func NewService(opts ...ServiceOption) *Service {
 		configurations: make(map[discovery.Discoverer]*Configuration),
 		Events:         make(chan *DiscoveryEvent),
 		csID:           discovery.DefaultCloudServiceID,
+		authz:          &service.AuthorizationStrategyAllowAll{},
 	}
 
 	// Apply any options
@@ -240,12 +250,17 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 }
 
 // Start starts discovery
-func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var opts = []azure.DiscoveryOption{}
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
@@ -361,9 +376,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Set the cloud service ID to the one of the discoverer
-		resource.SetServiceID(svc.csID)
-
 		var (
 			v *structpb.Value
 		)
@@ -410,20 +422,29 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
+func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
+	var (
+		query   []string
+		args    []any
+		all     bool
+		allowed []string
+	)
+
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	var query []string
-	var args []any
-
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
 	if req.Filter != nil {
+		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+			return nil, service.ErrPermissionDenied
+		}
+
 		if req.Filter.CloudServiceId != nil {
 			query = append(query, "cloud_service_id = ?")
 			args = append(args, req.Filter.GetCloudServiceId())
@@ -434,6 +455,16 @@ func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest
 		}
 	}
 
+	// We need to further restrict our query according to the cloud service we are allowed to "see".
+	//
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
+	//  and once above in CheckAccess.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		query = append(query, "cloud_service_id IN ?")
+		args = append(args, allowed)
+	}
+
 	res = new(discovery.ListResourcesResponse)
 
 	// Join query with AND and prepend the query
@@ -442,4 +473,11 @@ func (svc *Service) Query(_ context.Context, req *discovery.ListResourcesRequest
 	res.Results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
+}
+
+// GetCloudServiceId implements CloudServiceRequest for this service. This is a little trick, so that we can call
+// CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
+// cloud service ID, instead of the individual requests that are made against the service.
+func (svc *Service) GetCloudServiceId() string {
+	return svc.csID
 }
