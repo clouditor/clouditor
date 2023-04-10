@@ -29,15 +29,14 @@ import (
 	"net/http"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-
 	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/voc"
 )
 
 type mockNetworkSender struct {
@@ -253,7 +252,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
 							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							ServiceID: testutil.TestCloudService1,
+							ServiceID: testdata.MockCloudServiceID,
 							Name:      "iface1",
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -269,7 +268,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								ServiceID: testutil.TestCloudService1,
+								ServiceID: testdata.MockCloudServiceID,
 								Name:      "lb1",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
@@ -289,7 +288,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								ServiceID: testutil.TestCloudService1,
+								ServiceID: testdata.MockCloudServiceID,
 								Name:      "lb2",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
@@ -309,7 +308,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								ServiceID: testutil.TestCloudService1,
+								ServiceID: testdata.MockCloudServiceID,
 								Name:      "lb3",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",

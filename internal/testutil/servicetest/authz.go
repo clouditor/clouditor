@@ -5,10 +5,14 @@ import (
 
 	"clouditor.io/clouditor/internal/api"
 	"clouditor.io/clouditor/service"
+
 	"golang.org/x/exp/slices"
 )
 
-func NewAuthorizationStrategy(all bool, cloudServiceIDs []string) service.AuthorizationStrategy {
+// NewAuthorizationStrategy contains a mock for a
+// [service.AuthorizationStrategy] that either allows all cloud services or the
+// ones that are specified in the ID list.
+func NewAuthorizationStrategy(all bool, cloudServiceIDs ...string) service.AuthorizationStrategy {
 	return &AuthorizationStrategyMock{
 		all:             all,
 		cloudServiceIDs: cloudServiceIDs,

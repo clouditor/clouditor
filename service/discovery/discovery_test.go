@@ -39,7 +39,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -87,13 +87,13 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
 				opts: []ServiceOption{
-					WithCloudServiceID(testutil.TestCloudService1),
+					WithCloudServiceID(testdata.MockCloudServiceID),
 				},
 			},
 			want: &Service{
 				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
 				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              testutil.TestCloudService1,
+				csID:              testdata.MockCloudServiceID,
 			},
 		},
 	}
@@ -168,7 +168,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			name: "No err with custom cloud service ID",
 			fields: fields{
 				discoverer: mockDiscoverer{testCase: 2},
-				csID:       testutil.TestCloudService1,
+				csID:       testdata.MockCloudServiceID,
 			},
 			checkEvidence: true,
 		},
@@ -453,7 +453,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 }
 
 func (mockDiscoverer) CloudServiceID() string {
-	return testutil.TestCloudService1
+	return testdata.MockCloudServiceID
 }
 
 func wrongFormattedResource() voc.IsCloudResource {

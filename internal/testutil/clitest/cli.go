@@ -9,8 +9,10 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/service"
+
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -37,14 +39,14 @@ func PrepareSession(authPort uint16, authSrv *oauth2.AuthorizationServer, grpcUR
 	viper.Set(cli.SessionFolderFlag, dir)
 
 	// Simulate a login by directly granting a token
-	token, err = authSrv.GenerateToken(testutil.TestAuthClientID, 0, 0)
+	token, err = authSrv.GenerateToken(testdata.MockAuthClientID, 0, 0)
 	if err != nil {
 		return "", err
 	}
 
 	// TODO(oxisto): This is slightly duplicated code from the Login command. Extract it into the session struct
 	session, err = cli.NewSession(grpcURL, &oauth2.Config{
-		ClientID: testutil.TestAuthClientID,
+		ClientID: testdata.MockAuthClientID,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  testutil.AuthURL(authPort),
 			TokenURL: testutil.TokenURL(authPort),
