@@ -322,7 +322,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "No Azure authorizer",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
@@ -333,7 +333,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Azure authorizer from ENV",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
 					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
@@ -363,7 +363,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "No K8s authorizer",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the K8S authorizer fails
 					{
@@ -382,7 +382,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Request with 2 providers",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
 					{
@@ -401,7 +401,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Empty request",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
@@ -412,7 +412,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Request with wrong provider name",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true, nil),
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"falseProvider"},
@@ -423,7 +423,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockAnotherCloudServiceID}),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
 			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
