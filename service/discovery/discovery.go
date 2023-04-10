@@ -259,7 +259,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	}
 
 	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, svc) {
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -475,6 +475,9 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	return
 }
 
+// GetCloudServiceId implements CloudServiceRequest for this service. This is a little trick, so that we can call
+// CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
+// cloud service ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCloudServiceId() string {
 	return svc.csID
 }
