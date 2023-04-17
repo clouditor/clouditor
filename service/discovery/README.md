@@ -187,3 +187,21 @@
 
 </details>
 
+# Azure Backup
+There are 2 different backup solutions for different resources
+- Backup Vaults and
+- Recovery Services Vault.
+
+| Resource   | Backup Vaults | Recovery Services Vault |
+|------------|-------|-----|
+| Azure Virtual Machine | | ✅ |
+| Azure Storage (Files)| | ✅ |
+| Azure Backup Agent| | ✅ |
+| Azure Backup Server| | ✅ |
+| DPM| | ✅ |
+| SQL in Azure VM | | ✅ |
+| SAP HANA in Azure VM | | ✅ |
+| Azure Storage (Blobs) | ✅ | |
+| Azure disks | ✅ | |
+| Azure Database for PostgreSQL servers | ✅ | |
+| Kubernetes Services | ✅ | |
