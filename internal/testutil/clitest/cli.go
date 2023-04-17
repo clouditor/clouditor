@@ -11,8 +11,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/service"
-
+	"clouditor.io/clouditor/server"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -75,43 +74,57 @@ func PrepareSession(authPort uint16, authSrv *oauth2.AuthorizationServer, grpcUR
 //
 // Since this function is primarily used in a TestMain and no testing.T object is available at this
 // point, this function WILL panic on errors.
-func RunCLITest(m *testing.M, opts ...service.StartGRPCServerOption) (code int) {
+func RunCLITest(m *testing.M, opts ...server.StartGRPCServerOption) (code int) {
+	ret, err := RunCLITestFunc(m.Run, opts...)
+	if err != nil {
+		panic(err)
+	}
+
+	return *ret
+}
+
+// RunCLITestFunc can be used to launch individual test functions with a gRPC server. It takes care of launching an
+// authorization server as well as a gRPC server with the selected services supplied as options. It also automatically
+// issues a login command to the auth service.
+func RunCLITestFunc[T any](f func() T, opts ...server.StartGRPCServerOption) (retPtr *T, err error) {
 	var (
-		err      error
 		tmpDir   string
 		auth     *oauth2.AuthorizationServer
 		authPort uint16
 		grpcPort uint16
 		sock     net.Listener
-		server   *grpc.Server
+		srv      *grpc.Server
 	)
 
 	auth, authPort, err = testutil.StartAuthenticationServer()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	sock, server, err = service.StartGRPCServer(testutil.JWKSURL(authPort), opts...)
+	// Make sure, we are using authentication for the tests
+	opts = append(opts, server.WithJWKS(testutil.JWKSURL(authPort)))
+
+	sock, srv, err = server.StartGRPCServer("127.0.0.1:0", opts...)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	grpcPort = sock.Addr().(*net.TCPAddr).AddrPort().Port()
 
 	tmpDir, err = PrepareSession(authPort, auth, fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	code = m.Run()
+	ret := f()
 
 	sock.Close()
-	server.Stop()
+	srv.Stop()
 
 	// Remove temporary session directory
 	os.RemoveAll(tmpDir)
 
-	return code
+	return &ret, nil
 }
 
 // AutoChdir automatically guesses if we need to change the current working directory
