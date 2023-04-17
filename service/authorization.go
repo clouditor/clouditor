@@ -60,16 +60,23 @@ type AuthorizationStrategy interface {
 // AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of cloud service IDs to be in a specific JWT
 // claim key.
 type AuthorizationStrategyJWT struct {
-	Key string
+	CloudServicesKey string
+	AllowAllKey      string
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
 func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CloudServiceRequest) bool {
-	var list []string
+	var (
+		list []string
+		all  bool
+	)
 
-	// Retrieve the list of allowed cloud services. we never allow to retrieve
-	// "all" services with the token strategy.
-	_, list = a.AllowedCloudServices(ctx)
+	// Retrieve the list of allowed cloud services.
+	all, list = a.AllowedCloudServices(ctx)
+
+	if all {
+		return true
+	}
 
 	return slices.Contains(list, req.GetCloudServiceId())
 }
@@ -84,6 +91,12 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		l      []interface{}
 		s      string
 	)
+
+	// Check, if the context is nil
+	if ctx == nil {
+		log.Debugf("Retrieving allowed cloud services failed because of an empty context")
+		return false, nil
+	}
 
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
@@ -100,8 +113,13 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		return false, nil
 	}
 
+	// Let's look for an allow all key
+	if b, ok := claims[a.AllowAllKey].(bool); ok && b {
+		return true, nil
+	}
+
 	// We are looking for an array claim
-	if l, ok = claims[a.Key].([]interface{}); !ok {
+	if l, ok = claims[a.CloudServicesKey].([]interface{}); !ok {
 		log.Debug("Retrieving allowed cloud services from token failed: specified claims key is not an array", err)
 		return false, nil
 	}

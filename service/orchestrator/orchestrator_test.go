@@ -41,9 +41,10 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -94,12 +95,12 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithStorage(myStorage)},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, myStorage, service.storage)
+				return assert.Equal(tt, myStorage, s.storage)
 			},
 		},
 		{
@@ -108,12 +109,12 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, "catalogsfile.json", service.catalogsFile)
+				return assert.Equal(tt, "catalogsfile.json", s.catalogsFile)
 			},
 		},
 		{
@@ -122,12 +123,26 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, "metricsfile.json", service.metricsFile)
+				return assert.Equal(tt, "metricsfile.json", s.metricsFile)
+			},
+		},
+		{
+			name: "New service with authorization strategy",
+			args: args{
+				opts: []ServiceOption{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, &service.AuthorizationStrategyAllowAll{}, s.authz)
 			},
 		},
 	}
@@ -384,9 +399,11 @@ func Test_GetCertificate(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
-				// Compare timestamp. We have to cut off the microseconds, otherwise an error is returned.
-				tt.res.States[0].Timestamp = strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
-				res.States[0].Timestamp = strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				// Compare timestamp. We have to cut off the microseconds and seconds, otherwise an error can be returned.
+				t1 := strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
+				tt.res.States[0].Timestamp = t1[:len(t1)-3]
+				t2 := strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				res.States[0].Timestamp = t2[:len(t2)-3]
 				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
 		})

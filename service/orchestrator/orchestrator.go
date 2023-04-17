@@ -137,9 +137,15 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 }
 
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
-func WithAuthorizationStrategyJWT(key string) ServiceOption {
+func WithAuthorizationStrategyJWT(key string, allowAllKey string) ServiceOption {
 	return func(s *Service) {
-		s.authz = &service.AuthorizationStrategyJWT{Key: key}
+		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
+	}
+}
+
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+	return func(s *Service) {
+		s.authz = authz
 	}
 }
 

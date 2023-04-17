@@ -1,8 +1,9 @@
 package testdata
 
 import (
-	"clouditor.io/clouditor/voc"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"clouditor.io/clouditor/voc"
 )
 
 const (
@@ -28,14 +29,17 @@ const (
 	MockCatalogDescription        = "This is a mock catalog"
 	MockCategoryName              = "Mock Category Name"
 	MockCategoryDescription       = "This is a mock category"
-	MockControlID1                = "Cont1234"
-	MockControlID2                = "Cont2.B"
-	MockControlID3                = "Cont3.S"
-	MockControlID4                = "Cont4.H"
+	MockControlID1                = "Cont1"
+	MockControlID2                = "Cont2"
+	MockControlID3                = "Cont3"
+	MockControlID4                = "Cont4"
 	MockControlID5                = "Cont5"
 	MockControlName               = "Mock Control Name"
 	MockControlDescription        = "This is a mock control"
-	MockSubControlID              = "Cont1234.1"
+	MockSubControlID11            = "Cont1.1"
+	MockSubControlID21            = "Cont2.1"
+	MockSubControlID31            = "Cont3.1"
+	MockSubControlID32            = "Cont3.2"
 	MockSubControlName            = "Mock Sub-Control Name"
 	MockSubControlDescription     = "This is a mock sub-control"
 	MockAnotherControlID          = "Cont4567"
@@ -54,9 +58,9 @@ const (
 
 	// Evidence
 	MockEvidenceID            = "11111111-1111-1111-1111-111111111111"
-	MockEvidenceToolID        = "Mock Tool ID"
+	MockEvidenceToolID        = "39d85e98-c3da-11ed-afa1-0242ac120002"
 	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
-	MockAnotherEvidenceToolID = "Another Mock Tool ID"
+	MockAnotherEvidenceToolID = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Resource
 	MockResourceID          = "my-resource-id"

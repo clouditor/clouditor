@@ -34,8 +34,8 @@ import (
 
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/server"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -85,7 +85,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -112,7 +112,7 @@ func TestNewListResultsCommand(t *testing.T) {
 	err := cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &orchestrator.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)

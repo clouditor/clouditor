@@ -27,11 +27,9 @@ package discovery
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -40,16 +38,16 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -71,7 +69,7 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Service
+		want assert.ValueAssertionFunc
 	}{
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
@@ -80,25 +78,33 @@ func TestNewService(t *testing.T) {
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
-			want: &Service{
-				assessmentAddress: grpcTarget{target: "localhost:9091"},
-				resources:         make(map[string]voc.IsCloudResource),
-				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              discovery.DefaultCloudServiceID,
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, "localhost:9091", s.assessmentAddress.target)
 			},
 		},
 		{
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
 				opts: []ServiceOption{
-					WithCloudServiceID(testutil.TestCloudService1),
+					WithCloudServiceID(testdata.MockCloudServiceID),
 				},
 			},
-			want: &Service{
-				assessmentAddress: grpcTarget{target: DefaultAssessmentAddress},
-				resources:         make(map[string]voc.IsCloudResource),
-				configurations:    make(map[discovery.Discoverer]*Configuration),
-				csID:              testutil.TestCloudService1,
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, testdata.MockCloudServiceID, s.csID)
+			},
+		},
+		{
+			name: "Create service with option 'WithAuthorizationStrategy'",
+			args: args{
+				opts: []ServiceOption{
+					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
 			},
 		},
 	}
@@ -106,27 +112,7 @@ func TestNewService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
-
-			// we cannot compare the scheduler, so we first check if it is not empty and then nil it
-			assert.NotEmpty(t, got.scheduler)
-			got.scheduler = nil
-			tt.want.scheduler = nil
-			got.Events = nil
-			tt.want.Events = nil
-
-			// we cannot compare the assessment streams, so we first check if it is not empty and then nil it
-			assert.NotEmpty(t, got.assessmentStreams)
-			got.assessmentStreams = nil
-			tt.want.assessmentStreams = nil
-
-			// we cannot compare the Events, so we first check if it is not empty and then nil it
-			assert.Empty(t, got.Events)
-			got.Events = nil
-			tt.want.Events = nil
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewService() = %v, want %v", got, tt.want)
-			}
+			tt.want(t, got)
 		})
 	}
 }
@@ -145,21 +131,21 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 0},
+				discoverer: &mockDiscoverer{testCase: 0, csID: discovery.DefaultCloudServiceID},
 				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "Err in marshaling the resource containing circular dependencies",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 1},
+				discoverer: &mockDiscoverer{testCase: 1, csID: discovery.DefaultCloudServiceID},
 				csID:       discovery.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 2},
+				discoverer: &mockDiscoverer{testCase: 2, csID: discovery.DefaultCloudServiceID},
 				csID:       discovery.DefaultCloudServiceID,
 			},
 			checkEvidence: true,
@@ -167,8 +153,8 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "No err with custom cloud service ID",
 			fields: fields{
-				discoverer: mockDiscoverer{testCase: 2},
-				csID:       testutil.TestCloudService1,
+				discoverer: &mockDiscoverer{testCase: 2, csID: testdata.MockCloudServiceID},
+				csID:       testdata.MockCloudServiceID,
 			},
 			checkEvidence: true,
 		},
@@ -213,60 +199,101 @@ func TestService_StartDiscovery(t *testing.T) {
 	}
 }
 
-func TestService_Query(t *testing.T) {
-	s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
-	s.StartDiscovery(mockDiscoverer{testCase: 2})
-
+func TestService_ListResources(t *testing.T) {
 	type fields struct {
-		resources    map[string]voc.IsCloudResource
-		queryRequest *discovery.QueryRequest
+		authz service.AuthorizationStrategy
+		csID  string
+	}
+	type args struct {
+		req *discovery.ListResourcesRequest
 	}
 	tests := []struct {
-		name string
-		fields
+		name                     string
+		fields                   fields
+		args                     args
 		numberOfQueriedResources int
-		wantErr                  bool
+		wantErr                  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Err when unmarshalling",
+			name: "Filter type, allow all",
 			fields: fields{
-				queryRequest: &discovery.QueryRequest{},
-				resources: map[string]voc.IsCloudResource{
-					"MockResourceId": wrongFormattedResource(),
-				},
+				authz: servicetest.NewAuthorizationStrategy(true),
+				csID:  testdata.MockCloudServiceID,
 			},
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.ListResourcesRequest_Filter{
+					Type: util.Ref("Storage"),
+				},
+			}},
 			numberOfQueriedResources: 1,
-			wantErr:                  true,
+			wantErr:                  assert.NoError,
 		},
 		{
-			name:                     "Filter type",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{FilteredType: util.Ref("Compute")}},
-			numberOfQueriedResources: 0,
-		},
-		{
-			name:                     "No filtering",
-			fields:                   fields{queryRequest: &discovery.QueryRequest{}},
+			name: "Filter cloud service, allow",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				csID:  testdata.MockCloudServiceID,
+			},
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.ListResourcesRequest_Filter{
+					CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+				},
+			}},
 			numberOfQueriedResources: 2,
+			wantErr:                  assert.NoError,
+		},
+		{
+			name: "Filter cloud service, not allowed",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				csID:  testdata.MockCloudServiceID,
+			},
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.ListResourcesRequest_Filter{
+					CloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
+				},
+			}},
+			numberOfQueriedResources: 0,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+		{
+			name: "No filtering, allow all",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+				csID:  testdata.MockCloudServiceID,
+			},
+			args:                     args{req: &discovery.ListResourcesRequest{}},
+			numberOfQueriedResources: 2,
+			wantErr:                  assert.NoError,
+		},
+		{
+			name: "No filtering, allow different cloud service, empty result",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
+				csID:  testdata.MockCloudServiceID,
+			},
+			args:                     args{req: &discovery.ListResourcesRequest{}},
+			numberOfQueriedResources: 0,
+			wantErr:                  assert.NoError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Add resources (bad formatted ones)
-			if res := tt.fields.resources; res != nil {
-				for k, v := range res {
-					s.resources[k] = v
-				}
+			s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
+			s.authz = tt.fields.authz
+			s.csID = tt.fields.csID
+			s.StartDiscovery(&mockDiscoverer{testCase: 2, csID: tt.fields.csID})
+
+			response, err := s.ListResources(context.TODO(), tt.args.req)
+			tt.wantErr(t, err)
+
+			if err == nil {
+				assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
 			}
-			response, err := s.Query(context.TODO(), &discovery.QueryRequest{FilteredType: tt.fields.queryRequest.FilteredType})
-			assert.Equal(t, tt.wantErr, err != nil)
-			if err != nil {
-				return
-			}
-			assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
 		})
-		// If a bad resource was added it will be removed. Otherwise no-op
-		delete(s.resources, "MockResourceId")
 	}
 }
 
@@ -280,6 +307,7 @@ func TestService_Start(t *testing.T) {
 
 	type fields struct {
 		envVariables []envVariable
+		authz        service.AuthorizationStrategy
 	}
 
 	tests := []struct {
@@ -292,7 +320,10 @@ func TestService_Start(t *testing.T) {
 		wantErrMessage string
 	}{
 		{
-			name:           "No Azure authorizer",
+			name: "No Azure authorizer",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{ProviderAzure},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
@@ -302,6 +333,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Azure authorizer from ENV",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
 					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
@@ -331,6 +363,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "No K8s authorizer",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the K8S authorizer fails
 					{
@@ -349,6 +382,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Request with 2 providers",
 			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
 				envVariables: []envVariable{
 					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
 					{
@@ -365,8 +399,10 @@ func TestService_Start(t *testing.T) {
 			wantErrMessage: "could not authenticate to",
 		},
 		{
-			name:           "Empty request",
-			fields:         fields{},
+			name: "Empty request",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
 			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
@@ -374,19 +410,33 @@ func TestService_Start(t *testing.T) {
 			wantErrMessage: "",
 		},
 		{
-			name:           "Request with wrong provider name",
-			fields:         fields{},
+			name: "Request with wrong provider name",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{"falseProvider"},
 			wantResp:       nil,
 			wantErr:        true,
 			wantErrMessage: "provider falseProvider not known",
 		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
+			},
+			req:            &discovery.StartDiscoveryRequest{},
+			providers:      []string{},
+			wantResp:       nil,
+			wantErr:        true,
+			wantErrMessage: "access denied",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(WithProviders(tt.providers))
+			s.authz = tt.fields.authz
 
 			for _, env := range tt.fields.envVariables {
 				if env.hasEnvVariable {
@@ -417,54 +467,11 @@ func TestService_Shutdown(t *testing.T) {
 
 }
 
-// TestHandleError tests handleError (if all error cases are executed/printed)
-func TestHandleError(t *testing.T) {
-	type args struct {
-		err  error
-		dest string
-	}
-	tests := []struct {
-		name           string
-		args           args
-		wantErrSnippet string
-	}{
-		{
-			name: "handleInternalError",
-			args: args{
-				err:  status.Error(codes.Internal, "internal error"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "internal",
-		},
-		{
-			name: "handleInvalidError",
-			args: args{
-				err:  status.Errorf(codes.InvalidArgument, "invalid argument"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "invalid",
-		},
-		{
-			name: "handleSomeOtherErr",
-			args: args{
-				err:  errors.New("some other error"),
-				dest: "SomeDestination",
-			},
-			wantErrSnippet: "some other error",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := handleError(tt.args.err, tt.args.dest)
-			assert.Contains(t, err.Error(), tt.wantErrSnippet)
-		})
-	}
-}
-
 // mockDiscoverer implements Discoverer and mocks the API to cloud resources
 type mockDiscoverer struct {
 	// testCase allows for different implementations for table tests in TestStartDiscovery
 	testCase int
+	csID     string
 }
 
 func (mockDiscoverer) Name() string { return "just mocking" }
@@ -479,11 +486,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:   "some-id",
-						Name: "some-name",
-						Type: []string{"ObjectStorage", "Storage", "Resource"},
-					},
+					Resource: discovery.NewResource(&m,
+						"some-id",
+						"some-name", nil, voc.GeoLocation{}, nil,
+						[]string{"ObjectStorage", "Storage", "Resource"}),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -491,11 +497,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					Storage: []voc.ResourceID{"some-id"},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:   "some-storage-account-id",
-								Name: "some-storage-account-name",
-								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
-							},
+							Resource: discovery.NewResource(&m,
+								"some-storage-account-id",
+								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
+								[]string{"StorageService", "NetworkService", "Networking", "Resource"}),
 						},
 					},
 				},
@@ -513,8 +518,9 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	}
 }
 
-func (mockDiscoverer) CloudServiceID() string {
-	return testutil.TestCloudService1
+// CloudServiceID is an implementation for discovery.Discoverer
+func (d *mockDiscoverer) CloudServiceID() string {
+	return d.csID
 }
 
 func wrongFormattedResource() voc.IsCloudResource {

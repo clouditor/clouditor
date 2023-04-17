@@ -33,15 +33,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
-
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/stretchr/testify/assert"
 )
@@ -336,12 +335,12 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 		{
 			name: "With cloud service ID",
 			args: args{
-				opts: []DiscoveryOption{WithCloudServiceID(testutil.TestCloudService1)},
+				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID)},
 			},
 			want: &azureComputeDiscovery{
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
-					csID:                testutil.TestCloudService1,
+					csID:                testdata.MockCloudServiceID,
 				},
 				make(map[string]*defenderProperties),
 			},
@@ -549,7 +548,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -571,7 +570,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -593,7 +592,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "anotherdisk",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -615,7 +614,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         voc.VirtualMachineType,
@@ -653,7 +652,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         voc.VirtualMachineType,
@@ -691,7 +690,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm3",
 							Type:         voc.VirtualMachineType,
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -729,7 +728,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         voc.FunctionType,
@@ -757,7 +756,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "anotherdisk",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -827,7 +826,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -915,7 +914,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-						ServiceID:    testutil.TestCloudService1,
+						ServiceID:    testdata.MockCloudServiceID,
 						Name:         "function1",
 						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -978,7 +977,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1016,7 +1015,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1054,7 +1053,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -1195,7 +1194,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-						ServiceID:    testutil.TestCloudService1,
+						ServiceID:    testdata.MockCloudServiceID,
 						Name:         "vm1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1459,7 +1458,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1481,7 +1480,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1503,7 +1502,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testutil.TestCloudService1,
+							ServiceID:    testdata.MockCloudServiceID,
 							Name:         "anotherdisk",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1630,7 +1629,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(diskID),
-						ServiceID:    testutil.TestCloudService1,
+						ServiceID:    testdata.MockCloudServiceID,
 						Name:         "disk1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"BlockStorage", "Storage", "Resource"},

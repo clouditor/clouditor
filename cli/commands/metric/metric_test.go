@@ -33,7 +33,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +43,7 @@ import (
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(service_orchestrator.NewService())))
+	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(service_orchestrator.NewService())))
 }
 
 func TestListMetrics(t *testing.T) {
