@@ -72,7 +72,7 @@ func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 	}
 }
 
-// WithOrchestrator is an option for [StartGRPCServer] to register a [discovery.DiscoveryServer] at start.
+// WithDiscovery is an option for [StartGRPCServer] to register a [discovery.DiscoveryServer] at start.
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	return func(srv *Server, ac *AuthConfig) {
 		discovery.RegisterDiscoveryServer(srv, svc)
