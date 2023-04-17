@@ -27,10 +27,8 @@ package discovery
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"time"
 
@@ -422,20 +420,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 
 		channel.Send(&assessment.AssessEvidenceRequest{Evidence: e})
 	}
-
-	// TODO(anatheka): Delete before push
-	// err = storeEvidencesToFilesystem(list)
-	// if err != nil {
-	// 	log.Errorf("Error storing evidences to filesystem: %v", err)
-	// }
-}
-
-// TODO(anatheka): Delete before push
-func storeEvidencesToFilesystem(list []voc.IsCloudResource) error {
-	file, _ := json.MarshalIndent(list, "", " ")
-	err := ioutil.WriteFile("evidences.json", file, 0644)
-
-	return err
 }
 
 func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
