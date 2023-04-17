@@ -42,7 +42,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	msgraphsdkgo "github.com/microsoftgraph/msgraph-sdk-go"
 
 	"github.com/sirupsen/logrus"
 
@@ -118,9 +117,6 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
-	defenderClient          *armsecurity.PricingsClient
-	healthClient            *msgraphsdkgo.GraphServiceClient
-	// healthClient            *armresourcegraph.Client
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -185,6 +181,48 @@ func NewAuthorizer() (*azidentity.DefaultAzureCredential, error) {
 	}
 
 	return cred, nil
+}
+
+type defenderProperties struct {
+	monitoringLogDataEnabled bool
+	securityAlertsEnabled    bool
+}
+
+// discoverDefender discovers Defender for X services and returns a map with the following properties for each defender type
+// * monitoringLogDataEnabled
+// * securityAlertsEnabled
+// The property will be set to the individual resources, e.g., compute, storage in the corresponding discoverers
+func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, error) {
+	var pricings = make(map[string]*defenderProperties)
+
+	// Create new defender client
+	defenderClient, err := armsecurity.NewPricingsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get new defender client: %w", err)
+		return nil, err
+	}
+
+	// List all pricings to get the enabled Defender for X
+	pricingsList, err := defenderClient.List(context.Background(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not discover pricing")
+	}
+
+	for _, elem := range pricingsList.Value {
+		if *elem.Properties.PricingTier == armsecurity.PricingTierFree {
+			pricings[*elem.Name] = &defenderProperties{
+				monitoringLogDataEnabled: false,
+				securityAlertsEnabled:    false,
+			}
+		} else {
+			pricings[*elem.Name] = &defenderProperties{
+				monitoringLogDataEnabled: true,
+				securityAlertsEnabled:    true,
+			}
+		}
+	}
+
+	return pricings, nil
 }
 
 func resourceGroupName(id string) string {

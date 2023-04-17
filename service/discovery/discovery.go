@@ -40,7 +40,9 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/go-co-op/gocron"
@@ -261,30 +263,28 @@ func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryReques
 			}
 
 			discoverer = append(discoverer,
-				// azure.NewAzureComputeDiscovery(opts...),
-				// azure.NewAzureStorageDiscovery(opts...),
-				// azure.NewAzureNetworkDiscovery(opts...),
-				azure.NewAzureHealthDiscovery(opts...),
-				azure.NewAzureDefenderDiscovery(azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID)))
+				azure.NewAzureComputeDiscovery(opts...),
+				azure.NewAzureStorageDiscovery(opts...),
+				azure.NewAzureNetworkDiscovery(opts...))
 		case provider == ProviderK8S:
-			// k8sClient, err := k8s.AuthFromKubeConfig()
-			// if err != nil {
-			// 	log.Errorf("Could not authenticate to Kubernetes: %v", err)
-			// 	return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
-			// }
-			// discoverer = append(discoverer,
-			// 	k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
-			// 	k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
-			// 	k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
+			k8sClient, err := k8s.AuthFromKubeConfig()
+			if err != nil {
+				log.Errorf("Could not authenticate to Kubernetes: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
+			}
+			discoverer = append(discoverer,
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
 		case provider == ProviderAWS:
-			// awsClient, err := aws.NewClient()
-			// if err != nil {
-			// 	log.Errorf("Could not authenticate to AWS: %v", err)
-			// 	return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
-			// }
-			// discoverer = append(discoverer,
-			// 	aws.NewAwsStorageDiscovery(awsClient, svc.csID),
-			// 	aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+			awsClient, err := aws.NewClient()
+			if err != nil {
+				log.Errorf("Could not authenticate to AWS: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
+			}
+			discoverer = append(discoverer,
+				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

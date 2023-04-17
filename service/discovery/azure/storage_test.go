@@ -247,6 +247,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -264,6 +265,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -277,6 +279,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 	}
@@ -587,7 +590,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{csID: testutil.TestCloudService1}}
+	d := azureStorageDiscovery{&azureDiscovery{csID: testutil.TestCloudService1}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -626,7 +629,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{}}
+	d := azureStorageDiscovery{&azureDiscovery{}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"

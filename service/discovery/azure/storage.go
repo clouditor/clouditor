@@ -43,8 +43,13 @@ var (
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
+const (
+	DefenderType = "StorageAccounts"
+)
+
 type azureStorageDiscovery struct {
 	*azureDiscovery
+	defenderProperties map[string]*defenderProperties
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -53,6 +58,7 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
 		},
+		make(map[string]*defenderProperties),
 	}
 
 	// Apply options
@@ -78,6 +84,12 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 
 	log.Info("Discover Azure storage resources")
+
+	// Discover Defender for X properties to add it to the required resource properties
+	d.defenderProperties, err = d.discoverDefender()
+	if err != nil {
+		log.Errorf("Could not discover Defender for X")
+	}
 
 	// Discover storage accounts
 	storageAccounts, err := d.discoverStorageAccounts()
@@ -236,6 +248,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			Immutability: &voc.Immutability{
 				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
 			},
+			ResourceLogging: d.createResourceLogging(),
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
@@ -333,6 +346,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				labels(account.Tags),
 				voc.FileStorageType,
 			),
+			ResourceLogging:  d.createResourceLogging(),
 			AtRestEncryption: enc,
 		},
 	}, nil
@@ -384,6 +398,17 @@ func accountName(id string) string {
 
 	splitName := strings.Split(id, "/")
 	return splitName[8]
+}
+
+func (d *azureStorageDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
+	if d.defenderProperties[StorageComponent] != nil {
+		resourceLogging = &voc.ResourceLogging{
+			MonitoringLogDataEnabled: d.defenderProperties[DefenderType].monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    d.defenderProperties[DefenderType].securityAlertsEnabled,
+		}
+	}
+
+	return
 }
 
 // initAccountsClient creates the client if not already exists
