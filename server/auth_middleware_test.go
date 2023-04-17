@@ -33,12 +33,12 @@ import (
 
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
