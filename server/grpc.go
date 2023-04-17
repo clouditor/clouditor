@@ -58,7 +58,7 @@ func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption
 	}
 }
 
-// WithOrchestrator is an option for [StartGRPCServer] to register a [assessment.AssessmentServer] at start.
+// WithAssessment is an option for [StartGRPCServer] to register a [assessment.AssessmentServer] at start.
 func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
 	return func(srv *Server, ac *AuthConfig) {
 		assessment.RegisterAssessmentServer(srv, svc)
