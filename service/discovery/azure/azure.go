@@ -49,9 +49,11 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
+	StorageComponent           = "storage"
+	ComputeComponent           = "compute"
+	NetworkComponent           = "network"
+	DefenderStorageType        = "AccountStorages"
+	DefenderVirtualMachineType = "VirtualMachines"
 )
 
 var (

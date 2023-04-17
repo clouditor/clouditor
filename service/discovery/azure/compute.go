@@ -426,10 +426,10 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 
 // TODO(all): Update to generic function or method
 func (d *azureComputeDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
-	if d.defenderProperties[StorageComponent] != nil {
+	if d.defenderProperties[DefenderVirtualMachineType] != nil {
 		resourceLogging = &voc.ResourceLogging{
-			MonitoringLogDataEnabled: d.defenderProperties[DefenderType].monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    d.defenderProperties[DefenderType].securityAlertsEnabled,
+			MonitoringLogDataEnabled: d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled,
 		}
 	}
 

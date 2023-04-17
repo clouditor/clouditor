@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
@@ -37,7 +38,6 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -1860,6 +1860,54 @@ func Test_diskEncryptionSetName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_createResourceLogging(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		wantResourceLogging *voc.ResourceLogging
+	}{
+		{
+			name: "Missing defenderProperties",
+			fields: fields{
+				azureDiscovery:     NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+			wantResourceLogging: nil,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: map[string]*defenderProperties{
+					DefenderVirtualMachineType: {
+						monitoringLogDataEnabled: true,
+						securityAlertsEnabled:    true,
+					},
+				},
+			},
+			wantResourceLogging: &voc.ResourceLogging{
+				MonitoringLogDataEnabled: true,
+				SecurityAlertsEnabled:    true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			if gotResourceLogging := d.createResourceLogging(); !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
+				t.Errorf("azureComputeDiscovery.createResourceLogging() = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
+			}
 		})
 	}
 }

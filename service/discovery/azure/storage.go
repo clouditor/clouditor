@@ -43,10 +43,6 @@ var (
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
-const (
-	DefenderType = "VirtualMachines"
-)
-
 type azureStorageDiscovery struct {
 	*azureDiscovery
 	defenderProperties map[string]*defenderProperties
@@ -402,10 +398,10 @@ func accountName(id string) string {
 
 // TODO(all): Update to generic function or method
 func (d *azureStorageDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
-	if d.defenderProperties[StorageComponent] != nil {
+	if d.defenderProperties[DefenderStorageType] != nil {
 		resourceLogging = &voc.ResourceLogging{
-			MonitoringLogDataEnabled: d.defenderProperties[DefenderType].monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    d.defenderProperties[DefenderType].securityAlertsEnabled,
+			MonitoringLogDataEnabled: d.defenderProperties[DefenderStorageType].monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    d.defenderProperties[DefenderStorageType].securityAlertsEnabled,
 		}
 	}
 
