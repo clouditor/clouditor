@@ -65,4 +65,7 @@ type Storage interface {
 
 	// Delete deletes the record with given id of the DB
 	Delete(r any, conds ...any) error
+
+	// Raw executes a raw SQL statement and stores the result in r
+	Raw(r any, query string, args ...any) error
 }
