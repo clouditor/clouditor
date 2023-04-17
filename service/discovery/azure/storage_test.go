@@ -591,7 +591,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{csID: testutil.TestCloudService1}, make(map[string]*defenderProperties)}
+	d := azureStorageDiscovery{&azureDiscovery{csID: testdata.MockCloudServiceID}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"

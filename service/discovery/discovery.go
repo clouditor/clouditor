@@ -31,8 +31,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"sort"
-	"sync"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api"
