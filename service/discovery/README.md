@@ -60,6 +60,13 @@
 | LoggingService  | ✅     | 🚫  |
 | RetentionPeriod | ✅     | 🚫  |
 
+#### ResourceLogging
+| Evidence                  | Azure | AWS |
+|-----------------          |-------|-----|
+| MonitoringLogDataEnabled  | ✅     |   |
+| SecurityAlertsEnabled     | ✅     |   |
+
+
 ### BlockStorage
 
 | Evidence          | Azure | AWS |
