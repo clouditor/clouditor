@@ -65,7 +65,7 @@ func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
 	}
 }
 
-// WithOrchestrator is an option for [StartGRPCServer] to register a [evidence.EvidenceStoreServer] at start.
+// WithEvidenceStore is an option for [StartGRPCServer] to register a [evidence.EvidenceStoreServer] at start.
 func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 	return func(srv *Server, ac *AuthConfig) {
 		evidence.RegisterEvidenceStoreServer(srv, svc)
