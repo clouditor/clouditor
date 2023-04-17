@@ -298,6 +298,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -315,6 +316,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -328,6 +330,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -340,6 +343,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					discovererComponent: ComputeComponent,
 					csID:                testutil.TestCloudService1,
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 	}

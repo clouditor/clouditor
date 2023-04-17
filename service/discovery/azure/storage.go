@@ -44,7 +44,7 @@ var (
 )
 
 const (
-	DefenderType = "StorageAccounts"
+	DefenderType = "VirtualMachines"
 )
 
 type azureStorageDiscovery struct {
@@ -400,6 +400,7 @@ func accountName(id string) string {
 	return splitName[8]
 }
 
+// TODO(all): Update to generic function or method
 func (d *azureStorageDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
 	if d.defenderProperties[StorageComponent] != nil {
 		resourceLogging = &voc.ResourceLogging{

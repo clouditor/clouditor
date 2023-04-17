@@ -44,6 +44,7 @@ var (
 
 type azureComputeDiscovery struct {
 	*azureDiscovery
+	defenderProperties map[string]*defenderProperties
 }
 
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -52,6 +53,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 			discovererComponent: ComputeComponent,
 			csID:                discovery.DefaultCloudServiceID,
 		},
+		make(map[string]*defenderProperties),
 	}
 
 	// Apply options
@@ -227,6 +229,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				voc.VirtualMachineType,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
+			ResourceLogging:   d.createResourceLogging(),
 		},
 		BlockStorage:      []voc.ResourceID{},
 		MalwareProtection: &voc.MalwareProtection{},
@@ -419,6 +422,18 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 	}
 
 	return util.Deref(keyURL), nil
+}
+
+// TODO(all): Update to generic function or method
+func (d *azureComputeDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
+	if d.defenderProperties[StorageComponent] != nil {
+		resourceLogging = &voc.ResourceLogging{
+			MonitoringLogDataEnabled: d.defenderProperties[DefenderType].monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    d.defenderProperties[DefenderType].securityAlertsEnabled,
+		}
+	}
+
+	return
 }
 
 // initFunctionsClient creates the client if not already exists
