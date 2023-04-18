@@ -23,66 +23,101 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package server
 
 import (
 	"context"
 	"fmt"
 	"net"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/logging/formatter"
+
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-type StartGRPCServerOption func(srv *grpc.Server)
+// Server is a typealias for [grpc.Server] so that users of this package do not need to import the grpc packages
+// directly.
+type Server = grpc.Server
 
+// StartGRPCServerOption is a type for functional style options that can configure the [StartGRPCServer] function.
+type StartGRPCServerOption func(srv *Server, ac *AuthConfig)
+
+// WithOrchestrator is an option for [StartGRPCServer] to register a [orchestrator.OrchestratorServer] at start.
 func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		orchestrator.RegisterOrchestratorServer(srv, svc)
 	}
 }
 
+// WithAssessment is an option for [StartGRPCServer] to register a [assessment.AssessmentServer] at start.
+func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
+	return func(srv *Server, ac *AuthConfig) {
+		assessment.RegisterAssessmentServer(srv, svc)
+	}
+}
+
+// WithEvidenceStore is an option for [StartGRPCServer] to register a [evidence.EvidenceStoreServer] at start.
 func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		evidence.RegisterEvidenceStoreServer(srv, svc)
 	}
 }
 
+// WithDiscovery is an option for [StartGRPCServer] to register a [discovery.DiscoveryServer] at start.
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
-	return func(srv *grpc.Server) {
+	return func(srv *Server, ac *AuthConfig) {
 		discovery.RegisterDiscoveryServer(srv, svc)
 	}
 }
 
-func StartGRPCServer(jwksURL string, opts ...StartGRPCServerOption) (sock net.Listener, srv *grpc.Server, err error) {
-	var addr = "127.0.0.1:0"
+// WithReflection is an option for [StartGRPCServer] to enable gRPC reflection.
+func WithReflection() StartGRPCServerOption {
+	return func(srv *Server, ac *AuthConfig) {
+		reflection.Register(srv)
+	}
+}
 
+// StartGRPCServer starts a gRPC server listening on the given address. The server can be configured using the supplied
+// opts, e.g., to register various Clouditor services. The server itself is started in a separate Go routine, therefore
+// this function will NOT block.
+func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *Server, err error) {
 	// create a new socket for gRPC communication
 	sock, err = net.Listen("tcp", addr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
 	}
 
-	authConfig := ConfigureAuth(WithJWKSURL(jwksURL))
+	var authConfig AuthConfig
+
+	grpcLogger := logrus.New()
+	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
+	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
 	// We also add our authentication middleware, because we usually add additional service later
 	srv = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), UnaryReflectionFilter),
+			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
+			UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc()), UnaryReflectionFilter),
 		),
 		grpc.ChainStreamInterceptor(
-			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), StreamReflectionFilter),
+			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
+			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc()), StreamReflectionFilter),
 		),
 	)
 
-	reflection.Register(srv)
-
 	for _, o := range opts {
-		o(srv)
+		o(srv, &authConfig)
 	}
 
 	go func() {

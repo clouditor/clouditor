@@ -26,13 +26,14 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"net"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )

@@ -1,12 +1,12 @@
 # Discovery Status
 
-✅: Discovered
-❌: Not Discovered
-🚫: Not available
+✅: Discovered <br />
+❌: Not Discovered <br />
+🚫: Not available <br />
 
-## Compute
+### Compute
 <details>
-<summary>Compute</summary>
+<summary>Expand</summary>
 
 ### Function
 
@@ -83,9 +83,9 @@
 
 </details>
 
-## Network
+### Network
 <details>
-<summary>Network</summary>
+<summary>Expand</summary>
 
 
 ### LoadBalancer
@@ -115,9 +115,9 @@
 | AccessRestriction | ❌     | ❌   |
 </details>
 
-## Storage
+### Storage
 <details>
-<summary>Storage</summary>
+<summary>Expand</summary>
 
 ### ObjectStorage
 | Evidence     | Azure | AWS |
