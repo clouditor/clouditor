@@ -33,6 +33,7 @@
 			"gocron",
 			"GOPATH",
 			"gorm",
+			"grpcserver",
 			"Infof",
 			"inmem",
 			"inmemory",

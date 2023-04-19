@@ -144,6 +144,12 @@ func WithAuthorizationStrategyJWT(key string, allowAllKey string) ServiceOption 
 	}
 }
 
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+	return func(s *Service) {
+		s.authz = authz
+	}
+}
+
 // NewService creates a new Orchestrator service
 func NewService(opts ...ServiceOption) *Service {
 	var err error

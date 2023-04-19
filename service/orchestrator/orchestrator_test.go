@@ -44,6 +44,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -94,12 +95,12 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithStorage(myStorage)},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, myStorage, service.storage)
+				return assert.Equal(tt, myStorage, s.storage)
 			},
 		},
 		{
@@ -108,12 +109,12 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, "catalogsfile.json", service.catalogsFile)
+				return assert.Equal(tt, "catalogsfile.json", s.catalogsFile)
 			},
 		},
 		{
@@ -122,12 +123,26 @@ func TestNewService(t *testing.T) {
 				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
+				s, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
 				}
 
-				return assert.Equal(tt, "metricsfile.json", service.metricsFile)
+				return assert.Equal(tt, "metricsfile.json", s.metricsFile)
+			},
+		},
+		{
+			name: "New service with authorization strategy",
+			args: args{
+				opts: []ServiceOption{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(tt, &service.AuthorizationStrategyAllowAll{}, s.authz)
 			},
 		},
 	}

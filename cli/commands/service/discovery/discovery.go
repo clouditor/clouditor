@@ -92,14 +92,14 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				PageToken: "",
 				OrderBy:   "",
 				Asc:       false,
-				Filter:    &discovery.Filter{},
+				Filter:    &discovery.ListResourcesRequest_Filter{},
 			}
 
 			if len(args) > 0 {
 				req.Filter.Type = &args[0]
 			}
 
-			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.Query, func(res *discovery.ListResourcesResponse) []*discovery.Resource {
+			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.ListResources, func(res *discovery.ListResourcesResponse) []*discovery.Resource {
 				return res.Results
 			})
 

@@ -65,9 +65,17 @@ var (
 
 	ready = make(chan bool)
 
+	cnf config
+)
+
+// config holds different configuration options for the REST gateway.
+type config struct {
 	// cors holds the global CORS configuration.
 	cors *corsConfig
-)
+
+	// opts contains the gRPC options used for the gateway-to-backend calls.
+	opts []grpc.DialOption
+}
 
 // corsConfig holds all necessary configuration options for Cross-Origin Resource Sharing of our REST API.
 type corsConfig struct {
@@ -82,7 +90,7 @@ type corsConfig struct {
 }
 
 // ServerConfigOption represents functional-style options to modify the server configuration in RunServer.
-type ServerConfigOption func(*corsConfig, *runtime.ServeMux)
+type ServerConfigOption func(*config, *runtime.ServeMux)
 
 var (
 	// DefaultAllowedOrigins contains a nil slice, as per default, no origins are allowed.
@@ -104,7 +112,7 @@ func init() {
 	log = logrus.WithField("component", "rest")
 
 	// initialize the CORS config with restrictive default values, e.g. no origin allowed
-	cors = &corsConfig{
+	cnf.cors = &corsConfig{
 		allowedOrigins: DefaultAllowedOrigins,
 		allowedHeaders: DefaultAllowedHeaders,
 		allowedMethods: DefaultAllowedMethods,
@@ -113,29 +121,37 @@ func init() {
 
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) ServerConfigOption {
-	return func(cc *corsConfig, _ *runtime.ServeMux) {
-		cc.allowedOrigins = origins
+	return func(c *config, _ *runtime.ServeMux) {
+		c.cors.allowedOrigins = origins
 	}
 }
 
 // WithAllowedHeaders is an option to supply allowed headers in CORS.
 func WithAllowedHeaders(headers []string) ServerConfigOption {
-	return func(cc *corsConfig, _ *runtime.ServeMux) {
-		cc.allowedHeaders = headers
+	return func(c *config, _ *runtime.ServeMux) {
+		c.cors.allowedHeaders = headers
 	}
 }
 
 // WithAllowedMethods is an option to supply allowed methods in CORS.
 func WithAllowedMethods(methods []string) ServerConfigOption {
-	return func(cc *corsConfig, _ *runtime.ServeMux) {
-		cc.allowedMethods = methods
+	return func(c *config, _ *runtime.ServeMux) {
+		c.cors.allowedMethods = methods
 	}
 }
 
 // WithAdditionalHandler is an option to add an additional handler func in the REST server.
 func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) ServerConfigOption {
-	return func(_ *corsConfig, sm *runtime.ServeMux) {
+	return func(_ *config, sm *runtime.ServeMux) {
 		_ = sm.HandlePath(method, path, h)
+	}
+}
+
+// WithAdditionalGRPCOpts is an option to add an additional gRPC dial options in the REST server communication to the
+// backend.
+func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
+	return func(c *config, sm *runtime.ServeMux) {
+		c.opts = append(c.opts, opts...)
 	}
 }
 
@@ -150,7 +166,7 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 // In production scenarios, the usage of a dedicated authentication and authorization server is
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
-	return func(cc *corsConfig, sm *runtime.ServeMux) {
+	return func(c *config, sm *runtime.ServeMux) {
 		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
 			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
 		}), oauth2.WithPublicURL(fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)))
@@ -162,12 +178,12 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 
 		WithAdditionalHandler("GET", "/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			authSrv.Handler.ServeHTTP(w, r)
-		})(cc, sm)
-		WithAdditionalHandler("GET", "/v1/auth/certs", authHandler)(cc, sm)
-		WithAdditionalHandler("GET", "/v1/auth/login", authHandler)(cc, sm)
-		WithAdditionalHandler("GET", "/v1/auth/authorize", authHandler)(cc, sm)
-		WithAdditionalHandler("POST", "/v1/auth/login", authHandler)(cc, sm)
-		WithAdditionalHandler("POST", "/v1/auth/token", authHandler)(cc, sm)
+		})(c, sm)
+		WithAdditionalHandler("GET", "/v1/auth/certs", authHandler)(c, sm)
+		WithAdditionalHandler("GET", "/v1/auth/login", authHandler)(c, sm)
+		WithAdditionalHandler("GET", "/v1/auth/authorize", authHandler)(c, sm)
+		WithAdditionalHandler("POST", "/v1/auth/login", authHandler)(c, sm)
+		WithAdditionalHandler("POST", "/v1/auth/token", authHandler)(c, sm)
 	}
 }
 
@@ -181,29 +197,29 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 
 	mux := runtime.NewServeMux()
 
+	cnf.opts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+
 	for _, o := range serverOpts {
-		o(cors, mux)
+		o(&cnf, mux)
 	}
 
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 
-	if err := assessment.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := assessment.RegisterAssessmentHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to assessment gRPC service %w", err)
 	}
 
-	if err := orchestrator.RegisterOrchestratorHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := orchestrator.RegisterOrchestratorHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to orchestrator gRPC service %w", err)
 	}
 
-	if err := evaluation.RegisterEvaluationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := evaluation.RegisterEvaluationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to evaluation gRPC service %w", err)
 	}
 
-	if err := evidence.RegisterEvidenceStoreHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts); err != nil {
+	if err := evidence.RegisterEvidenceStoreHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to evidence gRPC service %w", err)
 	}
 
@@ -228,9 +244,9 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 	log.Printf("Starting REST gateway on :%d", httpPort)
 
 	log.WithFields(logrus.Fields{
-		"allowed-origins": cors.allowedOrigins,
-		"allowed-methods": cors.allowedMethods,
-		"allowed-headers": cors.allowedHeaders,
+		"allowed-origins": cnf.cors.allowedOrigins,
+		"allowed-methods": cnf.cors.allowedMethods,
+		"allowed-headers": cnf.cors.allowedHeaders,
 	}).Info("Applying CORS configuration...")
 
 	sock, err = net.Listen("tcp", srv.Addr)
@@ -287,15 +303,15 @@ func handleCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check, if we allow this specific origin
 		origin := r.Header.Get("Origin")
-		if cors.OriginAllowed(origin) {
+		if cnf.cors.OriginAllowed(origin) {
 			// Set the appropriate access control header
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Add("Vary", "Origin")
 
 			// Additionally, we need to handle preflight (OPTIONS) requests to specify allowed headers and methods
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
-				w.Header().Set("Access-Control-Allow-Headers", strings.Join(cors.allowedHeaders, ","))
-				w.Header().Set("Access-Control-Allow-Methods", strings.Join(cors.allowedMethods, ","))
+				w.Header().Set("Access-Control-Allow-Headers", strings.Join(cnf.cors.allowedHeaders, ","))
+				w.Header().Set("Access-Control-Allow-Methods", strings.Join(cnf.cors.allowedMethods, ","))
 				return
 			}
 		}

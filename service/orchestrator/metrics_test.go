@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -768,7 +769,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 						TargetValue:    &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: "1111"}},
 					})
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
@@ -804,7 +805,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			name: "metric not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.GetMetricConfigurationRequest{
@@ -867,7 +868,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			name: "error",
 			fields: fields{
 				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
@@ -888,7 +889,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 						Operator:       "==",
 					})
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{
@@ -959,7 +960,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "metricId is missing in request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -981,7 +982,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "cloudServiceID is missing in request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1003,7 +1004,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "cloudServiceID is invalid in request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1026,7 +1027,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "configuration is missing in request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1043,7 +1044,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "metricId is missing in configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1065,7 +1066,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "cloudServiceId is missing in configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1087,7 +1088,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "cloudServiceId is invalid in configuration",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1110,7 +1111,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			name: "metric does not exist in storage",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1135,7 +1136,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID})
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1161,7 +1162,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 					_ = s.Create(&assessment.Metric{Id: testdata.MockMetricID})
 					_ = s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{
@@ -1202,7 +1203,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 						Operator:       ">",
 					})
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &orchestrator.UpdateMetricConfigurationRequest{

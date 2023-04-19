@@ -34,8 +34,9 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -489,13 +490,13 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, csID: testutil.TestCloudService1},
+			args: args{client: mockClient, csID: testdata.MockCloudServiceID},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				csID:              testutil.TestCloudService1,
+				csID:              testdata.MockCloudServiceID,
 			},
 		},
 	}
