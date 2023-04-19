@@ -42,7 +42,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/evaluationtest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
@@ -1355,7 +1355,8 @@ func TestService_getControl(t *testing.T) {
 					return false
 				}
 
-				// We need to truncate the metric from the control because the control is only returned with its sub-control but without the sub-control's metric.
+				// We need to truncate the metric from the control because the control is only returned with its
+				// sub-control but without the sub-control's metric.
 				wantControl := orchestratortest.MockControl1
 				tmpMetrics := wantControl.Controls[0].Metrics
 				wantControl.Controls[0].Metrics = nil
