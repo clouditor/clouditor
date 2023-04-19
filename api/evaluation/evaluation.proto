@@ -151,7 +151,7 @@ message EvaluationResult {
   // 'compliant'
   repeated string failing_assessment_result_ids = 9 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated .items.string.min_len = 1
   ];
 }
 

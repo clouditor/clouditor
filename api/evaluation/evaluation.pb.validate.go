@@ -950,6 +950,22 @@ func (m *EvaluationResult) validate(all bool) error {
 		}
 	}
 
+	for idx, item := range m.GetFailingAssessmentResultIds() {
+		_, _ = idx, item
+
+		if utf8.RuneCountInString(item) < 1 {
+			err := EvaluationResultValidationError{
+				field:  fmt.Sprintf("FailingAssessmentResultIds[%v]", idx),
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return EvaluationResultMultiError(errors)
 	}
