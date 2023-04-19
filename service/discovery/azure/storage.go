@@ -185,30 +185,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	return storageResourcesList, nil
 }
 
-// handleBackupVaults creates a voc.Backup and stores it to the backupMap.
-func (d *azureStorageDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVaultResource) {
-	for _, vault := range vaults {
-		// Discover backup instances for given vault
-		instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
-		if err != nil {
-			log.Errorf("could not discover backup instances: %v", err)
-			continue
-		}
-
-		for _, instance := range instances {
-			d.backupMap[idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-				Enabled: true,
-				Policy:  *instance.Properties.PolicyInfo.PolicyID,
-				// RetentionPeriod: , // TODO(all): Add retention period
-				Storage: voc.ResourceID(*instance.ID),
-				GeoLocation: voc.GeoLocation{
-					Region: *vault.Location,
-				},
-			}
-		}
-	}
-}
-
 func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -262,47 +238,49 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+// discoverBackupVaults receives all backup vaults in the subscription.
+func (d *azureStorageDiscovery) discoverBackupVaults(account *armstorage.Account) ([]*armdataprotection.BackupVaultResource, error) {
+	var (
+		list armdataprotection.BackupVaultsClientGetInResourceGroupResponse
+		err  error
+	)
+
 	if account == nil {
-		return nil, ErrEmptyStorageAccount
+		err = errors.New("storage account is nil")
+		return nil, err
 	}
 
-	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
-	if container == nil || container.ID == nil {
-		return nil, fmt.Errorf("container is nil")
+	// List all backup vaults in the given resource group
+	listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
+	for listPager.More() {
+		list, err = listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
 	}
 
-	enc, err := storageAtRestEncryption(account)
-	if err != nil {
-		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	return list.Value, nil
+}
+
+// discoverBackupInstances retrieves the instances in a given backup vault.
+func (d *azureStorageDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
+	var (
+		list armdataprotection.BackupInstancesClientListResponse
+		err  error
+	)
+
+	// List all instances in the given backupp vault
+	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
+	for listPager.More() {
+		list, err = listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
 	}
 
-	backup := d.backupMap[idUpToStorageAccount(*container.ID)]
-
-	return &voc.ObjectStorage{
-		Storage: &voc.Storage{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(container.ID)),
-				util.Deref(container.Name),
-				// We only have the creation time of the storage account the object storage belongs to
-				account.Properties.CreationTime,
-				voc.GeoLocation{
-					// The location is the same as the storage account
-					Region: util.Deref(account.Location),
-				},
-				// The storage account labels the object storage belongs to
-				labels(account.Tags),
-				voc.ObjectStorageType,
-			),
-			AtRestEncryption: enc,
-			Immutability: &voc.Immutability{
-				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
-			},
-			ResourceLogging: d.createResourceLogging(),
-			Backup:          backup,
-		},
-		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
-	}, nil
+	return list.Value, nil
 }
 
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
@@ -354,19 +332,6 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
-// generalizeURL generalizes the URL, because the URL depends on the storage type
-func generalizeURL(url string) string {
-	if url == "" {
-		return ""
-	}
-
-	urlSplit := strings.Split(url, ".")
-	urlSplit[1] = "[file,blob]"
-	newURL := strings.Join(urlSplit, ".")
-
-	return newURL
-}
-
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
@@ -401,6 +366,73 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 			AtRestEncryption: enc,
 		},
 	}, nil
+}
+
+func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if container == nil || container.ID == nil {
+		return nil, fmt.Errorf("container is nil")
+	}
+
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	}
+
+	backup := d.backupMap[idUpToStorageAccount(*container.ID)]
+
+	return &voc.ObjectStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(container.ID)),
+				util.Deref(container.Name),
+				// We only have the creation time of the storage account the object storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
+					Region: util.Deref(account.Location),
+				},
+				// The storage account labels the object storage belongs to
+				labels(account.Tags),
+				voc.ObjectStorageType,
+			),
+			AtRestEncryption: enc,
+			Immutability: &voc.Immutability{
+				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
+			},
+			ResourceLogging: d.createResourceLogging(),
+			Backup:          backup,
+		},
+		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+	}, nil
+}
+
+// handleBackupVaults creates a voc.Backup and stores it to the backupMap.
+func (d *azureStorageDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVaultResource) {
+	for _, vault := range vaults {
+		// Discover backup instances for given vault
+		instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
+		if err != nil {
+			log.Errorf("could not discover backup instances: %v", err)
+			continue
+		}
+
+		for _, instance := range instances {
+			d.backupMap[idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+				Enabled: true,
+				Policy:  *instance.Properties.PolicyInfo.PolicyID,
+				// RetentionPeriod: , // TODO(all): Add retention period
+				Storage: voc.ResourceID(*instance.ID),
+				GeoLocation: voc.GeoLocation{
+					Region: *vault.Location,
+				},
+			}
+		}
+	}
 }
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
@@ -449,6 +481,34 @@ func accountName(id string) string {
 
 	splitName := strings.Split(id, "/")
 	return splitName[8]
+}
+
+// idUpToStorageAccount returns the resource ID cutting of the storage type information, e.g., '/subscriptions/XXXXXXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/containerName'
+func idUpToStorageAccount(id string) string {
+	if id == "" {
+		return ""
+	}
+
+	split := strings.Split(id, "/")
+
+	if len(split) < 8 {
+		return ""
+	}
+
+	return "/" + split[1] + "/" + split[2] + "/" + split[3] + "/" + split[4] + "/" + split[5] + "/" + split[6] + "/" + split[7] + "/" + split[8]
+}
+
+// generalizeURL generalizes the URL, because the URL depends on the storage type
+func generalizeURL(url string) string {
+	if url == "" {
+		return ""
+	}
+
+	urlSplit := strings.Split(url, ".")
+	urlSplit[1] = "[file,blob]"
+	newURL := strings.Join(urlSplit, ".")
+
+	return newURL
 }
 
 // TODO(all): Update to generic function or method
@@ -500,64 +560,4 @@ func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
 
 	return
-}
-
-// discoverBackupVaults receives all backup vaults in the subscription.
-func (d *azureStorageDiscovery) discoverBackupVaults(account *armstorage.Account) ([]*armdataprotection.BackupVaultResource, error) {
-	var (
-		list armdataprotection.BackupVaultsClientGetInResourceGroupResponse
-		err  error
-	)
-
-	if account == nil {
-		err = errors.New("storage account is nil")
-		return nil, err
-	}
-
-	// List all backup vaults in the given resource group
-	listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
-	for listPager.More() {
-		list, err = listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-	}
-
-	return list.Value, nil
-}
-
-// discoverBackupInstances retrieves the instances in a given backup vault.
-func (d *azureStorageDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
-	var (
-		list armdataprotection.BackupInstancesClientListResponse
-		err  error
-	)
-
-	// List all instances in the given backupp vault
-	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
-	for listPager.More() {
-		list, err = listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-	}
-
-	return list.Value, nil
-}
-
-// idUpToStorageAccount returns the resource ID cutting of the storage type information, e.g., '/subscriptions/XXXXXXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/containerName'
-func idUpToStorageAccount(id string) string {
-	if id == "" {
-		return ""
-	}
-
-	split := strings.Split(id, "/")
-
-	if len(split) < 8 {
-		return ""
-	}
-
-	return "/" + split[1] + "/" + split[2] + "/" + split[3] + "/" + split[4] + "/" + split[5] + "/" + split[6] + "/" + split[7] + "/" + split[8]
 }
