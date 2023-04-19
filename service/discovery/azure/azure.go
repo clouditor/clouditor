@@ -234,6 +234,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 }
 
 // discoverBackupVaults receives all backup vaults in the subscription.
+// Since the backups for storage and compute are discovered, the discovery is performed here and results are stored in the azureDiscovery receiver.
 // TODO(anatheka): update to subscription instead of resourceGroup
 func (d *azureDiscovery) discoverBackupVaults(account *armstorage.Account) ([]*armdataprotection.BackupVaultResource, error) {
 	var (
