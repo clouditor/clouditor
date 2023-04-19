@@ -47,7 +47,7 @@ var (
 type azureStorageDiscovery struct {
 	*azureDiscovery
 	defenderProperties map[string]*defenderProperties
-	backupMap          map[string]*voc.Backup
+	// backupMap          map[string]*voc.Backup
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -55,9 +55,9 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*voc.Backup),
 		},
 		make(map[string]*defenderProperties),
-		make(map[string]*voc.Backup),
 	}
 
 	// Apply options
@@ -145,7 +145,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		},
 		func(account *armstorage.Account) error {
 			// Discover backup policies
-			backupVaults, err := d.discoverBackupVaults(account)
+			backupVaults, err := d.azureDiscovery.discoverBackupVaults(account)
 			if err != nil {
 				log.Errorf("could not discover backup vaults: %v", err)
 			}
@@ -238,50 +238,25 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	return list, nil
 }
 
-// discoverBackupVaults receives all backup vaults in the subscription.
-func (d *azureStorageDiscovery) discoverBackupVaults(account *armstorage.Account) ([]*armdataprotection.BackupVaultResource, error) {
-	var (
-		list armdataprotection.BackupVaultsClientGetInResourceGroupResponse
-		err  error
-	)
+// // discoverBackupInstances retrieves the instances in a given backup vault.
+// func (d *azureStorageDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
+// 	var (
+// 		list armdataprotection.BackupInstancesClientListResponse
+// 		err  error
+// 	)
 
-	if account == nil {
-		err = errors.New("storage account is nil")
-		return nil, err
-	}
+// 	// List all instances in the given backupp vault
+// 	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
+// 	for listPager.More() {
+// 		list, err = listPager.NextPage(context.TODO())
+// 		if err != nil {
+// 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+// 			return nil, err
+// 		}
+// 	}
 
-	// List all backup vaults in the given resource group
-	listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
-	for listPager.More() {
-		list, err = listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-	}
-
-	return list.Value, nil
-}
-
-// discoverBackupInstances retrieves the instances in a given backup vault.
-func (d *azureStorageDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
-	var (
-		list armdataprotection.BackupInstancesClientListResponse
-		err  error
-	)
-
-	// List all instances in the given backupp vault
-	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
-	for listPager.More() {
-		list, err = listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-	}
-
-	return list.Value, nil
-}
+// 	return list.Value, nil
+// }
 
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
 	var storageResourceIDs []voc.ResourceID
@@ -411,29 +386,29 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	}, nil
 }
 
-// handleBackupVaults creates a voc.Backup and stores it to the backupMap.
-func (d *azureStorageDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVaultResource) {
-	for _, vault := range vaults {
-		// Discover backup instances for given vault
-		instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
-		if err != nil {
-			log.Errorf("could not discover backup instances: %v", err)
-			continue
-		}
+// // handleBackupVaults creates a voc.Backup and stores it to the backupMap.
+// func (d *azureStorageDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVaultResource) {
+// 	for _, vault := range vaults {
+// 		// Discover backup instances for given vault
+// 		instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
+// 		if err != nil {
+// 			log.Errorf("could not discover backup instances: %v", err)
+// 			continue
+// 		}
 
-		for _, instance := range instances {
-			d.backupMap[idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-				Enabled: true,
-				Policy:  *instance.Properties.PolicyInfo.PolicyID,
-				// RetentionPeriod: , // TODO(all): Add retention period
-				Storage: voc.ResourceID(*instance.ID),
-				GeoLocation: voc.GeoLocation{
-					Region: *vault.Location,
-				},
-			}
-		}
-	}
-}
+// 		for _, instance := range instances {
+// 			d.backupMap[idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+// 				Enabled: true,
+// 				Policy:  *instance.Properties.PolicyInfo.PolicyID,
+// 				// RetentionPeriod: , // TODO(all): Add retention period
+// 				Storage: voc.ResourceID(*instance.ID),
+// 				GeoLocation: voc.GeoLocation{
+// 					Region: *vault.Location,
+// 				},
+// 			}
+// 		}
+// 	}
+// }
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
 // ontology object.

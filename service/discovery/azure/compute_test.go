@@ -296,6 +296,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 				make(map[string]*defenderProperties),
 			},
@@ -314,6 +315,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 				make(map[string]*defenderProperties),
 			},
@@ -328,6 +330,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 				make(map[string]*defenderProperties),
 			},
@@ -341,6 +344,7 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
 					csID:                testdata.MockCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 				make(map[string]*defenderProperties),
 			},

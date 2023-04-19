@@ -52,6 +52,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: ComputeComponent,
 			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*voc.Backup),
 		},
 		make(map[string]*defenderProperties),
 	}

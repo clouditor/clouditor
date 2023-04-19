@@ -362,6 +362,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 			},
 		},
@@ -379,6 +380,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 			},
 		},
@@ -392,6 +394,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*voc.Backup),
 				},
 			},
 		},
