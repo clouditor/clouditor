@@ -34,4 +34,5 @@ type Storage struct {
 	AtRestEncryption IsAtRestEncryption `json:"atRestEncryption"`
 	Immutability     *Immutability      `json:"immutability"`
 	ResourceLogging  *ResourceLogging   `json:"resourceLogging"`
+	Backup           *Backup            `json:"backup"`
 }

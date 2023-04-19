@@ -38,6 +38,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -119,6 +120,9 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
+	dataProtectionClient    *armdataprotection.BackupPoliciesClient
+	backupVaultClient       *armdataprotection.BackupVaultsClient
+	backupInstancesClient   *armdataprotection.BackupInstancesClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -227,6 +231,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 	return pricings, nil
 }
 
+// resourceGroupName returns the resource group name of a given Azure ID
 func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }

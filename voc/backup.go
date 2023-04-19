@@ -34,4 +34,6 @@ type Backup struct {
 	RetentionPeriod time.Duration `json:"retentionPeriod"`
 	Enabled         bool          `json:"enabled"`
 	Policy          string        `json:"policy"`
+	GeoLocation     GeoLocation   `json:"geoLocation"`
+	Storage         ResourceID    `json:"storage"`
 }
