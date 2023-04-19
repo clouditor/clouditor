@@ -22,11 +22,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EvaluationClient interface {
-	// Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
+	// Evaluates periodically all assessment results of a cloud service id based
+	// on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(ctx context.Context, in *StartEvaluationRequest, opts ...grpc.CallOption) (*StartEvaluationResponse, error)
-	// StopEvaluation stops the evaluation for the given target of evaluation
+	// StopEvaluation stops the evaluation for the given target of evaluation.
+	// Part of the public API, also exposed as REST.
 	StopEvaluation(ctx context.Context, in *StopEvaluationRequest, opts ...grpc.CallOption) (*StopEvaluationResponse, error)
-	// List all evaluation results. Part of the public API, also exposed as REST.
+	// List all evaluation results that the user can access. It can further be
+	// restricted by various filtering options. Part of the public API, also
+	// exposed as REST.
 	ListEvaluationResults(ctx context.Context, in *ListEvaluationResultsRequest, opts ...grpc.CallOption) (*ListEvaluationResultsResponse, error)
 }
 
@@ -69,11 +73,15 @@ func (c *evaluationClient) ListEvaluationResults(ctx context.Context, in *ListEv
 // All implementations must embed UnimplementedEvaluationServer
 // for forward compatibility
 type EvaluationServer interface {
-	// Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
+	// Evaluates periodically all assessment results of a cloud service id based
+	// on the given catalog id. Part of the public API, also exposed as REST.
 	StartEvaluation(context.Context, *StartEvaluationRequest) (*StartEvaluationResponse, error)
-	// StopEvaluation stops the evaluation for the given target of evaluation
+	// StopEvaluation stops the evaluation for the given target of evaluation.
+	// Part of the public API, also exposed as REST.
 	StopEvaluation(context.Context, *StopEvaluationRequest) (*StopEvaluationResponse, error)
-	// List all evaluation results. Part of the public API, also exposed as REST.
+	// List all evaluation results that the user can access. It can further be
+	// restricted by various filtering options. Part of the public API, also
+	// exposed as REST.
 	ListEvaluationResults(context.Context, *ListEvaluationResultsRequest) (*ListEvaluationResultsResponse, error)
 	mustEmbedUnimplementedEvaluationServer()
 }

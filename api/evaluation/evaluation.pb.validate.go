@@ -555,48 +555,35 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
-	if m.FilteredCloudServiceId != nil {
+	if m.Filter != nil {
 
-		if err := m._validateUuid(m.GetFilteredCloudServiceId()); err != nil {
-			err = ListEvaluationResultsRequestValidationError{
-				field:  "FilteredCloudServiceId",
-				reason: "value must be a valid UUID",
-				cause:  err,
+		if all {
+			switch v := interface{}(m.GetFilter()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListEvaluationResultsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListEvaluationResultsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-			if !all {
-				return err
+		} else if v, ok := interface{}(m.GetFilter()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListEvaluationResultsRequestValidationError{
+					field:  "Filter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
 			}
-			errors = append(errors, err)
-		}
-
-	}
-
-	if m.FilteredControlId != nil {
-
-		if utf8.RuneCountInString(m.GetFilteredControlId()) < 1 {
-			err := ListEvaluationResultsRequestValidationError{
-				field:  "FilteredControlId",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
-
-	if m.FilteredSubControls != nil {
-
-		if utf8.RuneCountInString(m.GetFilteredSubControls()) < 1 {
-			err := ListEvaluationResultsRequestValidationError{
-				field:  "FilteredSubControls",
-				reason: "value length must be at least 1 runes",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
 
 	}
@@ -607,14 +594,6 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return ListEvaluationResultsRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-func (m *ListEvaluationResultsRequest) _validateUuid(uuid string) error {
-	if matched := _evaluation_uuidPattern.MatchString(uuid); !matched {
-		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -1056,3 +1035,162 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = EvaluationResultValidationError{}
+
+// Validate checks the field values on ListEvaluationResultsRequest_Filter with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *ListEvaluationResultsRequest_Filter) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListEvaluationResultsRequest_Filter
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// ListEvaluationResultsRequest_FilterMultiError, or nil if none found.
+func (m *ListEvaluationResultsRequest_Filter) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.CloudServiceId != nil {
+
+		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+			err = ListEvaluationResultsRequest_FilterValidationError{
+				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.ControlId != nil {
+
+		if utf8.RuneCountInString(m.GetControlId()) < 1 {
+			err := ListEvaluationResultsRequest_FilterValidationError{
+				field:  "ControlId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.SubControls != nil {
+
+		if utf8.RuneCountInString(m.GetSubControls()) < 1 {
+			err := ListEvaluationResultsRequest_FilterValidationError{
+				field:  "SubControls",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListEvaluationResultsRequest_FilterMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *ListEvaluationResultsRequest_Filter) _validateUuid(uuid string) error {
+	if matched := _evaluation_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// ListEvaluationResultsRequest_FilterMultiError is an error wrapping multiple
+// validation errors returned by
+// ListEvaluationResultsRequest_Filter.ValidateAll() if the designated
+// constraints aren't met.
+type ListEvaluationResultsRequest_FilterMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListEvaluationResultsRequest_FilterMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListEvaluationResultsRequest_FilterMultiError) AllErrors() []error { return m }
+
+// ListEvaluationResultsRequest_FilterValidationError is the validation error
+// returned by ListEvaluationResultsRequest_Filter.Validate if the designated
+// constraints aren't met.
+type ListEvaluationResultsRequest_FilterValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListEvaluationResultsRequest_FilterValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListEvaluationResultsRequest_FilterValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListEvaluationResultsRequest_FilterValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListEvaluationResultsRequest_FilterValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListEvaluationResultsRequest_FilterValidationError) ErrorName() string {
+	return "ListEvaluationResultsRequest_FilterValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListEvaluationResultsRequest_FilterValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListEvaluationResultsRequest_Filter.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListEvaluationResultsRequest_FilterValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListEvaluationResultsRequest_FilterValidationError{}

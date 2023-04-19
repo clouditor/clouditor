@@ -11,7 +11,9 @@ paths:
         post:
             tags:
                 - Evaluation
-            description: Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
+            description: |-
+                Evaluates periodically all assessment results of a cloud service id based
+                 on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
                 - name: cloudServiceId
@@ -24,12 +26,12 @@ paths:
                   required: true
                   schema:
                     type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/StartEvaluationRequest'
-                required: true
+                - name: interval
+                  in: query
+                  description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
+                  schema:
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -47,7 +49,9 @@ paths:
         post:
             tags:
                 - Evaluation
-            description: StopEvaluation stops the evaluation for the given target of evaluation
+            description: |-
+                StopEvaluation stops the evaluation for the given target of evaluation.
+                 Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
                 - name: cloudServiceId
@@ -77,20 +81,23 @@ paths:
         get:
             tags:
                 - Evaluation
-            description: List all evaluation results. Part of the public API, also exposed as REST.
+            description: |-
+                List all evaluation results that the user can access. It can further be
+                 restricted by various filtering options. Part of the public API, also
+                 exposed as REST.
             operationId: Evaluation_ListEvaluationResults
             parameters:
-                - name: filteredCloudServiceId
+                - name: filter.cloudServiceId
                   in: query
                   description: Optional. Lists only evaluation results for a specific cloud service.
                   schema:
                     type: string
-                - name: filteredControlId
+                - name: filter.controlId
                   in: query
                   description: Optional. Lists only evaluation results for a specific control id.
                   schema:
                     type: string
-                - name: filteredSubControls
+                - name: filter.subControls
                   in: query
                   description: Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
                   schema:
@@ -189,17 +196,6 @@ components:
                         $ref: '#/components/schemas/EvaluationResult'
                 nextPageToken:
                     type: string
-        StartEvaluationRequest:
-            type: object
-            properties:
-                cloudServiceId:
-                    type: string
-                catalogId:
-                    type: string
-                interval:
-                    type: integer
-                    description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-                    format: int32
         StartEvaluationResponse:
             type: object
             properties:

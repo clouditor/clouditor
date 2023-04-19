@@ -351,10 +351,12 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByResourceId:     util.Ref(true),
-					FilteredControlId:      util.Ref(testdata.MockSubControlID11),
-					FilteredSubControls:    util.Ref(testdata.MockControlID1),
-					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					LatestByResourceId: util.Ref(true),
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId:      util.Ref(testdata.MockSubControlID11),
+						SubControls:    util.Ref(testdata.MockControlID1),
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					},
 				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
@@ -376,7 +378,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					LatestByResourceId: util.Ref(true),
-					FilteredControlId:  util.Ref(testdata.MockSubControlID11),
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId: util.Ref(testdata.MockSubControlID11),
+					},
 				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
@@ -417,7 +421,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{FilteredControlId: util.Ref(testdata.MockControlID1)},
+				req: &evaluation.ListEvaluationResultsRequest{
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId: util.Ref(testdata.MockControlID1),
+					},
+				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
@@ -437,7 +445,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{FilteredSubControls: util.Ref(testdata.MockControlID1)},
+				req: &evaluation.ListEvaluationResultsRequest{
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						SubControls: util.Ref(testdata.MockControlID1),
+					},
+				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
@@ -461,7 +473,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID)},
+				req: &evaluation.ListEvaluationResultsRequest{
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					},
+				},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{

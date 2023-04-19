@@ -24,38 +24,41 @@
  *
  * This file is part of Clouditor Community Edition.
  */
- syntax = "proto3";
+syntax = "proto3";
 
- package clouditor.evaluation.v1;
+package clouditor.evaluation.v1;
 
- import "google/api/annotations.proto";
- import "google/protobuf/timestamp.proto";
- import "api/assessment/assessment.proto";
- import "api/orchestrator/orchestrator.proto";
- import "tagger/tagger.proto";
- import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "api/assessment/assessment.proto";
+import "api/orchestrator/orchestrator.proto";
+import "tagger/tagger.proto";
+import "validate/validate.proto";
 
- option go_package = "clouditor.io/clouditor/api/evaluation";
+option go_package = "clouditor.io/clouditor/api/evaluation";
 
- // Manages the evaluation of Clouditor's assessment results
- service Evaluation {
-   // Evaluates periodically all assessment results of a cloud service id based on the given catalog id. Part of the public API, also exposed as REST.
-  rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
+// Manages the evaluation of Clouditor's assessment results
+service Evaluation {
+  // Evaluates periodically all assessment results of a cloud service id based
+  // on the given catalog id. Part of the public API, also exposed as REST.
+  rpc StartEvaluation(StartEvaluationRequest)
+      returns (StartEvaluationResponse) {
     option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"
-      body : "*"
-      response_body : "*"
     };
   }
 
-  // StopEvaluation stops the evaluation for the given target of evaluation. Part of the public API, also exposed as REST.
+  // StopEvaluation stops the evaluation for the given target of evaluation.
+  // Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {
       post : "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"
     };
   }
 
-  // List all evaluation results. Part of the public API, also exposed as REST.
+  // List all evaluation results that the user can access. It can further be
+  // restricted by various filtering options. Part of the public API, also
+  // exposed as REST.
   rpc ListEvaluationResults(ListEvaluationResultsRequest)
       returns (ListEvaluationResultsResponse) {
     option (google.api.http) = {
@@ -65,45 +68,42 @@
 }
 
 message StartEvaluationRequest {
-  string cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
-  string catalog_id = 2
-    [ (validate.rules).string.min_len = 1 ]; 
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
 
-  // The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
-  optional int32 interval = 3
-    [ (validate.rules).int32.gt = 0 ];
+  // The interval time in minutes the evaluation executes periodically. The
+  // default interval is set to 5 minutes.
+  optional int32 interval = 3 [ (validate.rules).int32.gt = 0 ];
 }
 
-message StartEvaluationResponse {
-  bool successful = 1; 
-}
+message StartEvaluationResponse { bool successful = 1; }
 
 message StopEvaluationRequest {
-  string cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
 
-  string catalog_id = 2
-    [ (validate.rules).string.min_len = 1 ]; 
+  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
 }
 
 message StopEvaluationResponse {}
 
 message ListEvaluationResultsRequest {
-  // Optional. Lists only evaluation results for a specific cloud service.
-  optional string filtered_cloud_service_id = 1
-    [ (validate.rules).string.uuid = true ];
+  message Filter {
+    // Optional. Lists only evaluation results for a specific cloud service.
+    optional string cloud_service_id = 1
+        [ (validate.rules).string.uuid = true ];
 
-  // Optional. Lists only evaluation results for a specific control id.
-  optional string filtered_control_id = 2
-    [(validate.rules).string.min_len = 1];
+    // Optional. Lists only evaluation results for a specific control id.
+    optional string control_id = 2 [ (validate.rules).string.min_len = 1 ];
 
-  // Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
-  optional string filtered_sub_controls = 3
-    [(validate.rules).string.min_len = 1];
+    // Optional. Lists all evaluation results for the given initial control id
+    // substring, e.g., if the substring 'CMK-01.' is given it returns the
+    // controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
+    optional string sub_controls = 3 [ (validate.rules).string.min_len = 1 ];
+  }
+  optional Filter filter = 1;
 
   // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 4;
+  optional bool latest_by_resource_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -115,47 +115,44 @@ message ListEvaluationResultsResponse {
   repeated EvaluationResult results = 1;
   string next_page_token = 2;
 }
- 
-// A evaluation result resource, representing the result after evaluating the cloud service with a specific control
-// cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
+
+// A evaluation result resource, representing the result after evaluating the
+// cloud service with a specific control cloud_service_id, category_name and
+// catalog_id are necessary to get the corresponding TargetOfEvaluation
 message EvaluationResult {
   // Evaluation result id
   string id = 1
-    [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
+      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
 
   // The Cloud Service ID the evaluation belongs to
   string cloud_service_id = 2
-  [(validate.rules).string = {ignore_empty : true, uuid : true}]; 
+      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
 
   // The control id the evaluation was based on
-  string control_id = 3
-    [(validate.rules).string.min_len = 1];
-  
+  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
+
   // The category the evaluated control belongs to
-  string control_category_name = 4
-    [(validate.rules).string.min_len = 1]; 
+  string control_category_name = 4 [ (validate.rules).string.min_len = 1 ];
 
   // The catalog the evaluated control belongs to
-  string control_catalog_id = 5
-    [(validate.rules).string.min_len = 1]; 
+  string control_catalog_id = 5 [ (validate.rules).string.min_len = 1 ];
 
-  // The evaluated resource 
-  string resource_id = 6
-    [(validate.rules).string.min_len = 1]; 
-  
+  // The evaluated resource
+  string resource_id = 6 [ (validate.rules).string.min_len = 1 ];
+
   // Evaluation status
-  EvaluationStatus status = 7 
-    [(validate.rules).enum.defined_only = true];
-  
-  
+  EvaluationStatus status = 7 [ (validate.rules).enum.defined_only = true ];
+
   // Time of evaluation
   google.protobuf.Timestamp timestamp = 8
-    [(tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 
-  // List of assessment results because of which the evaluation status is not 'compliant'
+  // List of assessment results because of which the evaluation status is not
+  // 'compliant'
   repeated string failing_assessment_result_ids = 9 [
-      (tagger.tags) = "gorm:\"serializer:json\"",
-      (validate.rules).repeated.items.message.required = true];
+    (tagger.tags) = "gorm:\"serializer:json\"",
+    (validate.rules).repeated .items.message.required = true
+  ];
 }
 
 enum EvaluationStatus {
