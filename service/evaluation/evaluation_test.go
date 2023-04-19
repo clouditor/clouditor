@@ -1243,14 +1243,14 @@ func Test_getMetricIds(t *testing.T) {
 			args: args{
 				metrics: []*assessment.Metric{
 					{
-						Id: testdata.MockAnotherSubControlID,
+						Id: testdata.MockSubControlID11,
 					},
 					{
 						Id: testdata.MockSubControlID,
 					},
 				},
 			},
-			want: []string{testdata.MockAnotherSubControlID, testdata.MockSubControlID},
+			want: []string{testdata.MockSubControlID11, testdata.MockSubControlID},
 		},
 	}
 	for _, tt := range tests {
