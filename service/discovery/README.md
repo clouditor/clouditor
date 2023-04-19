@@ -32,6 +32,8 @@
 |-------------------|-------|-----|
 | Resource          | ✅     | ✅   |
 | NetworkInterfaces | ✅     | ✅   |
+| ResourceLogging  | ✅     |    |
+| Backup  | ✅     |    |
 
 #### Resource
 | Evidence    | Azure | AWS |
@@ -138,6 +140,8 @@
 | Resource         | ✅     | ✅   |
 | AtRestEncryption | ✅     | ✅   |
 | Immutability     | ✅     | ❌   |
+| ResourceLogging  | ✅     |    |
+| Backup  | ✅     |    |
 
 ### ObjectStorageService
 | Evidence       | Azure | AWS |
@@ -165,12 +169,6 @@
 | Evidence          | Azure | AWS |
 |-------------------|-------|-----|
 | Storage           | ✅     | ❌   |
-
-### Storage
-| Evidence          | Azure | AWS |
-|-------------------|-------|-----|
-| Resource          | ✅     | ✅   |
-| AtRestEncryption  | ✅     | ✅   |
 
 #### ManagedKeyEncryption
 | Evidence  | Azure | AWS |
