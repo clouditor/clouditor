@@ -49,7 +49,8 @@ import (
 var f embed.FS
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultCatalogsFile = "catalogs.json"
+
+var DefaultCatalogsFile = "demo_catalogs.json"
 
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration

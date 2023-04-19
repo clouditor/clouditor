@@ -122,7 +122,7 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithPreload("ControlsInScope"), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
@@ -223,6 +223,21 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
 
 	return &emptypb.Empty{}, nil
+}
+
+// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
+func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+	s.hookMutex.RLock()
+	hooks := s.toeHooks
+	defer s.hookMutex.RUnlock()
+
+	// Inform our hook, if we have any
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
+			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(ctx, event, err)
+		}
+	}
 }
 
 // RegisterToeHook registers the Target of Evaluation hook function
@@ -410,21 +425,6 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 	dedupControls := deduplicate(c)
 
 	return dedupControls, nil
-}
-
-// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
-func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
-	s.hookMutex.RLock()
-	hooks := s.toeHooks
-	defer s.hookMutex.RUnlock()
-
-	// Inform our hook, if we have any
-	if len(hooks) > 0 {
-		for _, hook := range hooks {
-			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, event, err)
-		}
-	}
 }
 
 // deduplicate removes all duplicates

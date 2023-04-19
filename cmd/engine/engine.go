@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	commands_login "clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/internal/auth"
@@ -47,6 +48,7 @@ import (
 	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	service_evaluation "clouditor.io/clouditor/service/evaluation"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -115,6 +117,7 @@ var (
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
+	evaluationService    evaluation.EvaluationServer
 	db                   persistence.Storage
 	providers            []string
 
@@ -265,7 +268,20 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			},
 		),
 	)
+
 	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
+
+	evaluationService = service_evaluation.NewService(
+		service_evaluation.WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
+			},
+		),
+		service_evaluation.WithStorage(db),
+	)
 
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
 	//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
@@ -355,6 +371,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),
 		server.WithEvidenceStore(evidenceStoreService),
+		server.WithEvaluation(evaluationService),
 		server.WithReflection(),
 	)
 	if err != nil {

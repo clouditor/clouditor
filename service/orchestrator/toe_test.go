@@ -293,7 +293,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: testdata.MockCloudServiceID,
-				CatalogId:      "Cat1234",
+				CatalogId:      testdata.MockCatalogID,
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.TargetOfEvaluation)
@@ -302,7 +302,8 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				return assert.True(t, ok) &&
 					assert.NoError(t, res.Validate()) &&
 					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
-					assert.Equal(t, want.CatalogId, res.CatalogId)
+					assert.Equal(t, want.CatalogId, res.CatalogId) &&
+					assert.Equal(t, want.ControlsInScope, res.ControlsInScope)
 			},
 			wantErr: assert.NoError,
 		},
@@ -815,7 +816,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						ControlId:                        testdata.MockAnotherControlID,
+						ControlId:                        testdata.MockControlID2,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
 						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -825,7 +826,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				},
 			},
 			wantRes: &orchestrator.ControlInScope{
-				ControlId:                        testdata.MockAnotherControlID,
+				ControlId:                        testdata.MockControlID2,
 				ControlCategoryName:              testdata.MockCategoryName,
 				ControlCategoryCatalogId:         testdata.MockCatalogID,
 				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
@@ -863,11 +864,12 @@ func TestService_AddControlToScope(t *testing.T) {
 				storage: tt.fields.storage,
 				authz:   tt.fields.authz,
 			}
+
 			gotRes, err := svc.AddControlToScope(tt.args.in0, tt.args.req)
-			tt.wantErr(t, err, tt.args)
+			tt.wantErr(t, err)
 
 			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateControlInScope() = %v, want %v", gotRes, tt.wantRes)
+				t.Errorf("Service.AddControlToScope() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}

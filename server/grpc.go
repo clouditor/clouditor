@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/logging/formatter"
@@ -76,6 +77,12 @@ func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	return func(srv *Server, ac *AuthConfig) {
 		discovery.RegisterDiscoveryServer(srv, svc)
+	}
+}
+
+func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
+	return func(srv *Server, ac *AuthConfig) {
+		evaluation.RegisterEvaluationServer(srv, svc)
 	}
 }
 
