@@ -509,6 +509,11 @@ func (d *azureStorageDiscovery) discoverBackupVaults(account *armstorage.Account
 		err  error
 	)
 
+	if account == nil {
+		err = errors.New("storage account is nil")
+		return nil, err
+	}
+
 	// List all backup vaults in the given resource group
 	listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
 	for listPager.More() {
