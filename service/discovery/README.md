@@ -33,7 +33,7 @@
 | Resource          | ✅     | ✅   |
 | NetworkInterfaces | ✅     | ✅   |
 | ResourceLogging  | ✅     |    |
-| Backup  | ✅     |    |
+| Backup  |      |    |
 
 #### Resource
 | Evidence    | Azure | AWS |
