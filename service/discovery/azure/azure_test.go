@@ -340,7 +340,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 	return d
 }
 
-func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
+func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 	type fields struct {
 		azureDiscovery     *azureDiscovery
 		defenderProperties map[string]*defenderProperties
@@ -439,6 +439,119 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureStorageDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+
+			// initialize backup instances client
+			_ = d.initBackupInstancesClient()
+
+			d.handleBackupVaults(tt.args.vaults)
+
+			tt.want(t, d)
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+		backupMap          map[string]map[string]*voc.Backup
+	}
+	type args struct {
+		vaults []*armdataprotection.BackupVaultResource
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   assert.ValueAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			fields: fields{
+				azureDiscovery:     NewMockAzureDiscovery(newMockComputeSender()),
+				backupMap:          make(map[string]map[string]*voc.Backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+			args: args{
+				vaults: []*armdataprotection.BackupVaultResource{},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*azureComputeDiscovery)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(t, 0, len(s.backupMap))
+			},
+		},
+		{
+			name: "Error getting instances",
+			fields: fields{
+				azureDiscovery:     NewMockAzureDiscovery(newMockNetworkSender()),
+				backupMap:          make(map[string]map[string]*voc.Backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+			args: args{
+				vaults: []*armdataprotection.BackupVaultResource{
+					{
+						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/accountDoesNotExist"),
+						Name:     util.Ref("accountDoesNotExist"),
+						Location: util.Ref("westeurope"),
+					},
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*azureComputeDiscovery)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(t, 0, len(s.backupMap))
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery:     NewMockAzureDiscovery(newMockComputeSender()),
+				backupMap:          make(map[string]map[string]*voc.Backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+			args: args{
+				vaults: []*armdataprotection.BackupVaultResource{
+					{
+						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1"),
+						Name:     util.Ref("account1"),
+						Location: util.Ref("westeurope"),
+					},
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s, ok := i1.(*azureComputeDiscovery)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				want := &voc.Backup{
+					RetentionPeriod: 0,
+					Enabled:         true,
+					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Policy:          "policyId",
+				}
+
+				val, ok := s.backupMap[DataSourceTypeDisc]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"]
+				assert.True(t, ok)
+
+				return assert.Equal(t, want, val)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
 				azureDiscovery:     tt.fields.azureDiscovery,
 				defenderProperties: tt.fields.defenderProperties,
 			}

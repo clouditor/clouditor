@@ -32,6 +32,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
@@ -78,6 +79,15 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
+
+	// Discover backup vaults
+	backupVaults, err := d.azureDiscovery.discoverBackupVaults()
+	if err != nil {
+		log.Errorf("could not discover backup vaults: %v", err)
+	}
+
+	// Store voc.Backup for each entry in the backupMap
+	d.handleBackupVaults(backupVaults)
 
 	log.Info("Discover Azure block storage")
 	// Discover block storage
@@ -344,6 +354,8 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
 
+	backup := d.backupMap[DataSourceTypeDisc][*disk.ID]
+
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -357,6 +369,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 				voc.BlockStorageType,
 			),
 			AtRestEncryption: enc,
+			Backup:           backup,
 		},
 	}, nil
 }
@@ -458,5 +471,19 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
 	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	return
+}
+
+// initBackupVaultsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupVaultsClient() (err error) {
+	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+
+	return
+}
+
+// initBackupInstancesClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
+	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
 	return
 }

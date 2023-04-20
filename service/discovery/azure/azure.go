@@ -239,20 +239,16 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 
 // discoverBackupVaults receives all backup vaults in the subscription.
 // Since the backups for storage and compute are discovered, the discovery is performed here and results are stored in the azureDiscovery receiver.
-// TODO(anatheka): update to subscription instead of resourceGroup
-func (d *azureDiscovery) discoverBackupVaults(account *armstorage.Account) ([]*armdataprotection.BackupVaultResource, error) {
+// TODO(anatheka): Call handleBackupVaults from here.
+func (d *azureDiscovery) discoverBackupVaults() ([]*armdataprotection.BackupVaultResource, error) {
 	var (
-		list armdataprotection.BackupVaultsClientGetInResourceGroupResponse
+		list armdataprotection.BackupVaultsClientGetInSubscriptionResponse
 		err  error
 	)
 
-	if account == nil {
-		err = errors.New("storage account is nil")
-		return nil, err
-	}
-
 	// List all backup vaults in the given resource group
-	listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
+	// listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
+	listPager := d.clients.backupVaultClient.NewGetInSubscriptionPager(&armdataprotection.BackupVaultsClientGetInSubscriptionOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())
 		if err != nil {
@@ -283,7 +279,7 @@ func (d *azureDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVa
 				d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
 			}
 
-			// Store voc.Backup in backupMap
+			// Store voc.Backup in
 			d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
 				Enabled: true,
 				Policy:  *instance.Properties.PolicyInfo.PolicyID,

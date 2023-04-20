@@ -273,8 +273,25 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/account1/backupInstances" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"name": "disk1",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							"datasourceType": "Microsoft.Compute/disks",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "policyId",
+						},
+					},
+				},
+			},
+		}, 200)
 	}
-
 	return m.mockSender.Do(req)
 }
 
