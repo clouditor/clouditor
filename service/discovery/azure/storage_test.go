@@ -232,7 +232,8 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"name": "container1-container1-22222222-2222-2222-2222-222222222222",
 					"properties": map[string]interface{}{
 						"dataSourceInfo": map[string]interface{}{
-							"resourceID": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
 						},
 						"policyInfo": map[string]interface{}{
 							"policyId": "policyId",
@@ -264,7 +265,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				azureDiscovery: &azureDiscovery{
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*voc.Backup),
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -283,7 +284,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*voc.Backup),
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -298,7 +299,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*voc.Backup),
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},

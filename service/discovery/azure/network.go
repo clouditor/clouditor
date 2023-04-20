@@ -44,7 +44,7 @@ func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: NetworkComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*voc.Backup),
+			backupMap:           make(map[string]map[string]*voc.Backup),
 		},
 	}
 

@@ -51,11 +51,15 @@ import (
 )
 
 const (
-	StorageComponent           = "storage"
-	ComputeComponent           = "compute"
-	NetworkComponent           = "network"
+	StorageComponent = "storage"
+	ComputeComponent = "compute"
+	NetworkComponent = "network"
+
 	DefenderStorageType        = "AccountStorages"
 	DefenderVirtualMachineType = "VirtualMachines"
+
+	DataSourceTypeDisc           = "Microsoft.Compute/disks"
+	DataSourceTypeStorageAccount = "Microsoft.Storage/storageAccounts/blobServices"
 )
 
 var (
@@ -109,7 +113,7 @@ type azureDiscovery struct {
 	discovererComponent string
 	clients             clients
 	csID                string
-	backupMap           map[string]*voc.Backup
+	backupMap           map[string]map[string]*voc.Backup
 }
 
 type clients struct {
@@ -271,7 +275,16 @@ func (d *azureDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVa
 		}
 
 		for _, instance := range instances {
-			d.backupMap[idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+			dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
+
+			// Check if map entry already exists
+			_, ok := d.backupMap[dataSourceType]
+			if !ok {
+				d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
+			}
+
+			// Store voc.Backup in backupMap
+			d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
 				Enabled: true,
 				Policy:  *instance.Properties.PolicyInfo.PolicyID,
 				// RetentionPeriod: , // TODO(all): Add retention period

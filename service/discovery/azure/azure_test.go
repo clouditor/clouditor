@@ -329,7 +329,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 			},
 		},
 		csID:      testdata.MockCloudServiceID,
-		backupMap: make(map[string]*voc.Backup),
+		backupMap: make(map[string]map[string]*voc.Backup),
 	}
 
 	// Apply options
@@ -344,7 +344,7 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 	type fields struct {
 		azureDiscovery     *azureDiscovery
 		defenderProperties map[string]*defenderProperties
-		backupMap          map[string]*voc.Backup
+		backupMap          map[string]map[string]*voc.Backup
 	}
 	type args struct {
 		vaults []*armdataprotection.BackupVaultResource
@@ -359,7 +359,7 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 			name: "Empty input",
 			fields: fields{
 				azureDiscovery:     NewMockAzureDiscovery(newMockStorageSender()),
-				backupMap:          make(map[string]*voc.Backup),
+				backupMap:          make(map[string]map[string]*voc.Backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
@@ -378,7 +378,7 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 			name: "Error getting instances",
 			fields: fields{
 				azureDiscovery:     NewMockAzureDiscovery(newMockNetworkSender()),
-				backupMap:          make(map[string]*voc.Backup),
+				backupMap:          make(map[string]map[string]*voc.Backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
@@ -403,7 +403,7 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				azureDiscovery:     NewMockAzureDiscovery(newMockStorageSender()),
-				backupMap:          make(map[string]*voc.Backup),
+				backupMap:          make(map[string]map[string]*voc.Backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
@@ -429,7 +429,7 @@ func Test_azureStorageDiscovery_handleBackupVaults(t *testing.T) {
 					Policy:          "policyId",
 				}
 
-				val, ok := s.backupMap["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"]
+				val, ok := s.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"]
 				assert.True(t, ok)
 
 				return assert.Equal(t, want, val)

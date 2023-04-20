@@ -55,7 +55,7 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*voc.Backup),
+			backupMap:           make(map[string]map[string]*voc.Backup),
 		},
 		make(map[string]*defenderProperties),
 	}
@@ -358,7 +358,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[idUpToStorageAccount(*container.ID)]
+	backup := d.backupMap[DataSourceTypeStorageAccount][idUpToStorageAccount(*container.ID)]
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
