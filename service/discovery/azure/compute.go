@@ -80,6 +80,16 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
+	// initialize backup vaults client
+	if err := d.initBackupVaultsClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup instances client
+	if err := d.initBackupInstancesClient(); err != nil {
+		return nil, err
+	}
+
 	// Discover backup vaults
 	backupVaults, err := d.azureDiscovery.discoverBackupVaults()
 	if err != nil {

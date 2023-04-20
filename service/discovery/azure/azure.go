@@ -126,9 +126,9 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
-	dataProtectionClient    *armdataprotection.BackupPoliciesClient
-	backupVaultClient       *armdataprotection.BackupVaultsClient
-	backupInstancesClient   *armdataprotection.BackupInstancesClient
+	// dataProtectionClient    *armdataprotection.BackupPoliciesClient
+	backupVaultClient     *armdataprotection.BackupVaultsClient
+	backupInstancesClient *armdataprotection.BackupInstancesClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {

@@ -471,12 +471,12 @@ func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	return
 }
 
-// initDataProtectionClient creates the client if not already exists
-func (d *azureStorageDiscovery) initDataProtectionClient() (err error) {
-	d.clients.dataProtectionClient, err = initClient(d.clients.dataProtectionClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+// // initDataProtectionClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initDataProtectionClient() (err error) {
+// 	d.clients.dataProtectionClient, err = initClient(d.clients.dataProtectionClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
 
-	return
-}
+// 	return
+// }
 
 // initBackupVaultsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
