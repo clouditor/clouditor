@@ -91,13 +91,13 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 
 	// Discover backup vaults
-	backupVaults, err := d.azureDiscovery.discoverBackupVaults()
+	err = d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
 		log.Errorf("could not discover backup vaults: %v", err)
 	}
 
-	// Store voc.Backup for each entry in the backupMap
-	d.handleBackupVaults(backupVaults)
+	// // Store voc.Backup for each entry in the backupMap
+	// d.handleBackupVaults(backupVaults)
 
 	log.Info("Discover Azure block storage")
 	// Discover block storage

@@ -347,13 +347,14 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 		backupMap          map[string]map[string]*voc.Backup
 	}
 	type args struct {
-		vaults []*armdataprotection.BackupVaultResource
+		vault *armdataprotection.BackupVaultResource
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.ValueAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Empty input",
@@ -362,16 +363,10 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 				backupMap:          make(map[string]map[string]*voc.Backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
-			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*azureStorageDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 0, len(s.backupMap))
+			args: args{},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "missing backup vault")
 			},
 		},
 		{
@@ -382,21 +377,15 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{
-					{
-						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/accountDoesNotExist"),
-						Name:     util.Ref("accountDoesNotExist"),
-						Location: util.Ref("westeurope"),
-					},
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/accountDoesNotExist"),
+					Name:     util.Ref("accountDoesNotExist"),
+					Location: util.Ref("westeurope"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*azureStorageDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 0, len(s.backupMap))
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover backup instances:")
 			},
 		},
 		{
@@ -407,12 +396,10 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{
-					{
-						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1"),
-						Name:     util.Ref("account1"),
-						Location: util.Ref("westeurope"),
-					},
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1"),
+					Name:     util.Ref("account1"),
+					Location: util.Ref("westeurope"),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -434,6 +421,7 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 
 				return assert.Equal(t, want, val)
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -446,9 +434,13 @@ func Test_azureStorageDiscovery_handleBackupVaults_Storage(t *testing.T) {
 			// initialize backup instances client
 			_ = d.initBackupInstancesClient()
 
-			d.handleBackupVaults(tt.args.vaults)
+			err := d.handleBackupVaults(tt.args.vault)
 
-			tt.want(t, d)
+			if tt.want != nil {
+				tt.want(t, d)
+			}
+
+			tt.wantErr(t, err)
 		})
 	}
 }
@@ -460,13 +452,14 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 		backupMap          map[string]map[string]*voc.Backup
 	}
 	type args struct {
-		vaults []*armdataprotection.BackupVaultResource
+		vault *armdataprotection.BackupVaultResource
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.ValueAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Empty input",
@@ -475,16 +468,10 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 				backupMap:          make(map[string]map[string]*voc.Backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
-			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*azureComputeDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 0, len(s.backupMap))
+			args: args{},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "missing backup vault")
 			},
 		},
 		{
@@ -495,21 +482,15 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{
-					{
-						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/accountDoesNotExist"),
-						Name:     util.Ref("accountDoesNotExist"),
-						Location: util.Ref("westeurope"),
-					},
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/accountDoesNotExist"),
+					Name:     util.Ref("accountDoesNotExist"),
+					Location: util.Ref("westeurope"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*azureComputeDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, 0, len(s.backupMap))
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover backup instances:")
 			},
 		},
 		{
@@ -520,12 +501,10 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 				defenderProperties: make(map[string]*defenderProperties),
 			},
 			args: args{
-				vaults: []*armdataprotection.BackupVaultResource{
-					{
-						ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1"),
-						Name:     util.Ref("account1"),
-						Location: util.Ref("westeurope"),
-					},
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1"),
+					Name:     util.Ref("account1"),
+					Location: util.Ref("westeurope"),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -547,6 +526,7 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 
 				return assert.Equal(t, want, val)
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
@@ -559,9 +539,13 @@ func Test_azureStorageDiscovery_handleBackupVaults_Compute(t *testing.T) {
 			// initialize backup instances client
 			_ = d.initBackupInstancesClient()
 
-			d.handleBackupVaults(tt.args.vaults)
+			err := d.handleBackupVaults(tt.args.vault)
 
-			tt.want(t, d)
+			if tt.want != nil {
+				tt.want(t, d)
+			}
+
+			tt.wantErr(t, err)
 		})
 	}
 }

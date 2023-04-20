@@ -239,58 +239,74 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 
 // discoverBackupVaults receives all backup vaults in the subscription.
 // Since the backups for storage and compute are discovered, the discovery is performed here and results are stored in the azureDiscovery receiver.
-// TODO(anatheka): Call handleBackupVaults from here.
-func (d *azureDiscovery) discoverBackupVaults() ([]*armdataprotection.BackupVaultResource, error) {
+func (d *azureDiscovery) discoverBackupVaults() error {
 	var (
-		list armdataprotection.BackupVaultsClientGetInSubscriptionResponse
-		err  error
+		err error
 	)
 
 	// List all backup vaults in the given resource group
-	// listPager := d.clients.backupVaultClient.NewGetInResourceGroupPager(resourceGroupName(*account.ID), &armdataprotection.BackupVaultsClientGetInResourceGroupOptions{})
-	listPager := d.clients.backupVaultClient.NewGetInSubscriptionPager(&armdataprotection.BackupVaultsClientGetInSubscriptionOptions{})
-	for listPager.More() {
-		list, err = listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
+	err = listPager(d,
+		d.clients.backupVaultClient.NewGetInSubscriptionPager,
+		d.clients.backupVaultClient.NewGetInResourceGroupPager,
+		func(res armdataprotection.BackupVaultsClientGetInSubscriptionResponse) []*armdataprotection.BackupVaultResource {
+			return res.Value
+		},
+		func(res armdataprotection.BackupVaultsClientGetInResourceGroupResponse) []*armdataprotection.BackupVaultResource {
+			return res.Value
+		},
+		func(vault *armdataprotection.BackupVaultResource) error {
+			err = d.handleBackupVaults(vault)
+			if err != nil {
+				return fmt.Errorf("could not handle file storage: %w", err)
+			}
+
+			return nil
+		})
+
+	if err != nil {
+		return err
 	}
 
-	return list.Value, nil
+	return nil
 }
 
 // handleBackupVaults creates a voc.Backup and stores it to the backupMap.
-func (d *azureDiscovery) handleBackupVaults(vaults []*armdataprotection.BackupVaultResource) {
-	for _, vault := range vaults {
-		// Discover backup instances for given vault
-		instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
-		if err != nil {
-			log.Errorf("could not discover backup instances: %v", err)
-			continue
+func (d *azureDiscovery) handleBackupVaults(vault *armdataprotection.BackupVaultResource) error {
+	var err error
+
+	if vault == nil {
+		err = errors.New("missing backup vault")
+		return err
+	}
+
+	instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
+	if err != nil {
+		err := fmt.Errorf("could not discover backup instances: %v", err)
+		return err
+	}
+
+	for _, instance := range instances {
+		dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
+
+		// Check if map entry already exists
+		_, ok := d.backupMap[dataSourceType]
+		if !ok {
+			d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
 		}
 
-		for _, instance := range instances {
-			dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
-
-			// Check if map entry already exists
-			_, ok := d.backupMap[dataSourceType]
-			if !ok {
-				d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
-			}
-
-			// Store voc.Backup in
-			d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-				Enabled: true,
-				Policy:  *instance.Properties.PolicyInfo.PolicyID,
-				// RetentionPeriod: , // TODO(all): Add retention period
-				Storage: voc.ResourceID(*instance.ID),
-				GeoLocation: voc.GeoLocation{
-					Region: *vault.Location,
-				},
-			}
+		// Store voc.Backup in backupMap
+		d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+			Enabled: true,
+			Policy:  *instance.Properties.PolicyInfo.PolicyID,
+			// RetentionPeriod: , // TODO(all): Add retention period
+			Storage: voc.ResourceID(*instance.ID),
+			GeoLocation: voc.GeoLocation{
+				Region: *vault.Location,
+			},
 		}
 	}
+
+	return nil
 }
 
 // discoverBackupInstances retrieves the instances in a given backup vault.
@@ -300,7 +316,12 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 		err  error
 	)
 
+	if resourceGroup == "" || vaultName == "" {
+		return nil, errors.New("missing resource group and/or vault name")
+	}
+
 	// List all instances in the given backupp vault
+	// TODO(anatheka): Can I use the listPager() here? the ListPager needs the reosurceGroup and vaultName.
 	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())

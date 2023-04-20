@@ -133,13 +133,13 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	}
 
 	// Discover backup vaults
-	backupVaults, err := d.azureDiscovery.discoverBackupVaults()
+	err := d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
 		log.Errorf("could not discover backup vaults: %v", err)
 	}
 
-	// Store voc.Backup for each entry in the backupMap
-	d.handleBackupVaults(backupVaults)
+	// // Store voc.Backup for each entry in the backupMap
+	// err = d.handleBackupVaults(backupVaults)
 
 	// Discover object and file storages
 	err = listPager(d.azureDiscovery,
