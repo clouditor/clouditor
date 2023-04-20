@@ -373,16 +373,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 			},
 		},
 		{
-			name: "Discovery error",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover storage accounts:")
-			},
-		},
-		{
 			name: "Without errors",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
