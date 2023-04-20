@@ -41,6 +41,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 
 	"github.com/sirupsen/logrus"
 
@@ -48,9 +49,10 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
+	StorageComponent  = "storage"
+	ComputeComponent  = "compute"
+	NetworkComponent  = "network"
+	IdentityComponent = "identity"
 )
 
 var (
@@ -116,6 +118,7 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
+	identityClient          graphrbac.UsersClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
