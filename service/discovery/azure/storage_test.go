@@ -224,12 +224,22 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/account1/backupInstances" {
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
 		return createResponse(map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/account1/backupInstances/container1-container1-22222222-2222-2222-2222-222222222222",
-					"name": "container1-container1-22222222-2222-2222-2222-222222222222",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+					"name": "account1-account1-22222222-2222-2222-2222-222222222222",
 					"properties": map[string]interface{}{
 						"dataSourceInfo": map[string]interface{}{
 							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
@@ -398,6 +408,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						Backup: &voc.Backup{
+							Enabled:         true,
+							RetentionPeriod: 0,
+							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+							Policy:          "policyId",
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						},
 					},
 					PublicAccess: true,
 				},
@@ -421,6 +438,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						Backup: &voc.Backup{
+							Enabled:         true,
+							RetentionPeriod: 0,
+							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+							Policy:          "policyId",
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						},
 					},
 					PublicAccess: true,
 				},

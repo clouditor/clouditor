@@ -240,12 +240,13 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 // discoverBackupVaults receives all backup vaults in the subscription.
 // Since the backups for storage and compute are discovered, the discovery is performed here and results are stored in the azureDiscovery receiver.
 func (d *azureDiscovery) discoverBackupVaults() error {
-	var (
-		err error
-	)
 
-	// List all backup vaults in the given resource group
-	err = listPager(d,
+	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
+		return errors.New("backupVaultClient and/or backupInstancesClient missing")
+	}
+
+	// List all backup vaults
+	err := listPager(d,
 		d.clients.backupVaultClient.NewGetInSubscriptionPager,
 		d.clients.backupVaultClient.NewGetInResourceGroupPager,
 		func(res armdataprotection.BackupVaultsClientGetInSubscriptionResponse) []*armdataprotection.BackupVaultResource {
@@ -255,9 +256,31 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 			return res.Value
 		},
 		func(vault *armdataprotection.BackupVaultResource) error {
-			err = d.handleBackupVaults(vault)
+			instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
 			if err != nil {
-				return fmt.Errorf("could not handle file storage: %w", err)
+				err := fmt.Errorf("could not discover backup instances: %v", err)
+				return err
+			}
+
+			for _, instance := range instances {
+				dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
+
+				// Check if map entry already exists
+				_, ok := d.backupMap[dataSourceType]
+				if !ok {
+					d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
+				}
+
+				// Store voc.Backup in backupMap
+				d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+					Enabled: true,
+					Policy:  *instance.Properties.PolicyInfo.PolicyID,
+					// RetentionPeriod: , // TODO(all): Add retention period
+					Storage: voc.ResourceID(*instance.ID),
+					GeoLocation: voc.GeoLocation{
+						Region: *vault.Location,
+					},
+				}
 			}
 
 			return nil
@@ -265,45 +288,6 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// handleBackupVaults creates a voc.Backup and stores it to the backupMap.
-func (d *azureDiscovery) handleBackupVaults(vault *armdataprotection.BackupVaultResource) error {
-	var err error
-
-	if vault == nil {
-		err = errors.New("missing backup vault")
-		return err
-	}
-
-	instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
-	if err != nil {
-		err := fmt.Errorf("could not discover backup instances: %v", err)
-		return err
-	}
-
-	for _, instance := range instances {
-		dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
-
-		// Check if map entry already exists
-		_, ok := d.backupMap[dataSourceType]
-		if !ok {
-			d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
-		}
-
-		// Store voc.Backup in backupMap
-		d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-			Enabled: true,
-			Policy:  *instance.Properties.PolicyInfo.PolicyID,
-			// RetentionPeriod: , // TODO(all): Add retention period
-			Storage: voc.ResourceID(*instance.ID),
-			GeoLocation: voc.GeoLocation{
-				Region: *vault.Location,
-			},
-		}
 	}
 
 	return nil

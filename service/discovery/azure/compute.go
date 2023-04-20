@@ -96,9 +96,6 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		log.Errorf("could not discover backup vaults: %v", err)
 	}
 
-	// // Store voc.Backup for each entry in the backupMap
-	// d.handleBackupVaults(backupVaults)
-
 	log.Info("Discover Azure block storage")
 	// Discover block storage
 	storage, err := d.discoverBlockStorages()

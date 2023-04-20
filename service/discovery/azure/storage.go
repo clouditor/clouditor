@@ -138,9 +138,6 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		log.Errorf("could not discover backup vaults: %v", err)
 	}
 
-	// // Store voc.Backup for each entry in the backupMap
-	// err = d.handleBackupVaults(backupVaults)
-
 	// Discover object and file storages
 	err = listPager(d.azureDiscovery,
 		d.clients.accountsClient.NewListPager,
