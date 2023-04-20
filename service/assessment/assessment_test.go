@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
@@ -215,6 +216,7 @@ func TestNewService(t *testing.T) {
 			assert.NotNil(t, s.orchestratorStreams)
 			s.evidenceStoreStreams = nil
 			s.orchestratorStreams = nil
+			s.authz = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -392,6 +394,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		results                       map[string]*assessment.AssessmentResult
 		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		authz                         service.AuthorizationStrategy
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -449,6 +452,7 @@ func TestService_AssessEvidences(t *testing.T) {
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+				authz:                servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
@@ -465,8 +469,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			},
 		},
 		{
-			name:   "Error in stream to client - Send()-err",
-			fields: fields{},
+			name: "Error in stream to client - Send()-err",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			args: args{
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -479,8 +485,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
 		},
 		{
-			name:   "Error in stream to server - Recv()-err",
-			fields: fields{},
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			args: args{
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -511,7 +519,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
-				pe: policies.NewRegoEval(),
+				pe:    policies.NewRegoEval(),
+				authz: tt.fields.authz,
 			}
 
 			if tt.args.streamToServer != nil {

@@ -104,6 +104,7 @@ type Service struct {
 	confMutex sync.Mutex
 
 	authorizer api.Authorizer
+	authz      service.AuthorizationStrategy
 
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
@@ -157,15 +158,15 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Op
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
-	return func(s *Service) {
-		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+	return func(svc *Service) {
+		svc.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
 func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
-	return func(s *Service) {
-		s.SetAuthorizer(auth)
+	return func(svc *Service) {
+		svc.SetAuthorizer(auth)
 	}
 }
 
@@ -176,9 +177,16 @@ func WithRegoPackageName(pkg string) service.Option[Service] {
 	}
 }
 
+// WithAuthorizationStrategy is an option that configures an authorization strategy.
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
+	return func(svc *Service) {
+		svc.authz = authz
+	}
+}
+
 // NewService creates a new assessment service with default values.
 func NewService(opts ...service.Option[Service]) *Service {
-	s := &Service{
+	svc := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
@@ -186,32 +194,37 @@ func NewService(opts ...service.Option[Service]) *Service {
 
 	// Apply any options
 	for _, o := range opts {
-		o(s)
+		o(svc)
 	}
 
 	// Set to default Evidence Store
-	if s.evidenceStoreAddress.target == "" {
-		s.evidenceStoreAddress = grpcTarget{
+	if svc.evidenceStoreAddress.target == "" {
+		svc.evidenceStoreAddress = grpcTarget{
 			target: DefaultEvidenceStoreAddress,
 		}
 	}
 
 	// Set to default Orchestrator
-	if s.orchestratorAddress.target == "" {
-		s.orchestratorAddress = grpcTarget{
+	if svc.orchestratorAddress.target == "" {
+		svc.orchestratorAddress = grpcTarget{
 			target: DefaultOrchestratorAddress,
 		}
 	}
 
 	// Set to default Rego package
-	if s.evalPkg == "" {
-		s.evalPkg = policies.DefaultRegoPackage
+	if svc.evalPkg == "" {
+		svc.evalPkg = policies.DefaultRegoPackage
 	}
 
 	// Initialize the policy evaluator after options are set
-	s.pe = policies.NewRegoEval(policies.WithPackageName(s.evalPkg))
+	svc.pe = policies.NewRegoEval(policies.WithPackageName(svc.evalPkg))
 
-	return s
+	// Default to an allow-all authorization strategy
+	if svc.authz == nil {
+		svc.authz = &service.AuthorizationStrategyAllowAll{}
+	}
+
+	return svc
 }
 
 // SetAuthorizer implements UsesAuthorizer
@@ -225,7 +238,7 @@ func (svc *Service) Authorizer() api.Authorizer {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
+func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
 	resp = &assessment.AssessEvidenceResponse{}
 
 	// Validate request
@@ -240,6 +253,11 @@ func (svc *Service) AssessEvidence(_ context.Context, req *assessment.AssessEvid
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// Assess evidence
