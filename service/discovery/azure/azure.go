@@ -285,6 +285,15 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 						Enabled:   true,     // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys)
 					},
 				}
+
+				// TODO(anatheka): Add TransportEncryption to Backup.
+
+				// 		TransportEncryption: &voc.TransportEncryption{ //https://learn.microsoft.com/en-us/azure/backup/security-overview#encryption-of-data
+				// 			Enforced:   true,
+				// 			TlsVersion: string(armstorage.MinimumTLSVersionTLS12), // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tls-support
+				// 			Algorithm:  "TLS",
+				// 			Enabled:    true, // cannot be disabled
+				// 		},
 			}
 
 			return nil
