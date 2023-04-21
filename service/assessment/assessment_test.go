@@ -227,13 +227,17 @@ func TestNewService(t *testing.T) {
 
 // TestAssessEvidence tests AssessEvidence
 func TestService_AssessEvidence(t *testing.T) {
+	type fields struct {
+		authz service.AuthorizationStrategy
+	}
 	type args struct {
 		in0      context.Context
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name string
-		args args
+		name   string
+		fields fields
+		args   args
 		// hasRPCConnection is true when connected to orchestrator and evidence store
 		hasRPCConnection bool
 		wantResp         *assessment.AssessEvidenceResponse
@@ -328,6 +332,26 @@ func TestService_AssessEvidence(t *testing.T) {
 			wantErr:          assert.NoError,
 		},
 		{
+			name: "Assess resource of wrong could service",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: testdata.MockCloudServiceID},
+			},
+			hasRPCConnection: true,
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
 			name: "Assess resource without resource id",
 			args: args{
 				in0: context.TODO(),
@@ -368,6 +392,9 @@ func TestService_AssessEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
+			if tt.fields.authz != nil {
+				s.authz = tt.fields.authz
+			}
 			if tt.hasRPCConnection {
 				s.evidenceStoreAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
@@ -730,7 +757,7 @@ func (*mockAssessmentServerStream) SetTrailer(metadata.MD) {
 }
 
 func (*mockAssessmentServerStream) Context() context.Context {
-	return nil
+	return context.TODO()
 }
 
 func (*mockAssessmentServerStream) SendMsg(interface{}) error {
@@ -776,6 +803,10 @@ func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEv
 	return req, nil
 }
 
+func (*mockAssessmentServerStreamWithSendErr) Context() context.Context {
+	return context.TODO()
+}
+
 type mockAssessmentServerStreamWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
@@ -790,6 +821,10 @@ func (*mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidence
 	err := errors.New("Recv()-error")
 
 	return nil, err
+}
+
+func (*mockAssessmentServerStreamWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
