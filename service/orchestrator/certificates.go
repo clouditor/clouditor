@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,8 +19,7 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 	res *orchestrator.Certificate, err error) {
 
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
+	if err = service.ValidateRequest(req); err != nil {
 		err = status.Error(codes.InvalidArgument, err.Error())
 		return
 	}
@@ -40,25 +40,36 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
 
 	// Return certificate
-	return req.Certificate, nil
+	res = req.Certificate
+	return
 }
 
 // GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
-func (svc *Service) GetCertificate(_ context.Context, req *orchestrator.GetCertificateRequest) (response *orchestrator.Certificate, err error) {
+func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCertificateRequest) (
+	res *orchestrator.Certificate, err error) {
+
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
+	if err = service.ValidateRequest(req); err != nil {
+		err = status.Error(codes.InvalidArgument, err.Error())
+		return
 	}
 
-	response = new(orchestrator.Certificate)
-	err = svc.storage.Get(response, "Id = ?", req.CertificateId)
+	res = new(orchestrator.Certificate)
+	err = svc.storage.Get(res, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "certificate not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-	return response, nil
+
+	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
+	areAllAllowed, allowedCloudServices := svc.authz.AllowedCloudServices(ctx)
+	if !areAllAllowed && !slices.Contains(allowedCloudServices, res.CloudServiceId) {
+		// Important to nil the response since it is set already
+		return nil, service.ErrPermissionDenied
+	}
+
+	return
 }
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
