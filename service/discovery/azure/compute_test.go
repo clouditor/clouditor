@@ -1952,3 +1952,51 @@ func Test_azureComputeDiscovery_createResourceLogging(t *testing.T) {
 		})
 	}
 }
+
+func Test_runtimeInfo(t *testing.T) {
+	type args struct {
+		runtime string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantRuntimeLanguage string
+		wantRuntimeVersion  string
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				runtime: "",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Wrong input",
+			args: args{
+				runtime: "TEST",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				runtime: "PYTHON|3.8",
+			},
+			wantRuntimeLanguage: "PYTHON",
+			wantRuntimeVersion:  "3.8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotRuntimeLanguage, gotRuntimeVersion := runtimeInfo(tt.args.runtime)
+			if gotRuntimeLanguage != tt.wantRuntimeLanguage {
+				t.Errorf("runtimeInfo() gotRuntimeLanguage = %v, want %v", gotRuntimeLanguage, tt.wantRuntimeLanguage)
+			}
+			if gotRuntimeVersion != tt.wantRuntimeVersion {
+				t.Errorf("runtimeInfo() gotRuntimeVersion = %v, want %v", gotRuntimeVersion, tt.wantRuntimeVersion)
+			}
+		})
+	}
+}

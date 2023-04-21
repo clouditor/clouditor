@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
@@ -168,6 +169,8 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		return nil
 	}
 
+	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -183,9 +186,21 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
-		RuntimeLanguage: "",
-		RuntimeVersion:  "",
+		RuntimeLanguage: runtimeLanguage,
+		RuntimeVersion:  runtimeVersion,
 	}
+}
+
+// runtimeInfo returns the runtime language and version
+func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string) {
+	if runtime == "" || !strings.Contains(runtime, "|") {
+		return "", ""
+	}
+	split := strings.Split(runtime, "|")
+	runtimeLanguage = split[0]
+	runtimeVersion = split[1]
+
+	return
 }
 
 // Discover virtual machines

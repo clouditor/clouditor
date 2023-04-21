@@ -276,6 +276,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				}
 
 				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs
+				// TODO(anatheka): Add test mocking for policy
 				retention := policy.BaseBackupPolicyResource.Properties.(*armdataprotection.BackupPolicy).PolicyRules[0].(*armdataprotection.AzureRetentionRule).Lifecycles[0].DeleteAfter.(*armdataprotection.AbsoluteDeleteOption).GetDeleteOption().Duration
 				// Check if map entry already exists
 				_, ok := d.backupMap[dataSourceType]
