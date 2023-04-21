@@ -42,3 +42,9 @@ var (
 func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
 }
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns the cloud service ID of the inner
+// object.
+func (req *AssessEvidenceRequest) GetCloudServiceId() string {
+	return req.GetEvidence().GetCloudServiceId()
+}
