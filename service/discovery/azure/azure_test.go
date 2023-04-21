@@ -34,6 +34,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
@@ -518,6 +519,46 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want(t, d)
+			}
+		})
+	}
+}
+
+func Test_retentionDuration(t *testing.T) {
+	type args struct {
+		retention string
+	}
+	tests := []struct {
+		name string
+		args args
+		want time.Duration
+	}{
+		{
+			name: "Missing input",
+			args: args{
+				retention: "",
+			},
+			want: time.Duration(0),
+		},
+		{
+			name: "Wrong input",
+			args: args{
+				retention: "TEST",
+			},
+			want: time.Duration(0),
+		},
+		{
+			name: "Happy path",
+			args: args{
+				retention: "P7D",
+			},
+			want: time.Duration(7 * 24),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := retentionDuration(tt.args.retention); got != tt.want {
+				t.Errorf("retentionDuration() = %v, want %v", got, tt.want)
 			}
 		})
 	}

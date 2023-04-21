@@ -80,6 +80,11 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return nil, err
+	}
+
 	// initialize backup vaults client
 	if err := d.initBackupVaultsClient(); err != nil {
 		return nil, err
@@ -478,6 +483,13 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
 	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	return
+}
+
+// initBackupPoliciesClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupPoliciesClient() (err error) {
+	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+
 	return
 }
 

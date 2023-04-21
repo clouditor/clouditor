@@ -102,10 +102,10 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
 
-	// // initialize data protection client
-	// if err := d.initDataProtectionClient(); err != nil {
-	// 	return nil, err
-	// }
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return nil, err
+	}
 
 	// initialize backup instances client
 	if err := d.initBackupInstancesClient(); err != nil {
@@ -468,12 +468,12 @@ func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	return
 }
 
-// // initDataProtectionClient creates the client if not already exists
-// func (d *azureStorageDiscovery) initDataProtectionClient() (err error) {
-// 	d.clients.dataProtectionClient, err = initClient(d.clients.dataProtectionClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+// initBackupPoliciesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initBackupPoliciesClient() (err error) {
+	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
 
-// 	return
-// }
+	return
+}
 
 // initBackupVaultsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {

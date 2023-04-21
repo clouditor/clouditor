@@ -29,7 +29,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -126,9 +128,9 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
-	// dataProtectionClient    *armdataprotection.BackupPoliciesClient
-	backupVaultClient     *armdataprotection.BackupVaultsClient
-	backupInstancesClient *armdataprotection.BackupInstancesClient
+	backupPoliciesClient    *armdataprotection.BackupPoliciesClient
+	backupVaultClient       *armdataprotection.BackupVaultsClient
+	backupInstancesClient   *armdataprotection.BackupInstancesClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -265,6 +267,16 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 			for _, instance := range instances {
 				dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
 
+				// Get retention from backup policy
+				policy, err := d.clients.backupPoliciesClient.Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
+				if err != nil {
+					err := fmt.Errorf("could not get backup policy '%s': %w", *instance.Properties.PolicyInfo.PolicyID, err)
+					log.Error(err)
+					continue
+				}
+
+				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs
+				retention := policy.BaseBackupPolicyResource.Properties.(*armdataprotection.BackupPolicy).PolicyRules[0].(*armdataprotection.AzureRetentionRule).Lifecycles[0].DeleteAfter.(*armdataprotection.AbsoluteDeleteOption).GetDeleteOption().Duration
 				// Check if map entry already exists
 				_, ok := d.backupMap[dataSourceType]
 				if !ok {
@@ -273,10 +285,10 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 
 				// Store voc.Backup in backupMap
 				d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-					Enabled: true,
-					Policy:  *instance.Properties.PolicyInfo.PolicyID,
-					// RetentionPeriod: , // TODO(all): Add retention period
-					Storage: voc.ResourceID(*instance.ID),
+					Enabled:         true,
+					Policy:          *instance.Properties.PolicyInfo.PolicyID,
+					RetentionPeriod: retentionDuration(*retention),
+					Storage:         voc.ResourceID(*instance.ID),
 					GeoLocation: voc.GeoLocation{
 						Region: *vault.Location,
 					},
@@ -287,7 +299,6 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				}
 
 				// TODO(anatheka): Add TransportEncryption to Backup.
-
 				// 		TransportEncryption: &voc.TransportEncryption{ //https://learn.microsoft.com/en-us/azure/backup/security-overview#encryption-of-data
 				// 			Enforced:   true,
 				// 			TlsVersion: string(armstorage.MinimumTLSVersionTLS12), // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tls-support
@@ -304,6 +315,28 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 	}
 
 	return nil
+}
+
+// retentionDuration returns the rentention string as time.Duration
+func retentionDuration(retention string) time.Duration {
+	if retention == "" {
+		return time.Duration(0)
+	}
+
+	// Delete first and last character
+	r := retention[1 : len(retention)-1]
+
+	// string to int
+	days, err := strconv.Atoi(r)
+	if err != nil {
+		log.Errorf("could not convert string to int")
+		return time.Duration(0)
+	}
+
+	// Create duration in hours
+	duration := time.Duration(days)
+
+	return duration
 }
 
 // discoverBackupInstances retrieves the instances in a given backup vault.
@@ -331,9 +364,30 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 	return list.Value, nil
 }
 
+// // discoverBackupPolicies retrieves the policies for a given instance.
+// func (d *azureDiscovery) discoverBackupPolicies(resourceGroup, vaultName, policyName string) ([]*armdataprotection.BackupPoliciesClientGetResponse, error) {
+// 	var (
+// 		err  error
+// 	)
+
+// 	// if resourceGroup == "" || vaultName == "" {
+// 	// 	return nil, errors.New("missing resource group and/or vault name")
+// 	// }
+
+// 	// Get the backup policy for a given ID
+// 	policy := d.clients.dataProtectionClient.Get(ctx.Background, resourceGroup, vaultName, policyName, &armdataprotection.BackupPoliciesClientGetOptions{})//NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
+
+// 	return policy, nil
+// }
+
 // resourceGroupName returns the resource group name of a given Azure ID
 func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
+}
+
+// resourceGroupName returns the resource group name of a given Azure ID
+func backupPolicyName(id string) string {
+	return strings.Split(id, "/")[10]
 }
 
 // labels converts the resource tags to the vocabulary label
