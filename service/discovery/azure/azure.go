@@ -280,6 +280,10 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 					GeoLocation: voc.GeoLocation{
 						Region: *vault.Location,
 					},
+					AtRestEncryption: &voc.AtRestEncryption{
+						Algorithm: "AES256", // https://learn.microsoft.com/en-us/azure/backup/backup-encryption
+						Enabled:   true,     // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys)
+					},
 				}
 			}
 

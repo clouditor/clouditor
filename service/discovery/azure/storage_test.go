@@ -404,6 +404,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 							Policy:          "policyId",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
 						},
 					},
 					PublicAccess: true,
@@ -434,6 +438,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 							Policy:          "policyId",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
 						},
 					},
 					PublicAccess: true,

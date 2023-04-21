@@ -392,6 +392,10 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 					Policy:          "policyId",
+					AtRestEncryption: &voc.AtRestEncryption{
+						Algorithm: "AES256",
+						Enabled:   true,
+					},
 				}
 
 				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
@@ -481,6 +485,10 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 					Policy:          "policyId",
+					AtRestEncryption: &voc.AtRestEncryption{
+						Algorithm: "AES256",
+						Enabled:   true,
+					},
 				}
 
 				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
