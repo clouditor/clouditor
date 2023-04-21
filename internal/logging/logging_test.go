@@ -177,10 +177,15 @@ func TestLogRequest(t *testing.T) {
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Store,
-				req:     &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID}},
-				params:  []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
+				req: &assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:             testdata.MockEvidenceID,
+						CloudServiceId: testdata.MockCloudServiceID,
+					},
+				},
+				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
 			},
-			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored back into queue for orchestrator (localhost).\n",
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Cloud Service '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {

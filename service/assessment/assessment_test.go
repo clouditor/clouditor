@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
@@ -215,6 +216,7 @@ func TestNewService(t *testing.T) {
 			assert.NotNil(t, s.orchestratorStreams)
 			s.evidenceStoreStreams = nil
 			s.orchestratorStreams = nil
+			s.authz = nil
 
 			if got := s; !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
@@ -225,13 +227,17 @@ func TestNewService(t *testing.T) {
 
 // TestAssessEvidence tests AssessEvidence
 func TestService_AssessEvidence(t *testing.T) {
+	type fields struct {
+		authz service.AuthorizationStrategy
+	}
 	type args struct {
 		in0      context.Context
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name string
-		args args
+		name   string
+		fields fields
+		args   args
 		// hasRPCConnection is true when connected to orchestrator and evidence store
 		hasRPCConnection bool
 		wantResp         *assessment.AssessEvidenceResponse
@@ -326,6 +332,26 @@ func TestService_AssessEvidence(t *testing.T) {
 			wantErr:          assert.NoError,
 		},
 		{
+			name: "Assess resource of wrong could service",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             testdata.MockEvidenceID,
+					ToolId:         testdata.MockEvidenceToolID,
+					Timestamp:      timestamppb.Now(),
+					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
+					CloudServiceId: testdata.MockCloudServiceID},
+			},
+			hasRPCConnection: true,
+			wantResp:         nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
 			name: "Assess resource without resource id",
 			args: args{
 				in0: context.TODO(),
@@ -366,6 +392,9 @@ func TestService_AssessEvidence(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
+			if tt.fields.authz != nil {
+				s.authz = tt.fields.authz
+			}
 			if tt.hasRPCConnection {
 				s.evidenceStoreAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 				s.orchestratorAddress.opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
@@ -392,6 +421,7 @@ func TestService_AssessEvidences(t *testing.T) {
 		results                       map[string]*assessment.AssessmentResult
 		evidenceStoreStreams          *api.StreamsOf[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest]
 		orchestratorStreams           *api.StreamsOf[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest]
+		authz                         service.AuthorizationStrategy
 		UnimplementedAssessmentServer assessment.UnimplementedAssessmentServer
 	}
 	type args struct {
@@ -449,6 +479,7 @@ func TestService_AssessEvidences(t *testing.T) {
 				results:              make(map[string]*assessment.AssessmentResult),
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+				authz:                servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
@@ -465,8 +496,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			},
 		},
 		{
-			name:   "Error in stream to client - Send()-err",
-			fields: fields{},
+			name: "Error in stream to client - Send()-err",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			args: args{
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -479,8 +512,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
 		},
 		{
-			name:   "Error in stream to server - Recv()-err",
-			fields: fields{},
+			name: "Error in stream to server - Recv()-err",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
 			args: args{
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
@@ -511,7 +546,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				orchestratorAddress: grpcTarget{
 					opts: []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)},
 				},
-				pe: policies.NewRegoEval(),
+				pe:    policies.NewRegoEval(),
+				authz: tt.fields.authz,
 			}
 
 			if tt.args.streamToServer != nil {
@@ -721,7 +757,7 @@ func (*mockAssessmentServerStream) SetTrailer(metadata.MD) {
 }
 
 func (*mockAssessmentServerStream) Context() context.Context {
-	return nil
+	return context.TODO()
 }
 
 func (*mockAssessmentServerStream) SendMsg(interface{}) error {
@@ -767,6 +803,10 @@ func (m *mockAssessmentServerStreamWithSendErr) Recv() (req *assessment.AssessEv
 	return req, nil
 }
 
+func (*mockAssessmentServerStreamWithSendErr) Context() context.Context {
+	return context.TODO()
+}
+
 type mockAssessmentServerStreamWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *assessment.AssessEvidenceRequest
@@ -781,6 +821,10 @@ func (*mockAssessmentServerStreamWithRecvErr) Recv() (*assessment.AssessEvidence
 	err := errors.New("Recv()-error")
 
 	return nil, err
+}
+
+func (*mockAssessmentServerStreamWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceRequest) *mockAssessmentServerStreamWithRecvErr {
