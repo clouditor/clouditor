@@ -14,19 +14,27 @@ import (
 )
 
 // CreateCertificate implements method for creating a new certificate
-func (svc *Service) CreateCertificate(_ context.Context, req *orchestrator.CreateCertificateRequest) (
-	*orchestrator.Certificate, error) {
+func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.CreateCertificateRequest) (
+	res *orchestrator.Certificate, err error) {
+
 	// Validate request
-	err := service.ValidateRequest(req)
+	err = service.ValidateRequest(req)
 	if err != nil {
-		return nil, err
+		err = status.Error(codes.InvalidArgument, err.Error())
+		return
+	}
+
+	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+		err = service.ErrPermissionDenied
+		return
 	}
 
 	// Persist the new certificate in our database
 	err = svc.storage.Create(req.Certificate)
 	if err != nil {
-		return nil,
-			status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
+		err = status.Errorf(codes.Internal, "could not add certificate to the database: %v", err)
+		return
 	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req)
