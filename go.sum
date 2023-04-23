@@ -113,8 +113,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.26 h1:uUt4XctZL
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.26/go.mod h1:Bd4C/4PkVGubtNe5iMXu5BNnaBi/9t/UsFspPt4ram8=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.14.0 h1:e2ooMhpYGhDnBfSvIyusvAwX7KexuZaHbQY2Dyei7VU=
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.14.0/go.mod h1:bh2E0CXKZsQN+faiKVqC40vfNMAWheoULBCnEgO9K+8=
-github.com/aws/aws-sdk-go-v2/service/lambda v1.32.0 h1:cAO9Mfn5O9nK9fYHiitdNGn2F3wiTlyCgLp/LIz7h/g=
-github.com/aws/aws-sdk-go-v2/service/lambda v1.32.0/go.mod h1:mITj+2RfksN1tWZYdmH+EWafyHLNAI/I7G5hz6WL8EE=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.33.0 h1:oXrT6y/jZJgXLWRdbxtSLIA4ITIPzYl+WqjfvXZwxjU=
+github.com/aws/aws-sdk-go-v2/service/lambda v1.33.0/go.mod h1:mITj+2RfksN1tWZYdmH+EWafyHLNAI/I7G5hz6WL8EE=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.31.0 h1:B1G2pSPvbAtQjilPq+Y7jLIzCOwKzuVEl+aBBaNG0AQ=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.31.0/go.mod h1:ncltU6n4Nof5uJttDtcNQ537uNuwYqsZZQcpkd2/GUQ=
 github.com/aws/aws-sdk-go-v2/service/sso v1.11.25 h1:GFZitO48N/7EsFDt8fMa5iYdmWqkUDDB3Eje6z3kbG0=
@@ -326,8 +326,6 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
-github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8 h1:4q/BeJpElGXg5jX05HFJEyZxkM/cjQGQvr1FzCBnvRA=
-github.com/kisielk/godepgraph v0.0.0-20220719222756-573dc89cecc8/go.mod h1:Gb5YEgxqiSSVrXKWQxDcKoCM94NO5QAwOwTaVmIUAMI=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.13.6 h1:P76CopJELS0TiO2mebmnzgWaajssP/EszplttgQxcgc=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
