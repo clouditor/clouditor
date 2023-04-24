@@ -13,7 +13,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/open-policy-agent/opa v0.51.0
-	github.com/oxisto/oauth2go v0.8.0
+	github.com/oxisto/oauth2go v0.9.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
@@ -162,6 +162,7 @@ require github.com/envoyproxy/protoc-gen-validate v0.10.1
 require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/jackc/pgx/v5 v5.3.0 // indirect
