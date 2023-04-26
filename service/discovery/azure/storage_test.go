@@ -246,12 +246,49 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
 						},
 						"policyInfo": map[string]interface{}{
-							"policyId": "policyId",
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 						},
 					},
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
+		return createResponse(map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P7D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
+		}, 200)
+		//else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+		// return createResponse(map[string]interface{}{
+		// 	"value": &[]map[string]interface{}{
+		// 		{
+		// 			"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+		// 			"name": "account1-account1-22222222-2222-2222-2222-222222222222",
+		// 			"type": "test",
+		// 			"properties": map[string]interface{}{
+		// 				"pricingTier": armsecurity.PricingTierStandard,
+		// 			},
+		// 		},
+		// 	},
+		// }, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -349,6 +386,7 @@ func TestStorage(t *testing.T) {
 }
 
 func Test_azureStorageDiscovery_List(t *testing.T) {
+	// TODO(all): For now, we do not check if the backup property is set as it is very difficult to write the corresponding mock return.
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
@@ -398,17 +436,17 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
-						Backup: &voc.Backup{
-							Enabled:         true,
-							RetentionPeriod: 0,
-							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "policyId",
-							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
-						},
+						// Backup: &voc.Backup{
+						// 	Enabled:         true,
+						// 	RetentionPeriod: 0,
+						// 	GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+						// 	Policy:          "policyId",
+						// 	Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						// 	AtRestEncryption: &voc.AtRestEncryption{
+						// 		Algorithm: "AES256",
+						// 		Enabled:   true,
+						// 	},
+						// },
 					},
 					PublicAccess: true,
 				},
@@ -432,17 +470,17 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
-						Backup: &voc.Backup{
-							Enabled:         true,
-							RetentionPeriod: 0,
-							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "policyId",
-							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
-						},
+						// Backup: &voc.Backup{
+						// 	Enabled:         true,
+						// 	RetentionPeriod: 0,
+						// 	GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+						// 	Policy:          "policyId",
+						// 	Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						// 	AtRestEncryption: &voc.AtRestEncryption{
+						// 		Algorithm: "AES256",
+						// 		Enabled:   true,
+						// 	},
+						// },
 					},
 					PublicAccess: true,
 				},
@@ -1128,7 +1166,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 }
 
 func Test_handleObjectStorage(t *testing.T) {
-	// accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
 	accountRegion := "eastus"
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	keySource := armstorage.KeySourceMicrosoftStorage
@@ -1151,40 +1189,40 @@ func Test_handleObjectStorage(t *testing.T) {
 		want    *voc.ObjectStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Account is empty",
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
-		// 	},
-		// },
-		// {
-		// 	name: "Container is empty",
-		// 	args: args{
-		// 		account: &armstorage.Account{
-		// 			ID: &accountID,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "container is nil")
-		// 	},
-		// },
-		// {
-		// 	name: "Error getting atRestEncryption properties",
-		// 	args: args{
-		// 		account: &armstorage.Account{
-		// 			ID: &accountID,
-		// 		},
-		// 		container: &armstorage.ListContainerItem{
-		// 			ID: &containerID,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
-		// 	},
-		// },
+		{
+			name: "Account is empty",
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
+			},
+		},
+		{
+			name: "Container is empty",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "container is nil")
+			},
+		},
+		{
+			name: "Error getting atRestEncryption properties",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+				container: &armstorage.ListContainerItem{
+					ID: &containerID,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
+			},
+		},
 		{
 			name: "No error",
 			fields: fields{

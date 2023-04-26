@@ -84,6 +84,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	log.Info("Discover Azure storage resources")
 
 	// Discover Defender for X properties to add it to the required resource properties
+	// TODO(anatheka): Add test
 	d.defenderProperties, err = d.discoverDefender()
 	if err != nil {
 		log.Errorf("Could not discover Defender for X")

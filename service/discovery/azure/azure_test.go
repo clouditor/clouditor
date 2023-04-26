@@ -343,6 +343,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 		azureDiscovery       *azureDiscovery
 		clientBackupVault    bool
 		clientBackupInstance bool
+		clientBackupPolicy   bool
 	}
 	tests := []struct {
 		name    string
@@ -356,6 +357,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
 				clientBackupVault:    false,
 				clientBackupInstance: false,
+				clientBackupPolicy:   false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -368,6 +370,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
 				clientBackupVault:    true,
 				clientBackupInstance: false,
+				clientBackupPolicy:   false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -380,6 +383,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
 				clientBackupVault:    true,
 				clientBackupInstance: true,
+				clientBackupPolicy:   true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureStorageDiscovery)
@@ -388,11 +392,11 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				}
 
 				want := &voc.Backup{
-					RetentionPeriod: 0,
+					RetentionPeriod: 7,
 					Enabled:         true,
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "policyId",
+					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 					AtRestEncryption: &voc.AtRestEncryption{
 						Algorithm: "AES256",
 						Enabled:   true,
@@ -400,6 +404,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				}
 
 				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+
 			},
 			wantErr: assert.NoError,
 		},
@@ -419,6 +424,10 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				// initialize backup instances client
 				_ = d.initBackupInstancesClient()
 			}
+			if tt.fields.clientBackupPolicy {
+				// initialize backup policies client
+				_ = d.initBackupPoliciesClient()
+			}
 
 			err := d.discoverBackupVaults()
 
@@ -436,6 +445,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 		azureDiscovery       *azureDiscovery
 		clientBackupVault    bool
 		clientBackupInstance bool
+		clientBackupPolicy   bool
 	}
 	tests := []struct {
 		name    string
@@ -449,6 +459,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
 				clientBackupVault:    false,
 				clientBackupInstance: false,
+				clientBackupPolicy:   false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -461,6 +472,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
 				clientBackupVault:    true,
 				clientBackupInstance: false,
+				clientBackupPolicy:   false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -473,6 +485,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
 				clientBackupVault:    true,
 				clientBackupInstance: true,
+				clientBackupPolicy:   true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureComputeDiscovery)
@@ -481,11 +494,11 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				}
 
 				want := &voc.Backup{
-					RetentionPeriod: 0,
+					RetentionPeriod: 30,
 					Enabled:         true,
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "policyId",
+					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
 					AtRestEncryption: &voc.AtRestEncryption{
 						Algorithm: "AES256",
 						Enabled:   true,
@@ -511,6 +524,11 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 			if tt.fields.clientBackupInstance {
 				// initialize backup instances client
 				_ = d.initBackupInstancesClient()
+			}
+
+			if tt.fields.clientBackupPolicy {
+				// initialize backup policies client
+				_ = d.initBackupPoliciesClient()
 			}
 
 			err := d.discoverBackupVaults()
@@ -552,7 +570,7 @@ func Test_retentionDuration(t *testing.T) {
 			args: args{
 				retention: "P7D",
 			},
-			want: time.Duration(7 * 24),
+			want: time.Duration(7),
 		},
 	}
 	for _, tt := range tests {
