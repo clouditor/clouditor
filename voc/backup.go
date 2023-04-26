@@ -29,7 +29,7 @@ package voc
 
 import "time"
 
-// retention period in hours
+// Backup contains the retention period in hours
 type Backup struct {
 	*Availability
 	AtRestEncryption IsAtRestEncryption `json:"atRestEncryption"`
