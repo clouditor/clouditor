@@ -1034,20 +1034,16 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		want    []voc.IsCloudResource
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO(anatheka): Wo kommt die panic her?
-		// {
-		//	name: "Error list pages",
-		//	fields: fields{
-		//		azureDiscovery: azureDiscovery{
-		//			cred: nil,
-		//			sub:  sub,
-		//		},
-		//	},
-		//	want: nil,
-		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		//		return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
-		//	},
-		// },
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
 		{
 			name: "No error",
 			fields: fields{
