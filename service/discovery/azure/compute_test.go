@@ -240,7 +240,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					"properties": map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"linuxFxVersion": "PYTHON|3.8",
+						},
+					},
 				},
 			},
 		}, 200)
@@ -621,10 +625,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						Backup: &voc.Backup{
 							Enabled:         true,
-							RetentionPeriod: 0,
+							RetentionPeriod: 30,
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "policyId",
-							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
@@ -808,6 +812,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -906,6 +912,8 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -974,6 +982,11 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						"testKey1": &testTag1,
 						"testKey2": &testTag2,
 					},
+					Properties: &armappservice.SiteProperties{
+						SiteConfig: &armappservice.SiteConfig{
+							LinuxFxVersion: util.Ref("PYTHON|3.8"),
+						},
+					},
 				},
 			},
 			want: &voc.Function{
@@ -994,6 +1007,8 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},
+				RuntimeVersion:  "3.8",
+				RuntimeLanguage: "PYTHON",
 			},
 		},
 	}
