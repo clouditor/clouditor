@@ -430,7 +430,7 @@ func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(garuppel): TBD
+				Algorithm: "", // TODO(all): TBD
 				Enabled:   true,
 			},
 			KeyUrl: keyUrl,

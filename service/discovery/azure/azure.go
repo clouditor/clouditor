@@ -276,7 +276,6 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				}
 
 				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs
-				// TODO(anatheka): Add test mocking for policy
 				retention := policy.BaseBackupPolicyResource.Properties.(*armdataprotection.BackupPolicy).PolicyRules[0].(*armdataprotection.AzureRetentionRule).Lifecycles[0].DeleteAfter.(*armdataprotection.AbsoluteDeleteOption).GetDeleteOption().Duration
 				// Check if map entry already exists
 				_, ok := d.backupMap[dataSourceType]
@@ -352,7 +351,6 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 	}
 
 	// List all instances in the given backupp vault
-	// TODO(anatheka): Can I use the listPager() here? the ListPager needs the reosurceGroup and vaultName.
 	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())
@@ -364,22 +362,6 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 
 	return list.Value, nil
 }
-
-// // discoverBackupPolicies retrieves the policies for a given instance.
-// func (d *azureDiscovery) discoverBackupPolicies(resourceGroup, vaultName, policyName string) ([]*armdataprotection.BackupPoliciesClientGetResponse, error) {
-// 	var (
-// 		err  error
-// 	)
-
-// 	// if resourceGroup == "" || vaultName == "" {
-// 	// 	return nil, errors.New("missing resource group and/or vault name")
-// 	// }
-
-// 	// Get the backup policy for a given ID
-// 	policy := d.clients.dataProtectionClient.Get(ctx.Background, resourceGroup, vaultName, policyName, &armdataprotection.BackupPoliciesClientGetOptions{})//NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
-
-// 	return policy, nil
-// }
 
 // resourceGroupName returns the resource group name of a given Azure ID
 func resourceGroupName(id string) string {

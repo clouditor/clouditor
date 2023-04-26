@@ -382,7 +382,7 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(garuppel): TBD
+				Algorithm: "", // TODO(all): TBD
 				Enabled:   true,
 			},
 			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
