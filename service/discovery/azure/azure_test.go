@@ -581,3 +581,70 @@ func Test_retentionDuration(t *testing.T) {
 		})
 	}
 }
+
+func Test_azureDiscovery_discoverDefender(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+		clientDefender bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "defenderClient not set",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				clientDefender: false,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "defenderClient not set")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				clientDefender: true,
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				got, ok := i1.(map[string]*defenderProperties)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				want := &defenderProperties{
+					monitoringLogDataEnabled: true,
+					securityAlertsEnabled:    true,
+				}
+
+				return assert.Equal(t, want, got[DefenderStorageType])
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			// Set client if needed
+			if tt.fields.clientDefender {
+				// initialize backup vaults client
+				_ = d.initDefenderClient()
+			}
+
+			got, err := d.discoverDefender()
+
+			tt.wantErr(t, err)
+
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+		})
+	}
+}

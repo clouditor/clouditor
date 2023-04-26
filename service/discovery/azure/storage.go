@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
@@ -83,11 +84,16 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 
 	log.Info("Discover Azure storage resources")
 
+	// initialize defender client
+	if err := d.initDefenderClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+	}
+
 	// Discover Defender for X properties to add it to the required resource properties
 	// TODO(anatheka): Add test
 	d.defenderProperties, err = d.discoverDefender()
 	if err != nil {
-		log.Errorf("Could not discover Defender for X")
+		return nil, fmt.Errorf("could not discover Defender for X: %w", err)
 	}
 
 	// Discover storage accounts
@@ -466,6 +472,13 @@ func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
+	return
+}
+
+// initDefenderClient creates the client if not already exists
+func (d *azureStorageDiscovery) initDefenderClient() (err error) {
+	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d.azureDiscovery, armsecurity.NewPricingsClient)
+
 	return
 }
 

@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -276,19 +277,27 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 			// },
 		}, 200)
-		//else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
-		// return createResponse(map[string]interface{}{
-		// 	"value": &[]map[string]interface{}{
-		// 		{
-		// 			"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
-		// 			"name": "account1-account1-22222222-2222-2222-2222-222222222222",
-		// 			"type": "test",
-		// 			"properties": map[string]interface{}{
-		// 				"pricingTier": armsecurity.PricingTierStandard,
-		// 			},
-		// 		},
-		// 	},
-		// }, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",
+					"name": "VirtualMachines",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/StorageAccounts",
+					"name": "StorageAccounts",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+			},
+		}, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -446,6 +455,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
+						},
 					},
 					PublicAccess: true,
 				},
@@ -480,6 +493,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
+						},
 					},
 					PublicAccess: true,
 				},
@@ -502,6 +519,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
+						},
 					},
 				},
 				&voc.FileStorage{
@@ -522,6 +543,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
 						},
 					},
 				},
@@ -586,6 +611,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
+						},
 					},
 					PublicAccess: false,
 				},
@@ -610,6 +639,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							MonitoringLogDataEnabled: true,
+							SecurityAlertsEnabled:    true,
+						},
 					},
 					PublicAccess: false,
 				},

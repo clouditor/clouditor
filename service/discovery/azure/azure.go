@@ -57,7 +57,7 @@ const (
 	ComputeComponent = "compute"
 	NetworkComponent = "network"
 
-	DefenderStorageType        = "AccountStorages"
+	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 
 	DataSourceTypeDisc           = "Microsoft.Compute/disks"
@@ -128,6 +128,7 @@ type clients struct {
 	virtualMachinesClient   *armcompute.VirtualMachinesClient
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
+	defenderClient          *armsecurity.PricingsClient
 	backupPoliciesClient    *armdataprotection.BackupPoliciesClient
 	backupVaultClient       *armdataprotection.BackupVaultsClient
 	backupInstancesClient   *armdataprotection.BackupInstancesClient
@@ -209,17 +210,14 @@ type defenderProperties struct {
 func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, error) {
 	var pricings = make(map[string]*defenderProperties)
 
-	// Create new defender client
-	defenderClient, err := armsecurity.NewPricingsClient(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get new defender client: %w", err)
-		return nil, err
+	if d.clients.defenderClient == nil {
+		return nil, errors.New("defenderClient not set")
 	}
 
 	// List all pricings to get the enabled Defender for X
-	pricingsList, err := defenderClient.List(context.Background(), nil)
+	pricingsList, err := d.clients.defenderClient.List(context.Background(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not discover pricing")
+		return nil, fmt.Errorf("could not discover pricings")
 	}
 
 	for _, elem := range pricingsList.Value {
