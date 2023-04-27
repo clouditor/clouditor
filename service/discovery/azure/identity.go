@@ -65,15 +65,17 @@ func (d *azureIdentityDiscovery) discoverIdentities() ([]voc.IsCloudResource, er
 		return nil, err
 	}
 
-	result, err := d.clients.identityClient.List(context.TODO(), "", "")
-
-	for _, user := range result.Values() {
-		log.Infof("Adding user '%s'", user.DisplayName)
-		list = append(list, d.handleIdentities(user))
-	}
+	result, err := d.clients.identityClient.ListComplete(context.Background(), "", "")
 
 	if err != nil {
 		return nil, err
+	}
+
+	for result.NotDone() {
+		user := result.Value()
+
+		log.Infof("Adding user '%s'", *user.DisplayName)
+		list = append(list, d.handleIdentities(user))
 	}
 
 	return list, nil
@@ -110,7 +112,7 @@ func LastActivity(i graphrbac.User) time.Time {
 }
 
 func (d *azureIdentityDiscovery) initIdentityClient() (err error) {
-	d.clients.identityClient = graphrbac.NewUsersClient("")
+	d.clients.identityClient = initIdentityClient(&d.clients.identityClient)
 
 	return
 }
