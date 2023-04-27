@@ -88,6 +88,7 @@ func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	}
 }
 
+// WithEvaluation is an option for [StartGRPCServer] to register a [evaluation.EvaluationServer] at start.
 func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
 	return func(c *config) {
 		c.services[&evaluation.Evaluation_ServiceDesc] = svc
