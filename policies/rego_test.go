@@ -190,7 +190,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				resource: voc.VirtualMachine{
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:      true,
-						Interval:     time.Hour * 24,
+						Interval:     time.Hour * 24 * 30,
 						SecurityOnly: true,
 					},
 					Compute: &voc.Compute{

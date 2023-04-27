@@ -43,6 +43,7 @@ import (
 
 var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
+	Duration30Days         = time.Duration(30 * time.Hour * 24)
 )
 
 type azureComputeDiscovery struct {
@@ -335,7 +336,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 		if *vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
 			*vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeImageDefault {
 			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = time.Duration(30)
+			automaticUpdates.Interval = Duration30Days
 			return
 
 		}
@@ -347,7 +348,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 		if *vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
 			*vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = time.Duration(30)
+			automaticUpdates.Interval = Duration30Days
 			return
 
 		} else {

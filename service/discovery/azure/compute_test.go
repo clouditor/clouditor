@@ -732,7 +732,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:  true,
-						Interval: time.Duration(30),
+						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -774,7 +774,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:  true,
-						Interval: time.Duration(30),
+						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -1115,7 +1115,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:  true,
-						Interval: time.Duration(30),
+						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -1157,7 +1157,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:  true,
-						Interval: time.Duration(30),
+						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -2134,7 +2134,7 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 			},
 			want: &voc.AutomaticUpdates{
 				Enabled:  true,
-				Interval: time.Duration(30),
+				Interval: Duration30Days,
 			},
 		},
 		{
@@ -2154,7 +2154,7 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 			},
 			want: &voc.AutomaticUpdates{
 				Enabled:  true,
-				Interval: time.Duration(30),
+				Interval: Duration30Days,
 			},
 		},
 	}
