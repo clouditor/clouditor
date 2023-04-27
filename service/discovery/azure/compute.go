@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
@@ -242,8 +243,11 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
-	var bootLogging = []voc.ResourceID{}
-	var osLogging = []voc.ResourceID{}
+	var (
+		bootLogging = []voc.ResourceID{}
+		osLogging   = []voc.ResourceID{}
+		autoUpdates *voc.AutomaticUpdates
+	)
 
 	// If a mandatory field is empty, the whole disk is empty
 	if vm == nil || vm.ID == nil {
@@ -253,6 +257,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	if bootLogOutput(vm) != "" {
 		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
 	}
+
+	autoUpdates = automaticUpdates(vm)
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
@@ -291,6 +297,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				},
 			},
 		},
+		AutomaticUpdates: autoUpdates,
 	}
 
 	// Reference to networkInterfaces
@@ -312,6 +319,44 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	}
 
 	return r, nil
+}
+
+// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
+func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
+	automaticUpdates = &voc.AutomaticUpdates{}
+
+	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
+		return
+	}
+
+	// Check if Linux configuration is available
+	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
+		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
+		if *vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
+			*vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeImageDefault {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = time.Duration(30)
+			return
+
+		}
+	}
+
+	// Check if Windows configuration is available
+	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
+		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
+		if *vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
+			*vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = time.Duration(30)
+			return
+
+		} else {
+			return
+
+		}
+	}
+
+	return
 }
 
 func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {

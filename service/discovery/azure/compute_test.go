@@ -87,6 +87,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								},
 							},
 						},
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
+								},
+							},
+						},
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{
 								"enabled":    true,
@@ -126,6 +133,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 									"managedDisk": map[string]interface{}{
 										"id": "data_disk_3",
 									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"windowsConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByOS",
 								},
 							},
 						},
@@ -716,6 +730,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: time.Duration(30),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -753,6 +771,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								SecurityFeature: &voc.SecurityFeature{},
 							},
 						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: time.Duration(30),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -792,6 +814,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.Function{
@@ -812,6 +838,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+
 					RuntimeVersion:  "3.8",
 					RuntimeLanguage: "PYTHON",
 				},
@@ -1086,6 +1113,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: time.Duration(30),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -1124,6 +1155,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: time.Duration(30),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -1161,6 +1196,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								SecurityFeature: &voc.SecurityFeature{},
 							},
 						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -1302,6 +1341,10 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 							SecurityFeature: &voc.SecurityFeature{},
 						},
 					},
+				},
+				AutomaticUpdates: &voc.AutomaticUpdates{
+					Enabled:  false,
+					Interval: time.Duration(0),
 				},
 				MalwareProtection: &voc.MalwareProtection{},
 			},
@@ -2033,6 +2076,93 @@ func Test_runtimeInfo(t *testing.T) {
 			if gotRuntimeVersion != tt.wantRuntimeVersion {
 				t.Errorf("runtimeInfo() gotRuntimeVersion = %v, want %v", gotRuntimeVersion, tt.wantRuntimeVersion)
 			}
+		})
+	}
+}
+
+func Test_automaticUpdatesEnabled(t *testing.T) {
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name string
+		args args
+		want *voc.AutomaticUpdates
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Windows configuration set to manual",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeManual),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Linux configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: time.Duration(30),
+			},
+		},
+		{
+			name: "Happy path: Windows configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: time.Duration(30),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := automaticUpdates(tt.args.vm)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
