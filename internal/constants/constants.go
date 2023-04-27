@@ -1,6 +1,4 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,18 +23,11 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package constants
 
-import "time"
-
-// Backup contains the retention period in hours
-type Backup struct {
-	*Availability
-	AtRestEncryption    IsAtRestEncryption   `json:"atRestEncryption"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	RetentionPeriod     time.Duration        `json:"retentionPeriod"`
-	Enabled             bool                 `json:"enabled"`
-	Policy              string               `json:"policy"`
-	GeoLocation         GeoLocation          `json:"geoLocation"`
-	Storage             ResourceID           `json:"storage"`
-}
+const (
+	TLS    = "TLS"
+	AES    = "AES"
+	TLS1_2 = "TLS1_2"
+	AES256 = "AES256"
+)

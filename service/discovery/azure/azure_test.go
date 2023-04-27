@@ -36,6 +36,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -401,6 +402,12 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 						Algorithm: "AES256",
 						Enabled:   true,
 					},
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						TlsVersion: constants.TLS1_2,
+						Algorithm:  constants.TLS,
+					},
 				}
 
 				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
@@ -502,6 +509,12 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 					AtRestEncryption: &voc.AtRestEncryption{
 						Algorithm: "AES256",
 						Enabled:   true,
+					},
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						TlsVersion: constants.TLS1_2,
+						Algorithm:  constants.TLS,
 					},
 				}
 

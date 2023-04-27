@@ -48,6 +48,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 )
@@ -291,18 +292,16 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 						Region: *vault.Location,
 					},
 					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: "AES256", // https://learn.microsoft.com/en-us/azure/backup/backup-encryption
-						Enabled:   true,     // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys)
+						Algorithm: constants.AES256, // https://learn.microsoft.com/en-us/azure/backup/backup-encryption (Last access: 04/27/2023)
+						Enabled:   true,             // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys, Last access: 04/27/2023)
+					},
+					TransportEncryption: &voc.TransportEncryption{
+						Enabled:    true,
+						Enforced:   true,
+						Algorithm:  constants.TLS,
+						TlsVersion: constants.TLS1_2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
 					},
 				}
-
-				// TODO(anatheka): Add TransportEncryption to Backup.
-				// 		TransportEncryption: &voc.TransportEncryption{ //https://learn.microsoft.com/en-us/azure/backup/security-overview#encryption-of-data
-				// 			Enforced:   true,
-				// 			TlsVersion: string(armstorage.MinimumTLSVersionTLS12), // https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tls-support
-				// 			Algorithm:  "TLS",
-				// 			Enabled:    true, // cannot be disabled
-				// 		},
 			}
 
 			return nil

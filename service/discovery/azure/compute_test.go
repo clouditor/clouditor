@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -646,6 +647,12 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: constants.TLS1_2,
+								Algorithm:  constants.TLS,
 							},
 						},
 					},
