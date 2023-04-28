@@ -32,11 +32,12 @@ import (
 	"io"
 	sync "sync"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
 
-// RPCConnection is a helper function that wraps all necessary information for a gRPC connection, which is established
+// RPCConnection is a helper struct that wraps all necessary information for a gRPC connection, which is established
 // using [grpc.Dial]. It features transparent goroutine-safe lazy initialization of the connection by overloading the
 // underlying [grpc.ClientConn]. The connection is established automatically once the first client call is made. If an
 // [io.EOF] error is received the connection is tried to be re-established on the next client call.
@@ -95,6 +96,7 @@ func (conn *RPCConnection[T]) Invoke(ctx context.Context, method string, args in
 	// Then, just forward the request to the embedded client conn
 	err = conn.cc.Invoke(ctx, method, args, reply, opts...)
 	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		log.Debugf("Caught EOF while invoking method %s, forcing connection to reconnect on next call", method)
 		conn.ForceReconnect()
 	}
 
@@ -112,6 +114,7 @@ func (conn *RPCConnection[T]) NewStream(ctx context.Context, desc *grpc.StreamDe
 	// Then, just forward the request to the embedded client conn
 	stream, err = conn.cc.NewStream(ctx, desc, method, opts...)
 	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		log.Debugf("Caught EOF while invoking method %s, forcing connection to reconnect on next call", method)
 		conn.ForceReconnect()
 	}
 
@@ -144,7 +147,7 @@ func (conn *RPCConnection[T]) init() (err error) {
 		DefaultGrpcDialOptions(conn.Target, conn, conn.Opts...)...,
 	)
 	if err != nil {
-		return fmt.Errorf("could not connect to gPRC target: %w", err)
+		return fmt.Errorf("could not connect to gPRC target %q: %w", conn.Target, err)
 	}
 
 	return nil

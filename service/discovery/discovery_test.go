@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/util"
@@ -105,6 +106,18 @@ func TestNewService(t *testing.T) {
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*Service)
 				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
+			},
+		},
+		{
+			name: "Create service with option 'WithStorage'",
+			args: args{
+				opts: []ServiceOption{
+					WithStorage(testutil.NewInMemoryStorage(t)),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.NotNil(t, s.storage)
 			},
 		},
 	}

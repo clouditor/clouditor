@@ -134,6 +134,31 @@ func TestNewService(t *testing.T) {
 				return assert.True(t, s.isEvidenceStoreDisabled)
 			},
 		},
+		{
+			name: "AssessmentServer with oauth2 authorizer",
+			args: args{
+				opts: []service.Option[Service]{
+					WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"}),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.NotNil(t, s.orchestrator.Authorizer())
+			},
+		},
+		{
+			name: "AssessmentServer with authorization strategy",
+			args: args{
+				opts: []service.Option[Service]{
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				a := s.authz.(*servicetest.AuthorizationStrategyMock)
+				return assert.NotNil(t, a)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -921,20 +946,6 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				return assert.Equal(t, codes.Unavailable, s.Code())
 			},
 		},
-		// TODO: Fix test
-		// {
-		// 	name: "Authenticated RPC connection with valid user",
-		// 	args: args{
-		// 		url: "bufnet",
-		// 	},
-		// 	fields: fields{
-		// 		opts: []ServiceOption{
-		// 			WithOrchestratorAddress("bufnet"),
-		// 			WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
-		// 			WithAdditionalGRPCOpts(grpc.WithContextDialer(bufConnDialer)),
-		// 		},
-		// 	},
-		// },
 		{
 			name: "Authenticated RPC connection with invalid user",
 			args: args{
