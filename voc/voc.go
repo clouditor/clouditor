@@ -157,6 +157,13 @@ type IsAuthenticity interface {
 
 func (*Authenticity) authenticity() {}
 
+type IsAccessRestriction interface {
+	IsSecurityFeature
+	accessRestriction()
+}
+
+func (*AccessRestriction) accessRestriction() {}
+
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }

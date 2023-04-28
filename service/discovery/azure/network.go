@@ -86,6 +86,13 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, loadBalancer...)
 
+	// Discover Application Gateway
+	ag, err := d.discoverApplicationGateway()
+	if err != nil {
+		return list, fmt.Errorf("could not discover application gateways: %w", err)
+	}
+	list = append(list, ag...)
+
 	return
 }
 
@@ -124,7 +131,42 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	return list, nil
 }
 
-// Discover load balancer
+// discoverApplicationGateway discovers application gateways
+func (d *azureNetworkDiscovery) discoverApplicationGateway() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize application gateway client
+	if err := d.initApplicationGatewayClient(); err != nil {
+		return nil, err
+	}
+
+	// List all application gateways
+	err := listPager(d.azureDiscovery,
+		d.clients.applicationGatewayClient.NewListAllPager,
+		d.clients.applicationGatewayClient.NewListPager,
+		func(res armnetwork.ApplicationGatewaysClientListAllResponse) []*armnetwork.ApplicationGateway {
+			return res.Value
+		},
+		func(res armnetwork.ApplicationGatewaysClientListResponse) []*armnetwork.ApplicationGateway {
+			return res.Value
+		},
+		func(ags *armnetwork.ApplicationGateway) error {
+			s := d.handleApplicationGateway(ags)
+
+			log.Infof("Adding application gateway %+v", s)
+
+			list = append(list, s)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+// discoverLoadBalancer discovers load balancer
 func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -178,10 +220,31 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 			Ips:   publicIPAddressFromLoadBalancer(lb),
 			Ports: LoadBalancerPorts(lb),
 		},
-		// TODO(all): do we need the AccessRestriction for load balancers?
-		AccessRestrictions: &[]voc.AccessRestriction{},
 		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: &[]voc.HttpEndpoint{},
+	}
+}
+
+// handleApplicationGateway returns the application gateway with its properties
+// NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
+func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
+	return &voc.LoadBalancer{
+		NetworkService: &voc.NetworkService{
+			Networking: &voc.Networking{
+				Resource: discovery.NewResource(
+					d,
+					voc.ResourceID(*ag.ID),
+					*ag.Name,
+					nil,
+					voc.GeoLocation{Region: *ag.Location},
+					labels(ag.Tags),
+					voc.LoadBalancerType,
+				),
+			},
+		},
+		AccessRestriction: voc.WebApplicationFirewall{
+			Enabled: *ag.Properties.WebApplicationFirewallConfiguration.Enabled,
+		},
 	}
 }
 
@@ -302,5 +365,11 @@ func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
 	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
+	return
+}
+
+// initApplicationGatewayClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initApplicationGatewayClient() (err error) {
+	d.clients.applicationGatewayClient, err = initClient(d.clients.applicationGatewayClient, d.azureDiscovery, armnetwork.NewApplicationGatewaysClient)
 	return
 }

@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -194,7 +193,24 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 				"ipAddress": nil,
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
+		return createResponse(map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+					"name":     "appgw1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"webApplicationFirewallConfiguration": map[string]interface{}{
+							"enabled": true,
+						},
+					},
+				},
+			},
+		}, 200)
 	}
+	// return createResponse(map[string]interface{}{
+	// 	"value": &[]map[string]interface{}{
 
 	return m.mockSender.Do(req)
 }
@@ -280,8 +296,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ips:   []string{"111.222.333.444"},
 						Ports: []uint16{1234, 5678},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -300,8 +315,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -320,8 +334,26 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+								ServiceID: testdata.MockCloudServiceID,
+								Name:      "appgw1",
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Type:   voc.LoadBalancerType,
+								Labels: map[string]string{},
+							},
+						},
+					},
+					AccessRestriction: voc.WebApplicationFirewall{
+						Enabled: true,
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -333,6 +365,8 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			gotList, err := d.List()
+
+			assert.Equal(t, len(tt.wantList), len(gotList))
 			if !tt.wantErr(t, err) {
 				return
 			}

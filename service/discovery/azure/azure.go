@@ -120,19 +120,31 @@ type azureDiscovery struct {
 }
 
 type clients struct {
-	blobContainerClient     *armstorage.BlobContainersClient
-	fileStorageClient       *armstorage.FileSharesClient
-	accountsClient          *armstorage.AccountsClient
-	networkInterfacesClient *armnetwork.InterfacesClient
-	loadBalancerClient      *armnetwork.LoadBalancersClient
-	functionsClient         *armappservice.WebAppsClient
-	virtualMachinesClient   *armcompute.VirtualMachinesClient
-	blockStorageClient      *armcompute.DisksClient
-	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
-	defenderClient          *armsecurity.PricingsClient
-	backupPoliciesClient    *armdataprotection.BackupPoliciesClient
-	backupVaultClient       *armdataprotection.BackupVaultsClient
-	backupInstancesClient   *armdataprotection.BackupInstancesClient
+	// Storage
+	blobContainerClient *armstorage.BlobContainersClient
+	fileStorageClient   *armstorage.FileSharesClient
+	accountsClient      *armstorage.AccountsClient
+
+	// Network
+	networkInterfacesClient  *armnetwork.InterfacesClient
+	loadBalancerClient       *armnetwork.LoadBalancersClient
+	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
+
+	// AppService
+	functionsClient *armappservice.WebAppsClient
+
+	// Compute
+	virtualMachinesClient *armcompute.VirtualMachinesClient
+	blockStorageClient    *armcompute.DisksClient
+	diskEncSetClient      *armcompute.DiskEncryptionSetsClient
+
+	// Security
+	defenderClient *armsecurity.PricingsClient
+
+	// Data protection
+	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
+	backupVaultClient     *armdataprotection.BackupVaultsClient
+	backupInstancesClient *armdataprotection.BackupInstancesClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
