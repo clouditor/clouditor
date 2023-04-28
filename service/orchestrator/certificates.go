@@ -7,6 +7,7 @@ import (
 	"clouditor.io/clouditor/service"
 	"context"
 	"errors"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -80,10 +81,16 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		return nil, err
 	}
 
+	var conds []any
+	areAllAllowed, cloudServices := svc.authz.AllowedCloudServices(ctx)
+	if !areAllAllowed {
+		conds = append([]any{"cloud_service_id IN ?"}, []any{cloudServices})
+	}
+
 	res = new(orchestrator.ListCertificatesResponse)
 
 	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
-		service.DefaultPaginationOpts)
+		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

@@ -11,8 +11,21 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// NewCertificate creates a mock certificate
-func NewCertificate() *orchestrator.Certificate {
+type NewCertificateOption func(*orchestrator.Certificate)
+
+func WithMockCertificateID(id string) NewCertificateOption {
+	return func(certificate *orchestrator.Certificate) {
+		certificate.Id = id
+	}
+}
+func WithMockServiceID(cloudServiceID string) NewCertificateOption {
+	return func(certificate *orchestrator.Certificate) {
+		certificate.CloudServiceId = cloudServiceID
+	}
+}
+
+// NewCertificate creates a mock certificate.
+func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
 		Name:           testdata.MockCertificateName,
@@ -30,6 +43,10 @@ func NewCertificate() *orchestrator.Certificate {
 			CertificateId: testdata.MockCertificateID,
 			Id:            testdata.MockStateId,
 		}},
+	}
+
+	for _, o := range opts {
+		o(mockCertificate)
 	}
 
 	return mockCertificate
