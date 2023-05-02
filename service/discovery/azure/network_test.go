@@ -57,7 +57,25 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"networkSecurityGroup": map[string]interface{}{
-							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"name":     "nsg1",
+							"location": "eastus",
+							"properties": map[string]interface{}{
+								"securityRules": []map[string]interface{}{ // Important: These properties must the same as for the path "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"
+									{
+										"properties": map[string]interface{}{
+											"access":          "Deny",
+											"sourcePortRange": "*",
+										},
+									},
+									{
+										"properties": map[string]interface{}{
+											"access":          "Deny",
+											"sourcePortRange": "*",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -277,7 +295,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 						},
 					},
-					AccessRestriction: nil,
+					AccessRestriction: &voc.L3Firewall{
+						Enabled: true,
+					},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
