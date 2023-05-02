@@ -13,8 +13,8 @@
 | Evidence        | Azure | AWS |
 |-----------------|-------|-----|
 | Compute         | ✅     | ✅   |
-| RuntimeLanguage | 🚫    | ❌   |
-| RuntimeVersion  | 🚫    | ❌   |
+| RuntimeLanguage | ✅    | ❌   |
+| RuntimeVersion  | ✅    | ❌   |
 
 ### VirtualMachine
 
@@ -25,7 +25,7 @@
 | MalwareProtection | ✅     | ❌   |
 | BootLogging       | ✅     | ✅   |
 | OSLogging         | ✅     | ✅   |
-| AutomaticUpdates  | ❌     | ❌   |
+| AutomaticUpdates  | ✅     | ❌   |
 
 #### Compute
 | Evidence          | Azure | AWS |
@@ -33,7 +33,7 @@
 | Resource          | ✅     | ✅   |
 | NetworkInterfaces | ✅     | ✅   |
 | ResourceLogging  | ✅     |    |
-| Backup  |      |    |
+| Backup  | ✅    |    |
 
 #### Resource
 | Evidence    | Azure | AWS |
@@ -121,7 +121,7 @@
 |-------------------|-------|-----|
 | Networking        | ✅     | ✅   |
 | Networkservice    | ❌     | ❌   |
-| AccessRestriction | ❌     | ❌   |
+| AccessRestriction | partly     | ❌   |
 </details>
 
 ### Storage
