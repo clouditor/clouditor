@@ -104,9 +104,9 @@ func (d *azureIdentityDiscovery) handleIdentities(identity graphrbac.User) voc.I
 	}
 }
 
-func lastActivity(i graphrbac.User) time.Time {
-	//this need Azure AD Premium, P1 or P2
-	//log.Infof(i.AdditionalProperties["signInActivity"].(string))
+func lastActivity(_ graphrbac.User) time.Time {
+	// this need Azure AD Premium, P1 or P2
+	// log.Infof(i.AdditionalProperties["signInActivity"].(string))
 
 	return time.Time{}
 }
