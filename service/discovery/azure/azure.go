@@ -43,6 +43,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
+	msgraphsdkgo "github.com/microsoftgraph/msgraph-sdk-go"
 
 	"github.com/sirupsen/logrus"
 
@@ -120,6 +121,7 @@ type clients struct {
 	blockStorageClient      *armcompute.DisksClient
 	diskEncSetClient        *armcompute.DiskEncryptionSetsClient
 	identityClient          graphrbac.UsersClient
+	graphClient             *msgraphsdkgo.GraphServiceClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -228,6 +230,21 @@ func initIdentityClient(existingClient *graphrbac.UsersClient) (client graphrbac
 	client = graphrbac.NewUsersClient(os.Getenv("AZURE_TENANT_ID"))
 
 	return client
+}
+
+func (d *azureDiscovery) initGraphClient(existingClient *msgraphsdkgo.GraphServiceClient) (client *msgraphsdkgo.GraphServiceClient) {
+	if existingClient != nil {
+		return existingClient
+	}
+
+	client, err := msgraphsdkgo.NewGraphServiceClientWithCredentials(d.cred, nil)
+
+	if err != nil {
+		log.Errorf("could not initialize graph service client")
+	}
+
+	return client
+
 }
 
 // listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It

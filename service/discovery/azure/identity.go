@@ -65,7 +65,17 @@ func (d *azureIdentityDiscovery) discoverIdentities() ([]voc.IsCloudResource, er
 		return nil, err
 	}
 
+	// initialize the graph client
+	if err := d.initGraphClient(); err != nil {
+		return nil, err
+	}
+
 	result, err := d.clients.identityClient.ListComplete(context.Background(), "", "")
+
+	resultGraph, err := d.clients.graphClient.Users().Get(context.Background(), nil)
+
+	log.Infof("resultGraph: %v", resultGraph)
+	log.Errorf("resultGraph error: %v", err)
 
 	if err != nil {
 		return nil, err
@@ -99,12 +109,12 @@ func (d *azureIdentityDiscovery) handleIdentities(identity graphrbac.User) voc.I
 		},
 		Authenticities:        nil,
 		Privileged:            false,
-		LastActivity:          LastActivity(identity),
+		LastActivity:          lastActivity(identity),
 		DisablePasswordPolicy: false,
 	}
 }
 
-func LastActivity(i graphrbac.User) time.Time {
+func lastActivity(i graphrbac.User) time.Time {
 	//this need Azure AD Premium, P1 or P2
 	//log.Infof(i.AdditionalProperties["signInActivity"].(string))
 
@@ -113,6 +123,12 @@ func LastActivity(i graphrbac.User) time.Time {
 
 func (d *azureIdentityDiscovery) initIdentityClient() (err error) {
 	d.clients.identityClient = initIdentityClient(&d.clients.identityClient)
+
+	return
+}
+
+func (d *azureIdentityDiscovery) initGraphClient() (err error) {
+	d.clients.graphClient = d.azureDiscovery.initGraphClient(d.clients.graphClient)
 
 	return
 }
