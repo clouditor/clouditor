@@ -65,17 +65,7 @@ func (d *azureIdentityDiscovery) discoverIdentities() ([]voc.IsCloudResource, er
 		return nil, err
 	}
 
-	// initialize the graph client
-	if err := d.initGraphClient(); err != nil {
-		return nil, err
-	}
-
 	result, err := d.clients.identityClient.ListComplete(context.Background(), "", "")
-
-	resultGraph, err := d.clients.graphClient.Users().Get(context.Background(), nil)
-
-	log.Infof("resultGraph: %v", resultGraph)
-	log.Errorf("resultGraph error: %v", err)
 
 	if err != nil {
 		return nil, err
@@ -123,12 +113,6 @@ func lastActivity(i graphrbac.User) time.Time {
 
 func (d *azureIdentityDiscovery) initIdentityClient() (err error) {
 	d.clients.identityClient = initIdentityClient(&d.clients.identityClient)
-
-	return
-}
-
-func (d *azureIdentityDiscovery) initGraphClient() (err error) {
-	d.clients.graphClient = d.azureDiscovery.initGraphClient(d.clients.graphClient)
 
 	return
 }

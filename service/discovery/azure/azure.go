@@ -232,21 +232,6 @@ func initIdentityClient(existingClient *graphrbac.UsersClient) (client graphrbac
 	return client
 }
 
-func (d *azureDiscovery) initGraphClient(existingClient *msgraphsdkgo.GraphServiceClient) (client *msgraphsdkgo.GraphServiceClient) {
-	if existingClient != nil {
-		return existingClient
-	}
-
-	client, err := msgraphsdkgo.NewGraphServiceClientWithCredentials(d.cred, nil)
-
-	if err != nil {
-		log.Errorf("could not initialize graph service client")
-	}
-
-	return client
-
-}
-
 // listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It
 // takes the following arguments:
 //   - d, an [azureDiscovery] struct,
