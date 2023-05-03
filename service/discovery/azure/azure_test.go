@@ -52,7 +52,7 @@ type mockSender struct {
 
 func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
-		res, err = createResponse(map[string]interface{}{
+		res, err = createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
@@ -62,7 +62,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 			},
 		}, 200)
 	} else {
-		res, err = createResponse(map[string]interface{}{}, 404)
+		res, err = createResponse(req, map[string]interface{}{}, 404)
 		log.Errorf("Not handling mock for %s yet", req.URL.Path)
 	}
 
@@ -77,7 +77,7 @@ func (*mockAuthorizer) GetToken(_ context.Context, _ policy.TokenRequestOptions)
 	return token, nil
 }
 
-func createResponse(object map[string]interface{}, statusCode int) (res *http.Response, err error) {
+func createResponse(req *http.Request, object map[string]interface{}, statusCode int) (res *http.Response, err error) {
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
 
@@ -90,6 +90,9 @@ func createResponse(object map[string]interface{}, statusCode int) (res *http.Re
 	return &http.Response{
 		StatusCode: statusCode,
 		Body:       body,
+		// We also need to fill out the request because the Azure SDK will
+		// construct the error message out of this
+		Request: req,
 	}, nil
 }
 

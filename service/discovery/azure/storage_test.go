@@ -61,7 +61,7 @@ type responseStorageAccount struct {
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
@@ -129,7 +129,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &map[string]interface{}{
 				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
 				"name":     "account3",
@@ -162,7 +162,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
@@ -185,7 +185,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
@@ -208,7 +208,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
@@ -223,11 +223,11 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
@@ -237,7 +237,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
@@ -255,7 +255,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"objectType": "BackupPolicy",
 				"policyRules": []map[string]interface{}{
@@ -279,7 +279,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			// },
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",

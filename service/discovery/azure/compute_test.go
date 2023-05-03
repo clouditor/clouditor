@@ -61,7 +61,7 @@ type mockedVirtualMachinesResponse struct {
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
@@ -175,7 +175,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
@@ -219,7 +219,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
@@ -237,15 +237,15 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
@@ -264,7 +264,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault1",
@@ -279,7 +279,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault2",
@@ -293,7 +293,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
@@ -303,7 +303,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
@@ -321,7 +321,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"objectType": "BackupPolicy",
 				"policyRules": []map[string]interface{}{
