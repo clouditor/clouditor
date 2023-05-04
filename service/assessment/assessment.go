@@ -413,13 +413,15 @@ func (svc *Service) initOrchestratorStream(target string, _ ...grpc.DialOption) 
 		return nil, fmt.Errorf("could not set up stream to orchestrator for storing assessment results: %w", err)
 	}
 
-	log.Infof("Connected to Orchestrator")
+	log.Infof("Stream to StoreAssessmentResults established")
 
 	// TODO(oxisto): We should rewrite our generic StreamsOf to deal with incoming messages
 	svc.metricEventStream, err = svc.orchestrator.Client.SubscribeMetricChangeEvents(context.Background(), &orchestrator.SubscribeMetricChangeEventRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for listening to metric change events: %w", err)
 	}
+
+	log.Infof("Stream to SubscribeMetricChangeEvents established")
 
 	go svc.recvEventsLoop()
 
