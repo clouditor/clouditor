@@ -95,17 +95,6 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 
-	// Only list certificates user is authorized to see
-	var certificateSlice []*orchestrator.Certificate
-	for i := range res.Certificates {
-		if svc.authz.CheckAccess(ctx, service.AccessRead, res.Certificates[i]) {
-			certificateSlice = append(certificateSlice, res.Certificates[i])
-		}
-	}
-
-	res.Certificates = make([]*orchestrator.Certificate, len(certificateSlice))
-	copy(res.Certificates, certificateSlice)
-
 	return
 }
 
