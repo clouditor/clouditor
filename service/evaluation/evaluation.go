@@ -68,18 +68,14 @@ const (
 	defaultInterval int = 5
 )
 
-type grpcTarget struct {
-	target string
-	opts   []grpc.DialOption
-}
-
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
 	evaluation.UnimplementedEvaluationServer
-	orchestratorClient  orchestrator.OrchestratorClient
-	orchestratorAddress grpcTarget
-	authorizer          api.Authorizer
-	scheduler           map[string]*gocron.Scheduler
+
+	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
+
+	authorizer api.Authorizer
+	scheduler  map[string]*gocron.Scheduler
 
 	// wg is used for a control that waits for its sub-controls to be evaluated
 	wg map[string]*sync.WaitGroup
@@ -109,24 +105,22 @@ func WithStorage(storage persistence.Storage) service.Option[Service] {
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
 	return func(svc *Service) {
-		svc.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+		svc.orchestrator.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
 func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 	return func(svc *Service) {
-		svc.SetAuthorizer(auth)
+		svc.orchestrator.SetAuthorizer(auth)
 	}
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
-func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
 	return func(svc *Service) {
-		svc.orchestratorAddress = grpcTarget{
-			target: address,
-			opts:   opts,
-		}
+		svc.orchestrator.Target = target
+		svc.orchestrator.Opts = opts
 	}
 }
 
@@ -134,9 +128,7 @@ func WithOrchestratorAddress(address string, opts ...grpc.DialOption) service.Op
 func NewService(opts ...service.Option[Service]) *Service {
 	var err error
 	svc := Service{
-		orchestratorAddress: grpcTarget{
-			target: DefaultOrchestratorAddress,
-		},
+		orchestrator:    api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
 		scheduler:       make(map[string]*gocron.Scheduler),
 		wg:              make(map[string]*sync.WaitGroup),
 		catalogControls: make(map[string]map[string]*orchestrator.Control),
@@ -161,16 +153,6 @@ func NewService(opts ...service.Option[Service]) *Service {
 	}
 
 	return &svc
-}
-
-// SetAuthorizer implements UsesAuthorizer
-func (svc *Service) SetAuthorizer(auth api.Authorizer) {
-	svc.authorizer = auth
-}
-
-// Authorizer implements UsesAuthorizer
-func (svc *Service) Authorizer() api.Authorizer {
-	return svc.authorizer
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a
@@ -202,15 +184,6 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		interval = int(req.GetInterval())
 	}
 
-	// Get orchestrator client. The orchestrator client is used to retrieve necessary information from the Orchestrator,
-	// such as assessment_results, controls or targets_of_evaluation.
-	err = svc.initOrchestratorClient()
-	if err != nil {
-		err = fmt.Errorf("could not set orchestrator client: %w", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%s", err)
-	}
-
 	// Get all Controls from Orchestrator for the evaluation
 	err = svc.cacheControls(req.GetCatalogId())
 	if err != nil {
@@ -221,7 +194,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 
 	// Get Target of Evaluation. The Target of Evaluation is retrieved to get the controls_in_scope, which are then
 	// evaluated.
-	toe, err = svc.orchestratorClient.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
+	toe, err = svc.orchestrator.Client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
 		CloudServiceId: req.GetCloudServiceId(),
 		CatalogId:      req.GetCatalogId(),
 	})
@@ -603,7 +576,7 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 				MetricIds:      getMetricIds(metrics),
 			},
 			LatestByResourceId: util.Ref(true),
-		}, svc.orchestratorClient.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+		}, svc.orchestrator.Client.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 			return res.Results
 		})
 
@@ -752,15 +725,8 @@ func (svc *Service) cacheControls(catalogId string) error {
 		return ErrCatalogIdIsMissing
 	}
 
-	if svc.orchestratorClient == nil {
-		err = svc.initOrchestratorClient()
-		if err != nil {
-			return err
-		}
-	}
-
 	// Get controls for given catalog
-	resp, err = svc.orchestratorClient.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+	resp, err = svc.orchestrator.Client.ListControls(context.Background(), &orchestrator.ListControlsRequest{
 		CatalogId: catalogId,
 	})
 	if err != nil {
@@ -799,26 +765,6 @@ func (svc *Service) getControl(catalogId, categoryName, controlId string) (contr
 	}
 
 	return
-}
-
-// TODO(all): Make a generic method for that in folder internal?
-// initOrchestratorClient sets the orchestrator client.
-func (svc *Service) initOrchestratorClient() error {
-	if svc.orchestratorClient != nil {
-		return nil
-	}
-
-	// Establish connection to orchestrator gRPC service
-	conn, err := grpc.Dial(svc.orchestratorAddress.target,
-		api.DefaultGrpcDialOptions(svc.orchestratorAddress.target, svc, svc.orchestratorAddress.opts...)...,
-	)
-	if err != nil {
-		return fmt.Errorf("could not connect to orchestrator service: %w", err)
-	}
-
-	svc.orchestratorClient = orchestrator.NewOrchestratorClient(conn)
-
-	return nil
 }
 
 // createSchedulerTag creates a tag for the schedulers job in the format 'cloud_service_id-catalog_id' ('00000000-0000-0000-0000-000000000000-EUCS')

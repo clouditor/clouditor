@@ -28,6 +28,7 @@ package assessment
 import (
 	"context"
 	"net"
+	"syscall"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -46,6 +47,10 @@ var (
 
 func bufConnDialer(context.Context, string) (net.Conn, error) {
 	return bufConnListener.Dial()
+}
+
+func connectionRefusedDialer(context.Context, string) (net.Conn, error) {
+	return nil, syscall.ECONNREFUSED
 }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes

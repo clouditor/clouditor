@@ -80,6 +80,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewService(t *testing.T) {
+	var inmem = testutil.NewInMemoryStorage(t)
 
 	type args struct {
 		opts []service.Option[Service]
@@ -87,20 +88,16 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Service
+		want assert.ValueAssertionFunc
 	}{
 		{
 			name: "WithStorage",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithStorage(testutil.NewInMemoryStorage(t)))},
+				opts: []service.Option[Service]{service.Option[Service](WithStorage(inmem))},
 			},
-			want: &Service{
-				storage: testutil.NewInMemoryStorage(t),
-				orchestratorAddress: grpcTarget{
-					target: DefaultOrchestratorAddress,
-				},
-				wg:              make(map[string]*sync.WaitGroup),
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, inmem, s.storage)
 			},
 		},
 		{
@@ -108,12 +105,9 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
 			},
-			want: &Service{
-				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
-				},
-				wg:              make(map[string]*sync.WaitGroup),
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, testdata.MockOrchestratorAddress, s.orchestrator.Target)
 			},
 		},
 		{
@@ -121,13 +115,9 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithOAuth2Authorizer(&clientcredentials.Config{}))},
 			},
-			want: &Service{
-				orchestratorAddress: grpcTarget{
-					target: DefaultOrchestratorAddress,
-				},
-				authorizer:      api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-				wg:              make(map[string]*sync.WaitGroup),
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
 			},
 		},
 		{
@@ -135,13 +125,9 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
 			},
-			want: &Service{
-				orchestratorAddress: grpcTarget{
-					target: DefaultOrchestratorAddress,
-				},
-				authorizer:      api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-				wg:              make(map[string]*sync.WaitGroup),
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
 			},
 		},
 		{
@@ -149,102 +135,16 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{},
 			},
-			want: &Service{
-				orchestratorAddress: grpcTarget{
-					target: DefaultOrchestratorAddress,
-				},
-				wg:              make(map[string]*sync.WaitGroup),
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.Equal(t, DefaultOrchestratorAddress, s.orchestrator.Target)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
-
-			// Check if scheduler is initialized and then remove
-			if assert.NotNil(t, got.scheduler) {
-				tt.want.scheduler = nil
-				got.scheduler = nil
-			}
-			// Check if storage is initialized and then remove
-			if assert.NotNil(t, got.storage) {
-				tt.want.storage = nil
-				got.storage = nil
-			}
-			// Check if authz is initialized and then remove
-			if assert.NotNil(t, got.authz) {
-				tt.want.authz = nil
-				got.authz = nil
-			}
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewService() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestService_SetAuthorizer(t *testing.T) {
-
-	type args struct {
-		auth api.Authorizer
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "Happy path",
-			args: args{
-				auth: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-			assert.Empty(t, s.authorizer)
-			s.SetAuthorizer(tt.args.auth)
-			assert.NotEmpty(t, s.authorizer)
-		})
-	}
-}
-
-func TestService_Authorizer(t *testing.T) {
-
-	type fields struct {
-		authorizer api.Authorizer
-	}
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   api.Authorizer
-	}{
-		{
-			name: "No authorizer set",
-			fields: fields{
-				authorizer: nil,
-			},
-			want: nil,
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				authorizer: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-			},
-			want: api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				authorizer: tt.fields.authorizer,
-			}
-			if got := s.Authorizer(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Service.Authorizer() = %v, want %v", got, tt.want)
-			}
+			tt.want(t, got)
 		})
 	}
 }
@@ -306,8 +206,7 @@ func Test_createSchedulerTag(t *testing.T) {
 func TestService_ListEvaluationResults(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
@@ -567,8 +466,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				storage:                       tt.fields.storage,
 				authz:                         tt.fields.authz,
@@ -584,62 +482,10 @@ func TestService_ListEvaluationResults(t *testing.T) {
 	}
 }
 
-func TestService_initOrchestratorClient(t *testing.T) {
-	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
-		authorizer                    api.Authorizer
-		storage                       persistence.Storage
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "OrchestratorClient already exists",
-			fields: fields{
-				orchestratorClient: orchestrator.NewOrchestratorClient(&grpc.ClientConn{}),
-				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
-				},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				orchestratorAddress: grpcTarget{
-					target: testdata.MockOrchestratorAddress,
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
-				authorizer:                    tt.fields.authorizer,
-				storage:                       tt.fields.storage,
-			}
-
-			err := s.initOrchestratorClient()
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			}
-		})
-	}
-}
-
 func TestService_getMetricsFromSubControls(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		storage                       persistence.Storage
 		catalogControls               map[string]map[string]*orchestrator.Control
@@ -722,8 +568,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				storage:                       tt.fields.storage,
 				catalogControls:               tt.fields.catalogControls,
@@ -745,8 +590,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 func TestService_StopEvaluation(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		storage                       persistence.Storage
@@ -839,8 +683,7 @@ func TestService_StopEvaluation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				storage:                       tt.fields.storage,
@@ -864,14 +707,13 @@ func TestService_StopEvaluation(t *testing.T) {
 
 func TestService_StartEvaluation(t *testing.T) {
 	type fields struct {
-		orchestratorClient  orchestrator.OrchestratorClient
-		orchestratorAddress grpcTarget
-		authorizer          api.Authorizer
-		scheduler           map[string]*gocron.Scheduler
-		storage             persistence.Storage
-		authz               service.AuthorizationStrategy
-		wg                  map[string]*sync.WaitGroup
-		catalogControls     map[string]map[string]*orchestrator.Control
+		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
+		authorizer      api.Authorizer
+		scheduler       map[string]*gocron.Scheduler
+		storage         persistence.Storage
+		authz           service.AuthorizationStrategy
+		wg              map[string]*sync.WaitGroup
+		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
 		in0 context.Context
@@ -916,7 +758,8 @@ func TestService_StartEvaluation(t *testing.T) {
 		{
 			name: "error init orchestrator client",
 			fields: fields{
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz:        &service.AuthorizationStrategyAllowAll{},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
 			},
 			args: args{
 				in0: context.Background(),
@@ -928,15 +771,13 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not set orchestrator client:")
+				return assert.ErrorContains(t, err, "connection refused")
 			},
 		},
 		{
 			name: "error cache controls",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))},
-				},
+				orchestrator:    api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
@@ -956,11 +797,9 @@ func TestService_StartEvaluation(t *testing.T) {
 		{
 			name: "error get ToE",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+				})))),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
@@ -980,13 +819,11 @@ func TestService_StartEvaluation(t *testing.T) {
 		{
 			name: "scheduler for control started already",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
-						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+				})))),
 				scheduler: map[string]*gocron.Scheduler{
 					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
 				},
@@ -1009,14 +846,12 @@ func TestService_StartEvaluation(t *testing.T) {
 		{
 			name: "No controls_in_scope and no scheduler added",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
-						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluationWithoutControlsInScope(testdata.AssuranceLevelBasic)))
-						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluationWithoutControlsInScope(testdata.AssuranceLevelBasic)))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
 				scheduler:       make(map[string]*gocron.Scheduler),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
@@ -1045,14 +880,12 @@ func TestService_StartEvaluation(t *testing.T) {
 		{
 			name: "Happy path: scheduler added",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
-						assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
-						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
 				scheduler:       make(map[string]*gocron.Scheduler),
 				wg:              make(map[string]*sync.WaitGroup),
 				authz:           &service.AuthorizationStrategyAllowAll{},
@@ -1087,14 +920,13 @@ func TestService_StartEvaluation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				orchestratorClient:  tt.fields.orchestratorClient,
-				orchestratorAddress: tt.fields.orchestratorAddress,
-				authorizer:          tt.fields.authorizer,
-				scheduler:           tt.fields.scheduler,
-				storage:             tt.fields.storage,
-				wg:                  tt.fields.wg,
-				authz:               tt.fields.authz,
-				catalogControls:     tt.fields.catalogControls,
+				orchestrator:    tt.fields.orchestrator,
+				authorizer:      tt.fields.authorizer,
+				scheduler:       tt.fields.scheduler,
+				storage:         tt.fields.storage,
+				wg:              tt.fields.wg,
+				authz:           tt.fields.authz,
+				catalogControls: tt.fields.catalogControls,
 			}
 
 			toeTag := createSchedulerTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())
@@ -1119,8 +951,7 @@ func TestService_StartEvaluation(t *testing.T) {
 func TestService_getAllMetricsFromControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
@@ -1204,8 +1035,7 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				wg:                            tt.fields.wg,
@@ -1265,8 +1095,7 @@ func Test_getMetricIds(t *testing.T) {
 func TestService_getControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
@@ -1377,8 +1206,7 @@ func TestService_getControl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				wg:                            tt.fields.wg,
@@ -1399,8 +1227,7 @@ func TestService_getControl(t *testing.T) {
 func TestService_addJobToScheduler(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
@@ -1524,8 +1351,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				wg:                            tt.fields.wg,
@@ -1557,8 +1383,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 func TestService_evaluateControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
@@ -1699,8 +1524,7 @@ func TestService_evaluateControl(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				wg:                            tt.fields.wg,
@@ -1718,16 +1542,15 @@ func TestService_evaluateControl(t *testing.T) {
 
 func TestService_evaluateSubcontrol(t *testing.T) {
 	type fields struct {
-		orchestratorClient  orchestrator.OrchestratorClient
-		orchestratorAddress grpcTarget
-		authorizer          api.Authorizer
-		scheduler           map[string]*gocron.Scheduler
-		wg                  map[string]*sync.WaitGroup
-		storage             persistence.Storage
-		authz               service.AuthorizationStrategy
-		schedulerTag        string
-		wgCounter           int
-		catalogControls     map[string]map[string]*orchestrator.Control
+		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
+		authorizer      api.Authorizer
+		scheduler       map[string]*gocron.Scheduler
+		wg              map[string]*sync.WaitGroup
+		storage         persistence.Storage
+		authz           service.AuthorizationStrategy
+		schedulerTag    string
+		wgCounter       int
+		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
 		toe                *orchestrator.TargetOfEvaluation
@@ -1745,12 +1568,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			name: "ToE input empty", // we do not check the other input parameters
 			fields: fields{
 				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
 				storage:   testutil.NewInMemoryStorage(t),
 				authz:     &service.AuthorizationStrategyAllowAll{},
 				wgCounter: 2,
@@ -1784,11 +1605,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+				})))),
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
@@ -1819,11 +1638,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				wg: map[string]*sync.WaitGroup{
 					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))},
-				},
+				storage:      testutil.NewInMemoryStorage(t),
+				authz:        &service.AuthorizationStrategyAllowAll{},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
@@ -1856,12 +1673,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
@@ -1893,12 +1708,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-						assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
 				catalogControls: map[string]map[string]*orchestrator.Control{
 					orchestratortest.MockControl1.GetCategoryCatalogId(): {
 						fmt.Sprintf("%s-%s", orchestratortest.MockControl1.GetCategoryName(), orchestratortest.MockControl1.GetId()):   orchestratortest.MockControl1,
@@ -1931,18 +1744,14 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				orchestratorClient:  tt.fields.orchestratorClient,
-				orchestratorAddress: tt.fields.orchestratorAddress,
-				authorizer:          tt.fields.authorizer,
-				scheduler:           tt.fields.scheduler,
-				wg:                  tt.fields.wg,
-				storage:             tt.fields.storage,
-				authz:               tt.fields.authz,
-				catalogControls:     tt.fields.catalogControls,
+				orchestrator:    tt.fields.orchestrator,
+				authorizer:      tt.fields.authorizer,
+				scheduler:       tt.fields.scheduler,
+				wg:              tt.fields.wg,
+				storage:         tt.fields.storage,
+				authz:           tt.fields.authz,
+				catalogControls: tt.fields.catalogControls,
 			}
-
-			err := s.initOrchestratorClient()
-			assert.NoError(t, err)
 
 			tt.fields.wg[tt.fields.schedulerTag].Add(tt.fields.wgCounter)
 			s.evaluateSubcontrol(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
@@ -2282,8 +2091,7 @@ func Test_getToeTag(t *testing.T) {
 func TestService_cacheControls(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestratorClient            orchestrator.OrchestratorClient
-		orchestratorAddress           grpcTarget
+		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
 		authorizer                    api.Authorizer
 		scheduler                     map[string]*gocron.Scheduler
 		wg                            map[string]*sync.WaitGroup
@@ -2309,21 +2117,20 @@ func TestService_cacheControls(t *testing.T) {
 		},
 		{
 			name: "initOrchestratorClient fails",
+			fields: fields{
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
+			},
 			args: args{
 				catalogId: testdata.MockCatalogID,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not connect to orchestrator service")
+				return assert.ErrorContains(t, err, "connection refused")
 			},
 		},
 		{
 			name: "no controls available",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						// assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					})))},
-				},
+				orchestrator:    api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {})))),
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{
@@ -2336,11 +2143,9 @@ func TestService_cacheControls(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				orchestratorAddress: grpcTarget{
-					opts: []grpc.DialOption{grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-						assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					})))},
-				},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+				})))),
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
 			args: args{
@@ -2362,8 +2167,7 @@ func TestService_cacheControls(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestratorClient:            tt.fields.orchestratorClient,
-				orchestratorAddress:           tt.fields.orchestratorAddress,
+				orchestrator:                  tt.fields.orchestrator,
 				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				wg:                            tt.fields.wg,

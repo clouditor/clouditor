@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/util"
@@ -80,7 +81,7 @@ func TestNewService(t *testing.T) {
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*Service)
-				return assert.Equal(t, "localhost:9091", s.assessmentAddress.target)
+				return assert.Equal(t, "localhost:9091", s.assessment.Target)
 			},
 		},
 		{
@@ -105,6 +106,18 @@ func TestNewService(t *testing.T) {
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*Service)
 				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
+			},
+		},
+		{
+			name: "Create service with option 'WithStorage'",
+			args: args{
+				opts: []ServiceOption{
+					WithStorage(testutil.NewInMemoryStorage(t)),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*Service)
+				return assert.NotNil(t, s.storage)
 			},
 		},
 	}
@@ -171,7 +184,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil
 			})
-			svc.assessmentAddress = grpcTarget{target: "mock"}
+			svc.assessment = &api.RPCConnection[assessment.AssessmentClient]{Target: "mock"}
 			go svc.StartDiscovery(tt.fields.discoverer)
 
 			if tt.checkEvidence {
