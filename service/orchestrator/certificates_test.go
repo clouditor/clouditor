@@ -83,9 +83,8 @@ func Test_CreateCertificate(t *testing.T) {
 		{
 			name: "authorization error - permission denied",
 			fields: fields{
-				service: &Service{
-					authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockAnotherCloudServiceID}),
-				},
+				service: NewService(WithAuthorizationStrategy(
+					servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID))),
 			},
 			args: args{
 				context.Background(),
@@ -115,11 +114,16 @@ func Test_CreateCertificate(t *testing.T) {
 			},
 		},
 		{
-			name:   "happy path - valid certificate",
-			fields: fields{service: NewService()},
+			name: "happy path - valid certificate",
+			fields: fields{
+				service: NewService(WithAuthorizationStrategy(
+					// Only allow certificates belonging to MockCloudServiceID
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID))),
+			},
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
+					// mockCertificate's corresponding cloud service ID is MockCloudServiceID (authorization succeeds)
 					Certificate: mockCertificate,
 				},
 			},
@@ -351,7 +355,7 @@ func Test_ListCertificates(t *testing.T) {
 					storage: &testutil.StorageWithError{
 						ListErr: gorm.ErrInvalidDB,
 					},
-					authz: servicetest.NewAuthorizationStrategy(true, nil),
+					authz: servicetest.NewAuthorizationStrategy(true, ""),
 				},
 			},
 			args: args{
@@ -370,7 +374,7 @@ func Test_ListCertificates(t *testing.T) {
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(true, nil),
+					authz: servicetest.NewAuthorizationStrategy(true, ""),
 				},
 			},
 			args: args{
@@ -397,7 +401,7 @@ func Test_ListCertificates(t *testing.T) {
 								orchestratortest.WithMockCertificateID("4321"),
 								orchestratortest.WithMockServiceID(testdata.MockAnotherCloudServiceID))))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockCloudServiceID}),
+					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 				},
 			},
 			args: args{
