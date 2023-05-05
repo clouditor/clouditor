@@ -16,6 +16,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const certificationNotFoundErrorMessage = "certificate not found"
+
 // CreateCertificate implements method for creating a new certificate
 func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.CreateCertificateRequest) (
 	res *orchestrator.Certificate, err error) {
@@ -59,7 +61,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	res = new(orchestrator.Certificate)
 	err = svc.storage.Get(res, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certificate not found")
+		return nil, status.Errorf(codes.NotFound, certificationNotFoundErrorMessage)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -102,11 +104,17 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 // UpdateCertificate implements method for updating an existing certificate
 // Todo: Add auth
-func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
+func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check authorization
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+		err = service.ErrPermissionDenied
+		return
 	}
 
 	count, err := svc.storage.Count(req.Certificate, req.Certificate.Id)
@@ -115,7 +123,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 	}
 
 	if count == 0 {
-		return nil, status.Error(codes.NotFound, "certificate not found")
+		return nil, status.Error(codes.NotFound, certificationNotFoundErrorMessage)
 	}
 
 	response = req.Certificate
@@ -141,7 +149,7 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 
 	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certificate not found")
+		return nil, status.Errorf(codes.NotFound, certificationNotFoundErrorMessage)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

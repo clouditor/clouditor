@@ -159,24 +159,24 @@ func Test_GetCertificate(t *testing.T) {
 		name    string
 		fields  fields
 		req     *orchestrator.GetCertificateRequest
-		res     *orchestrator.Certificate
+		wantRes *orchestrator.Certificate
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name:   "Validation error - Empty request",
-			fields: fields{svc: NewService()},
-			req:    nil,
-			res:    nil,
+			name:    "Validation error - Empty request",
+			fields:  fields{svc: NewService()},
+			req:     nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
-			name:   "Validation error - Certificate Id missing in request",
-			fields: fields{svc: NewService()},
-			req:    &orchestrator.GetCertificateRequest{CertificateId: ""},
-			res:    nil,
+			name:    "Validation error - Certificate Id missing in request",
+			fields:  fields{svc: NewService()},
+			req:     &orchestrator.GetCertificateRequest{CertificateId: ""},
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes")
@@ -191,8 +191,8 @@ func Test_GetCertificate(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}))),
 			},
-			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
-			res: nil,
+			req:     &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
+			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, "certificate not found")
@@ -203,8 +203,8 @@ func Test_GetCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(WithStorage(&testutil.StorageWithError{GetErr: gorm.ErrInvalidDB})),
 			},
-			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
-			res: nil,
+			req:     &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
+			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
 				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
@@ -223,8 +223,8 @@ func Test_GetCertificate(t *testing.T) {
 				),
 			},
 			// Only authorized for MockAnotherCloudServiceID (=2222-2...) and not MockCloudServiceID (=1111-1...)
-			req: &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
-			res: nil,
+			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
+			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.PermissionDenied, status.Code(err))
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
@@ -240,7 +240,7 @@ func Test_GetCertificate(t *testing.T) {
 					}))),
 			},
 			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
-			res:     orchestratortest.NewCertificate(),
+			wantRes: orchestratortest.NewCertificate(),
 			wantErr: assert.NoError,
 		},
 	}
@@ -254,9 +254,9 @@ func Test_GetCertificate(t *testing.T) {
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
 			// Assert response
-			if tt.res != nil {
+			if tt.wantRes != nil {
 				assert.NotEmpty(t, res.Id)
-				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
+				assert.True(t, proto.Equal(tt.wantRes, res), "Want: %v\nGot : %v", tt.wantRes, res)
 			}
 		})
 	}
@@ -277,7 +277,7 @@ func Test_ListCertificates(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Validation Error",
+			name: "Validation Error - empty request",
 			fields: fields{
 				svc: NewService(),
 			},
@@ -293,7 +293,7 @@ func Test_ListCertificates(t *testing.T) {
 			},
 		},
 		{
-			name: "Internal error",
+			name: "Internal error - db error",
 			fields: fields{
 				svc: &Service{
 					storage: &testutil.StorageWithError{
@@ -372,49 +372,166 @@ func Test_ListCertificates(t *testing.T) {
 }
 
 func Test_UpdateCertificate(t *testing.T) {
-	var (
-		certificate *orchestrator.Certificate
-		err         error
-	)
-	orchestratorService := NewService()
-
-	// 1st case: Certificate is nil
-	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-
-	// 2nd case: Certificate ID is nil
-	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
-		Certificate: certificate,
-	})
-	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-
-	// 3rd case: Certificate not found since there are no certificates yet
-	_, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
-		Certificate: &orchestrator.Certificate{
-			Id:             testdata.MockCertificateID,
-			Name:           "EUCS",
-			CloudServiceId: testdata.MockCloudServiceID,
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.UpdateCertificateRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.Certificate
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Validation Error - Request is nil",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
 		},
-	})
-	assert.Equal(t, codes.NotFound, status.Code(err))
-
-	// 4th case: Certificate updated successfully
-	mockCertificate := orchestratortest.NewCertificate()
-	err = orchestratorService.storage.Create(mockCertificate)
-	assert.NoError(t, err)
-	if err != nil {
-		return
+		{
+			name: "Validation Error - Certificate is nil",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{Certificate: nil},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "invalid request")
+			},
+		},
+		{
+			name: "Validation Error - Certificate ID is empty",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{Certificate: &orchestrator.Certificate{Id: ""}},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "invalid request")
+			},
+		},
+		{
+			name: "Permission Denied Error - not authorized",
+			fields: fields{
+				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+					false, testdata.MockAnotherCloudServiceID))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{Certificate: orchestratortest.NewCertificate()},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Internal - db error (count)",
+			fields: fields{
+				svc: NewService(WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{Certificate: orchestratortest.NewCertificate()},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Not Found Error - certificate doesn't exist",
+			fields: fields{
+				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create default certificate
+					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+				}))),
+			},
+			args: args{
+				ctx: nil,
+				// Try to update certificate 2 which is not in DB
+				req: &orchestrator.UpdateCertificateRequest{Certificate: orchestratortest.NewCertificate2()},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, certificationNotFoundErrorMessage)
+			},
+		},
+		{
+			name: "Internal - db error (save)",
+			fields: fields{
+				svc: NewService(WithStorage(&testutil.StorageWithError{
+					// Fake Count response so we can reach the saving part
+					CountRes: int64(1),
+					CountErr: nil,
+					SaveErr:  gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{Certificate: orchestratortest.NewCertificate()},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Internal - db error (save)",
+			fields: fields{
+				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+				}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateCertificateRequest{
+					Certificate: orchestratortest.NewCertificate(
+						// Modify description (use description of  mockCertification2)
+						orchestratortest.WithDescription(testdata.MockCertificateDescription2))},
+			},
+			wantRes: orchestratortest.NewCertificate(
+				orchestratortest.WithDescription(testdata.MockCertificateDescription2)),
+			wantErr: assert.NoError,
+		},
 	}
 
-	// update the certificate's description and send the update request
-	mockCertificate.Description = "new description"
-	certificate, err = orchestratorService.UpdateCertificate(context.Background(), &orchestrator.UpdateCertificateRequest{
-		Certificate: mockCertificate,
-	})
-	assert.NoError(t, certificate.Validate())
-	assert.NoError(t, err)
-	assert.NotNil(t, certificate)
-	assert.Equal(t, "new description", certificate.Description)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.fields.svc.UpdateCertificate(context.TODO(), tt.args.req)
+			// Run ErrorAssertionFunc
+			tt.wantErr(t, err)
+			// Assert response
+			if tt.wantRes != nil {
+				assert.NotEmpty(t, res.Id)
+				assert.True(t, proto.Equal(tt.wantRes, res), "Want: %v\nGot : %v", tt.wantRes, res)
+			}
+		})
+	}
 }
 
 func Test_RemoveCertificate(t *testing.T) {

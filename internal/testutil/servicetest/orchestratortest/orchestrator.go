@@ -11,8 +11,17 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// NewCertificateOption is an option for NewCertificate to modify single properties for testing , e.g., Update endpoint
+type NewCertificateOption func(*orchestrator.Certificate)
+
+func WithDescription(description string) NewCertificateOption {
+	return func(certificate *orchestrator.Certificate) {
+		certificate.Description = description
+	}
+}
+
 // NewCertificate creates a mock certificate.
-func NewCertificate() *orchestrator.Certificate {
+func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 	timeStamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
@@ -32,6 +41,11 @@ func NewCertificate() *orchestrator.Certificate {
 			Id:            testdata.MockStateId,
 		}},
 	}
+
+	for _, o := range opts {
+		o(mockCertificate)
+	}
+
 	return mockCertificate
 }
 
