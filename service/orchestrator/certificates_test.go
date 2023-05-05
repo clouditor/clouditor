@@ -2,9 +2,7 @@ package orchestrator
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"reflect"
-	"strings"
 	"testing"
 
 	"clouditor.io/clouditor/api"
@@ -20,13 +18,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"gorm.io/gorm"
 )
 
 func Test_CreateCertificate(t *testing.T) {
 	// Instantiate Mock certificate (so creating time is same for assertion)
 	mockCertificate := orchestratortest.NewCertificate()
 	type fields struct {
-		service *Service
+		svc *Service
 	}
 	type args struct {
 		in0 context.Context
@@ -41,7 +40,7 @@ func Test_CreateCertificate(t *testing.T) {
 	}{
 		{
 			name:   "validation error - missing request",
-			fields: fields{service: NewService()},
+			fields: fields{svc: NewService()},
 			args: args{
 				context.Background(),
 				nil,
@@ -54,7 +53,7 @@ func Test_CreateCertificate(t *testing.T) {
 		},
 		{
 			name:   "validation error - missing certificate",
-			fields: fields{service: NewService()},
+			fields: fields{svc: NewService()},
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{},
@@ -67,12 +66,12 @@ func Test_CreateCertificate(t *testing.T) {
 		},
 		{
 			name:   "validation error - missing certificate id",
-			fields: fields{service: NewService()},
+			fields: fields{svc: NewService()},
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
 					// Use certificate without an ID
-					Certificate: orchestratortest.NewCertificate(orchestratortest.WithMockCertificateID("")),
+					Certificate: &orchestrator.Certificate{Id: ""},
 				},
 			},
 			wantRes: nil,
@@ -84,7 +83,7 @@ func Test_CreateCertificate(t *testing.T) {
 		{
 			name: "authorization error - permission denied",
 			fields: fields{
-				service: NewService(WithAuthorizationStrategy(
+				svc: NewService(WithAuthorizationStrategy(
 					servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID))),
 			},
 			args: args{
@@ -100,8 +99,13 @@ func Test_CreateCertificate(t *testing.T) {
 			},
 		},
 		{
-			name:   "internal error - db error",
-			fields: fields{service: NewService(WithStorage(&testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB}))},
+			name: "internal error - certificate already exists",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						// Create mockCertificate in DB beforehand
+						assert.NoError(t, s.Create(mockCertificate))
+					})))},
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
@@ -111,13 +115,13 @@ func Test_CreateCertificate(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+				return assert.ErrorContains(t, err, persistence.ErrUniqueConstraintFailed.Error())
 			},
 		},
 		{
 			name: "happy path - valid certificate",
 			fields: fields{
-				service: NewService(WithAuthorizationStrategy(
+				svc: NewService(WithAuthorizationStrategy(
 					// Only allow certificates belonging to MockCloudServiceID
 					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID))),
 			},
@@ -134,7 +138,7 @@ func Test_CreateCertificate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := tt.fields.service
+			svc := tt.fields.svc
 			gotResponse, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
 			assert.NoError(t, gotResponse.Validate())
 
@@ -143,6 +147,120 @@ func Test_CreateCertificate(t *testing.T) {
 			// If no error is wanted, check response
 			if !reflect.DeepEqual(gotResponse, tt.wantRes) {
 				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantRes)
+			}
+		})
+	}
+}
+func Test_GetCertificate(t *testing.T) {
+	type fields struct {
+		svc *Service
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		req     *orchestrator.GetCertificateRequest
+		res     *orchestrator.Certificate
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:   "Validation error - Empty request",
+			fields: fields{svc: NewService()},
+			req:    nil,
+			res:    nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name:   "Validation error - Certificate Id missing in request",
+			fields: fields{svc: NewService()},
+			req:    &orchestrator.GetCertificateRequest{CertificateId: ""},
+			res:    nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes")
+			},
+		},
+		{
+			name: "Not Found Error - Certificate doesn't exist",
+			fields: fields{
+				svc: NewService(WithStorage(
+					testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						// Create Certificate
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+					}))),
+			},
+			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, "certificate not found")
+			},
+		},
+		{
+			name: "Internal error - DB Error",
+			fields: fields{
+				svc: NewService(WithStorage(&testutil.StorageWithError{GetErr: gorm.ErrInvalidDB})),
+			},
+			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Permission denied error - not authorized",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+					})),
+					// Only authorized for MockCloudServiceID
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockAnotherCloudServiceID)),
+				),
+			},
+			// Only authorized for MockAnotherCloudServiceID (=2222-2...) and not MockCloudServiceID (=1111-1...)
+			req: &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
+			res: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				svc: NewService(WithStorage(
+					testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						// Create Certificate
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+					}))),
+			},
+			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
+			res:     orchestratortest.NewCertificate(),
+			wantErr: assert.NoError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.fields.svc.GetCertificate(context.Background(), tt.req)
+			assert.NoError(t, res.Validate())
+
+			tt.wantErr(t, err)
+
+			if tt.res != nil {
+				assert.NotEmpty(t, res.Id)
+				// Todo: Use mockcertificate
+				// Compare timestamp. We have to cut off the microseconds and seconds, otherwise an error can be returned.
+				//t1 := strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
+				//tt.res.States[0].Timestamp = t1[:len(t1)-3]
+				//t2 := strings.Split(res.States[0].GetTimestamp(), ".")[0]
+				//res.States[0].Timestamp = t2[:len(t2)-3]
+				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
 		})
 	}
@@ -234,90 +352,6 @@ func Test_RemoveCertificate(t *testing.T) {
 	assert.Empty(t, listCertificatesResponse.Certificates)
 }
 
-func Test_GetCertificate(t *testing.T) {
-	type fields struct {
-		storage persistence.Storage
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		req     *orchestrator.GetCertificateRequest
-		res     *orchestrator.Certificate
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Empty request",
-			req:  nil,
-			res:  nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
-			},
-		},
-		{
-			name: "Certificate Id missing in request",
-			req:  &orchestrator.GetCertificateRequest{CertificateId: ""},
-			res:  nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes")
-			},
-		},
-		{
-			name: "Certificate not found",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Create Certificate
-					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
-				}),
-			},
-			req: &orchestrator.GetCertificateRequest{CertificateId: "WrongCertificateID"},
-			res: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, "certificate not found")
-			},
-		},
-		{
-			name: "valid",
-			fields: fields{
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Create Certificate
-					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
-				}),
-			},
-			req:     &orchestrator.GetCertificateRequest{CertificateId: testdata.MockCertificateID},
-			res:     orchestratortest.NewCertificate(),
-			wantErr: assert.NoError,
-		},
-	}
-	orchestratorService := NewService()
-
-	// Create Certificate
-	if err := orchestratorService.storage.Create(orchestratortest.NewCertificate()); err != nil {
-		panic(err)
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.GetCertificate(context.Background(), tt.req)
-			assert.NoError(t, res.Validate())
-
-			tt.wantErr(t, err)
-
-			if tt.res != nil {
-				assert.NotEmpty(t, res.Id)
-				// Compare timestamp. We have to cut off the microseconds and seconds, otherwise an error can be returned.
-				t1 := strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
-				tt.res.States[0].Timestamp = t1[:len(t1)-3]
-				t2 := strings.Split(res.States[0].GetTimestamp(), ".")[0]
-				res.States[0].Timestamp = t2[:len(t2)-3]
-				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
-			}
-		})
-	}
-}
-
 func Test_ListCertificates(t *testing.T) {
 	type fields struct {
 		svc *Service
@@ -397,10 +431,7 @@ func Test_ListCertificates(t *testing.T) {
 				svc: &Service{
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
-						assert.NoError(t, s.Create(
-							orchestratortest.NewCertificate(
-								orchestratortest.WithMockCertificateID("4321"),
-								orchestratortest.WithMockServiceID(testdata.MockAnotherCloudServiceID))))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
 					}),
 					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
 				},

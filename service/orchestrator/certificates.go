@@ -68,7 +68,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	areAllAllowed, allowedCloudServices := svc.authz.AllowedCloudServices(ctx)
 	if !areAllAllowed && !slices.Contains(allowedCloudServices, res.CloudServiceId) {
 		// Important to nil the response since it is set already
-		return nil, service.ErrPermissionDenied
+		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
 
 	return
