@@ -28,6 +28,7 @@ package evaluation
 import (
 	"context"
 	"net"
+	"syscall"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -45,6 +46,10 @@ func newBufConnDialer(storage persistence.Storage) func(context.Context, string)
 	return func(ctx context.Context, s string) (net.Conn, error) {
 		return lis.Dial()
 	}
+}
+
+func connectionRefusedDialer(context.Context, string) (net.Conn, error) {
+	return nil, syscall.ECONNREFUSED
 }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
