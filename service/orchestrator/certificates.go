@@ -1,12 +1,13 @@
 package orchestrator
 
 import (
+	"context"
+	"errors"
+
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-	"context"
-	"errors"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
@@ -81,6 +82,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		return nil, err
 	}
 
+	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
 	var conds []any
 	areAllAllowed, cloudServices := svc.authz.AllowedCloudServices(ctx)
 	if !areAllAllowed {
@@ -99,6 +101,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 }
 
 // UpdateCertificate implements method for updating an existing certificate
+// Todo: Add auth
 func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -128,6 +131,7 @@ func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.Updat
 }
 
 // RemoveCertificate implements method for removing a certificate
+// Todo: Add auth
 func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)

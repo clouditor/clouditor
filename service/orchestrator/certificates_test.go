@@ -8,6 +8,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/service"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -24,78 +25,119 @@ func Test_CreateCertificate(t *testing.T) {
 	mockCertificate := orchestratortest.NewCertificate()
 	mockCertificateWithoutID := orchestratortest.NewCertificate()
 	mockCertificateWithoutID.Id = ""
-
+	type fields struct {
+		service *Service
+	}
 	type args struct {
 		in0 context.Context
 		req *orchestrator.CreateCertificateRequest
 	}
 	var tests = []struct {
-		name         string
-		args         args
-		wantResponse *orchestrator.Certificate
-		wantErr      assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.Certificate
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"missing request",
-			args{
+			name:   "validation error - missing request",
+			fields: fields{service: NewService()},
+			args: args{
 				context.Background(),
 				nil,
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
-			"missing certificate",
-			args{
+			name:   "validation error - missing certificate",
+			fields: fields{service: NewService()},
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{},
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "Certificate: value is required")
 			},
 		},
 		{
-			"missing certificate id",
-			args{
+			name:   "validation error - missing certificate id",
+			fields: fields{service: NewService()},
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
 					Certificate: mockCertificateWithoutID,
 				},
 			},
-			nil,
-			func(tt assert.TestingT, err error, i ...interface{}) bool {
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "Id: value length must be at least 1 runes")
 			},
 		},
 		{
-			"valid certificate",
-			args{
+			name: "authorization error - permission denied",
+			fields: fields{
+				service: &Service{
+					authz: servicetest.NewAuthorizationStrategy(false, []string{testdata.MockAnotherCloudServiceID}),
+				},
+			},
+			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
 					Certificate: mockCertificate,
 				},
 			},
-			mockCertificate,
-			assert.NoError,
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name:   "internal error - db error",
+			fields: fields{service: NewService(WithStorage(&testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB}))},
+			args: args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{
+					Certificate: mockCertificate,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name:   "happy path - valid certificate",
+			fields: fields{service: NewService()},
+			args: args{
+				context.Background(),
+				&orchestrator.CreateCertificateRequest{
+					Certificate: mockCertificate,
+				},
+			},
+			wantRes: mockCertificate,
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-			gotResponse, err := s.CreateCertificate(tt.args.in0, tt.args.req)
+			svc := tt.fields.service
+			gotResponse, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
 			assert.NoError(t, gotResponse.Validate())
 
 			tt.wantErr(t, err)
 
 			// If no error is wanted, check response
-			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
-				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantResponse)
+			if !reflect.DeepEqual(gotResponse, tt.wantRes) {
+				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantRes)
 			}
 		})
 	}
@@ -374,9 +416,11 @@ func Test_ListCertificates(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		res, err := tt.fields.svc.ListCertificates(context.TODO(), tt.args.req)
-		tt.wantRes(t, res)
-		tt.wantErr(t, err)
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.fields.svc.ListCertificates(context.TODO(), tt.args.req)
+			tt.wantRes(t, res)
+			tt.wantErr(t, err)
+		})
 	}
 
 	//var (
