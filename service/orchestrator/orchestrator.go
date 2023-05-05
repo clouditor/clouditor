@@ -44,7 +44,8 @@ import (
 var f embed.FS
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultCatalogsFile = "catalogs.json"
+
+var DefaultCatalogsFile = "demo_catalogs.json"
 
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
@@ -135,6 +136,12 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 func WithAuthorizationStrategyJWT(key string, allowAllKey string) ServiceOption {
 	return func(s *Service) {
 		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
+	}
+}
+
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+	return func(s *Service) {
+		s.authz = authz
 	}
 }
 

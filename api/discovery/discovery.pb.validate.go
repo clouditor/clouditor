@@ -391,112 +391,6 @@ var _ interface {
 	ErrorName() string
 } = ListResourcesRequestValidationError{}
 
-// Validate checks the field values on Filter with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Filter) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Filter with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in FilterMultiError, or nil if none found.
-func (m *Filter) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Filter) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if m.Type != nil {
-		// no validation rules for Type
-	}
-
-	if m.CloudServiceId != nil {
-		// no validation rules for CloudServiceId
-	}
-
-	if len(errors) > 0 {
-		return FilterMultiError(errors)
-	}
-
-	return nil
-}
-
-// FilterMultiError is an error wrapping multiple validation errors returned by
-// Filter.ValidateAll() if the designated constraints aren't met.
-type FilterMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m FilterMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m FilterMultiError) AllErrors() []error { return m }
-
-// FilterValidationError is the validation error returned by Filter.Validate if
-// the designated constraints aren't met.
-type FilterValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e FilterValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e FilterValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e FilterValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e FilterValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e FilterValidationError) ErrorName() string { return "FilterValidationError" }
-
-// Error satisfies the builtin error interface
-func (e FilterValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sFilter.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = FilterValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = FilterValidationError{}
-
 // Validate checks the field values on ListResourcesResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -816,3 +710,114 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ResourceValidationError{}
+
+// Validate checks the field values on ListResourcesRequest_Filter with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListResourcesRequest_Filter) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListResourcesRequest_Filter with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListResourcesRequest_FilterMultiError, or nil if none found.
+func (m *ListResourcesRequest_Filter) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListResourcesRequest_Filter) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.Type != nil {
+		// no validation rules for Type
+	}
+
+	if m.CloudServiceId != nil {
+		// no validation rules for CloudServiceId
+	}
+
+	if len(errors) > 0 {
+		return ListResourcesRequest_FilterMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListResourcesRequest_FilterMultiError is an error wrapping multiple
+// validation errors returned by ListResourcesRequest_Filter.ValidateAll() if
+// the designated constraints aren't met.
+type ListResourcesRequest_FilterMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListResourcesRequest_FilterMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListResourcesRequest_FilterMultiError) AllErrors() []error { return m }
+
+// ListResourcesRequest_FilterValidationError is the validation error returned
+// by ListResourcesRequest_Filter.Validate if the designated constraints
+// aren't met.
+type ListResourcesRequest_FilterValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListResourcesRequest_FilterValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListResourcesRequest_FilterValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListResourcesRequest_FilterValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListResourcesRequest_FilterValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListResourcesRequest_FilterValidationError) ErrorName() string {
+	return "ListResourcesRequest_FilterValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListResourcesRequest_FilterValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListResourcesRequest_Filter.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListResourcesRequest_FilterValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListResourcesRequest_FilterValidationError{}

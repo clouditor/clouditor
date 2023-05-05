@@ -27,17 +27,15 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"strings"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
 	commands_login "clouditor.io/clouditor/cli/commands/login"
 	"clouditor.io/clouditor/internal/auth"
 	"clouditor.io/clouditor/internal/util"
@@ -45,24 +43,21 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/server"
+	"clouditor.io/clouditor/server/rest"
 	"clouditor.io/clouditor/service"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	service_discovery "clouditor.io/clouditor/service/discovery"
+	service_evaluation "clouditor.io/clouditor/service/evaluation"
 	service_evidenceStore "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -117,11 +112,12 @@ const (
 )
 
 var (
-	server               *grpc.Server
+	srv                  *server.Server
 	discoveryService     discovery.DiscoveryServer
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    assessment.AssessmentServer
 	evidenceStoreService evidence.EvidenceStoreServer
+	evaluationService    evaluation.EvaluationServer
 	db                   persistence.Storage
 	providers            []string
 
@@ -147,7 +143,7 @@ func init() {
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
 	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
-	engineCmd.Flags().String(APIJWKSURLFlag, service.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
+	engineCmd.Flags().String(APIJWKSURLFlag, server.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
 	engineCmd.Flags().String(ServiceOAuth2ClientSecretFlag, DefaultServiceOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
@@ -236,8 +232,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		))
 	}
 	if err != nil {
-		// We could also just log the error and forward db = nil which will result in inmemory storages
-		// for each service below
+		// We could also just log the error and forward db = nil which will result in inmemory storages for each service
+		// below
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
@@ -272,12 +268,25 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 			},
 		),
 	)
+
 	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
 
+	evaluationService = service_evaluation.NewService(
+		service_evaluation.WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
+			},
+		),
+		service_evaluation.WithStorage(db),
+	)
+
 	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
-	// The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
-	// The hook functions in evidenceStore are implemented in StoreEvidence(s)
-	// The hook functions in assessment are implemented in AssessEvidence(s)
+	//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+	//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
+	//  * The hook functions in assessment are implemented in AssessEvidence(s)
 
 	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
@@ -293,52 +302,15 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	grpcPort := viper.GetUint16(APIgRPCPortFlag)
 	httpPort := viper.GetUint16(APIHTTPPortFlag)
 
-	grpcLogger := logrus.New()
-	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
-	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
-
-	// disabling the grpc log itself, because it will log everything on INFO, whereas DEBUG would be more
-	// appropriate
-	// grpc_logrus.ReplaceGrpcLogger(grpcLoggerEntry)
-
-	// create a new socket for gRPC communication
-	sock, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
-	if err != nil {
-		log.Errorf("could not listen: %v", err)
-	}
-
-	authConfig := service.ConfigureAuth(service.WithJWKSURL(viper.GetString(APIJWKSURLFlag)))
-	defer authConfig.Jwks.EndBackground()
-
-	server = grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
-			grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-			service.UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(authConfig.AuthFunc), service.UnaryReflectionFilter),
-		),
-		grpc.ChainStreamInterceptor(
-			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
-			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			service.StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(authConfig.AuthFunc), service.StreamReflectionFilter),
-		))
-	discovery.RegisterDiscoveryServer(server, discoveryService)
-	orchestrator.RegisterOrchestratorServer(server, orchestratorService)
-	assessment.RegisterAssessmentServer(server, assessmentService)
-	evidence.RegisterEvidenceStoreServer(server, evidenceStoreService)
-
-	// enable reflection, primary for testing in early stages
-	reflection.Register(server)
-
 	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
 	}
 
-	// Let's check, if we are using our embedded OAuth 2.0 server, which we need to start
-	// (using additional arguments to our existing REST gateway). In a production scenario
-	// the usage of a dedicated (external) OAuth 2.0 server is recommended. In order
-	// to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
+	// Let's check, if we are using our embedded OAuth 2.0 server, which we need to start (using additional arguments to
+	// our existing REST gateway). In a production scenario the usage of a dedicated (external) OAuth 2.0 server is
+	// recommended. In order to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
 	// can be used.
 	if viper.GetBool(APIStartEmbeddedOAuth2ServerFlag) {
 		opts = append(opts,
@@ -376,27 +348,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		)
 	}
 
-	// start the gRPC-HTTP gateway
-	go func() {
-		err = rest.RunServer(context.Background(),
-			grpcPort,
-			httpPort,
-			opts...,
-		)
-		if errors.Is(err, http.ErrServerClosed) {
-			// ToDo(oxisto): deepsource anti-pattern: calls to os.Exit only in main() or init() functions
-			os.Exit(0)
-			return
-		}
-
-		if err != nil {
-			// ToDo(oxisto): deepsource anti-pattern: calls to log.Fatalf only in main() or init() functions
-			log.Fatalf("failed to serve gRPC-HTTP gateway: %v", err)
-		}
-	}()
-
-	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
-
 	// Automatically start the discovery, if we have this flag enabled
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
@@ -410,11 +361,37 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}()
 	}
 
-	// serve the gRPC socket
-	if err := server.Serve(sock); err != nil {
-		log.Infof("Failed to serve gRPC endpoint: %s", err)
+	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
+
+	// Start the gRPC server
+	_, srv, err = server.StartGRPCServer(
+		fmt.Sprintf("0.0.0.0:%d", grpcPort),
+		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
+		server.WithDiscovery(discoveryService),
+		server.WithOrchestrator(orchestratorService),
+		server.WithAssessment(assessmentService),
+		server.WithEvidenceStore(evidenceStoreService),
+		server.WithEvaluation(evaluationService),
+		server.WithReflection(),
+	)
+	if err != nil {
+		log.Errorf("Failed to serve gRPC endpoint: %s", err)
 		return err
 	}
+
+	// Start the gRPC-HTTP gateway
+	err = rest.RunServer(context.Background(),
+		grpcPort,
+		httpPort,
+		opts...,
+	)
+	if err != nil && err != http.ErrServerClosed {
+		log.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
+		return err
+	}
+
+	log.Infof("Stopping gRPC endpoint")
+	srv.GracefulStop()
 
 	return nil
 }

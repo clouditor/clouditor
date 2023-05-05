@@ -32,11 +32,12 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
+
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
-
-	"clouditor.io/clouditor/internal/testutil"
 )
 
 func Test_oauthAuthorizer_Token(t *testing.T) {
@@ -72,8 +73,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			fields: fields{
 				TokenSource: oauth2.ReuseTokenSource(nil,
 					(&clientcredentials.Config{
-						ClientID:     testutil.TestAuthClientID,
-						ClientSecret: testutil.TestAuthClientSecret,
+						ClientID:     testdata.MockAuthClientID,
+						ClientSecret: testdata.MockAuthClientSecret,
 						TokenURL:     fmt.Sprintf("http://localhost:%d/v1/auth/token", port),
 					}).TokenSource(context.Background()),
 				),
@@ -109,8 +110,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 
 func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
 	var config = clientcredentials.Config{
-		ClientID:     testutil.TestAuthClientID,
-		ClientSecret: testutil.TestAuthClientSecret,
+		ClientID:     testdata.MockAuthClientID,
+		ClientSecret: testdata.MockAuthClientSecret,
 		TokenURL:     "/v1/auth/token",
 	}
 
