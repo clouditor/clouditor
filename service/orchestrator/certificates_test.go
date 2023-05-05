@@ -1,6 +1,12 @@
 package orchestrator
 
 import (
+	"context"
+	"gorm.io/gorm"
+	"reflect"
+	"strings"
+	"testing"
+
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -9,22 +15,16 @@ import (
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-	"context"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"gorm.io/gorm"
-	"reflect"
-	"strings"
-	"testing"
 )
 
 func Test_CreateCertificate(t *testing.T) {
-	// Mock certificates
+	// Instantiate Mock certificate (so creating time is same for assertion)
 	mockCertificate := orchestratortest.NewCertificate()
-	mockCertificateWithoutID := orchestratortest.NewCertificate()
-	mockCertificateWithoutID.Id = ""
 	type fields struct {
 		service *Service
 	}
@@ -71,7 +71,8 @@ func Test_CreateCertificate(t *testing.T) {
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					Certificate: mockCertificateWithoutID,
+					// Use certificate without an ID
+					Certificate: orchestratortest.NewCertificate(orchestratortest.WithMockCertificateID("")),
 				},
 			},
 			wantRes: nil,
@@ -104,7 +105,7 @@ func Test_CreateCertificate(t *testing.T) {
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					Certificate: mockCertificate,
+					Certificate: orchestratortest.NewCertificate(),
 				},
 			},
 			wantRes: nil,
