@@ -427,38 +427,4 @@ func Test_ListCertificates(t *testing.T) {
 			tt.wantErr(t, err)
 		})
 	}
-
-	//var (
-	//	listCertificatesResponse *orchestrator.ListCertificatesResponse
-	//	err                      error
-	//)
-
-	//orchestratorService := NewService()
-	//orchestratorService.authz = servicetest.NewAuthorizationStrategy(false, []string{testdata.MockCloudServiceID})
-	//// 1st case: No services stored
-	//listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
-	//assert.NoError(t, err)
-	//assert.NotNil(t, listCertificatesResponse.Certificates)
-	//assert.Empty(t, listCertificatesResponse.Certificates)
-	//
-	//// 2nd case: One service stored
-	//err = orchestratorService.storage.Create(orchestratortest.NewCertificate())
-	//assert.NoError(t, err)
-	//
-	//listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
-	//// We check only the first certificate and assume that all certificates are valid
-	//assert.NoError(t, listCertificatesResponse.Certificates[0].Validate())
-	//assert.NoError(t, err)
-	//assert.NotNil(t, listCertificatesResponse.Certificates)
-	//assert.NotEmpty(t, listCertificatesResponse.Certificates)
-	//assert.Equal(t, len(listCertificatesResponse.Certificates), 1)
-	//assert.Equal(t, listCertificatesResponse.Certificates[0].CloudServiceId, testdata.MockCloudServiceID)
-	//
-	//// 3rd case: User is not allowed for certificates belonging to cloud service
-	//orchestratorService.authz = servicetest.NewAuthorizationStrategy(false, []string{testdata.MockAnotherCloudServiceID})
-	//listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
-	////assert.NoError(t, listCertificatesResponse.Certificates[0].Validate())
-	//assert.NoError(t, err)
-	//assert.Empty(t, listCertificatesResponse.Certificates)
-
 }
