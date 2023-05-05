@@ -34,6 +34,7 @@ import (
 var (
 	ErrInvalidColumnName = errors.New("column name is invalid")
 	ErrEmptyRequest      = errors.New("empty request")
+	ErrInvalidRequest    = errors.New("invalid request")
 )
 
 // StatusFromWrappedError attempts to recover a status.Status from a wrapped error message. This is necessary, because

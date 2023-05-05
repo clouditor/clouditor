@@ -501,7 +501,7 @@ func Test_UpdateCertificate(t *testing.T) {
 			},
 		},
 		{
-			name: "Internal - db error (save)",
+			name: "Happy path",
 			fields: fields{
 				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
@@ -535,41 +535,173 @@ func Test_UpdateCertificate(t *testing.T) {
 }
 
 func Test_RemoveCertificate(t *testing.T) {
-	var (
-		err                      error
-		listCertificatesResponse *orchestrator.ListCertificatesResponse
-	)
-	orchestratorService := NewService()
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RemoveCertificateRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Validation Error - Request is nil",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: nil,
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Validation Error - certificate id is empty",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: ""},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrInvalidRequest.Error())
+			},
+		},
+		{
+			name: "Permission Denied Error - No admin flag and not allowed for any cloud service",
+			fields: fields{
+				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+					false))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Not Found Error - certificate is hidden due to missing authorization)",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockAnotherCloudServiceID)),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, certificationNotFoundErrorMessage)
+			},
+		},
+		{
+			name: "Internal - db error",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(&testutil.StorageWithError{DeleteErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Happy path - with authorization allAllowed",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				svc, ok := i2[0].(*Service)
+				assert.True(t, ok)
+				// Verify that certificate 2 is still in the DB (by counting the number of occurrences = 1)
+				n, err := svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
+				assert.NoError(t, err)
+				assert.Equal(t, int64(1), n)
+				// Verify that the default certificate isn't in the DB anymore (occurrences = 0)
+				n, err = svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
+				assert.NoError(t, err)
+				return assert.Equal(t, int64(0), n)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path - with authorization for one certain cloud service",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID)),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				svc, ok := i2[0].(*Service)
+				assert.True(t, ok)
+				// Verify that certificate 2 is still in the DB (by counting the number of occurrences = 1)
+				n, err := svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
+				assert.NoError(t, err)
+				assert.Equal(t, int64(1), n)
+				// Verify that the default certificate isn't in the DB anymore (occurrences = 0)
+				n, err = svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
+				assert.NoError(t, err)
+				return assert.Equal(t, int64(0), n)
+			},
+			wantErr: assert.NoError,
+		},
+	}
 
-	// 1st case: Empty certificate ID error
-	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: ""})
-	assert.Error(t, err)
-	assert.Equal(t, status.Code(err), codes.InvalidArgument)
-
-	// 2nd case: ErrRecordNotFound
-	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: "0000"})
-	assert.Error(t, err)
-	assert.Equal(t, status.Code(err), codes.NotFound)
-
-	// 3rd case: Record removed successfully
-	mockCertificate := orchestratortest.NewCertificate()
-	assert.NoError(t, mockCertificate.Validate())
-	err = orchestratorService.storage.Create(mockCertificate)
-	assert.NoError(t, err)
-
-	// There is a record for certificates in the DB (default one)
-	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listCertificatesResponse.Certificates)
-	assert.NotEmpty(t, listCertificatesResponse.Certificates)
-
-	// Remove record
-	_, err = orchestratorService.RemoveCertificate(context.Background(), &orchestrator.RemoveCertificateRequest{CertificateId: mockCertificate.Id})
-	assert.NoError(t, err)
-
-	// There is a record for cloud services in the DB (default one)
-	listCertificatesResponse, err = orchestratorService.ListCertificates(context.Background(), &orchestrator.ListCertificatesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listCertificatesResponse.Certificates)
-	assert.Empty(t, listCertificatesResponse.Certificates)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.fields.svc.RemoveCertificate(context.TODO(), tt.args.req)
+			// Run ValueAssertionFunc on response
+			tt.wantRes(t, res, tt.fields.svc)
+			// Run ErrorAssertionFunc
+			tt.wantErr(t, err)
+		})
+	}
 }

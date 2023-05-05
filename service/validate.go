@@ -53,7 +53,7 @@ func ValidateRequest(req IncomingRequest) (err error) {
 	// Validate request
 	err = req.Validate()
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "invalid request: %v", err)
+		return status.Errorf(codes.InvalidArgument, "%v: %v", api.ErrInvalidRequest, err)
 	}
 
 	return nil
