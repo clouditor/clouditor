@@ -640,7 +640,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						Backup: &voc.Backup{
 							Enabled:         true,
-							RetentionPeriod: 30,
+							RetentionPeriod: Duration30Days,
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),

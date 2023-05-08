@@ -447,7 +447,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						Immutability: &voc.Immutability{Enabled: false},
 						Backup: &voc.Backup{
 							Enabled:         true,
-							RetentionPeriod: 7,
+							RetentionPeriod: Duration7Days,
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
@@ -491,7 +491,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						Immutability: &voc.Immutability{Enabled: false},
 						Backup: &voc.Backup{
 							Enabled:         true,
-							RetentionPeriod: 7,
+							RetentionPeriod: Duration7Days,
 							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),

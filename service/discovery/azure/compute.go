@@ -30,7 +30,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
@@ -43,7 +42,6 @@ import (
 
 var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
-	Duration30Days         = time.Duration(30 * time.Hour * 24) // https://learn.microsoft.com/en-us/azure/virtual-machines/automatic-vm-guest-patching
 )
 
 type azureComputeDiscovery struct {

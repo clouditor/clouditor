@@ -63,6 +63,9 @@ const (
 
 	DataSourceTypeDisc           = "Microsoft.Compute/disks"
 	DataSourceTypeStorageAccount = "Microsoft.Storage/storageAccounts/blobServices"
+
+	Duration30Days = time.Duration(30 * time.Hour * 24)
+	Duration7Days  = time.Duration(7 * time.Hour * 24)
 )
 
 var (
@@ -251,7 +254,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 }
 
 // discoverBackupVaults receives all backup vaults in the subscription.
-// Since the backups for storage and compute are discovered, the discovery is performed here and results are stored in the azureDiscovery receiver.
+// Since the backups for storage and compute are discovered togehter, the discovery is performed here and results are stored in the azureDiscovery receiver.
 func (d *azureDiscovery) discoverBackupVaults() error {
 
 	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
@@ -286,7 +289,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 					continue
 				}
 
-				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs
+				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs (Metrics)
 				retention := policy.BaseBackupPolicyResource.Properties.(*armdataprotection.BackupPolicy).PolicyRules[0].(*armdataprotection.AzureRetentionRule).Lifecycles[0].DeleteAfter.(*armdataprotection.AbsoluteDeleteOption).GetDeleteOption().Duration
 				// Check if map entry already exists
 				_, ok := d.backupMap[dataSourceType]
@@ -336,14 +339,14 @@ func retentionDuration(retention string) time.Duration {
 	r := retention[1 : len(retention)-1]
 
 	// string to int
-	days, err := strconv.Atoi(r)
+	d, err := strconv.Atoi(r)
 	if err != nil {
 		log.Errorf("could not convert string to int")
 		return time.Duration(0)
 	}
 
 	// Create duration in hours
-	duration := time.Duration(days)
+	duration := time.Duration(time.Duration(d) * time.Hour * 24)
 
 	return duration
 }

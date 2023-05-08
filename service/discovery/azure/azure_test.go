@@ -393,7 +393,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				}
 
 				want := &voc.Backup{
-					RetentionPeriod: 7,
+					RetentionPeriod: Duration7Days,
 					Enabled:         true,
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
@@ -501,7 +501,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				}
 
 				want := &voc.Backup{
-					RetentionPeriod: 30,
+					RetentionPeriod: Duration30Days,
 					Enabled:         true,
 					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
@@ -581,9 +581,9 @@ func Test_retentionDuration(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				retention: "P7D",
+				retention: "P30D",
 			},
-			want: time.Duration(7),
+			want: Duration30Days,
 		},
 	}
 	for _, tt := range tests {
