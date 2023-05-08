@@ -43,7 +43,7 @@ import (
 
 var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
-	Duration30Days         = time.Duration(30 * time.Hour * 24)
+	Duration30Days         = time.Duration(30 * time.Hour * 24) // https://learn.microsoft.com/en-us/azure/virtual-machines/automatic-vm-guest-patching
 )
 
 type azureComputeDiscovery struct {
