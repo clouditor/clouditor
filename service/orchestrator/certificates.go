@@ -146,16 +146,12 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 
 	// Only remove certificate if user is authorized for the corresponding cloud service
 	areAllAllowed, allowedCloudService := svc.authz.AllowedCloudServices(ctx)
-	// Todo(lebogg to all): Is this too much? A user having admin flag off but no cloud services attached would have full access otherwise. Would mean we have to change other endpoints with auth as well, I guess.
-	// 1st case: The user is neither admin nor is authorized for any cloud service because it's, e.g., a public user.
-	if !areAllAllowed && len(allowedCloudService) == 0 {
-		err = service.ErrPermissionDenied
-		return
-	} else if !areAllAllowed { // 2nd case: User is authorized for some cloud services (at least one)
+	// 1st case:  User is authorized for all cloud services (admin)
+	if areAllAllowed {
+		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
+	} else { // 2nd case: User is authorized for some cloud services (or none at all)
 		err = svc.storage.Delete(&orchestrator.Certificate{},
 			"id = ? AND cloud_service_id IN ?", req.CertificateId, allowedCloudService)
-	} else { // 3rd case: User is authorized for all cloud services (admin)
-		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	}
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// could also mean that user is not authorized for corresponding cloud service (2nd case)
