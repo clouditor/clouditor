@@ -16,7 +16,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const certificationNotFoundErrorMessage = "certificate not found"
+// ErrCertificationNotFound indicates the certification was not found
+var ErrCertificationNotFound = status.Error(codes.NotFound, "certificate not found")
 
 // CreateCertificate implements method for creating a new certificate
 func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.CreateCertificateRequest) (
@@ -24,7 +25,6 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 
 	// Validate request
 	if err = service.ValidateRequest(req); err != nil {
-		err = status.Error(codes.InvalidArgument, err.Error())
 		return
 	}
 
@@ -54,14 +54,13 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 
 	// Validate request
 	if err = service.ValidateRequest(req); err != nil {
-		err = status.Error(codes.InvalidArgument, err.Error())
 		return
 	}
 
 	res = new(orchestrator.Certificate)
 	err = svc.storage.Get(res, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, certificationNotFoundErrorMessage)
+		return nil, ErrCertificationNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -77,10 +76,11 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 }
 
 // ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
-func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.ListCertificatesRequest) (res *orchestrator.ListCertificatesResponse, err error) {
+func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.ListCertificatesRequest) (
+	res *orchestrator.ListCertificatesResponse, err error) {
+
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
+	if err = service.ValidateRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -106,8 +106,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 // Todo: Add auth
 func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
+	if err = service.ValidateRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -123,7 +122,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 	}
 
 	if count == 0 {
-		return nil, status.Error(codes.NotFound, certificationNotFoundErrorMessage)
+		return nil, ErrCertificationNotFound
 	}
 
 	response = req.Certificate
@@ -141,8 +140,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 // RemoveCertificate implements method for removing a certificate
 func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
+	if err = service.ValidateRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -151,17 +149,17 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	// Todo(lebogg to all): Is this too much? A user having admin flag off but no cloud services attached would have full access otherwise. Would mean we have to change other endpoints with auth as well, I guess.
 	// 1st case: The user is neither admin nor is authorized for any cloud service because it's, e.g., a public user.
 	if !areAllAllowed && len(allowedCloudService) == 0 {
-		err = status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
+		err = service.ErrPermissionDenied
 		return
 	} else if !areAllAllowed { // 2nd case: User is authorized for some cloud services (at least one)
 		err = svc.storage.Delete(&orchestrator.Certificate{},
-			"Id = ? and cloud_service_id IN ?", req.CertificateId, allowedCloudService)
+			"id = ? AND cloud_service_id IN ?", req.CertificateId, allowedCloudService)
 	} else { // 3rd case: User is authorized for all cloud services (admin)
 		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	}
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// could also mean that user is not authorized for corresponding cloud service (2nd case)
-		return nil, status.Errorf(codes.NotFound, certificationNotFoundErrorMessage)
+		return nil, ErrCertificationNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

@@ -478,7 +478,7 @@ func Test_UpdateCertificate(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, certificationNotFoundErrorMessage)
+				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
 			},
 		},
 		{
@@ -612,7 +612,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			wantRes: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, certificationNotFoundErrorMessage)
+				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
 			},
 		},
 		{
