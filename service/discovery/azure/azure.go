@@ -380,7 +380,7 @@ func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }
 
-// resourceGroupName returns the resource group name of a given Azure ID
+// backupPolicyName returns the backup policy name of a given Azure ID
 func backupPolicyName(id string) string {
 	return strings.Split(id, "/")[10]
 }
