@@ -975,7 +975,7 @@ func (mockStreamer) SetTrailer(_ metadata.MD) {
 }
 
 func (mockStreamer) Context() context.Context {
-	panic("implement me")
+	return context.TODO()
 }
 
 func (mockStreamer) SendMsg(_ interface{}) error {
@@ -990,6 +990,10 @@ type mockStreamerWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
 	SentFromServer chan *orchestrator.StoreAssessmentResultsResponse
+}
+
+func (mockStreamerWithSendErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (mockStreamerWithSendErr) Send(*orchestrator.StoreAssessmentResultsResponse) error {
@@ -1024,6 +1028,10 @@ type mockStreamerWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *orchestrator.StoreAssessmentResultRequest
 	SentFromServer chan *orchestrator.StoreAssessmentResultsResponse
+}
+
+func (mockStreamerWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (mockStreamerWithRecvErr) Send(*orchestrator.StoreAssessmentResultsResponse) error {
