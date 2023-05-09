@@ -625,7 +625,7 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 			Evidence: &evidence.Evidence{
 				Id:             uuid.NewString(),
 				ToolId:         fmt.Sprintf("MockToolId-%d", i),
-				CloudServiceId: testdata.MockCloudServiceID,
+				CloudServiceId: fmt.Sprintf("MockCloudServiceId-%d", i),
 				Timestamp:      timestamppb.Now(),
 				Raw:            nil,
 				Resource: toStructWithoutTest(voc.VirtualMachine{
