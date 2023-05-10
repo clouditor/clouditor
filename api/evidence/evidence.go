@@ -40,7 +40,7 @@ var (
 	ErrResourceNotMap                = errors.New("resource in evidence is not a map")
 	ErrResourceIdMissing             = errors.New("resource in evidence is missing the id field")
 	ErrResourceIdNotString           = errors.New("resource id in evidence is not a string")
-	ErrResourceIdFieldMissing        = errors.New("field id is missing")
+	ErrResourceIdFieldMissing        = errors.New("resource has no id")
 	ErrResourceTypeFieldMissing      = errors.New("field type in evidence is missing")
 	ErrResourceTypeNotArrayOfStrings = errors.New("resource type in evidence is not an array of strings")
 	ErrResourceTypeEmpty             = errors.New("resource type (array) in evidence is empty")

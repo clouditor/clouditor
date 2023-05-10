@@ -47,6 +47,8 @@ import (
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
+
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -370,6 +372,60 @@ func TestService_AssessEvidence(t *testing.T) {
 			assert.Empty(t, gotResp)
 		})
 	}
+}
+
+// TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached tests the following workflow: First an
+// evidence with a VM resource is assessed. The resource contains all required fields s.t. the metric cache is filled
+// with all applicable metrics. In a second step we assess another evidence. It is also of type "VirtualMachine" but all
+// other fields are not set (e.g. MalwareProtection). Thus, metric will be applied and therefore no error occurs in
+// AssessEvidence-handleEvidence (assessment.go) which loops over all evaluations
+// Todo: Add it to table test above (would probably need some function injection in test cases like we do with storage)
+func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached(t *testing.T) {
+	s := &Service{
+		evidenceStore: api.NewRPCConnection(
+			"bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+		orchestrator: api.NewRPCConnection(
+			"bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+		authz: servicetest.NewAuthorizationStrategy(true),
+		evidenceStoreStreams: api.NewStreamsOf(
+			api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+		orchestratorStreams: api.NewStreamsOf(
+			api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient,
+				*orchestrator.StoreAssessmentResultRequest](log)),
+		cachedConfigurations: make(map[string]cachedConfiguration),
+		pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
+	}
+	// First assess evidence with a valid VM resource s.t. the cache is created for the combination of resource type and
+	// tool id (="VirtualMachine-{testdata.MockEvidenceToolID}")
+	e := &evidence.Evidence{
+		Id:        testdata.MockEvidenceID,
+		ToolId:    testdata.MockEvidenceToolID,
+		Timestamp: timestamppb.Now(),
+		// toStruct creates all top level fields of VirtualMachine. Even though their values are nil, the corresponding
+		// metrics are applicable since the fields are present
+		Resource: toStruct(voc.VirtualMachine{
+			Compute: &voc.Compute{
+				Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
+		CloudServiceId: testdata.MockCloudServiceID}
+	_, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: e})
+	assert.NoError(t, err)
+
+	// Now assess a new evidence which has not a valid format other than the resource type and tool id is set correctly
+	r := map[string]any{
+		"type": []any{"VirtualMachine"},
+		"id":   uuid.NewString(),
+	}
+	v, err := structpb.NewValue(r)
+	assert.NoError(t, err)
+	_, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
+		Id:             uuid.NewString(),
+		Timestamp:      timestamppb.Now(),
+		CloudServiceId: testdata.MockCloudServiceID,
+		ToolId:         testdata.MockEvidenceToolID,
+		Raw:            nil,
+		Resource:       v,
+	}})
+	assert.NoError(t, err)
 }
 
 // TestAssessEvidences tests AssessEvidences
