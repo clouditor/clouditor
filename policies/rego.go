@@ -167,7 +167,9 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			if err != nil {
 				return nil, err
 			}
-
+			if runMap == nil {
+				continue
+			}
 			data = append(data, runMap)
 		}
 	}
