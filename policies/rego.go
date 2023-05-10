@@ -32,15 +32,17 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/storage"
+	"github.com/open-policy-agent/opa/storage/inmem"
+	"google.golang.org/grpc/codes"
+
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/storage"
-	"github.com/open-policy-agent/opa/storage/inmem"
-	"google.golang.org/grpc/codes"
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
@@ -273,6 +275,15 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		).PrepareForEval(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
+		}
+
+		modules := query.Modules()
+		var modulesSlice []*ast.Module
+		for _, m := range modules {
+			modulesSlice = append(modulesSlice, m)
+		}
+		for i, m := range modulesSlice {
+			fmt.Println("Annotations of Module", i, ":", m.Annotations)
 		}
 
 		// Commit the transaction into the store
