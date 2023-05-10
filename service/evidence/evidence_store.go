@@ -152,7 +152,7 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		_, err = svc.StoreEvidence(context.Background(), evidenceRequest)
+		_, err = svc.StoreEvidence(stream.Context(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
 			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
