@@ -26,6 +26,7 @@
 package assessment
 
 import (
+	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
 	"context"
 	"errors"
 	"fmt"
@@ -397,22 +398,18 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	}
 	// First assess evidence with a valid VM resource s.t. the cache is created for the combination of resource type and
 	// tool id (="VirtualMachine-{testdata.MockEvidenceToolID}")
-	e := &evidence.Evidence{
-		Id:        testdata.MockEvidenceID,
-		ToolId:    testdata.MockEvidenceToolID,
-		Timestamp: timestamppb.Now(),
-		// toStruct creates all top level fields of VirtualMachine. Even though their values are nil, the corresponding
-		// metrics are applicable since the fields are present
-		Resource: toStruct(voc.VirtualMachine{
-			Compute: &voc.Compute{
-				Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t),
-		CloudServiceId: testdata.MockCloudServiceID}
+	e := evidencetest.MockEvidence1
+	e.Resource = toStruct(voc.VirtualMachine{
+		Compute: &voc.Compute{
+			Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}, t)
 	_, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: e})
 	assert.NoError(t, err)
 
 	// Now assess a new evidence which has not a valid format other than the resource type and tool id is set correctly
+	// Prepare resource
 	r := map[string]any{
-		"type": []any{"VirtualMachine"},
+		// Make sure both evidences have the same type (for caching key)
+		"type": e.Resource.GetStructValue().AsMap()["type"],
 		"id":   uuid.NewString(),
 	}
 	v, err := structpb.NewValue(r)
@@ -421,9 +418,10 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 		Id:             uuid.NewString(),
 		Timestamp:      timestamppb.Now(),
 		CloudServiceId: testdata.MockCloudServiceID,
-		ToolId:         testdata.MockEvidenceToolID,
-		Raw:            nil,
-		Resource:       v,
+		// Make sure both evidences have the same tool id (for caching key)
+		ToolId:   e.ToolId,
+		Raw:      nil,
+		Resource: v,
 	}})
 	assert.NoError(t, err)
 }
