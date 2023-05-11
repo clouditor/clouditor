@@ -327,7 +327,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid evidence: resource in evidence is missing the id field")
+				return assert.ErrorContains(t, err, evidence.ErrResourceIdIsEmpty.Error())
 			},
 		},
 		{
