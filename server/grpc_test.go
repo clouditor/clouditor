@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service_test
+package server_test
 
 import (
 	"context"
@@ -32,7 +32,7 @@ import (
 
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -43,7 +43,7 @@ import (
 func TestMain(m *testing.M) {
 	svc := service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc), server.WithReflection()))
 }
 
 func TestReflectionNoAuth(t *testing.T) {

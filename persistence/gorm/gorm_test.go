@@ -37,7 +37,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
 )
 
@@ -246,7 +246,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.List(&services, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, len(services), 2)
+	assert.Equal(t, 2, len(services))
 	// We only check one service and assume the others are also correct
 	assert.NoError(t, services[0].Validate())
 
@@ -273,9 +273,9 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// List should return list of 2 certificates with associated states
-	err = s.List(&certificates, "id", false, 0, 0)
+	err = s.List(&certificates, "id", false, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, len(certificates), 2)
+	assert.Equal(t, 2, len(certificates))
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
 	// We only check one certificate and assume the others are also correct

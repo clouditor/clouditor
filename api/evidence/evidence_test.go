@@ -97,7 +97,7 @@ func Test_ValidateEvidence(t *testing.T) {
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrResourceIdMissing.Error())
+				return assert.ErrorContains(t, err, ErrResourceIdIsEmpty.Error())
 			},
 		},
 		{

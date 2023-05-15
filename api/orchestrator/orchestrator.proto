@@ -97,6 +97,14 @@ service Orchestrator {
   rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
       returns (stream StoreAssessmentResultsResponse);
 
+  // Get an assessment result by ID
+  rpc GetAssessmentResult(GetAssessmentResultRequest)
+      returns (clouditor.assessment.v1.AssessmentResult) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/assessment_results/{id}"
+    };
+  }
+
   // List all assessment results. Part of the public API, also exposed as REST.
   rpc ListAssessmentResults(ListAssessmentResultsRequest)
       returns (ListAssessmentResultsResponse) {
@@ -449,14 +457,25 @@ message RegisterAssessmentToolRequest {
 }
 
 message ListAssessmentToolsRequest {
-  // Optional. Filter tools by metric id.
-  optional string filter_metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  optional Filter filter = 1;
 
-  int32 page_size = 2;
-  string page_token = 3;
-  string order_by = 4;
-  bool asc = 5;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
+
+message Filter {
+  // Optional. List only assessment results of a specific cloud service.
+  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  // Optional. List only compliant assessment results.
+  optional bool compliant = 2;
+  // Optional. List only assessment results of a specific metric id.
+  repeated string metric_ids = 3
+      [ (validate.rules).repeated .items.string.min_len = 1 ];
+  optional string metric_id = 4 [ (validate.rules).string.min_len = 1 ];
+}
+
 message ListAssessmentToolsResponse {
   repeated AssessmentTool tools = 1;
   string next_page_token = 2;
@@ -508,10 +527,10 @@ message GetMetricRequest {
 }
 
 message ListMetricsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListMetricsResponse {
@@ -536,10 +555,10 @@ message RemoveCloudServiceRequest {
 }
 
 message ListCloudServicesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 message ListCloudServicesResponse {
   repeated CloudService services = 1;
@@ -562,7 +581,7 @@ message GetMetricConfigurationRequest {
 }
 
 message ListMetricConfigurationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
 }
 
 message ListMetricConfigurationResponse {
@@ -778,39 +797,34 @@ message TargetOfEvaluation {
   ];
 }
 
-message ListAssessmentResultsRequest {
-  // Optional. List only assessment results of a specific cloud service.
-  optional string filtered_cloud_service_id = 1
-      [ (validate.rules).string.uuid = true ];
-  // Optional. List only compliant assessment results.
-  optional bool filtered_compliant = 2;
-  // Optional. List only assessment results of a specific metric id.
-  repeated string filtered_metric_id = 3
-      [ (validate.rules).repeated .items.string.min_len = 1 ];
+message GetAssessmentResultRequest {
+  string id = 1 [ (validate.rules).string.uuid = true ];
+}
 
+message ListAssessmentResultsRequest {
+  optional Filter filter = 1;
   // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 4;
+  optional bool latest_by_resource_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
 }
+
 message ListAssessmentResultsResponse {
   repeated clouditor.assessment.v1.AssessmentResult results = 1;
   string next_page_token = 2;
 }
 
 message ListControlsInScopeRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  string cloud_service_id = 1 [ (validate.rules).string = {uuid : true} ];
+  string catalog_id = 2 [ (validate.rules).string = {min_len : 1} ];
 
-  string cloud_service_id = 10
-      [ (validate.rules).string = {uuid : true} ];
-  string catalog_id = 11
-      [ (validate.rules).string = {min_len : 1} ];
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListControlsInScopeResponse {
@@ -896,18 +910,19 @@ message GetTargetOfEvaluationRequest {
 }
 
 message ListTargetsOfEvaluationRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
   // We cannot create additional bindings when the parameter is optional so we
   // check for != "" in the method to see if it is set when the service is
   // specified, return all Targets of Evaluation that evaluate the given service
   // for any catalog
-  string cloud_service_id = 5;
+  string cloud_service_id = 1;
   // when the catalog is specified, return all Targets of Evaluation that
   // evaluate the given catalog for any service
-  string catalog_id = 6;
+  string catalog_id = 2;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListTargetsOfEvaluationResponse {
@@ -925,10 +940,10 @@ message GetCertificateRequest {
 }
 
 message ListCertificatesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 message ListCertificatesResponse {
   repeated Certificate certificates = 1;
@@ -952,10 +967,10 @@ message GetCatalogRequest {
 }
 
 message ListCatalogsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListCatalogsResponse {
@@ -979,14 +994,14 @@ message GetControlRequest {
 }
 
 message ListControlsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string order_by = 3;
-  bool asc = 4;
-
   // return either all controls or only the controls of the specified category
-  string catalog_id = 5;
-  string category_name = 6;
+  string catalog_id = 1;
+  string category_name = 2;
+
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
 }
 
 message ListControlsResponse {

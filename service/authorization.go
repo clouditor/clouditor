@@ -29,7 +29,7 @@ import (
 	"context"
 
 	"clouditor.io/clouditor/api"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -71,8 +71,7 @@ func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestTyp
 		all  bool
 	)
 
-	// Retrieve the list of allowed cloud services. we never allow to retrieve
-	// "all" services with the token strategy.
+	// Retrieve the list of allowed cloud services.
 	all, list = a.AllowedCloudServices(ctx)
 
 	if all {
@@ -92,6 +91,12 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 		l      []interface{}
 		s      string
 	)
+
+	// Check, if the context is nil
+	if ctx == nil {
+		log.Debugf("Retrieving allowed cloud services failed because of an empty context")
+		return false, nil
+	}
 
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")

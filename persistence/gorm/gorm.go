@@ -32,6 +32,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/persistence"
@@ -75,6 +76,7 @@ var DefaultTypes = []any{
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},
+	&evaluation.EvaluationResult{},
 }
 
 // StorageOption is a functional option type to configure the GORM storage. E.g. WithInMemory or WithPostgres

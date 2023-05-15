@@ -10,7 +10,7 @@ import (
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
@@ -19,7 +19,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestService_CreateCatalog(t *testing.T) {
@@ -339,22 +338,24 @@ func TestService_GetCategory(t *testing.T) {
 				Name:        testdata.MockCategoryName,
 				Description: testdata.MockCategoryDescription,
 				CatalogId:   testdata.MockCatalogID,
-				Controls: []*orchestrator.Control{{
-					Id:                testdata.MockControlID1,
-					Name:              testdata.MockControlName,
-					Description:       testdata.MockControlDescription,
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					// at this level, we will not have the metrics
-					Metrics: []*assessment.Metric{},
-					// at this level, we will not have the sub-controls
-					Controls: []*orchestrator.Control{},
-				}, {
-					Id:                testdata.MockAnotherControlID,
-					Name:              testdata.MockAnotherControlName,
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-				}},
+				Controls: []*orchestrator.Control{
+					{
+						Id:                testdata.MockControlID1,
+						Name:              testdata.MockControlName,
+						CategoryName:      testdata.MockCategoryName,
+						CategoryCatalogId: testdata.MockCatalogID,
+						Description:       testdata.MockControlDescription,
+						Controls:          []*orchestrator.Control{},
+					},
+					{
+						Id:                testdata.MockControlID2,
+						Name:              testdata.MockControlName,
+						CategoryName:      testdata.MockCategoryName,
+						CategoryCatalogId: testdata.MockCatalogID,
+						Description:       testdata.MockControlDescription,
+						Controls:          []*orchestrator.Control{},
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -431,25 +432,14 @@ func TestService_GetControl(t *testing.T) {
 				CategoryCatalogId: testdata.MockCatalogID,
 				Name:              testdata.MockControlName,
 				Description:       testdata.MockControlDescription,
-				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
-					Scale:       assessment.Metric_ORDINAL,
-					Range: &assessment.Range{
-						Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-							Values: []*structpb.Value{
-								structpb.NewBoolValue(false),
-								structpb.NewBoolValue(true),
-							}}}},
-				}},
 				Controls: []*orchestrator.Control{{
 					Id:                             testdata.MockSubControlID11,
 					Name:                           testdata.MockSubControlName,
 					Description:                    testdata.MockSubControlDescription,
-					Metrics:                        []*assessment.Metric{},
+					Metrics:                        []*assessment.Metric{}, // metrics on sub-controls are not returned
 					CategoryName:                   testdata.MockCategoryName,
 					CategoryCatalogId:              testdata.MockCatalogID,
+					AssuranceLevel:                 &testdata.AssuranceLevelBasic,
 					ParentControlId:                util.Ref(testdata.MockControlID1),
 					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
@@ -541,7 +531,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "storage error",
 			fields: fields{
-				catalogsFile: "catalogs.json",
+				catalogsFile: "demo_catalogs.json",
 				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
 			wantResult: assert.NotEmpty,
@@ -564,7 +554,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				catalogsFile: "catalogs.json",
+				catalogsFile: "demo_catalogs.json",
 				storage:      testutil.NewInMemoryStorage(t),
 			},
 			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {

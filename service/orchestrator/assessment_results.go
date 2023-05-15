@@ -32,6 +32,8 @@ import (
 	"io"
 	"strings"
 
+	"clouditor.io/clouditor/persistence"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/codes"
@@ -42,6 +44,40 @@ import (
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/service"
 )
+
+// GetAssessmentResult gets one assessment result by id
+func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.GetAssessmentResultRequest) (res *assessment.AssessmentResult, err error) {
+	var (
+		all     bool
+		allowed []string
+	)
+
+	// Validate request
+	if err = service.ValidateRequest(req); err != nil {
+		return
+	}
+
+	// Fetch result
+	res = new(assessment.AssessmentResult)
+	err = svc.storage.Get(res, "Id = ?", req.Id)
+
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "assessment result not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	// Check if cloud_service_id in assessment_result is within allowed or one can access *all* the cloud services
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+
+	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
+	// unless one can access *all* the cloud services.
+	if !all && !slices.Contains(allowed, res.GetCloudServiceId()) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	return
+}
 
 // ListAssessmentResults is a method implementation of the orchestrator interface
 func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator.ListAssessmentResultsRequest) (res *orchestrator.ListAssessmentResultsResponse, err error) {
@@ -60,7 +96,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 
 	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && req.FilteredCloudServiceId != nil && !slices.Contains(allowed, req.GetFilteredCloudServiceId()) {
+	if !all && req.Filter != nil && req.Filter.CloudServiceId != nil && !slices.Contains(allowed, req.Filter.GetCloudServiceId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -73,17 +109,19 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * cloud service ID
 	// * compliant status
 	// * metric ID
-	if req.FilteredCloudServiceId != nil {
-		query = append(query, "cloud_service_id = ?")
-		args = append(args, req.GetFilteredCloudServiceId())
-	}
-	if req.FilteredCompliant != nil {
-		query = append(query, "compliant = ?")
-		args = append(args, req.GetFilteredCompliant())
-	}
-	if req.FilteredMetricId != nil {
-		query = append(query, "metric_id IN ?")
-		args = append(args, req.GetFilteredMetricId())
+	if req.Filter != nil {
+		if req.Filter.CloudServiceId != nil {
+			query = append(query, "cloud_service_id = ?")
+			args = append(args, req.Filter.GetCloudServiceId())
+		}
+		if req.Filter.Compliant != nil {
+			query = append(query, "compliant = ?")
+			args = append(args, req.Filter.GetCompliant())
+		}
+		if req.Filter.MetricIds != nil {
+			query = append(query, "metric_id IN ?")
+			args = append(args, req.Filter.GetMetricIds())
+		}
 	}
 
 	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to
@@ -177,7 +215,7 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 		storeAssessmentResultReq := &orchestrator.StoreAssessmentResultRequest{
 			Result: result.Result,
 		}
-		_, err = s.StoreAssessmentResult(context.Background(), storeAssessmentResultReq)
+		_, err = s.StoreAssessmentResult(stream.Context(), storeAssessmentResultReq)
 		if err != nil {
 			// Create response message. The StoreAssessmentResult method does not need that message, so we have to create it here for the stream response.
 			res = &orchestrator.StoreAssessmentResultsResponse{

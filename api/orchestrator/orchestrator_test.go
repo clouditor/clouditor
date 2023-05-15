@@ -494,11 +494,13 @@ func TestListAssessmentResultsRequest_Validate(t *testing.T) {
 			name: "Invalid cloud service id",
 			fields: fields{
 				req: &ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref("invalidCloudServiceId"),
+					Filter: &Filter{
+						CloudServiceId: util.Ref("invalidCloudServiceId"),
+					},
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "value must be a valid UUID")
 			},
 		},
 		{
@@ -512,7 +514,9 @@ func TestListAssessmentResultsRequest_Validate(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				req: &ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					Filter: &Filter{
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					},
 				},
 			},
 			wantErr: assert.NoError,
