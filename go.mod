@@ -6,7 +6,7 @@ go 1.20
 require (
 	github.com/MicahParks/keyfunc/v2 v2.0.1
 	github.com/glebarez/sqlite v1.8.0
-	github.com/go-co-op/gocron v1.25.0
+	github.com/go-co-op/gocron v1.27.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -167,5 +167,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+require go.uber.org/atomic v1.9.0 // indirect
 
 retract v1.4.7
