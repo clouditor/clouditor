@@ -257,6 +257,10 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 // Since the backups for storage and compute are discovered togehter, the discovery is performed here and results are stored in the azureDiscovery receiver.
 func (d *azureDiscovery) discoverBackupVaults() error {
 
+	if d.backupMap != nil && len(d.backupMap) > 0 {
+		log.Debug("Backup Vaults already discovered.")
+	}
+
 	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
 		return errors.New("backupVaultClient and/or backupInstancesClient missing")
 	}
