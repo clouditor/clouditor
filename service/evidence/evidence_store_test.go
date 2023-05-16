@@ -288,7 +288,10 @@ func TestService_StoreEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
+				assert.Equal(t, tt.wantRespMessage.Status, responseFromServer.Status)
+				// We have to check both ways, as it fails if one StatusMessage is empty.
 				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				assert.Contains(t, tt.wantRespMessage.StatusMessage, responseFromServer.StatusMessage)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
@@ -625,7 +628,7 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 			Evidence: &evidence.Evidence{
 				Id:             uuid.NewString(),
 				ToolId:         fmt.Sprintf("MockToolId-%d", i),
-				CloudServiceId: fmt.Sprintf("MockCloudServiceId-%d", i),
+				CloudServiceId: testdata.MockCloudServiceID,
 				Timestamp:      timestamppb.Now(),
 				Raw:            nil,
 				Resource: toStructWithoutTest(voc.VirtualMachine{
@@ -695,7 +698,7 @@ func (mockStreamer) SetTrailer(_ metadata.MD) {
 }
 
 func (mockStreamer) Context() context.Context {
-	panic("implement me")
+	return context.TODO()
 }
 
 func (mockStreamer) SendMsg(_ interface{}) error {
@@ -710,6 +713,10 @@ type mockStreamerWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidencesResponse) error {
@@ -739,6 +746,10 @@ type mockStreamerWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithSendErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (*mockStreamerWithSendErr) Send(*evidence.StoreEvidencesResponse) error {
