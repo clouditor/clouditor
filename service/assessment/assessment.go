@@ -329,6 +329,12 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 	}
 
 	for _, data := range evaluations {
+		// That there is an empty (nil) evaluation should be caught beforehand, but you never know.
+		if data == nil {
+			log.Errorf("One empty policy evaluation detected for evidence '%s'. That should not happen.",
+				ev.GetId())
+			continue
+		}
 		metricID := data.MetricID
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)

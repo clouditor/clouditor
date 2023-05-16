@@ -29,7 +29,7 @@ var (
 		Timestamp:      timestamppb.Now(),
 		CloudServiceId: testdata.MockCloudServiceID,
 		ToolId:         testdata.MockEvidenceToolID,
-		Raw:            util.Ref(""),
+		Raw:            util.Ref("This Raw field must be of length >1"),
 		Resource:       structpb.NewNullValue(),
 	}
 	MockEvidence2 = &evidence.Evidence{
