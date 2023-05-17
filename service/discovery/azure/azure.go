@@ -237,13 +237,13 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 	}
 
 	for _, elem := range pricingsList.Value {
-		if *elem.Properties.PricingTier == armsecurity.PricingTierFree {
-			pricings[*elem.Name] = &defenderProperties{
+		if util.Deref(elem.Properties.PricingTier) == armsecurity.PricingTierFree {
+			pricings[util.Deref(elem.Name)] = &defenderProperties{
 				monitoringLogDataEnabled: false,
 				securityAlertsEnabled:    false,
 			}
 		} else {
-			pricings[*elem.Name] = &defenderProperties{
+			pricings[util.Deref(elem.Name)] = &defenderProperties{
 				monitoringLogDataEnabled: true,
 				securityAlertsEnabled:    true,
 			}
@@ -276,14 +276,14 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 			return res.Value
 		},
 		func(vault *armdataprotection.BackupVaultResource) error {
-			instances, err := d.discoverBackupInstances(resourceGroupName(*vault.ID), *vault.Name)
+			instances, err := d.discoverBackupInstances(resourceGroupName(util.Deref(vault.ID)), util.Deref(vault.Name))
 			if err != nil {
 				err := fmt.Errorf("could not discover backup instances: %v", err)
 				return err
 			}
 
 			for _, instance := range instances {
-				dataSourceType := *instance.Properties.DataSourceInfo.DatasourceType
+				dataSourceType := util.Deref(instance.Properties.DataSourceInfo.DatasourceType)
 
 				// Get retention from backup policy
 				policy, err := d.clients.backupPoliciesClient.Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
@@ -302,13 +302,13 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				}
 
 				// Store voc.Backup in backupMap
-				d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][*instance.Properties.DataSourceInfo.ResourceID] = &voc.Backup{
+				d.backupMap[util.Deref(instance.Properties.DataSourceInfo.DatasourceType)][util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
 					Enabled:         true,
-					Policy:          *instance.Properties.PolicyInfo.PolicyID,
-					RetentionPeriod: retentionDuration(*retention),
-					Storage:         voc.ResourceID(*instance.ID),
+					Policy:          util.Deref(instance.Properties.PolicyInfo.PolicyID),
+					RetentionPeriod: retentionDuration(util.Deref(retention)),
+					Storage:         voc.ResourceID(util.Deref(instance.ID)),
 					GeoLocation: voc.GeoLocation{
-						Region: *vault.Location,
+						Region: util.Deref(vault.Location),
 					},
 					AtRestEncryption: &voc.AtRestEncryption{
 						Algorithm: constants.AES256, // https://learn.microsoft.com/en-us/azure/backup/backup-encryption (Last access: 04/27/2023)

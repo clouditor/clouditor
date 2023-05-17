@@ -331,8 +331,8 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Linux configuration is available
 	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if *vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
-			*vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode == armcompute.LinuxVMGuestPatchModeImageDefault {
+		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
+			util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeImageDefault {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -343,8 +343,8 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Windows configuration is available
 	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
 		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if *vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
-			*vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
+		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
+			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -425,7 +425,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[DataSourceTypeDisc][*disk.ID]
+	backup := d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)]
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -459,12 +459,12 @@ func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 
 	if disk.Properties.Encryption.Type == nil {
 		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
-	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
+	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
 			Enabled:   true,
 		}}
-	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
+	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
 		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
 		keyUrl, err = d.keyURL(diskEncryptionSetID)

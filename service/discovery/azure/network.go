@@ -233,17 +233,17 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 			Networking: &voc.Networking{
 				Resource: discovery.NewResource(
 					d,
-					voc.ResourceID(*ag.ID),
-					*ag.Name,
+					voc.ResourceID(util.Deref(ag.ID)),
+					util.Deref(ag.Name),
 					nil,
-					voc.GeoLocation{Region: *ag.Location},
+					voc.GeoLocation{Region: util.Deref(ag.Location)},
 					labels(ag.Tags),
 					voc.LoadBalancerType,
 				),
 			},
 		},
 		AccessRestriction: voc.WebApplicationFirewall{
-			Enabled: *ag.Properties.WebApplicationFirewallConfiguration.Enabled,
+			Enabled: util.Deref(ag.Properties.WebApplicationFirewallConfiguration.Enabled),
 		},
 	}
 }

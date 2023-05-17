@@ -257,7 +257,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	te := &voc.TransportEncryption{
 		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
-		TlsVersion: string(*account.Properties.MinimumTLSVersion),
+		TlsVersion: string(util.Deref(account.Properties.MinimumTLSVersion)),
 		Algorithm:  "TLS",
 	}
 
@@ -340,7 +340,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[DataSourceTypeStorageAccount][*account.ID]
+	backup := d.backupMap[DataSourceTypeStorageAccount][util.Deref(account.ID)]
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -377,14 +377,14 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 
 	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
 		return enc, errors.New("keySource is empty")
-	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
+	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES256",
 				Enabled:   true,
 			},
 		}
-	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
+	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftKeyvault {
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "", // TODO(all): TBD
