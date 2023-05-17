@@ -29,9 +29,14 @@ package voc
 
 import "time"
 
+// Backup contains the retention period in hours
 type Backup struct {
 	*Availability
-	RetentionPeriod time.Duration `json:"retentionPeriod"`
-	Enabled         bool          `json:"enabled"`
-	Policy          string        `json:"policy"`
+	AtRestEncryption    IsAtRestEncryption   `json:"atRestEncryption"`
+	TransportEncryption *TransportEncryption `json:"transportEncryption"`
+	RetentionPeriod     time.Duration        `json:"retentionPeriod"`
+	Enabled             bool                 `json:"enabled"`
+	Policy              string               `json:"policy"`
+	GeoLocation         GeoLocation          `json:"geoLocation"`
+	Storage             ResourceID           `json:"storage"`
 }

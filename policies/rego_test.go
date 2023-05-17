@@ -100,7 +100,8 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ResourceInventory":                 true,
 			},
 			wantErr: false,
-		}, {
+		},
+		{
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
 				qc:      newQueryCache(),
@@ -190,7 +191,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				resource: voc.VirtualMachine{
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:      true,
-						Interval:     time.Hour * 24,
+						Interval:     time.Hour * 24 * 30,
 						SecurityOnly: true,
 					},
 					Compute: &voc.Compute{
@@ -324,7 +325,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				}
 			}
 
-			assert.Equal(t, compliants, tt.compliant)
+			assert.Equal(t, tt.compliant, compliants)
 		})
 	}
 }

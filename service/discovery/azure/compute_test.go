@@ -30,14 +30,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -60,7 +61,7 @@ type mockedVirtualMachinesResponse struct {
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
@@ -84,6 +85,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 									"managedDisk": map[string]interface{}{
 										"id": "data_disk_2",
 									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
 								},
 							},
 						},
@@ -129,6 +137,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								},
 							},
 						},
+						"osProfile": map[string]interface{}{
+							"windowsConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByOS",
+								},
+							},
+						},
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{
 								"enabled":    true,
@@ -160,7 +175,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
@@ -204,7 +219,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
@@ -222,15 +237,15 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
@@ -240,12 +255,16 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					"properties": map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"linuxFxVersion": "PYTHON|3.8",
+						},
+					},
 				},
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault1",
@@ -260,7 +279,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault2",
@@ -272,6 +291,58 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"name": "disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							"datasourceType": "Microsoft.Compute/disks",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P30D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
 		}, 200)
 	}
 
@@ -296,7 +367,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -313,7 +386,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -326,7 +401,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -338,7 +415,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
 					csID:                testdata.MockCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 	}
@@ -511,18 +590,18 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 		wantList []voc.IsCloudResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Authorize error",
-		// 	fields: fields{
-		// 		azureDiscovery: azureDiscovery{
-		// 			cred: nil,
-		// 		},
-		// 	},
-		// 	wantList: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-		// 	},
-		// },
+		{
+			name: "Authorize error",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
 		{
 			name: "Discovery error",
 			fields: fields{
@@ -553,11 +632,27 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						Backup: &voc.Backup{
+							Enabled:         true,
+							RetentionPeriod: Duration30Days,
+							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
+							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+							AtRestEncryption: &voc.AtRestEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: constants.TLS1_2,
+								Algorithm:  constants.TLS,
 							},
 						},
 					},
@@ -642,6 +737,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -679,6 +778,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								SecurityFeature: &voc.SecurityFeature{},
 							},
 						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -718,6 +821,10 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.Function{
@@ -738,6 +845,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -836,6 +946,8 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -904,6 +1016,11 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						"testKey1": &testTag1,
 						"testKey2": &testTag2,
 					},
+					Properties: &armappservice.SiteProperties{
+						SiteConfig: &armappservice.SiteConfig{
+							LinuxFxVersion: util.Ref("PYTHON|3.8"),
+						},
+					},
 				},
 			},
 			want: &voc.Function{
@@ -924,6 +1041,8 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},
+				RuntimeVersion:  "3.8",
+				RuntimeLanguage: "PYTHON",
 			},
 		},
 	}
@@ -949,20 +1068,16 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		want    []voc.IsCloudResource
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO(anatheka): Wo kommt die panic her?
-		// {
-		//	name: "Error list pages",
-		//	fields: fields{
-		//		azureDiscovery: azureDiscovery{
-		//			cred: nil,
-		//			sub:  sub,
-		//		},
-		//	},
-		//	want: nil,
-		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		//		return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
-		//	},
-		// },
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
 		{
 			name: "No error",
 			fields: fields{
@@ -1005,6 +1120,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -1043,6 +1162,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
@@ -1080,6 +1203,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								SecurityFeature: &voc.SecurityFeature{},
 							},
 						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -1221,6 +1348,10 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 							SecurityFeature: &voc.SecurityFeature{},
 						},
 					},
+				},
+				AutomaticUpdates: &voc.AutomaticUpdates{
+					Enabled:  false,
+					Interval: time.Duration(0),
 				},
 				MalwareProtection: &voc.MalwareProtection{},
 			},
@@ -1856,6 +1987,268 @@ func Test_diskEncryptionSetName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_createResourceLogging(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		wantResourceLogging *voc.ResourceLogging
+	}{
+		{
+			name: "Missing defenderProperties",
+			fields: fields{
+				azureDiscovery:     NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+			wantResourceLogging: nil,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: map[string]*defenderProperties{
+					DefenderVirtualMachineType: {
+						monitoringLogDataEnabled: true,
+						securityAlertsEnabled:    true,
+					},
+				},
+			},
+			wantResourceLogging: &voc.ResourceLogging{
+				MonitoringLogDataEnabled: true,
+				SecurityAlertsEnabled:    true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			if gotResourceLogging := d.createResourceLogging(); !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
+				t.Errorf("azureComputeDiscovery.createResourceLogging() = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
+			}
+		})
+	}
+}
+
+func Test_runtimeInfo(t *testing.T) {
+	type args struct {
+		runtime string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantRuntimeLanguage string
+		wantRuntimeVersion  string
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				runtime: "",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Wrong input",
+			args: args{
+				runtime: "TEST",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				runtime: "PYTHON|3.8",
+			},
+			wantRuntimeLanguage: "PYTHON",
+			wantRuntimeVersion:  "3.8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotRuntimeLanguage, gotRuntimeVersion := runtimeInfo(tt.args.runtime)
+			if gotRuntimeLanguage != tt.wantRuntimeLanguage {
+				t.Errorf("runtimeInfo() gotRuntimeLanguage = %v, want %v", gotRuntimeLanguage, tt.wantRuntimeLanguage)
+			}
+			if gotRuntimeVersion != tt.wantRuntimeVersion {
+				t.Errorf("runtimeInfo() gotRuntimeVersion = %v, want %v", gotRuntimeVersion, tt.wantRuntimeVersion)
+			}
+		})
+	}
+}
+
+func Test_automaticUpdatesEnabled(t *testing.T) {
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name string
+		args args
+		want *voc.AutomaticUpdates
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Windows configuration set to manual",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeManual),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Linux configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+		{
+			name: "Happy path: Windows configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := automaticUpdates(tt.args.vm)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_automaticUpdates(t *testing.T) {
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		wantAutomaticUpdates *voc.AutomaticUpdates
+	}{
+		{
+			name:                 "Empty input",
+			args:                 args{},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{},
+		},
+		{
+			name: "No automatic update for the given VM",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{},
+		},
+		{
+			name: "Happy path: Linux",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+		{
+			name: "Happy path: Windows",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotAutomaticUpdates := automaticUpdates(tt.args.vm); !reflect.DeepEqual(gotAutomaticUpdates, tt.wantAutomaticUpdates) {
+				t.Errorf("automaticUpdates() = %v, want %v", gotAutomaticUpdates, tt.wantAutomaticUpdates)
+			}
 		})
 	}
 }

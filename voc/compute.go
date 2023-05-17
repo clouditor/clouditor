@@ -31,5 +31,7 @@ var ComputeType = []string{"Compute", "Resource"}
 
 type Compute struct {
 	*Resource
-	NetworkInterfaces []ResourceID `json:"networkInterfaces"`
+	NetworkInterfaces []ResourceID     `json:"networkInterfaces"`
+	ResourceLogging   *ResourceLogging `json:"resourceLogging"`
+	Backup           *Backup            `json:"backup"`
 }

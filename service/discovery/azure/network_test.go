@@ -31,8 +31,8 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -50,7 +50,7 @@ func newMockNetworkSender() *mockNetworkSender {
 
 func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
@@ -58,14 +58,32 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 					"location": "eastus",
 					"properties": map[string]interface{}{
 						"networkSecurityGroup": map[string]interface{}{
-							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"name":     "nsg1",
+							"location": "eastus",
+							"properties": map[string]interface{}{
+								"securityRules": []map[string]interface{}{ // Important: These properties must the same as for the path "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"
+									{
+										"properties": map[string]interface{}{
+											"access":          "Deny",
+											"sourcePortRange": "*",
+										},
+									},
+									{
+										"properties": map[string]interface{}{
+											"access":          "Deny",
+											"sourcePortRange": "*",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
 			"name":     "nsg1",
 			"location": "eastus",
@@ -87,7 +105,7 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
@@ -183,18 +201,35 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": "111.222.333.444",
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
 				"ipAddress": nil,
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+					"name":     "appgw1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"webApplicationFirewallConfiguration": map[string]interface{}{
+							"enabled": true,
+						},
+					},
+				},
+			},
+		}, 200)
 	}
+	// return createResponse(req, map[string]interface{}{
+	// 	"value": &[]map[string]interface{}{
 
 	return m.mockSender.Do(req)
 }
@@ -261,7 +296,9 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 						},
 					},
-					AccessRestriction: nil,
+					AccessRestriction: &voc.L3Firewall{
+						Enabled: true,
+					},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -280,8 +317,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ips:   []string{"111.222.333.444"},
 						Ports: []uint16{1234, 5678},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -300,8 +336,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -320,8 +355,26 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					AccessRestrictions: &[]voc.AccessRestriction{},
-					HttpEndpoints:      &[]voc.HttpEndpoint{},
+					HttpEndpoints: &[]voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+								ServiceID: testdata.MockCloudServiceID,
+								Name:      "appgw1",
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Type:   voc.LoadBalancerType,
+								Labels: map[string]string{},
+							},
+						},
+					},
+					AccessRestriction: voc.WebApplicationFirewall{
+						Enabled: true,
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -333,6 +386,8 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			gotList, err := d.List()
+
+			assert.Equal(t, len(tt.wantList), len(gotList))
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -362,6 +417,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 			},
 		},
@@ -379,6 +435,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 			},
 		},
@@ -392,6 +449,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]map[string]*voc.Backup),
 				},
 			},
 		},
@@ -622,6 +680,86 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, publicIPAddressFromLoadBalancer(tt.args.lb))
+		})
+	}
+}
+
+func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.discoverApplicationGateway()
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "discoverApplicationGateway()")
+		})
+	}
+}
+
+func Test_nsgFirewallEnabled(t *testing.T) {
+	type args struct {
+		ni *armnetwork.Interface
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: false,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				ni: &armnetwork.Interface{
+					Properties: &armnetwork.InterfacePropertiesFormat{
+						NetworkSecurityGroup: &armnetwork.SecurityGroup{
+							Properties: &armnetwork.SecurityGroupPropertiesFormat{
+								SecurityRules: []*armnetwork.SecurityRule{
+									{
+										ID: util.Ref("test security rule"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := nsgFirewallEnabled(tt.args.ni); got != tt.want {
+				t.Errorf("nsgFirewallEnabled() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
