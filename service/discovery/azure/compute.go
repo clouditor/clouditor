@@ -336,7 +336,6 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
-
 		}
 	}
 
