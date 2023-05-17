@@ -33,15 +33,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
@@ -660,6 +663,94 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want(t, got)
+			}
+		})
+	}
+}
+
+func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
+	type fields struct {
+		azureDiscovery       *azureDiscovery
+		clientBackupInstance bool
+	}
+	type args struct {
+		resourceGroup string
+		vaultName     string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []*armdataprotection.BackupInstanceResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Input empty",
+			args: args{},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "missing resource group and/or vault name")
+			},
+		},
+		{
+			name: "defenderClient not set",
+			fields: fields{
+				azureDiscovery:       NewMockAzureDiscovery(newMockNetworkSender()),
+				clientBackupInstance: true,
+			},
+			args: args{
+				resourceGroup: "res1",
+				vaultName:     "backupAccount1",
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting next page: GET")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
+				clientBackupInstance: true,
+			},
+			args: args{
+				resourceGroup: "res1",
+				vaultName:     "backupAccount1",
+			},
+			wantErr: assert.NoError,
+			want: []*armdataprotection.BackupInstanceResource{
+				{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
+					Properties: &armdataprotection.BackupInstance{
+						DataSourceInfo: &armdataprotection.Datasource{
+							ResourceID:     util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							DatasourceType: util.Ref("Microsoft.Storage/storageAccounts/blobServices"),
+						},
+						PolicyInfo: &armdataprotection.PolicyInfo{
+							PolicyID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer"),
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			if tt.fields.clientBackupInstance {
+				// initialize backup instances client
+				_ = d.initBackupInstancesClient()
+			}
+			got, err := d.discoverBackupInstances(tt.args.resourceGroup, tt.args.vaultName)
+
+			tt.wantErr(t, err)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("azureDiscovery.discoverBackupInstances() = %v, want %v", got, tt.want)
 			}
 		})
 	}
