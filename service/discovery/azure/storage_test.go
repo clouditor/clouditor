@@ -1275,6 +1275,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			},
 			args: args{
 				account: &armstorage.Account{
+					ID: &accountID,
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
@@ -1619,44 +1620,6 @@ func Test_azureStorageDiscovery_createResourceLogging(t *testing.T) {
 			}
 			if gotResourceLogging := d.createResourceLogging(); !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
 				t.Errorf("azureStorageDiscovery.createResourceLogging() = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
-			}
-		})
-	}
-}
-
-func Test_idUpToStorageAccount(t *testing.T) {
-	type args struct {
-		id string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Empty input",
-			args: args{},
-			want: "",
-		},
-		{
-			name: "Wrong input",
-			args: args{
-				id: "teststring",
-			},
-			want: "",
-		},
-		{
-			name: "Happy path",
-			args: args{
-				id: "/subscriptions/XXXXXXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/containerName/blobServices/default/containers/testContainer",
-			},
-			want: "/subscriptions/XXXXXXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/containerName",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := idUpToStorageAccount(tt.args.id); got != tt.want {
-				t.Errorf("idUpToStorageAccount() = %v, want %v", got, tt.want)
 			}
 		})
 	}

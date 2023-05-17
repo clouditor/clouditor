@@ -340,7 +340,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[DataSourceTypeStorageAccount][idUpToStorageAccount(*container.ID)]
+	backup := d.backupMap[DataSourceTypeStorageAccount][*account.ID]
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -414,21 +414,6 @@ func accountName(id string) string {
 
 	splitName := strings.Split(id, "/")
 	return splitName[8]
-}
-
-// idUpToStorageAccount returns the resource ID cutting of the storage type information, e.g., '/subscriptions/XXXXXXXXXXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/resourceGroupName/providers/Microsoft.Storage/storageAccounts/containerName'
-func idUpToStorageAccount(id string) string {
-	if id == "" {
-		return ""
-	}
-
-	split := strings.Split(id, "/")
-
-	if len(split) < 8 {
-		return ""
-	}
-
-	return "/" + split[1] + "/" + split[2] + "/" + split[3] + "/" + split[4] + "/" + split[5] + "/" + split[6] + "/" + split[7] + "/" + split[8]
 }
 
 // generalizeURL generalizes the URL, because the URL depends on the storage type

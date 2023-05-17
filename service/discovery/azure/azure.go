@@ -302,7 +302,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				}
 
 				// Store voc.Backup in backupMap
-				d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][idUpToStorageAccount(*instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
+				d.backupMap[*instance.Properties.DataSourceInfo.DatasourceType][*instance.Properties.DataSourceInfo.ResourceID] = &voc.Backup{
 					Enabled:         true,
 					Policy:          *instance.Properties.PolicyInfo.PolicyID,
 					RetentionPeriod: retentionDuration(*retention),
