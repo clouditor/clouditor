@@ -273,7 +273,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 
 // nsgFirewallEnabled checks if network security group (NSG) rules are configured. A NSG is a firewall that operates at OSI layers 3 and 4 to filter ingress and egress traffic. (https://learn.microsoft.com/en-us/azure/firewall/firewall-faq#what-is-the-difference-between-network-security-groups--nsgs--and-azure-firewall, Last access: 05/02/2023)
 func nsgFirewallEnabled(ni *armnetwork.Interface) bool {
-	if ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil && ni.Properties.NetworkSecurityGroup.Properties != nil && ni.Properties.NetworkSecurityGroup.Properties.SecurityRules != nil && len(ni.Properties.NetworkSecurityGroup.Properties.SecurityRules) >= 1 {
+	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil && ni.Properties.NetworkSecurityGroup.Properties != nil && ni.Properties.NetworkSecurityGroup.Properties.SecurityRules != nil && len(ni.Properties.NetworkSecurityGroup.Properties.SecurityRules) >= 1 {
 		return true
 	}
 

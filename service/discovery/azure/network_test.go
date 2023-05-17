@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -679,6 +680,86 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, publicIPAddressFromLoadBalancer(tt.args.lb))
+		})
+	}
+}
+
+func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureNetworkDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			got, err := d.discoverApplicationGateway()
+			if !tt.wantErr(t, err) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "discoverApplicationGateway()")
+		})
+	}
+}
+
+func Test_nsgFirewallEnabled(t *testing.T) {
+	type args struct {
+		ni *armnetwork.Interface
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: false,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				ni: &armnetwork.Interface{
+					Properties: &armnetwork.InterfacePropertiesFormat{
+						NetworkSecurityGroup: &armnetwork.SecurityGroup{
+							Properties: &armnetwork.SecurityGroupPropertiesFormat{
+								SecurityRules: []*armnetwork.SecurityRule{
+									{
+										ID: util.Ref("test security rule"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := nsgFirewallEnabled(tt.args.ni); got != tt.want {
+				t.Errorf("nsgFirewallEnabled() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
