@@ -45,6 +45,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
@@ -347,10 +348,11 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 
 func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	type fields struct {
-		azureDiscovery       *azureDiscovery
-		clientBackupVault    bool
-		clientBackupInstance bool
-		clientBackupPolicy   bool
+		azureDiscovery            *azureDiscovery
+		clientBackupVault         bool
+		clientBackupInstance      bool
+		emptyClientBackupInstance bool
+		clientBackupPolicy        bool
 	}
 	tests := []struct {
 		name    string
@@ -359,7 +361,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "both clients missing",
+			name: "all clients missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
 				clientBackupVault:    false,
@@ -384,6 +386,20 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
 			},
 		},
+		{
+			name: "backup instance client empty",
+			fields: fields{
+				azureDiscovery:            NewMockAzureDiscovery(newMockStorageSender()),
+				clientBackupVault:         true,
+				emptyClientBackupInstance: true,
+				clientBackupPolicy:        false,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover backup instances:")
+			},
+		},
+
 		{
 			name: "Happy path",
 			fields: fields{
@@ -440,6 +456,12 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			if tt.fields.clientBackupPolicy {
 				// initialize backup policies client
 				_ = d.initBackupPoliciesClient()
+			}
+
+			// Set empty client if needed
+			if tt.fields.emptyClientBackupInstance {
+				// empty backup instances client
+				d.clients.backupInstancesClient = &armdataprotection.BackupInstancesClient{}
 			}
 
 			err := d.discoverBackupVaults()
@@ -603,8 +625,9 @@ func Test_retentionDuration(t *testing.T) {
 
 func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	type fields struct {
-		azureDiscovery *azureDiscovery
-		clientDefender bool
+		azureDiscovery      *azureDiscovery
+		clientDefender      bool
+		emptyDefenderClient bool
 	}
 	tests := []struct {
 		name    string
@@ -621,6 +644,18 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "defenderClient not set")
+			},
+		},
+		{
+			name: "empty defenderClient",
+			fields: fields{
+				azureDiscovery:      NewMockAzureDiscovery(newMockStorageSender()),
+				clientDefender:      false,
+				emptyDefenderClient: true,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover pricings")
 			},
 		},
 		{
@@ -655,6 +690,12 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			if tt.fields.clientDefender {
 				// initialize backup vaults client
 				_ = d.initDefenderClient()
+			}
+
+			// Set empty defender client if needed
+			if tt.fields.emptyDefenderClient {
+				// initialize backup vaults client
+				d.clients.defenderClient = &armsecurity.PricingsClient{}
 			}
 
 			got, err := d.discoverDefender()
