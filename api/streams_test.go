@@ -110,10 +110,10 @@ func TestStreamsOf_GetStream(t *testing.T) {
 							// put 2 left over messages into the channel
 							var c = make(chan proto.Message)
 							go func() {
-								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID}}
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID1}}
 							}()
 							go func() {
-								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockAnotherEvidenceID}}
+								c <- &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID2}}
 							}()
 							return c
 						}(),

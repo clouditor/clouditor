@@ -47,7 +47,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
@@ -62,7 +62,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       testdata.MockMetricID,
+					MetricId:       testdata.MockMetricID1,
 					CloudServiceId: "00000000000000000000",
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
@@ -78,7 +78,7 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:    "<",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
@@ -93,13 +93,13 @@ func TestUpdateMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &UpdateMetricConfigurationRequest{
-					MetricId:       testdata.MockMetricID,
-					CloudServiceId: testdata.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					Configuration: &assessment.MetricConfiguration{
 						Operator:       "<",
 						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-						MetricId:       testdata.MockMetricID,
-						CloudServiceId: testdata.MockCloudServiceID,
+						MetricId:       testdata.MockMetricID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
 				},
 			},
@@ -127,7 +127,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -138,7 +138,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Wrong CloudServiceId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       testdata.MockMetricID,
+					MetricId:       testdata.MockMetricID1,
 					CloudServiceId: "00000000000000000000",
 				},
 			},
@@ -150,7 +150,7 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Missing MetricId",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -161,8 +161,8 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 			name: "Without error",
 			fields: fields{
 				Request: &GetMetricConfigurationRequest{
-					MetricId:       testdata.MockMetricID,
-					CloudServiceId: testdata.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -189,10 +189,10 @@ func TestAddControlToScopeRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				&ControlInScope{
-					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -220,10 +220,10 @@ func TestUpdateControlInScopeRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				&ControlInScope{
-					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -251,10 +251,10 @@ func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				&CloudService{
-					Id: testdata.MockCloudServiceID,
+					Id: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -282,10 +282,10 @@ func TestStoreAssessmentResultRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Result: &assessment.AssessmentResult{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -313,10 +313,10 @@ func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				&TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -364,10 +364,10 @@ func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Certificate: &Certificate{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -395,10 +395,10 @@ func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Certificate: &Certificate{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -455,10 +455,10 @@ func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				TargetOfEvaluation: &TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: testdata.MockCloudServiceID,
+			want: testdata.MockCloudServiceID1,
 		},
 	}
 	for _, tt := range tests {
@@ -515,7 +515,7 @@ func TestListAssessmentResultsRequest_Validate(t *testing.T) {
 			fields: fields{
 				req: &ListAssessmentResultsRequest{
 					Filter: &Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
 				},
 			},

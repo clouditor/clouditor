@@ -490,13 +490,13 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, csID: testdata.MockCloudServiceID},
+			args: args{client: mockClient, csID: testdata.MockCloudServiceID1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				csID:              testdata.MockCloudServiceID,
+				csID:              testdata.MockCloudServiceID1,
 			},
 		},
 	}

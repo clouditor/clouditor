@@ -76,7 +76,7 @@ func TestListPods(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	d := NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID)
+	d := NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 
@@ -91,7 +91,7 @@ func TestListPods(t *testing.T) {
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(podID),
-				ServiceID:    testdata.MockCloudServiceID,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         podName,
 				CreationTime: podCreationTime.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -113,7 +113,7 @@ func TestListPods(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeName),
-				ServiceID:    testdata.MockCloudServiceID,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         volumeName,
 				CreationTime: 0,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

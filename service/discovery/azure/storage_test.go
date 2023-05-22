@@ -429,7 +429,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -473,7 +473,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -517,7 +517,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -542,7 +542,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -575,7 +575,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
-									ServiceID:    testdata.MockCloudServiceID,
+									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account1",
 									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -607,7 +607,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container3",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -635,7 +635,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container4",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -669,7 +669,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
-									ServiceID:    testdata.MockCloudServiceID,
+									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account2",
 									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -717,7 +717,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{csID: testdata.MockCloudServiceID}, make(map[string]*defenderProperties)}
+	d := azureStorageDiscovery{&azureDiscovery{csID: testdata.MockCloudServiceID1}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -1042,7 +1042,7 @@ func Test_handleFileStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(fileShareID),
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         fileShareName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1165,7 +1165,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:           voc.ResourceID(accountID),
-								ServiceID:    testdata.MockCloudServiceID,
+								ServiceID:    testdata.MockCloudServiceID1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
 								Type:         voc.ObjectStorageServiceType,
@@ -1297,7 +1297,7 @@ func Test_handleObjectStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(containerID),
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         containerName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1394,7 +1394,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1415,7 +1415,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1513,7 +1513,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1536,7 +1536,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),

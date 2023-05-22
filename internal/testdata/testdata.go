@@ -18,12 +18,12 @@ const (
 	MockCustomClaims     = "cloudserviceid"
 
 	// Cloud Service
-	MockCloudServiceID                 = "11111111-1111-1111-1111-111111111111"
-	MockCloudServiceName               = "Mock Cloud Service"
-	MockCloudServiceDescription        = "This is a mock cloud service"
-	MockAnotherCloudServiceID          = "22222222-2222-2222-2222-222222222222"
-	MockAnotherCloudServiceName        = "Another Mock Cloud Service"
-	MockAnotherCloudServiceDescription = "This is another mock cloud service"
+	MockCloudServiceID1          = "11111111-1111-1111-1111-111111111111"
+	MockCloudServiceName1        = "Mock Cloud Service"
+	MockCloudServiceDescription1 = "This is a mock cloud service"
+	MockCloudServiceID2          = "22222222-2222-2222-2222-222222222222"
+	MockCloudServiceName2        = "Another Mock Cloud Service"
+	MockCloudServiceDescription2 = "This is another mock cloud service"
 
 	// Catalog
 	MockCatalogID             = "Cat1234"
@@ -49,27 +49,27 @@ const (
 	MockSubControlDescription = "This is a mock sub-control"
 
 	// Metric
-	MockMetricID          = "Mock Metric"
-	MockMetricName        = "Mock Metric Name"
-	MockMetricDescription = "This is a mock metric"
-	MockAnotherMetricID   = "Another Mock Metric"
+	MockMetricID1          = "Mock Metric 1"
+	MockMetricName1        = "Mock Metric Name"
+	MockMetricDescription1 = "This is a mock metric"
+	MockMetricID2          = "Another Mock Metric"
 
 	// Assessment result
 	MockAssessmentResultID                   = "11111111-1111-1111-1111-111111111111"
 	MockAssessmentResultNonComplianceComment = "non_compliance_comment"
 
 	// Evidence
-	MockEvidenceID            = "11111111-1111-1111-1111-111111111111"
-	MockEvidenceToolID        = "39d85e98-c3da-11ed-afa1-0242ac120002"
-	MockAnotherEvidenceID     = "22222222-2222-2222-2222-222222222222"
-	MockAnotherEvidenceToolID = "49d85e98-c3da-11ed-afa1-0242ac120002"
+	MockEvidenceID1     = "11111111-1111-1111-1111-111111111111"
+	MockEvidenceToolID1 = "39d85e98-c3da-11ed-afa1-0242ac120002"
+	MockEvidenceID2     = "22222222-2222-2222-2222-222222222222"
+	MockEvidenceToolID2 = "49d85e98-c3da-11ed-afa1-0242ac120002"
 
 	// Resource
-	MockResourceID          = "my-resource-id"
-	MockResourceName        = "my-resource-name"
+	MockResourceID1         = "my-resource-id"
+	MockResourceName1       = "my-resource-name"
 	MockResourceStorageID   = voc.ResourceID("some-storage-service-id")
 	MockResourceStorageName = "some-storage-service-name"
-	MockAnotherResourceID   = "my-other-resource"
+	MockResourceID2         = "my-other-resource"
 
 	// Certificate
 	MockCertificateID          = "1234"

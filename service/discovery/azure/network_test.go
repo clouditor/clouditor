@@ -287,7 +287,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
 							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							ServiceID: testdata.MockCloudServiceID,
+							ServiceID: testdata.MockCloudServiceID1,
 							Name:      "iface1",
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -305,7 +305,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								ServiceID: testdata.MockCloudServiceID,
+								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb1",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
@@ -324,7 +324,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								ServiceID: testdata.MockCloudServiceID,
+								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb2",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
@@ -343,7 +343,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								ServiceID: testdata.MockCloudServiceID,
+								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb3",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",
@@ -362,7 +362,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-								ServiceID: testdata.MockCloudServiceID,
+								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "appgw1",
 								GeoLocation: voc.GeoLocation{
 									Region: "eastus",

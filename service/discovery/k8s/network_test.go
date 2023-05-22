@@ -88,7 +88,7 @@ func TestListIngresses(t *testing.T) {
 		t.Fatalf("error injecting service add: %v", err)
 	}
 
-	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID)
+	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 
