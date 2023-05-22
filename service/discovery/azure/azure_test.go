@@ -334,7 +334,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 				Transport: transport,
 			},
 		},
-		csID:      testdata.MockCloudServiceID,
+		csID:      testdata.MockCloudServiceID1,
 		backupMap: make(map[string]map[string]*voc.Backup),
 	}
 

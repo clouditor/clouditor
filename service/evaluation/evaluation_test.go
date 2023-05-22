@@ -171,7 +171,7 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Input cloudServiceId empty",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				catalogId:      testdata.MockCatalogID,
 			},
 			want: "",
@@ -179,7 +179,7 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Input catalogId empty",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				controlId:      testdata.MockSubControlID,
 			},
 			want: "",
@@ -187,11 +187,11 @@ func Test_createSchedulerTag(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				catalogId:      testdata.MockCatalogID,
 				controlId:      testdata.MockSubControlID,
 			},
-			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockSubControlID),
+			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockSubControlID),
 		},
 	}
 	for _, tt := range tests {
@@ -254,7 +254,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId:      util.Ref(testdata.MockSubControlID11),
 						SubControls:    util.Ref(testdata.MockControlID1),
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
 				},
 			},
@@ -374,7 +374,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
 				},
 			},
@@ -629,7 +629,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -643,7 +643,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 				schedulerRunning: false,
@@ -651,11 +651,11 @@ func TestService_StopEvaluation(t *testing.T) {
 			fields: fields{
 				scheduler: make(map[string]*gocron.Scheduler),
 				authz:     &service.AuthorizationStrategyAllowAll{},
-				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
+				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service '%s' and Catalog '%s' not running", testdata.MockCloudServiceID, testdata.MockCatalogID))
+				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service '%s' and Catalog '%s' not running", testdata.MockCloudServiceID1, testdata.MockCatalogID))
 			},
 		},
 		{
@@ -663,17 +663,17 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 				schedulerRunning: true,
 			},
 			fields: fields{
 				scheduler: map[string]*gocron.Scheduler{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
 				},
 				authz:  &service.AuthorizationStrategyAllowAll{},
-				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
+				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 			},
 			wantRes: &evaluation.StopEvaluationResponse{},
 			wantErr: assert.NoError,
@@ -745,7 +745,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
 				},
@@ -764,7 +764,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
 				},
@@ -784,7 +784,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
 				},
@@ -806,7 +806,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
 				},
@@ -821,11 +821,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				})))),
 				scheduler: map[string]*gocron.Scheduler{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
+					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
 				},
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
@@ -833,7 +833,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
 				},
@@ -848,7 +848,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluationWithoutControlsInScope(testdata.AssuranceLevelBasic)))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				})))),
@@ -859,7 +859,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -882,7 +882,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				})))),
@@ -895,7 +895,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -911,7 +911,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				}
 				assert.True(t, gotResp.Successful)
 
-				toeTag := createSchedulerTag(testdata.MockCloudServiceID, testdata.MockCatalogID)
+				toeTag := createSchedulerTag(testdata.MockCloudServiceID1, testdata.MockCatalogID)
 				return assert.Equal(t, 2, len(s.scheduler[toeTag].Jobs()))
 			},
 			wantErr: assert.NoError,
@@ -1012,9 +1012,9 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 			},
 			wantMetrics: []*assessment.Metric{
 				{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
+					Id:          testdata.MockMetricID1,
+					Name:        testdata.MockMetricName1,
+					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
 					Range: &assessment.Range{
 						Range: &assessment.Range_AllowedValues{
@@ -1269,11 +1269,11 @@ func TestService_addJobToScheduler(t *testing.T) {
 					ParentControlId:   util.Ref("control_id"),
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
 				interval:           0,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -1290,9 +1290,9 @@ func TestService_addJobToScheduler(t *testing.T) {
 					Name:              "sub_control_id",
 					ParentControlId:   util.Ref("control_id"),
 				},
-				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
@@ -1314,7 +1314,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 					Name:              "control_id",
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
@@ -1337,11 +1337,11 @@ func TestService_addJobToScheduler(t *testing.T) {
 					ParentControlId:   util.Ref("control_id"),
 				},
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: testdata.MockCloudServiceID + "control_id",
+				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
 				interval:           2,
 			},
 			wantErr: assert.NoError,
@@ -1408,7 +1408,7 @@ func TestService_evaluateControl(t *testing.T) {
 			name: "AuthZ error in ListEvaluationResults",
 			fields: fields{
 				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
+					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
@@ -1417,13 +1417,13 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName: testdata.MockCategoryName,
 				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
+				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
 			newEvaluationResults: &evaluation.EvaluationResult{},
@@ -1442,20 +1442,20 @@ func TestService_evaluateControl(t *testing.T) {
 			name: "No evaluation results for evaluation available",
 			fields: fields{
 				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
+					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName: testdata.MockCategoryName,
 				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
+				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
 			newEvaluationResults: nil,
@@ -1474,7 +1474,7 @@ func TestService_evaluateControl(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID + "-" + testdata.MockControlID1: {},
+					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
@@ -1483,13 +1483,13 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName: testdata.MockCategoryName,
 				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID + "-" + testdata.MockControlID1,
+				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
 				subControls:  make([]*orchestrator.Control, 2),
 			},
 			newEvaluationResults: evaluationtest.MockEvaluationResult1,
@@ -1567,7 +1567,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "ToE input empty", // we do not check the other input parameters
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -1576,13 +1576,13 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				authz:     &service.AuthorizationStrategyAllowAll{},
 				wgCounter: 2,
 				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 			},
 			args: args{
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockControlID1,
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1598,10 +1598,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "no assessment results available",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1611,13 +1611,13 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1633,10 +1633,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting metrics",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
 				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage:      testutil.NewInMemoryStorage(t),
 				authz:        &service.AuthorizationStrategyAllowAll{},
@@ -1644,13 +1644,13 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1666,10 +1666,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting assessment results",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    1,
 				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1685,7 +1685,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1701,10 +1701,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    1,
 				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1): {},
+					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
 				},
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1721,13 +1721,13 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			},
 			args: args{
 				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
 				categoryName:       testdata.MockCategoryName,
 				controlId:          testdata.MockSubControlID11,
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
@@ -1785,7 +1785,7 @@ func Test_getSchedulerTag(t *testing.T) {
 		{
 			name: "control_id empty",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				catalogId:      testdata.MockCatalogID,
 			},
 			want: "",
@@ -1793,7 +1793,7 @@ func Test_getSchedulerTag(t *testing.T) {
 		{
 			name: "catalog_id empty",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				controlId:      testdata.MockControlID1,
 			},
 			want: "",
@@ -1801,11 +1801,11 @@ func Test_getSchedulerTag(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				controlId:      testdata.MockControlID1,
 				catalogId:      testdata.MockCatalogID,
 			},
-			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID, testdata.MockControlID1),
+			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 		},
 	}
 	for _, tt := range tests {
@@ -1849,7 +1849,7 @@ func Test_getEvaluationResultMap(t *testing.T) {
 				}
 
 				wantResults := map[string][]*evaluation.EvaluationResult{
-					testdata.MockResourceID: {
+					testdata.MockResourceID1: {
 						evaluationtest.MockEvaluationResult6,
 						evaluationtest.MockEvaluationResult5,
 						evaluationtest.MockEvaluationResult4,
@@ -1858,7 +1858,7 @@ func Test_getEvaluationResultMap(t *testing.T) {
 						evaluationtest.MockEvaluationResult22,
 						evaluationtest.MockEvaluationResult1,
 					},
-					testdata.MockAnotherResourceID: {
+					testdata.MockResourceID2: {
 						evaluationtest.MockEvaluationResult8,
 						evaluationtest.MockEvaluationResult7,
 					},
@@ -1932,12 +1932,12 @@ func Test_getAssessmentResultMap(t *testing.T) {
 				}
 
 				wantResults := map[string][]*assessment.AssessmentResult{
-					testdata.MockResourceID: {
+					testdata.MockResourceID1: {
 						orchestratortest.MockAssessmentResult1,
 						orchestratortest.MockAssessmentResult2,
 						orchestratortest.MockAssessmentResult3,
 					},
-					testdata.MockAnotherResourceID: {
+					testdata.MockResourceID2: {
 						orchestratortest.MockAssessmentResult4,
 					},
 				}
@@ -2066,17 +2066,17 @@ func Test_getToeTag(t *testing.T) {
 		{
 			name: "Empty catalog_id",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 			},
 			want: "",
 		},
 		{
 			name: "Happy path",
 			args: args{
-				cloudServiceId: testdata.MockCloudServiceID,
+				cloudServiceId: testdata.MockCloudServiceID1,
 				catalogId:      testdata.MockCatalogID,
 			},
-			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID, testdata.MockCatalogID),
+			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 		},
 	}
 	for _, tt := range tests {

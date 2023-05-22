@@ -358,7 +358,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID1,
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
@@ -380,7 +380,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					IsDefault:      true,
 					UpdatedAt:      nil,
 					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 		},
@@ -392,7 +392,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID1,
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
@@ -414,7 +414,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					IsDefault:      false,
 					UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
 					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 		},
