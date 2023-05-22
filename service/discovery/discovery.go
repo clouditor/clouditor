@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -353,6 +352,10 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			v *structpb.Value
 		)
 
+		// Store the raw information for the evidence and reset the resource raw field
+		raw := resource.GetRaw()
+		resource.SetRaw("")
+
 		v, err = voc.ToStruct(resource)
 		if err != nil {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
@@ -379,7 +382,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			CloudServiceId: resource.GetServiceID(),
 			Timestamp:      timestamppb.Now(),
 			ToolId:         "Clouditor Evidences Collection",
-			Raw:            util.Ref(resource.GetRaw()),
+			Raw:            &raw,
 			Resource:       v,
 		}
 

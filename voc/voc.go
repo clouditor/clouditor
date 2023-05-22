@@ -44,6 +44,7 @@ type IsCloudResource interface {
 	HasType(string) bool
 	GetCreationTime() *time.Time
 	GetRaw() string
+	SetRaw(string)
 	Related() []string
 }
 
@@ -102,6 +103,10 @@ func (r *Resource) HasType(resourceType string) (ok bool) {
 
 func (r *Resource) GetRaw() string {
 	return r.Raw
+}
+
+func (r *Resource) SetRaw(raw string) {
+	r.Raw = raw
 }
 
 func (r *Resource) GetCreationTime() *time.Time {

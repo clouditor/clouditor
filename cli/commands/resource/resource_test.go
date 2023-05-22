@@ -187,6 +187,9 @@ func (mockIsCloudResource) GetRaw() string {
 	return ""
 }
 
+func (mockIsCloudResource) SetRaw(_ string) {
+}
+
 func (mockIsCloudResource) Related() []string {
 	return []string{}
 }
