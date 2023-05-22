@@ -77,6 +77,11 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
+	raw, err := voc.ToString(pv)
+	if err != nil {
+		log.Debugf("error converting site struct to string: %v", err)
+	}
+
 	s := &voc.Storage{
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(pv.UID),
@@ -86,7 +91,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 			voc.GeoLocation{},
 			pv.Labels,
 			voc.BlockStorageType,
-			"",
+			raw,
 		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}

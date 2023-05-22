@@ -100,6 +100,10 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		},
 	}
 
+	// Delete raw. We have to delete it, because of the creation time included in the raw field.
+	assert.NotNil(t, volume.Raw)
+	volume.Raw = ""
+
 	assert.True(t, ok)
 	assert.Equal(t, expectedVolume, volume)
 }

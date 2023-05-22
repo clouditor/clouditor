@@ -91,6 +91,11 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 		ports = append(ports, uint16(v.Port))
 	}
 
+	raw, err := voc.ToString(service)
+	if err != nil {
+		log.Debugf("error converting site struct to string: %v", err)
+	}
+
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
@@ -101,7 +106,7 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 				voc.GeoLocation{},
 				service.Labels,
 				voc.NetworkServiceType,
-				"",
+				raw,
 			),
 		},
 
@@ -115,6 +120,11 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 }
 
 func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
+	raw, err := voc.ToString(ingress)
+	if err != nil {
+		log.Debugf("error converting site struct to string: %v", err)
+	}
+
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -126,7 +136,7 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					voc.GeoLocation{},
 					ingress.Labels,
 					voc.LoadBalancerType,
-					"",
+					raw,
 				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs

@@ -90,18 +90,26 @@ func TestListPods(t *testing.T) {
 	expectedContainer := &voc.Container{
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
-				ID:           voc.ResourceID(podID),
-				ServiceID:    testdata.MockCloudServiceID1,
-				Name:         podName,
-				CreationTime: podCreationTime.Unix(),
-				Type:         []string{"Container", "Compute", "Resource"},
-				Labels:       podLabel,
+				ID:        voc.ResourceID(podID),
+				ServiceID: testdata.MockCloudServiceID1,
+				Name:      podName,
+				Type:      []string{"Container", "Compute", "Resource"},
+				Labels:    podLabel,
+				Raw:       "",
 			},
 			NetworkInterfaces: []voc.ResourceID{
 				voc.ResourceID(podNamespace),
 			},
 		},
 	}
+
+	// Delete creation time
+	assert.NotNil(t, container.CreationTime)
+	container.CreationTime = 0
+
+	// Delete raw. We have to delete it, because of the creation time included in the raw field.
+	assert.NotNil(t, container.Raw)
+	container.Raw = ""
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedContainer, container)
@@ -124,6 +132,10 @@ func TestListPods(t *testing.T) {
 			AtRestEncryption: &voc.AtRestEncryption{},
 		},
 	}
+
+	// Delete raw. We have to delete it, because of the creation time included in the raw field.
+	assert.NotNil(t, volume.Raw)
+	volume.Raw = ""
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedVolume, volume)
