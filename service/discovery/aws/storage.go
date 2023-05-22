@@ -120,6 +120,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	if err != nil {
 		return
 	}
+
 	for _, b := range buckets {
 		encryptionAtRest, err = d.getEncryptionAtRest(&b)
 		if err != nil {
@@ -128,6 +129,11 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		encryptionAtTransmit, err = d.getTransportEncryption(b.name)
 		if err != nil {
 			return
+		}
+
+		raw, err := voc.ToString(&b)
+		if err != nil {
+			log.Debugf("error converting bucket struct to string: %v", err)
 		}
 
 		resources = append(resources,
@@ -143,7 +149,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 						},
 						nil,
 						voc.ObjectStorageType,
-						""),
+						raw),
 					AtRestEncryption: encryptionAtRest,
 				},
 			},
@@ -160,7 +166,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 								voc.GeoLocation{Region: b.region},
 								nil,
 								voc.ObjectStorageServiceType,
-								"",
+								raw,
 							),
 						},
 						TransportEncryption: encryptionAtTransmit,

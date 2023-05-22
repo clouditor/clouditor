@@ -158,6 +158,11 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 			atRest.Algorithm = "AES-256"
 		}
 
+		raw, err := voc.ToString(&res.Volumes[i])
+		if err != nil {
+			log.Debugf("error converting bucket struct to string: %v", err)
+		}
+
 		blocks = append(blocks, &voc.BlockStorage{
 			Storage: &voc.Storage{
 				Resource: discovery.NewResource(d,
@@ -169,7 +174,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					},
 					d.labels(volume.Tags),
 					voc.BlockStorageType,
-					"",
+					raw,
 				),
 				AtRestEncryption: atRest,
 			},
@@ -190,6 +195,11 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 	for i := range res.NetworkInterfaces {
 		ifc := &res.NetworkInterfaces[i]
 
+		raw, err := voc.ToString(&res.NetworkInterfaces[i])
+		if err != nil {
+			log.Debugf("error converting bucket struct to string: %v", err)
+		}
+
 		ifcs = append(ifcs, voc.NetworkInterface{
 			Networking: &voc.Networking{
 				Resource: &voc.Resource{
@@ -202,6 +212,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 						Region: d.awsConfig.cfg.Region,
 					},
 					Labels: d.labels(ifc.TagSet),
+					Raw:    raw,
 				},
 			},
 		})
@@ -218,6 +229,11 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 	}
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
+		raw, err := voc.ToString(&reservation)
+		if err != nil {
+			log.Debugf("error converting bucket struct to string: %v", err)
+		}
+
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
@@ -231,6 +247,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 						Region: d.awsConfig.cfg.Region,
 					},
 					Labels: d.labels(vm.Tags),
+					Raw:    raw,
 				},
 				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
 			}
@@ -272,6 +289,12 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
 	for i := range functions {
 		function := &functions[i]
+
+		raw, err := voc.ToString(function)
+		if err != nil {
+			log.Debugf("error converting bucket struct to string: %v", err)
+		}
+
 		resources = append(resources, &voc.Function{
 			Compute: &voc.Compute{
 				Resource: &voc.Resource{
@@ -283,6 +306,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 					GeoLocation: voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
+					Raw: raw,
 				},
 			}})
 	}
