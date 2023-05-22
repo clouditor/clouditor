@@ -429,7 +429,7 @@ func TestService_ListEvidences(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockAnotherCloudServiceID is not allowed
+				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCloudServiceID2 is not allowed
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 			wantResp: assert.Nil,
