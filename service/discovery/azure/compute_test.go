@@ -204,8 +204,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-					"name":     "anotherdisk",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
@@ -222,8 +222,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-					"name":     "anotherdisk",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
@@ -682,9 +682,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
 							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "anotherdisk",
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -861,9 +861,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
 							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "anotherdisk",
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
@@ -1628,9 +1628,9 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
 							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "anotherdisk",
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
