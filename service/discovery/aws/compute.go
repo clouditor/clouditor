@@ -292,7 +292,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 
 		raw, err := voc.ToString(function)
 		if err != nil {
-			log.Debugf("error converting bucket struct to string: %v", err)
+			log.Debugf("error converting function struct to string: %v", err)
 		}
 
 		resources = append(resources, &voc.Function{

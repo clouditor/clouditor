@@ -81,7 +81,7 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 	raw, err := voc.ToString(pod)
 	if err != nil {
-		log.Debugf("error converting site struct to string: %v", err)
+		log.Debugf("error converting pod struct to string: %v", err)
 	}
 
 	r := &voc.Container{
@@ -119,7 +119,7 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource
 	for _, vol := range pod.Spec.Volumes {
 		raw, err := voc.ToString(&vol)
 		if err != nil {
-			log.Debugf("error converting site struct to string: %v", err)
+			log.Debugf("error converting volume struct to string: %v", err)
 		}
 
 		s := &voc.Storage{

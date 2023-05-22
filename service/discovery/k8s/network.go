@@ -93,7 +93,7 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 
 	raw, err := voc.ToString(service)
 	if err != nil {
-		log.Debugf("error converting site struct to string: %v", err)
+		log.Debugf("error converting service struct to string: %v", err)
 	}
 
 	return &voc.NetworkService{
@@ -122,7 +122,7 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 	raw, err := voc.ToString(ingress)
 	if err != nil {
-		log.Debugf("error converting site struct to string: %v", err)
+		log.Debugf("error converting ingress struct to string: %v", err)
 	}
 
 	lb := &voc.LoadBalancer{

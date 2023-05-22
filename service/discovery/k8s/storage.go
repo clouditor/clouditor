@@ -79,7 +79,7 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
 	raw, err := voc.ToString(pv)
 	if err != nil {
-		log.Debugf("error converting site struct to string: %v", err)
+		log.Debugf("error converting persistent volume struct to string: %v", err)
 	}
 
 	s := &voc.Storage{
