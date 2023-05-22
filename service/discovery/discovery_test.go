@@ -502,7 +502,8 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					Resource: discovery.NewResource(&m,
 						"some-id",
 						"some-name", nil, voc.GeoLocation{}, nil,
-						[]string{"ObjectStorage", "Storage", "Resource"}),
+						[]string{"ObjectStorage", "Storage", "Resource"},
+						"raw"),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -513,7 +514,8 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 							Resource: discovery.NewResource(&m,
 								"some-storage-account-id",
 								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
-								[]string{"StorageService", "NetworkService", "Networking", "Resource"}),
+								[]string{"StorageService", "NetworkService", "Networking", "Resource"},
+								"raw"),
 						},
 					},
 				},
@@ -652,6 +654,10 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) GetRaw() string {
+	return ""
 }
 
 func (mockIsCloudResource) Related() []string {

@@ -51,7 +51,7 @@ type Authorizer interface {
 }
 
 // NewResource creates a new voc resource.
-func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string) *voc.Resource {
+func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string, raw string) *voc.Resource {
 	return &voc.Resource{
 		ID:           ID,
 		ServiceID:    d.CloudServiceID(),
@@ -60,5 +60,6 @@ func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *tim
 		GeoLocation:  location,
 		Type:         typ,
 		Labels:       labels,
+		Raw:          raw,
 	}
 }

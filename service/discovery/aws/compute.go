@@ -169,6 +169,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					},
 					d.labels(volume.Tags),
 					voc.BlockStorageType,
+					"",
 				),
 				AtRestEncryption: atRest,
 			},

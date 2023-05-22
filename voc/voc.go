@@ -43,6 +43,7 @@ type IsCloudResource interface {
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	GetRaw() string
 	Related() []string
 }
 
@@ -64,6 +65,7 @@ type Resource struct {
 	Type        []string          `json:"type"`
 	GeoLocation GeoLocation       `json:"geoLocation"`
 	Labels      map[string]string `json:"labels"`
+	Raw         string            `json:"raw"`
 }
 
 func (r *Resource) GetID() ResourceID {
@@ -98,6 +100,10 @@ func (r *Resource) HasType(resourceType string) (ok bool) {
 	return
 }
 
+func (r *Resource) GetRaw() string {
+	return r.Raw
+}
+
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
@@ -105,6 +111,17 @@ func (r *Resource) GetCreationTime() *time.Time {
 
 func (*Resource) Related() []string {
 	return []string{}
+}
+
+// ToString returns a string representation of a given struct
+func ToString[T any](r *T) (s string, err error) {
+	var b []byte
+
+	if b, err = json.Marshal(r); err != nil {
+		return "", fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	return string(b), nil
 }
 
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {

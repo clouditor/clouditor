@@ -86,6 +86,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 			voc.GeoLocation{},
 			pv.Labels,
 			voc.BlockStorageType,
+			"",
 		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}

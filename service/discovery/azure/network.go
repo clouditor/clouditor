@@ -202,6 +202,11 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
+	raw, err := voc.ToString(lb)
+	if err != nil {
+		log.Debugf("error converting load balancer struct to string: %v", err)
+	}
+
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -215,6 +220,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 					},
 					labels(lb.Tags),
 					voc.LoadBalancerType,
+					raw,
 				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
@@ -228,6 +234,11 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
+	raw, err := voc.ToString(ag)
+	if err != nil {
+		log.Debugf("error converting application gateway struct to string: %v", err)
+	}
+
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -239,6 +250,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 					voc.GeoLocation{Region: util.Deref(ag.Location)},
 					labels(ag.Tags),
 					voc.LoadBalancerType,
+					raw,
 				),
 			},
 		},
@@ -249,6 +261,11 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
+	raw, err := voc.ToString(ni)
+	if err != nil {
+		log.Debugf("error converting interface struct to string: %v", err)
+	}
+
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
@@ -261,6 +278,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 				},
 				labels(ni.Tags),
 				voc.NetworkInterfaceType,
+				raw,
 			),
 		},
 		AccessRestriction: &voc.L3Firewall{

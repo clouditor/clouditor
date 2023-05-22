@@ -183,6 +183,10 @@ func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
 }
 
+func (mockIsCloudResource) GetRaw() string {
+	return ""
+}
+
 func (mockIsCloudResource) Related() []string {
 	return []string{}
 }

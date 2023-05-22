@@ -261,6 +261,11 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 		Algorithm:  "TLS",
 	}
 
+	raw, err := voc.ToString(account)
+	if err != nil {
+		log.Debugf("error converting account struct to string: %v", err)
+	}
+
 	storageService := &voc.ObjectStorageService{
 		StorageService: &voc.StorageService{
 			Storage: storageResourceIDs,
@@ -275,6 +280,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 						},
 						labels(account.Tags),
 						voc.ObjectStorageServiceType,
+						raw,
 					),
 				},
 				TransportEncryption: te,
@@ -304,6 +310,11 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
 	}
 
+	raw, err := voc.ToString(fileshare)
+	if err != nil {
+		log.Debugf("error converting fileshare struct to string: %v", err)
+	}
+
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -318,6 +329,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
 				voc.FileStorageType,
+				raw,
 			),
 			ResourceLogging:  d.createResourceLogging(),
 			AtRestEncryption: enc,
@@ -342,6 +354,11 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 
 	backup := d.backupMap[DataSourceTypeStorageAccount][util.Deref(account.ID)]
 
+	raw, err := voc.ToString(container)
+	if err != nil {
+		log.Debugf("error converting container item struct to string: %v", err)
+	}
+
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -356,6 +373,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
 				voc.ObjectStorageType,
+				raw,
 			),
 			AtRestEncryption: enc,
 			Immutability: &voc.Immutability{

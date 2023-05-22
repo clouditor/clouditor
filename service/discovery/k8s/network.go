@@ -101,6 +101,7 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 				voc.GeoLocation{},
 				service.Labels,
 				voc.NetworkServiceType,
+				"",
 			),
 		},
 
@@ -125,6 +126,7 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					voc.GeoLocation{},
 					ingress.Labels,
 					voc.LoadBalancerType,
+					"",
 				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs

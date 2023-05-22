@@ -171,6 +171,11 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 
 	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 
+	raw, err := voc.ToString(function)
+	if err != nil {
+		log.Debugf("error converting site struct to string: %v", err)
+	}
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -183,6 +188,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				},
 				labels(function.Tags),
 				voc.FunctionType,
+				raw,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
@@ -259,6 +265,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 
 	autoUpdates = automaticUpdates(vm)
 
+	raw, err := voc.ToString(vm)
+	if err != nil {
+		log.Debugf("error converting virtual machine struct to string: %v", err)
+	}
+
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -270,6 +281,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				},
 				labels(vm.Tags),
 				voc.VirtualMachineType,
+				raw,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 			ResourceLogging:   d.createResourceLogging(),
@@ -426,6 +438,11 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 
 	backup := d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)]
 
+	raw, err := voc.ToString(disk)
+	if err != nil {
+		log.Debugf("error converting disk struct to string: %v", err)
+	}
+
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -437,6 +454,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 				},
 				labels(disk.Tags),
 				voc.BlockStorageType,
+				raw,
 			),
 			AtRestEncryption: enc,
 			Backup:           backup,
