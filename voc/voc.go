@@ -122,6 +122,10 @@ func (*Resource) Related() []string {
 func ToString[T any](r *T) (s string, err error) {
 	var b []byte
 
+	if r == nil {
+		return "", nil
+	}
+
 	if b, err = json.Marshal(r); err != nil {
 		return "", fmt.Errorf("JSON marshal failed: %w", err)
 	}

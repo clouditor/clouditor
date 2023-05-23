@@ -29,6 +29,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestAuthenticityInterface(t *testing.T) {
@@ -89,6 +90,93 @@ func TestAuthorizationInterface(t *testing.T) {
 		t.Run(tt.typ, func(t *testing.T) {
 			var isa = tt.isAuthorization
 			assert.Equal(t, tt.typ, isa.Type())
+		})
+	}
+}
+
+func TestToString(t *testing.T) {
+	type test struct {
+		A int    `json:"a"`
+		B string `json:"b"`
+		C bool   `json:"c"`
+	}
+
+	var testStruct test
+	s, err := ToString(&testStruct)
+	assert.NoError(t, err)
+	assert.Equal(t, "{\"a\":0,\"b\":\"\",\"c\":false}", s)
+
+	testStruct = test{
+		A: 200,
+		B: "TestStruct",
+		C: false,
+	}
+	s, err = ToString(&testStruct)
+	assert.NoError(t, err)
+	assert.Equal(t, "{\"a\":200,\"b\":\"TestStruct\",\"c\":false}", s)
+
+}
+
+func TestToStruct(t *testing.T) {
+	type args struct {
+		r IsCloudResource
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantS   *structpb.Value
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "Empty input",
+			args:    args{},
+			wantS:   nil,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				r: &Resource{
+					ID:   "my-resource-id",
+					Name: "my-resource-name",
+					Type: ObjectStorageType,
+				},
+			},
+			wantS: &structpb.Value{
+				Kind: &structpb.Value_StructValue{
+					StructValue: &structpb.Struct{
+						Fields: map[string]*structpb.Value{
+							"creationTime": structpb.NewNumberValue(0),
+							"geoLocation": structpb.NewStructValue(&structpb.Struct{
+								Fields: map[string]*structpb.Value{
+									"region": structpb.NewStringValue(""),
+								}}),
+							"id":        structpb.NewStringValue("my-resource-id"),
+							"labels":    structpb.NewNullValue(),
+							"name":      structpb.NewStringValue("my-resource-name"),
+							"raw":       structpb.NewStringValue(""),
+							"serviceId": structpb.NewStringValue(""),
+							"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
+								structpb.NewStringValue("ObjectStorage"),
+								structpb.NewStringValue("Storage"),
+								structpb.NewStringValue("Resource"),
+							}}),
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotS, err := ToStruct(tt.args.r)
+
+			tt.wantErr(t, err)
+
+			if tt.wantErr != nil {
+				assert.Equal(t, tt.wantS.String(), gotS.String())
+			}
 		})
 	}
 }
