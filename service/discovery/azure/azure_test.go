@@ -417,13 +417,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				want := &voc.Backup{
 					RetentionPeriod: Duration7Days,
 					Enabled:         true,
-					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: "AES256",
-						Enabled:   true,
-					},
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
@@ -432,7 +426,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 					},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
 
 			},
 			wantErr: assert.NoError,
@@ -531,13 +525,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				want := &voc.Backup{
 					RetentionPeriod: Duration30Days,
 					Enabled:         true,
-					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: "AES256",
-						Enabled:   true,
-					},
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,

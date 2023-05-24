@@ -61,8 +61,8 @@ const (
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 
-	DataSourceTypeDisc           = "Microsoft.Compute/disks"
-	DataSourceTypeStorageAccount = "Microsoft.Storage/storageAccounts/blobServices"
+	DataSourceTypeDisc                 = "Microsoft.Compute/disks"
+	DataSourceTypeStorageAccountObject = "Microsoft.Storage/storageAccounts/blobServices"
 
 	Duration30Days = time.Duration(30 * time.Hour * 24)
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
@@ -304,16 +304,8 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				// Store voc.Backup in backupMap
 				d.backupMap[util.Deref(instance.Properties.DataSourceInfo.DatasourceType)][util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
 					Enabled:         true,
-					Policy:          util.Deref(instance.Properties.PolicyInfo.PolicyID),
 					RetentionPeriod: retentionDuration(util.Deref(retention)),
 					Storage:         voc.ResourceID(util.Deref(instance.ID)),
-					GeoLocation: voc.GeoLocation{
-						Region: util.Deref(vault.Location),
-					},
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: constants.AES256, // https://learn.microsoft.com/en-us/azure/backup/backup-encryption (Last access: 04/27/2023)
-						Enabled:   true,             // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys, Last access: 04/27/2023)
-					},
 					TransportEncryption: &voc.TransportEncryption{
 						Enabled:    true,
 						Enforced:   true,

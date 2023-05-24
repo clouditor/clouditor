@@ -29,7 +29,4 @@ package voc
 
 type ResourceLogging struct {
 	*Logging
-
-	MonitoringLogDataEnabled bool `json:"monitoringLogDataEnabled"`
-	SecurityAlertsEnabled    bool `json:"securityAlertsEnabled"`
 }

@@ -221,7 +221,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the httpEndpoint for load balancers?
-		HttpEndpoints: &[]voc.HttpEndpoint{},
+		HttpEndpoints: []*voc.HttpEndpoint{},
 	}
 }
 

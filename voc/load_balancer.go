@@ -33,7 +33,7 @@ var LoadBalancerType = []string{"LoadBalancer", "NetworkService", "Networking", 
 type LoadBalancer struct {
 	*NetworkService
 	AccessRestriction IsAccessRestriction `json:"accessRestriction"`
-	HttpEndpoints     *[]HttpEndpoint     `json:"httpEndpoints"`
+	HttpEndpoints     []*HttpEndpoint     `json:"httpEndpoints"`
 	NetworkServices   []ResourceID        `json:"networkServices"`
 	Url               string              `json:"url"`
 }

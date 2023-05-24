@@ -32,7 +32,7 @@ var StorageType = []string{"Storage", "Resource"}
 type Storage struct {
 	*Resource
 	AtRestEncryption IsAtRestEncryption `json:"atRestEncryption"`
+	Backups          []*Backup          `json:"backups"`
 	Immutability     *Immutability      `json:"immutability"`
 	ResourceLogging  *ResourceLogging   `json:"resourceLogging"`
-	Backup           *Backup            `json:"backup"`
 }

@@ -31,4 +31,5 @@ var FileStorageType = []string{"FileStorage", "Storage", "Resource"}
 
 type FileStorage struct {
 	*Storage
+	PublicAccess bool `json:"publicAccess"`
 }

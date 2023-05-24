@@ -638,22 +638,17 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
-						Backup: &voc.Backup{
+						Backups: []*voc.Backup{{
 							Enabled:         true,
 							RetentionPeriod: Duration30Days,
-							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
 							TransportEncryption: &voc.TransportEncryption{
 								Enforced:   true,
 								Enabled:    true,
 								TlsVersion: constants.TLS1_2,
 								Algorithm:  constants.TLS,
 							},
+						},
 						},
 					},
 				},
@@ -677,6 +672,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
+						Backups: nil,
 					},
 				},
 				&voc.BlockStorage{
@@ -692,13 +688,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
 						},
+						Backups: nil,
 					},
 				},
 				&voc.VirtualMachine{
@@ -871,7 +867,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
 						},
-
+						Backups: nil,
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
@@ -1987,54 +1983,6 @@ func Test_diskEncryptionSetName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
-		})
-	}
-}
-
-func Test_azureComputeDiscovery_createResourceLogging(t *testing.T) {
-	type fields struct {
-		azureDiscovery     *azureDiscovery
-		defenderProperties map[string]*defenderProperties
-	}
-	tests := []struct {
-		name                string
-		fields              fields
-		wantResourceLogging *voc.ResourceLogging
-	}{
-		{
-			name: "Missing defenderProperties",
-			fields: fields{
-				azureDiscovery:     NewMockAzureDiscovery(newMockComputeSender()),
-				defenderProperties: make(map[string]*defenderProperties),
-			},
-			wantResourceLogging: nil,
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
-				defenderProperties: map[string]*defenderProperties{
-					DefenderVirtualMachineType: {
-						monitoringLogDataEnabled: true,
-						securityAlertsEnabled:    true,
-					},
-				},
-			},
-			wantResourceLogging: &voc.ResourceLogging{
-				MonitoringLogDataEnabled: true,
-				SecurityAlertsEnabled:    true,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureComputeDiscovery{
-				azureDiscovery:     tt.fields.azureDiscovery,
-				defenderProperties: tt.fields.defenderProperties,
-			}
-			if gotResourceLogging := d.createResourceLogging(); !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
-				t.Errorf("azureComputeDiscovery.createResourceLogging() = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
-			}
 		})
 	}
 }

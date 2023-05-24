@@ -30,6 +30,6 @@ package voc
 type HttpRequestHandler struct {
 	*Functionality
 	Application   *Application    `json:"application"`
-	HttpEndpoints *[]HttpEndpoint `json:"httpEndpoints"`
+	HttpEndpoints []*HttpEndpoint `json:"httpEndpoints"`
 	Path          string          `json:"path"`
 }
