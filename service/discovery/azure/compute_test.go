@@ -1260,7 +1260,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 	enabledTrue := true
 
 	type fields struct {
-		azureDiscovery *azureDiscovery
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
 	}
 	type args struct {
 		vm *armcompute.VirtualMachine
@@ -1283,6 +1284,12 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 			name: "No error",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: map[string]*defenderProperties{
+					DefenderVirtualMachineType: {
+						monitoringLogDataEnabled: true,
+						securityAlertsEnabled:    true,
+					},
+				},
 			},
 			args: args{
 				vm: &armcompute.VirtualMachine{
@@ -1332,7 +1339,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
-						RetentionPeriod: 0,
+						RetentionPeriod:          0,
+						MonitoringLogDataEnabled: true,
+						SecurityAlertsEnabled:    true,
 					},
 				},
 				OsLogging: &voc.OSLogging{
@@ -1343,6 +1352,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
+						MonitoringLogDataEnabled: true,
+						SecurityAlertsEnabled:    true,
 					},
 				},
 				AutomaticUpdates: &voc.AutomaticUpdates{
@@ -1357,7 +1368,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureComputeDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
 			}
 			got, err := d.handleVirtualMachines(tt.args.vm)
 			if !tt.wantErr(t, err) {
