@@ -259,6 +259,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 
 	if d.backupMap != nil && len(d.backupMap) > 0 {
 		log.Debug("Backup Vaults already discovered.")
+		return nil
 	}
 
 	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
