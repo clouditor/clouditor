@@ -34,12 +34,10 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
-	log                         *logrus.Entry
 	ErrConvertingStructToString = errors.New("error converting struct to string")
 )
 
@@ -121,7 +119,7 @@ func (*Resource) Related() []string {
 	return []string{}
 }
 
-// ToString returns a string representation of the input
+// ToStringInterface returns a string representation of the input
 func ToStringInterface(r map[string][]interface{}) (s string, err error) {
 	var b []byte
 
