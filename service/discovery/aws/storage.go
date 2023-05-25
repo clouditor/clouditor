@@ -58,6 +58,7 @@ type bucket struct {
 	creationTime time.Time
 	endpoint     string
 	region       string
+	raw          map[string][]interface{}
 }
 
 // S3API describes the S3 api interface which is implemented by the official AWS storageAPI and mock clients in tests
@@ -140,6 +141,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		rawInfo = voc.AddRawInfo(rawInfo, &b)
 		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketEncOutput)
 		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketTranspEnc)
+		rawInfo = voc.AddRawInfo(rawInfo, &b.raw)
 		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
 			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
@@ -217,10 +219,20 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	}
 	var region string
 	for _, b := range resp.Buckets {
-		region, err = d.getRegion(aws.ToString(b.Name))
+		var (
+			rawRegion *s3.GetBucketLocationOutput
+			rawInfo   = make(map[string][]interface{})
+		)
+
+		region, rawRegion, err = d.getRegion(aws.ToString(b.Name))
 		if err != nil {
 			return
 		}
+
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, &b)
+		rawInfo = voc.AddRawInfo(rawInfo, rawRegion)
+
 		// Currently only buckets are retrieved that are in the region of the users specified region in the config. Since getBucketPolicy throws error if bucket region differs
 		// TODO(lebogg): Retrieve all buckets (just remove if) and fix issues with other methods, e.g. getBucketPolicy
 		if region == d.awsConfig.cfg.Region {
@@ -230,6 +242,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 				creationTime: aws.ToTime(b.CreationDate),
 				region:       region,
 				endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
+				raw:          rawInfo,
 			})
 		}
 	}
@@ -359,11 +372,10 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 }
 
 // getRegion returns the region where the bucket resides
-func (d *awsS3Discovery) getRegion(bucket string) (region string, err error) {
+func (d *awsS3Discovery) getRegion(bucket string) (region string, resp *s3.GetBucketLocationOutput, err error) {
 	input := s3.GetBucketLocationInput{
 		Bucket: aws.String(bucket),
 	}
-	var resp *s3.GetBucketLocationOutput
 	resp, err = d.storageAPI.GetBucketLocation(context.TODO(), &input)
 	if err != nil {
 		var oe *smithy.OperationError

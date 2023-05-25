@@ -240,7 +240,6 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
 		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, resp)
 		rawInfo = voc.AddRawInfo(rawInfo, &reservation)
 		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {

@@ -443,16 +443,19 @@ func TestAwsS3Discovery_getRegion(t *testing.T) {
 		storageAPI:    mockS3APINew{},
 		isDiscovering: false,
 	}
-	actualRegion, err := d.getRegion(mockBucket1)
+	actualRegion, rawRegion, err := d.getRegion(mockBucket1)
 	assert.NoError(t, err)
+	assert.NotEmpty(t, rawRegion)
 	assert.Equal(t, mockBucket1Region, actualRegion)
 
-	actualRegion, err = d.getRegion(mockBucket2)
+	actualRegion, rawRegion, err = d.getRegion(mockBucket2)
 	assert.NoError(t, err)
+	assert.NotEmpty(t, rawRegion)
 	assert.Equal(t, mockBucket2Region, actualRegion)
 
 	// Error case
-	_, err = d.getRegion("mockbucketNotAvailable")
+	_, rawRegion, err = d.getRegion("mockbucketNotAvailable")
+	assert.Empty(t, rawRegion)
 	assert.Error(t, err)
 
 }
