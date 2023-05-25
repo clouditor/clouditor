@@ -164,6 +164,8 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+	var rawInfo = make(map[string][]interface{})
+
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil || function.ID == nil {
 		return nil
@@ -171,9 +173,11 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 
 	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 
-	raw, err := voc.ToString(function)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, function)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting site struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.Function{
@@ -252,6 +256,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		bootLogging = []voc.ResourceID{}
 		osLogging   = []voc.ResourceID{}
 		autoUpdates *voc.AutomaticUpdates
+		rawInfo     = make(map[string][]interface{})
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -265,9 +270,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 
 	autoUpdates = automaticUpdates(vm)
 
-	raw, err := voc.ToString(vm)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, vm)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting virtual machine struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	r := &voc.VirtualMachine{
@@ -426,21 +433,30 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 }
 
 func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	var (
+		rawInfo   = make(map[string][]interface{})
+		rawKeyUrl *armcompute.DiskEncryptionSet
+	)
+
 	// If a mandatory field is empty, the whole disk is empty
 	if disk == nil || disk.ID == nil {
 		return nil, fmt.Errorf("disk is nil")
 	}
 
-	enc, err := d.blockStorageAtRestEncryption(disk)
+	enc, rawKeyUrl, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
 
+	// Get voc.Backup
 	backup := d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)]
 
-	raw, err := voc.ToString(disk)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, disk)
+	rawInfo = voc.AddRawInfo(rawInfo, rawKeyUrl)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting disk struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.BlockStorage{
@@ -464,18 +480,18 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
 // ontology object.
-func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, err error) {
+func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
 	var (
 		diskEncryptionSetID string
 		keyUrl              string
 	)
 
 	if disk == nil {
-		return enc, errors.New("disk is empty")
+		return enc, nil, errors.New("disk is empty")
 	}
 
 	if disk.Properties.Encryption.Type == nil {
-		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
+		return enc, nil, errors.New("error getting atRestEncryption properties of blockStorage")
 	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
@@ -484,9 +500,9 @@ func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
 		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
-		keyUrl, err = d.keyURL(diskEncryptionSetID)
+		keyUrl, rawKeyUrl, err = d.keyURL(diskEncryptionSetID)
 		if err != nil {
-			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
+			return nil, nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
 
 		enc = &voc.CustomerKeyEncryption{
@@ -498,32 +514,32 @@ func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 		}
 	}
 
-	return enc, nil
+	return enc, rawKeyUrl, nil
 }
 
-func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
+func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute.DiskEncryptionSet, error) {
 	if diskEncryptionSetID == "" {
-		return "", ErrMissingDiskEncryptionSetID
+		return "", nil, ErrMissingDiskEncryptionSetID
 	}
 
 	if err := d.initDiskEncryptonSetClient(); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// Get disk encryption set
 	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
-		return "", err
+		return "", nil, err
 	}
 
 	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
 
 	if keyURL == nil {
-		return "", fmt.Errorf("could not get keyURL")
+		return "", nil, fmt.Errorf("could not get keyURL")
 	}
 
-	return util.Deref(keyURL), nil
+	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
 }
 
 // TODO(all): Update to generic function or method

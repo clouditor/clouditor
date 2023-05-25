@@ -202,9 +202,13 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
-	raw, err := voc.ToString(lb)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, lb)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting load balancer struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.LoadBalancer{
@@ -234,9 +238,13 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
-	raw, err := voc.ToString(ag)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, ag)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting application gateway struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.LoadBalancer{
@@ -261,9 +269,13 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
-	raw, err := voc.ToString(ni)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, ni)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting interface struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.NetworkInterface{

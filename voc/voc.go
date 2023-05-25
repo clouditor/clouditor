@@ -29,10 +29,18 @@ package voc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/structpb"
+)
+
+var (
+	log                         *logrus.Entry
+	ErrConvertingStructToString = errors.New("error converting struct to string")
 )
 
 type IsCloudResource interface {
@@ -44,7 +52,6 @@ type IsCloudResource interface {
 	HasType(string) bool
 	GetCreationTime() *time.Time
 	GetRaw() string
-	SetRaw(string)
 	Related() []string
 }
 
@@ -105,10 +112,6 @@ func (r *Resource) GetRaw() string {
 	return r.Raw
 }
 
-func (r *Resource) SetRaw(raw string) {
-	r.Raw = raw
-}
-
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
@@ -118,8 +121,8 @@ func (*Resource) Related() []string {
 	return []string{}
 }
 
-// ToString returns a string representation of a given struct
-func ToString[T any](r *T) (s string, err error) {
+// ToString returns a string representation of the input
+func ToStringInterface(r map[string][]interface{}) (s string, err error) {
 	var b []byte
 
 	if r == nil {
@@ -131,6 +134,15 @@ func ToString[T any](r *T) (s string, err error) {
 	}
 
 	return string(b), nil
+}
+
+// AddRawInfo adds any struct type to the given map
+func AddRawInfo[T any](rawInfoMap map[string][]interface{}, i *T) map[string][]interface{} {
+	typ := reflect.TypeOf(i).String()
+
+	rawInfoMap[typ] = append(rawInfoMap[typ], i)
+
+	return rawInfoMap
 }
 
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {

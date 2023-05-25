@@ -335,9 +335,10 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
 func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	var (
-		encryptionAtRest   voc.IsAtRestEncryption
-		managedEncryption  *voc.ManagedKeyEncryption
-		customerEncryption *voc.CustomerKeyEncryption
+		encryptionAtRest    voc.IsAtRestEncryption
+		managedEncryption   *voc.ManagedKeyEncryption
+		customerEncryption  *voc.CustomerKeyEncryption
+		rawEncryptionAtRest *s3.GetBucketEncryptionOutput
 
 		ok            bool
 		err           error
@@ -354,45 +355,51 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	}
 
 	// First case: SSE-S3 encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
+	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
 	managedEncryption, ok = encryptionAtRest.(*voc.ManagedKeyEncryption)
 	assert.True(t, ok)
 	assert.True(t, managedEncryption.Enabled)
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
+	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Second case: SSE-KMS encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
+	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
 	customerEncryption, ok = encryptionAtRest.(*voc.CustomerKeyEncryption)
 	assert.True(t, ok)
 	assert.NoError(t, err)
 	assert.True(t, customerEncryption.Enabled)
 	assert.Equal(t, "", customerEncryption.Algorithm)
 	assert.Equal(t, "arn:aws:kms:"+mockBucket2Region+":"+mockAccountID+":key/"+mockBucket2KeyId, customerEncryption.KeyUrl)
+	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Third case: No encryption
-	encryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
+	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
 	assert.NoError(t, err)
 	assert.False(t, encryptionAtRest.IsEnabled())
+	assert.Empty(t, rawEncryptionAtRest)
 
 	// 4th case: Connection error
 	d = awsS3Discovery{
 		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
-	_, err = d.getEncryptionAtRest(&bucket{name: "mockbucket4"})
+	_, _, err = d.getEncryptionAtRest(&bucket{name: "mockbucket4"})
 	assert.Error(t, err)
 }
 
 // TestGetTransportEncryption tests the getTransportEncryption method
 func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
+	var rawBucketPolicy *s3.GetBucketPolicyOutput
+
 	// Case 1: Connection error
 	d := awsS3Discovery{
 		storageAPI:    mockS3APIWitHErrors{},
 		isDiscovering: false,
 	}
-	_, err := d.getTransportEncryption("")
+	_, rawBucketPolicy, err := d.getTransportEncryption("")
 	assert.Error(t, err)
+	assert.Empty(t, rawBucketPolicy)
 
 	d = awsS3Discovery{
 		storageAPI:    mockS3APINew{},
@@ -400,31 +407,34 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	}
 
 	// Case 2: Enforced
-	encryptionAtTransit, err := d.getTransportEncryption(mockBucket1)
+	encryptionAtTransit, rawBucketPolicy, err := d.getTransportEncryption(mockBucket1)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.True(t, encryptionAtTransit.Enforced)
+	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 3: JSON failure
-	encryptionAtTransit, err = d.getTransportEncryption(mockBucket2)
+	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket2)
 	assert.Error(t, err)
 	assert.Nil(t, encryptionAtTransit)
+	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 4: Not enforced
-	encryptionAtTransit, err = d.getTransportEncryption(mockBucket3)
+	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket3)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
+	assert.NotEmpty(t, rawBucketPolicy)
 
 	// Case 5: No bucket policy == not enforced
-	encryptionAtTransit, err = d.getTransportEncryption("")
+	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption("")
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
 	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
-
+	assert.Empty(t, rawBucketPolicy)
 }
 
 // TestGetRegion tests the getRegion method

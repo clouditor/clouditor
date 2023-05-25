@@ -241,7 +241,10 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 }
 
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
-	var storageResourceIDs []voc.ResourceID
+	var (
+		storageResourceIDs []voc.ResourceID
+		rawInfo            = make(map[string][]interface{})
+	)
 
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
@@ -261,9 +264,11 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 		Algorithm:  "TLS",
 	}
 
-	raw, err := voc.ToString(account)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, account)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting account struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	storageService := &voc.ObjectStorageService{
@@ -296,6 +301,8 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+	var rawInfo = make(map[string][]interface{})
+
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -310,9 +317,12 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
 	}
 
-	raw, err := voc.ToString(fileshare)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, account)
+	rawInfo = voc.AddRawInfo(rawInfo, fileshare)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting fileshare struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.FileStorage{
@@ -338,6 +348,8 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 }
 
 func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	var rawInfo = make(map[string][]interface{})
+
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -354,9 +366,12 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 
 	backup := d.backupMap[DataSourceTypeStorageAccount][util.Deref(account.ID)]
 
-	raw, err := voc.ToString(container)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, account)
+	rawInfo = voc.AddRawInfo(rawInfo, container)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting container item struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.ObjectStorage{

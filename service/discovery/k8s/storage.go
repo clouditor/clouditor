@@ -77,9 +77,13 @@ func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-	raw, err := voc.ToString(pv)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, pv)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting persistent volume struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	s := &voc.Storage{

@@ -140,6 +140,8 @@ func (d *computeDiscovery) CloudServiceID() string {
 
 // discoverVolumes discoveres all volumes (in the current region)
 func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
+	var rawInfo = make(map[string][]interface{})
+
 	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
 	if err != nil {
 		return nil, prettyError(err)
@@ -158,9 +160,11 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 			atRest.Algorithm = "AES-256"
 		}
 
-		raw, err := voc.ToString(&res.Volumes[i])
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, &res.Volumes[i])
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting bucket struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		blocks = append(blocks, &voc.BlockStorage{
@@ -186,6 +190,8 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 // discoverNetworkInterfaces discovers all network interfaces (in the current region)
 func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
+	var rawInfo = make(map[string][]interface{})
+
 	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
 	if err != nil {
 		return nil, prettyError(err)
@@ -195,9 +201,11 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 	for i := range res.NetworkInterfaces {
 		ifc := &res.NetworkInterfaces[i]
 
-		raw, err := voc.ToString(&res.NetworkInterfaces[i])
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, &res.NetworkInterfaces[i])
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting bucket struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		ifcs = append(ifcs, voc.NetworkInterface{
@@ -223,15 +231,20 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 // discoverVirtualMachines discovers all VMs (in the current region)
 func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, error) {
+	var rawInfo = make(map[string][]interface{})
+
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
-		raw, err := voc.ToString(&reservation)
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, resp)
+		rawInfo = voc.AddRawInfo(rawInfo, &reservation)
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting bucket struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		for i := range reservation.Instances {
@@ -287,12 +300,16 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
+	var rawInfo = make(map[string][]interface{})
+
 	for i := range functions {
 		function := &functions[i]
 
-		raw, err := voc.ToString(function)
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, &functions[i])
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting function struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		resources = append(resources, &voc.Function{

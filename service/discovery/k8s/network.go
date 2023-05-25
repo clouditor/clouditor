@@ -85,15 +85,20 @@ func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
-	var ports []uint16
+	var (
+		ports   []uint16
+		rawInfo = make(map[string][]interface{})
+	)
 
 	for _, v := range service.Spec.Ports {
 		ports = append(ports, uint16(v.Port))
 	}
 
-	raw, err := voc.ToString(service)
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, service)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting service struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	return &voc.NetworkService{
@@ -120,9 +125,13 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 }
 
 func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
-	raw, err := voc.ToString(ingress)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, ingress)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting ingress struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	lb := &voc.LoadBalancer{

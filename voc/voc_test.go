@@ -32,6 +32,12 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+type test struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+	C bool   `json:"c"`
+}
+
 func TestAuthenticityInterface(t *testing.T) {
 	tests := []struct {
 		isAuthenticity IsAuthenticity
@@ -94,27 +100,21 @@ func TestAuthorizationInterface(t *testing.T) {
 	}
 }
 
-func TestToString(t *testing.T) {
-	type test struct {
-		A int    `json:"a"`
-		B string `json:"b"`
-		C bool   `json:"c"`
-	}
+func TestToStringInterface(t *testing.T) {
+	var tmp = make(map[string][]interface{})
 
-	var testStruct test
-	s, err := ToString(&testStruct)
+	s, err := ToStringInterface(tmp)
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"a\":0,\"b\":\"\",\"c\":false}", s)
+	assert.Equal(t, "{}", s)
 
-	testStruct = test{
+	tmp["test"] = append(tmp["test"], test{
 		A: 200,
 		B: "TestStruct",
 		C: false,
-	}
-	s, err = ToString(&testStruct)
+	})
+	s, err = ToStringInterface(tmp)
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"a\":200,\"b\":\"TestStruct\",\"c\":false}", s)
-
+	assert.Equal(t, "{\"test\":[{\"a\":200,\"b\":\"TestStruct\",\"c\":false}]}", s)
 }
 
 func TestToStruct(t *testing.T) {
@@ -179,4 +179,50 @@ func TestToStruct(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAddRawInfo(t *testing.T) {
+	var (
+		tmp       = make(map[string][]interface{})
+		testInput = &test{}
+		exp       = make(map[string][]interface{})
+	)
+
+	// Add empty input
+	s := AddRawInfo(tmp, testInput)
+	exp["*voc.test"] = append(exp["*voc.test"], &test{
+		A: 0,
+		B: "",
+		C: false,
+	})
+	assert.Equal(t, exp, s)
+
+	// Add not empty input
+	delete(tmp, "*voc.test")
+	delete(exp, "*voc.test")
+	testInput = &test{
+		A: 200,
+		B: "TestStruct",
+		C: false,
+	}
+	exp["*voc.test"] = append(exp["*voc.test"], &test{
+		A: 200,
+		B: "TestStruct",
+		C: false,
+	})
+	s = AddRawInfo(tmp, testInput)
+	assert.Equal(t, exp, s)
+
+	// s, err := ToStringInterface(tmp)
+	// assert.NoError(t, err)
+	// assert.Equal(t, "{}", s)
+
+	// tmp["test"] = append(tmp["test"], test{
+	// 	A: 200,
+	// 	B: "TestStruct",
+	// 	C: false,
+	// })
+	// s, err = ToStringInterface(tmp)
+	// assert.NoError(t, err)
+	// assert.Equal(t, "{\"test\":[{\"a\":200,\"b\":\"TestStruct\",\"c\":false}]}", s)
 }

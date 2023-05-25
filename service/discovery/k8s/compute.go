@@ -79,9 +79,13 @@ func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePod returns all existing pods
 func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
-	raw, err := voc.ToString(pod)
+	var rawInfo = make(map[string][]interface{})
+
+	// Convert object responses from Azure to string
+	rawInfo = voc.AddRawInfo(rawInfo, pod)
+	raw, err := voc.ToStringInterface(rawInfo)
 	if err != nil {
-		log.Debugf("error converting pod struct to string: %v", err)
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 	}
 
 	r := &voc.Container{
@@ -112,14 +116,18 @@ func getContainerResourceID(pod *v1.Pod) string {
 func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 	var (
 		volumes []voc.IsCloudResource
+		rawInfo = make(map[string][]interface{})
 	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
 	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but I think we do not have credentials for the other providers in Clouditor?
 	for _, vol := range pod.Spec.Volumes {
-		raw, err := voc.ToString(&vol)
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, pod)
+		rawInfo = voc.AddRawInfo(rawInfo, &vol)
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting volume struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		s := &voc.Storage{

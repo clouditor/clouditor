@@ -111,8 +111,13 @@ func (*awsS3Discovery) Name() string {
 
 // List is the method implementation defined in the discovery.Discoverer interface
 func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
-	var encryptionAtRest voc.IsAtRestEncryption
-	var encryptionAtTransmit *voc.TransportEncryption
+	var (
+		encryptionAtRest    voc.IsAtRestEncryption
+		encryptionAtTransit *voc.TransportEncryption
+		rawInfo             = make(map[string][]interface{})
+		rawBucketEncOutput  *s3.GetBucketEncryptionOutput
+		rawBucketTranspEnc  *s3.GetBucketPolicyOutput
+	)
 
 	log.Infof("Collecting evidences in %s", d.Name())
 	var buckets []bucket
@@ -122,18 +127,22 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	}
 
 	for _, b := range buckets {
-		encryptionAtRest, err = d.getEncryptionAtRest(&b)
+		encryptionAtRest, rawBucketEncOutput, err = d.getEncryptionAtRest(&b)
 		if err != nil {
 			return
 		}
-		encryptionAtTransmit, err = d.getTransportEncryption(b.name)
+		encryptionAtTransit, rawBucketTranspEnc, err = d.getTransportEncryption(b.name)
 		if err != nil {
 			return
 		}
 
-		raw, err := voc.ToString(&b)
+		// Convert object responses from Azure to string
+		rawInfo = voc.AddRawInfo(rawInfo, &b)
+		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketEncOutput)
+		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketTranspEnc)
+		raw, err := voc.ToStringInterface(rawInfo)
 		if err != nil {
-			log.Debugf("error converting bucket struct to string: %v", err)
+			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
 		}
 
 		resources = append(resources,
@@ -169,12 +178,12 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 								raw,
 							),
 						},
-						TransportEncryption: encryptionAtTransmit,
+						TransportEncryption: encryptionAtTransit,
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					Url:                 b.endpoint,
-					TransportEncryption: encryptionAtTransmit,
+					TransportEncryption: encryptionAtTransit,
 				},
 			})
 	}
@@ -228,12 +237,11 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 }
 
 // getEncryptionAtRest gets the bucket's encryption configuration
-func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncryption, err error) {
+func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncryption, resp *s3.GetBucketEncryptionOutput, err error) {
 	input := s3.GetBucketEncryptionInput{
 		Bucket:              aws.String(bucket.name),
 		ExpectedBucketOwner: nil,
 	}
-	var resp *s3.GetBucketEncryptionOutput
 
 	resp, err = d.storageAPI.GetBucketEncryption(context.TODO(), &input)
 	if err != nil {
@@ -277,7 +285,7 @@ func (d *awsS3Discovery) getEncryptionAtRest(bucket *bucket) (e voc.IsAtRestEncr
 // "confirm that your bucket policies explicitly deny access to HTTP requests"
 // https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-policy-for-config-rule/
 // getTransportEncryption loops over all statements in the bucket policy and checks if one statement denies https only == false
-func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEncryption, error) {
+func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEncryption, *s3.GetBucketPolicyOutput, error) {
 	input := s3.GetBucketPolicyInput{
 		Bucket:              aws.String(bucket),
 		ExpectedBucketOwner: nil,
@@ -300,13 +308,13 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 					Enabled:    true,
 					TlsVersion: "TLS1.2",
 					Algorithm:  "TLS",
-				}, nil
+				}, resp, nil
 			}
 			// Any other error is a connection error with AWS : Format err and return it
 			err = formatError(ae)
 		}
 		// return any error (but according to doc: "All service API response errors implement the smithy.APIError")
-		return nil, err
+		return nil, resp, err
 	}
 
 	// Case 2: bucket policy -> check if https only is set
@@ -314,7 +322,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 	var policy BucketPolicy
 	err = json.Unmarshal([]byte(aws.ToString(resp.Policy)), &policy)
 	if err != nil {
-		return nil, fmt.Errorf("error occurred while unmarshalling the bucket policy: %v", err)
+		return nil, resp, fmt.Errorf("error occurred while unmarshalling the bucket policy: %v", err)
 	}
 	// one statement has set https only -> default encryption is set
 	for _, statement := range policy.Statement {
@@ -325,7 +333,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 					Enabled:    true,
 					TlsVersion: "TLS1.2",
 					Algorithm:  "TLS",
-				}, nil
+				}, resp, nil
 			}
 		}
 		if actions, ok := statement.Action.([]string); ok {
@@ -336,7 +344,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 						Enabled:    true,
 						TlsVersion: "TLS1.2",
 						Algorithm:  "TLS",
-					}, nil
+					}, resp, nil
 				}
 			}
 		}
@@ -346,7 +354,7 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 		Enabled:    true,
 		TlsVersion: "TLS1.2",
 		Algorithm:  "TLS",
-	}, nil
+	}, resp, nil
 
 }
 
