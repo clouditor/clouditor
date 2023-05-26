@@ -54,7 +54,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: ComputeComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]map[string]*voc.Backup),
+			backupMap:           make(map[string]*backup),
 		},
 		make(map[string]*defenderProperties),
 	}
@@ -436,8 +436,8 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
 
-	if d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)] != nil {
-		backups = append(backups, d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)])
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
 	}
 
 	return &voc.BlockStorage{
