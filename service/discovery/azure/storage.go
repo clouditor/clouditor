@@ -235,6 +235,11 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 			list = append(list, objectStorages)
+
+			// Add backup object storages
+			if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
+				list = append(list, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
+			}
 		}
 	}
 

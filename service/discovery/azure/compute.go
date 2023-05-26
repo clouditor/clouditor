@@ -109,6 +109,10 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not discover block storage: %w", err)
 	}
 	list = append(list, storage...)
+	// Add backup block storages
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
+		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
+	}
 
 	log.Info("Discover Azure compute resources")
 	// Discover virtual machines

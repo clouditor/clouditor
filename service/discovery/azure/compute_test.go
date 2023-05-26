@@ -450,7 +450,7 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
+	assert.Equal(t, 8, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -463,7 +463,7 @@ func TestDiscoverer_List(t *testing.T) {
 	list, err := d.List()
 	assert.NoError(t, err)
 
-	virtualMachine, ok := list[3].(*voc.VirtualMachine)
+	virtualMachine, ok := list[4].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
@@ -478,11 +478,11 @@ func TestDiscoverer_List(t *testing.T) {
 	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
 	assert.Equal(t, time.Duration(0), virtualMachine.BootLogging.RetentionPeriod)
 
-	virtualMachine2, ok := list[4].(*voc.VirtualMachine)
+	virtualMachine2, ok := list[5].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine2.BootLogging.LoggingService)
 
-	virtualMachine3, ok := list[5].(*voc.VirtualMachine)
+	virtualMachine3, ok := list[6].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorage)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterfaces)
@@ -499,9 +499,9 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
+	assert.Equal(t, 8, len(list))
 
-	function, ok := list[6].(*voc.Function)
+	function, ok := list[7].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)

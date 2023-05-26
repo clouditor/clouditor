@@ -313,8 +313,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				_, ok := d.backupMap[dataSourceType]
 				if !ok {
 					d.backupMap[dataSourceType] = &backup{
-						backup:         make(map[string][]*voc.Backup),
-						backupStorages: []voc.IsCloudResource{},
+						backup: make(map[string][]*voc.Backup),
 					}
 				}
 

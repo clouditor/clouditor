@@ -390,7 +390,7 @@ func TestStorage(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -893,7 +893,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 				}
 			} else {
 				assert.Nil(t, err)
-				assert.Equal(t, 8, len(got))
+				assert.Equal(t, 9, len(got))
 			}
 		})
 	}
