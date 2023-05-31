@@ -13,8 +13,8 @@
 | Evidence        | Azure | AWS |
 |-----------------|-------|-----|
 | Compute         | ✅     | ✅   |
-| RuntimeLanguage | 🚫    | ❌   |
-| RuntimeVersion  | 🚫    | ❌   |
+| RuntimeLanguage | ✅    | ❌   |
+| RuntimeVersion  | ✅    | ❌   |
 
 ### VirtualMachine
 
@@ -25,13 +25,15 @@
 | MalwareProtection | ✅     | ❌   |
 | BootLogging       | ✅     | ✅   |
 | OSLogging         | ✅     | ✅   |
-| AutomaticUpdates  | ❌     | ❌   |
+| AutomaticUpdates  | ✅     | ❌   |
 
 #### Compute
 | Evidence          | Azure | AWS |
 |-------------------|-------|-----|
 | Resource          | ✅     | ✅   |
 | NetworkInterfaces | ✅     | ✅   |
+| ResourceLogging  | ✅     |    |
+| Backup  | ✅    |    |
 
 #### Resource
 | Evidence    | Azure | AWS |
@@ -59,6 +61,13 @@
 | Enabled         | ✅     | ❌   |
 | LoggingService  | ✅     | 🚫  |
 | RetentionPeriod | ✅     | 🚫  |
+
+#### ResourceLogging
+| Evidence                  | Azure | AWS |
+|-----------------          |-------|-----|
+| MonitoringLogDataEnabled  | ✅     |   |
+| SecurityAlertsEnabled     | ✅     |   |
+
 
 ### BlockStorage
 
@@ -112,7 +121,7 @@
 |-------------------|-------|-----|
 | Networking        | ✅     | ✅   |
 | Networkservice    | ❌     | ❌   |
-| AccessRestriction | ❌     | ❌   |
+| AccessRestriction | partly     | ❌   |
 </details>
 
 ### Storage
@@ -131,6 +140,8 @@
 | Resource         | ✅     | ✅   |
 | AtRestEncryption | ✅     | ✅   |
 | Immutability     | ✅     | ❌   |
+| ResourceLogging  | ✅     |    |
+| Backup  | ✅     |    |
 
 ### ObjectStorageService
 | Evidence       | Azure | AWS |
@@ -159,12 +170,6 @@
 |-------------------|-------|-----|
 | Storage           | ✅     | ❌   |
 
-### Storage
-| Evidence          | Azure | AWS |
-|-------------------|-------|-----|
-| Resource          | ✅     | ✅   |
-| AtRestEncryption  | ✅     | ✅   |
-
 #### ManagedKeyEncryption
 | Evidence  | Azure | AWS |
 |-----------|-------|-----|
@@ -180,3 +185,21 @@
 
 </details>
 
+# Azure Backup
+There are 2 different backup solutions for different resources
+- Backup Vaults and
+- Recovery Services Vault.
+
+| Resource   | Backup Vaults | Recovery Services Vault |
+|------------|-------|-----|
+| Azure Virtual Machine | | ✅ |
+| Azure Storage (Files)| | ✅ |
+| Azure Backup Agent| | ✅ |
+| Azure Backup Server| | ✅ |
+| DPM| | ✅ |
+| SQL in Azure VM | | ✅ |
+| SAP HANA in Azure VM | | ✅ |
+| Azure Storage (Blobs) | ✅ | |
+| Azure disks | ✅ | |
+| Azure Database for PostgreSQL servers | ✅ | |
+| Kubernetes Services | ✅ | |

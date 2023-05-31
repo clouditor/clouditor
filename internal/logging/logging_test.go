@@ -138,7 +138,7 @@ func TestLogRequest(t *testing.T) {
 				level:   logrus.DebugLevel,
 				reqType: Register,
 				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID},
+					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID1},
 				},
 			},
 			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
@@ -150,7 +150,7 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						CatalogId:      testdata.MockCatalogID,
 					},
 				},
@@ -164,7 +164,7 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						CatalogId:      testdata.MockCatalogID,
 					},
 				},
@@ -179,8 +179,8 @@ func TestLogRequest(t *testing.T) {
 				reqType: Store,
 				req: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
 				},
 				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},

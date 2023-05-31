@@ -55,11 +55,11 @@ func TestMain(m *testing.M) {
 	svc = service_evidence.NewService()
 
 	_, err = svc.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:             testdata.MockCloudServiceID,
-		CloudServiceId: testdata.MockCloudServiceID,
-		ToolId:         testdata.MockEvidenceToolID,
+		Id:             testdata.MockCloudServiceID1,
+		CloudServiceId: testdata.MockCloudServiceID1,
+		ToolId:         testdata.MockEvidenceToolID1,
 		Timestamp:      timestamppb.Now(),
-		Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID, Type: []string{"VirtualMachine"}}}}),
+		Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}),
 	}})
 	if err != nil {
 		panic(err)

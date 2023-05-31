@@ -37,10 +37,10 @@ func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {
 			name: "only service 1 - denied",
 			fields: fields{
 				all:             false,
-				cloudServiceIDs: []string{testdata.MockCloudServiceID},
+				cloudServiceIDs: []string{testdata.MockCloudServiceID1},
 			},
 			args: args{
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockAnotherCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID2},
 			},
 			want: false,
 		},
@@ -48,10 +48,10 @@ func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {
 			name: "only service 1 - allowed",
 			fields: fields{
 				all:             false,
-				cloudServiceIDs: []string{testdata.MockCloudServiceID},
+				cloudServiceIDs: []string{testdata.MockCloudServiceID1},
 			},
 			args: args{
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: true,
 		},

@@ -100,7 +100,8 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ResourceInventory":                 true,
 			},
 			wantErr: false,
-		}, {
+		},
+		{
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
 				qc:      newQueryCache(),
@@ -190,7 +191,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				resource: voc.VirtualMachine{
 					AutomaticUpdates: &voc.AutomaticUpdates{
 						Enabled:      true,
-						Interval:     time.Hour * 24,
+						Interval:     time.Hour * 24 * 30,
 						SecurityOnly: true,
 					},
 					Compute: &voc.Compute{
@@ -324,7 +325,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				}
 			}
 
-			assert.Equal(t, compliants, tt.compliant)
+			assert.Equal(t, tt.compliant, compliants)
 		})
 	}
 }
@@ -357,7 +358,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID1,
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
@@ -379,7 +380,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					IsDefault:      true,
 					UpdatedAt:      nil,
 					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 		},
@@ -391,7 +392,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID1,
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
@@ -413,7 +414,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 					IsDefault:      false,
 					UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
 					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 		},

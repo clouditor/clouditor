@@ -73,7 +73,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		t.Fatalf("error injecting volume add: %v", err)
 	}
 
-	d := NewKubernetesStorageDiscovery(client, testdata.MockCloudServiceID)
+	d := NewKubernetesStorageDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 	assert.NoError(t, err)
@@ -87,7 +87,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeUID),
-				ServiceID:    testdata.MockCloudServiceID,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         volumeName,
 				CreationTime: volume.CreationTime,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

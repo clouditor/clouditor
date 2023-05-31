@@ -50,12 +50,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Empty id
 					Id:       "",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -70,12 +70,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Only 4 characters
 					Id:       "1234",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -90,12 +90,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Wrong format: 'x' not allowed (no hexadecimal character)
 					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -109,12 +109,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			args: args{
 				&AssessmentResult{
 					Id:       testdata.MockAssessmentResultID,
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    ">",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -134,7 +134,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 				},
 			},
 			wantResp: "",
@@ -148,15 +148,15 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						MetricId:       testdata.MockMetricID,
+						MetricId:       testdata.MockMetricID1,
 						Operator:       "==",
 						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
 					ResourceId: "myResource",
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantResp: "",
@@ -170,8 +170,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:            testdata.MockAssessmentResultID,
 					Timestamp:     timestamppb.Now(),
-					MetricId:      testdata.MockMetricID,
-					EvidenceId:    testdata.MockEvidenceID,
+					MetricId:      testdata.MockMetricID1,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -186,12 +186,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
-						MetricId:    testdata.MockMetricID,
+						MetricId:    testdata.MockMetricID1,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -206,11 +206,11 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "<",
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -225,10 +225,10 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    ">",
-						MetricId:    testdata.MockMetricID,
+						MetricId:    testdata.MockMetricID1,
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
@@ -245,17 +245,17 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:       "==",
-						MetricId:       testdata.MockMetricID,
+						MetricId:       testdata.MockMetricID1,
 						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
-					EvidenceId:     testdata.MockEvidenceID,
+					EvidenceId:     testdata.MockEvidenceID1,
 					ResourceId:     "myResource",
 					ResourceTypes:  []string{"Resource"},
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantResp: "",

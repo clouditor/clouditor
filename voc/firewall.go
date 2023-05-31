@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@
 
 package voc
 
-// WebApplicationFirewall is an entity in our Cloud ontology. A WAF is a L7 firewall that includes L3 capabilities
-type WebApplicationFirewall struct {
-	*Firewall
-	Enabled bool `json:"enabled"`
+type Firewall struct {
+	*AccessRestriction
 }

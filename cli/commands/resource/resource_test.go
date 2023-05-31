@@ -105,8 +105,8 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:   testdata.MockResourceID,
-						Name: testdata.MockResourceName,
+						ID:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
 					},
 				},
@@ -139,7 +139,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 }
 
 func (mockDiscoverer) CloudServiceID() string {
-	return testdata.MockCloudServiceID
+	return testdata.MockCloudServiceID1
 }
 
 func wrongFormattedResource() voc.IsCloudResource {
