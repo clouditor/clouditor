@@ -276,10 +276,12 @@
     "description": "This metric is used to assess if mutual authentication, including client certificate, has been enabled",
     "scale": 1,
     "range": {
-      "allowedValues" : [
-        true,
-        false
-      ]
+      "allowedValues" : {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
