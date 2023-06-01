@@ -335,7 +335,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 			},
 		},
 		csID:      testdata.MockCloudServiceID1,
-		backupMap: make(map[string]map[string]*voc.Backup),
+		backupMap: make(map[string]*backup),
 	}
 
 	// Apply options
@@ -414,25 +414,20 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 					return false
 				}
 
-				want := &voc.Backup{
+				want := []*voc.Backup{{
 					RetentionPeriod: Duration7Days,
 					Enabled:         true,
-					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: "AES256",
-						Enabled:   true,
-					},
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
 						TlsVersion: constants.TLS1_2,
 						Algorithm:  constants.TLS,
 					},
+				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccount]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
 
 			},
 			wantErr: assert.NoError,
@@ -528,25 +523,20 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 					return false
 				}
 
-				want := &voc.Backup{
+				want := []*voc.Backup{{
 					RetentionPeriod: Duration30Days,
 					Enabled:         true,
-					GeoLocation:     voc.GeoLocation{Region: "westeurope"},
 					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: "AES256",
-						Enabled:   true,
-					},
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
 						TlsVersion: constants.TLS1_2,
 						Algorithm:  constants.TLS,
 					},
+				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc]["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
+				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
 			},
 			wantErr: assert.NoError,
 		},
@@ -792,6 +782,135 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("azureDiscovery.discoverBackupInstances() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_azureDiscovery_handleInstances(t *testing.T) {
+	type fields struct {
+		isAuthorized        bool
+		sub                 armsubscription.Subscription
+		cred                azcore.TokenCredential
+		rg                  *string
+		clientOptions       arm.ClientOptions
+		discovererComponent string
+		clients             clients
+		csID                string
+		backupMap           map[string]*backup
+	}
+	type args struct {
+		vault    *armdataprotection.BackupVaultResource
+		instance *armdataprotection.BackupInstanceResource
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResource voc.IsCloudResource
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Empty input",
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrVaultInstanceIsEmpty.Error())
+			},
+		},
+		{
+			name: "Happy path: ObjectStorage",
+			fields: fields{
+				csID: testdata.MockCloudServiceID1,
+			},
+			args: args{
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
+					Name:     util.Ref("backupAccount1"),
+					Location: util.Ref("westeurope"),
+				},
+				instance: &armdataprotection.BackupInstanceResource{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
+					Properties: &armdataprotection.BackupInstance{
+						DataSourceInfo: &armdataprotection.Datasource{
+							DatasourceType: util.Ref("Microsoft.Storage/storageAccounts/blobServices"),
+						},
+					},
+				},
+			},
+			wantResource: &voc.ObjectStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+						ServiceID: testdata.MockCloudServiceID1,
+						Name:      "account1-account1-22222222-2222-2222-2222-222222222222",
+						GeoLocation: voc.GeoLocation{
+							Region: "westeurope",
+						},
+						CreationTime: 0,
+						Type:         voc.ObjectStorageType,
+						Labels:       nil,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: BlockStorage",
+			fields: fields{
+				csID: testdata.MockCloudServiceID1,
+			},
+			args: args{
+				vault: &armdataprotection.BackupVaultResource{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
+					Name:     util.Ref("backupAccount1"),
+					Location: util.Ref("westeurope"),
+				},
+				instance: &armdataprotection.BackupInstanceResource{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Name: util.Ref("disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Properties: &armdataprotection.BackupInstance{
+						DataSourceInfo: &armdataprotection.Datasource{
+							DatasourceType: util.Ref("Microsoft.Compute/disks"),
+						},
+					},
+				},
+			},
+			wantResource: &voc.BlockStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+						ServiceID: testdata.MockCloudServiceID1,
+						Name:      "disk1-disk1-22222222-2222-2222-2222-222222222222",
+						GeoLocation: voc.GeoLocation{
+							Region: "westeurope",
+						},
+						CreationTime: 0,
+						Type:         voc.BlockStorageType,
+						Labels:       nil,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureDiscovery{
+				isAuthorized:        tt.fields.isAuthorized,
+				sub:                 tt.fields.sub,
+				cred:                tt.fields.cred,
+				rg:                  tt.fields.rg,
+				clientOptions:       tt.fields.clientOptions,
+				discovererComponent: tt.fields.discovererComponent,
+				clients:             tt.fields.clients,
+				csID:                tt.fields.csID,
+				backupMap:           tt.fields.backupMap,
+			}
+			gotResource, err := d.handleInstances(tt.args.vault, tt.args.instance)
+			tt.wantErr(t, err)
+
+			if !reflect.DeepEqual(gotResource, tt.wantResource) {
+				t.Errorf("azureDiscovery.handleInstances() = %v, want %v", gotResource, tt.wantResource)
 			}
 		})
 	}

@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,14 +29,13 @@ package voc
 
 import "time"
 
-// Backup contains the retention period in hours
+// Backup is an entity in our Cloud ontology. RetentionPeriod in hours
 type Backup struct {
 	*Availability
-	AtRestEncryption    IsAtRestEncryption   `json:"atRestEncryption"`
-	TransportEncryption *TransportEncryption `json:"transportEncryption"`
-	RetentionPeriod     time.Duration        `json:"retentionPeriod"`
-	Enabled             bool                 `json:"enabled"`
-	Policy              string               `json:"policy"`
-	GeoLocation         GeoLocation          `json:"geoLocation"`
-	Storage             ResourceID           `json:"storage"`
+	TransportEncryption IsTransportEncryption `json:"transportEncryption"`
+	Storage             ResourceID            `json:"storage"`
+	Enabled             bool                  `json:"enabled"`
+	RetentionPeriod     time.Duration         `json:"retentionPeriod"`
+	// The interval refers to the update interval in days.
+	Interval time.Duration `json:"interval"`
 }

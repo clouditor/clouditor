@@ -44,7 +44,7 @@ func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: NetworkComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]map[string]*voc.Backup),
+			backupMap:           make(map[string]*backup),
 		},
 	}
 
@@ -221,7 +221,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 			Ports: LoadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the httpEndpoint for load balancers?
-		HttpEndpoints: &[]voc.HttpEndpoint{},
+		HttpEndpoints: []*voc.HttpEndpoint{},
 	}
 }
 

@@ -43,6 +43,7 @@ import (
 var (
 	ErrEmptyStorageAccount        = errors.New("storage account is empty")
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
+	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
 
 type azureStorageDiscovery struct {
@@ -55,7 +56,7 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]map[string]*voc.Backup),
+			backupMap:           make(map[string]*backup),
 		},
 		make(map[string]*defenderProperties),
 	}
@@ -184,6 +185,11 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// Add backuped storage account objects
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
+		storageResourcesList = append(storageResourcesList, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
+	}
+
 	return storageResourcesList, nil
 }
 
@@ -234,6 +240,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 			list = append(list, objectStorages)
+
 		}
 	}
 
@@ -290,6 +297,11 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+	var (
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -302,6 +314,11 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
+	}
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
 	return &voc.FileStorage{
@@ -319,13 +336,23 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				labels(account.Tags),
 				voc.FileStorageType,
 			),
-			ResourceLogging:  d.createResourceLogging(),
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
 			AtRestEncryption: enc,
 		},
 	}, nil
 }
 
 func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	var (
+		backups                  []*voc.Backup
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -340,7 +367,14 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[DataSourceTypeStorageAccount][util.Deref(account.ID)]
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
+	}
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -361,8 +395,13 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			Immutability: &voc.Immutability{
 				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
 			},
-			ResourceLogging: d.createResourceLogging(),
-			Backup:          backup,
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
+			Backups: backups,
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
@@ -427,18 +466,6 @@ func generalizeURL(url string) string {
 	newURL := strings.Join(urlSplit, ".")
 
 	return newURL
-}
-
-// TODO(all): Update to generic function or method
-func (d *azureStorageDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
-	if d.defenderProperties[DefenderStorageType] != nil {
-		resourceLogging = &voc.ResourceLogging{
-			MonitoringLogDataEnabled: d.defenderProperties[DefenderStorageType].monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    d.defenderProperties[DefenderStorageType].securityAlertsEnabled,
-		}
-	}
-
-	return
 }
 
 // initAccountsClient creates the client if not already exists

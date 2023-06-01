@@ -54,7 +54,7 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: ComputeComponent,
 			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]map[string]*voc.Backup),
+			backupMap:           make(map[string]*backup),
 		},
 		make(map[string]*defenderProperties),
 	}
@@ -109,6 +109,11 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not discover block storage: %w", err)
 	}
 	list = append(list, storage...)
+
+	// Add backup block storages
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
+		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
+	}
 
 	log.Info("Discover Azure compute resources")
 	// Discover virtual machines
@@ -243,9 +248,11 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
-		bootLogging = []voc.ResourceID{}
-		osLogging   = []voc.ResourceID{}
-		autoUpdates *voc.AutomaticUpdates
+		bootLogging              = []voc.ResourceID{}
+		osLogging                = []voc.ResourceID{}
+		autoUpdates              *voc.AutomaticUpdates
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -258,6 +265,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	}
 
 	autoUpdates = automaticUpdates(vm)
+
+	if d.defenderProperties[DefenderVirtualMachineType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
@@ -272,7 +284,6 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				voc.VirtualMachineType,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
-			ResourceLogging:   d.createResourceLogging(),
 		},
 		BlockStorage:      []voc.ResourceID{},
 		MalwareProtection: &voc.MalwareProtection{},
@@ -284,6 +295,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    securityAlertsEnabled,
 			},
 		},
 		OsLogging: &voc.OSLogging{
@@ -294,6 +307,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    monitoringLogDataEnabled,
 			},
 		},
 		AutomaticUpdates: autoUpdates,
@@ -396,14 +411,14 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 			return res.Value
 		},
 		func(disk *armcompute.Disk) error {
-			blockStorages, err := d.handleBlockStorage(disk)
+			blockStorage, err := d.handleBlockStorage(disk)
 			if err != nil {
 				return fmt.Errorf("could not handle block storage: %w", err)
 			}
 
-			log.Infof("Adding block storage '%s'", blockStorages.Name)
+			log.Infof("Adding block storage '%s'", blockStorage.GetName())
 
-			list = append(list, blockStorages)
+			list = append(list, blockStorage)
 			return nil
 		})
 	if err != nil {
@@ -414,6 +429,8 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 }
 
 func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	var backups []*voc.Backup
+
 	// If a mandatory field is empty, the whole disk is empty
 	if disk == nil || disk.ID == nil {
 		return nil, fmt.Errorf("disk is nil")
@@ -424,7 +441,9 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
 	}
 
-	backup := d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)]
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
+	}
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
@@ -439,7 +458,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 				voc.BlockStorageType,
 			),
 			AtRestEncryption: enc,
-			Backup:           backup,
+			Backups:          backups,
 		},
 	}, nil
 }
@@ -506,18 +525,6 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, erro
 	}
 
 	return util.Deref(keyURL), nil
-}
-
-// TODO(all): Update to generic function or method
-func (d *azureComputeDiscovery) createResourceLogging() (resourceLogging *voc.ResourceLogging) {
-	if d.defenderProperties[DefenderVirtualMachineType] != nil {
-		resourceLogging = &voc.ResourceLogging{
-			MonitoringLogDataEnabled: d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled,
-			SecurityAlertsEnabled:    d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled,
-		}
-	}
-
-	return
 }
 
 // initFunctionsClient creates the client if not already exists
