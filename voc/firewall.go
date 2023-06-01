@@ -30,3 +30,7 @@ package voc
 type Firewall struct {
 	*AccessRestriction
 }
+
+func (*Firewall) Type() string {
+	return "Firewall"
+}

@@ -61,8 +61,8 @@ const (
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 
-	DataSourceTypeDisc           = "Microsoft.Compute/disks"
-	DataSourceTypeStorageAccount = "Microsoft.Storage/storageAccounts/blobServices"
+	DataSourceTypeDisc                 = "Microsoft.Compute/disks"
+	DataSourceTypeStorageAccountObject = "Microsoft.Storage/storageAccounts/blobServices"
 
 	Duration30Days = time.Duration(30 * time.Hour * 24)
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
@@ -75,6 +75,7 @@ var (
 	ErrCouldNotGetSubscriptions = errors.New("could not get azure subscription")
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
 	ErrGettingNextPage          = errors.New("error getting next page")
+	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
 
 type DiscoveryOption func(a *azureDiscovery)
@@ -119,7 +120,12 @@ type azureDiscovery struct {
 	discovererComponent string
 	clients             clients
 	csID                string
-	backupMap           map[string]map[string]*voc.Backup
+	backupMap           map[string]*backup
+}
+
+type backup struct {
+	backup         map[string][]*voc.Backup
+	backupStorages []voc.IsCloudResource
 }
 
 type clients struct {
@@ -259,6 +265,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 
 	if d.backupMap != nil && len(d.backupMap) > 0 {
 		log.Debug("Backup Vaults already discovered.")
+		return nil
 	}
 
 	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
@@ -295,34 +302,38 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 
 				// TODO(all):Maybe we should differentiate the backup retention period for different resources, e.g., disk vs blobs (Metrics)
 				retention := policy.BaseBackupPolicyResource.Properties.(*armdataprotection.BackupPolicy).PolicyRules[0].(*armdataprotection.AzureRetentionRule).Lifecycles[0].DeleteAfter.(*armdataprotection.AbsoluteDeleteOption).GetDeleteOption().Duration
+
+				resp, err := d.handleInstances(vault, instance)
+				if err != nil {
+					err := fmt.Errorf("could not handle instance")
+					return err
+				}
+
 				// Check if map entry already exists
 				_, ok := d.backupMap[dataSourceType]
 				if !ok {
-					d.backupMap[dataSourceType] = make(map[string]*voc.Backup)
+					d.backupMap[dataSourceType] = &backup{
+						backup: make(map[string][]*voc.Backup),
+					}
 				}
 
 				// Store voc.Backup in backupMap
-				d.backupMap[util.Deref(instance.Properties.DataSourceInfo.DatasourceType)][util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = &voc.Backup{
-					Enabled:         true,
-					Policy:          util.Deref(instance.Properties.PolicyInfo.PolicyID),
-					RetentionPeriod: retentionDuration(util.Deref(retention)),
-					Storage:         voc.ResourceID(util.Deref(instance.ID)),
-					GeoLocation: voc.GeoLocation{
-						Region: util.Deref(vault.Location),
-					},
-					AtRestEncryption: &voc.AtRestEncryption{
-						Algorithm: constants.AES256, // https://learn.microsoft.com/en-us/azure/backup/backup-encryption (Last access: 04/27/2023)
-						Enabled:   true,             // By default, all your data is encrypted using platform-managed keys (https://learn.microsoft.com/en-us/azure/backup/backup-vault-overview#encryption-of-backup-data-using-platform-managed-keys, Last access: 04/27/2023)
-					},
-					TransportEncryption: &voc.TransportEncryption{
-						Enabled:    true,
-						Enforced:   true,
-						Algorithm:  constants.TLS,
-						TlsVersion: constants.TLS1_2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
+				d.backupMap[dataSourceType].backup[util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = []*voc.Backup{
+					{
+						Enabled:         true,
+						RetentionPeriod: retentionDuration(util.Deref(retention)),
+						Storage:         voc.ResourceID(util.Deref(instance.ID)),
+						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    true,
+							Enforced:   true,
+							Algorithm:  constants.TLS,
+							TlsVersion: constants.TLS1_2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
+						},
 					},
 				}
-			}
 
+				d.backupMap[dataSourceType].backupStorages = append(d.backupMap[dataSourceType].backupStorages, resp)
+			}
 			return nil
 		})
 
@@ -331,6 +342,49 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 	}
 
 	return nil
+}
+
+func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultResource, instance *armdataprotection.BackupInstanceResource) (resource voc.IsCloudResource, err error) {
+
+	if vault == nil || instance == nil {
+		return nil, ErrVaultInstanceIsEmpty
+	}
+
+	if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Storage/storageAccounts/blobServices" {
+		resource = &voc.ObjectStorage{
+			Storage: &voc.Storage{
+				Resource: &voc.Resource{
+					ID:           voc.ResourceID(*instance.ID),
+					Name:         *instance.Name,
+					CreationTime: 0,
+					GeoLocation: voc.GeoLocation{
+						Region: *vault.Location,
+					},
+					Labels:    nil,
+					ServiceID: d.csID,
+					Type:      voc.ObjectStorageType,
+				},
+			},
+		}
+	} else if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Compute/disks" {
+		resource = &voc.BlockStorage{
+			Storage: &voc.Storage{
+				Resource: &voc.Resource{
+					ID:           voc.ResourceID(*instance.ID),
+					Name:         *instance.Name,
+					ServiceID:    d.csID,
+					CreationTime: 0,
+					Type:         voc.BlockStorageType,
+					GeoLocation: voc.GeoLocation{
+						Region: *vault.Location,
+					},
+					Labels: nil,
+				},
+			},
+		}
+	}
+
+	return
 }
 
 // retentionDuration returns the rentention string as time.Duration
@@ -356,6 +410,7 @@ func retentionDuration(retention string) time.Duration {
 }
 
 // discoverBackupInstances retrieves the instances in a given backup vault.
+// Note: It is only possible to backup a storage account with all containers in it.
 func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
 	var (
 		list armdataprotection.BackupInstancesClientListResponse

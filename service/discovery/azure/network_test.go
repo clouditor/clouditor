@@ -317,7 +317,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ips:   []string{"111.222.333.444"},
 						Ports: []uint16{1234, 5678},
 					},
-					HttpEndpoints: &[]voc.HttpEndpoint{},
+					HttpEndpoints: []*voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -336,7 +336,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					HttpEndpoints: &[]voc.HttpEndpoint{},
+					HttpEndpoints: []*voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -355,7 +355,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 						Ports: []uint16{1234, 5678},
 						Ips:   []string{},
 					},
-					HttpEndpoints: &[]voc.HttpEndpoint{},
+					HttpEndpoints: []*voc.HttpEndpoint{},
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -417,7 +417,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 			},
 		},
@@ -435,7 +435,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 			},
 		},
@@ -449,7 +449,7 @@ func TestNewAzureNetworkDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: NetworkComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 			},
 		},

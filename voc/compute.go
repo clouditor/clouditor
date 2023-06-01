@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,5 +33,4 @@ type Compute struct {
 	*Resource
 	NetworkInterfaces []ResourceID     `json:"networkInterfaces"`
 	ResourceLogging   *ResourceLogging `json:"resourceLogging"`
-	Backup           *Backup            `json:"backup"`
 }

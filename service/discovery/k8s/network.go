@@ -130,7 +130,7 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 			Ips:   nil, // TODO (oxisto): fill out IPs
 			Ports: []uint16{80, 443},
 		},
-		HttpEndpoints: &[]voc.HttpEndpoint{},
+		HttpEndpoints: []*voc.HttpEndpoint{},
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -151,12 +151,12 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				}
 			}
 
-			http := voc.HttpEndpoint{
+			http := &voc.HttpEndpoint{
 				Url:                 url,
 				TransportEncryption: te,
 			}
 
-			*lb.HttpEndpoints = append(*lb.HttpEndpoints, http)
+			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
 		}
 	}
 
