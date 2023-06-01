@@ -410,6 +410,7 @@ func retentionDuration(retention string) time.Duration {
 }
 
 // discoverBackupInstances retrieves the instances in a given backup vault.
+// Note: It is only possible to backup a storage account with all containers in it.
 func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string) ([]*armdataprotection.BackupInstanceResource, error) {
 	var (
 		list armdataprotection.BackupInstancesClientListResponse
