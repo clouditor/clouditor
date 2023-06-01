@@ -115,7 +115,6 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	var (
 		encryptionAtRest    voc.IsAtRestEncryption
 		encryptionAtTransit *voc.TransportEncryption
-		rawInfo             = make(map[string][]interface{})
 		rawBucketEncOutput  *s3.GetBucketEncryptionOutput
 		rawBucketTranspEnc  *s3.GetBucketPolicyOutput
 	)
@@ -128,6 +127,8 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	}
 
 	for _, b := range buckets {
+		rawInfo := make(map[string][]interface{})
+
 		encryptionAtRest, rawBucketEncOutput, err = d.getEncryptionAtRest(&b)
 		if err != nil {
 			return

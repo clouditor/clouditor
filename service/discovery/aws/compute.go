@@ -140,8 +140,6 @@ func (d *computeDiscovery) CloudServiceID() string {
 
 // discoverVolumes discoveres all volumes (in the current region)
 func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
-	var rawInfo = make(map[string][]interface{})
-
 	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
 	if err != nil {
 		return nil, prettyError(err)
@@ -149,6 +147,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 	var blocks []*voc.BlockStorage
 	for i := range res.Volumes {
+		rawInfo := make(map[string][]interface{})
 		volume := &res.Volumes[i]
 
 		atRest := &voc.AtRestEncryption{
@@ -190,8 +189,6 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 // discoverNetworkInterfaces discovers all network interfaces (in the current region)
 func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
-	var rawInfo = make(map[string][]interface{})
-
 	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
 	if err != nil {
 		return nil, prettyError(err)
@@ -199,6 +196,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 	var ifcs []voc.NetworkInterface
 	for i := range res.NetworkInterfaces {
+		rawInfo := make(map[string][]interface{})
 		ifc := &res.NetworkInterfaces[i]
 
 		// Convert object responses from Azure to string
@@ -231,14 +229,14 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 // discoverVirtualMachines discovers all VMs (in the current region)
 func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, error) {
-	var rawInfo = make(map[string][]interface{})
-
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
+		rawInfo := make(map[string][]interface{})
+
 		// Convert object responses from Azure to string
 		rawInfo = voc.AddRawInfo(rawInfo, &reservation)
 		raw, err := voc.ToStringInterface(rawInfo)
@@ -299,9 +297,8 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
-	var rawInfo = make(map[string][]interface{})
-
 	for i := range functions {
+		rawInfo := make(map[string][]interface{})
 		function := &functions[i]
 
 		// Convert object responses from Azure to string
