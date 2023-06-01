@@ -29,7 +29,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 
@@ -322,7 +321,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				azureDiscovery: &azureDiscovery{
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -341,7 +340,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -356,7 +355,7 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]map[string]*voc.Backup),
+					backupMap:           make(map[string]*backup),
 				},
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -391,7 +390,7 @@ func TestStorage(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -446,16 +445,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
-						Backup: &voc.Backup{
+						Backups: []*voc.Backup{{
 							Enabled:         true,
 							RetentionPeriod: Duration7Days,
-							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
 							TransportEncryption: &voc.TransportEncryption{
 								Enforced:   true,
 								Enabled:    true,
@@ -463,9 +456,12 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Algorithm:  constants.TLS,
 							},
 						},
+						},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
 					},
 					PublicAccess: true,
@@ -491,26 +487,22 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
-						Backup: &voc.Backup{
+						Backups: []*voc.Backup{{
 							Enabled:         true,
 							RetentionPeriod: Duration7Days,
-							GeoLocation:     voc.GeoLocation{Region: "westeurope"},
-							Policy:          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
 							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-							AtRestEncryption: &voc.AtRestEncryption{
-								Algorithm: "AES256",
-								Enabled:   true,
-							},
 							TransportEncryption: &voc.TransportEncryption{
 								Enforced:   true,
 								Enabled:    true,
 								TlsVersion: constants.TLS1_2,
 								Algorithm:  constants.TLS,
 							},
-						},
+						}},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
 					},
 					PublicAccess: true,
@@ -536,8 +528,10 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
 					},
 				},
@@ -562,9 +556,12 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
+						Backups: nil,
 					},
 				},
 				&voc.ObjectStorageService{
@@ -631,9 +628,12 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 						Immutability: &voc.Immutability{Enabled: false},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
+						Backups: nil,
 					},
 					PublicAccess: false,
 				},
@@ -660,9 +660,12 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 						Immutability: &voc.Immutability{Enabled: false},
 						ResourceLogging: &voc.ResourceLogging{
-							MonitoringLogDataEnabled: true,
-							SecurityAlertsEnabled:    true,
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
 						},
+						Backups: nil,
 					},
 					PublicAccess: false,
 				},
@@ -702,6 +705,20 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Enabled:    true,
 							TlsVersion: "TLS1_2",
 							Algorithm:  "TLS",
+						},
+					},
+				},
+				&voc.ObjectStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+							Name:         "account1-account1-22222222-2222-2222-2222-222222222222",
+							ServiceID:    "11111111-1111-1111-1111-111111111111",
+							CreationTime: 0,
+							Type:         voc.ObjectStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "westeurope",
+							},
 						},
 					},
 				},
@@ -898,7 +915,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 				}
 			} else {
 				assert.Nil(t, err)
-				assert.Equal(t, 8, len(got))
+				assert.Equal(t, 9, len(got))
 			}
 		})
 	}
@@ -1064,6 +1081,13 @@ func Test_handleFileStorage(t *testing.T) {
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
+						},
+					},
+					ResourceLogging: &voc.ResourceLogging{
+						Logging: &voc.Logging{
+							Enabled:                  false,
+							MonitoringLogDataEnabled: false,
+							SecurityAlertsEnabled:    false,
 						},
 					},
 				},
@@ -1324,6 +1348,12 @@ func Test_handleObjectStorage(t *testing.T) {
 						},
 					},
 					Immutability: &voc.Immutability{Enabled: false},
+					ResourceLogging: &voc.ResourceLogging{
+						Logging: &voc.Logging{
+							MonitoringLogDataEnabled: false,
+							SecurityAlertsEnabled:    false,
+						},
+					},
 				},
 				PublicAccess: false,
 			},
@@ -1421,6 +1451,12 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
+							},
+						},
 					},
 				},
 				&voc.FileStorage{
@@ -1441,6 +1477,12 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
 							},
 						},
 					},
@@ -1543,6 +1585,12 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
+							},
+						},
 					},
 					PublicAccess: true,
 				},
@@ -1567,6 +1615,12 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
+							},
+						},
 					},
 					PublicAccess: true,
 				},
@@ -1588,54 +1642,6 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func Test_azureStorageDiscovery_createResourceLogging(t *testing.T) {
-	type fields struct {
-		azureDiscovery     *azureDiscovery
-		defenderProperties map[string]*defenderProperties
-	}
-	tests := []struct {
-		name                string
-		fields              fields
-		wantResourceLogging *voc.ResourceLogging
-	}{
-		{
-			name: "Missing defenderProperties",
-			fields: fields{
-				azureDiscovery:     NewMockAzureDiscovery(newMockStorageSender()),
-				defenderProperties: make(map[string]*defenderProperties),
-			},
-			wantResourceLogging: nil,
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-				defenderProperties: map[string]*defenderProperties{
-					DefenderStorageType: {
-						monitoringLogDataEnabled: true,
-						securityAlertsEnabled:    true,
-					},
-				},
-			},
-			wantResourceLogging: &voc.ResourceLogging{
-				MonitoringLogDataEnabled: true,
-				SecurityAlertsEnabled:    true,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery:     tt.fields.azureDiscovery,
-				defenderProperties: tt.fields.defenderProperties,
-			}
-			if gotResourceLogging := d.createResourceLogging(); !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
-				t.Errorf("azureStorageDiscovery.createResourceLogging() = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
-			}
 		})
 	}
 }
