@@ -308,7 +308,11 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
-	var rawInfo = make(map[string][]interface{})
+	var (
+		rawInfo                  = make(map[string][]interface{})
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
 
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
@@ -319,9 +323,16 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 		return nil, fmt.Errorf("fileshare is nil")
 	}
 
+	// Get atRestEncryptionEnabled
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
+	}
+
+	// Get monitoringLogDataEnabled and securityAlertsEnabled
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
 	// Convert object responses from Azure to string
@@ -360,7 +371,12 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 }
 
 func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
-	var rawInfo = make(map[string][]interface{})
+	var (
+		rawInfo                  = make(map[string][]interface{})
+		backups                  []*voc.Backup
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
 
 	if account == nil {
 		return nil, ErrEmptyStorageAccount

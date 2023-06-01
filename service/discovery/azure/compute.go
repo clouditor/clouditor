@@ -258,10 +258,12 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
-		bootLogging = []voc.ResourceID{}
-		osLogging   = []voc.ResourceID{}
-		autoUpdates *voc.AutomaticUpdates
-		rawInfo     = make(map[string][]interface{})
+		bootLogging              = []voc.ResourceID{}
+		osLogging                = []voc.ResourceID{}
+		autoUpdates              *voc.AutomaticUpdates
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+		rawInfo                  = make(map[string][]interface{})
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -274,6 +276,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	}
 
 	autoUpdates = automaticUpdates(vm)
+
+	if d.defenderProperties[DefenderVirtualMachineType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
 
 	// Convert object responses from Azure to string
 	rawInfo = voc.AddRawInfo(rawInfo, vm)
@@ -444,6 +451,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	var (
 		rawInfo   = make(map[string][]interface{})
 		rawKeyUrl *armcompute.DiskEncryptionSet
+		backups   []*voc.Backup
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -457,7 +465,9 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	}
 
 	// Get voc.Backup
-	backup := d.backupMap[DataSourceTypeDisc][util.Deref(disk.ID)]
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
+	}
 
 	// Convert object responses from Azure to string
 	rawInfo = voc.AddRawInfo(rawInfo, disk)
