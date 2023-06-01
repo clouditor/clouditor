@@ -391,10 +391,9 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Make sure that the configuration also has metric/service ID and updated at set
-	req.Configuration.CloudServiceId = req.CloudServiceId
-	req.Configuration.MetricId = req.MetricId
+	// Make sure that the configuration also has updatedAt and isDefault set
 	req.Configuration.UpdatedAt = timestamppb.Now()
+	req.Configuration.IsDefault = false
 
 	err = svc.storage.Save(&req.Configuration)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
