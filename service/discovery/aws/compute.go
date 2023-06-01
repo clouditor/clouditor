@@ -94,7 +94,7 @@ func (*computeDiscovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
+func (d *computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	log.Infof("Collecting evidences in %s", d.Name())
 
 	// Even though technically volumes are "storage", they are part of the EC2 API and therefore discovered here
@@ -410,7 +410,7 @@ func (*computeDiscovery) labels(tags []typesEC2.Tag) (labels map[string]string) 
 }
 
 // addARNToVolume generates the ARN of a volumne instance
-func (d computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
+func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +
