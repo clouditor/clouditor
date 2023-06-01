@@ -185,6 +185,11 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// Add backuped storage account objects
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
+		storageResourcesList = append(storageResourcesList, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
+	}
+
 	return storageResourcesList, nil
 }
 
@@ -236,10 +241,6 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 
 			list = append(list, objectStorages)
 
-			// Add backup object storages
-			if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
-				list = append(list, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
-			}
 		}
 	}
 

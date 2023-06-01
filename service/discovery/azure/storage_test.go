@@ -700,6 +700,20 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 					},
 				},
+				&voc.ObjectStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+							Name:         "account1-account1-22222222-2222-2222-2222-222222222222",
+							ServiceID:    "11111111-1111-1111-1111-111111111111",
+							CreationTime: 0,
+							Type:         voc.ObjectStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "westeurope",
+							},
+						},
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
