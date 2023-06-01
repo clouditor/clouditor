@@ -50,7 +50,7 @@ func (*k8sStorageDiscovery) Description() string {
 	return "Discover Kubernetes storage resources."
 }
 
-func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// Get persistent volumes

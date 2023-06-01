@@ -50,7 +50,7 @@ func (*k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
-func (d k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
+func (d *k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// Get pods
