@@ -79,7 +79,7 @@ func TestService_loadMetrics(t *testing.T) {
 			name: "storage error",
 			fields: fields{
 				metricsFile: "metrics.json",
-				storage:     &testutil.StorageWithError{SaveErr: ErrSomeError},
+				storage:     &testutil.StorageWithError{CreateErr: ErrSomeError},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
