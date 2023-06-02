@@ -72,7 +72,9 @@ func TestMain(m *testing.M) {
 				Operator:       "==",
 				IsDefault:      true,
 				CloudServiceId: testdata.MockCloudServiceID1,
-			}}})
+			},
+			ToolId: assessment.AssessmentToolId,
+		}})
 	if err != nil {
 		panic(err)
 	}

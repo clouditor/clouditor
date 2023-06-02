@@ -1483,6 +1483,9 @@ components:
                 cloudServiceId:
                     type: string
                     description: The cloud service which this assessment result belongs to
+                toolId:
+                    type: string
+                    description: Reference to the tool which provided the assessment result
             description: A result resource, representing the result after assessing the cloud resource with id resource_id.
         AssessmentTool:
             type: object

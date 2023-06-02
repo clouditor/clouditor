@@ -638,6 +638,7 @@ func TestAssessmentResultHook(t *testing.T) {
 						Compliant:             true,
 						ResourceId:            testdata.MockResourceID1,
 						ResourceTypes:         []string{"ResourceType"},
+						ToolId:                assessment.AssessmentToolId,
 					},
 				},
 			},
@@ -705,6 +706,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Compliant:             true,
 						ResourceId:            testdata.MockResourceID1,
 						ResourceTypes:         []string{"ResourceType"},
+						ToolId:                assessment.AssessmentToolId,
 					},
 				},
 			},
@@ -732,6 +734,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 						Compliant:             true,
 						ResourceId:            testdata.MockResourceID1,
 						ResourceTypes:         []string{"ResourceType"},
+						ToolId:                assessment.AssessmentToolId,
 					},
 				},
 			},
@@ -914,6 +917,7 @@ func createStoreAssessmentResultRequestsMock(count int) []*orchestrator.StoreAss
 				Compliant:             true,
 				ResourceId:            testdata.MockResourceID1,
 				ResourceTypes:         []string{"ResourceType"},
+				ToolId:                assessment.AssessmentToolId,
 			},
 		}
 

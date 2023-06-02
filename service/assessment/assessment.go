@@ -355,6 +355,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 			ResourceId:            resourceId,
 			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
+			ToolId:                assessment.AssessmentToolId,
 		}
 
 		// Inform hooks about new assessment result
