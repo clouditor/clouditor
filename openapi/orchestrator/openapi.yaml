@@ -35,6 +35,11 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: filter.toolId
+                  in: query
+                  description: Optional. List only assessment result from a specific assessment tool.
+                  schema:
+                    type: string
                 - name: latestByResourceId
                   in: query
                   description: Optional. Latest results grouped by resource_id and metric_id.
@@ -147,6 +152,11 @@ paths:
                         type: string
                 - name: filter.metricId
                   in: query
+                  schema:
+                    type: string
+                - name: filter.toolId
+                  in: query
+                  description: Optional. List only assessment result from a specific assessment tool.
                   schema:
                     type: string
                 - name: pageSize

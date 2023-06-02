@@ -203,7 +203,7 @@ var (
 			MetricId:       testdata.MockMetricID2,
 			CloudServiceId: testdata.MockCloudServiceID2,
 		},
-		ToolId: assessment.AssessmentToolId,
+		ToolId: testdata.MockAssessmentResultToolID,
 	}
 	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
 

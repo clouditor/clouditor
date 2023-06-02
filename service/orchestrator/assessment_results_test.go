@@ -384,6 +384,29 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
+			name: "return filtered assessment results with specific tool_id",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.ListAssessmentResultsRequest{
+					Filter: &orchestrator.Filter{
+						ToolId: util.Ref(testdata.MockAssessmentResultToolID),
+					},
+				},
+			},
+			wantRes: &orchestrator.ListAssessmentResultsResponse{
+				Results: []*assessment.AssessmentResult{
+					orchestratortest.MockAssessmentResult4,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "return filtered non-compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
