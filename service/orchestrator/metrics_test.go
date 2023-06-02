@@ -33,12 +33,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
-
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -47,6 +42,11 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -384,6 +384,58 @@ func TestService_UpdateMetric(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
+			name: "storage error: Get",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.UpdateMetricRequest{
+					Metric: &assessment.Metric{
+						Id:    "TransportEncryptionEnabled",
+						Name:  "A slightly updated metric",
+						Scale: assessment.Metric_NOMINAL,
+						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+					},
+				},
+			},
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
+		},
+		{
+			name: "storage error: Save",
+			fields: fields{
+				storage: &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.UpdateMetricRequest{
+					Metric: &assessment.Metric{
+						Id:          "TransportEncryptionEnabled",
+						Name:        "TransportEncryptionEnabled",
+						Description: testdata.MockMetricDescription1,
+						Category:    testdata.MockMetricCategory1,
+						Scale:       assessment.Metric_NOMINAL,
+						Range:       &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+					},
+				},
+			},
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
+		},
+		{
 			name: "Update non-existing metric",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
@@ -451,8 +503,32 @@ func TestService_GetMetric(t *testing.T) {
 		fields     fields
 		args       args
 		wantMetric *assessment.Metric
-		wantErr    bool
+		wantErr    assert.ErrorAssertionFunc
 	}{
+		{
+			name:       "Invalid request",
+			args:       args{},
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.GetMetricRequest{
+					MetricId: "TransportEncryptionEnabled",
+				},
+			},
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrSomeError.Error())
+			},
+		},
 		{
 			name: "Get existing metric",
 			fields: fields{
@@ -489,7 +565,7 @@ func TestService_GetMetric(t *testing.T) {
 							structpb.NewBoolValue(true),
 						}}}},
 			},
-			wantErr: false,
+			wantErr: assert.NoError,
 		},
 		{
 			name:   "Get non-existing metric",
@@ -501,7 +577,9 @@ func TestService_GetMetric(t *testing.T) {
 				},
 			},
 			wantMetric: nil,
-			wantErr:    true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "metric not found")
+			},
 		},
 	}
 
@@ -513,11 +591,7 @@ func TestService_GetMetric(t *testing.T) {
 			gotMetric, err := svc.GetMetric(tt.args.in0, tt.args.req)
 
 			assert.NoError(t, gotMetric.Validate())
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetric() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.GetMetric() = %v, want %v", gotMetric, tt.wantMetric)
 			}
@@ -526,18 +600,100 @@ func TestService_GetMetric(t *testing.T) {
 }
 
 func TestService_ListMetrics(t *testing.T) {
-	var (
-		response *orchestrator.ListMetricsResponse
-		err      error
-	)
-	service := NewService()
+	type fields struct {
+		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
+		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFile          string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.ListMetricsRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListMetricsResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Invalid input",
+			args: args{},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id:          "TransportEncryptionEnabled",
+						Name:        "Transport Encryption: Enabled",
+						Description: "This metric describes, whether transport encryption is turned on or not",
+						Scale:       assessment.Metric_ORDINAL,
+						Range: &assessment.Range{
+							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+								Values: []*structpb.Value{
+									structpb.NewBoolValue(false),
+									structpb.NewBoolValue(true),
+								}}}},
+					})
+				}),
+			},
+			args: args{
+				req: &orchestrator.ListMetricsRequest{},
+			},
+			wantRes: &orchestrator.ListMetricsResponse{
+				Metrics: []*assessment.Metric{
+					{
+						Id:          "TransportEncryptionEnabled",
+						Name:        "Transport Encryption: Enabled",
+						Description: "This metric describes, whether transport encryption is turned on or not",
+						Scale:       assessment.Metric_ORDINAL,
+						Range: &assessment.Range{
+							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
+								Values: []*structpb.Value{
+									structpb.NewBoolValue(false),
+									structpb.NewBoolValue(true),
+								}}}},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				cloudServiceHooks:     tt.fields.cloudServiceHooks,
+				toeHooks:              tt.fields.toeHooks,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFile:          tt.fields.catalogsFile,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
+			}
+			gotRes, err := svc.ListMetrics(tt.args.in0, tt.args.req)
 
-	response, err = service.ListMetrics(context.TODO(), &orchestrator.ListMetricsRequest{})
+			assert.NoError(t, gotRes.Validate())
+			tt.wantErr(t, err)
 
-	assert.NoError(t, err)
-	assert.NotEmpty(t, response.Metrics)
-	// TODO(anatheka): Test failes because of incorrect metrics.json file
-	// assert.NoError(t, response.Validate())
+			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListMetrics() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
 
 func TestService_GetMetricImplementation(t *testing.T) {
@@ -557,8 +713,19 @@ func TestService_GetMetricImplementation(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes *assessment.MetricImplementation
-		wantErr bool
+		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name:    "Invalid input",
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
+			},
+		},
 		{
 			name: "metric not found",
 			fields: fields{
@@ -569,7 +736,13 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					MetricId: testdata.MockMetricID1,
 				},
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
+			},
 		},
 		{
 			name: "storage error",
@@ -581,7 +754,13 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					MetricId: testdata.MockMetricID1,
 				},
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
 		},
 		{
 			name: "metric found",
@@ -607,6 +786,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 				Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 				Code:     "package test",
 			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -623,10 +803,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
 			assert.NoError(t, gotRes.Validate())
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
 				t.Errorf("Service.GetMetricImplementation() = %v, want %v", gotRes, tt.wantRes)
 			}
@@ -651,10 +828,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		fields   fields
 		args     args
 		wantImpl assert.ValueAssertionFunc
-		wantErr  bool
+		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "metric not found",
+			name: "Invalid input",
 			fields: fields{
 				storage:     testutil.NewInMemoryStorage(t),
 				metricsFile: "metrics.json",
@@ -665,10 +842,62 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr:  true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
+			},
 		},
 		{
-			name: "storage error",
+			name: "Metric not found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricImplementationRequest{
+					Implementation: &assessment.MetricImplementation{
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
+					},
+				},
+			},
+			wantImpl: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
+			},
+		},
+		{
+			name: "storage error: Get",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricImplementationRequest{
+					Implementation: &assessment.MetricImplementation{
+						MetricId: "TransportEncryptionEnabled",
+						Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
+						Code:     "package example",
+					},
+				},
+			},
+			wantImpl: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
+		},
+		{
+			name: "storage error: Save",
 			fields: fields{
 				storage: &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
@@ -682,7 +911,13 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr:  true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
 		},
 		{
 			name: "update",
@@ -710,6 +945,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now())) &&
 					assert.NoError(t, impl.Validate())
 			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -723,11 +959,8 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				events:                tt.fields.events,
 			}
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
 
+			tt.wantErr(t, err)
 			tt.wantImpl(t, gotImpl)
 		})
 	}
@@ -754,6 +987,59 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		want         assert.ValueAssertionFunc
 		wantErr      assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Invalid input",
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					CloudServiceId: "InvalidCloudServiceID",
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
+			},
+		},
+		{
+			name: "Permission denied",
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					MetricId:       testdata.MockMetricID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			fields: fields{
+				authz: &servicetest.AuthorizationStrategyMock{},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.PermissionDenied)
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				authz:   &service.AuthorizationStrategyAllowAll{},
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.GetMetricConfigurationRequest{
+					MetricId:       testdata.MockMetricID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrSomeError.Error())
+			},
+		},
 		{
 			name: "metric found",
 			fields: fields{
@@ -862,7 +1148,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 		fields       fields
 		args         args
 		wantResponse *orchestrator.ListMetricConfigurationResponse
-		wantErr      bool
+		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
 			name: "error",
@@ -873,7 +1159,52 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
 			},
-			wantErr: true,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
+			},
+		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				authz: &servicetest.AuthorizationStrategyMock{},
+			},
+			args: args{
+				req: &orchestrator.ListMetricConfigurationRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.PermissionDenied)
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.ListMetricConfigurationRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				gotStatus, ok := status.FromError(err)
+				if !ok {
+					return false
+				}
+				return assert.Equal(t, gotStatus.Code(), codes.Internal)
+			},
 		},
 		{
 			name: "no error",
@@ -905,6 +1236,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 					},
 				},
 			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -923,10 +1255,8 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			// TODO(anatheka): Test failes because of incorrect metrics.json file
 			// assert.NoError(t, gotResponse.Validate())
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.ListMetricConfigurations() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
+
 			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.ListMetricConfigurations() = %v, want %v", gotResponse, tt.wantResponse)
 			}
@@ -956,6 +1286,70 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		want    assert.ValueAssertionFunc
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "Metric configuration invalid",
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+					MetricId:       testdata.MockMetricID1,
+					Configuration: &assessment.MetricConfiguration{
+						Operator:       "invalidOperator",
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+						MetricId:       testdata.MockMetricID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "value does not match regex pattern")
+			},
+		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				authz: &servicetest.AuthorizationStrategyMock{},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+					MetricId:       testdata.MockMetricID1,
+					Configuration: &assessment.MetricConfiguration{
+						CloudServiceId: testdata.MockCloudServiceID1,
+						MetricId:       testdata.MockMetricID1,
+						Operator:       "<",
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "storage error",
+			fields: fields{
+				authz:   &service.AuthorizationStrategyAllowAll{},
+				storage: &testutil.StorageWithError{SaveErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.UpdateMetricConfigurationRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+					MetricId:       testdata.MockMetricID1,
+					Configuration: &assessment.MetricConfiguration{
+						CloudServiceId: testdata.MockCloudServiceID1,
+						MetricId:       testdata.MockMetricID1,
+						Operator:       "<",
+						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+					},
+				},
+			},
+			want: assert.Empty,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrSomeError.Error())
+			},
+		},
 		{
 			name: "metricId is missing in request",
 			fields: fields{

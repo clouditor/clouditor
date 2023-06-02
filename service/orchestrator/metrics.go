@@ -219,6 +219,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 		return nil, err
 	}
 
+	metric = new(assessment.Metric)
+
 	// Check, if metric exists according to req.Metric.Id
 	err = svc.storage.Get(&metric, "id = ?", req.Metric.Id)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
@@ -378,12 +380,6 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
-	}
-
-	// Validate request configuration
-	err = req.Configuration.Validate()
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
