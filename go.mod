@@ -4,7 +4,7 @@ go 1.20
 
 // runtime dependencies (core)
 require (
-	github.com/MicahParks/keyfunc/v2 v2.0.1
+	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-co-op/gocron v1.28.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
