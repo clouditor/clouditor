@@ -514,7 +514,7 @@ func TestService_ListControls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are 50 default controls
+	// there are 30 default controls
 	// TODO(all): Why are IdSec-02 and IdSec-02.1 missing?
 	assert.Equal(t, 30, len(listControlsResponse.Controls))
 
