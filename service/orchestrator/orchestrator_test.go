@@ -113,7 +113,7 @@ func TestNewService(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(tt, "catalogsFolder.json", service.catalogsFolder)
+				return assert.Equal(tt, "catalogsFolder.json", s.catalogsFolder)
 			},
 		},
 		{

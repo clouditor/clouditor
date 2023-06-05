@@ -242,7 +242,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 
 	// Get catalog for each file
 	for i := range fileList {
-		var catalog []orchestrator.Catalog
+		var catalogsFromFile []*orchestrator.Catalog
 
 		// Get current path
 		path, _ := os.Getwd()
@@ -253,15 +253,13 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 			continue
 		}
 
-		err = json.Unmarshal(b, &catalog)
+		err = json.Unmarshal(b, &catalogsFromFile)
 		if err != nil {
 			log.Errorf("error in JSON marshal for file %s: %v", fileList[i], err)
 			continue
 		}
 
-		for i := range catalog {
-			catalogs = append(catalogs, &catalog[i])
-		}
+		catalogs = append(catalogs, catalogsFromFile...)
 	}
 
 	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.

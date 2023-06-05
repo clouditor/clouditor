@@ -223,7 +223,7 @@ func TestService_ListCatalogs(t *testing.T) {
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
+	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 }
 
 func TestService_UpdateCatalog(t *testing.T) {
