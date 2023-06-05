@@ -144,7 +144,7 @@ func (s *Session) Save() (err error) {
 	)
 
 	// create the session directory
-	if err = os.MkdirAll(s.Folder, 0744); err != nil {
+	if err = os.MkdirAll(s.Folder, 0600); err != nil {
 		return fmt.Errorf("could not create .clouditor in home directory: %w", err)
 	}
 

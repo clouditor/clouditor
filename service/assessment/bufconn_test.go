@@ -26,13 +26,15 @@
 package assessment
 
 import (
-	"clouditor.io/clouditor/api/orchestrator"
 	"context"
 	"net"
+	"syscall"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
@@ -45,6 +47,10 @@ var (
 
 func bufConnDialer(context.Context, string) (net.Conn, error) {
 	return bufConnListener.Dial()
+}
+
+func connectionRefusedDialer(context.Context, string) (net.Conn, error) {
+	return nil, syscall.ECONNREFUSED
 }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes

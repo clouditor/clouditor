@@ -29,7 +29,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/exp/slices"
 	"io"
+	"strings"
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -150,7 +152,7 @@ func (svc *Service) StoreEvidences(stream evidence.EvidenceStore_StoreEvidencesS
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: req.Evidence,
 		}
-		_, err = svc.StoreEvidence(context.Background(), evidenceRequest)
+		_, err = svc.StoreEvidence(stream.Context(), evidenceRequest)
 		if err != nil {
 			log.Errorf("Error storing evidence: %v", err)
 			// Create response message. The StoreEvidence method does not need that message, so we have to create it here for the stream response.
@@ -186,7 +188,6 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		allowed []string
 		conds   []any
 	)
-
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -196,15 +197,39 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all cloud services.
 	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all {
-		conds = append(conds, "cloud_service_id IN ?", allowed)
+	if !all && req.GetFilter().GetCloudServiceId() != "" && !slices.Contains(allowed, req.GetFilter().GetCloudServiceId()) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	res = new(evidence.ListEvidencesResponse)
 
+	var query []string
+
+	// Apply filter options
+	if filter := req.GetFilter(); filter != nil {
+		if cloudServiceId := filter.GetCloudServiceId(); cloudServiceId != "" {
+			query = append(query, "cloud_service_id = ?")
+			conds = append(conds, cloudServiceId)
+		}
+		if toolId := filter.GetToolId(); toolId != "" {
+			query = append(query, "tool_id = ?")
+			conds = append(conds, toolId)
+		}
+	}
+
+	// In any case, we need to make sure that we only select evidences of cloud services that we have access to
+	if !all {
+		query = append(query, "cloud_service_id IN ?")
+		conds = append(conds, allowed)
+	}
+
+	// Join query with AND and prepend the query
+	conds = append([]any{strings.Join(query, " AND ")}, conds...)
+
 	// Paginate the evidences according to the request
 	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

@@ -30,6 +30,8 @@ package clouditor.discovery.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
+import "tagger/tagger.proto";
+import "validate/validate.proto";
 
 option go_package = "api/discovery";
 
@@ -46,24 +48,24 @@ service Discovery {
   };
 
   // Lists all evidences collected in the last run, exposed as REST.
-  rpc Query(QueryRequest) returns (QueryResponse) {
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
     option (google.api.http) = {
-      post : "/v1/discovery/query"
-      body : "*"
-      response_body : "*"
+      get : "/v1/discovery/resources"
     };
   }
 }
 
-message StartDiscoveryRequest {
-  optional string resource_group = 1; 
-}
+message StartDiscoveryRequest { optional string resource_group = 1; }
 
 message StartDiscoveryResponse { bool successful = 1; }
 
-message QueryRequest {
-  optional string filtered_type = 1;
-  optional string filtered_cloud_service_id = 2;
+message ListResourcesRequest {
+  message Filter {
+    optional string type = 1;
+    optional string cloud_service_id = 2;
+  }
+
+  optional Filter filter = 1;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -71,7 +73,29 @@ message QueryRequest {
   bool asc = 13;
 }
 
-message QueryResponse {
-  repeated google.protobuf.Value results = 1;
+message ListResourcesResponse {
+  repeated Resource results = 1;
   string next_page_token = 2;
+}
+
+// Resource is a wrapper around google.protobuf.Value that is needed for
+// persistence reasons.
+message Resource {
+  // Id contains a unique ID for each resource. This is specific for the cloud
+  // provider this resource was gathered for and can for example be a resource
+  // URL.
+  string id = 1 [ (validate.rules).string.uuid = true ];
+  // CloudServiceId is the UUID for the cloud service to which this resource
+  // belongs to.
+  string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
+  // ResourceType contains a comma seperated string of resource types according
+  // to our ontology.
+  string resource_type = 3 [ (validate.rules).string.min_len = 1 ];
+
+  // Properties contains a protobuf struct that describe the resource in the
+  // terms of our Clouditor ontology.
+  google.protobuf.Value properties = 10 [
+    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
+    (validate.rules).message.required = true
+  ];
 }

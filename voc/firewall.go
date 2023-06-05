@@ -1,4 +1,6 @@
-// Copyright 2022 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +25,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package voc
 
-// Option is a functional option type to configure services.
-type Option[T any] func(*T)
+type Firewall struct {
+	*AccessRestriction
+}
+
+func (*Firewall) Type() string {
+	return "Firewall"
+}

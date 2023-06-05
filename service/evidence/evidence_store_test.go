@@ -35,10 +35,15 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/internal/util"
+
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -115,9 +120,9 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{
@@ -136,8 +141,8 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{
@@ -283,7 +288,10 @@ func TestService_StoreEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
+				assert.Equal(t, tt.wantRespMessage.Status, responseFromServer.Status)
+				// We have to check both ways, as it fails if one StatusMessage is empty.
 				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				assert.Contains(t, tt.wantRespMessage.StatusMessage, responseFromServer.StatusMessage)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
@@ -293,34 +301,225 @@ func TestService_StoreEvidences(t *testing.T) {
 
 // TestListEvidences tests List req
 func TestService_ListEvidences(t *testing.T) {
-	// TODO(oxisto): Convert this test to a table test
-	s := NewService()
-	err := s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockEvidenceID,
-		CloudServiceId: testdata.MockCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
-	err = s.storage.Create(&evidence.Evidence{
-		Id:             testdata.MockAnotherEvidenceID,
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
-		Timestamp:      timestamppb.Now(),
-		Raw:            util.Ref(""),
-		Resource:       structpb.NewNullValue(),
-	})
-	assert.NoError(t, err)
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *evidence.ListEvidencesRequest
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantResp assert.ValueAssertionFunc
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Successful Filter Of Evidences (with allowed cloud service)",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: evidencetest.MockListEvidenceRequest1,
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
 
-	resp, err := s.ListEvidences(context.TODO(), &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(resp.Evidences))
+				for _, e := range res.Evidences {
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, e.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, e.ToolId)
+				}
 
-	s.authz = &service.AuthorizationStrategyJWT{Key: testutil.TestCustomClaims}
+				return true
+			},
+		},
+		{
+			name: "Only Cloud_Service_Id filter applied, when Tool_Id filter off",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest1.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest1.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest1.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest1.Asc,
+					Filter: &evidence.Filter{
+						CloudServiceId: evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
 
-	resp, err = s.ListEvidences(testutil.TestContextOnlyService1, &evidence.ListEvidencesRequest{})
-	assert.NoError(t, err)
-	assert.Equal(t, 1, len(resp.Evidences))
+				assert.Equal(t, 1, len(res.Evidences))
+
+				for _, r := range res.Evidences {
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Only Tool_Id filter applied, when Cloud_Service_Id filter off",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						ToolId: evidencetest.MockListEvidenceRequest2.Filter.ToolId,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
+
+				assert.Equal(t, 1, len(res.Evidences))
+
+				// Loop through all received evidences and check whether tool and service ids are correct.
+				for _, r := range res.Evidences {
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
+				}
+
+				return true
+			},
+		},
+		{
+			name: "Permission denied (cloud service id not allowed)",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1), // allow only MockCloudServiceID
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					Filter: &evidence.Filter{
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCloudServiceID2 is not allowed
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Wrong Input handled correctly (req = nil)",
+			args: args{
+				in0: context.TODO(),
+				req: nil,
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Wrong Input handled correctly (tool_id not UUID)",
+			args: args{
+				in0: nil,
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						ToolId: util.Ref("No UUID Format"),
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+			wantResp: assert.Nil,
+		},
+		{
+			name: "Wrong Input handled correctly (cloud_service_id not UUID)",
+			args: args{
+				in0: nil,
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+					Filter: &evidence.Filter{
+						CloudServiceId: util.Ref("No UUID Format"),
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
+			},
+			wantResp: assert.Nil,
+		},
+		{
+			name: "DB (pagination) error",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{
+					PageSize:  evidencetest.MockListEvidenceRequest2.PageSize,
+					PageToken: evidencetest.MockListEvidenceRequest2.PageToken,
+					OrderBy:   "Wrong Input",
+					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "could not paginate results")
+				return assert.Equal(t, status.Code(err), codes.Internal)
+			},
+			wantResp: assert.Nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+
+			gotRes, err := svc.ListEvidences(tt.args.in0, tt.args.req)
+			tt.wantErr(t, err)
+			tt.wantResp(t, gotRes)
+		})
+	}
 }
 
 func TestService_EvidenceHook(t *testing.T) {
@@ -374,8 +573,8 @@ func TestService_EvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID,
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					Id:             testdata.MockEvidenceID1,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					Timestamp:      timestamppb.Now(),
 					Raw:            nil,
 					ToolId:         "mockToolId-1",
@@ -429,7 +628,7 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 			Evidence: &evidence.Evidence{
 				Id:             uuid.NewString(),
 				ToolId:         fmt.Sprintf("MockToolId-%d", i),
-				CloudServiceId: fmt.Sprintf("MockCloudServiceId-%d", i),
+				CloudServiceId: testdata.MockCloudServiceID1,
 				Timestamp:      timestamppb.Now(),
 				Raw:            nil,
 				Resource: toStructWithoutTest(voc.VirtualMachine{
@@ -499,7 +698,7 @@ func (mockStreamer) SetTrailer(_ metadata.MD) {
 }
 
 func (mockStreamer) Context() context.Context {
-	panic("implement me")
+	return context.TODO()
 }
 
 func (mockStreamer) SendMsg(_ interface{}) error {
@@ -514,6 +713,10 @@ type mockStreamerWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidencesResponse) error {
@@ -543,6 +746,10 @@ type mockStreamerWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithSendErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (*mockStreamerWithSendErr) Send(*evidence.StoreEvidencesResponse) error {
@@ -612,21 +819,19 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockAnotherCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID2,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Resource:       structpb.NewNullValue(),
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyJWT{
-					Key: testutil.TestCustomClaims,
-				},
+				authz: servicetest.NewAuthorizationStrategy(false),
 			},
 			args: args{
-				ctx: testutil.TestContextOnlyService1,
+				ctx: context.TODO(),
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			want: assert.Nil,
@@ -640,18 +845,18 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Resource:       structpb.NewNullValue(),
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
+				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -664,7 +869,7 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "invalid UUID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
@@ -681,11 +886,11 @@ func TestService_GetEvidence(t *testing.T) {
 			name: "evidence not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {

@@ -41,8 +41,17 @@ paths:
             description: Returns all stored evidences. Part of the public API, also exposed as REST.
             operationId: EvidenceStore_ListEvidences
             parameters:
+                - name: filter.cloudServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.toolId
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
+                  description: 'page_size: 0 = default (50 is default value), > 0 = set value (i.e. page_size = 5 -> SQL-Limit = 5)'
                   schema:
                     type: integer
                     format: int32

@@ -26,53 +26,8 @@
 package assessment
 
 import (
-	"fmt"
-
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
 )
-
-// NewListAssessmentResultsCommand returns a cobra command for the `list` subcommand
-func NewListAssessmentResultsCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list-assessment-results",
-		Short: "Lists all assessment results stored in the assessment service",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var (
-				err     error
-				session *cli.Session
-				client  assessment.AssessmentClient
-				res     *assessment.ListAssessmentResultsResponse
-				results []*assessment.AssessmentResult
-			)
-
-			if session, err = cli.ContinueSession(); err != nil {
-				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
-				return nil
-			}
-
-			client = assessment.NewAssessmentClient(session)
-
-			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
-				return res.Results
-			})
-
-			// Build a response with all results
-			res = &assessment.ListAssessmentResultsResponse{
-				Results: results,
-			}
-
-			return session.HandleResponse(res, err)
-		},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
-	}
-
-	return cmd
-}
 
 // NewAssessmentCommand returns a cobra command for `assessment` subcommands
 func NewAssessmentCommand() *cobra.Command {
@@ -88,7 +43,5 @@ func NewAssessmentCommand() *cobra.Command {
 
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		NewListAssessmentResultsCommand(),
-	)
+	cmd.AddCommand()
 }

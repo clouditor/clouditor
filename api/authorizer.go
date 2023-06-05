@@ -130,13 +130,13 @@ func DefaultGrpcDialOptions(hostport string, s UsesAuthorizer, additionalOpts ..
 	// if the server-side has not enabled the auth middleware (for example in testing), it is perfectly
 	// fine to at least attempt to run it without one. If the server-side has enabled auth middleware
 	// and does not receive any client credentials, the actual RPC call will then fail later.
-	authorizer := s.Authorizer()
-
-	if authorizer != nil {
-		opts = append(opts, grpc.WithPerRPCCredentials(authorizer))
+	if s != nil {
+		if authorizer := s.Authorizer(); authorizer != nil {
+			opts = append(opts, grpc.WithPerRPCCredentials(authorizer))
+		}
 	}
 
-	// Appply any additional options that we might have
+	// Apply any additional options that we might have
 	opts = append(opts, additionalOpts...)
 
 	return opts

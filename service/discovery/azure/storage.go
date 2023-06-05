@@ -35,16 +35,20 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
 var (
 	ErrEmptyStorageAccount        = errors.New("storage account is empty")
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
+	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
 
 type azureStorageDiscovery struct {
 	*azureDiscovery
+	defenderProperties map[string]*defenderProperties
 }
 
 func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -52,7 +56,9 @@ func NewAzureStorageDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: StorageComponent,
 			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*backup),
 		},
+		make(map[string]*defenderProperties),
 	}
 
 	// Apply options
@@ -79,6 +85,17 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 
 	log.Info("Discover Azure storage resources")
 
+	// initialize defender client
+	if err := d.initDefenderClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+	}
+
+	// Discover Defender for X properties to add it to the required resource properties
+	d.defenderProperties, err = d.discoverDefender()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover Defender for X: %w", err)
+	}
+
 	// Discover storage accounts
 	storageAccounts, err := d.discoverStorageAccounts()
 	if err != nil {
@@ -91,6 +108,21 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
+
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup instances client
+	if err := d.initBackupInstancesClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup vaults client
+	if err := d.initBackupVaultsClient(); err != nil {
+		return nil, err
+	}
 
 	// initialize storage accounts client
 	if err := d.initAccountsClient(); err != nil {
@@ -107,8 +139,14 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// Discover backup vaults
+	err := d.azureDiscovery.discoverBackupVaults()
+	if err != nil {
+		log.Errorf("could not discover backup vaults: %v", err)
+	}
+
 	// Discover object and file storages
-	err := listPager(d.azureDiscovery,
+	err = listPager(d.azureDiscovery,
 		d.clients.accountsClient.NewListPager,
 		d.clients.accountsClient.NewListByResourceGroupPager,
 		func(res armstorage.AccountsClientListResponse) []*armstorage.Account {
@@ -140,10 +178,16 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			}
 
 			storageResourcesList = append(storageResourcesList, storageService)
+
 			return nil
 		})
 	if err != nil {
 		return nil, err
+	}
+
+	// Add backuped storage account objects
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
+		storageResourcesList = append(storageResourcesList, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
 	}
 
 	return storageResourcesList, nil
@@ -196,49 +240,11 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 			list = append(list, objectStorages)
+
 		}
 	}
 
 	return list, nil
-}
-
-func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
-	if account == nil {
-		return nil, ErrEmptyStorageAccount
-	}
-
-	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
-	if container == nil || container.ID == nil {
-		return nil, fmt.Errorf("container is nil")
-	}
-
-	enc, err := storageAtRestEncryption(account)
-	if err != nil {
-		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
-	}
-
-	return &voc.ObjectStorage{
-		Storage: &voc.Storage{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(container.ID)),
-				util.Deref(container.Name),
-				// We only have the creation time of the storage account the object storage belongs to
-				account.Properties.CreationTime,
-				voc.GeoLocation{
-					// The location is the same as the storage account
-					Region: util.Deref(account.Location),
-				},
-				// The storage account labels the object storage belongs to
-				labels(account.Tags),
-				voc.ObjectStorageType,
-			),
-			AtRestEncryption: enc,
-			Immutability: &voc.Immutability{
-				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
-			},
-		},
-		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
-	}, nil
 }
 
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
@@ -258,7 +264,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	te := &voc.TransportEncryption{
 		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
-		TlsVersion: string(*account.Properties.MinimumTLSVersion),
+		TlsVersion: string(util.Deref(account.Properties.MinimumTLSVersion)),
 		Algorithm:  "TLS",
 	}
 
@@ -290,20 +296,12 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
-// generalizeURL generalizes the URL, because the URL depends on the storage type
-func generalizeURL(url string) string {
-	if url == "" {
-		return ""
-	}
-
-	urlSplit := strings.Split(url, ".")
-	urlSplit[1] = "[file,blob]"
-	newURL := strings.Join(urlSplit, ".")
-
-	return newURL
-}
-
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+	var (
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -316,6 +314,11 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
+	}
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
 	return &voc.FileStorage{
@@ -333,8 +336,74 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				labels(account.Tags),
 				voc.FileStorageType,
 			),
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
 			AtRestEncryption: enc,
 		},
+	}, nil
+}
+
+func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+	var (
+		backups                  []*voc.Backup
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the container is not empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if container == nil || container.ID == nil {
+		return nil, fmt.Errorf("container is nil")
+	}
+
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	}
+
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
+	}
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	return &voc.ObjectStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(container.ID)),
+				util.Deref(container.Name),
+				// We only have the creation time of the storage account the object storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
+					Region: util.Deref(account.Location),
+				},
+				// The storage account labels the object storage belongs to
+				labels(account.Tags),
+				voc.ObjectStorageType,
+			),
+			AtRestEncryption: enc,
+			Immutability: &voc.Immutability{
+				Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
+			},
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
+			Backups: backups,
+		},
+		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }
 
@@ -347,17 +416,17 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 
 	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
 		return enc, errors.New("keySource is empty")
-	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftStorage {
+	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Algorithm: "AES256",
 				Enabled:   true,
 			},
 		}
-	} else if *account.Properties.Encryption.KeySource == armstorage.KeySourceMicrosoftKeyvault {
+	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftKeyvault {
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(garuppel): TBD
+				Algorithm: "", // TODO(all): TBD
 				Enabled:   true,
 			},
 			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
@@ -386,6 +455,19 @@ func accountName(id string) string {
 	return splitName[8]
 }
 
+// generalizeURL generalizes the URL, because the URL depends on the storage type
+func generalizeURL(url string) string {
+	if url == "" {
+		return ""
+	}
+
+	urlSplit := strings.Split(url, ".")
+	urlSplit[1] = "[file,blob]"
+	newURL := strings.Join(urlSplit, ".")
+
+	return newURL
+}
+
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
 	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
@@ -401,5 +483,33 @@ func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
+	return
+}
+
+// initDefenderClient creates the client if not already exists
+func (d *azureStorageDiscovery) initDefenderClient() (err error) {
+	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d.azureDiscovery, armsecurity.NewPricingsClient)
+
+	return
+}
+
+// initBackupPoliciesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initBackupPoliciesClient() (err error) {
+	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+
+	return
+}
+
+// initBackupVaultsClient creates the client if not already exists
+func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
+	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+
+	return
+}
+
+// initBackupInstancesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
+	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
 	return
 }

@@ -42,8 +42,10 @@ type OrchestratorClient interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(ctx context.Context, opts ...grpc.CallOption) (Orchestrator_StoreAssessmentResultsClient, error)
+	// Get an assessment result by ID
+	GetAssessmentResult(ctx context.Context, in *GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error)
+	ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error)
 	// Creates a new metric
 	CreateMetric(ctx context.Context, in *CreateMetricRequest, opts ...grpc.CallOption) (*assessment.Metric, error)
 	// Updates an existing metric
@@ -226,8 +228,17 @@ func (x *orchestratorStoreAssessmentResultsClient) Recv() (*StoreAssessmentResul
 	return m, nil
 }
 
-func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *assessment.ListAssessmentResultsRequest, opts ...grpc.CallOption) (*assessment.ListAssessmentResultsResponse, error) {
-	out := new(assessment.ListAssessmentResultsResponse)
+func (c *orchestratorClient) GetAssessmentResult(ctx context.Context, in *GetAssessmentResultRequest, opts ...grpc.CallOption) (*assessment.AssessmentResult, error) {
+	out := new(assessment.AssessmentResult)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListAssessmentResults(ctx context.Context, in *ListAssessmentResultsRequest, opts ...grpc.CallOption) (*ListAssessmentResultsResponse, error) {
+	out := new(ListAssessmentResultsResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -621,8 +632,10 @@ type OrchestratorServer interface {
 	// Stores stream of assessment results provided by an assessment tool and
 	// returns a response stream. Part of the public API, not exposed as REST.
 	StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error
+	// Get an assessment result by ID
+	GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error)
 	// List all assessment results. Part of the public API, also exposed as REST.
-	ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error)
+	ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error)
 	// Creates a new metric
 	CreateMetric(context.Context, *CreateMetricRequest) (*assessment.Metric, error)
 	// Updates an existing metric
@@ -738,7 +751,10 @@ func (UnimplementedOrchestratorServer) StoreAssessmentResult(context.Context, *S
 func (UnimplementedOrchestratorServer) StoreAssessmentResults(Orchestrator_StoreAssessmentResultsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StoreAssessmentResults not implemented")
 }
-func (UnimplementedOrchestratorServer) ListAssessmentResults(context.Context, *assessment.ListAssessmentResultsRequest) (*assessment.ListAssessmentResultsResponse, error) {
+func (UnimplementedOrchestratorServer) GetAssessmentResult(context.Context, *GetAssessmentResultRequest) (*assessment.AssessmentResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAssessmentResult not implemented")
+}
+func (UnimplementedOrchestratorServer) ListAssessmentResults(context.Context, *ListAssessmentResultsRequest) (*ListAssessmentResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAssessmentResults not implemented")
 }
 func (UnimplementedOrchestratorServer) CreateMetric(context.Context, *CreateMetricRequest) (*assessment.Metric, error) {
@@ -1002,8 +1018,26 @@ func (x *orchestratorStoreAssessmentResultsServer) Recv() (*StoreAssessmentResul
 	return m, nil
 }
 
+func _Orchestrator_GetAssessmentResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAssessmentResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetAssessmentResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetAssessmentResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetAssessmentResult(ctx, req.(*GetAssessmentResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(assessment.ListAssessmentResultsRequest)
+	in := new(ListAssessmentResultsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1015,7 +1049,7 @@ func _Orchestrator_ListAssessmentResults_Handler(srv interface{}, ctx context.Co
 		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListAssessmentResults",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*assessment.ListAssessmentResultsRequest))
+		return srv.(OrchestratorServer).ListAssessmentResults(ctx, req.(*ListAssessmentResultsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1737,6 +1771,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreAssessmentResult",
 			Handler:    _Orchestrator_StoreAssessmentResult_Handler,
+		},
+		{
+			MethodName: "GetAssessmentResult",
+			Handler:    _Orchestrator_GetAssessmentResult_Handler,
 		},
 		{
 			MethodName: "ListAssessmentResults",

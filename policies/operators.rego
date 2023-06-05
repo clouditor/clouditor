@@ -51,6 +51,27 @@ compare(operator, target_values, actual_values) {
     act_val in target_values
 }
 
+# Checks if one element of target_values (array) exists in key of actual_values (object)
+compare(operator, target_values, actual_values) {
+	operator == "isIn"
+    is_object(actual_values)
+    # Get all keys from objects
+    value := object.keys(actual_values)
+    # Check if one the keys is in array of target_values
+    some v in value
+    v in target_values
+}
+
+# Checks if the target_value (string) exists in key of actual_values (object)
+compare(operator, target_value, actual_values) {
+	operator == "isIn"
+    is_object(actual_values)
+    # Get all keys from objects
+    value := object.keys(actual_values)
+    # Check if target_value exists in the set of object's keys 
+    target_value in value
+}
+
 # Checks if the actual_value (string) exists in target_values (array)
 compare(operator, target_values, actual_value) {
 	operator == "allIn"

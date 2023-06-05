@@ -50,10 +50,10 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing resource",
 			args: args{
 				Evidence: &Evidence{
-					Id:             testdata.MockCloudServiceID,
-					ToolId:         testdata.MockEvidenceToolID,
+					Id:             testdata.MockCloudServiceID1,
+					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantResp: "",
@@ -65,15 +65,15 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Resource is not a struct",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: &structpb.Value{
 						Kind: &structpb.Value_StringValue{
 							StringValue: "MockTargetValue",
 						},
 					},
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -84,37 +84,37 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing resource Id field",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrResourceIdMissing.Error())
+				return assert.ErrorContains(t, err, ErrResourceIdIsEmpty.Error())
 			},
 		},
 		{
 			name: "Missing resource type field",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID: testdata.MockResourceID,
+								ID: testdata.MockResourceID1,
 							},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -125,18 +125,18 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing resource type field is empty",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{},
 							},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -147,16 +147,16 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing toolId",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -167,12 +167,12 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Missing timestamp",
 			args: args{
 				Evidence: &Evidence{
-					Id:     testdata.MockCloudServiceID,
-					ToolId: testdata.MockEvidenceToolID,
+					Id:     testdata.MockCloudServiceID1,
+					ToolId: testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
@@ -186,19 +186,19 @@ func Test_ValidateEvidence(t *testing.T) {
 			name: "Valid evidence",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
-			wantResp: string(testdata.MockResourceID),
+			wantResp: string(testdata.MockResourceID1),
 			wantErr:  assert.NoError,
 		},
 	}
@@ -227,10 +227,10 @@ func TestEvidence_ResourceTypes(t *testing.T) {
 			name: "Missing resource",
 			args: args{
 				Evidence: &Evidence{
-					Id:             testdata.MockCloudServiceID,
+					Id:             testdata.MockCloudServiceID1,
 					Timestamp:      timestamppb.Now(),
-					ToolId:         testdata.MockEvidenceToolID,
-					CloudServiceId: testdata.MockCloudServiceID,
+					ToolId:         testdata.MockEvidenceToolID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantErr: assert.NoError,
 		},
@@ -238,17 +238,17 @@ func TestEvidence_ResourceTypes(t *testing.T) {
 			name: "Missing resource types",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{}},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "list of types is empty")
@@ -258,17 +258,17 @@ func TestEvidence_ResourceTypes(t *testing.T) {
 			name: "Valid resource types",
 			args: args{
 				Evidence: &Evidence{
-					Id:        testdata.MockCloudServiceID,
+					Id:        testdata.MockCloudServiceID1,
 					Timestamp: timestamppb.Now(),
-					ToolId:    testdata.MockEvidenceToolID,
+					ToolId:    testdata.MockEvidenceToolID1,
 					Resource: toStruct(voc.VirtualMachine{
 						Compute: &voc.Compute{
 							Resource: &voc.Resource{
-								ID:   testdata.MockResourceID,
+								ID:   testdata.MockResourceID1,
 								Type: []string{"VirtualMachine"}},
 						},
 					}, t),
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				}},
 			wantErr: assert.NoError,
 		},

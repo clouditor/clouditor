@@ -5,7 +5,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/orchestratortest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +21,7 @@ func TestNewStorage(t *testing.T) {
 
 	// Test if we get same user via its name
 	userOutput := &orchestrator.CloudService{}
-	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName)
+	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName1)
 	assert.NoError(t, err)
 	assert.NoError(t, userOutput.Validate())
 	assert.Equal(t, userInput, userOutput)

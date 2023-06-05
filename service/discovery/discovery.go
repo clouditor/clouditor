@@ -29,14 +29,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
-	"sync"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
@@ -46,7 +47,6 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/maps"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -64,11 +64,6 @@ const (
 
 var log *logrus.Entry
 
-type grpcTarget struct {
-	target string
-	opts   []grpc.DialOption
-}
-
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
 
@@ -79,7 +74,7 @@ const (
 	DiscovererFinished
 )
 
-// DiscoveryEvent represents an event that is ommited if certain situations happen in the discoverer (defined by
+// DiscoveryEvent represents an event that is emitted if certain situations happen in the discoverer (defined by
 // [DiscoveryEventType]). Examples would be the start or the end of the discovery. We will potentially expand this in
 // the future.
 type DiscoveryEvent struct {
@@ -98,17 +93,15 @@ type Service struct {
 	configurations map[discovery.Discoverer]*Configuration
 
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-	assessmentAddress grpcTarget
+	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
-	resources map[string]voc.IsCloudResource
+	storage persistence.Storage
+
 	scheduler *gocron.Scheduler
 
-	authorizer api.Authorizer
+	authz service.AuthorizationStrategy
 
 	providers []string
-
-	// Mutex for resources
-	resourceMutex sync.RWMutex
 
 	Events chan *DiscoveryEvent
 
@@ -133,12 +126,10 @@ const (
 type ServiceOption func(*Service)
 
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOption {
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.assessmentAddress = grpcTarget{
-			target: address,
-			opts:   opts,
-		}
+		s.assessment.Target = target
+		s.assessment.Opts = opts
 	}
 }
 
@@ -151,8 +142,8 @@ func WithCloudServiceID(ID string) ServiceOption {
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
-	return func(s *Service) {
-		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+	return func(svc *Service) {
+		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
@@ -168,17 +159,30 @@ func WithProviders(providersList []string) ServiceOption {
 	}
 }
 
+// WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
+func WithStorage(storage persistence.Storage) ServiceOption {
+	return func(s *Service) {
+		s.storage = storage
+	}
+}
+
+// WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+	return func(s *Service) {
+		s.authz = authz
+	}
+}
+
 func NewService(opts ...ServiceOption) *Service {
+	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-		assessmentAddress: grpcTarget{
-			target: DefaultAssessmentAddress,
-		},
-		resources:      make(map[string]voc.IsCloudResource),
-		scheduler:      gocron.NewScheduler(time.UTC),
-		configurations: make(map[discovery.Discoverer]*Configuration),
-		Events:         make(chan *DiscoveryEvent),
-		csID:           discovery.DefaultCloudServiceID,
+		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
+		scheduler:         gocron.NewScheduler(time.UTC),
+		configurations:    make(map[discovery.Discoverer]*Configuration),
+		Events:            make(chan *DiscoveryEvent),
+		csID:              discovery.DefaultCloudServiceID,
+		authz:             &service.AuthorizationStrategyAllowAll{},
 	}
 
 	// Apply any options
@@ -186,37 +190,28 @@ func NewService(opts ...ServiceOption) *Service {
 		o(s)
 	}
 
+	// Default to an in-memory storage, if nothing was explicitly set
+	if s.storage == nil {
+		s.storage, err = inmemory.NewStorage()
+		if err != nil {
+			log.Errorf("Could not initialize the storage: %v", err)
+		}
+	}
+
 	return s
-}
-
-// SetAuthorizer implements UsesAuthorizer.
-func (svc *Service) SetAuthorizer(auth api.Authorizer) {
-	svc.authorizer = auth
-}
-
-// Authorizer implements UsesAuthorizer.
-func (svc *Service) Authorizer() api.Authorizer {
-	return svc.authorizer
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
-	// Establish connection to assessment gRPC service
-	conn, err := grpc.Dial(target,
-		api.DefaultGrpcDialOptions(target, svc, additionalOpts...)...,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
-	}
-
-	client := assessment.NewAssessmentClient(conn)
+	// Make sure, that we re-connect
+	svc.assessment.ForceReconnect()
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	stream, err = client.AssessEvidences(context.Background())
+	stream, err = svc.assessment.Client.AssessEvidences(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
@@ -227,12 +222,17 @@ func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.D
 }
 
 // Start starts discovery
-func (svc *Service) Start(_ context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var opts = []azure.DiscoveryOption{}
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
@@ -348,13 +348,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		// Set the cloud service ID to the one of the discoverer
-		resource.SetServiceID(svc.csID)
-
-		svc.resourceMutex.Lock()
-		svc.resources[string(resource.GetID())] = resource
-		svc.resourceMutex.Unlock()
-
 		var (
 			v *structpb.Value
 		)
@@ -362,6 +355,21 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		v, err = voc.ToStruct(resource)
 		if err != nil {
 			log.Errorf("Could not convert resource to protobuf struct: %v", err)
+		}
+
+		// Build a resource struct. This will hold the latest sync state of the
+		// resource for our storage layer.
+		r := &discovery.Resource{
+			Id:             string(resource.GetID()),
+			ResourceType:   strings.Join(resource.GetType(), ","),
+			CloudServiceId: resource.GetServiceID(),
+			Properties:     v,
+		}
+
+		// Persist the latest state of the resource
+		err = svc.storage.Save(&r, "id = ?", r.Id)
+		if err != nil {
+			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
 		// TODO(all): What is the raw type in our case?
@@ -375,9 +383,9 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		// Get Evidence Store stream
-		channel, err := svc.assessmentStreams.GetStream(svc.assessmentAddress.target, "Assessment", svc.initAssessmentStream, svc.assessmentAddress.opts...)
+		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentAddress.target, err)
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
 			log.Error(err)
 			continue
 		}
@@ -386,9 +394,13 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *discovery.QueryResponse, err error) {
-	var r []*structpb.Value
-	var resources []voc.IsCloudResource
+func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
+	var (
+		query   []string
+		args    []any
+		all     bool
+		allowed []string
+	)
 
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -396,58 +408,48 @@ func (svc *Service) Query(_ context.Context, req *discovery.QueryRequest) (res *
 		return nil, err
 	}
 
-	resources = maps.Values(svc.resources)
-	sort.Slice(resources, func(i, j int) bool {
-		return resources[i].GetID() < resources[j].GetID()
-	})
-
-	for _, v := range resources {
-		var resource *structpb.Value
-
-		if req.FilteredType != nil && !v.HasType(req.GetFilteredType()) {
-			continue
+	// Filtering the resources by
+	// * cloud service ID
+	// * resource type
+	if req.Filter != nil {
+		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+			return nil, service.ErrPermissionDenied
 		}
 
-		if req.FilteredCloudServiceId != nil && v.GetServiceID() != req.GetFilteredCloudServiceId() {
-			continue
+		if req.Filter.CloudServiceId != nil {
+			query = append(query, "cloud_service_id = ?")
+			args = append(args, req.Filter.GetCloudServiceId())
 		}
-
-		resource, err = voc.ToStruct(v)
-		if err != nil {
-			log.Errorf("Error during JSON unmarshal: %v", err)
-			return nil, status.Error(codes.Internal, "error during JSON unmarshal")
+		if req.Filter.Type != nil {
+			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
+			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
 		}
-
-		r = append(r, resource)
 	}
 
-	res = new(discovery.QueryResponse)
-
-	// Paginate the evidences according to the request
-	r, res.NextPageToken, err = service.PaginateSlice(req, r, func(a *structpb.Value, b *structpb.Value) bool {
-		if req.OrderBy == "creation_time" {
-			return a.GetStructValue().Fields["creation_time"].GetNumberValue() < b.GetStructValue().Fields["creation_time"].GetNumberValue()
-		} else {
-			return a.GetStructValue().Fields["id"].GetStringValue() < b.GetStructValue().Fields["b"].GetStringValue()
-		}
-	}, service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	// We need to further restrict our query according to the cloud service we are allowed to "see".
+	//
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
+	//  and once above in CheckAccess.
+	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		query = append(query, "cloud_service_id IN ?")
+		args = append(args, allowed)
 	}
 
-	res.Results = r
+	res = new(discovery.ListResourcesResponse)
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	res.Results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
 }
 
-// handleError prints out the error according to the status code
-func handleError(err error, dest string) error {
-	prefix := "could not send evidence to " + dest
-	if status.Code(err) == codes.Internal {
-		return fmt.Errorf("%s. Internal error on the server side: %w", prefix, err)
-	} else if status.Code(err) == codes.InvalidArgument {
-		return fmt.Errorf("invalid evidence - provide evidence in the right format: %w", err)
-	} else {
-		return err
-	}
+// GetCloudServiceId implements CloudServiceRequest for this service. This is a little trick, so that we can call
+// CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
+// cloud service ID, instead of the individual requests that are made against the service.
+func (svc *Service) GetCloudServiceId() string {
+	return svc.csID
 }

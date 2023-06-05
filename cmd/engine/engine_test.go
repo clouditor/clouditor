@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/rest"
+	"clouditor.io/clouditor/server/rest"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 
 	"github.com/spf13/cobra"
@@ -41,11 +41,7 @@ func Test_doCmd(t *testing.T) {
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)
-				if !assert.NotNil(t, discoveryService) {
-					return false
-				}
-
-				return assert.NotNil(t, discoveryService.Authorizer())
+				return assert.NotNil(t, discoveryService)
 			},
 		},
 		{
@@ -76,7 +72,7 @@ func Test_doCmd(t *testing.T) {
 			success := <-rest.GetReadyChannel()
 
 			if success {
-				assert.NotNil(t, server)
+				assert.NotNil(t, srv)
 				assert.NotNil(t, discoveryService)
 				assert.NotNil(t, assessmentService)
 				assert.NotNil(t, evidenceStoreService)

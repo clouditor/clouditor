@@ -29,7 +29,6 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -51,12 +50,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Empty id
 					Id:       "",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -71,12 +70,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Only 4 characters
 					Id:       "1234",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -91,12 +90,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					// Wrong format: 'x' not allowed (no hexadecimal character)
 					Id:       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    "==",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -110,12 +109,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			args: args{
 				&AssessmentResult{
 					Id:       testdata.MockAssessmentResultID,
-					MetricId: testdata.MockMetricID,
+					MetricId: testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    ">",
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -135,7 +134,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 				},
 			},
 			wantResp: "",
@@ -149,15 +148,15 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
-						MetricId:       testdata.MockMetricID,
+						MetricId:       testdata.MockMetricID1,
 						Operator:       "==",
 						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
 					ResourceId: "myResource",
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantResp: "",
@@ -171,8 +170,8 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:            testdata.MockAssessmentResultID,
 					Timestamp:     timestamppb.Now(),
-					MetricId:      testdata.MockMetricID,
-					EvidenceId:    testdata.MockEvidenceID,
+					MetricId:      testdata.MockMetricID1,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -187,12 +186,12 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
-						MetricId:    testdata.MockMetricID,
+						MetricId:    testdata.MockMetricID1,
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -207,11 +206,11 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator: "<",
 					},
-					EvidenceId:    testdata.MockEvidenceID,
+					EvidenceId:    testdata.MockEvidenceID1,
 					ResourceTypes: []string{"Resource"},
 				},
 			},
@@ -226,10 +225,10 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:    ">",
-						MetricId:    testdata.MockMetricID,
+						MetricId:    testdata.MockMetricID1,
 						TargetValue: testdata.MockMetricConfigurationTargetValueString,
 					},
 					ResourceTypes: []string{"Resource"},
@@ -246,17 +245,17 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 				&AssessmentResult{
 					Id:        testdata.MockAssessmentResultID,
 					Timestamp: timestamppb.Now(),
-					MetricId:  testdata.MockMetricID,
+					MetricId:  testdata.MockMetricID1,
 					MetricConfiguration: &MetricConfiguration{
 						Operator:       "==",
-						MetricId:       testdata.MockMetricID,
+						MetricId:       testdata.MockMetricID1,
 						TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 					},
-					EvidenceId:     testdata.MockEvidenceID,
+					EvidenceId:     testdata.MockEvidenceID1,
 					ResourceId:     "myResource",
 					ResourceTypes:  []string{"Resource"},
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantResp: "",
@@ -272,59 +271,6 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-		})
-	}
-}
-
-func TestListAssessmentResultsRequest_Validate(t *testing.T) {
-	type fields struct {
-		req *ListAssessmentResultsRequest
-	}
-
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Request is empty",
-			fields: fields{
-				&ListAssessmentResultsRequest{},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Invalid cloud service id",
-			fields: fields{
-				req: &ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref("invalidCloudServiceId"),
-				},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "FilteredCloudServiceId: value must be a valid UUID")
-			},
-		},
-		{
-			name: "No filtered cloud service id",
-			fields: fields{
-				req: &ListAssessmentResultsRequest{},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				req: &ListAssessmentResultsRequest{
-					FilteredCloudServiceId: util.Ref(testdata.MockCloudServiceID),
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.fields.req.Validate()
-			tt.wantErr(t, err)
 		})
 	}
 }

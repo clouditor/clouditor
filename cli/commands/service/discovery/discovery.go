@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
-	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/spf13/cobra"
 )
@@ -76,9 +75,9 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  discovery.DiscoveryClient
-				res     *discovery.QueryResponse
-				results []*structpb.Value
-				req     discovery.QueryRequest
+				res     *discovery.ListResourcesResponse
+				results []*discovery.Resource
+				req     discovery.ListResourcesRequest
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -88,16 +87,24 @@ func NewQueryDiscoveryCommand() *cobra.Command {
 
 			client = discovery.NewDiscoveryClient(session)
 
-			if len(args) > 0 {
-				req.FilteredType = &args[0]
+			req = discovery.ListResourcesRequest{
+				PageSize:  0,
+				PageToken: "",
+				OrderBy:   "",
+				Asc:       false,
+				Filter:    &discovery.ListResourcesRequest_Filter{},
 			}
 
-			results, err = api.ListAllPaginated(&discovery.QueryRequest{}, client.Query, func(res *discovery.QueryResponse) []*structpb.Value {
+			if len(args) > 0 {
+				req.Filter.Type = &args[0]
+			}
+
+			results, err = api.ListAllPaginated(&discovery.ListResourcesRequest{}, client.ListResources, func(res *discovery.ListResourcesResponse) []*discovery.Resource {
 				return res.Results
 			})
 
 			// Build a response with all results
-			res = &discovery.QueryResponse{
+			res = &discovery.ListResourcesResponse{
 				Results: results,
 			}
 

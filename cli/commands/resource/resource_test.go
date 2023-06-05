@@ -35,9 +35,8 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_discovery "clouditor.io/clouditor/service/discovery"
 	"clouditor.io/clouditor/voc"
 
@@ -49,7 +48,7 @@ func TestMain(m *testing.M) {
 	svc := service_discovery.NewService()
 	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	os.Exit(clitest.RunCLITest(m, service.WithDiscovery(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithDiscovery(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -77,7 +76,7 @@ func TestNewListCommand(t *testing.T) {
 	err = cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &discovery.QueryResponse{}
+	var response = &discovery.ListResourcesResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)
@@ -106,8 +105,8 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:   testdata.MockResourceID,
-						Name: testdata.MockResourceName,
+						ID:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
 					},
 				},
@@ -140,7 +139,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 }
 
 func (mockDiscoverer) CloudServiceID() string {
-	return testutil.TestCloudService1
+	return testdata.MockCloudServiceID1
 }
 
 func wrongFormattedResource() voc.IsCloudResource {

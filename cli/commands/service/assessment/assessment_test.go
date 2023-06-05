@@ -26,21 +26,14 @@
 package assessment
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddCommands(t *testing.T) {
 	cmd := NewAssessmentCommand()
 
 	// Check if sub commands were added
-	assert.True(t, cmd.HasSubCommands())
-
-	// Check if NewListResultsCommand was added
-	for _, v := range cmd.Commands() {
-		if v.Use == "list-assessment-results" {
-			return
-		}
-	}
-	t.Errorf("No list command was added")
+	assert.False(t, cmd.HasSubCommands())
 }
