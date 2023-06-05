@@ -47,7 +47,7 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *assessment.ListAssessmentResultsResponse
+				res     *orchestrator.ListAssessmentResultsResponse
 				results []*assessment.AssessmentResult
 			)
 
@@ -58,12 +58,12 @@ func NewListAssessmentResultsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			results, err = api.ListAllPaginated(&assessment.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *assessment.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
+			results, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{}, client.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
 				return res.Results
 			})
 
 			// Build a response with all results
-			res = &assessment.ListAssessmentResultsResponse{
+			res = &orchestrator.ListAssessmentResultsResponse{
 				Results: results,
 			}
 

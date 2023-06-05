@@ -37,7 +37,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
@@ -59,25 +59,25 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:             testdata.MockCloudServiceID,
-			MetricId:       testdata.MockMetricID,
-			EvidenceId:     testdata.MockCloudServiceID,
-			CloudServiceId: testdata.MockCloudServiceID,
+			Id:             testdata.MockCloudServiceID1,
+			MetricId:       testdata.MockMetricID1,
+			EvidenceId:     testdata.MockCloudServiceID1,
+			CloudServiceId: testdata.MockCloudServiceID1,
 			Timestamp:      timestamppb.Now(),
 			ResourceId:     "myResource",
 			ResourceTypes:  []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
 				TargetValue:    toStruct(1.0),
-				MetricId:       testdata.MockMetricID,
+				MetricId:       testdata.MockMetricID1,
 				Operator:       "==",
 				IsDefault:      true,
-				CloudServiceId: testdata.MockCloudServiceID,
+				CloudServiceId: testdata.MockCloudServiceID1,
 			}}})
 	if err != nil {
 		panic(err)
 	}
 
-	os.Exit(clitest.RunCLITest(m, service.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -104,7 +104,7 @@ func TestNewListResultsCommand(t *testing.T) {
 	err := cmd.RunE(nil, []string{})
 	assert.NoError(t, err)
 
-	var response = &assessment.ListAssessmentResultsResponse{}
+	var response = &orchestrator.ListAssessmentResultsResponse{}
 	err = protojson.Unmarshal(b.Bytes(), response)
 
 	assert.NoError(t, err)

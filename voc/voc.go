@@ -143,6 +143,17 @@ func (a *AtRestEncryption) IsEnabled() bool {
 	return a.Enabled
 }
 
+type IsTransportEncryption interface {
+	IsSecurityFeature
+	transportEncryption()
+	IsEnabled() bool
+}
+
+func (*TransportEncryption) transportEncryption() {}
+func (a *TransportEncryption) IsEnabled() bool {
+	return a.Enabled
+}
+
 type IsAuthorization interface {
 	IsSecurityFeature
 	authorization()
@@ -156,6 +167,13 @@ type IsAuthenticity interface {
 }
 
 func (*Authenticity) authenticity() {}
+
+type IsAccessRestriction interface {
+	IsSecurityFeature
+	accessRestriction()
+}
+
+func (*AccessRestriction) accessRestriction() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint

@@ -23,22 +23,17 @@
 //
 // This file is part of Clouditor Community Edition.
 
-syntax = "proto3";
-package prototest;
+package service
 
-option go_package = "clouditor.io/clouditor/internal/testutil/prototest";
+import (
+	"github.com/sirupsen/logrus"
+)
 
-// This is a test message. If a test needs a proto message, that one can be used. 
-// This has been created because of import cycles in the package util.
-message TestStruct {
-	string test_name = 1;       
-	string test_id = 2; 
-	string test_description = 3; 
-	enum EvaluationStatus {
-        STATUS_UNSPECIFIED = 0;
-        COMPLIANT = 1;
-        NOT_COMPLIANT = 2;
-        PENDING = 3;
-    }
-	EvaluationStatus test_status = 4;
+var log *logrus.Entry
+
+func init() {
+	log = logrus.WithField("component", "service")
 }
+
+// Option is a functional option type to configure services.
+type Option[T any] func(*T)

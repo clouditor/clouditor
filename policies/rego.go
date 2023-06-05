@@ -167,8 +167,15 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 			if err != nil {
 				return nil, err
 			}
-
-			data = append(data, runMap)
+			// Add runMap to data only if metric was applicable. runMap=nil and err=nil means the metric was not
+			// applicable.
+			// This shouldn't happen in theory since it was tested above when the metric cache got initialized. But when
+			// there is new evidence which has set the resource types and tool id correctly (their combination builds
+			// the key for the cache), all metrics are applied due to the cache - even when all corresponding resource
+			// fields are not set properly.
+			if runMap != nil {
+				data = append(data, runMap)
+			}
 		}
 	}
 

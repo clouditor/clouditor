@@ -29,8 +29,9 @@ import (
 	"context"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -87,7 +88,7 @@ func TestListIngresses(t *testing.T) {
 		t.Fatalf("error injecting service add: %v", err)
 	}
 
-	d := NewKubernetesNetworkDiscovery(client, testutil.TestCloudService1)
+	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 
@@ -107,13 +108,13 @@ func TestListIngresses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
-	assert.Equal(t, "http://myhost/test", string((*lb.HttpEndpoints)[0].Url))
+	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
 
 	lb, ok = list[2].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
-	assert.Equal(t, "https://myhost/test", string((*lb.HttpEndpoints)[0].Url))
-	assert.NotNil(t, (*lb.HttpEndpoints)[0].TransportEncryption)
+	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
+	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }

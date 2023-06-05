@@ -29,8 +29,9 @@ import (
 	"context"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +76,7 @@ func TestListPods(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	d := NewKubernetesComputeDiscovery(client, testutil.TestCloudService1)
+	d := NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 
@@ -90,7 +91,7 @@ func TestListPods(t *testing.T) {
 		Compute: &voc.Compute{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(podID),
-				ServiceID:    testutil.TestCloudService1,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         podName,
 				CreationTime: podCreationTime.Unix(),
 				Type:         []string{"Container", "Compute", "Resource"},
@@ -112,7 +113,7 @@ func TestListPods(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeName),
-				ServiceID:    testutil.TestCloudService1,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         volumeName,
 				CreationTime: 0,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},

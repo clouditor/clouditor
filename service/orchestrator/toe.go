@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -121,7 +122,7 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithPreload("ControlsInScope"), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
@@ -222,6 +223,21 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
 
 	return &emptypb.Empty{}, nil
+}
+
+// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
+func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+	s.hookMutex.RLock()
+	hooks := s.toeHooks
+	defer s.hookMutex.RUnlock()
+
+	// Inform our hook, if we have any
+	if len(hooks) > 0 {
+		for _, hook := range hooks {
+			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
+			hook(ctx, event, err)
+		}
+	}
 }
 
 // RegisterToeHook registers the Target of Evaluation hook function
@@ -364,14 +380,12 @@ func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrato
 // getControls returns all controls based on the assurance level
 func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
 	var (
-		low    []*orchestrator.Control
-		medium []*orchestrator.Control
-		high   []*orchestrator.Control
-		c      = []*orchestrator.Control{}
+		levelControls = make(map[string][]*orchestrator.Control)
+		c             = []*orchestrator.Control{}
 	)
 
 	// Check that levels and level is not empty
-	if len(levels) < 3 {
+	if len(levels) == 0 {
 		err := errors.New("assurance levels are empty")
 		return c, err
 	}
@@ -381,47 +395,51 @@ func getControls(controls []*orchestrator.Control, levels []string, level string
 		return c, err
 	}
 
-	// Add controls based on their assurance level to the lists low, medium and high. If a controls is not defined regarding the assurance level it is dropped.
-	for i := range controls {
-		switch controls[i].GetAssuranceLevel() {
-		case levels[0]:
-			low = append(low, controls[i])
-		case levels[1]:
-			medium = append(medium, controls[i])
-		case levels[2]:
-			high = append(high, controls[i])
-		default:
+	// Add controls based on their assurance level to the map. If a controls is not defined regarding the assurance level it is dropped.
+	for _, control := range controls {
+		if control.AssuranceLevel == nil {
 			continue
 		}
+		levelControls[control.GetAssuranceLevel()] = append(levelControls[control.GetAssuranceLevel()], control)
 	}
 
-	// Add all needed controls based on the assurance level and return
-	switch level {
-	case levels[0]:
-		c = append(c, low...)
-	case levels[1]:
-		c = append(c, low...)
-		c = append(c, medium...)
-	case levels[2]:
-		c = append(c, low...)
-		c = append(c, medium...)
-		c = append(c, high...)
-	}
-
-	return c, nil
-}
-
-// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
-func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
-	s.hookMutex.RLock()
-	hooks := s.toeHooks
-	defer s.hookMutex.RUnlock()
-
-	// Inform our hook, if we have any
-	if len(hooks) > 0 {
-		for _, hook := range hooks {
-			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(ctx, event, err)
+	// Add all needed controls based on the assurance level.
+	// Note: The assurance levels must be sorted in ascending order, e.g., low, medium, high, because the controls of the lower assurance levels must be present in the higger assurance levels. If this is not the case, the controls with assurance levels low will not be included in medium.
+	for i := range levels {
+		c = append(c, levelControls[levels[i]]...)
+		if level == levels[i] {
+			break
 		}
 	}
+
+	// Add parent controls to the sub-control included in the list. That results in duplicates that we can remove later.
+	for i := range c {
+		for j := range controls {
+			if c[i].GetParentControlId() == controls[j].GetId() {
+				c = append(c, controls[j])
+			}
+		}
+	}
+
+	// Deduplicate controls
+	dedupControls := deduplicate(c)
+
+	return dedupControls, nil
+}
+
+// deduplicate removes all duplicates
+func deduplicate(result []*orchestrator.Control) []*orchestrator.Control {
+	// Sort slice by ID
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].GetId() > result[j].GetId()
+	})
+
+	// Compare elements and delete if it is a duplicate
+	for i := len(result) - 1; i > 0; i-- {
+		if result[i] == result[i-1] {
+			result = append(result[:i], result[i+1:]...)
+		}
+	}
+
+	return result
 }

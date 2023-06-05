@@ -52,7 +52,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "first page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
@@ -65,7 +65,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "next page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
@@ -78,7 +78,7 @@ func TestPaginateSlice(t *testing.T) {
 		{
 			name: "last page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},
@@ -124,7 +124,7 @@ func TestPaginateMapValues(t *testing.T) {
 		{
 			name: "first page",
 			args: args{
-				req: &assessment.ListAssessmentResultsRequest{
+				req: &orchestrator.ListAssessmentResultsRequest{
 					PageSize:  2,
 					PageToken: "",
 				},

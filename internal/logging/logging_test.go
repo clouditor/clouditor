@@ -138,7 +138,7 @@ func TestLogRequest(t *testing.T) {
 				level:   logrus.DebugLevel,
 				reqType: Register,
 				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID},
+					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID1},
 				},
 			},
 			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
@@ -150,7 +150,7 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						CatalogId:      testdata.MockCatalogID,
 					},
 				},
@@ -164,7 +164,7 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						CatalogId:      testdata.MockCatalogID,
 					},
 				},
@@ -177,10 +177,15 @@ func TestLogRequest(t *testing.T) {
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Store,
-				req:     &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{Id: testdata.MockEvidenceID}},
-				params:  []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
+				req: &assessment.AssessEvidenceRequest{
+					Evidence: &evidence.Evidence{
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+					},
+				},
+				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
 			},
-			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored back into queue for orchestrator (localhost).\n",
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Cloud Service '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {
