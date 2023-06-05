@@ -11,6 +11,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -232,7 +233,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	)
 
 	// Get all filenames
-	fileList, err = readFolder(svc.catalogsFolder)
+	fileList, err = util.GetJSONFilenames(svc.catalogsFolder)
 
 	log.Infof("Loading catalogs from files %s.", strings.Join(fileList, ", "))
 
@@ -273,24 +274,4 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	}
 
 	return
-}
-
-// readFolder returns all json files in the given folder
-func readFolder(folder string) ([]string, error) {
-	var (
-		list []string
-	)
-
-	files, err := os.ReadDir(folder)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range files {
-		if strings.HasSuffix(files[i].Name(), ".json") {
-			list = append(list, fmt.Sprintf("%s/%s", folder, files[i].Name()))
-		}
-	}
-
-	return list, nil
 }
