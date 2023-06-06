@@ -843,15 +843,19 @@ func (m *AssessmentResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetToolId()) < 1 {
-		err := AssessmentResultValidationError{
-			field:  "ToolId",
-			reason: "value length must be at least 1 runes",
+	if m.ToolId != nil {
+
+		if utf8.RuneCountInString(m.GetToolId()) < 1 {
+			err := AssessmentResultValidationError{
+				field:  "ToolId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
 	if len(errors) > 0 {
