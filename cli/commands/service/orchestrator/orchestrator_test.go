@@ -74,7 +74,9 @@ func TestMain(m *testing.M) {
 				IsDefault:      true,
 				MetricId:       testdata.MockMetricID1,
 				CloudServiceId: testdata.MockCloudServiceID1,
-			}}})
+			},
+			ToolId: assessment.AssessmentToolId,
+		}})
 	if err != nil {
 		panic(err)
 	}

@@ -39,6 +39,8 @@ var (
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
+const AssessmentToolId = "Clouditor Assessment"
+
 func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
 }
