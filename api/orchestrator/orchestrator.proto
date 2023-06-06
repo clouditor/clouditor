@@ -474,6 +474,8 @@ message Filter {
   repeated string metric_ids = 3
       [ (validate.rules).repeated .items.string.min_len = 1 ];
   optional string metric_id = 4 [ (validate.rules).string.min_len = 1 ];
+  // Optional. List only assessment result from a specific assessment tool.
+  optional string tool_id = 5 [ (validate.rules).string.min_len = 1 ];
 }
 
 message ListAssessmentToolsResponse {

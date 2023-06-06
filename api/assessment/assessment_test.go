@@ -256,6 +256,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					ResourceId:     "myResource",
 					ResourceTypes:  []string{"Resource"},
 					CloudServiceId: testdata.MockCloudServiceID1,
+					ToolId:         AssessmentToolId,
 				},
 			},
 			wantResp: "",
