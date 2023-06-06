@@ -136,7 +136,7 @@ message AssessmentResult {
   string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
 
   // Reference to the tool which provided the assessment result
-  string tool_id = 11 [ (validate.rules).string.min_len = 1 ];
+  optional string tool_id = 11 [ (validate.rules).string.min_len = 1 ];
 }
 
 /*

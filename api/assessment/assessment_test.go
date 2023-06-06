@@ -29,6 +29,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -256,7 +257,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 					ResourceId:     "myResource",
 					ResourceTypes:  []string{"Resource"},
 					CloudServiceId: testdata.MockCloudServiceID1,
-					ToolId:         AssessmentToolId,
+					ToolId:         util.Ref(AssessmentToolId),
 				},
 			},
 			wantResp: "",

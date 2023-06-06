@@ -149,7 +149,7 @@ var (
 			MetricId:       testdata.MockMetricID1,
 			CloudServiceId: testdata.MockCloudServiceID1,
 		},
-		ToolId: assessment.AssessmentToolId,
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult2ID,
@@ -167,7 +167,7 @@ var (
 			MetricId:       testdata.MockMetricID1,
 			CloudServiceId: testdata.MockCloudServiceID2,
 		},
-		ToolId: assessment.AssessmentToolId,
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult3ID,
@@ -185,7 +185,7 @@ var (
 			MetricId:       testdata.MockMetricID2,
 			CloudServiceId: testdata.MockCloudServiceID1,
 		},
-		ToolId: assessment.AssessmentToolId,
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult4ID,
@@ -203,7 +203,7 @@ var (
 			MetricId:       testdata.MockMetricID2,
 			CloudServiceId: testdata.MockCloudServiceID2,
 		},
-		ToolId: testdata.MockAssessmentResultToolID,
+		ToolId: util.Ref(testdata.MockAssessmentResultToolID),
 	}
 	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
 
