@@ -316,6 +316,6 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 }
 
 // GetRuntimeInfo implements a method to retrieve runtime information
-func (svc *Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
+func (*Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
 	return service.GetRuntimeInfo()
 }
