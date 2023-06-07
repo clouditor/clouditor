@@ -35,7 +35,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/server"
 	service_assessment "clouditor.io/clouditor/service/assessment"
 	"clouditor.io/clouditor/voc"
 
@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 		},
 	})
 
-	os.Exit(clitest.RunCLITest(m, service.WithAssessment(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithAssessment(svc)))
 }
 
 func TestAddCommands(t *testing.T) {
