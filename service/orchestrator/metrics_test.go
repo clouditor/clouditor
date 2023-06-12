@@ -49,7 +49,33 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-var ErrSomeError = errors.New("some error")
+var (
+	ErrSomeError = errors.New("some error")
+
+	// We need to define the following vars here because we could get import cycle errors in ./internal/testdata/testdata.go
+	MockMetricConfiguration1 = &assessment.MetricConfiguration{
+		MetricId:       testdata.MockMetricID1,
+		CloudServiceId: testdata.MockCloudServiceID1,
+		Operator:       "==",
+		TargetValue:    testdata.MockMetricConfigurationTargetValueString,
+	}
+
+	MockMetricRange1 = &assessment.Range{
+		Range: &assessment.Range_AllowedValues{
+			AllowedValues: &assessment.AllowedValues{
+				Values: []*structpb.Value{
+					structpb.NewBoolValue(false),
+					structpb.NewBoolValue(true),
+				}}}}
+
+	MockMetric1 = &assessment.Metric{
+		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
+		Description: testdata.MockMetricDescription1,
+		Scale:       assessment.Metric_ORDINAL,
+		Range:       MockMetricRange1,
+	}
+)
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
@@ -634,38 +660,14 @@ func TestService_ListMetrics(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(&assessment.Metric{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "Transport Encryption: Enabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					})
+					_ = s.Create(MockMetric1)
 				}),
 			},
 			args: args{
 				req: &orchestrator.ListMetricsRequest{},
 			},
 			wantRes: &orchestrator.ListMetricsResponse{
-				Metrics: []*assessment.Metric{
-					{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "Transport Encryption: Enabled",
-						Description: "This metric describes, whether transport encryption is turned on or not",
-						Scale:       assessment.Metric_ORDINAL,
-						Range: &assessment.Range{
-							Range: &assessment.Range_AllowedValues{AllowedValues: &assessment.AllowedValues{
-								Values: []*structpb.Value{
-									structpb.NewBoolValue(false),
-									structpb.NewBoolValue(true),
-								}}}},
-					},
-				},
+				Metrics: []*assessment.Metric{MockMetric1},
 			},
 			wantErr: assert.NoError,
 		},
@@ -687,6 +689,7 @@ func TestService_ListMetrics(t *testing.T) {
 			gotRes, err := svc.ListMetrics(tt.args.in0, tt.args.req)
 
 			assert.NoError(t, gotRes.Validate())
+
 			tt.wantErr(t, err)
 
 			if !reflect.DeepEqual(gotRes, tt.wantRes) {
@@ -1214,11 +1217,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 					_ = s.Create(&orchestrator.CloudService{
 						Id: testdata.MockCloudServiceID1,
 					})
-					_ = s.Create(&assessment.MetricConfiguration{
-						MetricId:       testdata.MockMetricID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Operator:       "==",
-					})
+					_ = s.Create(MockMetricConfiguration1)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
@@ -1229,11 +1228,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			},
 			wantResponse: &orchestrator.ListMetricConfigurationResponse{
 				Configurations: map[string]*assessment.MetricConfiguration{
-					testdata.MockMetricID1: {
-						MetricId:       testdata.MockMetricID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Operator:       "==",
-					},
+					testdata.MockMetricID1: MockMetricConfiguration1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1252,8 +1247,8 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
 
-			// TODO(anatheka): Test failes because of incorrect metrics.json file
-			// assert.NoError(t, gotResponse.Validate())
+			// Check if response validation succeds
+			assert.NoError(t, gotResponse.Validate())
 
 			tt.wantErr(t, err)
 
