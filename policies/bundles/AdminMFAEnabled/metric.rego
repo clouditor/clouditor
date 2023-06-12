@@ -15,10 +15,10 @@ applicable {
 
 compliant {
 	# count the number of "factors"
-	compare(data.operator, data.target_value, count(identity.authenticity))
+	compare(data.operator, data.target_value, count(identity.authenticities))
 
 	# also make sure, that we do not have any "NoAuthentication" in the factor and all are activated
-	every factor in identity.authenticity {
+	every factor in identity.authenticities {
 		# TODO(oxisto): we do not have this type property (yet)
 		not factor.type == "NoAuthentication"
 

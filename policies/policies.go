@@ -33,6 +33,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -48,7 +49,7 @@ type metricsCache struct {
 
 // PolicyEval is an interface for the policy evaluation engine
 type PolicyEval interface {
-	Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error)
+	Eval(evidence *evidence.Evidence, src MetricsSource, related map[string]*structpb.Value) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 

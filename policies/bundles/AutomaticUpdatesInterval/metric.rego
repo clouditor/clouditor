@@ -11,6 +11,8 @@ applicable {
 	am
 }
 
+tv := data.target_value
+
 compliant {
 	# time.Duration is nanoseconds, we want to convert this to days
 	compare(data.operator, data.target_value, am.interval / (1000000000 * 86400)) # nanoseconds to seconds (/1000000000), seconds to days (/(60*60*24) = 86400) 

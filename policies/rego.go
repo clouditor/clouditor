@@ -41,6 +41,7 @@ import (
 	"github.com/open-policy-agent/opa/storage"
 	"github.com/open-policy-agent/opa/storage/inmem"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // DefaultRegoPackage is the default package name for the Rego files
@@ -89,7 +90,7 @@ func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
 // considered to be applicable.
-func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error) {
+func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource, related map[string]*structpb.Value) (data []*Result, err error) {
 	var (
 		baseDir string
 		m       map[string]interface{}
@@ -98,6 +99,15 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 
 	baseDir = "."
 	m = evidence.Resource.GetStructValue().AsMap()
+
+	if related != nil {
+		am := make(map[string]interface{})
+		for key, value := range related {
+			am[key] = value.GetStructValue().AsMap()
+		}
+
+		m["related"] = am
+	}
 
 	types, err = evidence.ResourceTypes()
 	if err != nil {

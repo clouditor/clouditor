@@ -1,0 +1,23 @@
+{
+    "name": "logging-service",
+    "id": "someId",
+    "storage": [
+        "clouditor.io/container"
+    ],
+    "type": [
+        "LoggingService"
+    ],
+    "related": {
+        "clouditor.io/container": {
+            "name": "clouditor.io/container",
+            "id": "clouditor.io/container",
+            "type": ["ObjectStorage"],
+            "atRestEncryption": {
+                "enabled": true
+            },
+            "immutability": {
+                "enabled": true
+            }
+        }
+    }
+}

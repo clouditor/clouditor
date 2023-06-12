@@ -60,6 +60,14 @@ service Assessment {
   // stream. Part of the public API. Not exposed as REST.
   rpc AssessEvidences(stream AssessEvidenceRequest)
       returns (stream AssessEvidencesResponse) {};
+
+  // ListStatistics returns several statistics about this assessment service,
+  // such as processed evidences and evidences waiting for more resources.
+  rpc ListStatistics(ListStatisticsRequest) returns (ListStatisticsResponse) {
+    option (google.api.http) = {
+      get : "/v1/assessment/statistics"
+    };
+  }
 };
 
 message ConfigureAssessmentRequest {}
@@ -72,10 +80,16 @@ message AssessEvidenceRequest {
       [ (validate.rules).message.required = true ];
 }
 
+enum AssessmentStatus {
+  ASSESSMENT_STATUS_UNSPECIFIED = 0;
+  ASSESSMENT_STATUS_WAITING_FOR_RELATED = 1;
+  ASSESSMENT_STATUS_ASSESSED = 2;
+}
+
 // AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
 // RPC and therefore requires a response message according to the style
-// convention. Since no return values are required, this is empty.
-message AssessEvidenceResponse {}
+// convention.
+message AssessEvidenceResponse { AssessmentStatus status = 1; }
 
 // AssessEvidencesResponse belongs to AssessEvidences, which uses a custom
 // bidirectional streaming RPC and therefore requires a response message
@@ -91,6 +105,13 @@ message AssessEvidencesResponse {
   AssessmentStatus status = 1;
 
   string status_message = 2;
+}
+
+message ListStatisticsRequest {}
+message ListStatisticsResponse {
+  int64 number_processed_evidences = 1;
+  int64 number_evidences_waiting = 2;
+  float average_waiting_time = 3;
 }
 
 // A result resource, representing the result after assessing the cloud resource

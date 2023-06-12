@@ -511,6 +511,8 @@ func (m *AssessEvidenceResponse) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Status
+
 	if len(errors) > 0 {
 		return AssessEvidenceResponseMultiError(errors)
 	}
@@ -696,6 +698,216 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AssessEvidencesResponseValidationError{}
+
+// Validate checks the field values on ListStatisticsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListStatisticsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListStatisticsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListStatisticsRequestMultiError, or nil if none found.
+func (m *ListStatisticsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListStatisticsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListStatisticsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListStatisticsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListStatisticsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListStatisticsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListStatisticsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListStatisticsRequestMultiError) AllErrors() []error { return m }
+
+// ListStatisticsRequestValidationError is the validation error returned by
+// ListStatisticsRequest.Validate if the designated constraints aren't met.
+type ListStatisticsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListStatisticsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListStatisticsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListStatisticsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListStatisticsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListStatisticsRequestValidationError) ErrorName() string {
+	return "ListStatisticsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListStatisticsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListStatisticsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListStatisticsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListStatisticsRequestValidationError{}
+
+// Validate checks the field values on ListStatisticsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListStatisticsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListStatisticsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListStatisticsResponseMultiError, or nil if none found.
+func (m *ListStatisticsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListStatisticsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for NumberProcessedEvidences
+
+	// no validation rules for NumberEvidencesWaiting
+
+	// no validation rules for AverageWaitingTime
+
+	if len(errors) > 0 {
+		return ListStatisticsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListStatisticsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListStatisticsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListStatisticsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListStatisticsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListStatisticsResponseMultiError) AllErrors() []error { return m }
+
+// ListStatisticsResponseValidationError is the validation error returned by
+// ListStatisticsResponse.Validate if the designated constraints aren't met.
+type ListStatisticsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListStatisticsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListStatisticsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListStatisticsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListStatisticsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListStatisticsResponseValidationError) ErrorName() string {
+	return "ListStatisticsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListStatisticsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListStatisticsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListStatisticsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListStatisticsResponseValidationError{}
 
 // Validate checks the field values on AssessmentResult with the rules defined
 // in the proto definition for this message. If any rules are violated, the
