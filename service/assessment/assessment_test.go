@@ -945,7 +945,8 @@ func TestService_HandleEvidence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
+			// We need anohter evidence store address, otherwise the test fails if Clouditor is already running.
+			s := NewService(WithEvidenceStoreAddress("testhost:0000"))
 
 			// Mock streams for target services
 			if tt.fields.hasEvidenceStoreStream {
