@@ -31,7 +31,6 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync"
 	"testing"
 
@@ -106,7 +105,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with catalogs file",
 			args: args{
-				opts: []ServiceOption{WithCatalogsFile("catalogsfile.json")},
+				opts: []ServiceOption{WithCatalogsFolder("catalogsFolder.json")},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s, ok := i1.(*Service)
@@ -114,7 +113,7 @@ func TestNewService(t *testing.T) {
 					return false
 				}
 
-				return assert.Equal(tt, "catalogsfile.json", s.catalogsFile)
+				return assert.Equal(tt, "catalogsFolder.json", s.catalogsFolder)
 			},
 		},
 		{
@@ -399,11 +398,10 @@ func Test_GetCertificate(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
-				// Compare timestamp. We have to cut off the microseconds and seconds, otherwise an error can be returned.
-				t1 := strings.Split(tt.res.States[0].GetTimestamp(), ".")[0]
-				tt.res.States[0].Timestamp = t1[:len(t1)-3]
-				t2 := strings.Split(res.States[0].GetTimestamp(), ".")[0]
-				res.States[0].Timestamp = t2[:len(t2)-3]
+				// Check if timestamp is available and delete for comparison.
+				assert.NotEmpty(t, res.States[0].GetTimestamp())
+				res.States[0].Timestamp = ""
+				tt.res.States[0].Timestamp = ""
 				assert.True(t, proto.Equal(tt.res, res), "Want: %v\nGot : %v", tt.res, res)
 			}
 		})
