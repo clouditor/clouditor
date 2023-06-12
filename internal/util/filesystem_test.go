@@ -51,9 +51,9 @@ func TestGetJSONFilenames(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				folder: "../testcatalogs",
+				folder: "../../catalogs",
 			},
-			want:    []string{"../testcatalogs/demo_catalog.json"},
+			want:    []string{"../../catalogs/demo_catalog.json"},
 			wantErr: false,
 		},
 	}

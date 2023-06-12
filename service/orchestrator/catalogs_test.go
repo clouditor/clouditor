@@ -218,7 +218,7 @@ func TestService_ListCatalogs(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs"))
+	orchestratorService := NewService(WithCatalogsFolder("catalogs"))
 	// 1st case: Default catalogs stored
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
@@ -509,7 +509,7 @@ func TestService_ListControls(t *testing.T) {
 	assert.Empty(t, listControlsResponse.Controls)
 
 	// 2nd case: 30 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
-	orchestratorService = NewService(WithCatalogsFolder("internal/testcatalogs"))
+	orchestratorService = NewService(WithCatalogsFolder("catalogs"))
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
@@ -580,7 +580,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				catalogsFolder: "internal/testcatalogs",
+				catalogsFolder: "catalogs",
 				storage:        testutil.NewInMemoryStorage(t),
 			},
 			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
