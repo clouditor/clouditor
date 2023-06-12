@@ -396,6 +396,21 @@ func (m *Filter) validate(all bool) error {
 
 	}
 
+	if m.ToolId != nil {
+
+		if utf8.RuneCountInString(m.GetToolId()) < 1 {
+			err := FilterValidationError{
+				field:  "ToolId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return FilterMultiError(errors)
 	}

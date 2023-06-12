@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,30 +23,30 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package util
 
 import (
-	"errors"
-
-	"google.golang.org/protobuf/proto"
+	"fmt"
+	"os"
+	"strings"
 )
 
-type ResultHookFunc func(result *AssessmentResult, err error)
+// GetJSONFilenames returns all json files in the given folder
+func GetJSONFilenames(folder string) ([]string, error) {
+	var (
+		list []string
+	)
 
-var (
-	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
-	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
-	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
-)
+	files, err := os.ReadDir(folder)
+	if err != nil {
+		return nil, err
+	}
 
-const AssessmentToolId = "Clouditor Assessment"
+	for i := range files {
+		if strings.HasSuffix(files[i].Name(), ".json") {
+			list = append(list, fmt.Sprintf("%s/%s", folder, files[i].Name()))
+		}
+	}
 
-func (req *AssessEvidenceRequest) GetPayload() proto.Message {
-	return req.Evidence
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns the cloud service ID of the inner
-// object.
-func (req *AssessEvidenceRequest) GetCloudServiceId() string {
-	return req.GetEvidence().GetCloudServiceId()
+	return list, nil
 }

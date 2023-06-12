@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
 
@@ -72,7 +73,9 @@ func TestMain(m *testing.M) {
 				Operator:       "==",
 				IsDefault:      true,
 				CloudServiceId: testdata.MockCloudServiceID1,
-			}}})
+			},
+			ToolId: util.Ref(assessment.AssessmentToolId),
+		}})
 	if err != nil {
 		panic(err)
 	}

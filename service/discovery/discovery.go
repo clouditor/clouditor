@@ -378,8 +378,8 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:             uuid.New().String(),
 			CloudServiceId: resource.GetServiceID(),
 			Timestamp:      timestamppb.Now(),
-			ToolId:         "Clouditor Evidences Collection",
 			Raw:            util.Ref(resource.GetRaw()),
+			ToolId:         discovery.EvidenceCollectorToolId,
 			Resource:       v,
 		}
 

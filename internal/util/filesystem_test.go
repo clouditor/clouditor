@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,30 +23,50 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package assessment
+package util
 
 import (
-	"errors"
-
-	"google.golang.org/protobuf/proto"
+	"reflect"
+	"testing"
 )
 
-type ResultHookFunc func(result *AssessmentResult, err error)
-
-var (
-	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")
-	ErrMetricConfigurationOperatorMissing    = errors.New("operator in metric data is missing")
-	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
-)
-
-const AssessmentToolId = "Clouditor Assessment"
-
-func (req *AssessEvidenceRequest) GetPayload() proto.Message {
-	return req.Evidence
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns the cloud service ID of the inner
-// object.
-func (req *AssessEvidenceRequest) GetCloudServiceId() string {
-	return req.GetEvidence().GetCloudServiceId()
+func TestGetJSONFilenames(t *testing.T) {
+	type args struct {
+		folder string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			name: "Empty input folder",
+			args: args{
+				folder: "",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				folder: "../../catalogs",
+			},
+			want:    []string{"../../catalogs/demo_catalog.json"},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetJSONFilenames(tt.args.folder)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetJSONFilenames() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetJSONFilenames() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
