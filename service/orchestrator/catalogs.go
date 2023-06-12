@@ -244,10 +244,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	for i := range fileList {
 		var catalogsFromFile []*orchestrator.Catalog
 
-		// Get current path
-		path, _ := os.Getwd()
-
-		b, err = os.ReadFile(filepath.Join(path, fileList[i]))
+		b, err = os.ReadFile(filepath.Join(fileList[i]))
 		if err != nil {
 			log.Errorf("error while loading %s: %v", fileList[i], err)
 			continue
