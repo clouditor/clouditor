@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 
@@ -355,7 +356,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 			ResourceId:            resourceId,
 			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
-			ToolId:                assessment.AssessmentToolId,
+			ToolId:                util.Ref(assessment.AssessmentToolId),
 		}
 
 		// Inform hooks about new assessment result
