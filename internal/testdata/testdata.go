@@ -58,6 +58,7 @@ const (
 	// Assessment result
 	MockAssessmentResultID                   = "11111111-1111-1111-1111-111111111111"
 	MockAssessmentResultNonComplianceComment = "non_compliance_comment"
+	MockAssessmentResultToolID               = "Another Assessment Result Tool ID"
 
 	// Evidence
 	MockEvidenceID1     = "11111111-1111-1111-1111-111111111111"
