@@ -384,6 +384,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		functionAPI       LambdaAPI
 		isDiscovering     bool
 		awsConfig         *Client
+		csID              string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -403,13 +404,14 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
+				csID:        testdata.MockCloudServiceID1,
 			},
 			//args: args{client: mockClient},
 			[]*voc.Function{
 				{Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           mockFunction1ID,
-						ServiceID:    discovery.DefaultCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         mockFunction1,
 						CreationTime: int64(0),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -438,6 +440,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				functionAPI:       tt.fields.functionAPI,
 				isDiscovering:     tt.fields.isDiscovering,
 				awsConfig:         tt.fields.awsConfig,
+				csID:              tt.fields.csID,
 			}
 			got, err := d.discoverFunctions()
 			if (err != nil) != tt.wantErr {

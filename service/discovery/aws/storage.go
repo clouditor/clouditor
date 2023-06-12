@@ -127,7 +127,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	}
 
 	for _, b := range buckets {
-		rawInfo := make(map[string][]interface{})
+		raw := make(map[string][]interface{})
 
 		encryptionAtRest, rawBucketEncOutput, err = d.getEncryptionAtRest(&b)
 		if err != nil {
@@ -138,15 +138,11 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 			return
 		}
 
-		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, &b)
-		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketEncOutput)
-		rawInfo = voc.AddRawInfo(rawInfo, &rawBucketTranspEnc)
-		rawInfo = voc.AddRawInfo(rawInfo, &b.raw)
-		raw, err := voc.ToStringInterface(rawInfo)
-		if err != nil {
-			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-		}
+		// Add object responses from AWS
+		raw = voc.AddRawInfo(raw, &b)
+		raw = voc.AddRawInfo(raw, &rawBucketEncOutput)
+		raw = voc.AddRawInfo(raw, &rawBucketTranspEnc)
+		raw = voc.AddRawInfo(raw, &b.raw)
 
 		resources = append(resources,
 			// Add ObjectStorage
@@ -230,7 +226,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 			return
 		}
 
-		// Convert object responses from Azure to string
+		// Add object responses from AWS
 		rawInfo = voc.AddRawInfo(rawInfo, &b)
 		rawInfo = voc.AddRawInfo(rawInfo, rawRegion)
 

@@ -147,7 +147,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 	var blocks []*voc.BlockStorage
 	for i := range res.Volumes {
-		rawInfo := make(map[string][]interface{})
+		raw := make(map[string][]interface{})
 		volume := &res.Volumes[i]
 
 		atRest := &voc.AtRestEncryption{
@@ -159,12 +159,8 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 			atRest.Algorithm = "AES-256"
 		}
 
-		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, &res.Volumes[i])
-		raw, err := voc.ToStringInterface(rawInfo)
-		if err != nil {
-			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-		}
+		// Add object responses from AWS
+		raw = voc.AddRawInfo(raw, &res.Volumes[i])
 
 		blocks = append(blocks, &voc.BlockStorage{
 			Storage: &voc.Storage{
@@ -196,30 +192,26 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 	var ifcs []voc.NetworkInterface
 	for i := range res.NetworkInterfaces {
-		rawInfo := make(map[string][]interface{})
+		raw := make(map[string][]interface{})
 		ifc := &res.NetworkInterfaces[i]
 
-		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, &res.NetworkInterfaces[i])
-		raw, err := voc.ToStringInterface(rawInfo)
-		if err != nil {
-			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-		}
+		// Add object responses from AWS
+		raw = voc.AddRawInfo(raw, &res.NetworkInterfaces[i])
 
 		ifcs = append(ifcs, voc.NetworkInterface{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           d.arnify("network-interface", ifc.NetworkInterfaceId),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
-					CreationTime: 0,
-					Type:         []string{"NetworkInterface", "Networking", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					d.arnify("network-interface", ifc.NetworkInterfaceId),
+					d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Labels: d.labels(ifc.TagSet),
-					Raw:    raw,
-				},
+					d.labels(ifc.TagSet),
+					[]string{"NetworkInterface", "Networking", "Resource"},
+					raw,
+				),
 			},
 		})
 	}
@@ -235,30 +227,27 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 	}
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
-		rawInfo := make(map[string][]interface{})
+		raw := make(map[string][]interface{})
 
-		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, &reservation)
-		raw, err := voc.ToStringInterface(rawInfo)
-		if err != nil {
-			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-		}
+		// Add object responses from AWS
+		raw = voc.AddRawInfo(raw, &reservation)
 
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
-				Resource: &voc.Resource{
-					ID:           d.arnify("instance", vm.InstanceId),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.getNameOfVM(vm),
-					CreationTime: 0,
-					Type:         []string{"VirtualMachine", "Compute", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					d.arnify("instance", vm.InstanceId),
+					d.getNameOfVM(vm),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Labels: d.labels(vm.Tags),
-					Raw:    raw,
-				},
+					d.labels(vm.Tags),
+					[]string{"VirtualMachine", "Compute", "Resource"},
+					raw,
+				),
+
 				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
 			}
 
@@ -297,30 +286,28 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
+	// TODO(all): Labels are missing
 	for i := range functions {
-		rawInfo := make(map[string][]interface{})
+		raw := make(map[string][]interface{})
 		function := &functions[i]
 
-		// Convert object responses from Azure to string
-		rawInfo = voc.AddRawInfo(rawInfo, &functions[i])
-		raw, err := voc.ToStringInterface(rawInfo)
-		if err != nil {
-			log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-		}
+		// Add object responses from AWS
+		raw = voc.AddRawInfo(raw, &functions[i])
 
 		resources = append(resources, &voc.Function{
 			Compute: &voc.Compute{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         aws.ToString(function.FunctionName),
-					CreationTime: 0,
-					Type:         []string{"Function", "Compute", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					voc.ResourceID(aws.ToString(function.FunctionArn)),
+					aws.ToString(function.FunctionName),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Raw: raw,
-				},
+					nil,
+					voc.FunctionType,
+					raw,
+				),
 			}})
 	}
 	return

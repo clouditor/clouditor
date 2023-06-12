@@ -503,7 +503,7 @@ func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 						"some-id",
 						"some-name", nil, voc.GeoLocation{}, nil,
 						[]string{"ObjectStorage", "Storage", "Resource"},
-						"raw"),
+						map[string][]interface{}{"raw": {"raw"}}),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -515,7 +515,7 @@ func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 								"some-storage-account-id",
 								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
 								[]string{"StorageService", "NetworkService", "Networking", "Resource"},
-								"raw"),
+								map[string][]interface{}{"raw": {"raw"}}),
 						},
 					},
 				},

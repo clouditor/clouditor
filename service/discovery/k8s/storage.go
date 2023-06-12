@@ -77,14 +77,10 @@ func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-	var rawInfo = make(map[string][]interface{})
+	var raw = make(map[string][]interface{})
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, pv)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from K8S
+	raw = voc.AddRawInfo(raw, pv)
 
 	s := &voc.Storage{
 		Resource: discovery.NewResource(d,

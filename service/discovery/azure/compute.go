@@ -169,7 +169,7 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
-	var rawInfo = make(map[string][]interface{})
+	var raw = make(map[string][]interface{})
 
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil || function.ID == nil {
@@ -178,12 +178,8 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 
 	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, function)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -263,7 +259,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		autoUpdates              *voc.AutomaticUpdates
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
-		rawInfo                  = make(map[string][]interface{})
+		raw                      = make(map[string][]interface{})
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -282,12 +278,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, vm)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, vm)
 
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
@@ -449,7 +441,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 
 func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
 	var (
-		rawInfo   = make(map[string][]interface{})
+		raw       = make(map[string][]interface{})
 		rawKeyUrl *armcompute.DiskEncryptionSet
 		backups   []*voc.Backup
 	)
@@ -469,13 +461,9 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
 	}
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, disk)
-	rawInfo = voc.AddRawInfo(rawInfo, rawKeyUrl)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, disk)
+	raw = voc.AddRawInfo(raw, rawKeyUrl)
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{

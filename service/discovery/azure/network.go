@@ -202,14 +202,10 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
-	var rawInfo = make(map[string][]interface{})
+	var raw = make(map[string][]interface{})
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, lb)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, lb)
 
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
@@ -238,14 +234,10 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
-	var rawInfo = make(map[string][]interface{})
+	var raw = make(map[string][]interface{})
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, ag)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, ag)
 
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
@@ -269,14 +261,10 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
-	var rawInfo = make(map[string][]interface{})
+	var raw = make(map[string][]interface{})
 
-	// Convert object responses from Azure to string
-	rawInfo = voc.AddRawInfo(rawInfo, ni)
-	raw, err := voc.ToStringInterface(rawInfo)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
+	// Add object responses from Azure
+	raw = voc.AddRawInfo(raw, ni)
 
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
