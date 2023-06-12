@@ -1,3 +1,28 @@
+// Copyright 2023 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 package orchestrator
 
 import (
@@ -193,12 +218,12 @@ func TestService_ListCatalogs(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("catalogs"))
 	// 1st case: Default catalogs stored
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, len(listCatalogsResponse.Catalogs), 1)
+	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 }
 
 func TestService_UpdateCatalog(t *testing.T) {
@@ -252,7 +277,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 		err                  error
 		listCatalogsResponse *orchestrator.ListCatalogsResponse
 	)
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs/emptyTestFolder"))
 
 	// 1st case: Empty catalog ID error
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: ""})
@@ -269,21 +294,21 @@ func TestService_RemoveCatalog(t *testing.T) {
 	err = orchestratorService.storage.Create(mockCatalog)
 	assert.NoError(t, err)
 
-	// There are two catalogs in the db now (one default plus NewCatalog)
+	// There is one catalog in the db now (one default plus NewCatalog)
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 2, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
 
 	// Remove record
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: mockCatalog.Id})
 	assert.NoError(t, err)
 
-	// There are two records left in the DB
+	// There is no record left in the DB
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCatalogsResponse.Catalogs)
-	assert.Equal(t, 1, len(listCatalogsResponse.Catalogs))
+	assert.Equal(t, 0, len(listCatalogsResponse.Catalogs))
 }
 
 func TestService_GetCategory(t *testing.T) {
@@ -369,7 +394,7 @@ func TestService_GetCategory(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFile,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
@@ -390,7 +415,7 @@ func TestService_GetControl(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 	}
 	type args struct {
@@ -457,7 +482,7 @@ func TestService_GetControl(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 			}
 			gotRes, err := srv.GetControl(tt.args.ctx, tt.args.req)
@@ -476,20 +501,21 @@ func TestService_ListControls(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService()
+	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs/emptyTestFolder"))
 	// 1st case: No Controls stored
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
-	assert.NotEmpty(t, listControlsResponse.Controls)
+	assert.Empty(t, listControlsResponse.Controls)
 
-	// 2nd case: Two controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
+	// 2nd case: 30 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
+	orchestratorService = NewService(WithCatalogsFolder("catalogs"))
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are two default controls
-	assert.Equal(t, 2, len(listControlsResponse.Controls))
+	// there are 30 default controls
+	assert.Equal(t, 30, len(listControlsResponse.Controls))
 
 	// 3th case: List controls for a specific catalog and category.
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
@@ -499,7 +525,7 @@ func TestService_ListControls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	assert.Equal(t, 2, len(listControlsResponse.Controls))
+	assert.Equal(t, 4, len(listControlsResponse.Controls))
 }
 
 func TestService_loadCatalogs(t *testing.T) {
@@ -508,7 +534,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -531,8 +557,8 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "storage error",
 			fields: fields{
-				catalogsFile: "demo_catalogs.json",
-				storage:      &testutil.StorageWithError{SaveErr: ErrSomeError},
+				catalogsFolder: "internal/testcatalogs/emptyTestFolder",
+				storage:        &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
 			wantResult: assert.NotEmpty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -554,8 +580,8 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				catalogsFile: "demo_catalogs.json",
-				storage:      testutil.NewInMemoryStorage(t),
+				catalogsFolder: "catalogs",
+				storage:        testutil.NewInMemoryStorage(t),
 			},
 			wantResult: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				svc, ok := i.(*Service)
@@ -579,7 +605,7 @@ func TestService_loadCatalogs(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
