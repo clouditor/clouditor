@@ -28,7 +28,6 @@ package orchestrator
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -736,10 +735,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				events:                tt.fields.events,
 			}
 
-			m, err := svc.GetMetric(context.Background(), &orchestrator.GetMetricRequest{MetricId: tt.args.req.Implementation.MetricId})
-			assert.NoError(t, err)
-			fmt.Println("Metric is: ", m)
-
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
@@ -747,10 +742,6 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			}
 
 			tt.wantImpl(t, gotImpl)
-
-			m, err = svc.GetMetric(context.Background(), &orchestrator.GetMetricRequest{MetricId: gotImpl.MetricId})
-			assert.NoError(t, err)
-			fmt.Println("Metric is: ", m)
 		})
 	}
 }
