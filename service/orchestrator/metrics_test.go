@@ -28,6 +28,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -95,6 +96,18 @@ func TestService_loadMetrics(t *testing.T) {
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
+		},
+		{
+			// To test more accurately, we would need, e.g. an integration test since this function only returns error
+			name: "happy path",
+			fields: fields{
+				// nil enforce the local embedded metric function to be used
+				loadMetricsFunc: nil,
+				// empty string enforces the DefaultValue to be used
+				metricsFile: DefaultMetricsFile,
+				storage:     testutil.NewInMemoryStorage(t),
+			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -722,6 +735,11 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				catalogsFile:          tt.fields.catalogsFile,
 				events:                tt.fields.events,
 			}
+
+			m, err := svc.GetMetric(context.Background(), &orchestrator.GetMetricRequest{MetricId: tt.args.req.Implementation.MetricId})
+			assert.NoError(t, err)
+			fmt.Println("Metric is: ", m)
+
 			gotImpl, err := svc.UpdateMetricImplementation(tt.args.in0, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.UpdateMetricImplementation() error = %v, wantErrMessage %v", err, tt.wantErr)
@@ -729,6 +747,10 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 			}
 
 			tt.wantImpl(t, gotImpl)
+
+			m, err = svc.GetMetric(context.Background(), &orchestrator.GetMetricRequest{MetricId: gotImpl.MetricId})
+			assert.NoError(t, err)
+			fmt.Println("Metric is: ", m)
 		})
 	}
 }
