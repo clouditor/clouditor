@@ -266,7 +266,7 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 	return
 }
 
-// ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
+// ListPublicCertificates implements method for getting all certificates wihtout the state history, e.g. to show its state in the UI
 func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
