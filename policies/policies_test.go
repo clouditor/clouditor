@@ -32,15 +32,13 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 
 	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/api/assessment"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
