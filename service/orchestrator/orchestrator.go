@@ -266,6 +266,30 @@ func (svc *Service) ListCertificates(_ context.Context, req *orchestrator.ListCe
 	return
 }
 
+// ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
+func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	res = new(orchestrator.ListPublicCertificatesResponse)
+
+	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
+		service.DefaultPaginationOpts)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+	}
+
+	// Delete state history from certificates
+	for i := range res.Certificates {
+		res.Certificates[i].States = nil
+	}
+
+	return
+}
+
 // UpdateCertificate implements method for updating an existing certificate
 func (svc *Service) UpdateCertificate(_ context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request

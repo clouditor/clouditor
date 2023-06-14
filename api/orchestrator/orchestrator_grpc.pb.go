@@ -84,6 +84,8 @@ type OrchestratorClient interface {
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Lists all target certificates
 	ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error)
+	// Lists all target certificates without state history
+	ListPublicCertificates(ctx context.Context, in *ListPublicCertificatesRequest, opts ...grpc.CallOption) (*ListPublicCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Removes a certificate
@@ -431,6 +433,15 @@ func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCerti
 	return out, nil
 }
 
+func (c *orchestratorClient) ListPublicCertificates(ctx context.Context, in *ListPublicCertificatesRequest, opts ...grpc.CallOption) (*ListPublicCertificatesResponse, error) {
+	out := new(ListPublicCertificatesResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orchestratorClient) UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error) {
 	out := new(Certificate)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateCertificate", in, out, opts...)
@@ -674,6 +685,8 @@ type OrchestratorServer interface {
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
 	// Lists all target certificates
 	ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error)
+	// Lists all target certificates without state history
+	ListPublicCertificates(context.Context, *ListPublicCertificatesRequest) (*ListPublicCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
 	// Removes a certificate
@@ -810,6 +823,9 @@ func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCerti
 }
 func (UnimplementedOrchestratorServer) ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCertificates not implemented")
+}
+func (UnimplementedOrchestratorServer) ListPublicCertificates(context.Context, *ListPublicCertificatesRequest) (*ListPublicCertificatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPublicCertificates not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificate not implemented")
@@ -1381,6 +1397,24 @@ func _Orchestrator_ListCertificates_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_ListPublicCertificates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPublicCertificatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListPublicCertificates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListPublicCertificates(ctx, req.(*ListPublicCertificatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_UpdateCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateCertificateRequest)
 	if err := dec(in); err != nil {
@@ -1847,6 +1881,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCertificates",
 			Handler:    _Orchestrator_ListCertificates_Handler,
+		},
+		{
+			MethodName: "ListPublicCertificates",
+			Handler:    _Orchestrator_ListPublicCertificates_Handler,
 		},
 		{
 			MethodName: "UpdateCertificate",
