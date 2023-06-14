@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ var LoadBalancerType = []string{"LoadBalancer", "NetworkService", "Networking", 
 type LoadBalancer struct {
 	*NetworkService
 	AccessRestriction IsAccessRestriction `json:"accessRestriction"`
-	HttpEndpoints     *[]HttpEndpoint     `json:"httpEndpoints"`
+	HttpEndpoints     []*HttpEndpoint     `json:"httpEndpoints"`
 	NetworkServices   []ResourceID        `json:"networkServices"`
 	Url               string              `json:"url"`
 }

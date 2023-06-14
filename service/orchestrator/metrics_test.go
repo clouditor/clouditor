@@ -58,7 +58,7 @@ func TestService_loadMetrics(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 	}
@@ -118,7 +118,7 @@ func TestService_loadMetrics(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 			}
@@ -559,7 +559,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		events                chan *orchestrator.MetricChangeEvent
-		catalogsFile          string
+		catalogsFolder        string
 	}
 	type args struct {
 		ctx context.Context
@@ -629,7 +629,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 			}
 
@@ -652,7 +652,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		catalogsFile          string
+		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 	}
 	type args struct {
@@ -732,7 +732,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 			}
 
@@ -760,7 +760,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		catalogsFile          string
+		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
 	}
@@ -852,7 +852,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
 			}
@@ -871,7 +871,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
 		storage               persistence.Storage
 		metricsFile           string
-		catalogsFile          string
+		catalogsFolder        string
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
 	}
@@ -936,7 +936,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
 			}
@@ -962,7 +962,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -1261,7 +1261,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,

@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import "time"
 
 type Logging struct {
 	*Auditing
-	LoggingService  []ResourceID  `json:"loggingService"`
-	Enabled         bool          `json:"enabled"`
-	RetentionPeriod time.Duration `json:"retentionPeriod"`
+	LoggingService           []ResourceID  `json:"loggingService"`
+	Enabled                  bool          `json:"enabled"`
+	RetentionPeriod          time.Duration `json:"retentionPeriod"`
+	MonitoringLogDataEnabled bool          `json:"monitoringLogDataEnabled"`
+	SecurityAlertsEnabled    bool          `json:"securityAlertsEnabled"`
 }

@@ -4,7 +4,7 @@ go 1.20
 
 // runtime dependencies (core)
 require (
-	github.com/MicahParks/keyfunc/v2 v2.0.1
+	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-co-op/gocron v1.28.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
@@ -46,7 +46,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.2
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.98.0
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.34.0
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.35.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.33.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.19.0
 	github.com/aws/smithy-go v1.13.5
