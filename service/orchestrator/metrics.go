@@ -74,7 +74,7 @@ func (svc *Service) loadMetrics() (err error) {
 		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.
 		err = svc.storage.Create(m)
 		if err != nil {
-			log.Errorf("Error while saving metric configuration for '%s': %v", m.Id, err)
+			log.Errorf("Error while saving metric `%s`: %v", m.Id, err)
 			continue
 		}
 
