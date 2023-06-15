@@ -71,7 +71,7 @@ func (svc *Service) loadMetrics() (err error) {
 	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
-		// Somehow, we first need to save the metric, otherwise we are running into weird constraint issues.
+		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.
 		err = svc.storage.Create(m)
 		if err != nil {
 			log.Errorf("Error while saving metric configuration for '%s': %v", m.Id, err)
