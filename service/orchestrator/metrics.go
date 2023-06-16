@@ -94,7 +94,8 @@ func (svc *Service) loadMetrics() (err error) {
 
 	}
 
-	return
+	// Here we have return nil, as the previous errors are only a warning and not a real error for the calling function.
+	return nil
 }
 
 // prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular
@@ -218,6 +219,8 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	if err != nil {
 		return nil, err
 	}
+
+	metric = new(assessment.Metric)
 
 	// Check, if metric exists according to req.Metric.Id
 	err = svc.storage.Get(&metric, "id = ?", req.Metric.Id)
@@ -380,21 +383,14 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 		return nil, err
 	}
 
-	// Validate request configuration
-	err = req.Configuration.Validate()
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%s", err)
-	}
-
 	// Check, if this request has access to the cloud service according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Make sure that the configuration also has metric/service ID and updated at set
-	req.Configuration.CloudServiceId = req.CloudServiceId
-	req.Configuration.MetricId = req.MetricId
+	// Make sure that the configuration also has updatedAt and isDefault set
 	req.Configuration.UpdatedAt = timestamppb.Now()
+	req.Configuration.IsDefault = false
 
 	err = svc.storage.Save(&req.Configuration)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {

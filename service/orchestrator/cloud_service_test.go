@@ -329,7 +329,7 @@ func TestService_ListCloudServices(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -450,7 +450,7 @@ func TestService_ListCloudServices(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,

@@ -248,7 +248,9 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 }
 
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
-	var storageResourceIDs []voc.ResourceID
+	var (
+		storageResourceIDs []voc.ResourceID
+	)
 
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
@@ -282,6 +284,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 						},
 						labels(account.Tags),
 						voc.ObjectStorageServiceType,
+						account,
 					),
 				},
 				TransportEncryption: te,
@@ -311,11 +314,13 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 		return nil, fmt.Errorf("fileshare is nil")
 	}
 
+	// Get atRestEncryptionEnabled
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
 		return nil, fmt.Errorf("could not get file storage properties for the atRestEncryption: %w", err)
 	}
 
+	// Get monitoringLogDataEnabled and securityAlertsEnabled
 	if d.defenderProperties[DefenderStorageType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
@@ -335,6 +340,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
 				voc.FileStorageType,
+				account, fileshare,
 			),
 			ResourceLogging: &voc.ResourceLogging{
 				Logging: &voc.Logging{
@@ -353,6 +359,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
 	)
+
 	if account == nil {
 		return nil, ErrEmptyStorageAccount
 	}
@@ -390,6 +397,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
 				voc.ObjectStorageType,
+				account, container,
 			),
 			AtRestEncryption: enc,
 			Immutability: &voc.Immutability{
