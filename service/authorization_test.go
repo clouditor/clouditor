@@ -34,7 +34,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -61,7 +61,7 @@ var (
 	TestClaimsOnlyService1 = jwt.MapClaims{
 		"sub": "me",
 		"cloudserviceid": []string{
-			testdata.MockCloudServiceID,
+			testdata.MockCloudServiceID1,
 		},
 		"other": []int{1, 2},
 	}
@@ -194,7 +194,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: true,
 		},
@@ -206,7 +206,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestContextAllowAll,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: true,
 		},
@@ -218,7 +218,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: false,
 		},
@@ -230,7 +230,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: false,
 		},
@@ -242,7 +242,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: false,
 		},
@@ -254,7 +254,7 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestBrokenContext,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			want: false,
 		},
@@ -297,7 +297,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 				ctx: TestContextOnlyService1,
 			},
 			wantAll:  false,
-			wantList: []string{testdata.MockCloudServiceID},
+			wantList: []string{testdata.MockCloudServiceID1},
 		},
 		{
 			name: "valid context, allow all",

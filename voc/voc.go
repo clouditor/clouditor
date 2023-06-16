@@ -29,10 +29,16 @@ package voc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"google.golang.org/protobuf/types/known/structpb"
+)
+
+var (
+	ErrConvertingStructToString = errors.New("error converting struct to string")
 )
 
 type IsCloudResource interface {
@@ -43,6 +49,7 @@ type IsCloudResource interface {
 	GetType() []string
 	HasType(string) bool
 	GetCreationTime() *time.Time
+	GetRaw() string
 	Related() []string
 }
 
@@ -64,6 +71,7 @@ type Resource struct {
 	Type        []string          `json:"type"`
 	GeoLocation GeoLocation       `json:"geoLocation"`
 	Labels      map[string]string `json:"labels"`
+	Raw         string            `json:"raw"`
 }
 
 func (r *Resource) GetID() ResourceID {
@@ -98,6 +106,10 @@ func (r *Resource) HasType(resourceType string) (ok bool) {
 	return
 }
 
+func (r *Resource) GetRaw() string {
+	return r.Raw
+}
+
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
@@ -105,6 +117,30 @@ func (r *Resource) GetCreationTime() *time.Time {
 
 func (*Resource) Related() []string {
 	return []string{}
+}
+
+// ToStringInterface returns a string representation of the input
+func ToStringInterface(r []interface{}) (s string, err error) {
+	var (
+		b          []byte
+		rawInfoMap = make(map[string][]interface{})
+	)
+
+	if r == nil {
+		return "", nil
+	}
+
+	for i := range r {
+		typ := reflect.TypeOf(r[i]).String()
+
+		rawInfoMap[typ] = append(rawInfoMap[typ], r[i])
+	}
+
+	if b, err = json.Marshal(rawInfoMap); err != nil {
+		return "", fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	return string(b), nil
 }
 
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {
@@ -143,6 +179,17 @@ func (a *AtRestEncryption) IsEnabled() bool {
 	return a.Enabled
 }
 
+type IsTransportEncryption interface {
+	IsSecurityFeature
+	transportEncryption()
+	IsEnabled() bool
+}
+
+func (*TransportEncryption) transportEncryption() {}
+func (a *TransportEncryption) IsEnabled() bool {
+	return a.Enabled
+}
+
 type IsAuthorization interface {
 	IsSecurityFeature
 	authorization()
@@ -156,6 +203,13 @@ type IsAuthenticity interface {
 }
 
 func (*Authenticity) authenticity() {}
+
+type IsAccessRestriction interface {
+	IsSecurityFeature
+	accessRestriction()
+}
+
+func (*AccessRestriction) accessRestriction() {}
 
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint

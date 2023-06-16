@@ -1,4 +1,6 @@
-// Copyright 2022 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,32 +25,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package voc
 
-import (
-	"reflect"
-	"testing"
+var FileStorageServiceType = []string{"FileStorageService", "StorageService", "NetworkService", "Networking", "Resource"}
 
-	"github.com/stretchr/testify/assert"
-
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testutil/prototest"
-)
-
-// Not the most sophisticated tests. They will probably fail at some point when these proto messages change. Mocking
-// a proto.Message (and thus implementing ProtoReflect() as well) would be ideal...
-func TestGetFieldNames(t *testing.T) {
-	var (
-		fieldnames []string
-	)
-
-	// Successful
-	fieldnames = GetFieldNames(&prototest.TestStruct{})
-	assert.Equal(t, reflect.ValueOf(prototest.TestStruct{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"test_name", "test_id", "test_description", "test_status"}, fieldnames)
-
-	// Successful
-	fieldnames = GetFieldNames(&evidence.Evidence{})
-	assert.Equal(t, reflect.ValueOf(evidence.Evidence{}).NumField()-3, len(fieldnames))
-	assert.Equal(t, []string{"id", "timestamp", "cloud_service_id", "tool_id", "raw", "resource"}, fieldnames)
+// FileStorageService is an entity in our Cloud ontology. An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
+type FileStorageService struct {
+	*StorageService
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
 }

@@ -27,8 +27,10 @@ package k8s
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
 
@@ -36,8 +38,51 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 )
+
+func TestNewKubernetesStorageDiscovery(t *testing.T) {
+	type args struct {
+		intf           kubernetes.Interface
+		cloudServiceID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "empty input",
+			want: &k8sStorageDiscovery{
+				k8sDiscovery: k8sDiscovery{},
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				intf:           &fake.Clientset{},
+				cloudServiceID: testdata.MockCloudServiceID1,
+			},
+			want: &k8sStorageDiscovery{
+				k8sDiscovery: k8sDiscovery{
+					intf: &fake.Clientset{},
+					csID: testdata.MockCloudServiceID1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewKubernetesStorageDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewKubernetesStorageDiscovery() = %v, want %v", got, tt.want)
+			}
+
+			assert.Equal(t, "Kubernetes Storage", got.Name())
+		})
+	}
+}
 
 func Test_k8sStorageDiscovery_List(t *testing.T) {
 
@@ -73,7 +118,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		t.Fatalf("error injecting volume add: %v", err)
 	}
 
-	d := NewKubernetesStorageDiscovery(client, testdata.MockCloudServiceID)
+	d := NewKubernetesStorageDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 	assert.NoError(t, err)
@@ -87,7 +132,7 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		Storage: &voc.Storage{
 			Resource: &voc.Resource{
 				ID:           voc.ResourceID(volumeUID),
-				ServiceID:    testdata.MockCloudServiceID,
+				ServiceID:    testdata.MockCloudServiceID1,
 				Name:         volumeName,
 				CreationTime: volume.CreationTime,
 				Type:         []string{"BlockStorage", "Storage", "Resource"},
@@ -99,6 +144,10 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 			AtRestEncryption: &voc.AtRestEncryption{},
 		},
 	}
+
+	// Delete raw. We have to delete it, because of the creation time included in the raw field.
+	assert.NotNil(t, volume.Raw)
+	volume.Raw = ""
 
 	assert.True(t, ok)
 	assert.Equal(t, expectedVolume, volume)

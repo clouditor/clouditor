@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -63,11 +64,6 @@ const (
 )
 
 var log *logrus.Entry
-
-type grpcTarget struct {
-	target string
-	opts   []grpc.DialOption
-}
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
@@ -98,13 +94,11 @@ type Service struct {
 	configurations map[discovery.Discoverer]*Configuration
 
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-	assessmentAddress grpcTarget
+	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
 	storage persistence.Storage
 
 	scheduler *gocron.Scheduler
-
-	authorizer api.Authorizer
 
 	authz service.AuthorizationStrategy
 
@@ -133,12 +127,10 @@ const (
 type ServiceOption func(*Service)
 
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(address string, opts ...grpc.DialOption) ServiceOption {
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption {
 	return func(s *Service) {
-		s.assessmentAddress = grpcTarget{
-			target: address,
-			opts:   opts,
-		}
+		s.assessment.Target = target
+		s.assessment.Opts = opts
 	}
 }
 
@@ -151,8 +143,8 @@ func WithCloudServiceID(ID string) ServiceOption {
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
 func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
-	return func(s *Service) {
-		s.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
+	return func(svc *Service) {
+		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
@@ -186,14 +178,12 @@ func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
-		assessmentAddress: grpcTarget{
-			target: DefaultAssessmentAddress,
-		},
-		scheduler:      gocron.NewScheduler(time.UTC),
-		configurations: make(map[discovery.Discoverer]*Configuration),
-		Events:         make(chan *DiscoveryEvent),
-		csID:           discovery.DefaultCloudServiceID,
-		authz:          &service.AuthorizationStrategyAllowAll{},
+		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
+		scheduler:         gocron.NewScheduler(time.UTC),
+		configurations:    make(map[discovery.Discoverer]*Configuration),
+		Events:            make(chan *DiscoveryEvent),
+		csID:              discovery.DefaultCloudServiceID,
+		authz:             &service.AuthorizationStrategyAllowAll{},
 	}
 
 	// Apply any options
@@ -212,34 +202,17 @@ func NewService(opts ...ServiceOption) *Service {
 	return s
 }
 
-// SetAuthorizer implements UsesAuthorizer.
-func (svc *Service) SetAuthorizer(auth api.Authorizer) {
-	svc.authorizer = auth
-}
-
-// Authorizer implements UsesAuthorizer.
-func (svc *Service) Authorizer() api.Authorizer {
-	return svc.authorizer
-}
-
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
 // If configured, it uses the Authorizer of the discovery service to authenticate requests to the assessment.
-func (svc *Service) initAssessmentStream(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
+func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 	log.Infof("Trying to establish a connection to assessment service @ %v", target)
 
-	// Establish connection to assessment gRPC service
-	conn, err := grpc.Dial(target,
-		api.DefaultGrpcDialOptions(target, svc, additionalOpts...)...,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to assessment service: %w", err)
-	}
-
-	client := assessment.NewAssessmentClient(conn)
+	// Make sure, that we re-connect
+	svc.assessment.ForceReconnect()
 
 	// Set up the stream and store it in our service struct, so we can access it later to actually
 	// send the evidence data
-	stream, err = client.AssessEvidences(context.Background())
+	stream, err = svc.assessment.Client.AssessEvidences(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("could not set up stream for assessing evidences: %w", err)
 	}
@@ -406,15 +379,15 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:             uuid.New().String(),
 			CloudServiceId: resource.GetServiceID(),
 			Timestamp:      timestamppb.Now(),
-			ToolId:         "Clouditor Evidences Collection",
-			Raw:            nil,
+			Raw:            util.Ref(resource.GetRaw()),
+			ToolId:         discovery.EvidenceCollectorToolId,
 			Resource:       v,
 		}
 
 		// Get Evidence Store stream
-		channel, err := svc.assessmentStreams.GetStream(svc.assessmentAddress.target, "Assessment", svc.initAssessmentStream, svc.assessmentAddress.opts...)
+		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentAddress.target, err)
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessment.Target, err)
 			log.Error(err)
 			continue
 		}

@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,22 +23,30 @@
 //
 // This file is part of Clouditor Community Edition.
 
-syntax = "proto3";
-package prototest;
+package util
 
-option go_package = "clouditor.io/clouditor/internal/testutil/prototest";
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
-// This is a test message. If a test needs a proto message, that one can be used. 
-// This has been created because of import cycles in the package util.
-message TestStruct {
-	string test_name = 1;       
-	string test_id = 2; 
-	string test_description = 3; 
-	enum EvaluationStatus {
-        STATUS_UNSPECIFIED = 0;
-        COMPLIANT = 1;
-        NOT_COMPLIANT = 2;
-        PENDING = 3;
-    }
-	EvaluationStatus test_status = 4;
+// GetJSONFilenames returns all json files in the given folder
+func GetJSONFilenames(folder string) ([]string, error) {
+	var (
+		list []string
+	)
+
+	files, err := os.ReadDir(folder)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range files {
+		if strings.HasSuffix(files[i].Name(), ".json") {
+			list = append(list, fmt.Sprintf("%s/%s", folder, files[i].Name()))
+		}
+	}
+
+	return list, nil
 }

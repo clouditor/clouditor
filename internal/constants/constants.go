@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,21 +23,11 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package constants
 
-import (
-	"google.golang.org/protobuf/proto"
+const (
+	TLS    = "TLS"
+	AES    = "AES"
+	TLS1_2 = "TLS1_2"
+	AES256 = "AES256"
 )
-
-// GetFieldNames extracts all field names of a proto.Message. The extracted names are in lowercase with underscores
-func GetFieldNames(msg proto.Message) (fieldNames []string) {
-	fields := msg.ProtoReflect().Type().Descriptor().Fields()
-	// Start with 1 since fields[0] is always nil - for whatever reason.
-	// ProtoReflect().Range is would be more elegant, but it only iterates over populated fields which we don't have
-
-	for i := 0; i < fields.Len(); i++ {
-		desc := fields.Get(i)
-		fieldNames = append(fieldNames, desc.TextName())
-	}
-	return
-}

@@ -119,8 +119,8 @@ func Test_storage_Create(t *testing.T) {
 	)
 
 	metric = &assessment.Metric{
-		Id:    testdata.MockMetricID,
-		Name:  testdata.MockMetricName,
+		Id:    testdata.MockMetricID1,
+		Name:  testdata.MockMetricName1,
 		Range: mockMetricRange,
 	}
 	// Check if metric has all necessary fields
@@ -179,8 +179,8 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, service, gotService3)
 
 	var metric = &assessment.Metric{
-		Id:    testdata.MockMetricID,
-		Name:  testdata.MockMetricName,
+		Id:    testdata.MockMetricID1,
+		Name:  testdata.MockMetricName1,
 		Range: mockMetricRange,
 	}
 	// Check if metric has all necessary fields
@@ -192,13 +192,13 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric via Id
 	gotMetric := &assessment.Metric{}
-	err = s.Get(gotMetric, "id = ?", testdata.MockMetricID)
+	err = s.Get(gotMetric, "id = ?", testdata.MockMetricID1)
 	assert.NoError(t, err)
 	assert.NoError(t, gotMetric.Validate())
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId:  testdata.MockMetricID,
+		MetricId:  testdata.MockMetricID1,
 		Code:      "TestCode",
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
@@ -211,7 +211,7 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get metric implementation via Id
 	gotImpl := &assessment.MetricImplementation{}
-	err = s.Get(gotImpl, "metric_id = ?", testdata.MockMetricID)
+	err = s.Get(gotImpl, "metric_id = ?", testdata.MockMetricID1)
 	assert.NoError(t, err)
 	assert.NoError(t, gotImpl.Validate())
 	assert.Equal(t, impl, gotImpl)
@@ -231,8 +231,8 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test service
-	service1 = &orchestrator.CloudService{Id: testdata.MockCloudServiceID, Name: testdata.MockCloudServiceName}
-	service2 = &orchestrator.CloudService{Id: testdata.MockAnotherCloudServiceID, Name: testdata.MockAnotherCloudServiceName}
+	service1 = &orchestrator.CloudService{Id: testdata.MockCloudServiceID1, Name: testdata.MockCloudServiceName1}
+	service2 = &orchestrator.CloudService{Id: testdata.MockCloudServiceID2, Name: testdata.MockCloudServiceName2}
 
 	// List should return empty list since no services are in DB yet
 	err = s.List(&services, "", true, 0, -1)
@@ -246,7 +246,7 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 	err = s.List(&services, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, len(services), 2)
+	assert.Equal(t, 2, len(services))
 	// We only check one service and assume the others are also correct
 	assert.NoError(t, services[0].Validate())
 
@@ -273,9 +273,9 @@ func Test_storage_List(t *testing.T) {
 	assert.NoError(t, err)
 
 	// List should return list of 2 certificates with associated states
-	err = s.List(&certificates, "id", false, 0, 0)
+	err = s.List(&certificates, "id", false, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, len(certificates), 2)
+	assert.Equal(t, 2, len(certificates))
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
 	// We only check one certificate and assume the others are also correct
@@ -330,7 +330,7 @@ func Test_storage_Count(t *testing.T) {
 	assert.Equal(t, 2, int(count))
 
 	// Count of services with ID "SomeName2" should be 1
-	count, err = s.Count(&orchestrator.CloudService{}, "name = ?", testdata.MockAnotherCloudServiceName)
+	count, err = s.Count(&orchestrator.CloudService{}, "name = ?", testdata.MockCloudServiceName2)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, int(count))
 
@@ -404,13 +404,13 @@ func Test_storage_Update(t *testing.T) {
 	// Testing cloud service
 	// Create cloud service
 	cloudService := orchestrator.CloudService{
-		Id:          testdata.MockCloudServiceID,
-		Name:        testdata.MockCloudServiceName,
-		Description: testdata.MockCloudServiceDescription,
+		Id:          testdata.MockCloudServiceID1,
+		Name:        testdata.MockCloudServiceName1,
+		Description: testdata.MockCloudServiceDescription1,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id:    testdata.MockCloudServiceID,
-				Name:  testdata.MockMetricName,
+				Id:    testdata.MockCloudServiceID1,
+				Name:  testdata.MockMetricName1,
 				Range: mockMetricRange,
 			},
 		},

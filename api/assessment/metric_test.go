@@ -74,8 +74,8 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 				MetricConfiguration: &MetricConfiguration{
 					TargetValue:    testdata.MockMetricConfigurationTargetValueString,
 					Operator:       "==",
-					MetricId:       testdata.MockMetricID,
-					CloudServiceId: testdata.MockCloudServiceID,
+					MetricId:       testdata.MockMetricID1,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -334,7 +334,7 @@ func TestCheckCloudServiceID(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				serviceID: testdata.MockCloudServiceID,
+				serviceID: testdata.MockCloudServiceID1,
 			},
 			wantErr: assert.NoError,
 		},

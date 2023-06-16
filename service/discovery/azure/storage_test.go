@@ -33,12 +33,13 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -59,7 +60,7 @@ type responseStorageAccount struct {
 
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
@@ -127,7 +128,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &map[string]interface{}{
 				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
 				"name":     "account3",
@@ -160,7 +161,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
@@ -183,7 +184,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
@@ -206,7 +207,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
@@ -221,8 +222,81 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+					"name": "account1-account1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P7D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",
+					"name": "VirtualMachines",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/StorageAccounts",
+					"name": "StorageAccounts",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+			},
 		}, 200)
 	}
 
@@ -247,7 +321,9 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 				azureDiscovery: &azureDiscovery{
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -264,7 +340,9 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -277,7 +355,9 @@ func TestNewAzureStorageDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: StorageComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 	}
@@ -310,7 +390,7 @@ func TestStorage(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -339,16 +419,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 			},
 		},
 		{
-			name: "Discovery error",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover storage accounts:")
-			},
-		},
-		{
 			name: "Without errors",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
@@ -358,7 +428,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -366,6 +436,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -374,6 +445,24 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						Backups: []*voc.Backup{{
+							Enabled:         true,
+							RetentionPeriod: Duration7Days,
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: constants.TLS1_2,
+								Algorithm:  constants.TLS,
+							},
+						},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
+						},
 					},
 					PublicAccess: true,
 				},
@@ -381,7 +470,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -389,6 +478,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -397,6 +487,23 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						Backups: []*voc.Backup{{
+							Enabled:         true,
+							RetentionPeriod: Duration7Days,
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: constants.TLS1_2,
+								Algorithm:  constants.TLS,
+							},
+						}},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
+						},
 					},
 					PublicAccess: true,
 				},
@@ -404,7 +511,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -412,11 +519,18 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
 							},
 						},
 					},
@@ -425,7 +539,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -433,6 +547,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -440,6 +555,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
+						},
+						Backups: nil,
 					},
 				},
 				&voc.ObjectStorageService{
@@ -454,7 +576,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
-									ServiceID:    testdata.MockCloudServiceID,
+									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account1",
 									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -462,6 +584,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									GeoLocation: voc.GeoLocation{
 										Region: "eastus",
 									},
+									Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}]}",
 								},
 							},
 							TransportEncryption: &voc.TransportEncryption{
@@ -486,7 +609,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container3",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -494,6 +617,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3\",\"name\":\"container3\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -503,6 +627,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
+						},
+						Backups: nil,
 					},
 					PublicAccess: false,
 				},
@@ -510,7 +641,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container4",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -518,6 +649,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4\",\"name\":\"container4\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -527,6 +659,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: true,
+								SecurityAlertsEnabled:    true,
+							},
+						},
+						Backups: nil,
 					},
 					PublicAccess: false,
 				},
@@ -540,7 +679,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
 									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
-									ServiceID:    testdata.MockCloudServiceID,
+									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account2",
 									Type:         voc.ObjectStorageServiceType,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -548,6 +687,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									GeoLocation: voc.GeoLocation{
 										Region: "eastus",
 									},
+									Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}]}",
 								},
 							},
 							TransportEncryption: &voc.TransportEncryption{
@@ -565,6 +705,21 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Enabled:    true,
 							TlsVersion: "TLS1_2",
 							Algorithm:  "TLS",
+						},
+					},
+				},
+				&voc.ObjectStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+							Name:         "account1-account1-22222222-2222-2222-2222-222222222222",
+							ServiceID:    "11111111-1111-1111-1111-111111111111",
+							CreationTime: 0,
+							Type:         voc.ObjectStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "westeurope",
+							},
+							Raw: "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 						},
 					},
 				},
@@ -588,7 +743,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 }
 
 func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{csID: testdata.MockCloudServiceID}}
+	d := azureStorageDiscovery{&azureDiscovery{csID: testdata.MockCloudServiceID1}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -627,7 +782,7 @@ func TestStorageMethodsWhenInputIsInvalid(t *testing.T) {
 }
 
 func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
-	d := azureStorageDiscovery{&azureDiscovery{}}
+	d := azureStorageDiscovery{&azureDiscovery{}, make(map[string]*defenderProperties)}
 
 	// Get mocked armstorage.Account
 	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3"
@@ -761,7 +916,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 				}
 			} else {
 				assert.Nil(t, err)
-				assert.Equal(t, 8, len(got))
+				assert.Equal(t, 9, len(got))
 			}
 		})
 	}
@@ -913,7 +1068,7 @@ func Test_handleFileStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(fileShareID),
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         fileShareName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -921,11 +1076,19 @@ func Test_handleFileStorage(t *testing.T) {
 						},
 						Labels: map[string]string{},
 						Type:   voc.FileStorageType,
+						Raw:    "{\"*armstorage.Account\":[{\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
+						},
+					},
+					ResourceLogging: &voc.ResourceLogging{
+						Logging: &voc.Logging{
+							Enabled:                  false,
+							MonitoringLogDataEnabled: false,
+							SecurityAlertsEnabled:    false,
 						},
 					},
 				},
@@ -1036,7 +1199,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
 								ID:           voc.ResourceID(accountID),
-								ServiceID:    testdata.MockCloudServiceID,
+								ServiceID:    testdata.MockCloudServiceID1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
 								Type:         voc.ObjectStorageServiceType,
@@ -1044,6 +1207,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 									Region: accountRegion,
 								},
 								Labels: map[string]string{},
+								Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true}}]}",
 							},
 						},
 						TransportEncryption: &voc.TransportEncryption{
@@ -1082,7 +1246,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 }
 
 func Test_handleObjectStorage(t *testing.T) {
-	// accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
 	accountRegion := "eastus"
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 	keySource := armstorage.KeySourceMicrosoftStorage
@@ -1105,40 +1269,40 @@ func Test_handleObjectStorage(t *testing.T) {
 		want    *voc.ObjectStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Account is empty",
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
-		// 	},
-		// },
-		// {
-		// 	name: "Container is empty",
-		// 	args: args{
-		// 		account: &armstorage.Account{
-		// 			ID: &accountID,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "container is nil")
-		// 	},
-		// },
-		// {
-		// 	name: "Error getting atRestEncryption properties",
-		// 	args: args{
-		// 		account: &armstorage.Account{
-		// 			ID: &accountID,
-		// 		},
-		// 		container: &armstorage.ListContainerItem{
-		// 			ID: &containerID,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
-		// 	},
-		// },
+		{
+			name: "Account is empty",
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
+			},
+		},
+		{
+			name: "Container is empty",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "container is nil")
+			},
+		},
+		{
+			name: "Error getting atRestEncryption properties",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+				container: &armstorage.ListContainerItem{
+					ID: &containerID,
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
+			},
+		},
 		{
 			name: "No error",
 			fields: fields{
@@ -1146,6 +1310,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			},
 			args: args{
 				account: &armstorage.Account{
+					ID: &accountID,
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
@@ -1167,7 +1332,7 @@ func Test_handleObjectStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(containerID),
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         containerName,
 						CreationTime: util.SafeTimestamp(&creationTime),
 						GeoLocation: voc.GeoLocation{
@@ -1175,6 +1340,7 @@ func Test_handleObjectStorage(t *testing.T) {
 						},
 						Labels: map[string]string{},
 						Type:   voc.ObjectStorageType,
+						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1183,6 +1349,12 @@ func Test_handleObjectStorage(t *testing.T) {
 						},
 					},
 					Immutability: &voc.Immutability{Enabled: false},
+					ResourceLogging: &voc.ResourceLogging{
+						Logging: &voc.Logging{
+							MonitoringLogDataEnabled: false,
+							SecurityAlertsEnabled:    false,
+						},
+					},
 				},
 				PublicAccess: false,
 			},
@@ -1264,7 +1436,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1272,11 +1444,18 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
 							},
 						},
 					},
@@ -1285,7 +1464,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1293,11 +1472,18 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
 							},
 						},
 					},
@@ -1383,7 +1569,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1391,6 +1577,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1399,6 +1586,12 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
+							},
+						},
 					},
 					PublicAccess: true,
 				},
@@ -1406,7 +1599,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
 							CreationTime: util.SafeTimestamp(&creationTime),
@@ -1414,6 +1607,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1422,6 +1616,12 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 						Immutability: &voc.Immutability{Enabled: false},
+						ResourceLogging: &voc.ResourceLogging{
+							Logging: &voc.Logging{
+								MonitoringLogDataEnabled: false,
+								SecurityAlertsEnabled:    false,
+							},
+						},
 					},
 					PublicAccess: true,
 				},

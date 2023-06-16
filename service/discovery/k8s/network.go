@@ -85,7 +85,9 @@ func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
-	var ports []uint16
+	var (
+		ports []uint16
+	)
 
 	for _, v := range service.Spec.Ports {
 		ports = append(ports, uint16(v.Port))
@@ -101,6 +103,7 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 				voc.GeoLocation{},
 				service.Labels,
 				voc.NetworkServiceType,
+				service,
 			),
 		},
 
@@ -125,14 +128,13 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					voc.GeoLocation{},
 					ingress.Labels,
 					voc.LoadBalancerType,
+					ingress,
 				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs
 			Ports: []uint16{80, 443},
 		},
-		// TODO(oxisto): fill out access restrictions
-		AccessRestrictions: &[]voc.AccessRestriction{},
-		HttpEndpoints:      &[]voc.HttpEndpoint{},
+		HttpEndpoints: []*voc.HttpEndpoint{},
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -153,12 +155,12 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 				}
 			}
 
-			http := voc.HttpEndpoint{
+			http := &voc.HttpEndpoint{
 				Url:                 url,
 				TransportEncryption: te,
 			}
 
-			*lb.HttpEndpoints = append(*lb.HttpEndpoints, http)
+			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
 		}
 	}
 

@@ -27,8 +27,10 @@ package k8s
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
 
@@ -36,8 +38,51 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 )
+
+func TestNewKubernetesNetworkDiscovery(t *testing.T) {
+	type args struct {
+		intf           kubernetes.Interface
+		cloudServiceID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "empty input",
+			want: &k8sNetworkDiscovery{
+				k8sDiscovery: k8sDiscovery{},
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				intf:           &fake.Clientset{},
+				cloudServiceID: testdata.MockCloudServiceID1,
+			},
+			want: &k8sNetworkDiscovery{
+				k8sDiscovery: k8sDiscovery{
+					intf: &fake.Clientset{},
+					csID: testdata.MockCloudServiceID1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewKubernetesNetworkDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewKubernetesNetworkDiscovery() = %v, want %v", got, tt.want)
+			}
+
+			assert.Equal(t, "Kubernetes Network", got.Name())
+		})
+	}
+}
 
 func TestListIngresses(t *testing.T) {
 	client := fake.NewSimpleClientset()
@@ -88,7 +133,7 @@ func TestListIngresses(t *testing.T) {
 		t.Fatalf("error injecting service add: %v", err)
 	}
 
-	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID)
+	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID1)
 
 	list, err := d.List()
 
@@ -108,13 +153,13 @@ func TestListIngresses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
-	assert.Equal(t, "http://myhost/test", string((*lb.HttpEndpoints)[0].Url))
+	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
 
 	lb, ok = list[2].(*voc.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
-	assert.Equal(t, "https://myhost/test", string((*lb.HttpEndpoints)[0].Url))
-	assert.NotNil(t, (*lb.HttpEndpoints)[0].TransportEncryption)
+	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
+	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }

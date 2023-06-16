@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -220,23 +224,39 @@ func (svc *Service) loadCatalogs() (err error) {
 		log.Errorf("Error while saving catalog %v", err)
 	}
 
-	log.Debugf("Catalog loaded with id '%s'.", catalogs[0].GetId())
+	log.Debug("Catalogs successfully stored.")
 
 	return
 }
 
 func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, err error) {
-	var b []byte
+	var (
+		b        []byte
+		fileList []string
+	)
 
-	log.Infof("Loading catalogs from %s", svc.catalogsFile)
-	b, err = f.ReadFile(svc.catalogsFile)
-	if err != nil {
-		return nil, fmt.Errorf("error while loading %s: %w", svc.catalogsFile, err)
-	}
+	// Get all filenames
+	fileList, err = util.GetJSONFilenames(svc.catalogsFolder)
 
-	err = json.Unmarshal(b, &catalogs)
-	if err != nil {
-		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	log.Infof("Loading catalogs from files %s.", strings.Join(fileList, ", "))
+
+	// Get catalog for each file
+	for i := range fileList {
+		var catalogsFromFile []*orchestrator.Catalog
+
+		b, err = os.ReadFile(filepath.Join(fileList[i]))
+		if err != nil {
+			log.Errorf("error while loading %s: %v", fileList[i], err)
+			continue
+		}
+
+		err = json.Unmarshal(b, &catalogsFromFile)
+		if err != nil {
+			log.Errorf("error in JSON marshal for file %s: %v", fileList[i], err)
+			continue
+		}
+
+		catalogs = append(catalogs, catalogsFromFile...)
 	}
 
 	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
@@ -250,5 +270,6 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 			}
 		}
 	}
+
 	return
 }

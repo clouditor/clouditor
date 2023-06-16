@@ -39,6 +39,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/auth"
@@ -212,6 +213,10 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 
 	if err := orchestrator.RegisterOrchestratorHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to orchestrator gRPC service %w", err)
+	}
+
+	if err := evaluation.RegisterEvaluationHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
+		return fmt.Errorf("failed to connect to evaluation gRPC service %w", err)
 	}
 
 	if err := evidence.RegisterEvidenceStoreHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {

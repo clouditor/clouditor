@@ -49,7 +49,7 @@ import (
 var f embed.FS
 
 var DefaultMetricsFile = "metrics.json"
-var DefaultCatalogsFile = "catalogs.json"
+var DefaultCatalogsFolder = "catalogs"
 
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
@@ -82,7 +82,7 @@ type Service struct {
 	// loadMetricsFunc is a function that is used to initially load metrics at the start of the orchestrator
 	loadMetricsFunc func() ([]*assessment.Metric, error)
 
-	catalogsFile string
+	catalogsFolder string
 
 	// loadCatalogsFunc is a function that is used to initially load catalogs at the start of the orchestrator
 	loadCatalogsFunc func() ([]*orchestrator.Catalog, error)
@@ -115,10 +115,10 @@ func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
 	}
 }
 
-// WithCatalogsFile can be used to load a different catalogs file
-func WithCatalogsFile(file string) ServiceOption {
+// WithCatalogsFolder can be used to load catalog files from a different catalogs folder
+func WithCatalogsFolder(folder string) ServiceOption {
 	return func(s *Service) {
-		s.catalogsFile = file
+		s.catalogsFolder = folder
 	}
 }
 
@@ -153,9 +153,9 @@ func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOptio
 func NewService(opts ...ServiceOption) *Service {
 	var err error
 	s := Service{
-		metricsFile:  DefaultMetricsFile,
-		catalogsFile: DefaultCatalogsFile,
-		events:       make(chan *orchestrator.MetricChangeEvent, 1000),
+		metricsFile:    DefaultMetricsFile,
+		catalogsFolder: DefaultCatalogsFolder,
+		events:         make(chan *orchestrator.MetricChangeEvent, 1000),
 	}
 
 	// Apply service options
@@ -316,6 +316,6 @@ func (svc *Service) RemoveCertificate(_ context.Context, req *orchestrator.Remov
 }
 
 // GetRuntimeInfo implements a method to retrieve runtime information
-func (svc *Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
+func (*Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
 	return service.GetRuntimeInfo()
 }
