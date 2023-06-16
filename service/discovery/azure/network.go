@@ -215,6 +215,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 					},
 					labels(lb.Tags),
 					voc.LoadBalancerType,
+					lb,
 				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
@@ -239,6 +240,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 					voc.GeoLocation{Region: util.Deref(ag.Location)},
 					labels(ag.Tags),
 					voc.LoadBalancerType,
+					ag,
 				),
 			},
 		},
@@ -261,6 +263,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 				},
 				labels(ni.Tags),
 				voc.NetworkInterfaceType,
+				ni,
 			),
 		},
 		AccessRestriction: &voc.L3Firewall{
