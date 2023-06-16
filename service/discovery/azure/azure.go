@@ -345,9 +345,13 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 }
 
 func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultResource, instance *armdataprotection.BackupInstanceResource) (resource voc.IsCloudResource, err error) {
-
 	if vault == nil || instance == nil {
 		return nil, ErrVaultInstanceIsEmpty
+	}
+
+	raw, err := voc.ToStringInterface([]interface{}{instance, vault})
+	if err != nil {
+		log.Error(err)
 	}
 
 	if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Storage/storageAccounts/blobServices" {
@@ -363,6 +367,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 					Labels:    nil,
 					ServiceID: d.csID,
 					Type:      voc.ObjectStorageType,
+					Raw:       raw,
 				},
 			},
 		}
@@ -379,6 +384,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 						Region: *vault.Location,
 					},
 					Labels: nil,
+					Raw:    raw,
 				},
 			},
 		}

@@ -225,7 +225,7 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 			log.Infof("Created new default target cloud service: %s", service.Id)
 		}
 	} else {
-		log.Infof("Cloud services already exist.")
+		log.Infof("Default target cloud service already exist.")
 	}
 
 	return

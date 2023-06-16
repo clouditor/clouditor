@@ -94,7 +94,8 @@ func (svc *Service) loadMetrics() (err error) {
 
 	}
 
-	return
+	// Here we have return nil, as the previous errors are only a warning and not a real error for the calling function.
+	return nil
 }
 
 // prepareMetric takes care of the heavy lifting of loading the default implementation and configuration of a particular

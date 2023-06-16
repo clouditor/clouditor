@@ -102,16 +102,6 @@ func TestService_loadMetrics(t *testing.T) {
 			},
 		},
 		{
-			name: "storage error",
-			fields: fields{
-				metricsFile: "metrics.json",
-				storage:     &testutil.StorageWithError{SaveErr: ErrSomeError},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrSomeError)
-			},
-		},
-		{
 			name: "custom loading function with error",
 			fields: fields{
 				loadMetricsFunc: func() ([]*assessment.Metric, error) {
