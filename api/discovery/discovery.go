@@ -30,6 +30,11 @@ import (
 
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
+	"github.com/sirupsen/logrus"
+)
+
+var (
+	log *logrus.Entry
 )
 
 // DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
@@ -52,7 +57,12 @@ type Authorizer interface {
 }
 
 // NewResource creates a new voc resource.
-func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string) *voc.Resource {
+func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string, raw ...interface{}) *voc.Resource {
+	rawString, err := voc.ToStringInterface(raw)
+	if err != nil {
+		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
+	}
+
 	return &voc.Resource{
 		ID:           ID,
 		ServiceID:    d.CloudServiceID(),
@@ -61,5 +71,6 @@ func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *tim
 		GeoLocation:  location,
 		Type:         typ,
 		Labels:       labels,
+		Raw:          rawString,
 	}
 }

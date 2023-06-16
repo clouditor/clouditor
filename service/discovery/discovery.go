@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -377,8 +378,8 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Id:             uuid.New().String(),
 			CloudServiceId: resource.GetServiceID(),
 			Timestamp:      timestamppb.Now(),
+			Raw:            util.Ref(resource.GetRaw()),
 			ToolId:         discovery.EvidenceCollectorToolId,
-			Raw:            nil,
 			Resource:       v,
 		}
 

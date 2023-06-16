@@ -952,11 +952,13 @@ func TestService_HandleEvidence(t *testing.T) {
 				s.evidenceStore.Opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			} else {
 				s.evidenceStore.Opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
+				s.evidenceStore.Target = ""
 			}
 			if tt.fields.hasOrchestratorStream {
 				s.orchestrator.Opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
 			} else {
 				s.orchestrator.Opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
+				s.orchestrator.Target = ""
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
