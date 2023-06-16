@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
