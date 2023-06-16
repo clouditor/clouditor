@@ -226,7 +226,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 				creationTime: aws.ToTime(b.CreationDate),
 				region:       region,
 				endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
-				raw:          []interface{}{&b, rawRegion},
+				raw:          []interface{}{b, rawRegion},
 			})
 		}
 	}
