@@ -417,13 +417,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				},
 			},
 			wantMetric: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr:    wantStatusCode(codes.Internal),
 		},
 		{
 			name: "storage error: Save",
@@ -444,13 +438,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				},
 			},
 			wantMetric: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr:    wantStatusCode(codes.Internal),
 		},
 		{
 			name: "Update non-existing metric",
@@ -712,13 +700,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 		{
 			name:    "Invalid input",
 			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
-			},
+			wantErr: wantStatusCode(codes.InvalidArgument),
 		},
 		{
 			name: "metric not found",
@@ -730,13 +712,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					MetricId: testdata.MockMetricID1,
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
-			},
+			wantErr: wantStatusCode(codes.NotFound),
 		},
 		{
 			name: "storage error",
@@ -748,13 +724,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 					MetricId: testdata.MockMetricID1,
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr: wantStatusCode(codes.Internal),
 		},
 		{
 			name: "metric found",
@@ -836,13 +806,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
-			},
+			wantErr:  wantStatusCode(codes.InvalidArgument),
 		},
 		{
 			name: "Metric not found",
@@ -859,13 +823,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
-			},
+			wantErr:  wantStatusCode(codes.NotFound),
 		},
 		{
 			name: "storage error: Get",
@@ -882,13 +840,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr:  wantStatusCode(codes.Internal),
 		},
 		{
 			name: "storage error: Save",
@@ -905,13 +857,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 				},
 			},
 			wantImpl: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr:  wantStatusCode(codes.Internal),
 		},
 		{
 			name: "update",
@@ -988,14 +934,8 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 					CloudServiceId: "InvalidCloudServiceID",
 				},
 			},
-			want: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
-			},
+			want:    assert.Empty,
+			wantErr: wantStatusCode(codes.InvalidArgument),
 		},
 		{
 			name: "Permission denied",
@@ -1008,14 +948,8 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 			fields: fields{
 				authz: &servicetest.AuthorizationStrategyMock{},
 			},
-			want: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.PermissionDenied)
-			},
+			want:    assert.Empty,
+			wantErr: wantStatusCode(codes.PermissionDenied),
 		},
 		{
 			name: "storage error",
@@ -1093,14 +1027,8 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			want: assert.Empty,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.NotFound)
-			},
+			want:    assert.Empty,
+			wantErr: wantStatusCode(codes.NotFound),
 		},
 	}
 
@@ -1153,13 +1081,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			args: args{
 				req: &orchestrator.ListMetricConfigurationRequest{},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.InvalidArgument)
-			},
+			wantErr: wantStatusCode(codes.InvalidArgument),
 		},
 		{
 			name: "Permission denied",
@@ -1172,13 +1094,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				},
 			},
 			wantResponse: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.PermissionDenied)
-			},
+			wantErr:      wantStatusCode(codes.PermissionDenied),
 		},
 		{
 			name: "storage error",
@@ -1192,13 +1108,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				gotStatus, ok := status.FromError(err)
-				if !ok {
-					return false
-				}
-				return assert.Equal(t, gotStatus.Code(), codes.Internal)
-			},
+			wantErr: wantStatusCode(codes.Internal),
 		},
 		{
 			name: "no error",
@@ -1631,5 +1541,15 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 
 			tt.want(t, gotRes, svc)
 		})
+	}
+}
+
+func wantStatusCode(code codes.Code) assert.ErrorAssertionFunc {
+	return func(t assert.TestingT, err error, i ...interface{}) bool {
+		gotStatus, ok := status.FromError(err)
+		if !ok {
+			return false
+		}
+		return assert.Equal(t, gotStatus.Code(), code)
 	}
 }
