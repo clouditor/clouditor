@@ -250,7 +250,6 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
 	var (
 		storageResourceIDs []voc.ResourceID
-		raw                = make(map[string][]interface{})
 	)
 
 	if account == nil {
@@ -271,9 +270,6 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 		Algorithm:  "TLS",
 	}
 
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, account)
-
 	storageService := &voc.ObjectStorageService{
 		StorageService: &voc.StorageService{
 			Storage: storageResourceIDs,
@@ -288,7 +284,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 						},
 						labels(account.Tags),
 						voc.ObjectStorageServiceType,
-						raw,
+						account,
 					),
 				},
 				TransportEncryption: te,
@@ -305,7 +301,6 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
 	var (
-		raw                      = make(map[string][]interface{})
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
 	)
@@ -331,10 +326,6 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, account)
-	raw = voc.AddRawInfo(raw, fileshare)
-
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -349,7 +340,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
 				voc.FileStorageType,
-				raw,
+				account, fileshare,
 			),
 			ResourceLogging: &voc.ResourceLogging{
 				Logging: &voc.Logging{
@@ -364,7 +355,6 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 
 func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
 	var (
-		raw                      = make(map[string][]interface{})
 		backups                  []*voc.Backup
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
@@ -393,10 +383,6 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, account)
-	raw = voc.AddRawInfo(raw, container)
-
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -411,7 +397,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
 				voc.ObjectStorageType,
-				raw,
+				account, container,
 			),
 			AtRestEncryption: enc,
 			Immutability: &voc.Immutability{

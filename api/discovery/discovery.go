@@ -57,7 +57,7 @@ type Authorizer interface {
 }
 
 // NewResource creates a new voc resource.
-func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string, raw map[string][]interface{}) *voc.Resource {
+func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string, raw ...interface{}) *voc.Resource {
 	rawString, err := voc.ToStringInterface(raw)
 	if err != nil {
 		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)

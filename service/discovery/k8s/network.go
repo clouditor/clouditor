@@ -87,15 +87,11 @@ func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
 	var (
 		ports []uint16
-		raw   = make(map[string][]interface{})
 	)
 
 	for _, v := range service.Spec.Ports {
 		ports = append(ports, uint16(v.Port))
 	}
-
-	// Add object responses from K8S
-	raw = voc.AddRawInfo(raw, service)
 
 	return &voc.NetworkService{
 		Networking: &voc.Networking{
@@ -107,7 +103,7 @@ func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwo
 				voc.GeoLocation{},
 				service.Labels,
 				voc.NetworkServiceType,
-				raw,
+				service,
 			),
 		},
 
@@ -121,11 +117,6 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 }
 
 func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from K8S
-	raw = voc.AddRawInfo(raw, ingress)
-
 	lb := &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -137,7 +128,7 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 					voc.GeoLocation{},
 					ingress.Labels,
 					voc.LoadBalancerType,
-					raw,
+					ingress,
 				),
 			},
 			Ips:   nil, // TODO (oxisto): fill out IPs

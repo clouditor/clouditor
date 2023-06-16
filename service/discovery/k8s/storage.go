@@ -77,11 +77,6 @@ func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from K8S
-	raw = voc.AddRawInfo(raw, pv)
-
 	s := &voc.Storage{
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(pv.UID),
@@ -91,7 +86,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 			voc.GeoLocation{},
 			pv.Labels,
 			voc.BlockStorageType,
-			raw,
+			pv,
 		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}

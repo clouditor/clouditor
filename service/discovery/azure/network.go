@@ -202,11 +202,6 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 }
 
 func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, lb)
-
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -220,7 +215,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 					},
 					labels(lb.Tags),
 					voc.LoadBalancerType,
-					raw,
+					lb,
 				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
@@ -234,11 +229,6 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, ag)
-
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -250,7 +240,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 					voc.GeoLocation{Region: util.Deref(ag.Location)},
 					labels(ag.Tags),
 					voc.LoadBalancerType,
-					raw,
+					ag,
 				),
 			},
 		},
@@ -261,11 +251,6 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 }
 
 func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from Azure
-	raw = voc.AddRawInfo(raw, ni)
-
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
@@ -278,7 +263,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 				},
 				labels(ni.Tags),
 				voc.NetworkInterfaceType,
-				raw,
+				ni,
 			),
 		},
 		AccessRestriction: &voc.L3Firewall{

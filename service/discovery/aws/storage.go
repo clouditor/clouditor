@@ -58,7 +58,7 @@ type bucket struct {
 	creationTime time.Time
 	endpoint     string
 	region       string
-	raw          map[string][]interface{}
+	raw          []interface{}
 }
 
 // S3API describes the S3 api interface which is implemented by the official AWS storageAPI and mock clients in tests
@@ -127,8 +127,6 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 	}
 
 	for _, b := range buckets {
-		raw := make(map[string][]interface{})
-
 		encryptionAtRest, rawBucketEncOutput, err = d.getEncryptionAtRest(&b)
 		if err != nil {
 			return
@@ -137,12 +135,6 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 		if err != nil {
 			return
 		}
-
-		// Add object responses from AWS
-		raw = voc.AddRawInfo(raw, &b)
-		raw = voc.AddRawInfo(raw, &rawBucketEncOutput)
-		raw = voc.AddRawInfo(raw, &rawBucketTranspEnc)
-		raw = voc.AddRawInfo(raw, &b.raw)
 
 		resources = append(resources,
 			// Add ObjectStorage
@@ -157,7 +149,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 						},
 						nil,
 						voc.ObjectStorageType,
-						raw),
+						&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw),
 					AtRestEncryption: encryptionAtRest,
 				},
 			},
@@ -174,7 +166,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 								voc.GeoLocation{Region: b.region},
 								nil,
 								voc.ObjectStorageServiceType,
-								raw,
+								&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw,
 							),
 						},
 						TransportEncryption: encryptionAtTransit,
@@ -218,17 +210,12 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 	for _, b := range resp.Buckets {
 		var (
 			rawRegion *s3.GetBucketLocationOutput
-			rawInfo   = make(map[string][]interface{})
 		)
 
 		region, rawRegion, err = d.getRegion(aws.ToString(b.Name))
 		if err != nil {
 			return
 		}
-
-		// Add object responses from AWS
-		rawInfo = voc.AddRawInfo(rawInfo, &b)
-		rawInfo = voc.AddRawInfo(rawInfo, rawRegion)
 
 		// Currently only buckets are retrieved that are in the region of the users specified region in the config. Since getBucketPolicy throws error if bucket region differs
 		// TODO(lebogg): Retrieve all buckets (just remove if) and fix issues with other methods, e.g. getBucketPolicy
@@ -239,7 +226,7 @@ func (d *awsS3Discovery) getBuckets() (buckets []bucket, err error) {
 				creationTime: aws.ToTime(b.CreationDate),
 				region:       region,
 				endpoint:     "https://" + aws.ToString(b.Name) + ".s3." + region + ".amazonaws.com",
-				raw:          rawInfo,
+				raw:          []interface{}{&b, rawRegion},
 			})
 		}
 	}

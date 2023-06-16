@@ -101,20 +101,20 @@ func TestAuthorizationInterface(t *testing.T) {
 }
 
 func TestToStringInterface(t *testing.T) {
-	var tmp = make(map[string][]interface{})
+	var tmp = []interface{}{}
 
 	s, err := ToStringInterface(tmp)
 	assert.NoError(t, err)
 	assert.Equal(t, "{}", s)
 
-	tmp["test"] = append(tmp["test"], test{
+	tmp = append(tmp, test{
 		A: 200,
 		B: "TestStruct",
 		C: false,
 	})
 	s, err = ToStringInterface(tmp)
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"test\":[{\"a\":200,\"b\":\"TestStruct\",\"c\":false}]}", s)
+	assert.Equal(t, "{\"voc.test\":[{\"a\":200,\"b\":\"TestStruct\",\"c\":false}]}", s)
 }
 
 func TestToStruct(t *testing.T) {
@@ -179,50 +179,4 @@ func TestToStruct(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestAddRawInfo(t *testing.T) {
-	var (
-		tmp       = make(map[string][]interface{})
-		testInput = &test{}
-		exp       = make(map[string][]interface{})
-	)
-
-	// Add empty input
-	s := AddRawInfo(tmp, testInput)
-	exp["*voc.test"] = append(exp["*voc.test"], &test{
-		A: 0,
-		B: "",
-		C: false,
-	})
-	assert.Equal(t, exp, s)
-
-	// Add not empty input
-	delete(tmp, "*voc.test")
-	delete(exp, "*voc.test")
-	testInput = &test{
-		A: 200,
-		B: "TestStruct",
-		C: false,
-	}
-	exp["*voc.test"] = append(exp["*voc.test"], &test{
-		A: 200,
-		B: "TestStruct",
-		C: false,
-	})
-	s = AddRawInfo(tmp, testInput)
-	assert.Equal(t, exp, s)
-
-	// s, err := ToStringInterface(tmp)
-	// assert.NoError(t, err)
-	// assert.Equal(t, "{}", s)
-
-	// tmp["test"] = append(tmp["test"], test{
-	// 	A: 200,
-	// 	B: "TestStruct",
-	// 	C: false,
-	// })
-	// s, err = ToStringInterface(tmp)
-	// assert.NoError(t, err)
-	// assert.Equal(t, "{\"test\":[{\"a\":200,\"b\":\"TestStruct\",\"c\":false}]}", s)
 }

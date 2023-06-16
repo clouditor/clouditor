@@ -120,27 +120,27 @@ func (*Resource) Related() []string {
 }
 
 // ToStringInterface returns a string representation of the input
-func ToStringInterface(r map[string][]interface{}) (s string, err error) {
-	var b []byte
+func ToStringInterface(r []interface{}) (s string, err error) {
+	var (
+		b          []byte
+		rawInfoMap = make(map[string][]interface{})
+	)
 
 	if r == nil {
 		return "", nil
 	}
 
-	if b, err = json.Marshal(r); err != nil {
+	for i := range r {
+		typ := reflect.TypeOf(r[i]).String()
+
+		rawInfoMap[typ] = append(rawInfoMap[typ], r[i])
+	}
+
+	if b, err = json.Marshal(rawInfoMap); err != nil {
 		return "", fmt.Errorf("JSON marshal failed: %w", err)
 	}
 
 	return string(b), nil
-}
-
-// AddRawInfo adds any struct type to the given map
-func AddRawInfo[T any](rawInfoMap map[string][]interface{}, i *T) map[string][]interface{} {
-	typ := reflect.TypeOf(i).String()
-
-	rawInfoMap[typ] = append(rawInfoMap[typ], i)
-
-	return rawInfoMap
 }
 
 func ToStruct(r IsCloudResource) (s *structpb.Value, err error) {

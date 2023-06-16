@@ -79,11 +79,6 @@ func (d *k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
 
 // handlePod returns all existing pods
 func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
-	var raw = make(map[string][]interface{})
-
-	// Add object responses from K8S
-	raw = voc.AddRawInfo(raw, pod)
-
 	r := &voc.Container{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -94,7 +89,7 @@ func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 				voc.GeoLocation{},
 				pod.Labels,
 				voc.ContainerType,
-				raw,
+				pod,
 			),
 		},
 	}
@@ -112,16 +107,11 @@ func getContainerResourceID(pod *v1.Pod) string {
 func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
 	var (
 		volumes []voc.IsCloudResource
-		raw     = make(map[string][]interface{})
 	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?
 	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related storage, but I think we do not have credentials for the other providers in Clouditor?
 	for _, vol := range pod.Spec.Volumes {
-		// Add object responses from K8S
-		raw = voc.AddRawInfo(raw, pod)
-		raw = voc.AddRawInfo(raw, &vol)
-
 		s := &voc.Storage{
 			Resource: discovery.NewResource(d,
 				voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
@@ -130,7 +120,7 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource
 				voc.GeoLocation{},
 				nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
 				voc.BlockStorageType,
-				raw,
+				pod, &vol,
 			),
 			AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 		}

@@ -147,7 +147,6 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 
 	var blocks []*voc.BlockStorage
 	for i := range res.Volumes {
-		raw := make(map[string][]interface{})
 		volume := &res.Volumes[i]
 
 		atRest := &voc.AtRestEncryption{
@@ -158,9 +157,6 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 		if atRest.Enabled {
 			atRest.Algorithm = "AES-256"
 		}
-
-		// Add object responses from AWS
-		raw = voc.AddRawInfo(raw, &res.Volumes[i])
 
 		blocks = append(blocks, &voc.BlockStorage{
 			Storage: &voc.Storage{
@@ -173,7 +169,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					},
 					d.labels(volume.Tags),
 					voc.BlockStorageType,
-					raw,
+					&res.Volumes[i],
 				),
 				AtRestEncryption: atRest,
 			},
@@ -192,11 +188,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 	var ifcs []voc.NetworkInterface
 	for i := range res.NetworkInterfaces {
-		raw := make(map[string][]interface{})
 		ifc := &res.NetworkInterfaces[i]
-
-		// Add object responses from AWS
-		raw = voc.AddRawInfo(raw, &res.NetworkInterfaces[i])
 
 		ifcs = append(ifcs, voc.NetworkInterface{
 			Networking: &voc.Networking{
@@ -210,7 +202,7 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 					},
 					d.labels(ifc.TagSet),
 					[]string{"NetworkInterface", "Networking", "Resource"},
-					raw,
+					&res.NetworkInterfaces[i],
 				),
 			},
 		})
@@ -227,11 +219,6 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 	}
 	var resources []*voc.VirtualMachine
 	for _, reservation := range resp.Reservations {
-		raw := make(map[string][]interface{})
-
-		// Add object responses from AWS
-		raw = voc.AddRawInfo(raw, &reservation)
-
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
@@ -245,7 +232,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 					},
 					d.labels(vm.Tags),
 					[]string{"VirtualMachine", "Compute", "Resource"},
-					raw,
+					&reservation,
 				),
 
 				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
@@ -288,11 +275,7 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
 	// TODO(all): Labels are missing
 	for i := range functions {
-		raw := make(map[string][]interface{})
 		function := &functions[i]
-
-		// Add object responses from AWS
-		raw = voc.AddRawInfo(raw, &functions[i])
 
 		resources = append(resources, &voc.Function{
 			Compute: &voc.Compute{
@@ -306,7 +289,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 					},
 					nil,
 					voc.FunctionType,
-					raw,
+					&functions[i],
 				),
 			}})
 	}
