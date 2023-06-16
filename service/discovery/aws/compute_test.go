@@ -384,6 +384,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		functionAPI       LambdaAPI
 		isDiscovering     bool
 		awsConfig         *Client
+		csID              string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -403,19 +404,21 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
+				csID:        testdata.MockCloudServiceID1,
 			},
 			//args: args{client: mockClient},
 			[]*voc.Function{
 				{Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           mockFunction1ID,
-						ServiceID:    discovery.DefaultCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         mockFunction1,
 						CreationTime: int64(0),
 						Type:         []string{"Function", "Compute", "Resource"},
 						GeoLocation: voc.GeoLocation{
 							Region: mockFunction1Region,
 						},
+						Raw: "{\"*types.FunctionConfiguration\":[{\"Architectures\":null,\"CodeSha256\":null,\"CodeSize\":0,\"DeadLetterConfig\":null,\"Description\":null,\"Environment\":null,\"EphemeralStorage\":null,\"FileSystemConfigs\":null,\"FunctionArn\":\"arn:aws:lambda:eu-central-1:123456789:function:mock-function:1\",\"FunctionName\":\"MockFunction1\",\"Handler\":null,\"ImageConfigResponse\":null,\"KMSKeyArn\":null,\"LastModified\":\"2012-11-01T22:08:41.0+00:00\",\"LastUpdateStatus\":\"\",\"LastUpdateStatusReason\":null,\"LastUpdateStatusReasonCode\":\"\",\"Layers\":null,\"MasterArn\":null,\"MemorySize\":null,\"PackageType\":\"\",\"RevisionId\":null,\"Role\":null,\"Runtime\":\"\",\"RuntimeVersionConfig\":null,\"SigningJobArn\":null,\"SigningProfileVersionArn\":null,\"SnapStart\":null,\"State\":\"\",\"StateReason\":null,\"StateReasonCode\":\"\",\"Timeout\":null,\"TracingConfig\":null,\"Version\":null,\"VpcConfig\":null}]}",
 					},
 				}},
 			},
@@ -437,6 +440,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				functionAPI:       tt.fields.functionAPI,
 				isDiscovering:     tt.fields.isDiscovering,
 				awsConfig:         tt.fields.awsConfig,
+				csID:              tt.fields.csID,
 			}
 			got, err := d.discoverFunctions()
 			if (err != nil) != tt.wantErr {

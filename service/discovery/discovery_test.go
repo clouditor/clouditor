@@ -487,9 +487,9 @@ type mockDiscoverer struct {
 	csID     string
 }
 
-func (mockDiscoverer) Name() string { return "just mocking" }
+func (*mockDiscoverer) Name() string { return "just mocking" }
 
-func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
+func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
 		return nil, fmt.Errorf("mock error in List()")
@@ -499,10 +499,11 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					Resource: discovery.NewResource(&m,
+					Resource: discovery.NewResource(m,
 						"some-id",
 						"some-name", nil, voc.GeoLocation{}, nil,
-						[]string{"ObjectStorage", "Storage", "Resource"}),
+						[]string{"ObjectStorage", "Storage", "Resource"},
+						map[string][]interface{}{"raw": {"raw"}}),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -510,10 +511,11 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					Storage: []voc.ResourceID{"some-id"},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
-							Resource: discovery.NewResource(&m,
+							Resource: discovery.NewResource(m,
 								"some-storage-account-id",
 								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
-								[]string{"StorageService", "NetworkService", "Networking", "Resource"}),
+								[]string{"StorageService", "NetworkService", "Networking", "Resource"},
+								map[string][]interface{}{"raw": {"raw"}}),
 						},
 					},
 				},
@@ -652,6 +654,13 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) GetRaw() string {
+	return ""
+}
+
+func (mockIsCloudResource) SetRaw(_ string) {
 }
 
 func (mockIsCloudResource) Related() []string {

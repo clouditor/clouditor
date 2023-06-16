@@ -27,18 +27,62 @@ package k8s
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestListPods(t *testing.T) {
+func TestNewKubernetesComputeDiscovery(t *testing.T) {
+	type args struct {
+		intf           kubernetes.Interface
+		cloudServiceID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "empty input",
+			want: &k8sComputeDiscovery{
+				k8sDiscovery: k8sDiscovery{},
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				intf:           &fake.Clientset{},
+				cloudServiceID: testdata.MockCloudServiceID1,
+			},
+			want: &k8sComputeDiscovery{
+				k8sDiscovery: k8sDiscovery{
+					intf: &fake.Clientset{},
+					csID: testdata.MockCloudServiceID1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewKubernetesComputeDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewKubernetesComputeDiscovery() = %v, want %v", got, tt.want)
+			}
+
+			assert.Equal(t, "Kubernetes Compute", got.Name())
+		})
+	}
+}
+
+func Test_k8sComputeDiscovery_List(t *testing.T) {
 	var (
 		volumeName      = "my-volume"
 		diskName        = "my-disk"
@@ -76,55 +120,96 @@ func TestListPods(t *testing.T) {
 		t.Fatalf("error injecting pod add: %v", err)
 	}
 
-	d := NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1)
-
-	list, err := d.List()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, list)
-
-	// Check container
-	container, ok := list[0].(*voc.Container)
-
-	// Create expected voc.Container
-	expectedContainer := &voc.Container{
-		Compute: &voc.Compute{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(podID),
-				ServiceID:    testdata.MockCloudServiceID1,
-				Name:         podName,
-				CreationTime: podCreationTime.Unix(),
-				Type:         []string{"Container", "Compute", "Resource"},
-				Labels:       podLabel,
+	type fields struct {
+		discovery discovery.Discoverer
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1),
 			},
-			NetworkInterfaces: []voc.ResourceID{
-				voc.ResourceID(podNamespace),
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				cloudResource, ok := i1.([]voc.IsCloudResource)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				container, ok := cloudResource[0].(*voc.Container)
+				if !assert.True(tt, ok) {
+					return false
+				}
+				// Create expected voc.Container
+				expectedContainer := &voc.Container{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:        voc.ResourceID(podID),
+							ServiceID: testdata.MockCloudServiceID1,
+							Name:      podName,
+							Type:      []string{"Container", "Compute", "Resource"},
+							Labels:    podLabel,
+							Raw:       "",
+						},
+						NetworkInterfaces: []voc.ResourceID{
+							voc.ResourceID(podNamespace),
+						},
+					},
+				}
+
+				// Delete creation time
+				assert.NotNil(t, container.CreationTime)
+				container.CreationTime = 0
+
+				// Delete raw. We have to delete it, because of the creation time included in the raw field.
+				assert.NotNil(t, container.Raw)
+				container.Raw = ""
+
+				assert.True(t, ok)
+				assert.Equal(t, expectedContainer, container)
+
+				// Check volume
+				volume, ok := cloudResource[1].(*voc.BlockStorage)
+				// Create expected voc.BlockStorage
+				expectedVolume := &voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           voc.ResourceID(volumeName),
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         volumeName,
+							CreationTime: 0,
+							Type:         []string{"BlockStorage", "Storage", "Resource"},
+							GeoLocation: voc.GeoLocation{
+								Region: "",
+							},
+						},
+						AtRestEncryption: &voc.AtRestEncryption{},
+					},
+				}
+
+				// Delete raw. We have to delete it, because of the creation time included in the raw field.
+				assert.NotNil(t, volume.Raw)
+				volume.Raw = ""
+
+				assert.True(t, ok)
+				return assert.Equal(t, expectedVolume, volume)
 			},
+			wantErr: assert.NoError,
 		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.discovery
 
-	assert.True(t, ok)
-	assert.Equal(t, expectedContainer, container)
+			got, err := d.List()
+			tt.wantErr(t, err)
 
-	// Check volume
-	volume, ok := list[1].(*voc.BlockStorage)
-	// Create expected voc.BlockStorage
-	expectedVolume := &voc.BlockStorage{
-		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(volumeName),
-				ServiceID:    testdata.MockCloudServiceID1,
-				Name:         volumeName,
-				CreationTime: 0,
-				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "",
-				},
-			},
-			AtRestEncryption: &voc.AtRestEncryption{},
-		},
+			if tt.want != nil {
+				tt.want(t, got)
+			}
+		})
 	}
-
-	assert.True(t, ok)
-	assert.Equal(t, expectedVolume, volume)
 }

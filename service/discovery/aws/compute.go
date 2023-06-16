@@ -94,7 +94,7 @@ func (*computeDiscovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-func (d computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
+func (d *computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
 	log.Infof("Collecting evidences in %s", d.Name())
 
 	// Even though technically volumes are "storage", they are part of the EC2 API and therefore discovered here
@@ -169,6 +169,7 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 					},
 					d.labels(volume.Tags),
 					voc.BlockStorageType,
+					&res.Volumes[i],
 				),
 				AtRestEncryption: atRest,
 			},
@@ -191,17 +192,18 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 
 		ifcs = append(ifcs, voc.NetworkInterface{
 			Networking: &voc.Networking{
-				Resource: &voc.Resource{
-					ID:           d.arnify("network-interface", ifc.NetworkInterfaceId),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
-					CreationTime: 0,
-					Type:         []string{"NetworkInterface", "Networking", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					d.arnify("network-interface", ifc.NetworkInterfaceId),
+					d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Labels: d.labels(ifc.TagSet),
-				},
+					d.labels(ifc.TagSet),
+					[]string{"NetworkInterface", "Networking", "Resource"},
+					&res.NetworkInterfaces[i],
+				),
 			},
 		})
 	}
@@ -220,17 +222,19 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
 			computeResource := &voc.Compute{
-				Resource: &voc.Resource{
-					ID:           d.arnify("instance", vm.InstanceId),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         d.getNameOfVM(vm),
-					CreationTime: 0,
-					Type:         []string{"VirtualMachine", "Compute", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					d.arnify("instance", vm.InstanceId),
+					d.getNameOfVM(vm),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-					Labels: d.labels(vm.Tags),
-				},
+					d.labels(vm.Tags),
+					[]string{"VirtualMachine", "Compute", "Resource"},
+					&reservation,
+				),
+
 				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
 			}
 
@@ -269,20 +273,24 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
+	// TODO(all): Labels are missing
 	for i := range functions {
 		function := &functions[i]
+
 		resources = append(resources, &voc.Function{
 			Compute: &voc.Compute{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(aws.ToString(function.FunctionArn)),
-					ServiceID:    discovery.DefaultCloudServiceID,
-					Name:         aws.ToString(function.FunctionName),
-					CreationTime: 0,
-					Type:         []string{"Function", "Compute", "Resource"},
-					GeoLocation: voc.GeoLocation{
+				Resource: discovery.NewResource(
+					d,
+					voc.ResourceID(aws.ToString(function.FunctionArn)),
+					aws.ToString(function.FunctionName),
+					nil,
+					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
 					},
-				},
+					nil,
+					voc.FunctionType,
+					&functions[i],
+				),
 			}})
 	}
 	return
@@ -372,7 +380,7 @@ func (*computeDiscovery) labels(tags []typesEC2.Tag) (labels map[string]string) 
 }
 
 // addARNToVolume generates the ARN of a volumne instance
-func (d computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
+func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 	return voc.ResourceID("arn:aws:ec2:" +
 		d.awsConfig.cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +
