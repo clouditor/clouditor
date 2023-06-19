@@ -170,6 +170,11 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 
 	// Only remove certificate if user is authorized for the corresponding cloud service
 	areAllAllowed, allowedCloudService := svc.authz.AllowedCloudServices(ctx)
+	if !areAllAllowed && len(allowedCloudService) == 0 {
+		err = service.ErrPermissionDenied
+		return
+	}
+
 	// 1st case:  User is authorized for all cloud services (admin)
 	if areAllAllowed {
 		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
