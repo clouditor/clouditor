@@ -567,6 +567,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/certificates/public:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates without state history
+            operationId: Orchestrator_ListPublicCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListPublicCertificatesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/certificates/{certificate.id}:
         put:
             tags:
@@ -1745,6 +1782,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
+        ListPublicCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
         ListTargetsOfEvaluationResponse:
