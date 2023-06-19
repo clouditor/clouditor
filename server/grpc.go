@@ -193,10 +193,10 @@ func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter f
 
 // UnaryReflectionFilter is a filter that ignores calls to the reflection endpoint
 func UnaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
-	return info.FullMethod == "/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo" || info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo" || info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
 }
 
 // StreamReflectionFilter is a filter that ignores calls to the reflection endpoint
 func StreamReflectionFilter(info *grpc.StreamServerInfo) bool {
-	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
+	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo" || info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
 }
