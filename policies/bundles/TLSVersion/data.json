@@ -1,4 +1,0 @@
-{
-  "operator" : "isIn",
-  "target_value" : ["TLS1.2","TLS1.3"]
-}

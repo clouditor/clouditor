@@ -1,4 +1,4 @@
-package clouditor.metrics.transport_encryption_algorithm
+package clouditor.metrics.transport_encryption_protocol
 
 import data.clouditor.compare
 import input.transportEncryption as enc
