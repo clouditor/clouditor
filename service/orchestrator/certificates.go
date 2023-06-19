@@ -75,7 +75,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	return
 }
 
-// ListCertificates implements method for getting a certificate, e.g. to show its state in the UI
+// ListCertificates implements method for getting all certificates, e.g. to show its state in the UI
 func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.ListCertificatesRequest) (
 	res *orchestrator.ListCertificatesResponse, err error) {
 
