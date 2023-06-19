@@ -88,12 +88,12 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
 				opts: []ServiceOption{
-					WithCloudServiceID(testdata.MockCloudServiceID),
+					WithCloudServiceID(testdata.MockCloudServiceID1),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*Service)
-				return assert.Equal(t, testdata.MockCloudServiceID, s.csID)
+				return assert.Equal(t, testdata.MockCloudServiceID1, s.csID)
 			},
 		},
 		{
@@ -166,8 +166,8 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "No err with custom cloud service ID",
 			fields: fields{
-				discoverer: &mockDiscoverer{testCase: 2, csID: testdata.MockCloudServiceID},
-				csID:       testdata.MockCloudServiceID,
+				discoverer: &mockDiscoverer{testCase: 2, csID: testdata.MockCloudServiceID1},
+				csID:       testdata.MockCloudServiceID1,
 			},
 			checkEvidence: true,
 		},
@@ -231,7 +231,7 @@ func TestService_ListResources(t *testing.T) {
 			name: "Filter type, allow all",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
-				csID:  testdata.MockCloudServiceID,
+				csID:  testdata.MockCloudServiceID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
@@ -244,12 +244,12 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter cloud service, allow",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
-				csID:  testdata.MockCloudServiceID,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				csID:  testdata.MockCloudServiceID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
-					CloudServiceId: util.Ref(testdata.MockCloudServiceID),
+					CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 				},
 			}},
 			numberOfQueriedResources: 2,
@@ -258,12 +258,12 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "Filter cloud service, not allowed",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
-				csID:  testdata.MockCloudServiceID,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				csID:  testdata.MockCloudServiceID1,
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
-					CloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
+					CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
 				},
 			}},
 			numberOfQueriedResources: 0,
@@ -275,7 +275,7 @@ func TestService_ListResources(t *testing.T) {
 			name: "No filtering, allow all",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
-				csID:  testdata.MockCloudServiceID,
+				csID:  testdata.MockCloudServiceID1,
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
@@ -284,8 +284,8 @@ func TestService_ListResources(t *testing.T) {
 		{
 			name: "No filtering, allow different cloud service, empty result",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
-				csID:  testdata.MockCloudServiceID,
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+				csID:  testdata.MockCloudServiceID1,
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 0,
@@ -436,7 +436,7 @@ func TestService_Start(t *testing.T) {
 		{
 			name: "Permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 			},
 			req:            &discovery.StartDiscoveryRequest{},
 			providers:      []string{},
@@ -487,9 +487,9 @@ type mockDiscoverer struct {
 	csID     string
 }
 
-func (mockDiscoverer) Name() string { return "just mocking" }
+func (*mockDiscoverer) Name() string { return "just mocking" }
 
-func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
+func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 	switch m.testCase {
 	case 0:
 		return nil, fmt.Errorf("mock error in List()")
@@ -499,10 +499,11 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					Resource: discovery.NewResource(&m,
+					Resource: discovery.NewResource(m,
 						"some-id",
 						"some-name", nil, voc.GeoLocation{}, nil,
-						[]string{"ObjectStorage", "Storage", "Resource"}),
+						[]string{"ObjectStorage", "Storage", "Resource"},
+						map[string][]interface{}{"raw": {"raw"}}),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -510,10 +511,11 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					Storage: []voc.ResourceID{"some-id"},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
-							Resource: discovery.NewResource(&m,
+							Resource: discovery.NewResource(m,
 								"some-storage-account-id",
 								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
-								[]string{"StorageService", "NetworkService", "Networking", "Resource"}),
+								[]string{"StorageService", "NetworkService", "Networking", "Resource"},
+								map[string][]interface{}{"raw": {"raw"}}),
 						},
 					},
 				},
@@ -652,6 +654,13 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) GetRaw() string {
+	return ""
+}
+
+func (mockIsCloudResource) SetRaw(_ string) {
 }
 
 func (mockIsCloudResource) Related() []string {

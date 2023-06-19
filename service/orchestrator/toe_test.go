@@ -59,7 +59,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFile          string
+		catalogsFolder        string
 		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
 		events                chan *orchestrator.MetricChangeEvent
 		authz                 service.AuthorizationStrategy
@@ -106,7 +106,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "valid and assurance level not set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 					assert.NoError(t, err)
 
 					err = s.Create(catalogWithoutAssuranceLevelList)
@@ -132,7 +132,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}
 
 				var service orchestrator.CloudService
-				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID)
+				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -145,7 +145,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "valid and assurance level set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -171,7 +171,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}
 
 				var service orchestrator.CloudService
-				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID)
+				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -190,7 +190,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				storage:               tt.fields.storage,
 				metricsFile:           tt.fields.metricsFile,
 				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFile:          tt.fields.catalogsFile,
+				catalogsFolder:        tt.fields.catalogsFolder,
 				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
@@ -255,7 +255,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "toe not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -267,7 +267,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: testdata.MockAnotherCloudServiceID,
+				CloudServiceId: testdata.MockCloudServiceID2,
 				CatalogId:      testdata.MockCatalogID,
 			}},
 			wantResponse: assert.Nil,
@@ -280,7 +280,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "valid toe",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -292,7 +292,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: testdata.MockCloudServiceID,
+				CloudServiceId: testdata.MockCloudServiceID1,
 				CatalogId:      testdata.MockCatalogID,
 			}},
 			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
@@ -332,7 +332,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	)
 
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -361,7 +361,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		err error
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -392,7 +392,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: testdata.MockCloudServiceID,
+			CloudServiceId: testdata.MockCloudServiceID1,
 			CatalogId:      testdata.MockCatalogID,
 			AssuranceLevel: &testdata.AssuranceLevelBasic,
 		},
@@ -409,7 +409,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -424,7 +424,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 
 	// 2nd case: ErrRecordNotFound
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		CatalogId:      "0000",
 	})
 	assert.Error(t, err)
@@ -443,7 +443,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		CatalogId:      testdata.MockCatalogID,
 	})
 	assert.NoError(t, err)
@@ -511,7 +511,7 @@ func TestToeHook(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						CatalogId:      testdata.MockCatalogID,
 						AssuranceLevel: &testdata.AssuranceLevelSubstantial,
 					},
@@ -519,7 +519,7 @@ func TestToeHook(t *testing.T) {
 			},
 			wantErr: false,
 			wantResp: &orchestrator.TargetOfEvaluation{
-				CloudServiceId: testdata.MockCloudServiceID,
+				CloudServiceId: testdata.MockCloudServiceID1,
 				CatalogId:      testdata.MockCatalogID,
 				AssuranceLevel: &testdata.AssuranceLevelSubstantial,
 			},
@@ -531,7 +531,7 @@ func TestToeHook(t *testing.T) {
 
 			// Create service
 			s := service
-			err := s.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID})
+			err := s.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 			assert.NoError(t, err)
 
 			// Create catalog
@@ -592,7 +592,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantRes: nil,
@@ -606,7 +606,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -614,7 +614,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -624,7 +624,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
@@ -632,7 +632,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						ControlId:                        testdata.MockSubControlID11,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
@@ -645,20 +645,20 @@ func TestService_ListControlsInScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 					assert.NoError(t, s.Update(&orchestrator.ControlInScope{
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					}, orchestrator.ControlInScope{
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 					}))
 				}),
@@ -667,7 +667,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: testdata.MockCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -677,7 +677,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -685,7 +685,7 @@ func TestService_ListControlsInScope(t *testing.T) {
 						ControlId:                        testdata.MockSubControlID11,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_UNSPECIFIED,
 					},
@@ -696,11 +696,11 @@ func TestService_ListControlsInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 			},
 			args: args{
 				req: &orchestrator.ListControlsInScopeRequest{
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 				},
 			},
@@ -757,7 +757,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -769,7 +769,7 @@ func TestService_AddControlToScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -792,7 +792,7 @@ func TestService_AddControlToScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -807,7 +807,7 @@ func TestService_AddControlToScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -819,7 +819,7 @@ func TestService_AddControlToScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID2,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -829,7 +829,7 @@ func TestService_AddControlToScope(t *testing.T) {
 				ControlId:                        testdata.MockControlID2,
 				ControlCategoryName:              testdata.MockCategoryName,
 				ControlCategoryCatalogId:         testdata.MockCatalogID,
-				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 				TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 			},
@@ -838,13 +838,13 @@ func TestService_AddControlToScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 			},
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.AddControlToScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID2,
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
@@ -906,7 +906,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -918,7 +918,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -928,7 +928,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 				ControlId:                        testdata.MockControlID1,
 				ControlCategoryName:              testdata.MockCategoryName,
 				ControlCategoryCatalogId:         testdata.MockCatalogID,
-				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+				TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 				TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 				MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 			},
@@ -947,7 +947,7 @@ func TestService_UpdateControlInScope(t *testing.T) {
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
-						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
 						TargetOfEvaluationCatalogId:      testdata.MockCatalogID,
 						MonitoringStatus:                 orchestrator.MonitoringStatus_MONITORING_STATUS_AUTOMATICALLY_MONITORED,
 					},
@@ -960,13 +960,13 @@ func TestService_UpdateControlInScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 			},
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.UpdateControlInScopeRequest{
 					Scope: &orchestrator.ControlInScope{
-						TargetOfEvaluationCloudServiceId: testdata.MockAnotherCloudServiceID,
+						TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID2,
 						ControlId:                        testdata.MockControlID1,
 						ControlCategoryName:              testdata.MockCategoryName,
 						ControlCategoryCatalogId:         testdata.MockCatalogID,
@@ -1026,7 +1026,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID}))
+					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -1036,7 +1036,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				req: &orchestrator.RemoveControlFromScopeRequest{
 					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
-					CloudServiceId:      testdata.MockCloudServiceID,
+					CloudServiceId:      testdata.MockCloudServiceID1,
 					CatalogId:           testdata.MockCatalogID,
 				},
 			},
@@ -1053,7 +1053,7 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 				req: &orchestrator.RemoveControlFromScopeRequest{
 					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
-					CloudServiceId:      testdata.MockCloudServiceID,
+					CloudServiceId:      testdata.MockCloudServiceID1,
 					CatalogId:           testdata.MockCatalogID,
 				},
 			},
@@ -1064,12 +1064,12 @@ func TestService_RemoveControlFromScope(t *testing.T) {
 		{
 			name: "permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 			},
 			args: args{
 				in0: context.TODO(),
 				req: &orchestrator.RemoveControlFromScopeRequest{
-					CloudServiceId:      testdata.MockAnotherCloudServiceID,
+					CloudServiceId:      testdata.MockCloudServiceID2,
 					ControlId:           testdata.MockControlID1,
 					ControlCategoryName: testdata.MockCategoryName,
 					CatalogId:           testdata.MockCatalogID,

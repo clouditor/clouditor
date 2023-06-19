@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,6 @@ var NetworkInterfaceType = []string{"NetworkInterface", "Networking", "Resource"
 
 type NetworkInterface struct {
 	*Networking
-	NetworkService    ResourceID         `json:"networkService"`
-	AccessRestriction *AccessRestriction `json:"accessRestriction"`
+	AccessRestriction IsAccessRestriction `json:"accessRestriction"`
+	NetworkService    ResourceID          `json:"networkService"`
 }

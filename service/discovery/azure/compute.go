@@ -29,9 +29,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
@@ -44,6 +46,7 @@ var (
 
 type azureComputeDiscovery struct {
 	*azureDiscovery
+	defenderProperties map[string]*defenderProperties
 }
 
 func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -51,7 +54,9 @@ func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		&azureDiscovery{
 			discovererComponent: ComputeComponent,
 			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*backup),
 		},
+		make(map[string]*defenderProperties),
 	}
 
 	// Apply options
@@ -76,6 +81,27 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup vaults client
+	if err := d.initBackupVaultsClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup instances client
+	if err := d.initBackupInstancesClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover backup vaults
+	err = d.azureDiscovery.discoverBackupVaults()
+	if err != nil {
+		log.Errorf("could not discover backup vaults: %v", err)
+	}
+
 	log.Info("Discover Azure block storage")
 	// Discover block storage
 	storage, err := d.discoverBlockStorages()
@@ -83,6 +109,11 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, fmt.Errorf("could not discover block storage: %w", err)
 	}
 	list = append(list, storage...)
+
+	// Add backup block storages
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
+		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
+	}
 
 	log.Info("Discover Azure compute resources")
 	// Discover virtual machines
@@ -143,6 +174,8 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		return nil
 	}
 
+	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -155,12 +188,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				},
 				labels(function.Tags),
 				voc.FunctionType,
+				function,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
-		RuntimeLanguage: "",
-		RuntimeVersion:  "",
+		RuntimeLanguage: runtimeLanguage,
+		RuntimeVersion:  runtimeVersion,
 	}
+}
+
+// runtimeInfo returns the runtime language and version
+func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string) {
+	if runtime == "" || !strings.Contains(runtime, "|") {
+		return "", ""
+	}
+	split := strings.Split(runtime, "|")
+	runtimeLanguage = split[0]
+	runtimeVersion = split[1]
+
+	return
 }
 
 // Discover virtual machines
@@ -202,8 +248,13 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
-	var bootLogging = []voc.ResourceID{}
-	var osLogging = []voc.ResourceID{}
+	var (
+		bootLogging              = []voc.ResourceID{}
+		osLogging                = []voc.ResourceID{}
+		autoUpdates              *voc.AutomaticUpdates
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
 
 	// If a mandatory field is empty, the whole disk is empty
 	if vm == nil || vm.ID == nil {
@@ -212,6 +263,13 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 
 	if bootLogOutput(vm) != "" {
 		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	}
+
+	autoUpdates = automaticUpdates(vm)
+
+	if d.defenderProperties[DefenderVirtualMachineType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
 	r := &voc.VirtualMachine{
@@ -225,6 +283,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				},
 				labels(vm.Tags),
 				voc.VirtualMachineType,
+				vm,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
@@ -238,6 +297,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    securityAlertsEnabled,
 			},
 		},
 		OsLogging: &voc.OSLogging{
@@ -248,8 +309,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    monitoringLogDataEnabled,
 			},
 		},
+		AutomaticUpdates: autoUpdates,
 	}
 
 	// Reference to networkInterfaces
@@ -271,6 +335,43 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	}
 
 	return r, nil
+}
+
+// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
+func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
+	automaticUpdates = &voc.AutomaticUpdates{}
+
+	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
+		return
+	}
+
+	// Check if Linux configuration is available
+	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
+		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
+			util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeImageDefault {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+		}
+	}
+
+	// Check if Windows configuration is available
+	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
+		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
+		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
+			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+
+		} else {
+			return
+
+		}
+	}
+
+	return
 }
 
 func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
@@ -312,14 +413,14 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 			return res.Value
 		},
 		func(disk *armcompute.Disk) error {
-			blockStorages, err := d.handleBlockStorage(disk)
+			blockStorage, err := d.handleBlockStorage(disk)
 			if err != nil {
 				return fmt.Errorf("could not handle block storage: %w", err)
 			}
 
-			log.Infof("Adding block storage '%s'", blockStorages.Name)
+			log.Infof("Adding block storage '%s'", blockStorage.GetName())
 
-			list = append(list, blockStorages)
+			list = append(list, blockStorage)
 			return nil
 		})
 	if err != nil {
@@ -330,14 +431,24 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 }
 
 func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	var (
+		rawKeyUrl *armcompute.DiskEncryptionSet
+		backups   []*voc.Backup
+	)
+
 	// If a mandatory field is empty, the whole disk is empty
 	if disk == nil || disk.ID == nil {
 		return nil, fmt.Errorf("disk is nil")
 	}
 
-	enc, err := d.blockStorageAtRestEncryption(disk)
+	enc, rawKeyUrl, err := d.blockStorageAtRestEncryption(disk)
 	if err != nil {
 		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
+	}
+
+	// Get voc.Backup
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
 	}
 
 	return &voc.BlockStorage{
@@ -351,74 +462,76 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 				},
 				labels(disk.Tags),
 				voc.BlockStorageType,
+				disk, rawKeyUrl,
 			),
 			AtRestEncryption: enc,
+			Backups:          backups,
 		},
 	}, nil
 }
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
 // ontology object.
-func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, err error) {
+func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
 	var (
 		diskEncryptionSetID string
 		keyUrl              string
 	)
 
 	if disk == nil {
-		return enc, errors.New("disk is empty")
+		return enc, nil, errors.New("disk is empty")
 	}
 
 	if disk.Properties.Encryption.Type == nil {
-		return enc, errors.New("error getting atRestEncryption properties of blockStorage")
-	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
+		return enc, nil, errors.New("error getting atRestEncryption properties of blockStorage")
+	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
 		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
 			Algorithm: "AES256",
 			Enabled:   true,
 		}}
-	} else if *disk.Properties.Encryption.Type == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
+	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
 		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
-		keyUrl, err = d.keyURL(diskEncryptionSetID)
+		keyUrl, rawKeyUrl, err = d.keyURL(diskEncryptionSetID)
 		if err != nil {
-			return nil, fmt.Errorf("could not get keyVaultID: %w", err)
+			return nil, nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
 
 		enc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(garuppel): TBD
+				Algorithm: "", // TODO(all): TBD
 				Enabled:   true,
 			},
 			KeyUrl: keyUrl,
 		}
 	}
 
-	return enc, nil
+	return enc, rawKeyUrl, nil
 }
 
-func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, error) {
+func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute.DiskEncryptionSet, error) {
 	if diskEncryptionSetID == "" {
-		return "", ErrMissingDiskEncryptionSetID
+		return "", nil, ErrMissingDiskEncryptionSetID
 	}
 
 	if err := d.initDiskEncryptonSetClient(); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	// Get disk encryption set
 	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
-		return "", err
+		return "", nil, err
 	}
 
 	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
 
 	if keyURL == nil {
-		return "", fmt.Errorf("could not get keyURL")
+		return "", nil, fmt.Errorf("could not get keyURL")
 	}
 
-	return util.Deref(keyURL), nil
+	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
 }
 
 // initFunctionsClient creates the client if not already exists
@@ -442,5 +555,26 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
 	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	return
+}
+
+// initBackupPoliciesClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupPoliciesClient() (err error) {
+	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+
+	return
+}
+
+// initBackupVaultsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupVaultsClient() (err error) {
+	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+
+	return
+}
+
+// initBackupInstancesClient creates the client if not already exists
+func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
+	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
 	return
 }

@@ -120,9 +120,9 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{
@@ -141,8 +141,8 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
 						Resource: toStruct(voc.VirtualMachine{
@@ -288,7 +288,10 @@ func TestService_StoreEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
+				assert.Equal(t, tt.wantRespMessage.Status, responseFromServer.Status)
+				// We have to check both ways, as it fails if one StatusMessage is empty.
 				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				assert.Contains(t, tt.wantRespMessage.StatusMessage, responseFromServer.StatusMessage)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
@@ -415,18 +418,18 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Permission denied (cloud service id not allowed)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID), // allow only MockCloudServiceID
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1), // allow only MockCloudServiceID
 			},
 			args: args{
 				in0: context.TODO(),
 				req: &evidence.ListEvidencesRequest{
 					Filter: &evidence.Filter{
-						CloudServiceId: util.Ref(testdata.MockAnotherCloudServiceID),
+						CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockAnotherCloudServiceID is not allowed
+				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCloudServiceID2 is not allowed
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 			wantResp: assert.Nil,
@@ -570,8 +573,8 @@ func TestService_EvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID,
-					CloudServiceId: testdata.MockAnotherCloudServiceID,
+					Id:             testdata.MockEvidenceID1,
+					CloudServiceId: testdata.MockCloudServiceID2,
 					Timestamp:      timestamppb.Now(),
 					Raw:            nil,
 					ToolId:         "mockToolId-1",
@@ -625,7 +628,7 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 			Evidence: &evidence.Evidence{
 				Id:             uuid.NewString(),
 				ToolId:         fmt.Sprintf("MockToolId-%d", i),
-				CloudServiceId: fmt.Sprintf("MockCloudServiceId-%d", i),
+				CloudServiceId: testdata.MockCloudServiceID1,
 				Timestamp:      timestamppb.Now(),
 				Raw:            nil,
 				Resource: toStructWithoutTest(voc.VirtualMachine{
@@ -695,7 +698,7 @@ func (mockStreamer) SetTrailer(_ metadata.MD) {
 }
 
 func (mockStreamer) Context() context.Context {
-	panic("implement me")
+	return context.TODO()
 }
 
 func (mockStreamer) SendMsg(_ interface{}) error {
@@ -710,6 +713,10 @@ type mockStreamerWithRecvErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithRecvErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidencesResponse) error {
@@ -739,6 +746,10 @@ type mockStreamerWithSendErr struct {
 	grpc.ServerStream
 	RecvToServer   chan *evidence.StoreEvidenceRequest
 	SentFromServer chan *evidence.StoreEvidencesResponse
+}
+
+func (*mockStreamerWithSendErr) Context() context.Context {
+	return context.TODO()
 }
 
 func (*mockStreamerWithSendErr) Send(*evidence.StoreEvidencesResponse) error {
@@ -808,9 +819,9 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockAnotherCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID2,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Resource:       structpb.NewNullValue(),
 						Timestamp:      timestamppb.Now(),
 					}))
@@ -820,7 +831,7 @@ func TestService_GetEvidence(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			want: assert.Nil,
@@ -834,9 +845,9 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID,
-						CloudServiceId: testdata.MockCloudServiceID,
-						ToolId:         testdata.MockEvidenceToolID,
+						Id:             testdata.MockEvidenceID1,
+						CloudServiceId: testdata.MockCloudServiceID1,
+						ToolId:         testdata.MockEvidenceToolID1,
 						Resource:       structpb.NewNullValue(),
 						Timestamp:      timestamppb.Now(),
 					}))
@@ -845,7 +856,7 @@ func TestService_GetEvidence(t *testing.T) {
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -879,7 +890,7 @@ func TestService_GetEvidence(t *testing.T) {
 			},
 			args: args{
 				req: &evidence.GetEvidenceRequest{
-					EvidenceId: testdata.MockEvidenceID,
+					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {

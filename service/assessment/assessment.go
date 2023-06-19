@@ -38,6 +38,7 @@ import (
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 
@@ -329,6 +330,12 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 	}
 
 	for _, data := range evaluations {
+		// That there is an empty (nil) evaluation should be caught beforehand, but you never know.
+		if data == nil {
+			log.Errorf("One empty policy evaluation detected for evidence '%s'. That should not happen.",
+				ev.GetId())
+			continue
+		}
 		metricID := data.MetricID
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
@@ -349,6 +356,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 			ResourceId:            resourceId,
 			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
+			ToolId:                util.Ref(assessment.AssessmentToolId),
 		}
 
 		// Inform hooks about new assessment result

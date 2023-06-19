@@ -30,14 +30,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -60,7 +61,7 @@ type mockedVirtualMachinesResponse struct {
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
@@ -84,6 +85,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 									"managedDisk": map[string]interface{}{
 										"id": "data_disk_2",
 									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
 								},
 							},
 						},
@@ -129,6 +137,13 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								},
 							},
 						},
+						"osProfile": map[string]interface{}{
+							"windowsConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByOS",
+								},
+							},
+						},
 						"diagnosticsProfile": map[string]interface{}{
 							"bootDiagnostics": map[string]interface{}{
 								"enabled":    true,
@@ -160,7 +175,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
@@ -189,8 +204,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-					"name":     "anotherdisk",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
@@ -204,11 +219,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-					"name":     "anotherdisk",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
@@ -222,15 +237,15 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
@@ -240,12 +255,16 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
 					},
-					"properties": map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"linuxFxVersion": "PYTHON|3.8",
+						},
+					},
 				},
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault1",
@@ -260,7 +279,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
-		return createResponse(map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
 			"type":     "Microsoft.Compute/diskEncryptionSets",
 			"name":     "encryptionkeyvault2",
@@ -272,6 +291,58 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"name": "disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							"datasourceType": "Microsoft.Compute/disks",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P30D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
 		}, 200)
 	}
 
@@ -296,7 +367,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -313,7 +386,9 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
@@ -326,19 +401,23 @@ func TestNewAzureComputeDiscovery(t *testing.T) {
 					cred:                &mockAuthorizer{},
 					discovererComponent: ComputeComponent,
 					csID:                discovery.DefaultCloudServiceID,
+					backupMap:           make(map[string]*backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 		{
 			name: "With cloud service ID",
 			args: args{
-				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID)},
+				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
 			},
 			want: &azureComputeDiscovery{
 				&azureDiscovery{
 					discovererComponent: ComputeComponent,
-					csID:                testdata.MockCloudServiceID,
+					csID:                testdata.MockCloudServiceID1,
+					backupMap:           make(map[string]*backup),
 				},
+				make(map[string]*defenderProperties),
 			},
 		},
 	}
@@ -371,7 +450,7 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
+	assert.Equal(t, 8, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -384,7 +463,7 @@ func TestDiscoverer_List(t *testing.T) {
 	list, err := d.List()
 	assert.NoError(t, err)
 
-	virtualMachine, ok := list[3].(*voc.VirtualMachine)
+	virtualMachine, ok := list[4].(*voc.VirtualMachine)
 
 	assert.True(t, ok)
 	assert.Equal(t, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1", string(virtualMachine.ID))
@@ -399,11 +478,11 @@ func TestDiscoverer_List(t *testing.T) {
 	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
 	assert.Equal(t, time.Duration(0), virtualMachine.BootLogging.RetentionPeriod)
 
-	virtualMachine2, ok := list[4].(*voc.VirtualMachine)
+	virtualMachine2, ok := list[5].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine2.BootLogging.LoggingService)
 
-	virtualMachine3, ok := list[5].(*voc.VirtualMachine)
+	virtualMachine3, ok := list[6].(*voc.VirtualMachine)
 	assert.True(t, ok)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.BlockStorage)
 	assert.Equal(t, []voc.ResourceID{}, virtualMachine3.NetworkInterfaces)
@@ -420,9 +499,9 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 7, len(list))
+	assert.Equal(t, 8, len(list))
 
-	function, ok := list[6].(*voc.Function)
+	function, ok := list[7].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)
@@ -511,18 +590,18 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 		wantList []voc.IsCloudResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Authorize error",
-		// 	fields: fields{
-		// 		azureDiscovery: azureDiscovery{
-		// 			cred: nil,
-		// 		},
-		// 	},
-		// 	wantList: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-		// 	},
-		// },
+		{
+			name: "Authorize error",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
 		{
 			name: "Discovery error",
 			fields: fields{
@@ -544,7 +623,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -552,13 +631,25 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
+						},
+						Backups: []*voc.Backup{{
+							Enabled:         true,
+							RetentionPeriod: Duration30Days,
+							Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+							TransportEncryption: &voc.TransportEncryption{
+								Enforced:   true,
+								Enabled:    true,
+								TlsVersion: constants.TLS1_2,
+								Algorithm:  constants.TLS,
+							},
+						},
 						},
 					},
 				},
@@ -566,7 +657,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -574,6 +665,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2\",\"location\":\"eastus\",\"name\":\"disk2\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -582,27 +674,44 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
+						Backups: nil,
 					},
 				},
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testdata.MockCloudServiceID,
-							Name:         "anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
+						},
+						Backups: nil,
+					},
+				},
+				&voc.BlockStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+							Name:         "disk1-disk1-22222222-2222-2222-2222-222222222222",
+							ServiceID:    testdata.MockCloudServiceID1,
+							CreationTime: 0,
+							Type:         voc.BlockStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "westeurope",
+							},
+							Raw: "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"datasourceType\":\"Microsoft.Compute/disks\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 						},
 					},
 				},
@@ -610,7 +719,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         voc.VirtualMachineType,
@@ -618,6 +727,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -642,13 +752,17 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         voc.VirtualMachineType,
@@ -656,6 +770,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -680,13 +795,17 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm3",
 							Type:         voc.VirtualMachineType,
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -694,6 +813,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3\",\"location\":\"eastus\",\"name\":\"vm3\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{}}}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
@@ -718,13 +838,17 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         voc.FunctionType,
@@ -735,9 +859,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -751,17 +879,18 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testdata.MockCloudServiceID,
-							Name:         "anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-
+						Backups: nil,
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
@@ -822,7 +951,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "function1",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"Function", "Compute", "Resource"},
@@ -833,9 +962,12 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
 				},
 			},
 			wantErr: assert.NoError,
@@ -904,13 +1036,18 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						"testKey1": &testTag1,
 						"testKey2": &testTag2,
 					},
+					Properties: &armappservice.SiteProperties{
+						SiteConfig: &armappservice.SiteConfig{
+							LinuxFxVersion: util.Ref("PYTHON|3.8"),
+						},
+					},
 				},
 			},
 			want: &voc.Function{
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         "function1",
 						CreationTime: util.SafeTimestamp(&time.Time{}),
 						Type:         []string{"Function", "Compute", "Resource"},
@@ -921,9 +1058,12 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "West Europe",
 						},
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},
+				RuntimeVersion:  "3.8",
+				RuntimeLanguage: "PYTHON",
 			},
 		},
 	}
@@ -949,20 +1089,16 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		want    []voc.IsCloudResource
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO(anatheka): Wo kommt die panic her?
-		// {
-		//	name: "Error list pages",
-		//	fields: fields{
-		//		azureDiscovery: azureDiscovery{
-		//			cred: nil,
-		//			sub:  sub,
-		//		},
-		//	},
-		//	want: nil,
-		//	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		//		return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
-		//	},
-		// },
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
 		{
 			name: "No error",
 			fields: fields{
@@ -973,7 +1109,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -981,6 +1117,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -1005,13 +1142,17 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm2",
 							CreationTime: util.SafeTimestamp(&time.Time{}),
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1019,6 +1160,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -1043,13 +1185,17 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							},
 						},
 					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "vm3",
 							Type:         []string{"VirtualMachine", "Compute", "Resource"},
 							CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -1057,6 +1203,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3\",\"location\":\"eastus\",\"name\":\"vm3\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{}}}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
@@ -1080,6 +1227,10 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 								SecurityFeature: &voc.SecurityFeature{},
 							},
 						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  false,
+						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
 				},
@@ -1137,7 +1288,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 	enabledTrue := true
 
 	type fields struct {
-		azureDiscovery *azureDiscovery
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
 	}
 	type args struct {
 		vm *armcompute.VirtualMachine
@@ -1160,6 +1312,12 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 			name: "No error",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				defenderProperties: map[string]*defenderProperties{
+					DefenderVirtualMachineType: {
+						monitoringLogDataEnabled: true,
+						securityAlertsEnabled:    true,
+					},
+				},
 			},
 			args: args{
 				vm: &armcompute.VirtualMachine{
@@ -1190,7 +1348,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				Compute: &voc.Compute{
 					Resource: &voc.Resource{
 						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         "vm1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"VirtualMachine", "Compute", "Resource"},
@@ -1198,6 +1356,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "eastus",
 						},
+						Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{"123", "234"},
 				},
@@ -1209,7 +1368,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
-						RetentionPeriod: 0,
+						RetentionPeriod:          0,
+						MonitoringLogDataEnabled: true,
+						SecurityAlertsEnabled:    true,
 					},
 				},
 				OsLogging: &voc.OSLogging{
@@ -1220,7 +1381,13 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
+						MonitoringLogDataEnabled: true,
+						SecurityAlertsEnabled:    true,
 					},
+				},
+				AutomaticUpdates: &voc.AutomaticUpdates{
+					Enabled:  false,
+					Interval: time.Duration(0),
 				},
 				MalwareProtection: &voc.MalwareProtection{},
 			},
@@ -1230,7 +1397,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureComputeDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
 			}
 			got, err := d.handleVirtualMachines(tt.args.vm)
 			if !tt.wantErr(t, err) {
@@ -1454,7 +1622,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "disk1",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1462,6 +1630,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 							Type:   []string{"BlockStorage", "Storage", "Resource"},
 							Labels: map[string]string{},
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
 
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1476,7 +1645,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-							ServiceID:    testdata.MockCloudServiceID,
+							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "disk2",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
@@ -1484,6 +1653,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 							Type:   []string{"BlockStorage", "Storage", "Resource"},
 							Labels: map[string]string{},
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2\",\"location\":\"eastus\",\"name\":\"disk2\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1497,15 +1667,16 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/anotherdisk",
-							ServiceID:    testdata.MockCloudServiceID,
-							Name:         "anotherdisk",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "disk3",
 							CreationTime: util.SafeTimestamp(&creationTime),
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
 							Labels: map[string]string{},
 							Type:   voc.BlockStorageType,
+							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
 
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1625,7 +1796,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
 						ID:           voc.ResourceID(diskID),
-						ServiceID:    testdata.MockCloudServiceID,
+						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         "disk1",
 						CreationTime: util.SafeTimestamp(&creationTime),
 						Type:         []string{"BlockStorage", "Storage", "Resource"},
@@ -1633,6 +1804,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 							Region: "eastus",
 						},
 						Labels: map[string]string{},
+						Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1\",\"type\":\"EncryptionAtRestWithCustomerKey\"},\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\"}}],\"*armcompute.DiskEncryptionSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1\",\"location\":\"germanywestcentral\",\"name\":\"encryptionkeyvault1\",\"properties\":{\"activeKey\":{\"keyUrl\":\"https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382\",\"sourceVault\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1\"}}},\"type\":\"Microsoft.Compute/diskEncryptionSets\"}]}",
 					},
 
 					AtRestEncryption: &voc.CustomerKeyEncryption{
@@ -1746,7 +1918,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.blockStorageAtRestEncryption(tt.args.disk)
+			got, _, err := d.blockStorageAtRestEncryption(tt.args.disk)
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -1820,7 +1992,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.keyURL(tt.args.diskEncryptionSetID)
+			got, _, err := d.keyURL(tt.args.diskEncryptionSetID)
 			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetID)) {
 				return
 			}
@@ -1856,6 +2028,220 @@ func Test_diskEncryptionSetName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, diskEncryptionSetName(tt.args.diskEncryptionSetID))
+		})
+	}
+}
+
+func Test_runtimeInfo(t *testing.T) {
+	type args struct {
+		runtime string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantRuntimeLanguage string
+		wantRuntimeVersion  string
+	}{
+		{
+			name: "Empty input",
+			args: args{
+				runtime: "",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Wrong input",
+			args: args{
+				runtime: "TEST",
+			},
+			wantRuntimeLanguage: "",
+			wantRuntimeVersion:  "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				runtime: "PYTHON|3.8",
+			},
+			wantRuntimeLanguage: "PYTHON",
+			wantRuntimeVersion:  "3.8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotRuntimeLanguage, gotRuntimeVersion := runtimeInfo(tt.args.runtime)
+			if gotRuntimeLanguage != tt.wantRuntimeLanguage {
+				t.Errorf("runtimeInfo() gotRuntimeLanguage = %v, want %v", gotRuntimeLanguage, tt.wantRuntimeLanguage)
+			}
+			if gotRuntimeVersion != tt.wantRuntimeVersion {
+				t.Errorf("runtimeInfo() gotRuntimeVersion = %v, want %v", gotRuntimeVersion, tt.wantRuntimeVersion)
+			}
+		})
+	}
+}
+
+func Test_automaticUpdatesEnabled(t *testing.T) {
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name string
+		args args
+		want *voc.AutomaticUpdates
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Windows configuration set to manual",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeManual),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  false,
+				Interval: time.Duration(0),
+			},
+		},
+		{
+			name: "Happy path: Linux configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+		{
+			name: "Happy path: Windows configuration",
+			args: args{
+				&armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := automaticUpdates(tt.args.vm)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_automaticUpdates(t *testing.T) {
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		wantAutomaticUpdates *voc.AutomaticUpdates
+	}{
+		{
+			name:                 "Empty input",
+			args:                 args{},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{},
+		},
+		{
+			name: "No automatic update for the given VM",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{},
+		},
+		{
+			name: "Happy path: Linux",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+		{
+			name: "Happy path: Windows",
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						OSProfile: &armcompute.OSProfile{
+							WindowsConfiguration: &armcompute.WindowsConfiguration{
+								PatchSettings: &armcompute.PatchSettings{
+									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantAutomaticUpdates: &voc.AutomaticUpdates{
+				Enabled:  true,
+				Interval: Duration30Days,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotAutomaticUpdates := automaticUpdates(tt.args.vm); !reflect.DeepEqual(gotAutomaticUpdates, tt.wantAutomaticUpdates) {
+				t.Errorf("automaticUpdates() = %v, want %v", gotAutomaticUpdates, tt.wantAutomaticUpdates)
+			}
 		})
 	}
 }

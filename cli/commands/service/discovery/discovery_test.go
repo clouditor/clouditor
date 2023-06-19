@@ -122,15 +122,15 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:   testdata.MockResourceID,
-						Name: testdata.MockResourceName,
+						ID:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
 						Type: []string{"ObjectStorage", "Storage", "Resource"},
 					},
 				},
 			},
 			&voc.ObjectStorageService{
 				StorageService: &voc.StorageService{
-					Storage: []voc.ResourceID{testdata.MockResourceID},
+					Storage: []voc.ResourceID{testdata.MockResourceID1},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
@@ -156,7 +156,7 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 }
 
 func (mockDiscoverer) CloudServiceID() string {
-	return testdata.MockCloudServiceID
+	return testdata.MockCloudServiceID1
 }
 
 func wrongFormattedResource() voc.IsCloudResource {
@@ -198,6 +198,13 @@ func (mockIsCloudResource) HasType(_ string) bool {
 
 func (mockIsCloudResource) GetCreationTime() *time.Time {
 	return nil
+}
+
+func (mockIsCloudResource) GetRaw() string {
+	return ""
+}
+
+func (mockIsCloudResource) SetRaw(_ string) {
 }
 
 func (mockIsCloudResource) Related() []string {

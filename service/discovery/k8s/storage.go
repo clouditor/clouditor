@@ -50,8 +50,8 @@ func (*k8sStorageDiscovery) Description() string {
 	return "Discover Kubernetes storage resources."
 }
 
-func (d k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
-	list := []voc.IsCloudResource{}
+func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
 	// Get persistent volumes
 	// Note: Volumes exist in the context of a pod and cannot be created on its own, PersistentVolumes are first class objects with its own lifecycle.
@@ -86,6 +86,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 			voc.GeoLocation{},
 			pv.Labels,
 			voc.BlockStorageType,
+			pv,
 		),
 		AtRestEncryption: &voc.AtRestEncryption{},
 	}

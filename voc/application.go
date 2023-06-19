@@ -1,6 +1,6 @@
 // Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
 
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ package voc
 
 // Application is an entity in our Cloud ontology. This encapsulates the whole (source) code of an application.
 type Application struct {
-	Functionalities     *[]Functionality `json:"functionalities"`
+	Functionalities     []*Functionality `json:"functionalities"`
 	Compute             []ResourceID     `json:"compute"`
 	ProgrammingLanguage string           `json:"programmingLanguage"`
 	TranslationUnits    []string         `json:"translationUnits"`

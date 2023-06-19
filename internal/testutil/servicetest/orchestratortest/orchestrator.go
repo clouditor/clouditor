@@ -26,7 +26,7 @@ func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
 		Name:           testdata.MockCertificateName,
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
 		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName,
@@ -55,7 +55,7 @@ func NewCertificate2() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID2,
 		Name:           testdata.MockCertificateName2,
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID2,
 		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
 		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName2,
@@ -97,7 +97,7 @@ func NewCatalog() *orchestrator.Catalog {
 // NewTargetOfEvaluation creates a new Target of Evaluation. The assurance level is set if available.
 func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		CatalogId:      testdata.MockCatalogID,
 	}
 
@@ -133,7 +133,7 @@ func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluati
 // NewTargetOfEvaluationWithoutControlsInScope creates a new Target of Evaluation without controls_in_scope. The assurance level is set if available.
 func NewTargetOfEvaluationWithoutControlsInScope(assuranceLevel string) *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		CatalogId:      testdata.MockCatalogID,
 	}
 
@@ -146,9 +146,9 @@ func NewTargetOfEvaluationWithoutControlsInScope(assuranceLevel string) *orchest
 
 func NewCloudService() *orchestrator.CloudService {
 	return &orchestrator.CloudService{
-		Id:                testdata.MockCloudServiceID,
-		Name:              testdata.MockCloudServiceName,
-		Description:       testdata.MockCloudServiceDescription,
+		Id:                testdata.MockCloudServiceID1,
+		Name:              testdata.MockCloudServiceName1,
+		Description:       testdata.MockCloudServiceDescription1,
 		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
@@ -156,9 +156,9 @@ func NewCloudService() *orchestrator.CloudService {
 
 func NewAnotherCloudService() *orchestrator.CloudService {
 	return &orchestrator.CloudService{
-		Id:                testdata.MockAnotherCloudServiceID,
-		Name:              testdata.MockAnotherCloudServiceName,
-		Description:       testdata.MockAnotherCloudServiceDescription,
+		Id:                testdata.MockCloudServiceID2,
+		Name:              testdata.MockCloudServiceName2,
+		Description:       testdata.MockCloudServiceDescription2,
 		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
@@ -174,70 +174,74 @@ var (
 	MockAssessmentResult1 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult1ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID,
-		MetricId:       testdata.MockMetricID,
+		CloudServiceId: testdata.MockCloudServiceID1,
+		MetricId:       testdata.MockMetricID1,
 		Compliant:      true,
-		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockResourceID,
+		EvidenceId:     testdata.MockEvidenceID1,
+		ResourceId:     testdata.MockResourceID1,
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockMetricID,
-			CloudServiceId: testdata.MockCloudServiceID,
+			MetricId:       testdata.MockMetricID1,
+			CloudServiceId: testdata.MockCloudServiceID1,
 		},
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult2ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
-		MetricId:       testdata.MockMetricID,
+		CloudServiceId: testdata.MockCloudServiceID2,
+		MetricId:       testdata.MockMetricID1,
 		Compliant:      true,
-		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockResourceID,
+		EvidenceId:     testdata.MockEvidenceID1,
+		ResourceId:     testdata.MockResourceID1,
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockMetricID,
-			CloudServiceId: testdata.MockAnotherCloudServiceID,
+			MetricId:       testdata.MockMetricID1,
+			CloudServiceId: testdata.MockCloudServiceID2,
 		},
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult3ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID,
-		MetricId:       testdata.MockAnotherMetricID,
+		CloudServiceId: testdata.MockCloudServiceID1,
+		MetricId:       testdata.MockMetricID2,
 		Compliant:      false,
-		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockResourceID,
+		EvidenceId:     testdata.MockEvidenceID1,
+		ResourceId:     testdata.MockResourceID1,
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockAnotherMetricID,
-			CloudServiceId: testdata.MockCloudServiceID,
+			MetricId:       testdata.MockMetricID2,
+			CloudServiceId: testdata.MockCloudServiceID1,
 		},
+		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
 		Id:             testdata.MockAssessmentResult4ID,
 		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
-		MetricId:       testdata.MockAnotherMetricID,
+		CloudServiceId: testdata.MockCloudServiceID2,
+		MetricId:       testdata.MockMetricID2,
 		Compliant:      false,
-		EvidenceId:     testdata.MockEvidenceID,
-		ResourceId:     testdata.MockAnotherResourceID,
+		EvidenceId:     testdata.MockEvidenceID1,
+		ResourceId:     testdata.MockResourceID2,
 		ResourceTypes:  []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:       "==",
 			TargetValue:    structpb.NewBoolValue(true),
 			IsDefault:      true,
-			MetricId:       testdata.MockAnotherMetricID,
-			CloudServiceId: testdata.MockAnotherCloudServiceID,
+			MetricId:       testdata.MockMetricID2,
+			CloudServiceId: testdata.MockCloudServiceID2,
 		},
+		ToolId: util.Ref(testdata.MockAssessmentResultToolID),
 	}
 	MockAssessmentResults = []*assessment.AssessmentResult{MockAssessmentResult1, MockAssessmentResult2, MockAssessmentResult3, MockAssessmentResult4}
 
@@ -259,9 +263,9 @@ var (
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
+					Id:          testdata.MockMetricID1,
+					Name:        testdata.MockMetricName1,
+					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
 					Range: &assessment.Range{
 						Range: &assessment.Range_AllowedValues{
@@ -286,9 +290,9 @@ var (
 		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{
@@ -320,9 +324,9 @@ var (
 				ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
-					Id:          testdata.MockMetricID,
-					Name:        testdata.MockMetricName,
-					Description: testdata.MockMetricDescription,
+					Id:          testdata.MockMetricID1,
+					Name:        testdata.MockMetricName1,
+					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
 					Range: &assessment.Range{
 						Range: &assessment.Range_AllowedValues{
@@ -363,9 +367,9 @@ var (
 		Description:       testdata.MockControlDescription,
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{
@@ -387,9 +391,9 @@ var (
 		Description:       testdata.MockControlDescription,
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{
@@ -431,9 +435,9 @@ var (
 		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{
@@ -464,9 +468,9 @@ var (
 		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{
@@ -536,9 +540,9 @@ var (
 		Description:       testdata.MockControlDescription,
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID,
-			Name:        testdata.MockMetricName,
-			Description: testdata.MockMetricDescription,
+			Id:          testdata.MockMetricID1,
+			Name:        testdata.MockMetricName1,
+			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
 			Range: &assessment.Range{
 				Range: &assessment.Range_AllowedValues{

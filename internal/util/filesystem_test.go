@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,62 +23,49 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package api
+package util
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
 	"testing"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func TestStatusFromWrappedError(t *testing.T) {
+func TestGetJSONFilenames(t *testing.T) {
 	type args struct {
-		err error
+		folder string
 	}
 	tests := []struct {
-		name   string
-		args   args
-		wantS  *status.Status
-		wantOk bool
+		name    string
+		args    args
+		want    []string
+		wantErr bool
 	}{
 		{
-			name: "err is status.Status",
+			name: "Empty input folder",
 			args: args{
-				err: status.Errorf(codes.NotFound, "not found"),
+				folder: "",
 			},
-			wantS:  status.New(codes.NotFound, "not found"),
-			wantOk: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
-			name: "wrapped in fmt.Errorf",
+			name: "Happy path",
 			args: args{
-				err: fmt.Errorf("some error: %w", status.Errorf(codes.NotFound, "not found")),
+				folder: "../../catalogs",
 			},
-			wantS:  status.New(codes.NotFound, "not found"),
-			wantOk: true,
-		},
-		{
-			name: "no status",
-			args: args{
-				err: fmt.Errorf("some error: %w", errors.New("some other error")),
-			},
-			wantS:  nil,
-			wantOk: false,
+			want:    []string{"../../catalogs/demo_catalog.json"},
+			wantErr: false,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotS, gotOk := StatusFromWrappedError(tt.args.err)
-			if !reflect.DeepEqual(gotS, tt.wantS) {
-				t.Errorf("StatusFromWrappedError() gotS = %v, want %v", gotS, tt.wantS)
+			got, err := GetJSONFilenames(tt.args.folder)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetJSONFilenames() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if gotOk != tt.wantOk {
-				t.Errorf("StatusFromWrappedError() gotOk = %v, want %v", gotOk, tt.wantOk)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetJSONFilenames() = %v, want %v", got, tt.want)
 			}
 		})
 	}
