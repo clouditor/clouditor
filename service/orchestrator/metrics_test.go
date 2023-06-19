@@ -103,14 +103,13 @@ func TestService_loadMetrics(t *testing.T) {
 			},
 		},
 		{
-			name: "storage error",
+			// There is a storage error for creating a single metric which is not forwarded/returned
+			name: "storage error (but not returned)",
 			fields: fields{
 				metricsFile: "metrics.json",
 				storage:     &testutil.StorageWithError{CreateErr: ErrSomeError},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrSomeError)
-			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "custom loading function with error",
