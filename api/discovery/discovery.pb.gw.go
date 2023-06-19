@@ -113,13 +113,12 @@ func RegisterDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Discovery_Start_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Discovery_Start_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -137,13 +136,12 @@ func RegisterDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/ListResources", runtime.WithHTTPPathPattern("/v1/discovery/resources"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/ListResources", runtime.WithHTTPPathPattern("/v1/discovery/resources"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Discovery_ListResources_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Discovery_ListResources_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -185,7 +183,7 @@ func RegisterDiscoveryHandlerFromEndpoint(ctx context.Context, mux *runtime.Serv
 
 // RegisterDiscoveryHandler registers the http handlers for service Discovery to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+func RegisterDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
 	return RegisterDiscoveryHandlerClient(ctx, mux, NewDiscoveryClient(conn))
 }
 
@@ -200,13 +198,12 @@ func RegisterDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/Start", runtime.WithHTTPPathPattern("/v1/discovery/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Discovery_Start_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Discovery_Start_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -221,13 +218,12 @@ func RegisterDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/ListResources", runtime.WithHTTPPathPattern("/v1/discovery/resources"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1.Discovery/ListResources", runtime.WithHTTPPathPattern("/v1/discovery/resources"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Discovery_ListResources_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Discovery_ListResources_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)

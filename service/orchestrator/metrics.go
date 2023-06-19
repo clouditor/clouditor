@@ -71,10 +71,10 @@ func (svc *Service) loadMetrics() (err error) {
 	// we intentionally do not have the implementation, because they are assess outside the Clouditor toolset, but we
 	// still need to be aware of the particular metric.
 	for _, m := range metrics {
-		// Somehow, we first need to save the metric, otherwise we are running into weird constraint issues.
-		err = svc.storage.Save(m, "id = ?", m.Id)
+		// Somehow, we first need to create the metric, otherwise we are running into weird constraint issues.
+		err = svc.storage.Create(m)
 		if err != nil {
-			log.Errorf("Error while saving metrics: %v", err)
+			log.Errorf("Error while saving metric `%s`: %v", m.Id, err)
 			continue
 		}
 
@@ -84,9 +84,9 @@ func (svc *Service) loadMetrics() (err error) {
 			continue
 		}
 
-		err = svc.storage.Save(m.Implementation, "metric_id = ?", m.Id)
+		err = svc.storage.Create(m.Implementation)
 		if err != nil {
-			log.Errorf("Error while saving metrics: %v", err)
+			log.Errorf("Error while saving metric implementation for '%s': %v", m.Id, err)
 			continue
 		}
 

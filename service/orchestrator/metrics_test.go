@@ -103,6 +103,15 @@ func TestService_loadMetrics(t *testing.T) {
 			},
 		},
 		{
+			// There is a storage error for creating a single metric which is not forwarded/returned
+			name: "storage error (but not returned)",
+			fields: fields{
+				metricsFile: "metrics.json",
+				storage:     &testutil.StorageWithError{CreateErr: ErrSomeError},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "custom loading function with error",
 			fields: fields{
 				loadMetricsFunc: func() ([]*assessment.Metric, error) {
@@ -112,6 +121,18 @@ func TestService_loadMetrics(t *testing.T) {
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
+		},
+		{
+			// To test more accurately, we would need, e.g. an integration test since this function only returns error
+			name: "happy path",
+			fields: fields{
+				// nil enforce the local embedded metric function to be used
+				loadMetricsFunc: nil,
+				// empty string enforces the DefaultValue to be used
+				metricsFile: DefaultMetricsFile,
+				storage:     testutil.NewInMemoryStorage(t),
+			},
+			wantErr: assert.NoError,
 		},
 	}
 

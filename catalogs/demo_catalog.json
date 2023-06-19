@@ -20,10 +20,7 @@
                                 "name": "The CSP shall use an up-to-date TLS version in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TLSVersion"
-                                    },
-                                    {
-                                        "id": "TransportEncryptionAlgorihm"
+                                        "id": "TransportEncryptionProtocol"
                                     }
                                 ],
                                 "parent_control_id": "CommSec-01",
@@ -72,10 +69,7 @@
                                 "name": "The CSP shall use an up-to-date TLS version in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TLSVersion"
-                                    },
-                                    {
-                                        "id": "TransportEncryptionAlgorihm"
+                                        "id": "TransportEncryptionProtocol"
                                     }
                                 ],
                                 "parent_control_id": "SysHard-01",
@@ -118,7 +112,7 @@
                                 "name": "The CSP shall enable the Web Application Firewall (WAF).",
                                 "metrics": [
                                     {
-                                        "id": "WebApplicationFireall"
+                                        "id": "WebApplicationFirewallEnabled"
                                     }
                                 ],
                                 "parent_control_id": "SysHard-02",
