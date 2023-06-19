@@ -1,4 +1,6 @@
-// Copyright 2022 Fraunhofer AISEC
+// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
+
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,13 +25,12 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package api
+package voc
 
-import (
-	"errors"
-)
+var FileStorageServiceType = []string{"FileStorageService", "StorageService", "NetworkService", "Networking", "Resource"}
 
-var (
-	ErrInvalidColumnName = errors.New("column name is invalid")
-	ErrEmptyRequest      = errors.New("empty request")
-)
+// FileStorageService is an entity in our Cloud ontology. An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
+type FileStorageService struct {
+	*StorageService
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+}

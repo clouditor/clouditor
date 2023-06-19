@@ -840,8 +840,9 @@ func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceReq
 
 func TestService_HandleEvidence(t *testing.T) {
 	type fields struct {
-		hasEvidenceStoreStream bool
-		hasOrchestratorStream  bool
+		authz         service.AuthorizationStrategy
+		evidenceStore *api.RPCConnection[evidence.EvidenceStoreClient]
+		orchestrator  *api.RPCConnection[orchestrator.OrchestratorClient]
 	}
 	type args struct {
 		evidence   *evidence.Evidence
@@ -856,8 +857,8 @@ func TestService_HandleEvidence(t *testing.T) {
 		{
 			name: "correct evidence",
 			fields: fields{
-				hasOrchestratorStream:  true,
-				hasEvidenceStoreStream: true,
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -888,8 +889,8 @@ func TestService_HandleEvidence(t *testing.T) {
 		{
 			name: "missing type in evidence",
 			fields: fields{
-				hasOrchestratorStream:  true,
-				hasEvidenceStoreStream: true,
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -911,8 +912,8 @@ func TestService_HandleEvidence(t *testing.T) {
 		{
 			name: "evidence store stream error",
 			fields: fields{
-				hasOrchestratorStream:  true,
-				hasEvidenceStoreStream: false,
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -945,18 +946,14 @@ func TestService_HandleEvidence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService()
-
-			// Mock streams for target services
-			if tt.fields.hasEvidenceStoreStream {
-				s.evidenceStore.Opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-			} else {
-				s.evidenceStore.Opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
-			}
-			if tt.fields.hasOrchestratorStream {
-				s.orchestrator.Opts = []grpc.DialOption{grpc.WithContextDialer(bufConnDialer)}
-			} else {
-				s.orchestrator.Opts = []grpc.DialOption{grpc.WithContextDialer(nil)}
+			s := &Service{
+				evidenceStore:        tt.fields.evidenceStore,
+				orchestrator:         tt.fields.orchestrator,
+				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
+				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
+				cachedConfigurations: make(map[string]cachedConfiguration),
+				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
+				authz:                tt.fields.authz,
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
