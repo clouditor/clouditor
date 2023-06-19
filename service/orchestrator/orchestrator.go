@@ -203,30 +203,6 @@ func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFun
 	s.cloudServiceHooks = append(s.cloudServiceHooks, hook)
 }
 
-// ListPublicCertificates implements method for getting all certificates wihtout the state history, e.g. to show its state in the UI
-func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	res = new(orchestrator.ListPublicCertificatesResponse)
-
-	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
-		service.DefaultPaginationOpts)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
-	}
-
-	// Delete state history from certificates
-	for i := range res.Certificates {
-		res.Certificates[i].States = nil
-	}
-
-	return
-}
-
 // GetRuntimeInfo implements a method to retrieve runtime information
 func (*Service) GetRuntimeInfo(_ context.Context, _ *runtime.GetRuntimeInfoRequest) (res *runtime.Runtime, err error) {
 	return service.GetRuntimeInfo()

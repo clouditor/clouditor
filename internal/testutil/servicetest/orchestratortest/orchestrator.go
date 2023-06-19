@@ -26,7 +26,7 @@ func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
 		Name:           testdata.MockCertificateName,
-		CloudServiceId: testdata.MockCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID1,
 		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
 		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName,
@@ -55,7 +55,7 @@ func NewCertificate2() *orchestrator.Certificate {
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID2,
 		Name:           testdata.MockCertificateName2,
-		CloudServiceId: testdata.MockAnotherCloudServiceID,
+		CloudServiceId: testdata.MockCloudServiceID2,
 		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
 		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName2,

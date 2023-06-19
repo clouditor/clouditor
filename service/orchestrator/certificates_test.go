@@ -4,8 +4,10 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
@@ -84,7 +86,7 @@ func Test_CreateCertificate(t *testing.T) {
 			name: "authorization error - permission denied",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
-					servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2))),
 			},
 			args: args{
 				context.Background(),
@@ -123,7 +125,7 @@ func Test_CreateCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
 					// Only allow certificates belonging to MockCloudServiceID
-					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1))),
 			},
 			args: args{
 				context.Background(),
@@ -219,7 +221,7 @@ func Test_GetCertificate(t *testing.T) {
 					})),
 					// Only authorized for MockCloudServiceID
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockAnotherCloudServiceID)),
+						false, testdata.MockCloudServiceID2)),
 				),
 			},
 			// Only authorized for MockAnotherCloudServiceID (=2222-2...) and not MockCloudServiceID (=1111-1...)
@@ -342,7 +344,7 @@ func Test_ListCertificates(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 				},
 			},
 			args: args{
@@ -367,6 +369,115 @@ func Test_ListCertificates(t *testing.T) {
 			tt.wantRes(t, res)
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_ListPublicCertificates(t *testing.T) {
+	type fields struct {
+		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
+		cloudServiceHooks               []orchestrator.CloudServiceHookFunc
+		toeHooks                        []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks           []func(result *assessment.AssessmentResult, err error)
+		storage                         persistence.Storage
+		metricsFile                     string
+		loadMetricsFunc                 func() ([]*assessment.Metric, error)
+		catalogsFolder                  string
+		loadCatalogsFunc                func() ([]*orchestrator.Catalog, error)
+		events                          chan *orchestrator.MetricChangeEvent
+		authz                           service.AuthorizationStrategy
+	}
+	type args struct {
+		in0 context.Context
+		req *orchestrator.ListPublicCertificatesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.ListPublicCertificatesResponse
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:   "Validation error",
+			fields: fields{},
+			args: args{
+				req: nil,
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Pagination error",
+			fields: fields{
+				storage: &testutil.StorageWithError{ListErr: ErrSomeError},
+			},
+			args: args{
+				req: &orchestrator.ListPublicCertificatesRequest{},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "database error")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Create Certificate
+					assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+				}),
+			},
+			args: args{
+				req: &orchestrator.ListPublicCertificatesRequest{},
+			},
+			wantRes: &orchestrator.ListPublicCertificatesResponse{
+				Certificates: []*orchestrator.Certificate{
+					{
+						Id:             testdata.MockCertificateID,
+						Name:           testdata.MockCertificateName,
+						CloudServiceId: testdata.MockCloudServiceID1,
+						IssueDate:      time.Date(2006, 7, 1, 0, 0, 0, 0, time.UTC).String(),
+						ExpirationDate: time.Date(2016, 7, 1, 0, 0, 0, 0, time.UTC).String(),
+						Standard:       testdata.MockCertificateName,
+						AssuranceLevel: testdata.AssuranceLevelHigh,
+						Cab:            testdata.MockCertificateCab,
+						Description:    testdata.MockCertificateDescription,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
+				cloudServiceHooks:               tt.fields.cloudServiceHooks,
+				toeHooks:                        tt.fields.toeHooks,
+				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
+				storage:                         tt.fields.storage,
+				metricsFile:                     tt.fields.metricsFile,
+				loadMetricsFunc:                 tt.fields.loadMetricsFunc,
+				catalogsFolder:                  tt.fields.catalogsFolder,
+				loadCatalogsFunc:                tt.fields.loadCatalogsFunc,
+				events:                          tt.fields.events,
+				authz:                           tt.fields.authz,
+			}
+			gotRes, err := svc.ListPublicCertificates(tt.args.in0, tt.args.req)
+			assert.NoError(t, gotRes.Validate())
+
+			tt.wantErr(t, err)
+
+			if tt.wantRes != nil {
+				if !reflect.DeepEqual(gotRes, tt.wantRes) {
+					t.Errorf("Service.ListPublicCertificates() = %v, want %v", gotRes, tt.wantRes)
+				}
+			}
 		})
 	}
 }
@@ -435,7 +546,7 @@ func Test_UpdateCertificate(t *testing.T) {
 			name: "Permission Denied Error - not authorized",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-					false, testdata.MockAnotherCloudServiceID))),
+					false, testdata.MockCloudServiceID2))),
 			},
 			args: args{
 				ctx: nil,
@@ -600,7 +711,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockAnotherCloudServiceID)),
+						false, testdata.MockCloudServiceID2)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}))),
@@ -668,7 +779,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCloudServiceID)),
+						false, testdata.MockCloudServiceID1)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
