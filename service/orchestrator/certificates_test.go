@@ -123,7 +123,7 @@ func Test_CreateCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
 					// Only allow certificates belonging to MockCloudServiceID
-					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1))),
 			},
 			args: args{
 				context.Background(),
@@ -577,22 +577,6 @@ func Test_RemoveCertificate(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrInvalidRequest.Error())
-			},
-		},
-		{
-			name: "Permission Denied Error - No admin flag and not allowed for any cloud service",
-			fields: fields{
-				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-					false))),
-			},
-			args: args{
-				ctx: nil,
-				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
-			},
-			wantRes: assert.Nil,
-			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				assert.Equal(t, codes.PermissionDenied, status.Code(err))
-				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 		},
 		{

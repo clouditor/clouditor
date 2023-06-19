@@ -66,8 +66,8 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	}
 
 	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
-	areAllAllowed, allowedCloudServices := svc.authz.AllowedCloudServices(ctx)
-	if !areAllAllowed && !slices.Contains(allowedCloudServices, res.CloudServiceId) {
+	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	if !all && !slices.Contains(allowed, res.CloudServiceId) {
 		// Important to nil the response since it is set already
 		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
@@ -86,9 +86,9 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
 	var conds []any
-	areAllAllowed, cloudServices := svc.authz.AllowedCloudServices(ctx)
-	if !areAllAllowed {
-		conds = append([]any{"cloud_service_id IN ?"}, []any{cloudServices})
+	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		conds = append([]any{"cloud_service_id IN ?"}, []any{allowed})
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
@@ -103,7 +103,6 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 }
 
 // UpdateCertificate implements method for updating an existing certificate
-// Todo: Add auth
 func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request
 	if err = service.ValidateRequest(req); err != nil {
@@ -145,13 +144,13 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	}
 
 	// Only remove certificate if user is authorized for the corresponding cloud service
-	areAllAllowed, allowedCloudService := svc.authz.AllowedCloudServices(ctx)
+	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	// 1st case:  User is authorized for all cloud services (admin)
-	if areAllAllowed {
+	if all {
 		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	} else { // 2nd case: User is authorized for some cloud services (or none at all)
 		err = svc.storage.Delete(&orchestrator.Certificate{},
-			"id = ? AND cloud_service_id IN ?", req.CertificateId, allowedCloudService)
+			"id = ? AND cloud_service_id IN ?", req.CertificateId, allowed)
 	}
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// could also mean that user is not authorized for corresponding cloud service (2nd case)
