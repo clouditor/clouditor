@@ -84,7 +84,7 @@ func Test_CreateCertificate(t *testing.T) {
 			name: "authorization error - permission denied",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
-					servicetest.NewAuthorizationStrategy(false, testdata.MockAnotherCloudServiceID))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2))),
 			},
 			args: args{
 				context.Background(),
@@ -123,7 +123,7 @@ func Test_CreateCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(
 					// Only allow certificates belonging to MockCloudServiceID
-					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID))),
+					servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2))),
 			},
 			args: args{
 				context.Background(),
@@ -219,7 +219,7 @@ func Test_GetCertificate(t *testing.T) {
 					})),
 					// Only authorized for MockCloudServiceID
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockAnotherCloudServiceID)),
+						false, testdata.MockCloudServiceID2)),
 				),
 			},
 			// Only authorized for MockAnotherCloudServiceID (=2222-2...) and not MockCloudServiceID (=1111-1...)
@@ -342,7 +342,7 @@ func Test_ListCertificates(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID),
+					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 				},
 			},
 			args: args{
@@ -435,7 +435,7 @@ func Test_UpdateCertificate(t *testing.T) {
 			name: "Permission Denied Error - not authorized",
 			fields: fields{
 				svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-					false, testdata.MockAnotherCloudServiceID))),
+					false, testdata.MockCloudServiceID2))),
 			},
 			args: args{
 				ctx: nil,
@@ -600,7 +600,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockAnotherCloudServiceID)),
+						false, testdata.MockCloudServiceID2)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 					}))),
@@ -668,7 +668,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
-						false, testdata.MockCloudServiceID)),
+						false, testdata.MockCloudServiceID1)),
 					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
