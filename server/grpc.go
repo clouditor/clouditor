@@ -103,8 +103,6 @@ func WithReflection() StartGRPCServerOption {
 	}
 }
 
-//TODO!!!
-
 // WithReflection is an option for [StartGRPCServer] to enable gRPC reflection.
 func WithPublicEndpoints(endpoints []string) StartGRPCServerOption {
 	return func(c *config) {
