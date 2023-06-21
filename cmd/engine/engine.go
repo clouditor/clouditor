@@ -363,6 +363,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
 
+	// publicEndpoints is a list of public endpoints that do not need an authentication check.
+	publicEndpoints := []string{"/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"}
+
 	// Start the gRPC server
 	_, srv, err = server.StartGRPCServer(
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
@@ -373,6 +376,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		server.WithEvidenceStore(evidenceStoreService),
 		server.WithEvaluation(evaluationService),
 		server.WithReflection(),
+		server.WithPublicEndpoints(publicEndpoints),
 	)
 	if err != nil {
 		log.Errorf("Failed to serve gRPC endpoint: %s", err)

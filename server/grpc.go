@@ -54,10 +54,11 @@ type StartGRPCServerOption func(c *config)
 
 // config contains additional server configurations
 type config struct {
-	grpcOpts   []grpc.ServerOption
-	services   map[*grpc.ServiceDesc]any
-	ac         AuthConfig
-	reflection bool
+	grpcOpts        []grpc.ServerOption
+	services        map[*grpc.ServiceDesc]any
+	ac              AuthConfig
+	reflection      bool
+	publicEndpoints []string
 }
 
 // WithOrchestrator is an option for [StartGRPCServer] to register a [orchestrator.OrchestratorServer] at start.
@@ -102,6 +103,13 @@ func WithReflection() StartGRPCServerOption {
 	}
 }
 
+// WithPublicEndpoints is an option for [StartGRPCServer] to exclude endpoints from authentication.
+func WithPublicEndpoints(pe []string) StartGRPCServerOption {
+	return func(c *config) {
+		c.publicEndpoints = pe
+	}
+}
+
 // WithAdditionalGRPCOpts is an option to add an additional gRPC dial options in the REST server communication to the
 // backend.
 func WithAdditionalGRPCOpts(opts []grpc.ServerOption) StartGRPCServerOption {
@@ -129,12 +137,12 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 	c.grpcOpts = []grpc.ServerOption{grpc.ChainUnaryInterceptor(
 		grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 		grpc_logrus.UnaryServerInterceptor(grpcLoggerEntry),
-		UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(c.ac.AuthFunc()), UnaryReflectionFilter),
+		UnaryServerInterceptorWithFilter(grpc_auth.UnaryServerInterceptor(c.ac.AuthFunc()), UnaryReflectionFilter, UnaryPublicEndpointFilter),
 	),
 		grpc.ChainStreamInterceptor(
 			grpc_ctxtags.StreamServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_logrus.StreamServerInterceptor(grpcLoggerEntry),
-			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(c.ac.AuthFunc()), StreamReflectionFilter),
+			StreamServerInterceptorWithFilter(grpc_auth.StreamServerInterceptor(c.ac.AuthFunc()), StreamReflectionFilter, StreamPublicEndpointFilter),
 		),
 	}
 	c.services = map[*grpc.ServiceDesc]any{}
@@ -167,11 +175,13 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 
 // UnaryServerInterceptorWithFilter wraps a grpc.UnaryServerInterceptor and only invokes the interceptor, if the filter
 // function does not return true.
-func UnaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter func(info *grpc.UnaryServerInfo) bool) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter ...func(info *grpc.UnaryServerInfo) bool) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
-		if filter(info) {
-			return handler(ctx, req)
+		for _, f := range filter {
+			if f(info) {
+				return handler(ctx, req)
+			}
 		}
 
 		return in(ctx, req, info, handler)
@@ -180,11 +190,13 @@ func UnaryServerInterceptorWithFilter(in grpc.UnaryServerInterceptor, filter fun
 
 // StreamServerInterceptorWithFilter wraps a grpc.StreamServerInterceptor and only invokes the interceptor, if the
 // filter function does not return true.
-func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter func(info *grpc.StreamServerInfo) bool) grpc.StreamServerInterceptor {
+func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter ...func(info *grpc.StreamServerInfo) bool) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		// If the filter evaluates to true, we directly return the handler and ignore the interceptor
-		if filter(info) {
-			return handler(srv, ss)
+		for _, f := range filter {
+			if f(info) {
+				return handler(srv, ss)
+			}
 		}
 
 		return in(srv, ss, info, handler)
@@ -193,10 +205,20 @@ func StreamServerInterceptorWithFilter(in grpc.StreamServerInterceptor, filter f
 
 // UnaryReflectionFilter is a filter that ignores calls to the reflection endpoint
 func UnaryReflectionFilter(info *grpc.UnaryServerInfo) bool {
-	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo" || info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
 }
 
 // StreamReflectionFilter is a filter that ignores calls to the reflection endpoint
 func StreamReflectionFilter(info *grpc.StreamServerInfo) bool {
-	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo" || info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+	return info.FullMethod == "/grpc.reflection.v1.ServerReflection/ServerReflectionInfo"
+}
+
+// UnaryPublicEndpointFilter is a filter that ignores calls to the public endpoints
+func UnaryPublicEndpointFilter(info *grpc.UnaryServerInfo) bool {
+	return info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
+}
+
+// StreamPublicEndpointFilter is a filter that ignores calls to the public endpoints
+func StreamPublicEndpointFilter(info *grpc.StreamServerInfo) bool {
+	return info.FullMethod == "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
 }
