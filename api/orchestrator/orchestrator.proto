@@ -655,7 +655,7 @@ message CloudService {
     (validate.rules).repeated .items.message.required = true
   ];
 
-  // As long as the repeating maps is not supported, we have to do this workaround. 
+  // As long as repeated maps are not supported, we have to do this workaround. 
   message Tag {
     map<string, string> tag   = 1;
   }
