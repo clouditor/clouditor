@@ -682,6 +682,8 @@ message Catalog {
       items : {string : {pattern : "^(|basic|substantial|high|low|medium)$"}}
     }
   ];
+
+  string color = 8;
 }
 
 message Category {

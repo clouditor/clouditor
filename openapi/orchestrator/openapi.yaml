@@ -1533,6 +1533,8 @@ components:
                     items:
                         type: string
                     description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
+                color:
+                    type: string
         Category:
             type: object
             properties:
