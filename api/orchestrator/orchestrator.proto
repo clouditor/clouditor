@@ -654,6 +654,17 @@ message CloudService {
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
     (validate.rules).repeated .items.message.required = true
   ];
+
+  // As long as repeated maps are not supported, we have to do this workaround. 
+  message Tag {
+    map<string, string> tag   = 1;
+  }
+
+  // a tag list of key/value pairs, e.g., env:prod
+  repeated Tag tags = 6 [
+    (tagger.tags) = "gorm:\"serializer:json\""];
+  
+  
 }
 
 message Catalog {
@@ -682,6 +693,11 @@ message Catalog {
       items : {string : {pattern : "^(|basic|substantial|high|low|medium)$"}}
     }
   ];
+
+  string color = 8;
+
+  // Catalogs short name, e.g. EUCS
+  string short_name = 9;
 }
 
 message Category {
