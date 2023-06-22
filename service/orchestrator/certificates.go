@@ -57,19 +57,18 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 		return
 	}
 
+	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
+	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	if !all && !slices.Contains(allowed, req.CertificateId) {
+		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
+	}
+
 	res = new(orchestrator.Certificate)
 	err = svc.storage.Get(res, "Id = ?", req.CertificateId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, ErrCertificationNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
-	all, allowed := svc.authz.AllowedCloudServices(ctx)
-	if !all && !slices.Contains(allowed, res.CloudServiceId) {
-		// Important to nil the response since it is set already
-		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
 
 	return
