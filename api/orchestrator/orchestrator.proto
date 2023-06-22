@@ -656,7 +656,8 @@ message CloudService {
   ];
 
   // a tag list of key/value pairs
-  map<string, string> tags = 6;
+  map<string, string> tags = 6 [
+    (tagger.tags) = "gorm:\"serializer:json\""];
 }
 
 message Catalog {
