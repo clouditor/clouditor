@@ -1860,6 +1860,7 @@ type CloudService struct {
 	Description       string               `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	CatalogsInScope   []*Catalog           `protobuf:"bytes,4,rep,name=catalogs_in_scope,json=catalogsInScope,proto3" json:"catalogs_in_scope,omitempty" gorm:"many2many:target_of_evaluations"`
 	ConfiguredMetrics []*assessment.Metric `protobuf:"bytes,5,rep,name=configured_metrics,json=configuredMetrics,proto3" json:"configured_metrics,omitempty" gorm:"many2many:metric_configurations"`
+	Tags              map[string]string    `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *CloudService) Reset() {
@@ -1925,6 +1926,13 @@ func (x *CloudService) GetCatalogsInScope() []*Catalog {
 func (x *CloudService) GetConfiguredMetrics() []*assessment.Metric {
 	if x != nil {
 		return x.ConfiguredMetrics
+	}
+	return nil
+}
+
+func (x *CloudService) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
 	}
 	return nil
 }
@@ -4687,7 +4695,7 @@ var file_api_orchestrator_orchestrator_proto_rawDesc = []byte{
 	0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18,
 	0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x0c, 0xfa, 0x42, 0x09, 0x92, 0x01, 0x06, 0x22, 0x04, 0x72,
 	0x02, 0x10, 0x01, 0x52, 0x10, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x4d, 0x65,
-	0x74, 0x72, 0x69, 0x63, 0x73, 0x22, 0x80, 0x03, 0x0a, 0x0c, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x53,
+	0x74, 0x72, 0x69, 0x63, 0x73, 0x22, 0x80, 0x04, 0x0a, 0x0c, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x1b, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x42, 0x0b, 0xfa, 0x42, 0x08, 0x72, 0x06, 0xd0, 0x01, 0x01, 0xb0, 0x01, 0x01, 0x52,
 	0x02, 0x69, 0x64, 0x12, 0x1b, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
@@ -4711,7 +4719,15 @@ var file_api_orchestrator_orchestrator_proto_rawDesc = []byte{
 	0x6f, 0x72, 0x6d, 0x3a, 0x22, 0x6d, 0x61, 0x6e, 0x79, 0x32, 0x6d, 0x61, 0x6e, 0x79, 0x3a, 0x6d,
 	0x65, 0x74, 0x72, 0x69, 0x63, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x73, 0x22, 0x52, 0x11, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x65,
-	0x64, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x22, 0x90, 0x03, 0x0a, 0x07, 0x43, 0x61, 0x74,
+	0x64, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x45, 0x0a, 0x04, 0x74, 0x61, 0x67, 0x73,
+	0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x31, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
+	0x6f, 0x72, 0x2e, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2e,
+	0x76, 0x31, 0x2e, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
+	0x54, 0x61, 0x67, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x04, 0x74, 0x61, 0x67, 0x73, 0x1a,
+	0x37, 0x0a, 0x09, 0x54, 0x61, 0x67, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14,
+	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x90, 0x03, 0x0a, 0x07, 0x43, 0x61, 0x74,
 	0x61, 0x6c, 0x6f, 0x67, 0x12, 0x17, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1b, 0x0a,
 	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04,
@@ -5801,7 +5817,7 @@ func file_api_orchestrator_orchestrator_proto_rawDescGZIP() []byte {
 }
 
 var file_api_orchestrator_orchestrator_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_api_orchestrator_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 70)
+var file_api_orchestrator_orchestrator_proto_msgTypes = make([]protoimpl.MessageInfo, 71)
 var file_api_orchestrator_orchestrator_proto_goTypes = []interface{}{
 	(MonitoringStatus)(0),                     // 0: clouditor.orchestrator.v1.MonitoringStatus
 	(MetricChangeEvent_Type)(0),               // 1: clouditor.orchestrator.v1.MetricChangeEvent.Type
@@ -5876,157 +5892,159 @@ var file_api_orchestrator_orchestrator_proto_goTypes = []interface{}{
 	(*State)(nil),                             // 70: clouditor.orchestrator.v1.State
 	(*TargetOfEvaluationChangeEvent)(nil),     // 71: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent
 	nil,                                       // 72: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	(*assessment.AssessmentResult)(nil),       // 73: clouditor.assessment.v1.AssessmentResult
-	(*assessment.Metric)(nil),                 // 74: clouditor.assessment.v1.Metric
-	(*assessment.MetricConfiguration)(nil),    // 75: clouditor.assessment.v1.MetricConfiguration
-	(*assessment.MetricImplementation)(nil),   // 76: clouditor.assessment.v1.MetricImplementation
-	(*runtime.GetRuntimeInfoRequest)(nil),     // 77: clouditor.runtime.v1.GetRuntimeInfoRequest
-	(*emptypb.Empty)(nil),                     // 78: google.protobuf.Empty
-	(*runtime.Runtime)(nil),                   // 79: clouditor.runtime.v1.Runtime
+	nil,                                       // 73: clouditor.orchestrator.v1.CloudService.TagsEntry
+	(*assessment.AssessmentResult)(nil),       // 74: clouditor.assessment.v1.AssessmentResult
+	(*assessment.Metric)(nil),                 // 75: clouditor.assessment.v1.Metric
+	(*assessment.MetricConfiguration)(nil),    // 76: clouditor.assessment.v1.MetricConfiguration
+	(*assessment.MetricImplementation)(nil),   // 77: clouditor.assessment.v1.MetricImplementation
+	(*runtime.GetRuntimeInfoRequest)(nil),     // 78: clouditor.runtime.v1.GetRuntimeInfoRequest
+	(*emptypb.Empty)(nil),                     // 79: google.protobuf.Empty
+	(*runtime.Runtime)(nil),                   // 80: clouditor.runtime.v1.Runtime
 }
 var file_api_orchestrator_orchestrator_proto_depIdxs = []int32{
 	32, // 0: clouditor.orchestrator.v1.RegisterAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
 	5,  // 1: clouditor.orchestrator.v1.ListAssessmentToolsRequest.filter:type_name -> clouditor.orchestrator.v1.Filter
 	32, // 2: clouditor.orchestrator.v1.ListAssessmentToolsResponse.tools:type_name -> clouditor.orchestrator.v1.AssessmentTool
 	32, // 3: clouditor.orchestrator.v1.UpdateAssessmentToolRequest.tool:type_name -> clouditor.orchestrator.v1.AssessmentTool
-	73, // 4: clouditor.orchestrator.v1.StoreAssessmentResultRequest.result:type_name -> clouditor.assessment.v1.AssessmentResult
-	74, // 5: clouditor.orchestrator.v1.CreateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
-	74, // 6: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
-	74, // 7: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
+	74, // 4: clouditor.orchestrator.v1.StoreAssessmentResultRequest.result:type_name -> clouditor.assessment.v1.AssessmentResult
+	75, // 5: clouditor.orchestrator.v1.CreateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
+	75, // 6: clouditor.orchestrator.v1.UpdateMetricRequest.metric:type_name -> clouditor.assessment.v1.Metric
+	75, // 7: clouditor.orchestrator.v1.ListMetricsResponse.metrics:type_name -> clouditor.assessment.v1.Metric
 	33, // 8: clouditor.orchestrator.v1.RegisterCloudServiceRequest.cloud_service:type_name -> clouditor.orchestrator.v1.CloudService
 	33, // 9: clouditor.orchestrator.v1.UpdateCloudServiceRequest.cloud_service:type_name -> clouditor.orchestrator.v1.CloudService
 	33, // 10: clouditor.orchestrator.v1.ListCloudServicesResponse.services:type_name -> clouditor.orchestrator.v1.CloudService
-	75, // 11: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
+	76, // 11: clouditor.orchestrator.v1.UpdateMetricConfigurationRequest.configuration:type_name -> clouditor.assessment.v1.MetricConfiguration
 	72, // 12: clouditor.orchestrator.v1.ListMetricConfigurationResponse.configurations:type_name -> clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry
-	76, // 13: clouditor.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
+	77, // 13: clouditor.orchestrator.v1.UpdateMetricImplementationRequest.implementation:type_name -> clouditor.assessment.v1.MetricImplementation
 	1,  // 14: clouditor.orchestrator.v1.MetricChangeEvent.type:type_name -> clouditor.orchestrator.v1.MetricChangeEvent.Type
 	34, // 15: clouditor.orchestrator.v1.CloudService.catalogs_in_scope:type_name -> clouditor.orchestrator.v1.Catalog
-	74, // 16: clouditor.orchestrator.v1.CloudService.configured_metrics:type_name -> clouditor.assessment.v1.Metric
-	35, // 17: clouditor.orchestrator.v1.Catalog.categories:type_name -> clouditor.orchestrator.v1.Category
-	36, // 18: clouditor.orchestrator.v1.Category.controls:type_name -> clouditor.orchestrator.v1.Control
-	36, // 19: clouditor.orchestrator.v1.Control.controls:type_name -> clouditor.orchestrator.v1.Control
-	74, // 20: clouditor.orchestrator.v1.Control.metrics:type_name -> clouditor.assessment.v1.Metric
-	36, // 21: clouditor.orchestrator.v1.TargetOfEvaluation.controls_in_scope:type_name -> clouditor.orchestrator.v1.Control
-	5,  // 22: clouditor.orchestrator.v1.ListAssessmentResultsRequest.filter:type_name -> clouditor.orchestrator.v1.Filter
-	73, // 23: clouditor.orchestrator.v1.ListAssessmentResultsResponse.results:type_name -> clouditor.assessment.v1.AssessmentResult
-	46, // 24: clouditor.orchestrator.v1.ListControlsInScopeResponse.controls_in_scope:type_name -> clouditor.orchestrator.v1.ControlInScope
-	46, // 25: clouditor.orchestrator.v1.UpdateControlInScopeRequest.scope:type_name -> clouditor.orchestrator.v1.ControlInScope
-	46, // 26: clouditor.orchestrator.v1.AddControlToScopeRequest.scope:type_name -> clouditor.orchestrator.v1.ControlInScope
-	0,  // 27: clouditor.orchestrator.v1.ControlInScope.monitoring_status:type_name -> clouditor.orchestrator.v1.MonitoringStatus
-	37, // 28: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	37, // 29: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	37, // 30: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	69, // 31: clouditor.orchestrator.v1.ListCertificatesResponse.certificates:type_name -> clouditor.orchestrator.v1.Certificate
-	69, // 32: clouditor.orchestrator.v1.UpdateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
-	34, // 33: clouditor.orchestrator.v1.CreateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
-	34, // 34: clouditor.orchestrator.v1.ListCatalogsResponse.catalogs:type_name -> clouditor.orchestrator.v1.Catalog
-	34, // 35: clouditor.orchestrator.v1.UpdateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
-	36, // 36: clouditor.orchestrator.v1.ListControlsResponse.controls:type_name -> clouditor.orchestrator.v1.Control
-	69, // 37: clouditor.orchestrator.v1.CreateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
-	70, // 38: clouditor.orchestrator.v1.Certificate.states:type_name -> clouditor.orchestrator.v1.State
-	2,  // 39: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.type:type_name -> clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.Type
-	37, // 40: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
-	46, // 41: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.control_in_scope:type_name -> clouditor.orchestrator.v1.ControlInScope
-	75, // 42: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> clouditor.assessment.v1.MetricConfiguration
-	3,  // 43: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.orchestrator.v1.RegisterAssessmentToolRequest
-	4,  // 44: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:input_type -> clouditor.orchestrator.v1.ListAssessmentToolsRequest
-	7,  // 45: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:input_type -> clouditor.orchestrator.v1.GetAssessmentToolRequest
-	8,  // 46: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.orchestrator.v1.UpdateAssessmentToolRequest
-	9,  // 47: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
-	10, // 48: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	10, // 49: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
-	38, // 50: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:input_type -> clouditor.orchestrator.v1.GetAssessmentResultRequest
-	39, // 51: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:input_type -> clouditor.orchestrator.v1.ListAssessmentResultsRequest
-	13, // 52: clouditor.orchestrator.v1.Orchestrator.CreateMetric:input_type -> clouditor.orchestrator.v1.CreateMetricRequest
-	14, // 53: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:input_type -> clouditor.orchestrator.v1.UpdateMetricRequest
-	15, // 54: clouditor.orchestrator.v1.Orchestrator.GetMetric:input_type -> clouditor.orchestrator.v1.GetMetricRequest
-	16, // 55: clouditor.orchestrator.v1.Orchestrator.ListMetrics:input_type -> clouditor.orchestrator.v1.ListMetricsRequest
-	19, // 56: clouditor.orchestrator.v1.Orchestrator.RegisterCloudService:input_type -> clouditor.orchestrator.v1.RegisterCloudServiceRequest
-	20, // 57: clouditor.orchestrator.v1.Orchestrator.UpdateCloudService:input_type -> clouditor.orchestrator.v1.UpdateCloudServiceRequest
-	18, // 58: clouditor.orchestrator.v1.Orchestrator.GetCloudService:input_type -> clouditor.orchestrator.v1.GetCloudServiceRequest
-	22, // 59: clouditor.orchestrator.v1.Orchestrator.ListCloudServices:input_type -> clouditor.orchestrator.v1.ListCloudServicesRequest
-	21, // 60: clouditor.orchestrator.v1.Orchestrator.RemoveCloudService:input_type -> clouditor.orchestrator.v1.RemoveCloudServiceRequest
-	24, // 61: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:input_type -> clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
-	25, // 62: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:input_type -> clouditor.orchestrator.v1.GetMetricConfigurationRequest
-	26, // 63: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:input_type -> clouditor.orchestrator.v1.ListMetricConfigurationRequest
-	28, // 64: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:input_type -> clouditor.orchestrator.v1.UpdateMetricImplementationRequest
-	29, // 65: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:input_type -> clouditor.orchestrator.v1.GetMetricImplementationRequest
-	30, // 66: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:input_type -> clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
-	67, // 67: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:input_type -> clouditor.orchestrator.v1.CreateCertificateRequest
-	53, // 68: clouditor.orchestrator.v1.Orchestrator.GetCertificate:input_type -> clouditor.orchestrator.v1.GetCertificateRequest
-	54, // 69: clouditor.orchestrator.v1.Orchestrator.ListCertificates:input_type -> clouditor.orchestrator.v1.ListCertificatesRequest
-	56, // 70: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:input_type -> clouditor.orchestrator.v1.UpdateCertificateRequest
-	68, // 71: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:input_type -> clouditor.orchestrator.v1.RemoveCertificateRequest
-	57, // 72: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:input_type -> clouditor.orchestrator.v1.CreateCatalogRequest
-	60, // 73: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:input_type -> clouditor.orchestrator.v1.ListCatalogsRequest
-	59, // 74: clouditor.orchestrator.v1.Orchestrator.GetCatalog:input_type -> clouditor.orchestrator.v1.GetCatalogRequest
-	58, // 75: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:input_type -> clouditor.orchestrator.v1.RemoveCatalogRequest
-	62, // 76: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:input_type -> clouditor.orchestrator.v1.UpdateCatalogRequest
-	63, // 77: clouditor.orchestrator.v1.Orchestrator.GetCategory:input_type -> clouditor.orchestrator.v1.GetCategoryRequest
-	65, // 78: clouditor.orchestrator.v1.Orchestrator.ListControls:input_type -> clouditor.orchestrator.v1.ListControlsRequest
-	64, // 79: clouditor.orchestrator.v1.Orchestrator.GetControl:input_type -> clouditor.orchestrator.v1.GetControlRequest
-	47, // 80: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
-	49, // 81: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
-	41, // 82: clouditor.orchestrator.v1.Orchestrator.ListControlsInScope:input_type -> clouditor.orchestrator.v1.ListControlsInScopeRequest
-	44, // 83: clouditor.orchestrator.v1.Orchestrator.AddControlToScope:input_type -> clouditor.orchestrator.v1.AddControlToScopeRequest
-	43, // 84: clouditor.orchestrator.v1.Orchestrator.UpdateControlInScope:input_type -> clouditor.orchestrator.v1.UpdateControlInScopeRequest
-	45, // 85: clouditor.orchestrator.v1.Orchestrator.RemoveControlFromScope:input_type -> clouditor.orchestrator.v1.RemoveControlFromScopeRequest
-	50, // 86: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:input_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
-	52, // 87: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
-	48, // 88: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
-	77, // 89: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:input_type -> clouditor.runtime.v1.GetRuntimeInfoRequest
-	32, // 90: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	6,  // 91: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:output_type -> clouditor.orchestrator.v1.ListAssessmentToolsResponse
-	32, // 92: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	32, // 93: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
-	78, // 94: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
-	11, // 95: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultResponse
-	12, // 96: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultsResponse
-	73, // 97: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:output_type -> clouditor.assessment.v1.AssessmentResult
-	40, // 98: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:output_type -> clouditor.orchestrator.v1.ListAssessmentResultsResponse
-	74, // 99: clouditor.orchestrator.v1.Orchestrator.CreateMetric:output_type -> clouditor.assessment.v1.Metric
-	74, // 100: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:output_type -> clouditor.assessment.v1.Metric
-	74, // 101: clouditor.orchestrator.v1.Orchestrator.GetMetric:output_type -> clouditor.assessment.v1.Metric
-	17, // 102: clouditor.orchestrator.v1.Orchestrator.ListMetrics:output_type -> clouditor.orchestrator.v1.ListMetricsResponse
-	33, // 103: clouditor.orchestrator.v1.Orchestrator.RegisterCloudService:output_type -> clouditor.orchestrator.v1.CloudService
-	33, // 104: clouditor.orchestrator.v1.Orchestrator.UpdateCloudService:output_type -> clouditor.orchestrator.v1.CloudService
-	33, // 105: clouditor.orchestrator.v1.Orchestrator.GetCloudService:output_type -> clouditor.orchestrator.v1.CloudService
-	23, // 106: clouditor.orchestrator.v1.Orchestrator.ListCloudServices:output_type -> clouditor.orchestrator.v1.ListCloudServicesResponse
-	78, // 107: clouditor.orchestrator.v1.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
-	75, // 108: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
-	75, // 109: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
-	27, // 110: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:output_type -> clouditor.orchestrator.v1.ListMetricConfigurationResponse
-	76, // 111: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
-	76, // 112: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
-	31, // 113: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:output_type -> clouditor.orchestrator.v1.MetricChangeEvent
-	69, // 114: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	69, // 115: clouditor.orchestrator.v1.Orchestrator.GetCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	55, // 116: clouditor.orchestrator.v1.Orchestrator.ListCertificates:output_type -> clouditor.orchestrator.v1.ListCertificatesResponse
-	69, // 117: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
-	78, // 118: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:output_type -> google.protobuf.Empty
-	34, // 119: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	61, // 120: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:output_type -> clouditor.orchestrator.v1.ListCatalogsResponse
-	34, // 121: clouditor.orchestrator.v1.Orchestrator.GetCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	78, // 122: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:output_type -> google.protobuf.Empty
-	34, // 123: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
-	35, // 124: clouditor.orchestrator.v1.Orchestrator.GetCategory:output_type -> clouditor.orchestrator.v1.Category
-	66, // 125: clouditor.orchestrator.v1.Orchestrator.ListControls:output_type -> clouditor.orchestrator.v1.ListControlsResponse
-	36, // 126: clouditor.orchestrator.v1.Orchestrator.GetControl:output_type -> clouditor.orchestrator.v1.Control
-	37, // 127: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	37, // 128: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	42, // 129: clouditor.orchestrator.v1.Orchestrator.ListControlsInScope:output_type -> clouditor.orchestrator.v1.ListControlsInScopeResponse
-	46, // 130: clouditor.orchestrator.v1.Orchestrator.AddControlToScope:output_type -> clouditor.orchestrator.v1.ControlInScope
-	46, // 131: clouditor.orchestrator.v1.Orchestrator.UpdateControlInScope:output_type -> clouditor.orchestrator.v1.ControlInScope
-	78, // 132: clouditor.orchestrator.v1.Orchestrator.RemoveControlFromScope:output_type -> google.protobuf.Empty
-	51, // 133: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:output_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
-	37, // 134: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
-	78, // 135: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:output_type -> google.protobuf.Empty
-	79, // 136: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:output_type -> clouditor.runtime.v1.Runtime
-	90, // [90:137] is the sub-list for method output_type
-	43, // [43:90] is the sub-list for method input_type
-	43, // [43:43] is the sub-list for extension type_name
-	43, // [43:43] is the sub-list for extension extendee
-	0,  // [0:43] is the sub-list for field type_name
+	75, // 16: clouditor.orchestrator.v1.CloudService.configured_metrics:type_name -> clouditor.assessment.v1.Metric
+	73, // 17: clouditor.orchestrator.v1.CloudService.tags:type_name -> clouditor.orchestrator.v1.CloudService.TagsEntry
+	35, // 18: clouditor.orchestrator.v1.Catalog.categories:type_name -> clouditor.orchestrator.v1.Category
+	36, // 19: clouditor.orchestrator.v1.Category.controls:type_name -> clouditor.orchestrator.v1.Control
+	36, // 20: clouditor.orchestrator.v1.Control.controls:type_name -> clouditor.orchestrator.v1.Control
+	75, // 21: clouditor.orchestrator.v1.Control.metrics:type_name -> clouditor.assessment.v1.Metric
+	36, // 22: clouditor.orchestrator.v1.TargetOfEvaluation.controls_in_scope:type_name -> clouditor.orchestrator.v1.Control
+	5,  // 23: clouditor.orchestrator.v1.ListAssessmentResultsRequest.filter:type_name -> clouditor.orchestrator.v1.Filter
+	74, // 24: clouditor.orchestrator.v1.ListAssessmentResultsResponse.results:type_name -> clouditor.assessment.v1.AssessmentResult
+	46, // 25: clouditor.orchestrator.v1.ListControlsInScopeResponse.controls_in_scope:type_name -> clouditor.orchestrator.v1.ControlInScope
+	46, // 26: clouditor.orchestrator.v1.UpdateControlInScopeRequest.scope:type_name -> clouditor.orchestrator.v1.ControlInScope
+	46, // 27: clouditor.orchestrator.v1.AddControlToScopeRequest.scope:type_name -> clouditor.orchestrator.v1.ControlInScope
+	0,  // 28: clouditor.orchestrator.v1.ControlInScope.monitoring_status:type_name -> clouditor.orchestrator.v1.MonitoringStatus
+	37, // 29: clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	37, // 30: clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	37, // 31: clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	69, // 32: clouditor.orchestrator.v1.ListCertificatesResponse.certificates:type_name -> clouditor.orchestrator.v1.Certificate
+	69, // 33: clouditor.orchestrator.v1.UpdateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
+	34, // 34: clouditor.orchestrator.v1.CreateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
+	34, // 35: clouditor.orchestrator.v1.ListCatalogsResponse.catalogs:type_name -> clouditor.orchestrator.v1.Catalog
+	34, // 36: clouditor.orchestrator.v1.UpdateCatalogRequest.catalog:type_name -> clouditor.orchestrator.v1.Catalog
+	36, // 37: clouditor.orchestrator.v1.ListControlsResponse.controls:type_name -> clouditor.orchestrator.v1.Control
+	69, // 38: clouditor.orchestrator.v1.CreateCertificateRequest.certificate:type_name -> clouditor.orchestrator.v1.Certificate
+	70, // 39: clouditor.orchestrator.v1.Certificate.states:type_name -> clouditor.orchestrator.v1.State
+	2,  // 40: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.type:type_name -> clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.Type
+	37, // 41: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.target_of_evaluation:type_name -> clouditor.orchestrator.v1.TargetOfEvaluation
+	46, // 42: clouditor.orchestrator.v1.TargetOfEvaluationChangeEvent.control_in_scope:type_name -> clouditor.orchestrator.v1.ControlInScope
+	76, // 43: clouditor.orchestrator.v1.ListMetricConfigurationResponse.ConfigurationsEntry.value:type_name -> clouditor.assessment.v1.MetricConfiguration
+	3,  // 44: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:input_type -> clouditor.orchestrator.v1.RegisterAssessmentToolRequest
+	4,  // 45: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:input_type -> clouditor.orchestrator.v1.ListAssessmentToolsRequest
+	7,  // 46: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:input_type -> clouditor.orchestrator.v1.GetAssessmentToolRequest
+	8,  // 47: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:input_type -> clouditor.orchestrator.v1.UpdateAssessmentToolRequest
+	9,  // 48: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:input_type -> clouditor.orchestrator.v1.DeregisterAssessmentToolRequest
+	10, // 49: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
+	10, // 50: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:input_type -> clouditor.orchestrator.v1.StoreAssessmentResultRequest
+	38, // 51: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:input_type -> clouditor.orchestrator.v1.GetAssessmentResultRequest
+	39, // 52: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:input_type -> clouditor.orchestrator.v1.ListAssessmentResultsRequest
+	13, // 53: clouditor.orchestrator.v1.Orchestrator.CreateMetric:input_type -> clouditor.orchestrator.v1.CreateMetricRequest
+	14, // 54: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:input_type -> clouditor.orchestrator.v1.UpdateMetricRequest
+	15, // 55: clouditor.orchestrator.v1.Orchestrator.GetMetric:input_type -> clouditor.orchestrator.v1.GetMetricRequest
+	16, // 56: clouditor.orchestrator.v1.Orchestrator.ListMetrics:input_type -> clouditor.orchestrator.v1.ListMetricsRequest
+	19, // 57: clouditor.orchestrator.v1.Orchestrator.RegisterCloudService:input_type -> clouditor.orchestrator.v1.RegisterCloudServiceRequest
+	20, // 58: clouditor.orchestrator.v1.Orchestrator.UpdateCloudService:input_type -> clouditor.orchestrator.v1.UpdateCloudServiceRequest
+	18, // 59: clouditor.orchestrator.v1.Orchestrator.GetCloudService:input_type -> clouditor.orchestrator.v1.GetCloudServiceRequest
+	22, // 60: clouditor.orchestrator.v1.Orchestrator.ListCloudServices:input_type -> clouditor.orchestrator.v1.ListCloudServicesRequest
+	21, // 61: clouditor.orchestrator.v1.Orchestrator.RemoveCloudService:input_type -> clouditor.orchestrator.v1.RemoveCloudServiceRequest
+	24, // 62: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:input_type -> clouditor.orchestrator.v1.UpdateMetricConfigurationRequest
+	25, // 63: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:input_type -> clouditor.orchestrator.v1.GetMetricConfigurationRequest
+	26, // 64: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:input_type -> clouditor.orchestrator.v1.ListMetricConfigurationRequest
+	28, // 65: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:input_type -> clouditor.orchestrator.v1.UpdateMetricImplementationRequest
+	29, // 66: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:input_type -> clouditor.orchestrator.v1.GetMetricImplementationRequest
+	30, // 67: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:input_type -> clouditor.orchestrator.v1.SubscribeMetricChangeEventRequest
+	67, // 68: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:input_type -> clouditor.orchestrator.v1.CreateCertificateRequest
+	53, // 69: clouditor.orchestrator.v1.Orchestrator.GetCertificate:input_type -> clouditor.orchestrator.v1.GetCertificateRequest
+	54, // 70: clouditor.orchestrator.v1.Orchestrator.ListCertificates:input_type -> clouditor.orchestrator.v1.ListCertificatesRequest
+	56, // 71: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:input_type -> clouditor.orchestrator.v1.UpdateCertificateRequest
+	68, // 72: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:input_type -> clouditor.orchestrator.v1.RemoveCertificateRequest
+	57, // 73: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:input_type -> clouditor.orchestrator.v1.CreateCatalogRequest
+	60, // 74: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:input_type -> clouditor.orchestrator.v1.ListCatalogsRequest
+	59, // 75: clouditor.orchestrator.v1.Orchestrator.GetCatalog:input_type -> clouditor.orchestrator.v1.GetCatalogRequest
+	58, // 76: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:input_type -> clouditor.orchestrator.v1.RemoveCatalogRequest
+	62, // 77: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:input_type -> clouditor.orchestrator.v1.UpdateCatalogRequest
+	63, // 78: clouditor.orchestrator.v1.Orchestrator.GetCategory:input_type -> clouditor.orchestrator.v1.GetCategoryRequest
+	65, // 79: clouditor.orchestrator.v1.Orchestrator.ListControls:input_type -> clouditor.orchestrator.v1.ListControlsRequest
+	64, // 80: clouditor.orchestrator.v1.Orchestrator.GetControl:input_type -> clouditor.orchestrator.v1.GetControlRequest
+	47, // 81: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.CreateTargetOfEvaluationRequest
+	49, // 82: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.GetTargetOfEvaluationRequest
+	41, // 83: clouditor.orchestrator.v1.Orchestrator.ListControlsInScope:input_type -> clouditor.orchestrator.v1.ListControlsInScopeRequest
+	44, // 84: clouditor.orchestrator.v1.Orchestrator.AddControlToScope:input_type -> clouditor.orchestrator.v1.AddControlToScopeRequest
+	43, // 85: clouditor.orchestrator.v1.Orchestrator.UpdateControlInScope:input_type -> clouditor.orchestrator.v1.UpdateControlInScopeRequest
+	45, // 86: clouditor.orchestrator.v1.Orchestrator.RemoveControlFromScope:input_type -> clouditor.orchestrator.v1.RemoveControlFromScopeRequest
+	50, // 87: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:input_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationRequest
+	52, // 88: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.UpdateTargetOfEvaluationRequest
+	48, // 89: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:input_type -> clouditor.orchestrator.v1.RemoveTargetOfEvaluationRequest
+	78, // 90: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:input_type -> clouditor.runtime.v1.GetRuntimeInfoRequest
+	32, // 91: clouditor.orchestrator.v1.Orchestrator.RegisterAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
+	6,  // 92: clouditor.orchestrator.v1.Orchestrator.ListAssessmentTools:output_type -> clouditor.orchestrator.v1.ListAssessmentToolsResponse
+	32, // 93: clouditor.orchestrator.v1.Orchestrator.GetAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
+	32, // 94: clouditor.orchestrator.v1.Orchestrator.UpdateAssessmentTool:output_type -> clouditor.orchestrator.v1.AssessmentTool
+	79, // 95: clouditor.orchestrator.v1.Orchestrator.DeregisterAssessmentTool:output_type -> google.protobuf.Empty
+	11, // 96: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResult:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultResponse
+	12, // 97: clouditor.orchestrator.v1.Orchestrator.StoreAssessmentResults:output_type -> clouditor.orchestrator.v1.StoreAssessmentResultsResponse
+	74, // 98: clouditor.orchestrator.v1.Orchestrator.GetAssessmentResult:output_type -> clouditor.assessment.v1.AssessmentResult
+	40, // 99: clouditor.orchestrator.v1.Orchestrator.ListAssessmentResults:output_type -> clouditor.orchestrator.v1.ListAssessmentResultsResponse
+	75, // 100: clouditor.orchestrator.v1.Orchestrator.CreateMetric:output_type -> clouditor.assessment.v1.Metric
+	75, // 101: clouditor.orchestrator.v1.Orchestrator.UpdateMetric:output_type -> clouditor.assessment.v1.Metric
+	75, // 102: clouditor.orchestrator.v1.Orchestrator.GetMetric:output_type -> clouditor.assessment.v1.Metric
+	17, // 103: clouditor.orchestrator.v1.Orchestrator.ListMetrics:output_type -> clouditor.orchestrator.v1.ListMetricsResponse
+	33, // 104: clouditor.orchestrator.v1.Orchestrator.RegisterCloudService:output_type -> clouditor.orchestrator.v1.CloudService
+	33, // 105: clouditor.orchestrator.v1.Orchestrator.UpdateCloudService:output_type -> clouditor.orchestrator.v1.CloudService
+	33, // 106: clouditor.orchestrator.v1.Orchestrator.GetCloudService:output_type -> clouditor.orchestrator.v1.CloudService
+	23, // 107: clouditor.orchestrator.v1.Orchestrator.ListCloudServices:output_type -> clouditor.orchestrator.v1.ListCloudServicesResponse
+	79, // 108: clouditor.orchestrator.v1.Orchestrator.RemoveCloudService:output_type -> google.protobuf.Empty
+	76, // 109: clouditor.orchestrator.v1.Orchestrator.UpdateMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
+	76, // 110: clouditor.orchestrator.v1.Orchestrator.GetMetricConfiguration:output_type -> clouditor.assessment.v1.MetricConfiguration
+	27, // 111: clouditor.orchestrator.v1.Orchestrator.ListMetricConfigurations:output_type -> clouditor.orchestrator.v1.ListMetricConfigurationResponse
+	77, // 112: clouditor.orchestrator.v1.Orchestrator.UpdateMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
+	77, // 113: clouditor.orchestrator.v1.Orchestrator.GetMetricImplementation:output_type -> clouditor.assessment.v1.MetricImplementation
+	31, // 114: clouditor.orchestrator.v1.Orchestrator.SubscribeMetricChangeEvents:output_type -> clouditor.orchestrator.v1.MetricChangeEvent
+	69, // 115: clouditor.orchestrator.v1.Orchestrator.CreateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
+	69, // 116: clouditor.orchestrator.v1.Orchestrator.GetCertificate:output_type -> clouditor.orchestrator.v1.Certificate
+	55, // 117: clouditor.orchestrator.v1.Orchestrator.ListCertificates:output_type -> clouditor.orchestrator.v1.ListCertificatesResponse
+	69, // 118: clouditor.orchestrator.v1.Orchestrator.UpdateCertificate:output_type -> clouditor.orchestrator.v1.Certificate
+	79, // 119: clouditor.orchestrator.v1.Orchestrator.RemoveCertificate:output_type -> google.protobuf.Empty
+	34, // 120: clouditor.orchestrator.v1.Orchestrator.CreateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
+	61, // 121: clouditor.orchestrator.v1.Orchestrator.ListCatalogs:output_type -> clouditor.orchestrator.v1.ListCatalogsResponse
+	34, // 122: clouditor.orchestrator.v1.Orchestrator.GetCatalog:output_type -> clouditor.orchestrator.v1.Catalog
+	79, // 123: clouditor.orchestrator.v1.Orchestrator.RemoveCatalog:output_type -> google.protobuf.Empty
+	34, // 124: clouditor.orchestrator.v1.Orchestrator.UpdateCatalog:output_type -> clouditor.orchestrator.v1.Catalog
+	35, // 125: clouditor.orchestrator.v1.Orchestrator.GetCategory:output_type -> clouditor.orchestrator.v1.Category
+	66, // 126: clouditor.orchestrator.v1.Orchestrator.ListControls:output_type -> clouditor.orchestrator.v1.ListControlsResponse
+	36, // 127: clouditor.orchestrator.v1.Orchestrator.GetControl:output_type -> clouditor.orchestrator.v1.Control
+	37, // 128: clouditor.orchestrator.v1.Orchestrator.CreateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
+	37, // 129: clouditor.orchestrator.v1.Orchestrator.GetTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
+	42, // 130: clouditor.orchestrator.v1.Orchestrator.ListControlsInScope:output_type -> clouditor.orchestrator.v1.ListControlsInScopeResponse
+	46, // 131: clouditor.orchestrator.v1.Orchestrator.AddControlToScope:output_type -> clouditor.orchestrator.v1.ControlInScope
+	46, // 132: clouditor.orchestrator.v1.Orchestrator.UpdateControlInScope:output_type -> clouditor.orchestrator.v1.ControlInScope
+	79, // 133: clouditor.orchestrator.v1.Orchestrator.RemoveControlFromScope:output_type -> google.protobuf.Empty
+	51, // 134: clouditor.orchestrator.v1.Orchestrator.ListTargetsOfEvaluation:output_type -> clouditor.orchestrator.v1.ListTargetsOfEvaluationResponse
+	37, // 135: clouditor.orchestrator.v1.Orchestrator.UpdateTargetOfEvaluation:output_type -> clouditor.orchestrator.v1.TargetOfEvaluation
+	79, // 136: clouditor.orchestrator.v1.Orchestrator.RemoveTargetOfEvaluation:output_type -> google.protobuf.Empty
+	80, // 137: clouditor.orchestrator.v1.Orchestrator.GetRuntimeInfo:output_type -> clouditor.runtime.v1.Runtime
+	91, // [91:138] is the sub-list for method output_type
+	44, // [44:91] is the sub-list for method input_type
+	44, // [44:44] is the sub-list for extension type_name
+	44, // [44:44] is the sub-list for extension extendee
+	0,  // [0:44] is the sub-list for field type_name
 }
 
 func init() { file_api_orchestrator_orchestrator_proto_init() }
@@ -6876,7 +6894,7 @@ func file_api_orchestrator_orchestrator_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_orchestrator_orchestrator_proto_rawDesc,
 			NumEnums:      3,
-			NumMessages:   70,
+			NumMessages:   71,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

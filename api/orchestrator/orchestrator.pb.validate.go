@@ -4162,6 +4162,8 @@ func (m *CloudService) validate(all bool) error {
 
 	}
 
+	// no validation rules for Tags
+
 	if len(errors) > 0 {
 		return CloudServiceMultiError(errors)
 	}

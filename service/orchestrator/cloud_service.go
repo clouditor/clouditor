@@ -61,6 +61,7 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 	res.Id = uuid.NewString()
 	res.Name = req.CloudService.Name
 	res.Description = req.CloudService.Description
+	res.Tags = req.CloudService.Tags
 
 	// Persist the service in our database
 	err = s.storage.Create(res)

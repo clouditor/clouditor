@@ -654,6 +654,9 @@ message CloudService {
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
     (validate.rules).repeated .items.message.required = true
   ];
+
+  // a tag list of key/value pairs
+  repeated map<string, string> tags = 6;
 }
 
 message Catalog {

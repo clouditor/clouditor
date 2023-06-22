@@ -1593,6 +1593,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                tags:
+                    type: object
+                    additionalProperties:
+                        type: string
         Control:
             type: object
             properties:
