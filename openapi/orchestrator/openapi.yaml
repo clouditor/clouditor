@@ -1597,10 +1597,18 @@ components:
                     items:
                         $ref: '#/components/schemas/Metric'
                 tags:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CloudService_Tag'
+                    description: a tag list of key/value pairs, e.g., env:prod
+        CloudService_Tag:
+            type: object
+            properties:
+                tag:
                     type: object
                     additionalProperties:
                         type: string
-                    description: a tag list of key/value pairs
+            description: As long as the repeating maps is not supported, we have to do this workaround.
         Control:
             type: object
             properties:

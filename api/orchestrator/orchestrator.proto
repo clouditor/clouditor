@@ -655,9 +655,16 @@ message CloudService {
     (validate.rules).repeated .items.message.required = true
   ];
 
-  // a tag list of key/value pairs
-  map<string, string> tags = 6 [
+  // As long as the repeating maps is not supported, we have to do this workaround. 
+  message Tag {
+    map<string, string> tag   = 1;
+  }
+
+  // a tag list of key/value pairs, e.g., env:prod
+  repeated Tag tags = 6 [
     (tagger.tags) = "gorm:\"serializer:json\""];
+  
+  
 }
 
 message Catalog {
