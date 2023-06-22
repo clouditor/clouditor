@@ -1,8 +1,10 @@
 [
     {
         "id": "DemoCatalog",
-        "name": "A demo catalog for testing purposes",
-        "description": "A mock catalog for testing purposes",
+        "name": "Clouditor Demo Catalog",
+        "description": "A catalog for demonstration purposes",
+        "color": "#007FC3",
+        "short_name:" "CD",
         "assurance_levels": ["low", "medium", "high"],
         "all_in_scope": true,
         "categories": [
