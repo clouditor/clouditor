@@ -656,7 +656,7 @@ message CloudService {
   ];
 
   // a tag list of key/value pairs
-  repeated map<string, string> tags = 6;
+  map<string, string> tags = 6;
 }
 
 message Catalog {
@@ -687,6 +687,9 @@ message Catalog {
   ];
 
   string color = 8;
+
+  // Catalogs short name, e.g. EUCS
+  string short_name = 9;
 }
 
 message Category {

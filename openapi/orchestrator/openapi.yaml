@@ -1535,6 +1535,9 @@ components:
                     description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
                 color:
                     type: string
+                shortName:
+                    type: string
+                    description: Catalogs short name, e.g. EUCS
         Category:
             type: object
             properties:
@@ -1597,6 +1600,7 @@ components:
                     type: object
                     additionalProperties:
                         type: string
+                    description: a tag list of key/value pairs
         Control:
             type: object
             properties:

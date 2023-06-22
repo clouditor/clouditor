@@ -4370,6 +4370,8 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for Color
 
+	// no validation rules for ShortName
+
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
 	}
