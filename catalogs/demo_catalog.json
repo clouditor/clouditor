@@ -4,8 +4,12 @@
         "name": "Clouditor Demo Catalog",
         "description": "A catalog for demonstration purposes",
         "color": "#007FC3",
-        "short_name:" "CD",
-        "assurance_levels": ["low", "medium", "high"],
+        "short_name:": "CD",
+        "assurance_levels": [
+            "low",
+            "medium",
+            "high"
+        ],
         "all_in_scope": true,
         "categories": [
             {
@@ -203,7 +207,7 @@
                                 "parent_control_category_catalog_id": "DemoCatalog"
                             }
                         ]
-                    }, 
+                    },
                     {
                         "id": "SysHard-06",
                         "name": "Runtime",
