@@ -202,6 +202,8 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	var (
 		runtimeLanguage string
 		runtimeVersion  string
+		config          armappservice.WebAppsClientGetConfigurationResponse
+		err             error
 	)
 
 	// If a mandatory field is empty, the whole function is empty
@@ -213,7 +215,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
 		// Get site config
-		config, err := d.clients.webAppsClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+		config, err = d.clients.webAppsClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
 		if err != nil {
 			log.Errorf("error getting site config: %v", err)
 		}
@@ -256,6 +258,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				labels(function.Tags),
 				voc.FunctionType,
 				function,
+				config,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},

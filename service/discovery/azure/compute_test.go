@@ -262,6 +262,26 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 					},
 				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+					"name":     "function2",
+					"location": "West Europe",
+					"kind":     "functionapp",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":    map[string]interface{}{},
+						"resourceGroup": "res1",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"javaVersion": "1.8",
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
@@ -451,7 +471,7 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -500,7 +520,7 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 
 	function, ok := list[7].(*voc.Function)
 
@@ -860,13 +880,36 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
 
 					RuntimeVersion:  "3.8",
 					RuntimeLanguage: "PYTHON",
+				},
+				&voc.Function{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "function2",
+							CreationTime: util.SafeTimestamp(&time.Time{}),
+							Type:         voc.FunctionType,
+							Labels: map[string]string{
+								"testKey1": "testTag1",
+								"testKey2": "testTag2",
+							},
+							GeoLocation: voc.GeoLocation{
+								Region: "West Europe",
+							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+						},
+						NetworkInterfaces: []voc.ResourceID{},
+					},
+
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
 				},
 			},
 			wantErr: assert.NoError,
@@ -942,7 +985,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 			},
 		},
 		{
-			name: "No error",
+			name: "Happy path",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
@@ -963,12 +1006,34 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
 					RuntimeVersion:  "3.8",
 					RuntimeLanguage: "PYTHON",
+				},
+				&voc.Function{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "function2",
+							CreationTime: util.SafeTimestamp(&time.Time{}),
+							Type:         []string{"Function", "Compute", "Resource"},
+							Labels: map[string]string{
+								"testKey1": "testTag1",
+								"testKey2": "testTag2",
+							},
+							GeoLocation: voc.GeoLocation{
+								Region: "West Europe",
+							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+						},
+						NetworkInterfaces: []voc.ResourceID{},
+					},
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
 				},
 			},
 			wantErr: assert.NoError,
@@ -989,14 +1054,13 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 }
 
 func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
-	functionID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1"
-	functionName := "function1"
 	diskRegion := "West Europe"
 	testTag1 := "testTag1"
 	testTag2 := "testTag2"
 
 	type fields struct {
 		azureDiscovery *azureDiscovery
+		clientWebApps  bool
 	}
 	type args struct {
 		function *armappservice.Site
@@ -1015,23 +1079,14 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Empty functionID",
-			args: args{
-				function: &armappservice.Site{
-					ID: nil,
-				},
-			},
-			want: nil,
-		},
-		{
-			name: "No error",
+			name: "Happy path: Linux function",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
 			args: args{
 				function: &armappservice.Site{
-					ID:       &functionID,
-					Name:     &functionName,
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1"),
+					Name:     util.Ref("function1"),
 					Location: &diskRegion,
 					Tags: map[string]*string{
 						"testKey1": &testTag1,
@@ -1060,12 +1115,57 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "West Europe",
 						},
-						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},
 				RuntimeVersion:  "3.8",
 				RuntimeLanguage: "PYTHON",
+			},
+		},
+		{
+			name: "Happy path: Windows function",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				clientWebApps:  true,
+			},
+			args: args{
+				function: &armappservice.Site{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2"),
+					Name:     util.Ref("function2"),
+					Location: &diskRegion,
+					Tags: map[string]*string{
+						"testKey1": &testTag1,
+						"testKey2": &testTag2,
+					},
+					Kind: util.Ref("functionapp"),
+					Properties: &armappservice.SiteProperties{
+						SiteConfig:    &armappservice.SiteConfig{},
+						ResourceGroup: util.Ref("res1"),
+					},
+				},
+			},
+			want: &voc.Function{
+				Compute: &voc.Compute{
+					Resource: &voc.Resource{
+						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+						ServiceID:    testdata.MockCloudServiceID1,
+						Name:         "function2",
+						CreationTime: util.SafeTimestamp(&time.Time{}),
+						Type:         []string{"Function", "Compute", "Resource"},
+						Labels: map[string]string{
+							"testKey1": testTag1,
+							"testKey2": testTag2,
+						},
+						GeoLocation: voc.GeoLocation{
+							Region: "West Europe",
+						},
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+					},
+					NetworkInterfaces: []voc.ResourceID{},
+				},
+				RuntimeVersion:  "1.8",
+				RuntimeLanguage: "Java",
 			},
 		},
 	}
@@ -1074,6 +1174,12 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 			az := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
+			// Set clients if needed
+			if tt.fields.clientWebApps {
+				// initialize backup vaults client
+				_ = az.initWebAppsClient()
+			}
+
 			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function), "handleFunction(%v)", tt.args.function)
 		})
 	}
