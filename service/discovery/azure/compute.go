@@ -140,14 +140,14 @@ func (d *azureComputeDiscovery) discoverSites() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize functions client
-	if err := d.initFunctionsClient(); err != nil {
+	if err := d.initWebAppsClient(); err != nil {
 		return nil, err
 	}
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.functionsClient.NewListPager,
-		d.clients.functionsClient.NewListByResourceGroupPager,
+		d.clients.webAppsClient.NewListPager,
+		d.clients.webAppsClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
@@ -205,14 +205,42 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	)
 
 	// If a mandatory field is empty, the whole function is empty
-	if function == nil || function.ID == nil {
+	if function == nil {
 		return nil
 	}
 
-	if *function.Kind == "functionapp,linux" {
+	if *function.Kind == "functionapp,linux" { // Linux function
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
-	} else if *function.Kind == "functionapp" {
-		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.WindowsFxVersion)
+	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+		// Get site config
+		config, err := d.clients.webAppsClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+		if err != nil {
+			log.Errorf("error getting site config: %v", err)
+		}
+
+		// Check all runtime versions to get the used runtime language and runtime version
+		if config.Properties.JavaVersion != nil {
+			runtimeLanguage = "Java"
+			runtimeVersion = *config.Properties.JavaVersion
+		} else if config.Properties.NodeVersion != nil {
+			runtimeLanguage = "Node.js"
+			runtimeVersion = *config.Properties.NodeVersion
+		} else if config.Properties.PowerShellVersion != nil {
+			runtimeLanguage = "PowerShell"
+			runtimeVersion = *config.Properties.PowerShellVersion
+		} else if config.Properties.PhpVersion != nil {
+			runtimeLanguage = "PHP"
+			runtimeVersion = *config.Properties.PhpVersion
+		} else if config.Properties.PythonVersion != nil {
+			runtimeLanguage = "Python"
+			runtimeVersion = *config.Properties.PythonVersion
+		} else if config.Properties.JavaContainer != nil {
+			runtimeLanguage = "JavaContainer"
+			runtimeVersion = *config.Properties.JavaContainer
+		} else if config.Properties.NetFrameworkVersion != nil {
+			runtimeLanguage = ".NET"
+			runtimeVersion = *config.Properties.NetFrameworkVersion
+		}
 	}
 
 	return &voc.Function{
@@ -573,9 +601,9 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
 }
 
-// initFunctionsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
-	d.clients.functionsClient, err = initClient(d.clients.functionsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+// initWebAppsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
+	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 

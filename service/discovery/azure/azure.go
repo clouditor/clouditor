@@ -140,7 +140,7 @@ type clients struct {
 	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
 
 	// AppService
-	functionsClient *armappservice.WebAppsClient
+	webAppsClient *armappservice.WebAppsClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
