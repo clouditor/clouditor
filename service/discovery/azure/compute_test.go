@@ -251,6 +251,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
 					"name":     "function1",
 					"location": "West Europe",
+					"kind":     "functionapp,linux",
 					"tags": map[string]interface{}{
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
@@ -510,7 +511,7 @@ func TestFunction(t *testing.T) {
 func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 	d := azureComputeDiscovery{azureDiscovery: &azureDiscovery{}}
 
-	discoverFunctionsResponse, err := d.discoverFunctions()
+	discoverFunctionsResponse, err := d.discoverSites()
 
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFunctionsResponse)
@@ -859,7 +860,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
@@ -962,7 +963,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
@@ -978,7 +979,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.discoverFunctions()
+			got, err := d.discoverSites()
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -1036,6 +1037,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						"testKey1": &testTag1,
 						"testKey2": &testTag2,
 					},
+					Kind: util.Ref("functionapp,linux"),
 					Properties: &armappservice.SiteProperties{
 						SiteConfig: &armappservice.SiteConfig{
 							LinuxFxVersion: util.Ref("PYTHON|3.8"),
@@ -1058,7 +1060,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "West Europe",
 						},
-						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},

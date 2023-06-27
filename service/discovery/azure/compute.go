@@ -123,18 +123,20 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, virtualMachines...)
 
-	// Discover functions
-	function, err := d.discoverFunctions()
+	// Discover functions and web apps
+	function, err := d.discoverSites()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
-	list = append(list, function...)
+	if function != nil {
+		list = append(list, function...)
+	}
 
 	return
 }
 
 // Discover function
-func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, error) {
+func (d *azureComputeDiscovery) discoverSites() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize functions client
@@ -152,12 +154,40 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
 			return res.Value
 		},
-		func(function *armappservice.Site) error {
-			r := d.handleFunction(function)
+		func(site *armappservice.Site) error {
+			var r voc.IsCompute
+
+			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
+			switch *site.Kind {
+			case "app": // Windows Web App
+			// TODO(all): TBD
+			case "app,linux": // Linux Web app
+			// TODO(all): TBD
+			case "app,linux,container": // Linux Container Web app
+			// TODO(all): TBD
+			case "hyperV": // Windows Container Web App
+			// TODO(all): TBD
+			case "app,container,windows": // Windows Container Web App
+			// TODO(all): TBD
+			case "app,linux,kubernetes": // Linux Web App on ARC
+			// TODO(all): TBD
+			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
+			// TODO(all): TBD
+			case "functionapp": // Function Code App
+				r = d.handleFunction(site)
+			case "functionapp,linux": // Linux Consumption Function app
+				r = d.handleFunction(site)
+			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
+			// TODO(all): TBD
+			case "functionapp,linux,kubernetes": // Function Code App on ARC
+				// TODO(all): TBD
+			}
 
 			log.Infof("Adding function %+v", r)
 
-			list = append(list, r)
+			if r != nil {
+				list = append(list, r)
+			}
 
 			return nil
 		})
@@ -169,12 +199,21 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+	var (
+		runtimeLanguage string
+		runtimeVersion  string
+	)
+
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil || function.ID == nil {
 		return nil
 	}
 
-	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+	if *function.Kind == "functionapp,linux" {
+		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+	} else if *function.Kind == "functionapp" {
+		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.WindowsFxVersion)
+	}
 
 	return &voc.Function{
 		Compute: &voc.Compute{
