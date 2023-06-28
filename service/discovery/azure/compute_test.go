@@ -112,6 +112,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 							},
 						},
 					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent",
+						},
+					},
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
@@ -159,6 +164,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 									"id": "654",
 								},
 							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux",
 						},
 					},
 				},
@@ -748,7 +758,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -765,7 +775,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -798,7 +808,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -815,7 +825,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -1246,7 +1256,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -1263,7 +1273,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -1296,7 +1306,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -1313,7 +1323,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
