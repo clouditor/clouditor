@@ -780,7 +780,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -828,7 +830,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -876,7 +880,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -1272,7 +1278,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -1320,7 +1328,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -1368,7 +1378,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					MalwareProtection: &voc.MalwareProtection{},
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
-							Enabled: false,
+							Enabled:         true,
+							RetentionPeriod: 90,
+							LoggingService:  []voc.ResourceID{},
 						},
 					},
 				},
@@ -1530,7 +1542,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				MalwareProtection: &voc.MalwareProtection{},
 				ActivityLogging: &voc.ActivityLogging{
 					Logging: &voc.Logging{
-						Enabled: false,
+						Enabled:         true,
+						RetentionPeriod: 90,
+						LoggingService:  []voc.ResourceID{},
 					},
 				},
 			},

@@ -320,12 +320,10 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
 		bootLogging              = []voc.ResourceID{}
-		osLogging                = []voc.ResourceID{}
 		osLoggingEnabled         bool
 		autoUpdates              *voc.AutomaticUpdates
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
-		activityLoggingEnabled   bool
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -389,7 +387,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 			Logging: &voc.Logging{
 				Enabled:         osLoggingEnabled,
 				RetentionPeriod: 0,
-				LoggingService:  osLogging,
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
@@ -399,7 +397,9 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		},
 		ActivityLogging: &voc.ActivityLogging{
 			Logging: &voc.Logging{
-				Enabled: activityLoggingEnabled,
+				Enabled:         true,               // is always enabled
+				RetentionPeriod: 90,                 // always 90 days
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
 			},
 		},
 		AutomaticUpdates: autoUpdates,
