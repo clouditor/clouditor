@@ -778,6 +778,11 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -821,6 +826,11 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -864,6 +874,11 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -1255,6 +1270,11 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -1298,6 +1318,11 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -1341,6 +1366,11 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: false,
+						},
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -1498,6 +1528,11 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					Interval: time.Duration(0),
 				},
 				MalwareProtection: &voc.MalwareProtection{},
+				ActivityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: false,
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},

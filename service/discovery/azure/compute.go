@@ -321,9 +321,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	var (
 		bootLogging              = []voc.ResourceID{}
 		osLogging                = []voc.ResourceID{}
+		osLoggingEnabled         bool
 		autoUpdates              *voc.AutomaticUpdates
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
+		activityLoggingEnabled   bool
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -340,6 +342,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	if d.defenderProperties[DefenderVirtualMachineType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	// Check extensions
+	for _, extension := range vm.Resources {
+		// Azure Monitor Agent (AMA) collects monitoring data from the guest operating system of Azure and hybrid virtual machines and delivers it to Azure Monitor for use (https://learn.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview). The extension names are
+		// * OMSAgentForLinux for Linux VMs and (legacy agent)
+		// * MicrosoftMonitoringAgent for Windows VMs (legacy agent)
+		// * AzureMonitoringWindowsAgent (new agent)
+		// * AzureMonitoringLinuxAgent (new agent)
+		if strings.Contains(*extension.ID, "OmsAgentForLinux") || strings.Contains(*extension.ID, "MicrosoftMonitoringAgent") || strings.Contains(*extension.ID, "AzureMonitoringWindowsAgent") || strings.Contains(*extension.ID, "AzureMonitoringLinuxAgent") {
+			osLoggingEnabled = true
+		}
 	}
 
 	r := &voc.VirtualMachine{
@@ -373,7 +387,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		},
 		OsLogging: &voc.OSLogging{
 			Logging: &voc.Logging{
-				Enabled:         false,
+				Enabled:         osLoggingEnabled,
 				RetentionPeriod: 0,
 				LoggingService:  osLogging,
 				Auditing: &voc.Auditing{
@@ -381,6 +395,11 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 				},
 				MonitoringLogDataEnabled: monitoringLogDataEnabled,
 				SecurityAlertsEnabled:    monitoringLogDataEnabled,
+			},
+		},
+		ActivityLogging: &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled: activityLoggingEnabled,
 			},
 		},
 		AutomaticUpdates: autoUpdates,
