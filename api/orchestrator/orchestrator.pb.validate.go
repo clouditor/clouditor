@@ -4162,6 +4162,40 @@ func (m *CloudService) validate(all bool) error {
 
 	}
 
+	for idx, item := range m.GetTags() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CloudServiceValidationError{
+						field:  fmt.Sprintf("Tags[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CloudServiceValidationError{
+						field:  fmt.Sprintf("Tags[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CloudServiceValidationError{
+					field:  fmt.Sprintf("Tags[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CloudServiceMultiError(errors)
 	}
@@ -4365,6 +4399,10 @@ func (m *Catalog) validate(all bool) error {
 		}
 
 	}
+
+	// no validation rules for Color
+
+	// no validation rules for ShortName
 
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
@@ -9963,3 +10001,105 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationChangeEventValidationError{}
+
+// Validate checks the field values on CloudService_Tag with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *CloudService_Tag) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudService_Tag with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CloudService_TagMultiError, or nil if none found.
+func (m *CloudService_Tag) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudService_Tag) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Tag
+
+	if len(errors) > 0 {
+		return CloudService_TagMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudService_TagMultiError is an error wrapping multiple validation errors
+// returned by CloudService_Tag.ValidateAll() if the designated constraints
+// aren't met.
+type CloudService_TagMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudService_TagMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudService_TagMultiError) AllErrors() []error { return m }
+
+// CloudService_TagValidationError is the validation error returned by
+// CloudService_Tag.Validate if the designated constraints aren't met.
+type CloudService_TagValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudService_TagValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudService_TagValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudService_TagValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudService_TagValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudService_TagValidationError) ErrorName() string { return "CloudService_TagValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CloudService_TagValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudService_Tag.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudService_TagValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudService_TagValidationError{}

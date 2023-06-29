@@ -78,9 +78,33 @@ func TestService_RegisterCloudService(t *testing.T) {
 			},
 		},
 		{
-			name:    "valid",
-			req:     &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "test", Description: "some"}},
-			res:     &orchestrator.CloudService{Name: "test", Description: "some"},
+			name: "valid",
+			req: &orchestrator.RegisterCloudServiceRequest{
+				CloudService: &orchestrator.CloudService{
+					Name:        "test",
+					Description: "some",
+					Tags: []*orchestrator.CloudService_Tag{
+						{
+							Tag: map[string]string{"owner": "testOwner"},
+						},
+						{
+							Tag: map[string]string{"env": "prod"},
+						},
+					},
+				},
+			},
+			res: &orchestrator.CloudService{
+				Name:        "test",
+				Description: "some",
+				Tags: []*orchestrator.CloudService_Tag{
+					{
+						Tag: map[string]string{"owner": "testOwner"},
+					},
+					{
+						Tag: map[string]string{"env": "prod"},
+					},
+				},
+			},
 			wantErr: assert.NoError,
 		},
 	}
