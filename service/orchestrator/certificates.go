@@ -167,23 +167,55 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 		return nil, err
 	}
 
-	// Only remove certificate if user is authorized for the corresponding cloud service
-	all, allowed := svc.authz.AllowedCloudServices(ctx)
-	// 1st case:  User is authorized for all cloud services (admin)
-	if all {
-		err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
-	} else { // 2nd case: User is authorized for some cloud services (or none at all)
-		err = svc.storage.Delete(&orchestrator.Certificate{},
-			"id = ? AND cloud_service_id IN ?", req.CertificateId, allowed)
+	// Lookup if certificate entry is in DB. If not, return NotFound error
+	if err = svc.checkExistence(req); err != nil {
+		return
 	}
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		// could also mean that user is not authorized for corresponding cloud service (2nd case)
-		return nil, ErrCertificationNotFound
-	} else if err != nil {
+	// 2) Check if client is authorized to remove certificate.
+	// Only remove certificate if user is authorized for the corresponding cloud service.
+	if err = svc.checkAuthorization(ctx, req); err != nil {
+		return
+	}
+
+	// Delete entry since client is authorized to do so
+	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
+	if err != nil { // Only internal errors left since others (Permission and NotFound) are already covered
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
+}
+
+// checkAuthorization checks if client is authorized to remove certificate by
+// 1) checking admin flag: If it is enabled (`all`) the client is authorized
+// 2) querying the DB within the range of cloud services (`allowed`) the client is allowed to access
+// Error is returned if not authorized or internal DB error occurred.
+// Note: Use the checkExistence before to ensure that the entry is in the DB!
+func (svc *Service) checkAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
+	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	if !all {
+		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND cloud_service_id IN ?",
+			req.CertificateId, allowed)
+		if err != nil {
+			return status.Errorf(codes.Internal, "database error: %v", err)
+		}
+		if count2 == 0 {
+			return service.ErrPermissionDenied
+		}
+	}
+	return nil
+}
+
+// checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
+func (svc *Service) checkExistence(req *orchestrator.RemoveCertificateRequest) error {
+	count, err := svc.storage.Count(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
+	if err != nil {
+		return status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	if count == 0 {
+		return ErrCertificationNotFound
+	}
+	return nil
 }

@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -691,7 +692,44 @@ func Test_RemoveCertificate(t *testing.T) {
 			},
 		},
 		{
-			name: "Not Found Error - certificate is hidden due to missing authorization)",
+			name: "Error - Internal (Count)",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Error - Not Found",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						true)),
+					// Create empty storage => No certificate can be found
+					WithStorage(testutil.NewInMemoryStorage(t))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
+			},
+		},
+		{
+			name: "Error - Permission denied",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
@@ -706,26 +744,8 @@ func Test_RemoveCertificate(t *testing.T) {
 			},
 			wantRes: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
-				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
-			},
-		},
-		{
-			name: "Internal - db error",
-			fields: fields{
-				svc: NewService(
-					// Just to make it clear. Nilling it would also result in this strategy since it is the default
-					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
-					WithStorage(&testutil.StorageWithError{DeleteErr: gorm.ErrInvalidDB})),
-			},
-			args: args{
-				ctx: nil,
-				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
-			},
-			wantRes: assert.Nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 		},
 		{
@@ -797,6 +817,172 @@ func Test_RemoveCertificate(t *testing.T) {
 			tt.wantRes(t, res, tt.fields.svc)
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_checkAuthorization(t *testing.T) {
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RemoveCertificateRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error - Internal",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID1)),
+					WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Error - Permission denied",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID2)),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Happy path - with authorization allAllowed",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path - with authorization for one certain cloud service",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID1)),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
+					}))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantErr(t, tt.fields.svc.checkAuthorization(tt.args.ctx, tt.args.req),
+				fmt.Sprintf("checkAuthorization(%v, %v)", tt.args.ctx, tt.args.req))
+		})
+	}
+}
+
+func TestService_checkExistence(t *testing.T) {
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		req *orchestrator.RemoveCertificateRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error - Internal",
+			fields: fields{
+				svc: NewService(
+					// Just to make it clear. Nilling it would also result in this strategy since it is the default
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID1)),
+					WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Error - Not Found",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						true)),
+					// Create empty storage => No certificate can be found
+					WithStorage(testutil.NewInMemoryStorage(t))),
+			},
+			args: args{
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						false, testdata.MockCloudServiceID1)),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
+						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
+					}))),
+			},
+			args: args{
+				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantErr(t, tt.fields.svc.checkExistence(tt.args.req),
+				fmt.Sprintf("checkExistence(%v)", tt.args.req))
 		})
 	}
 }
