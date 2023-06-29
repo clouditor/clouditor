@@ -1645,7 +1645,7 @@ components:
                     type: object
                     additionalProperties:
                         type: string
-            description: As long as the repeating maps is not supported, we have to do this workaround.
+            description: As long as repeated maps are not supported, we have to do this workaround.
         Control:
             type: object
             properties:
