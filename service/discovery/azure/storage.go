@@ -37,6 +37,9 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
+
+	// "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresqlhsc/armpostgresqlhsc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
@@ -111,6 +114,12 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, db...)
 
+	// Discover sql databases
+	_, err = d.discoverSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+	}
+
 	return
 }
 
@@ -118,7 +127,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 func (d *azureStorageDiscovery) discoverPostgresql() ([]voc.IsCloudResource, error) {
 	var (
 		dbList []voc.IsCloudResource
-		err    error
+		// err    error
 	)
 
 	// initialize postgresql client
@@ -127,7 +136,7 @@ func (d *azureStorageDiscovery) discoverPostgresql() ([]voc.IsCloudResource, err
 	}
 
 	// Discover postgresql server
-	err = listPager(d.azureDiscovery,
+	_ = listPager(d.azureDiscovery,
 		d.clients.postgresqlClient.NewListPager,
 		d.clients.postgresqlClient.NewListByResourceGroupPager,
 		func(res armpostgresql.ServersClientListResponse) []*armpostgresql.Server {
@@ -150,11 +159,131 @@ func (d *azureStorageDiscovery) discoverPostgresql() ([]voc.IsCloudResource, err
 
 			return nil
 		})
-	if err != nil {
+	// // Discover postgresql server
+	// server := d.clients.postgresqlClient.NewListByServerGroupPager()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return dbList, nil
+}
+
+// discoverSql discovers the sql server and databases
+func (d *azureStorageDiscovery) discoverSql() ([]voc.IsCloudResource, error) {
+	var (
+		list []voc.IsCloudResource
+		err  error
+		db   voc.IsCloudResource
+	)
+
+	// initialize sql client
+	if err = d.initSQLClient(); err != nil {
 		return nil, err
 	}
 
-	return dbList, nil
+	// Discover sql databases/server
+	// returns the databases, e.g., testpostgres and the master (server)
+	listPager := d.clients.sqlClient.NewListByServerPager("BayernCloud", "testserverdiscovery", &armsql.DatabasesClientListByServerOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+
+			db, err = d.handleSqlDatabases(value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle sql database storage: %w", err)
+			}
+			log.Infof("Adding sql database '%s", *value.Name)
+
+			list = append(list, db)
+
+		}
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) handleSqlDatabases(database *armsql.Database) (voc.IsCloudResource, error) {
+	var (
+		db               voc.IsCloudResource
+		err              error
+		anomalyDetection bool
+	)
+
+	// initialize threat protection client
+	if err = d.initThreatProtectionClient(); err != nil {
+		return nil, err
+	}
+
+	listPager := d.clients.threatProtectionClient.NewListByDatabasePager("BayernCloud", "testserverdiscovery", *database.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
+				anomalyDetection = true
+			}
+			if *database.Name == "master" { //TODO(all): What is a "master"-DB?
+				db = &voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: discovery.NewResource(d,
+									voc.ResourceID(*database.ID),
+									*database.Name,
+									database.Properties.CreationDate,
+									voc.GeoLocation{
+										Region: *database.Location,
+									},
+									labels(database.Tags),
+									voc.DatabaseServiceType,
+									database,
+									value),
+							},
+							// TODO(all): TransportEncryption, HttpEndpoint
+						},
+					},
+					AnomalyDetection: &voc.AnomalyDetection{
+						Enabled: anomalyDetection,
+					},
+				}
+
+			} else {
+				db = &voc.DatabaseStorage{
+					Storage: &voc.Storage{
+						Resource: discovery.NewResource(d,
+							voc.ResourceID(*database.ID),
+							*database.Name,
+							database.Properties.CreationDate,
+							voc.GeoLocation{
+								Region: *database.Location,
+							},
+							labels(database.Tags),
+							voc.DatabaseServiceType,
+							database),
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled:   *database.Properties.IsInfraEncryptionEnabled,
+							Algorithm: AES256,
+						},
+						// TODO(all): Backups
+					},
+
+					// Parent: []voc.ResourceID{voc.ResourceID(*database.ManagedBy)},
+				}
+			}
+		}
+	}
+
+	return db, nil
+
 }
 
 // func (d *azureStorageDiscovery) discoverPostgresqlServer(server *armpostgresql.Server) ([]voc.IsCloudResource, error) {
@@ -505,7 +634,7 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES256",
+				Algorithm: AES256,
 				Enabled:   true,
 			},
 		}
@@ -603,6 +732,21 @@ func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 // initPostgresqlClient creates the client if not already exists
 func (d *azureStorageDiscovery) initPostgresqlClient() (err error) {
 	d.clients.postgresqlClient, err = initClient(d.clients.postgresqlClient, d.azureDiscovery, armpostgresql.NewServersClient)
+	// d.clients.postgresqlClient, err = initClient(d.clients.postgresqlClient, d.azureDiscovery, armpostgresqlhsc.NewClientFactory)
+
+	return
+}
+
+// initSQLClient creates the client if not already exists
+func (d *azureStorageDiscovery) initSQLClient() (err error) {
+	d.clients.sqlClient, err = initClient(d.clients.sqlClient, d.azureDiscovery, armsql.NewDatabasesClient)
+
+	return
+}
+
+// initThreatProtectionClient creates the client if not already exists
+func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
+	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
 
 	return
 }

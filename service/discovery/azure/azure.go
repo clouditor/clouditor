@@ -44,6 +44,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 
@@ -67,6 +68,8 @@ const (
 
 	Duration30Days = time.Duration(30 * time.Hour * 24)
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
+
+	AES256 = "AES256"
 )
 
 var (
@@ -131,10 +134,12 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
-	accountsClient      *armstorage.AccountsClient
-	postgresqlClient    *armpostgresql.ServersClient
+	blobContainerClient    *armstorage.BlobContainersClient
+	fileStorageClient      *armstorage.FileSharesClient
+	accountsClient         *armstorage.AccountsClient
+	postgresqlClient       *armpostgresql.ServersClient
+	sqlClient              *armsql.DatabasesClient
+	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network
 	networkInterfacesClient  *armnetwork.InterfacesClient
