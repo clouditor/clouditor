@@ -124,19 +124,19 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	list = append(list, virtualMachines...)
 
 	// Discover functions and web apps
-	function, err := d.discoverSites()
+	resources, err := d.discoverFunctionsWebApps()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
-	if function != nil {
-		list = append(list, function...)
-	}
+	// if resources != nil {
+	list = append(list, resources...)
+	// }
 
 	return
 }
 
-// Discover function
-func (d *azureComputeDiscovery) discoverSites() ([]voc.IsCloudResource, error) {
+// Discover functions and web apps
+func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize functions client
@@ -146,8 +146,8 @@ func (d *azureComputeDiscovery) discoverSites() ([]voc.IsCloudResource, error) {
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.webAppsClient.NewListPager,
-		d.clients.webAppsClient.NewListByResourceGroupPager,
+		d.clients.sitesClient.NewListPager,
+		d.clients.sitesClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
@@ -160,32 +160,43 @@ func (d *azureComputeDiscovery) discoverSites() ([]voc.IsCloudResource, error) {
 			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
 			switch *site.Kind {
 			case "app": // Windows Web App
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Windows Web App currently not implemented.")
 			case "app,linux": // Linux Web app
-			// TODO(all): TBD
-			case "app,linux,container": // Linux Container Web app
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Linux Web App currently not implemented.")
+			case "app,linux,container": // Linux Container Web App
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App Web App currently not implemented.")
 			case "hyperV": // Windows Container Web App
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Windows Container Web App currently not implemented.")
 			case "app,container,windows": // Windows Container Web App
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Windows Web App currently not implemented.")
 			case "app,linux,kubernetes": // Linux Web App on ARC
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Linux Web App on ARC currently not implemented.")
 			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App on ARC currently not implemented.")
 			case "functionapp": // Function Code App
 				r = d.handleFunction(site)
 			case "functionapp,linux": // Linux Consumption Function app
+				log.Debug("Windows Web App currently not implemented.")
 				r = d.handleFunction(site)
 			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
-			// TODO(all): TBD
+				// TODO(all): TBD
+				log.Debug("Function Container App on ARC currently not implemented.")
 			case "functionapp,linux,kubernetes": // Function Code App on ARC
 				// TODO(all): TBD
+				log.Debug("Function Code App on ARC currently not implemented.")
+			default:
+				log.Debugf("%s currently not supported.", *site.Kind)
 			}
 
-			log.Infof("Adding function %+v", r)
-
 			if r != nil {
+				log.Infof("Adding function %+v", r)
 				list = append(list, r)
 			}
 
@@ -215,7 +226,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
 		// Get site config
-		config, err = d.clients.webAppsClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+		config, err = d.clients.sitesClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
 		if err != nil {
 			log.Errorf("error getting site config: %v", err)
 		}
@@ -397,8 +408,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		},
 		ActivityLogging: &voc.ActivityLogging{
 			Logging: &voc.Logging{
-				Enabled:         true,               // is always enabled
-				RetentionPeriod: 90,                 // always 90 days
+				Enabled:         true, // is always enabled
+				RetentionPeriod: RetentionPeriod90Days,
 				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
 			},
 		},
@@ -625,7 +636,7 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 

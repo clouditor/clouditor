@@ -541,7 +541,7 @@ func TestFunction(t *testing.T) {
 func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 	d := azureComputeDiscovery{azureDiscovery: &azureDiscovery{}}
 
-	discoverFunctionsResponse, err := d.discoverSites()
+	discoverFunctionsResponse, err := d.discoverFunctionsWebApps()
 
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFunctionsResponse)
@@ -791,7 +791,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -841,7 +841,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -891,7 +891,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -1075,7 +1075,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.discoverSites()
+			got, err := d.discoverFunctionsWebApps()
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -1289,7 +1289,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -1339,7 +1339,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -1389,7 +1389,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					ActivityLogging: &voc.ActivityLogging{
 						Logging: &voc.Logging{
 							Enabled:         true,
-							RetentionPeriod: 90,
+							RetentionPeriod: RetentionPeriod90Days,
 							LoggingService:  []voc.ResourceID{},
 						},
 					},
@@ -1553,7 +1553,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				ActivityLogging: &voc.ActivityLogging{
 					Logging: &voc.Logging{
 						Enabled:         true,
-						RetentionPeriod: 90,
+						RetentionPeriod: RetentionPeriod90Days,
 						LoggingService:  []voc.ResourceID{},
 					},
 				},
