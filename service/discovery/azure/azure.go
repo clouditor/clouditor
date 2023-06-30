@@ -42,6 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -133,6 +134,7 @@ type clients struct {
 	blobContainerClient *armstorage.BlobContainersClient
 	fileStorageClient   *armstorage.FileSharesClient
 	accountsClient      *armstorage.AccountsClient
+	postgresqlClient    *armpostgresql.ServersClient
 
 	// Network
 	networkInterfacesClient  *armnetwork.InterfacesClient

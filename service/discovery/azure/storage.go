@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
@@ -103,8 +104,85 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, storageAccounts...)
 
+	// Discover postgresql instances
+	db, err := d.discoverPostgresql()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover postgresql instances: %w", err)
+	}
+	list = append(list, db...)
+
 	return
 }
+
+// discoverPostgresql discovers the postgresql server
+func (d *azureStorageDiscovery) discoverPostgresql() ([]voc.IsCloudResource, error) {
+	var (
+		dbList []voc.IsCloudResource
+		err    error
+	)
+
+	// initialize postgresql client
+	if err := d.initPostgresqlClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover postgresql server
+	err = listPager(d.azureDiscovery,
+		d.clients.postgresqlClient.NewListPager,
+		d.clients.postgresqlClient.NewListByResourceGroupPager,
+		func(res armpostgresql.ServersClientListResponse) []*armpostgresql.Server {
+			return res.Value
+		},
+		func(res armpostgresql.ServersClientListByResourceGroupResponse) []*armpostgresql.Server {
+			return res.Value
+		},
+		func(server *armpostgresql.Server) error {
+			// Discover postgresql server
+			// dbs, err := d.discoverPostgresqlServer(server)
+			// if err != nil {
+			// 	return fmt.Errorf("could not handle postgresql instances: %w", err)
+			// }
+			dbs := server.ID
+
+			_ = dbs
+
+			// dbList = append(dbList, dbs...)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return dbList, nil
+}
+
+// func (d *azureStorageDiscovery) discoverPostgresqlServer(server *armpostgresql.Server) ([]voc.IsCloudResource, error) {
+// 	var list []voc.IsCloudResource
+
+// 	// List all blob containers in the specified resource group
+// 	listPager := d.clients.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+// 	for listPager.More() {
+// 		pageResponse, err := listPager.NextPage(context.TODO())
+// 		if err != nil {
+// 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+// 			return nil, err
+// 		}
+
+// 		for _, value := range pageResponse.Value {
+// 			objectStorages, err := d.handleObjectStorage(account, value)
+// 			if err != nil {
+// 				return nil, fmt.Errorf("could not handle object storage: %w", err)
+// 			}
+// 			log.Infof("Adding object storage '%s'", objectStorages.Name)
+
+// 			list = append(list, objectStorages)
+
+// 		}
+// 	}
+
+// 	return list, nil
+// }
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
@@ -518,6 +596,13 @@ func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
 // initBackupInstancesClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
+	return
+}
+
+// initPostgresqlClient creates the client if not already exists
+func (d *azureStorageDiscovery) initPostgresqlClient() (err error) {
+	d.clients.postgresqlClient, err = initClient(d.clients.postgresqlClient, d.azureDiscovery, armpostgresql.NewServersClient)
 
 	return
 }
