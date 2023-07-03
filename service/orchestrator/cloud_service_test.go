@@ -78,17 +78,30 @@ func TestService_RegisterCloudService(t *testing.T) {
 			},
 		},
 		{
-			name: "valid",
+			name: "Happy path: without metadata as input",
 			req: &orchestrator.RegisterCloudServiceRequest{
 				CloudService: &orchestrator.CloudService{
 					Name:        "test",
 					Description: "some",
-					Tags: []*orchestrator.CloudService_Tag{
-						{
-							Tag: map[string]string{"owner": "testOwner"},
-						},
-						{
-							Tag: map[string]string{"env": "prod"},
+				},
+			},
+			res: &orchestrator.CloudService{
+				Name:        "test",
+				Description: "some",
+				Metadata:    &orchestrator.CloudService_Metadata{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: with metadata as input",
+			req: &orchestrator.RegisterCloudServiceRequest{
+				CloudService: &orchestrator.CloudService{
+					Name:        "test",
+					Description: "some",
+					Metadata: &orchestrator.CloudService_Metadata{
+						Labels: map[string]string{
+							"owner": "testOwner",
+							"env":   "prod",
 						},
 					},
 				},
@@ -96,12 +109,10 @@ func TestService_RegisterCloudService(t *testing.T) {
 			res: &orchestrator.CloudService{
 				Name:        "test",
 				Description: "some",
-				Tags: []*orchestrator.CloudService_Tag{
-					{
-						Tag: map[string]string{"owner": "testOwner"},
-					},
-					{
-						Tag: map[string]string{"env": "prod"},
+				Metadata: &orchestrator.CloudService_Metadata{
+					Labels: map[string]string{
+						"owner": "testOwner",
+						"env":   "prod",
 					},
 				},
 			},
@@ -128,8 +139,13 @@ func TestService_RegisterCloudService(t *testing.T) {
 			// reset the IDs because we cannot compare them, since they are randomly generated
 			if res != nil {
 				res.Id = ""
-			}
+				// check creation/update time and reset
+				assert.NotEmpty(t, res.CreatedAt)
+				res.CreatedAt = nil
 
+				assert.NotEmpty(t, res.UpdatedAt)
+				res.UpdatedAt = nil
+			}
 			if tt.res != nil {
 				tt.res.Id = ""
 			}

@@ -1533,11 +1533,17 @@ components:
                     items:
                         type: string
                     description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
-                color:
-                    type: string
                 shortName:
                     type: string
                     description: Catalogs short name, e.g. EUCS
+                metadata:
+                    $ref: '#/components/schemas/Catalog_Metadata'
+        Catalog_Metadata:
+            type: object
+            properties:
+                color:
+                    type: string
+                    description: a color for the cloud service used by the UI
         Category:
             type: object
             properties:
@@ -1596,19 +1602,27 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
-                tags:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/CloudService_Tag'
-                    description: a tag list of key/value pairs, e.g., env:prod
-        CloudService_Tag:
+                createdAt:
+                    type: string
+                    description: creation time of the cloud_service
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: last update time of the cloud_service
+                    format: date-time
+                metadata:
+                    $ref: '#/components/schemas/CloudService_Metadata'
+        CloudService_Metadata:
             type: object
             properties:
-                tag:
+                labels:
                     type: object
                     additionalProperties:
                         type: string
-            description: As long as repeated maps are not supported, we have to do this workaround.
+                    description: a map of key/value pairs, e.g., env:prod
+                icon:
+                    type: string
+                    description: an icon for the cloud service used by the UI
         Control:
             type: object
             properties:

@@ -3,11 +3,12 @@
         "id": "DemoCatalog",
         "name": "Clouditor Demo Catalog",
         "description": "A catalog for demonstration purposes",
-        "color": "#007FC3",
-        "short_name:": "CD",
+        "metadata": {
+            "color": "#007FC3"
+        },
+        "short_name": "CD",
         "assurance_levels": [
-            "low",
-            "medium",
+            "substantial",
             "high"
         ],
         "all_in_scope": true,
@@ -31,7 +32,8 @@
                                 ],
                                 "parent_control_id": "CommSec-01",
                                 "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             },
                             {
                                 "id": "CommSec-01.2",
@@ -43,7 +45,8 @@
                                 ],
                                 "parent_control_id": "CommSec-01",
                                 "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "high"
                             },
                             {
                                 "id": "CommSec-01.3",
@@ -55,7 +58,8 @@
                                 ],
                                 "parent_control_id": "CommSec-01",
                                 "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             }
                         ]
                     }
@@ -123,7 +127,8 @@
                                 ],
                                 "parent_control_id": "SysHard-02",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             },
                             {
                                 "id": "SysHard-02.2",
@@ -138,7 +143,8 @@
                                 ],
                                 "parent_control_id": "SysHard-02",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "high"
                             }
                         ]
                     },
@@ -160,14 +166,15 @@
                                 ],
                                 "parent_control_id": "SysHard-03",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
                     {
                         "id": "SysHard-04",
                         "name": "Automatic Updates",
-                        "description": "The CSP should enable firewalls",
+                        "description": "The CSP should enable automatic updates",
                         "controls": [
                             {
                                 "id": "SysHard-04.1",
@@ -182,7 +189,8 @@
                                 ],
                                 "parent_control_id": "SysHard-04",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
@@ -204,7 +212,8 @@
                                 ],
                                 "parent_control_id": "SysHard-05",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "high"
                             }
                         ]
                     },
@@ -223,7 +232,8 @@
                                 ],
                                 "parent_control_id": "SysHard-06",
                                 "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
                             }
                         ]
                     }
@@ -240,7 +250,7 @@
                         "controls": [
                             {
                                 "id": "Log-01.1",
-                                "name": "The CSP shall log all activies in a dedicated storage and retain the data for a specific time.",
+                                "name": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "BootLoggingEnabled"

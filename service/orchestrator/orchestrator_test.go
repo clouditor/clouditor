@@ -461,10 +461,10 @@ func TestCloudServiceHooks(t *testing.T) {
 		cloudServiceHooks []orchestrator.CloudServiceHookFunc
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *orchestrator.CloudService
-		wantErr  bool
+		name    string
+		args    args
+		wantRes assert.ValueAssertionFunc
+		wantErr bool
 	}{
 		{
 			name: "Update Cloud Service",
@@ -480,10 +480,10 @@ func TestCloudServiceHooks(t *testing.T) {
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr: false,
-			wantResp: &orchestrator.CloudService{
-				Id:          "00000000-0000-0000-0000-000000000000",
-				Name:        "test service",
-				Description: "test service",
+			wantRes: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				s := i1.(*orchestrator.CloudService)
+				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", s.Id) &&
+					assert.Equal(t, "test service", s.Name) && assert.Equal(t, "test service", s.Description)
 			},
 		},
 	}
@@ -508,7 +508,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotResp, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
+			gotRes, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
 
 			// wait for all hooks (2 services * 2 hooks)
 			wg.Wait()
@@ -517,11 +517,8 @@ func TestCloudServiceHooks(t *testing.T) {
 				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !proto.Equal(gotResp, tt.wantResp) {
-				t.Errorf("UpdateCloudService() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			tt.wantRes(t, gotRes)
 
-			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}

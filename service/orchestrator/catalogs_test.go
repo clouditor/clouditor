@@ -48,7 +48,11 @@ import (
 
 func TestService_CreateCatalog(t *testing.T) {
 	// Mock catalogs
-	mockCatalog := orchestratortest.NewCatalog()
+	mockCatalogWithoutMetadata := orchestratortest.NewCatalog()
+	mockCatalogWithMetadata := orchestratortest.NewCatalog()
+	mockCatalogWithMetadata.Metadata = &orchestrator.Catalog_Metadata{
+		Color: util.Ref("#007FC3"),
+	}
 	mockCatalogWithoutID := orchestratortest.NewCatalog()
 	mockCatalogWithoutID.Id = ""
 
@@ -101,14 +105,25 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 		},
 		{
-			name: "valid catalog",
+			name: "Happy path: without metadata",
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCatalogRequest{
-					Catalog: mockCatalog,
+					Catalog: mockCatalogWithoutMetadata,
 				},
 			},
-			wantResponse: mockCatalog,
+			wantResponse: mockCatalogWithoutMetadata,
+			wantErr:      assert.NoError,
+		},
+		{
+			name: "Happy path: with metadata",
+			args: args{
+				context.Background(),
+				&orchestrator.CreateCatalogRequest{
+					Catalog: mockCatalogWithMetadata,
+				},
+			},
+			wantResponse: mockCatalogWithMetadata,
 			wantErr:      assert.NoError,
 		},
 	}

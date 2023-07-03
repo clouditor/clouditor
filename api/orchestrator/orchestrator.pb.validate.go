@@ -4162,15 +4162,72 @@ func (m *CloudService) validate(all bool) error {
 
 	}
 
-	for idx, item := range m.GetTags() {
-		_, _ = idx, item
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudServiceValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudServiceValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudServiceValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetUpdatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CloudServiceValidationError{
+					field:  "UpdatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CloudServiceValidationError{
+					field:  "UpdatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CloudServiceValidationError{
+				field:  "UpdatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.Metadata != nil {
 
 		if all {
-			switch v := interface{}(item).(type) {
+			switch v := interface{}(m.GetMetadata()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, CloudServiceValidationError{
-						field:  fmt.Sprintf("Tags[%v]", idx),
+						field:  "Metadata",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -4178,16 +4235,16 @@ func (m *CloudService) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, CloudServiceValidationError{
-						field:  fmt.Sprintf("Tags[%v]", idx),
+						field:  "Metadata",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return CloudServiceValidationError{
-					field:  fmt.Sprintf("Tags[%v]", idx),
+					field:  "Metadata",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -4400,9 +4457,40 @@ func (m *Catalog) validate(all bool) error {
 
 	}
 
-	// no validation rules for Color
-
 	// no validation rules for ShortName
+
+	if m.Metadata != nil {
+
+		if all {
+			switch v := interface{}(m.GetMetadata()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CatalogValidationError{
+						field:  "Metadata",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CatalogValidationError{
+						field:  "Metadata",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CatalogValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return CatalogMultiError(errors)
@@ -9752,44 +9840,48 @@ var _ interface {
 	ErrorName() string
 } = TargetOfEvaluationChangeEventValidationError{}
 
-// Validate checks the field values on CloudService_Tag with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *CloudService_Tag) Validate() error {
+// Validate checks the field values on CloudService_Metadata with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudService_Metadata) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CloudService_Tag with the rules
+// ValidateAll checks the field values on CloudService_Metadata with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// CloudService_TagMultiError, or nil if none found.
-func (m *CloudService_Tag) ValidateAll() error {
+// CloudService_MetadataMultiError, or nil if none found.
+func (m *CloudService_Metadata) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CloudService_Tag) validate(all bool) error {
+func (m *CloudService_Metadata) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for Tag
+	// no validation rules for Labels
+
+	if m.Icon != nil {
+		// no validation rules for Icon
+	}
 
 	if len(errors) > 0 {
-		return CloudService_TagMultiError(errors)
+		return CloudService_MetadataMultiError(errors)
 	}
 
 	return nil
 }
 
-// CloudService_TagMultiError is an error wrapping multiple validation errors
-// returned by CloudService_Tag.ValidateAll() if the designated constraints
-// aren't met.
-type CloudService_TagMultiError []error
+// CloudService_MetadataMultiError is an error wrapping multiple validation
+// errors returned by CloudService_Metadata.ValidateAll() if the designated
+// constraints aren't met.
+type CloudService_MetadataMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CloudService_TagMultiError) Error() string {
+func (m CloudService_MetadataMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -9798,11 +9890,11 @@ func (m CloudService_TagMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CloudService_TagMultiError) AllErrors() []error { return m }
+func (m CloudService_MetadataMultiError) AllErrors() []error { return m }
 
-// CloudService_TagValidationError is the validation error returned by
-// CloudService_Tag.Validate if the designated constraints aren't met.
-type CloudService_TagValidationError struct {
+// CloudService_MetadataValidationError is the validation error returned by
+// CloudService_Metadata.Validate if the designated constraints aren't met.
+type CloudService_MetadataValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -9810,22 +9902,24 @@ type CloudService_TagValidationError struct {
 }
 
 // Field function returns field value.
-func (e CloudService_TagValidationError) Field() string { return e.field }
+func (e CloudService_MetadataValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CloudService_TagValidationError) Reason() string { return e.reason }
+func (e CloudService_MetadataValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CloudService_TagValidationError) Cause() error { return e.cause }
+func (e CloudService_MetadataValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CloudService_TagValidationError) Key() bool { return e.key }
+func (e CloudService_MetadataValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CloudService_TagValidationError) ErrorName() string { return "CloudService_TagValidationError" }
+func (e CloudService_MetadataValidationError) ErrorName() string {
+	return "CloudService_MetadataValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e CloudService_TagValidationError) Error() string {
+func (e CloudService_MetadataValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -9837,14 +9931,14 @@ func (e CloudService_TagValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCloudService_Tag.%s: %s%s",
+		"invalid %sCloudService_Metadata.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CloudService_TagValidationError{}
+var _ error = CloudService_MetadataValidationError{}
 
 var _ interface {
 	Field() string
@@ -9852,4 +9946,108 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CloudService_TagValidationError{}
+} = CloudService_MetadataValidationError{}
+
+// Validate checks the field values on Catalog_Metadata with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *Catalog_Metadata) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Catalog_Metadata with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// Catalog_MetadataMultiError, or nil if none found.
+func (m *Catalog_Metadata) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Catalog_Metadata) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.Color != nil {
+		// no validation rules for Color
+	}
+
+	if len(errors) > 0 {
+		return Catalog_MetadataMultiError(errors)
+	}
+
+	return nil
+}
+
+// Catalog_MetadataMultiError is an error wrapping multiple validation errors
+// returned by Catalog_Metadata.ValidateAll() if the designated constraints
+// aren't met.
+type Catalog_MetadataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Catalog_MetadataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Catalog_MetadataMultiError) AllErrors() []error { return m }
+
+// Catalog_MetadataValidationError is the validation error returned by
+// Catalog_Metadata.Validate if the designated constraints aren't met.
+type Catalog_MetadataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Catalog_MetadataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Catalog_MetadataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Catalog_MetadataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Catalog_MetadataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Catalog_MetadataValidationError) ErrorName() string { return "Catalog_MetadataValidationError" }
+
+// Error satisfies the builtin error interface
+func (e Catalog_MetadataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCatalog_Metadata.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Catalog_MetadataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Catalog_MetadataValidationError{}
