@@ -138,7 +138,8 @@ type clients struct {
 	fileStorageClient      *armstorage.FileSharesClient
 	accountsClient         *armstorage.AccountsClient
 	postgresqlClient       *armpostgresql.ServersClient
-	sqlClient              *armsql.DatabasesClient
+	databasesClient        *armsql.DatabasesClient
+	serverClient           *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network

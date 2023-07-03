@@ -36,10 +36,8 @@ import (
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 
-	// "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresqlhsc/armpostgresqlhsc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
@@ -107,65 +105,14 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, storageAccounts...)
 
-	// Discover postgresql instances
-	db, err := d.discoverPostgresql()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover postgresql instances: %w", err)
-	}
-	list = append(list, db...)
-
 	// Discover sql databases
-	_, err = d.discoverSql()
+	dbs, err := d.discoverSql()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
 	}
+	list = append(list, dbs...)
 
 	return
-}
-
-// discoverPostgresql discovers the postgresql server
-func (d *azureStorageDiscovery) discoverPostgresql() ([]voc.IsCloudResource, error) {
-	var (
-		dbList []voc.IsCloudResource
-		// err    error
-	)
-
-	// initialize postgresql client
-	if err := d.initPostgresqlClient(); err != nil {
-		return nil, err
-	}
-
-	// Discover postgresql server
-	_ = listPager(d.azureDiscovery,
-		d.clients.postgresqlClient.NewListPager,
-		d.clients.postgresqlClient.NewListByResourceGroupPager,
-		func(res armpostgresql.ServersClientListResponse) []*armpostgresql.Server {
-			return res.Value
-		},
-		func(res armpostgresql.ServersClientListByResourceGroupResponse) []*armpostgresql.Server {
-			return res.Value
-		},
-		func(server *armpostgresql.Server) error {
-			// Discover postgresql server
-			// dbs, err := d.discoverPostgresqlServer(server)
-			// if err != nil {
-			// 	return fmt.Errorf("could not handle postgresql instances: %w", err)
-			// }
-			dbs := server.ID
-
-			_ = dbs
-
-			// dbList = append(dbList, dbs...)
-
-			return nil
-		})
-	// // Discover postgresql server
-	// server := d.clients.postgresqlClient.NewListByServerGroupPager()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	return dbList, nil
 }
 
 // discoverSql discovers the sql server and databases
@@ -173,145 +120,149 @@ func (d *azureStorageDiscovery) discoverSql() ([]voc.IsCloudResource, error) {
 	var (
 		list []voc.IsCloudResource
 		err  error
-		db   voc.IsCloudResource
 	)
 
-	// initialize sql client
-	if err = d.initSQLClient(); err != nil {
+	// initialize SQL server client
+	if err := d.initServerClient(); err != nil {
 		return nil, err
 	}
 
-	// Discover sql databases/server
-	// returns the databases, e.g., testpostgres and the master (server)
-	listPager := d.clients.sqlClient.NewListByServerPager("BayernCloud", "testserverdiscovery", &armsql.DatabasesClientListByServerOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-
-		for _, value := range pageResponse.Value {
-
-			db, err = d.handleSqlDatabases(value)
+	// Discover sql server
+	err = listPager(d.azureDiscovery,
+		d.clients.serverClient.NewListPager,
+		d.clients.serverClient.NewListByResourceGroupPager,
+		func(res armsql.ServersClientListResponse) []*armsql.Server {
+			return res.Value
+		},
+		func(res armsql.ServersClientListByResourceGroupResponse) []*armsql.Server {
+			return res.Value
+		},
+		func(server *armsql.Server) error {
+			db, err := d.handleSqlDatabases(server)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle sql database storage: %w", err)
+				return fmt.Errorf("could not handle sql database: %w", err)
 			}
-			log.Infof("Adding sql database '%s", *value.Name)
+			log.Infof("Adding sql database '%s", *server.Name)
+			list = append(list, db...)
 
-			list = append(list, db)
-
-		}
+			return nil
+		})
+	if err != nil {
+		return nil, err
 	}
 
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleSqlDatabases(database *armsql.Database) (voc.IsCloudResource, error) {
+// anomalyDetectionEnabled returns true if Azure Advanced Threat Protection is enabled.
+func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *armsql.Database) (bool, error) {
+	// initialize threat protection client
+	if err := d.initThreatProtectionClient(); err != nil {
+		return false, err
+	}
+
+	listPager := d.clients.threatProtectionClient.NewListByDatabasePager("BayernCloud", *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return false, err
+		}
+
+		for _, value := range pageResponse.Value {
+			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// handleSqlDatabases
+func (d *azureStorageDiscovery) handleSqlDatabases(server *armsql.Server) ([]voc.IsCloudResource, error) {
 	var (
-		db               voc.IsCloudResource
-		err              error
-		anomalyDetection bool
+		dbStorage voc.IsCloudResource
+		dbService voc.IsCloudResource
+		list      []voc.IsCloudResource
+		err       error
 	)
 
-	// initialize threat protection client
-	if err = d.initThreatProtectionClient(); err != nil {
+	// initialize SQL databases client
+	if err = d.initDatabsesClient(); err != nil {
 		return nil, err
 	}
 
-	listPager := d.clients.threatProtectionClient.NewListByDatabasePager("BayernCloud", "testserverdiscovery", *database.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
+	// Get databases for given server
+	serverlistPager := d.clients.databasesClient.NewListByServerPager("BayernCloud", *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	for serverlistPager.More() {
+		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
 			return nil, err
 		}
 
 		for _, value := range pageResponse.Value {
-			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
-				anomalyDetection = true
+			// Getting anomaly detection status
+			anomalyDetectionEnabeld, err := d.anomalyDetectionEnabled(server, value)
+			if err != nil {
+				log.Errorf("error getting anomlay detection info for database '%s': %v", *value.Name, err)
 			}
-			if *database.Name == "master" { //TODO(all): What is a "master"-DB?
-				db = &voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: discovery.NewResource(d,
-									voc.ResourceID(*database.ID),
-									*database.Name,
-									database.Properties.CreationDate,
-									voc.GeoLocation{
-										Region: *database.Location,
-									},
-									labels(database.Tags),
-									voc.DatabaseServiceType,
-									database,
-									value),
-							},
-							// TODO(all): TransportEncryption, HttpEndpoint
-						},
-					},
-					AnomalyDetection: &voc.AnomalyDetection{
-						Enabled: anomalyDetection,
-					},
-				}
 
-			} else {
-				db = &voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: discovery.NewResource(d,
-							voc.ResourceID(*database.ID),
-							*database.Name,
-							database.Properties.CreationDate,
-							voc.GeoLocation{
-								Region: *database.Location,
-							},
-							labels(database.Tags),
-							voc.DatabaseServiceType,
-							database),
-						AtRestEncryption: &voc.AtRestEncryption{
-							Enabled:   *database.Properties.IsInfraEncryptionEnabled,
-							Algorithm: AES256,
+			// Create database storage voc object
+			dbStorage = &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*value.ID),
+						*value.Name,
+						value.Properties.CreationDate,
+						voc.GeoLocation{
+							Region: *value.Location,
 						},
-						// TODO(all): Backups
+						labels(value.Tags),
+						voc.DatabaseStorageType,
+						value),
+					AtRestEncryption: &voc.AtRestEncryption{
+						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
+						Algorithm: AES256,
 					},
+					// TODO(all): Backups
 
-					// Parent: []voc.ResourceID{voc.ResourceID(*database.ManagedBy)},
-				}
+				},
+				Parent: []voc.ResourceID{voc.ResourceID(*server.ID)},
 			}
+
+			list = append(list, dbStorage)
+
+			// Create database service voc object
+			dbService = &voc.DatabaseService{
+				StorageService: &voc.StorageService{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: discovery.NewResource(d,
+								voc.ResourceID(*value.ID),
+								*value.Name,
+								value.Properties.CreationDate,
+								voc.GeoLocation{
+									Region: *value.Location,
+								},
+								labels(value.Tags),
+								voc.DatabaseServiceType,
+								server,
+								value,
+							),
+						},
+						// TODO(all): TransportEncryption, HttpEndpoint
+					},
+				},
+				AnomalyDetection: &voc.AnomalyDetection{
+					Enabled: anomalyDetectionEnabeld,
+				},
+			}
+			list = append(list, dbService)
 		}
 	}
-
-	return db, nil
-
+	return list, nil
 }
-
-// func (d *azureStorageDiscovery) discoverPostgresqlServer(server *armpostgresql.Server) ([]voc.IsCloudResource, error) {
-// 	var list []voc.IsCloudResource
-
-// 	// List all blob containers in the specified resource group
-// 	listPager := d.clients.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
-// 	for listPager.More() {
-// 		pageResponse, err := listPager.NextPage(context.TODO())
-// 		if err != nil {
-// 			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-// 			return nil, err
-// 		}
-
-// 		for _, value := range pageResponse.Value {
-// 			objectStorages, err := d.handleObjectStorage(account, value)
-// 			if err != nil {
-// 				return nil, fmt.Errorf("could not handle object storage: %w", err)
-// 			}
-// 			log.Infof("Adding object storage '%s'", objectStorages.Name)
-
-// 			list = append(list, objectStorages)
-
-// 		}
-// 	}
-
-// 	return list, nil
-// }
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
@@ -729,17 +680,16 @@ func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 	return
 }
 
-// initPostgresqlClient creates the client if not already exists
-func (d *azureStorageDiscovery) initPostgresqlClient() (err error) {
-	d.clients.postgresqlClient, err = initClient(d.clients.postgresqlClient, d.azureDiscovery, armpostgresql.NewServersClient)
-	// d.clients.postgresqlClient, err = initClient(d.clients.postgresqlClient, d.azureDiscovery, armpostgresqlhsc.NewClientFactory)
+// initDatabsesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initDatabsesClient() (err error) {
+	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d.azureDiscovery, armsql.NewDatabasesClient)
 
 	return
 }
 
 // initSQLClient creates the client if not already exists
-func (d *azureStorageDiscovery) initSQLClient() (err error) {
-	d.clients.sqlClient, err = initClient(d.clients.sqlClient, d.azureDiscovery, armsql.NewDatabasesClient)
+func (d *azureStorageDiscovery) initServerClient() (err error) {
+	d.clients.serverClient, err = initClient(d.clients.serverClient, d.azureDiscovery, armsql.NewServersClient)
 
 	return
 }
