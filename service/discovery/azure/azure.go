@@ -70,6 +70,8 @@ const (
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
 
 	AES256 = "AES256"
+  
+	RetentionPeriod90Days = 90
 )
 
 var (
@@ -148,7 +150,7 @@ type clients struct {
 	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
 
 	// AppService
-	functionsClient *armappservice.WebAppsClient
+	sitesClient *armappservice.WebAppsClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
