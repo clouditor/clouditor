@@ -135,11 +135,13 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient    *armstorage.BlobContainersClient
-	fileStorageClient      *armstorage.FileSharesClient
-	accountsClient         *armstorage.AccountsClient
+	blobContainerClient *armstorage.BlobContainersClient
+	fileStorageClient   *armstorage.FileSharesClient
+	accountsClient      *armstorage.AccountsClient
+
+	// DB
 	databasesClient        *armsql.DatabasesClient
-	serverClient           *armsql.ServersClient
+	serversClient          *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network

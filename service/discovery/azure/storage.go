@@ -106,7 +106,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	list = append(list, storageAccounts...)
 
 	// Discover sql databases
-	dbs, err := d.discoverSql()
+	dbs, err := d.discoverSqlServer()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
 	}
@@ -115,22 +115,22 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	return
 }
 
-// discoverSql discovers the sql server and databases
-func (d *azureStorageDiscovery) discoverSql() ([]voc.IsCloudResource, error) {
+// discoverSqlServer discovers the sql server and databases
+func (d *azureStorageDiscovery) discoverSqlServer() ([]voc.IsCloudResource, error) {
 	var (
 		list []voc.IsCloudResource
 		err  error
 	)
 
 	// initialize SQL server client
-	if err := d.initServerClient(); err != nil {
+	if err := d.initServersClient(); err != nil {
 		return nil, err
 	}
 
 	// Discover sql server
 	err = listPager(d.azureDiscovery,
-		d.clients.serverClient.NewListPager,
-		d.clients.serverClient.NewListByResourceGroupPager,
+		d.clients.serversClient.NewListPager,
+		d.clients.serversClient.NewListByResourceGroupPager,
 		func(res armsql.ServersClientListResponse) []*armsql.Server {
 			return res.Value
 		},
@@ -686,9 +686,9 @@ func (d *azureStorageDiscovery) initDatabsesClient() (err error) {
 	return
 }
 
-// initSQLClient creates the client if not already exists
-func (d *azureStorageDiscovery) initServerClient() (err error) {
-	d.clients.serverClient, err = initClient(d.clients.serverClient, d.azureDiscovery, armsql.NewServersClient)
+// initServersClient creates the client if not already exists
+func (d *azureStorageDiscovery) initServersClient() (err error) {
+	d.clients.serversClient, err = initClient(d.clients.serversClient, d.azureDiscovery, armsql.NewServersClient)
 
 	return
 }
