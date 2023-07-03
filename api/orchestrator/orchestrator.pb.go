@@ -4449,7 +4449,7 @@ func (x *TargetOfEvaluationChangeEvent) GetControlInScope() *ControlInScope {
 	return nil
 }
 
-// As long as the repeating maps is not supported, we have to do this workaround.
+// As long as repeated maps are not supported, we have to do this workaround.
 type CloudService_Tag struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

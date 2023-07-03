@@ -112,6 +112,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 							},
 						},
 					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent",
+						},
+					},
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
@@ -159,6 +164,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 									"id": "654",
 								},
 							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux",
 						},
 					},
 				},
@@ -251,6 +261,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
 					"name":     "function1",
 					"location": "West Europe",
+					"kind":     "functionapp,linux",
 					"tags": map[string]interface{}{
 						"testKey1": "testTag1",
 						"testKey2": "testTag2",
@@ -261,6 +272,26 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 					},
 				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+					"name":     "function2",
+					"location": "West Europe",
+					"kind":     "functionapp",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":    map[string]interface{}{},
+						"resourceGroup": "res1",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"javaVersion": "1.8",
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
@@ -450,7 +481,7 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -499,7 +530,7 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 8, len(list))
+	assert.Equal(t, 9, len(list))
 
 	function, ok := list[7].(*voc.Function)
 
@@ -510,7 +541,7 @@ func TestFunction(t *testing.T) {
 func TestComputeDiscoverFunctionsWhenInputIsInvalid(t *testing.T) {
 	d := azureComputeDiscovery{azureDiscovery: &azureDiscovery{}}
 
-	discoverFunctionsResponse, err := d.discoverFunctions()
+	discoverFunctionsResponse, err := d.discoverFunctionsWebApps()
 
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFunctionsResponse)
@@ -727,7 +758,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -744,7 +775,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -757,6 +788,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -770,7 +808,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -787,7 +825,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -800,6 +838,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -843,6 +888,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -859,13 +911,36 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
 
 					RuntimeVersion:  "3.8",
 					RuntimeLanguage: "PYTHON",
+				},
+				&voc.Function{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "function2",
+							CreationTime: util.SafeTimestamp(&time.Time{}),
+							Type:         voc.FunctionType,
+							Labels: map[string]string{
+								"testKey1": "testTag1",
+								"testKey2": "testTag2",
+							},
+							GeoLocation: voc.GeoLocation{
+								Region: "West Europe",
+							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+						},
+						NetworkInterfaces: []voc.ResourceID{},
+					},
+
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
 				},
 			},
 			wantErr: assert.NoError,
@@ -941,7 +1016,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 			},
 		},
 		{
-			name: "No error",
+			name: "Happy path",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
@@ -962,12 +1037,34 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "West Europe",
 							},
-							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
 					RuntimeVersion:  "3.8",
 					RuntimeLanguage: "PYTHON",
+				},
+				&voc.Function{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "function2",
+							CreationTime: util.SafeTimestamp(&time.Time{}),
+							Type:         []string{"Function", "Compute", "Resource"},
+							Labels: map[string]string{
+								"testKey1": "testTag1",
+								"testKey2": "testTag2",
+							},
+							GeoLocation: voc.GeoLocation{
+								Region: "West Europe",
+							},
+							Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+						},
+						NetworkInterfaces: []voc.ResourceID{},
+					},
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
 				},
 			},
 			wantErr: assert.NoError,
@@ -978,7 +1075,7 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := d.discoverFunctions()
+			got, err := d.discoverFunctionsWebApps()
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -988,14 +1085,13 @@ func Test_azureComputeDiscovery_discoverFunctions(t *testing.T) {
 }
 
 func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
-	functionID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1"
-	functionName := "function1"
 	diskRegion := "West Europe"
 	testTag1 := "testTag1"
 	testTag2 := "testTag2"
 
 	type fields struct {
 		azureDiscovery *azureDiscovery
+		clientWebApps  bool
 	}
 	type args struct {
 		function *armappservice.Site
@@ -1014,28 +1110,20 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Empty functionID",
-			args: args{
-				function: &armappservice.Site{
-					ID: nil,
-				},
-			},
-			want: nil,
-		},
-		{
-			name: "No error",
+			name: "Happy path: Linux function",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
 			},
 			args: args{
 				function: &armappservice.Site{
-					ID:       &functionID,
-					Name:     &functionName,
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1"),
+					Name:     util.Ref("function1"),
 					Location: &diskRegion,
 					Tags: map[string]*string{
 						"testKey1": &testTag1,
 						"testKey2": &testTag2,
 					},
+					Kind: util.Ref("functionapp,linux"),
 					Properties: &armappservice.SiteProperties{
 						SiteConfig: &armappservice.SiteConfig{
 							LinuxFxVersion: util.Ref("PYTHON|3.8"),
@@ -1058,12 +1146,57 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						GeoLocation: voc.GeoLocation{
 							Region: "West Europe",
 						},
-						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
 				},
 				RuntimeVersion:  "3.8",
 				RuntimeLanguage: "PYTHON",
+			},
+		},
+		{
+			name: "Happy path: Windows function",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				clientWebApps:  true,
+			},
+			args: args{
+				function: &armappservice.Site{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2"),
+					Name:     util.Ref("function2"),
+					Location: &diskRegion,
+					Tags: map[string]*string{
+						"testKey1": &testTag1,
+						"testKey2": &testTag2,
+					},
+					Kind: util.Ref("functionapp"),
+					Properties: &armappservice.SiteProperties{
+						SiteConfig:    &armappservice.SiteConfig{},
+						ResourceGroup: util.Ref("res1"),
+					},
+				},
+			},
+			want: &voc.Function{
+				Compute: &voc.Compute{
+					Resource: &voc.Resource{
+						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+						ServiceID:    testdata.MockCloudServiceID1,
+						Name:         "function2",
+						CreationTime: util.SafeTimestamp(&time.Time{}),
+						Type:         []string{"Function", "Compute", "Resource"},
+						Labels: map[string]string{
+							"testKey1": testTag1,
+							"testKey2": testTag2,
+						},
+						GeoLocation: voc.GeoLocation{
+							Region: "West Europe",
+						},
+						Raw: "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+					},
+					NetworkInterfaces: []voc.ResourceID{},
+				},
+				RuntimeVersion:  "1.8",
+				RuntimeLanguage: "Java",
 			},
 		},
 	}
@@ -1072,6 +1205,12 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 			az := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
+			// Set clients if needed
+			if tt.fields.clientWebApps {
+				// initialize backup vaults client
+				_ = az.initWebAppsClient()
+			}
+
 			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function), "handleFunction(%v)", tt.args.function)
 		})
 	}
@@ -1117,7 +1256,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1\",\"location\":\"eastus\",\"name\":\"vm1\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true,\"storageUri\":\"https://logstoragevm1.blob.core.windows.net/\"}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"123\"},{\"id\":\"234\"}]},\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_1\"}},{\"managedDisk\":{\"id\":\"data_disk_2\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"123", "234"},
 					},
@@ -1134,7 +1273,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -1147,6 +1286,13 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -1160,7 +1306,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}}}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -1177,7 +1323,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					},
 					OsLogging: &voc.OSLogging{
 						Logging: &voc.Logging{
-							Enabled:         false,
+							Enabled:         true,
 							LoggingService:  []voc.ResourceID{},
 							RetentionPeriod: 0,
 							Auditing: &voc.Auditing{
@@ -1190,6 +1336,13 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: Duration30Days,
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
@@ -1233,6 +1386,13 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						Interval: time.Duration(0),
 					},
 					MalwareProtection: &voc.MalwareProtection{},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled:         true,
+							RetentionPeriod: RetentionPeriod90Days,
+							LoggingService:  []voc.ResourceID{},
+						},
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -1390,6 +1550,13 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					Interval: time.Duration(0),
 				},
 				MalwareProtection: &voc.MalwareProtection{},
+				ActivityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled:         true,
+						RetentionPeriod: RetentionPeriod90Days,
+						LoggingService:  []voc.ResourceID{},
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},

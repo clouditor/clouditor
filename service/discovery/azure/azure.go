@@ -66,6 +66,8 @@ const (
 
 	Duration30Days = time.Duration(30 * time.Hour * 24)
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
+
+	RetentionPeriod90Days = 90
 )
 
 var (
@@ -140,7 +142,7 @@ type clients struct {
 	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
 
 	// AppService
-	functionsClient *armappservice.WebAppsClient
+	sitesClient *armappservice.WebAppsClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
