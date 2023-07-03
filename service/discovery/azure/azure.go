@@ -42,7 +42,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -70,7 +69,7 @@ const (
 	Duration7Days  = time.Duration(7 * time.Hour * 24)
 
 	AES256 = "AES256"
-  
+
 	RetentionPeriod90Days = 90
 )
 
@@ -139,7 +138,6 @@ type clients struct {
 	blobContainerClient    *armstorage.BlobContainersClient
 	fileStorageClient      *armstorage.FileSharesClient
 	accountsClient         *armstorage.AccountsClient
-	postgresqlClient       *armpostgresql.ServersClient
 	databasesClient        *armsql.DatabasesClient
 	serverClient           *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
