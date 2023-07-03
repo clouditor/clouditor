@@ -138,7 +138,7 @@ func (d *azureStorageDiscovery) discoverSql() ([]voc.IsCloudResource, error) {
 			return res.Value
 		},
 		func(server *armsql.Server) error {
-			db, err := d.handleSqlDatabases(server)
+			db, err := d.handleSqlServer(server)
 			if err != nil {
 				return fmt.Errorf("could not handle sql database: %w", err)
 			}
@@ -154,32 +154,7 @@ func (d *azureStorageDiscovery) discoverSql() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-// anomalyDetectionEnabled returns true if Azure Advanced Threat Protection is enabled.
-func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *armsql.Database) (bool, error) {
-	// initialize threat protection client
-	if err := d.initThreatProtectionClient(); err != nil {
-		return false, err
-	}
-
-	listPager := d.clients.threatProtectionClient.NewListByDatabasePager("BayernCloud", *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return false, err
-		}
-
-		for _, value := range pageResponse.Value {
-			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
-				return true, nil
-			}
-		}
-	}
-	return false, nil
-}
-
-// handleSqlDatabases
-func (d *azureStorageDiscovery) handleSqlDatabases(server *armsql.Server) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.IsCloudResource, error) {
 	var (
 		dbStorage voc.IsCloudResource
 		dbService voc.IsCloudResource
@@ -193,7 +168,7 @@ func (d *azureStorageDiscovery) handleSqlDatabases(server *armsql.Server) ([]voc
 	}
 
 	// Get databases for given server
-	serverlistPager := d.clients.databasesClient.NewListByServerPager("BayernCloud", *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
@@ -600,6 +575,30 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	}
 
 	return enc, nil
+}
+
+// anomalyDetectionEnabled returns true if Azure Advanced Threat Protection is enabled for the database.
+func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *armsql.Database) (bool, error) {
+	// initialize threat protection client
+	if err := d.initThreatProtectionClient(); err != nil {
+		return false, err
+	}
+
+	listPager := d.clients.threatProtectionClient.NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return false, err
+		}
+
+		for _, value := range pageResponse.Value {
+			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 // diskEncryptionSetName return the disk encryption set ID's name
