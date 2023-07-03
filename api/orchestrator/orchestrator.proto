@@ -583,15 +583,15 @@ message GetCloudServiceStatisticsRequest {
 message GetCloudServiceStatisticsResponse {
   // number of discovered resources per cloud service
   int64 number_of_discovered_resources = 1;
-  
+
   // number of assessment results per cloud service
   int64 number_of_assessment_results = 2;
-  
+
   // number of evidences per cloud service
   int64 number_of_evidences = 3;
 
   // number of selected catalogs per cloud service
-  int64 number_of_selected_catalogs = 4;  
+  int64 number_of_selected_catalogs = 4;
 }
 
 message UpdateMetricConfigurationRequest {
@@ -726,8 +726,8 @@ message Catalog {
 
   // A list of the assurance levels, e.g., basic, substantial and high for the
   // EUCS catalog.
-  repeated string assurance_levels = 7 [
-    (tagger.tags) = "gorm:\"serializer:json\"" ];
+  repeated string assurance_levels = 7
+      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
 
   // Catalogs short name, e.g. EUCS
   string short_name = 9;
