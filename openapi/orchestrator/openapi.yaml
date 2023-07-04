@@ -705,6 +705,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/statistics:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves target cloud service statistics
+            operationId: Orchestrator_CloudServiceStatistics
+            parameters:
+                - name: cloudServiceId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CloudServiceStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
@@ -1601,6 +1625,37 @@ components:
                     items:
                         $ref: '#/components/schemas/CloudService_Tag'
                     description: a tag list of key/value pairs, e.g., env:prod
+        CloudServiceStatisticsResponse:
+            type: object
+            properties:
+                numberOfDiscoveredResources:
+                    type: integer
+                    description: number of discovered resources per cloud services
+                    format: int64
+                numberOfAssessmentResults:
+                    type: integer
+                    description: number of assessment results per cloud services
+                    format: int64
+                numberOfEvidences:
+                    type: integer
+                    description: number of evidences per cloud services
+                    format: int64
+                numberOfSelectedCatalogs:
+                    type: integer
+                    description: number of selected catalogs per cloud services
+                    format: int64
+                numberOfCloudServices:
+                    type: integer
+                    description: number of available cloud services
+                    format: int64
+                numberOfMetrics:
+                    type: integer
+                    description: number of available metrics
+                    format: int64
+                numberOfCatalogs:
+                    type: integer
+                    description: number of available catalogs
+                    format: int64
         CloudService_Tag:
             type: object
             properties:

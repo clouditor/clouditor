@@ -2778,6 +2778,264 @@ var _ interface {
 	ErrorName() string
 } = ListCloudServicesResponseValidationError{}
 
+// Validate checks the field values on CloudServiceStatisticsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudServiceStatisticsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudServiceStatisticsRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CloudServiceStatisticsRequestMultiError, or nil if none found.
+func (m *CloudServiceStatisticsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudServiceStatisticsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.CloudServiceId != nil {
+
+		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+			err = CloudServiceStatisticsRequestValidationError{
+				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return CloudServiceStatisticsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *CloudServiceStatisticsRequest) _validateUuid(uuid string) error {
+	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// CloudServiceStatisticsRequestMultiError is an error wrapping multiple
+// validation errors returned by CloudServiceStatisticsRequest.ValidateAll()
+// if the designated constraints aren't met.
+type CloudServiceStatisticsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudServiceStatisticsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudServiceStatisticsRequestMultiError) AllErrors() []error { return m }
+
+// CloudServiceStatisticsRequestValidationError is the validation error
+// returned by CloudServiceStatisticsRequest.Validate if the designated
+// constraints aren't met.
+type CloudServiceStatisticsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudServiceStatisticsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudServiceStatisticsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudServiceStatisticsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudServiceStatisticsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudServiceStatisticsRequestValidationError) ErrorName() string {
+	return "CloudServiceStatisticsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudServiceStatisticsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudServiceStatisticsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudServiceStatisticsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudServiceStatisticsRequestValidationError{}
+
+// Validate checks the field values on CloudServiceStatisticsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CloudServiceStatisticsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CloudServiceStatisticsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CloudServiceStatisticsResponseMultiError, or nil if none found.
+func (m *CloudServiceStatisticsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CloudServiceStatisticsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.NumberOfDiscoveredResources != nil {
+		// no validation rules for NumberOfDiscoveredResources
+	}
+
+	if m.NumberOfAssessmentResults != nil {
+		// no validation rules for NumberOfAssessmentResults
+	}
+
+	if m.NumberOfEvidences != nil {
+		// no validation rules for NumberOfEvidences
+	}
+
+	if m.NumberOfSelectedCatalogs != nil {
+		// no validation rules for NumberOfSelectedCatalogs
+	}
+
+	if m.NumberOfCloudServices != nil {
+		// no validation rules for NumberOfCloudServices
+	}
+
+	if m.NumberOfMetrics != nil {
+		// no validation rules for NumberOfMetrics
+	}
+
+	if m.NumberOfCatalogs != nil {
+		// no validation rules for NumberOfCatalogs
+	}
+
+	if len(errors) > 0 {
+		return CloudServiceStatisticsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CloudServiceStatisticsResponseMultiError is an error wrapping multiple
+// validation errors returned by CloudServiceStatisticsResponse.ValidateAll()
+// if the designated constraints aren't met.
+type CloudServiceStatisticsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CloudServiceStatisticsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CloudServiceStatisticsResponseMultiError) AllErrors() []error { return m }
+
+// CloudServiceStatisticsResponseValidationError is the validation error
+// returned by CloudServiceStatisticsResponse.Validate if the designated
+// constraints aren't met.
+type CloudServiceStatisticsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CloudServiceStatisticsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CloudServiceStatisticsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CloudServiceStatisticsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CloudServiceStatisticsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CloudServiceStatisticsResponseValidationError) ErrorName() string {
+	return "CloudServiceStatisticsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CloudServiceStatisticsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCloudServiceStatisticsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CloudServiceStatisticsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CloudServiceStatisticsResponseValidationError{}
+
 // Validate checks the field values on UpdateMetricConfigurationRequest with
 // the rules defined in the proto definition for this message. If any rules
 // are violated, the first error encountered is returned, or nil if there are
