@@ -217,6 +217,7 @@ func (s *Service) CloudServiceStatistics(ctx context.Context, req *orchestrator.
 
 	response = &orchestrator.CloudServiceStatisticsResponse{}
 
+	// fields to be set for a specific cloud service
 	if req.CloudServiceId != nil {
 		// Get number of selected catalogs
 		cloudService := new(orchestrator.CloudService)
@@ -253,7 +254,8 @@ func (s *Service) CloudServiceStatistics(ctx context.Context, req *orchestrator.
 		response.NumberOfAssessmentResults = &countAR
 	}
 
-	// Get number of cloud services
+	// general statistics information
+	// get number of cloud services
 	cloudServices := new(orchestrator.CloudService)
 	countCS, err := s.storage.Count(cloudServices)
 	if err != nil {
