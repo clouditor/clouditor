@@ -184,6 +184,14 @@ service Orchestrator {
     };
   }
 
+  // Retrieves target cloud service statistics
+  rpc GetCloudServiceStatistics(GetCloudServiceStatisticsRequest)
+      returns (GetCloudServiceStatisticsResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/cloud_services/statistics"
+    };
+  }
+
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
@@ -565,6 +573,24 @@ message ListCloudServicesRequest {
 message ListCloudServicesResponse {
   repeated CloudService services = 1;
   string next_page_token = 2;
+}
+
+message GetCloudServiceStatisticsRequest {
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+}
+
+message GetCloudServiceStatisticsResponse {
+  // number of discovered resources per cloud service
+  int64 number_of_discovered_resources = 1;
+  
+  // number of assessment results per cloud service
+  int64 number_of_assessment_results = 2;
+  
+  // number of evidences per cloud service
+  int64 number_of_evidences = 3;
+
+  // number of selected catalogs per cloud service
+  int64 number_of_selected_catalogs = 4;  
 }
 
 message UpdateMetricConfigurationRequest {
