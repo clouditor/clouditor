@@ -30,6 +30,9 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
@@ -133,6 +136,7 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 	}
 
 	response = new(orchestrator.CloudService)
+
 	err = s.storage.Get(response, "Id = ?", req.CloudServiceId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
@@ -207,6 +211,58 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
+}
+
+// GetCloudServiceStatistics implements method for OrchestratorServer interface for retrieving cloud service statistics
+func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrator.GetCloudServiceStatisticsRequest) (response *orchestrator.GetCloudServiceStatisticsResponse, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if this request has access to the cloud service according to our authorization strategy.
+	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
+		return nil, service.ErrPermissionDenied
+	}
+
+	response = &orchestrator.GetCloudServiceStatisticsResponse{}
+
+	// Get number of selected catalogs
+	cloudService := new(orchestrator.CloudService)
+	err = s.storage.Get(cloudService, "Id = ?", req.CloudServiceId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "service not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error getting cloud service: %s", err)
+	}
+	response.NumberOfSelectedCatalogs = int64(len(cloudService.CatalogsInScope))
+
+	// Get number of discovered resources
+	resources := new(discovery.Resource)
+	count, err := s.storage.Count(resources, "cloud_service_id = ?", req.CloudServiceId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error counting resources: %s", err)
+	}
+	response.NumberOfDiscoveredResources = count
+
+	// Get number of evidences
+	ev := new(evidence.Evidence)
+	count, err = s.storage.Count(ev, "cloud_service_id = ?", req.CloudServiceId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error counting evidences: %s", err)
+	}
+	response.NumberOfEvidences = count
+
+	// Get number of assessment results
+	res := new(assessment.AssessmentResult)
+	count, err = s.storage.Count(res, "cloud_service_id = ?", req.CloudServiceId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error counting assessment results: %s", err)
+	}
+	response.NumberOfAssessmentResults = count
+
+	return response, nil
 }
 
 // CreateDefaultTargetCloudService creates a new "default" target cloud services,
