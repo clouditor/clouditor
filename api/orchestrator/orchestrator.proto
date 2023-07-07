@@ -665,13 +665,13 @@ message CloudService {
   }
 
   // creation time of the cloud_service
-  google.protobuf.Timestamp created_at = 6 [
+  optional google.protobuf.Timestamp created_at = 6 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
     (validate.rules).timestamp.required = true
   ];
 
   // last update time of the cloud_service
-  google.protobuf.Timestamp updated_at = 7 [
+  optional google.protobuf.Timestamp updated_at = 7 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
     (validate.rules).timestamp.required = true
   ];
