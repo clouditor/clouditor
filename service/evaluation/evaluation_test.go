@@ -250,7 +250,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId:      util.Ref(testdata.MockSubControlID11),
 						SubControls:    util.Ref(testdata.MockControlID1),
@@ -276,7 +276,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId: util.Ref(testdata.MockSubControlID11),
 					},
@@ -284,7 +284,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					evaluationtest.MockEvaluationResult8,
 					evaluationtest.MockEvaluationResult22,
 				},
 			},
@@ -300,11 +299,10 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{LatestByResourceId: util.Ref(true)},
+				req: &evaluation.ListEvaluationResultsRequest{LatestByControlId: util.Ref(true)},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					evaluationtest.MockEvaluationResult7,
 					evaluationtest.MockEvaluationResult1,
 				},
 			},
@@ -329,7 +327,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
-					evaluationtest.MockEvaluationResult7,
 				},
 			},
 			wantErr: assert.NoError,
@@ -356,8 +353,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					evaluationtest.MockEvaluationResult2,
 					evaluationtest.MockEvaluationResult22,
 					evaluationtest.MockEvaluationResult3,
-					evaluationtest.MockEvaluationResult7,
-					evaluationtest.MockEvaluationResult8,
 				},
 			},
 			wantErr: assert.NoError,
@@ -438,8 +433,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult6,
-					evaluationtest.MockEvaluationResult7,
-					evaluationtest.MockEvaluationResult8,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1506,7 +1499,7 @@ func TestService_evaluateControl(t *testing.T) {
 
 				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, 7, len(evalResults.Results))
+				assert.Equal(t, 6, len(evalResults.Results))
 
 				createdResult := evalResults.Results[len(evalResults.Results)-1]
 
@@ -1813,89 +1806,6 @@ func Test_getSchedulerTag(t *testing.T) {
 			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_getEvaluationResultMap(t *testing.T) {
-	type args struct {
-		results []*evaluation.EvaluationResult
-	}
-	tests := []struct {
-		name string
-		args args
-		want assert.ValueAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			args: args{results: []*evaluation.EvaluationResult{}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				return assert.Empty(t, gotResults)
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				results: evaluationtest.MockEvaluationResults,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				wantResults := map[string][]*evaluation.EvaluationResult{
-					testdata.MockResourceID1: {
-						evaluationtest.MockEvaluationResult6,
-						evaluationtest.MockEvaluationResult5,
-						evaluationtest.MockEvaluationResult4,
-						evaluationtest.MockEvaluationResult3,
-						evaluationtest.MockEvaluationResult2,
-						evaluationtest.MockEvaluationResult22,
-						evaluationtest.MockEvaluationResult1,
-					},
-					testdata.MockResourceID2: {
-						evaluationtest.MockEvaluationResult8,
-						evaluationtest.MockEvaluationResult7,
-					},
-				}
-
-				for _, r := range gotResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-				for _, r := range wantResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-
-				assert.Equal(t, len(gotResults), len(wantResults))
-
-				for key, results := range gotResults {
-					if !assert.Equal(t, len(results), len(wantResults[key])) {
-						return false
-					}
-					for i := range results {
-						reflect.DeepEqual(results[i], wantResults[key][i])
-					}
-				}
-
-				return true
-			},
-			//
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := createEvaluationResultMap(tt.args.results)
-
-			tt.want(t, got)
 		})
 	}
 }

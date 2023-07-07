@@ -588,8 +588,8 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	}
 
-	if m.LatestByResourceId != nil {
-		// no validation rules for LatestByResourceId
+	if m.LatestByControlId != nil {
+		// no validation rules for LatestByControlId
 	}
 
 	if len(errors) > 0 {
@@ -899,17 +899,6 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetResourceId()) < 1 {
-		err := EvaluationResultValidationError{
-			field:  "ResourceId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if _, ok := EvaluationStatus_name[int32(m.GetStatus())]; !ok {
 		err := EvaluationResultValidationError{
 			field:  "Status",
@@ -1080,6 +1069,22 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
 			err = ListEvaluationResultsRequest_FilterValidationError{
 				field:  "CloudServiceId",
+				reason: "value must be a valid UUID",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.CatalogId != nil {
+
+		if err := m._validateUuid(m.GetCatalogId()); err != nil {
+			err = ListEvaluationResultsRequest_FilterValidationError{
+				field:  "CatalogId",
 				reason: "value must be a valid UUID",
 				cause:  err,
 			}
