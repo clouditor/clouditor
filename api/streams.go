@@ -141,6 +141,13 @@ func (s *StreamsOf[StreamType, MsgType]) GetStream(target string, component stri
 	return c, nil
 }
 
+// CloseAll closes all streams
+func (s *StreamsOf[StreamType, MsgType]) CloseAll() {
+	for _, channel := range s.channels {
+		_ = channel.stream.CloseSend()
+	}
+}
+
 // addStream stores a stream to the given component and starts a goroutine for sending messages from the channel to the given component
 func (s *StreamsOf[StreamType, MsgType]) addStream(target string, component string, init InitFuncOf[StreamType], opts ...grpc.DialOption) (c *StreamChannelOf[StreamType, MsgType], err error) {
 	// We need an init func
