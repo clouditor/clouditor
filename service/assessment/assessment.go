@@ -509,6 +509,11 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	return cache.MetricConfiguration, nil
 }
 
+func (svc *Service) Shutdown() {
+	svc.evidenceStoreStreams.CloseAll()
+	svc.orchestratorStreams.CloseAll()
+}
+
 // recvEventsLoop continuously tries to receive events on the metricEventStream
 func (svc *Service) recvEventsLoop() {
 	for {

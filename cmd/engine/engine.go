@@ -32,7 +32,6 @@ import (
 	"os"
 	"strings"
 
-	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
@@ -113,9 +112,9 @@ const (
 
 var (
 	srv                  *server.Server
-	discoveryService     discovery.DiscoveryServer
+	discoveryService     *service_discovery.Service
 	orchestratorService  *service_orchestrator.Service
-	assessmentService    assessment.AssessmentServer
+	assessmentService    *service_assessment.Service
 	evidenceStoreService evidence.EvidenceStoreServer
 	evaluationService    evaluation.EvaluationServer
 	db                   persistence.Storage
@@ -390,8 +389,11 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return err
 	}
 
+	assessmentService.Shutdown()
+	discoveryService.Shutdown()
+
 	log.Infof("Stopping gRPC endpoint")
-	srv.GracefulStop()
+	srv.Stop()
 
 	return nil
 }
