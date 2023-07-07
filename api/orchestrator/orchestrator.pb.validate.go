@@ -2778,52 +2778,49 @@ var _ interface {
 	ErrorName() string
 } = ListCloudServicesResponseValidationError{}
 
-// Validate checks the field values on CloudServiceStatisticsRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CloudServiceStatisticsRequest) Validate() error {
+// Validate checks the field values on GetCloudServiceStatisticsRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetCloudServiceStatisticsRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CloudServiceStatisticsRequest with
+// ValidateAll checks the field values on GetCloudServiceStatisticsRequest with
 // the rules defined in the proto definition for this message. If any rules
 // are violated, the result is a list of violation errors wrapped in
-// CloudServiceStatisticsRequestMultiError, or nil if none found.
-func (m *CloudServiceStatisticsRequest) ValidateAll() error {
+// GetCloudServiceStatisticsRequestMultiError, or nil if none found.
+func (m *GetCloudServiceStatisticsRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CloudServiceStatisticsRequest) validate(all bool) error {
+func (m *GetCloudServiceStatisticsRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if m.CloudServiceId != nil {
-
-		if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
-			err = CloudServiceStatisticsRequestValidationError{
-				field:  "CloudServiceId",
-				reason: "value must be a valid UUID",
-				cause:  err,
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
+	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
+		err = GetCloudServiceStatisticsRequestValidationError{
+			field:  "CloudServiceId",
+			reason: "value must be a valid UUID",
+			cause:  err,
 		}
-
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {
-		return CloudServiceStatisticsRequestMultiError(errors)
+		return GetCloudServiceStatisticsRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-func (m *CloudServiceStatisticsRequest) _validateUuid(uuid string) error {
+func (m *GetCloudServiceStatisticsRequest) _validateUuid(uuid string) error {
 	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
 		return errors.New("invalid uuid format")
 	}
@@ -2831,13 +2828,14 @@ func (m *CloudServiceStatisticsRequest) _validateUuid(uuid string) error {
 	return nil
 }
 
-// CloudServiceStatisticsRequestMultiError is an error wrapping multiple
-// validation errors returned by CloudServiceStatisticsRequest.ValidateAll()
-// if the designated constraints aren't met.
-type CloudServiceStatisticsRequestMultiError []error
+// GetCloudServiceStatisticsRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// GetCloudServiceStatisticsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetCloudServiceStatisticsRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CloudServiceStatisticsRequestMultiError) Error() string {
+func (m GetCloudServiceStatisticsRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2846,12 +2844,12 @@ func (m CloudServiceStatisticsRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CloudServiceStatisticsRequestMultiError) AllErrors() []error { return m }
+func (m GetCloudServiceStatisticsRequestMultiError) AllErrors() []error { return m }
 
-// CloudServiceStatisticsRequestValidationError is the validation error
-// returned by CloudServiceStatisticsRequest.Validate if the designated
+// GetCloudServiceStatisticsRequestValidationError is the validation error
+// returned by GetCloudServiceStatisticsRequest.Validate if the designated
 // constraints aren't met.
-type CloudServiceStatisticsRequestValidationError struct {
+type GetCloudServiceStatisticsRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2859,24 +2857,24 @@ type CloudServiceStatisticsRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e CloudServiceStatisticsRequestValidationError) Field() string { return e.field }
+func (e GetCloudServiceStatisticsRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CloudServiceStatisticsRequestValidationError) Reason() string { return e.reason }
+func (e GetCloudServiceStatisticsRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CloudServiceStatisticsRequestValidationError) Cause() error { return e.cause }
+func (e GetCloudServiceStatisticsRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CloudServiceStatisticsRequestValidationError) Key() bool { return e.key }
+func (e GetCloudServiceStatisticsRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CloudServiceStatisticsRequestValidationError) ErrorName() string {
-	return "CloudServiceStatisticsRequestValidationError"
+func (e GetCloudServiceStatisticsRequestValidationError) ErrorName() string {
+	return "GetCloudServiceStatisticsRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CloudServiceStatisticsRequestValidationError) Error() string {
+func (e GetCloudServiceStatisticsRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -2888,14 +2886,14 @@ func (e CloudServiceStatisticsRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCloudServiceStatisticsRequest.%s: %s%s",
+		"invalid %sGetCloudServiceStatisticsRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CloudServiceStatisticsRequestValidationError{}
+var _ error = GetCloudServiceStatisticsRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -2903,72 +2901,54 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CloudServiceStatisticsRequestValidationError{}
+} = GetCloudServiceStatisticsRequestValidationError{}
 
-// Validate checks the field values on CloudServiceStatisticsResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CloudServiceStatisticsResponse) Validate() error {
+// Validate checks the field values on GetCloudServiceStatisticsResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *GetCloudServiceStatisticsResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on CloudServiceStatisticsResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// CloudServiceStatisticsResponseMultiError, or nil if none found.
-func (m *CloudServiceStatisticsResponse) ValidateAll() error {
+// ValidateAll checks the field values on GetCloudServiceStatisticsResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// GetCloudServiceStatisticsResponseMultiError, or nil if none found.
+func (m *GetCloudServiceStatisticsResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *CloudServiceStatisticsResponse) validate(all bool) error {
+func (m *GetCloudServiceStatisticsResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if m.NumberOfDiscoveredResources != nil {
-		// no validation rules for NumberOfDiscoveredResources
-	}
+	// no validation rules for NumberOfDiscoveredResources
 
-	if m.NumberOfAssessmentResults != nil {
-		// no validation rules for NumberOfAssessmentResults
-	}
+	// no validation rules for NumberOfAssessmentResults
 
-	if m.NumberOfEvidences != nil {
-		// no validation rules for NumberOfEvidences
-	}
+	// no validation rules for NumberOfEvidences
 
-	if m.NumberOfSelectedCatalogs != nil {
-		// no validation rules for NumberOfSelectedCatalogs
-	}
-
-	if m.NumberOfCloudServices != nil {
-		// no validation rules for NumberOfCloudServices
-	}
-
-	if m.NumberOfMetrics != nil {
-		// no validation rules for NumberOfMetrics
-	}
-
-	if m.NumberOfCatalogs != nil {
-		// no validation rules for NumberOfCatalogs
-	}
+	// no validation rules for NumberOfSelectedCatalogs
 
 	if len(errors) > 0 {
-		return CloudServiceStatisticsResponseMultiError(errors)
+		return GetCloudServiceStatisticsResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// CloudServiceStatisticsResponseMultiError is an error wrapping multiple
-// validation errors returned by CloudServiceStatisticsResponse.ValidateAll()
-// if the designated constraints aren't met.
-type CloudServiceStatisticsResponseMultiError []error
+// GetCloudServiceStatisticsResponseMultiError is an error wrapping multiple
+// validation errors returned by
+// GetCloudServiceStatisticsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetCloudServiceStatisticsResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m CloudServiceStatisticsResponseMultiError) Error() string {
+func (m GetCloudServiceStatisticsResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -2977,12 +2957,12 @@ func (m CloudServiceStatisticsResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m CloudServiceStatisticsResponseMultiError) AllErrors() []error { return m }
+func (m GetCloudServiceStatisticsResponseMultiError) AllErrors() []error { return m }
 
-// CloudServiceStatisticsResponseValidationError is the validation error
-// returned by CloudServiceStatisticsResponse.Validate if the designated
+// GetCloudServiceStatisticsResponseValidationError is the validation error
+// returned by GetCloudServiceStatisticsResponse.Validate if the designated
 // constraints aren't met.
-type CloudServiceStatisticsResponseValidationError struct {
+type GetCloudServiceStatisticsResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -2990,24 +2970,24 @@ type CloudServiceStatisticsResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e CloudServiceStatisticsResponseValidationError) Field() string { return e.field }
+func (e GetCloudServiceStatisticsResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e CloudServiceStatisticsResponseValidationError) Reason() string { return e.reason }
+func (e GetCloudServiceStatisticsResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e CloudServiceStatisticsResponseValidationError) Cause() error { return e.cause }
+func (e GetCloudServiceStatisticsResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e CloudServiceStatisticsResponseValidationError) Key() bool { return e.key }
+func (e GetCloudServiceStatisticsResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e CloudServiceStatisticsResponseValidationError) ErrorName() string {
-	return "CloudServiceStatisticsResponseValidationError"
+func (e GetCloudServiceStatisticsResponseValidationError) ErrorName() string {
+	return "GetCloudServiceStatisticsResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e CloudServiceStatisticsResponseValidationError) Error() string {
+func (e GetCloudServiceStatisticsResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -3019,14 +2999,14 @@ func (e CloudServiceStatisticsResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sCloudServiceStatisticsResponse.%s: %s%s",
+		"invalid %sGetCloudServiceStatisticsResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = CloudServiceStatisticsResponseValidationError{}
+var _ error = GetCloudServiceStatisticsResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -3034,7 +3014,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = CloudServiceStatisticsResponseValidationError{}
+} = GetCloudServiceStatisticsResponseValidationError{}
 
 // Validate checks the field values on UpdateMetricConfigurationRequest with
 // the rules defined in the proto definition for this message. If any rules

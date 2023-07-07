@@ -710,7 +710,7 @@ paths:
             tags:
                 - Orchestrator
             description: Retrieves target cloud service statistics
-            operationId: Orchestrator_CloudServiceStatistics
+            operationId: Orchestrator_GetCloudServiceStatistics
             parameters:
                 - name: cloudServiceId
                   in: query
@@ -722,7 +722,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CloudServiceStatisticsResponse'
+                                $ref: '#/components/schemas/GetCloudServiceStatisticsResponse'
                 default:
                     description: Default error response
                     content:
@@ -1625,37 +1625,6 @@ components:
                     items:
                         $ref: '#/components/schemas/CloudService_Tag'
                     description: a tag list of key/value pairs, e.g., env:prod
-        CloudServiceStatisticsResponse:
-            type: object
-            properties:
-                numberOfDiscoveredResources:
-                    type: integer
-                    description: number of discovered resources per cloud services
-                    format: int64
-                numberOfAssessmentResults:
-                    type: integer
-                    description: number of assessment results per cloud services
-                    format: int64
-                numberOfEvidences:
-                    type: integer
-                    description: number of evidences per cloud services
-                    format: int64
-                numberOfSelectedCatalogs:
-                    type: integer
-                    description: number of selected catalogs per cloud services
-                    format: int64
-                numberOfCloudServices:
-                    type: integer
-                    description: number of available cloud services
-                    format: int64
-                numberOfMetrics:
-                    type: integer
-                    description: number of available metrics
-                    format: int64
-                numberOfCatalogs:
-                    type: integer
-                    description: number of available catalogs
-                    format: int64
         CloudService_Tag:
             type: object
             properties:
@@ -1730,6 +1699,25 @@ components:
                     type: string
                 version:
                     type: string
+        GetCloudServiceStatisticsResponse:
+            type: object
+            properties:
+                numberOfDiscoveredResources:
+                    type: integer
+                    description: number of discovered resources per cloud service
+                    format: int64
+                numberOfAssessmentResults:
+                    type: integer
+                    description: number of assessment results per cloud service
+                    format: int64
+                numberOfEvidences:
+                    type: integer
+                    description: number of evidences per cloud service
+                    format: int64
+                numberOfSelectedCatalogs:
+                    type: integer
+                    description: number of selected catalogs per cloud service
+                    format: int64
         GoogleProtobufAny:
             type: object
             properties:

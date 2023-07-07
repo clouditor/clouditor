@@ -185,8 +185,8 @@ service Orchestrator {
   }
 
   // Retrieves target cloud service statistics
-  rpc CloudServiceStatistics(CloudServiceStatisticsRequest)
-      returns (CloudServiceStatisticsResponse) {
+  rpc GetCloudServiceStatistics(GetCloudServiceStatisticsRequest)
+      returns (GetCloudServiceStatisticsResponse) {
     option (google.api.http) = {
       get : "/v1/orchestrator/cloud_services/statistics"
     };
@@ -575,32 +575,22 @@ message ListCloudServicesResponse {
   string next_page_token = 2;
 }
 
-message CloudServiceStatisticsRequest {
-  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+message GetCloudServiceStatisticsRequest {
+  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
 }
 
-message CloudServiceStatisticsResponse {
-  // number of discovered resources per cloud services 
-  optional int64 number_of_discovered_resources = 1;
+message GetCloudServiceStatisticsResponse {
+  // number of discovered resources per cloud service
+  int64 number_of_discovered_resources = 1;
   
-  // number of assessment results per cloud services 
-  optional int64 number_of_assessment_results = 2;
+  // number of assessment results per cloud service
+  int64 number_of_assessment_results = 2;
   
-  // number of evidences per cloud services 
-  optional int64 number_of_evidences = 3;
+  // number of evidences per cloud service
+  int64 number_of_evidences = 3;
 
-  // number of selected catalogs per cloud services 
-  optional int64 number_of_selected_catalogs = 4;
-
-  // number of available cloud services 
-  optional int64 number_of_cloud_services = 5;
-  
-  // number of available metrics 
-  optional int64 number_of_metrics = 6;
-
-  // number of available catalogs
-  optional int64 number_of_catalogs = 7;
-  
+  // number of selected catalogs per cloud service
+  int64 number_of_selected_catalogs = 4;  
 }
 
 message UpdateMetricConfigurationRequest {
