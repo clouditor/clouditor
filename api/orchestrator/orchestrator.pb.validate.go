@@ -4402,33 +4402,6 @@ func (m *Catalog) validate(all bool) error {
 
 	// no validation rules for AllInScope
 
-	if len(m.GetAssuranceLevels()) < 3 {
-		err := CatalogValidationError{
-			field:  "AssuranceLevels",
-			reason: "value must contain at least 3 item(s)",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	for idx, item := range m.GetAssuranceLevels() {
-		_, _ = idx, item
-
-		if !_Catalog_AssuranceLevels_Pattern.MatchString(item) {
-			err := CatalogValidationError{
-				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
-				reason: "value does not match regex pattern \"^(|basic|substantial|high|low|medium)$\"",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-	}
-
 	// no validation rules for ShortName
 
 	if m.Metadata != nil {
@@ -4540,8 +4513,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CatalogValidationError{}
-
-var _Catalog_AssuranceLevels_Pattern = regexp.MustCompile("^(|basic|substantial|high|low|medium)$")
 
 // Validate checks the field values on Category with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

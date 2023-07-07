@@ -701,12 +701,7 @@ message Catalog {
   // A list of the assurance levels, e.g., basic, substantial and high for the
   // EUCS catalog.
   repeated string assurance_levels = 7 [
-    (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated = {
-      min_items : 3
-      items : {string : {pattern : "^(|basic|substantial|high|low|medium)$"}}
-    }
-  ];
+    (tagger.tags) = "gorm:\"serializer:json\"" ];
 
   // Catalogs short name, e.g. EUCS
   string short_name = 9;
