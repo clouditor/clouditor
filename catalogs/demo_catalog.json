@@ -71,7 +71,7 @@
                 "controls": [
                     {
                         "id": "SysHard-01",
-                        "name": "Transport",
+                        "name": "Harden transmissions",
                         "description": "The CSP should encrypt all data transmissions",
                         "controls": [
                             {
@@ -239,6 +239,39 @@
                                 "assurance_level": "substantial"
                             }
                         ]
+                    },
+                    {
+                        "id": "SysHard-07",
+                        "name": "Harden storage resources",
+                        "description": "The CSP should provide state-of-the art techniques to ecnrypt storage data.",
+                        "controls": [
+                            {
+                                "id": "SysHard-07.1",
+                                "name": "The CSP shall enable at rest enctyption.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionEnabled"
+                                    }
+                                ],
+                                "parent_control_id": "SysHard-07",
+                                "parent_control_category_name": "System Hardening",
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "SysHard-07.2",
+                                "name": "The CSP shall use state-of-the-art encryption algorithms for data at rest.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionAlgorithm"
+                                    }
+                                ],
+                                "parent_control_id": "SysHard-07",
+                                "parent_control_category_name": "System Hardening",
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
+                            }
+                        ]
                     }
                 ]
             },
@@ -372,6 +405,46 @@
                                 ],
                                 "parent_control_id": "IdSec-02",
                                 "parent_control_category_name": "Identity Security",
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Data Security",
+                "description": "Secure all stored data.",
+                "controls": [
+                    {
+                        "id": "DataSec-01",
+                        "name": "Data Encryption",
+                        "description": "The CSP should check data at rest.",
+                        "controls": [
+                            {
+                                "id": "DataSec-01.1",
+                                "name": "The CSP shall check if data encryption is enabled.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionEnabled"
+                                    }
+                                ],
+                                "parent_control_id": "DataSec-01",
+                                "parent_control_category_name": "Data Security",
+                                "parent_control_category_catalog_id": "DemoCatalog",
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "DataSec-01.2",
+                                "name": "The CSP shall check if state-of-the-art algorithms are used for data at rest.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionAlgorithm"
+                                    }
+
+                                ],
+                                "parent_control_id": "DataSec-01",
+                                "parent_control_category_name": "Data Security",
                                 "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
