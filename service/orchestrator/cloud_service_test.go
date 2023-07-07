@@ -593,7 +593,13 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 						Id:          testdata.MockCloudServiceID1,
 						Name:        testdata.MockCloudServiceName1,
 						Description: testdata.MockCloudServiceDescription1,
-						// CatalogsInScope: make([]*orchestrator.Catalog, 2),
+						CatalogsInScope: []*orchestrator.Catalog{
+							{
+								Id:          testdata.MockCatalogID,
+								Name:        testdata.MockCatalogName,
+								Description: testdata.MockCatalogDescription,
+							},
+						},
 					})
 					_ = s.Create(&orchestrator.CloudService{
 						Id:   testdata.MockCloudServiceID2,
@@ -640,7 +646,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 				NumberOfDiscoveredResources: 1,
 				NumberOfAssessmentResults:   2,
 				NumberOfEvidences:           1,
-				NumberOfSelectedCatalogs:    0,
+				NumberOfSelectedCatalogs:    1,
 			},
 			wantErr: assert.NoError,
 		},
