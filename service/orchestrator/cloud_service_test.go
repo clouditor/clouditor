@@ -41,6 +41,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestService_RegisterCloudService(t *testing.T) {
@@ -213,8 +214,10 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "permission granted",
 			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.CloudService{
-					Id:   testdata.MockCloudServiceID1,
-					Name: "service1",
+					Id:        testdata.MockCloudServiceID1,
+					Name:      "service1",
+					CreatedAt: timestamppb.Now(),
+					UpdatedAt: timestamppb.Now(),
 				})
 			}))),
 			ctx: context.TODO(),
@@ -239,6 +242,11 @@ func TestService_GetCloudService(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
+				// Check if timestamps are set and then delete for further checking
+				assert.NotEmpty(t, res.CreatedAt)
+				assert.NotEmpty(t, res.UpdatedAt)
+				res.CreatedAt = nil
+				res.UpdatedAt = nil
 			}
 
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
@@ -348,6 +356,12 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	// 1st case: No records for cloud services -> Default target service is created
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
+	// Check timestamps and delete it for further tests
+	assert.NotEmpty(t, cloudServiceResponse.CreatedAt)
+	assert.NotEmpty(t, cloudServiceResponse.UpdatedAt)
+	cloudServiceResponse.CreatedAt = nil
+	cloudServiceResponse.UpdatedAt = nil
+
 	assert.Equal(t, &orchestrator.CloudService{
 		Id:          DefaultTargetCloudServiceId,
 		Name:        DefaultTargetCloudServiceName,
