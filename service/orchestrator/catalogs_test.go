@@ -512,35 +512,46 @@ func TestService_GetControl(t *testing.T) {
 
 func TestService_ListControls(t *testing.T) {
 	var (
-		listControlsResponse *orchestrator.ListControlsResponse
-		err                  error
+		res *orchestrator.ListControlsResponse
+		err error
+		c   *orchestrator.Control
+		sub *orchestrator.Control
 	)
 
 	orchestratorService := NewService(WithCatalogsFolder("internal/testdata/empty_catalogs"))
 	// 1st case: No Controls stored
-	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
+	res, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listControlsResponse.Controls)
-	assert.Empty(t, listControlsResponse.Controls)
+	assert.NotNil(t, res.Controls)
+	assert.Empty(t, res.Controls)
 
 	// 2nd case: 3 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
 	orchestratorService = NewService(WithCatalogsFolder("internal/testdata/catalogs"))
-	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
+	res, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listControlsResponse.Controls)
-	assert.NotEmpty(t, listControlsResponse.Controls)
+	assert.NotNil(t, res.Controls)
+	assert.NotEmpty(t, res.Controls)
 	// there are 3 default controls
-	assert.Equal(t, 3, len(listControlsResponse.Controls))
+	assert.Equal(t, 3, len(res.Controls))
 
 	// 3th case: List controls for a specific catalog and category.
-	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+	res, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
 		CatalogId:    "TestCatalog",
 		CategoryName: "Secure Category",
 	})
 	assert.NoError(t, err)
-	assert.NotNil(t, listControlsResponse.Controls)
-	assert.NotEmpty(t, listControlsResponse.Controls)
-	assert.Equal(t, 3, len(listControlsResponse.Controls))
+	assert.NotNil(t, res.Controls)
+	assert.NotEmpty(t, res.Controls)
+	assert.Equal(t, 3, len(res.Controls))
+
+	// Make sure, that control parent information is set correctly
+	c = res.Controls[0]
+	assert.Equal(t, 2, len(c.Controls))
+
+	sub = c.Controls[0]
+	assert.Equal(t, c.Id, util.Deref(sub.ParentControlId))
+	assert.Equal(t, c.CategoryName, util.Deref(sub.ParentControlCategoryName))
+	assert.Equal(t, c.CategoryCatalogId, util.Deref(sub.ParentControlCategoryCatalogId))
 }
 
 func TestService_loadCatalogs(t *testing.T) {

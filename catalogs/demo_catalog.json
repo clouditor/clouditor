@@ -30,9 +30,6 @@
                                         "id": "TransportEncryptionProtocol"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -43,9 +40,6 @@
                                         "id": "TransportEncryptionEnforced"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             },
                             {
@@ -56,9 +50,6 @@
                                         "id": "TransportEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -82,9 +73,6 @@
                                         "id": "TransportEncryptionProtocol"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -95,9 +83,6 @@
                                         "id": "TransportEncryptionEnforced"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             },
                             {
@@ -108,9 +93,6 @@
                                         "id": "TransportEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -128,9 +110,6 @@
                                         "id": "WebApplicationFirewallEnabled"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-02",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -144,9 +123,6 @@
                                         "id": "L3FirewallRestrictedPorts"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-02",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             }
                         ]
@@ -167,9 +143,6 @@
                                         "id": "MalwareProtectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-03",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -190,9 +163,6 @@
                                         "id": "AutomaticUpdatesInterval"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-04",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -213,9 +183,6 @@
                                         "id": "AnomalyDetectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-05",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             }
                         ]
@@ -233,9 +200,6 @@
                                         "id": "RuntimeVersion"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-06",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -243,19 +207,16 @@
                     {
                         "id": "SysHard-07",
                         "name": "Harden storage resources",
-                        "description": "The CSP should provide state-of-the art techniques to ecnrypt storage data.",
+                        "description": "The CSP should provide state-of-the art techniques to encrypt storage data.",
                         "controls": [
                             {
                                 "id": "SysHard-07.1",
-                                "name": "The CSP shall enable at rest enctyption.",
+                                "name": "The CSP shall enable at rest encryption.",
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-07",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -266,9 +227,6 @@
                                         "id": "AtRestEncryptionAlgorithm"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-07",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -298,9 +256,6 @@
                                         "id": "BootLoggingRetention"
                                     }
                                 ],
-                                "parent_control_id": "Log-01",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -312,7 +267,7 @@
                         "controls": [
                             {
                                 "id": "Log-02.1",
-                                "name": "The CSP shall log all activies in a dedicated storage and retain the data for a specific time.",
+                                "name": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "OSLoggingEnabled"
@@ -324,9 +279,6 @@
                                         "id": "OSLoggingRetention"
                                     }
                                 ],
-                                "parent_control_id": "Log-02",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             }
                         ]
@@ -344,9 +296,6 @@
                                         "id": "MalwareProtectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "Log-03",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -357,9 +306,6 @@
                                         "id": "AnomalyDetectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "Log-03",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -383,9 +329,6 @@
                                         "id": "IdentityRecentActivity"
                                     }
                                 ],
-                                "parent_control_id": "IdSec-01",
-                                "parent_control_category_name": "Identity Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "high"
                             }
                         ]
@@ -403,9 +346,6 @@
                                         "id": "IdentityPasswordPolicy"
                                     }
                                 ],
-                                "parent_control_id": "IdSec-02",
-                                "parent_control_category_name": "Identity Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
@@ -429,9 +369,6 @@
                                         "id": "AtRestEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "DataSec-01",
-                                "parent_control_category_name": "Data Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             },
                             {
@@ -441,11 +378,7 @@
                                     {
                                         "id": "AtRestEncryptionAlgorithm"
                                     }
-
                                 ],
-                                "parent_control_id": "DataSec-01",
-                                "parent_control_category_name": "Data Security",
-                                "parent_control_category_catalog_id": "DemoCatalog",
                                 "assurance_level": "substantial"
                             }
                         ]
