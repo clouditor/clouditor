@@ -356,7 +356,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		}
 
 		if req.Filter.CatalogId != nil {
-			query = append(query, "catalog_id = ?")
+			query = append(query, "control_catalog_id = ?")
 			args = append(args, req.Filter.GetCatalogId())
 		}
 
@@ -399,11 +399,11 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		// Execute the raw SQL statement
 		err = svc.storage.Raw(&res.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
-				SELECT *, ROW_NUMBER() OVER (PARTITION BY control_catalog_id %s ORDER BY timestamp DESC) AS row_number
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY control_id %s ORDER BY timestamp DESC) AS row_number
 				FROM evaluation_results
 				%s
 		  	)
-		  	SELECT * FROM sorted_results WHERE row_number = 1;`, p, where), args...)
+		  	SELECT * FROM sorted_results WHERE row_number = 1 ORDER BY control_catalog_id, control_id;`, p, where), args...)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "database error: %v", err)
 		}
@@ -459,7 +459,7 @@ func (svc *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator
 			Every(interval).
 			Minute().
 			Tag(jobTag).
-			Do(svc.evaluateSubcontrol, toe, c.GetCategoryName(), c.GetId(), parentJobTag)
+			Do(svc.evaluateSubcontrol, toe, c, parentJobTag)
 	}
 	if err != nil {
 		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled: %w", toe.GetCloudServiceId(), c.GetId(), err)
@@ -542,7 +542,7 @@ func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, catego
 }
 
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
-func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentJobTag string) {
+func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, control *orchestrator.Control, parentJobTag string) {
 	var (
 		eval                          *evaluation.EvaluationResult
 		err                           error
@@ -551,15 +551,15 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 		nonCompliantAssessmentResults []string
 	)
 
-	if toe == nil || categoryName == "" || controlId == "" || parentJobTag == "" {
+	if toe == nil || control == nil || parentJobTag == "" {
 		log.Errorf("input is missing")
 		return
 	}
 
 	// Get metrics from control and sub-controls
-	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), categoryName, controlId)
+	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, toe.GetCloudServiceId(), err)
+		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, toe.GetCloudServiceId(), err)
 		// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
 		if parentJobTag != "" && svc.wg[parentJobTag] != nil {
 			svc.wg[parentJobTag].Done()
@@ -625,8 +625,9 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 	eval = &evaluation.EvaluationResult{
 		Id:                         uuid.NewString(),
 		Timestamp:                  timestamppb.Now(),
-		ControlCategoryName:        categoryName,
-		ControlId:                  controlId,
+		ControlCategoryName:        control.CategoryName,
+		ControlId:                  control.Id,
+		ParentControlId:            control.ParentControlId,
 		CloudServiceId:             toe.GetCloudServiceId(),
 		ControlCatalogId:           toe.GetCatalogId(),
 		Status:                     status,
@@ -635,10 +636,10 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 
 	err = svc.storage.Create(eval)
 	if err != nil {
-		log.Errorf("error storing evaluation result for control ID '%s' in database: %v", controlId, err)
+		log.Errorf("error storing evaluation result for control ID '%s' in database: %v", control.Id, err)
 	}
 
-	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), eval.Id)
+	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", control.Id, toe.GetCloudServiceId(), eval.Id)
 
 	// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be
 	// evaluated when all sub-controls are evaluated.

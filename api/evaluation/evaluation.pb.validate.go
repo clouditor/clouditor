@@ -955,6 +955,10 @@ func (m *EvaluationResult) validate(all bool) error {
 
 	}
 
+	if m.ParentControlId != nil {
+		// no validation rules for ParentControlId
+	}
+
 	if len(errors) > 0 {
 		return EvaluationResultMultiError(errors)
 	}
@@ -1082,11 +1086,10 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 
 	if m.CatalogId != nil {
 
-		if err := m._validateUuid(m.GetCatalogId()); err != nil {
-			err = ListEvaluationResultsRequest_FilterValidationError{
+		if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+			err := ListEvaluationResultsRequest_FilterValidationError{
 				field:  "CatalogId",
-				reason: "value must be a valid UUID",
-				cause:  err,
+				reason: "value length must be at least 1 runes",
 			}
 			if !all {
 				return err

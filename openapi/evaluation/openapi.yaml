@@ -162,6 +162,9 @@ components:
                 controlCatalogId:
                     type: string
                     description: The catalog the evaluated control belongs to
+                parentControlId:
+                    type: string
+                    description: Optionally, specifies the parent control ID, if this is a sub-control
                 status:
                     enum:
                         - EVALUATION_STATUS_UNSPECIFIED

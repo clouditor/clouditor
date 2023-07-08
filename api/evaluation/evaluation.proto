@@ -91,7 +91,7 @@ message ListEvaluationResultsRequest {
         [ (validate.rules).string.uuid = true ];
 
     // Optional. Lists only evaluation results for a specific catalog.
-    optional string catalog_id = 2 [ (validate.rules).string.uuid = true ];
+    optional string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
 
     // Optional. Lists only evaluation results for a specific control id.
     optional string control_id = 3 [ (validate.rules).string.min_len = 1 ];
@@ -137,6 +137,9 @@ message EvaluationResult {
 
   // The catalog the evaluated control belongs to
   string control_catalog_id = 5 [ (validate.rules).string.min_len = 1 ];
+
+  // Optionally, specifies the parent control ID, if this is a sub-control
+  optional string parent_control_id = 6;
 
   // Evaluation status
   EvaluationStatus status = 7 [ (validate.rules).enum.defined_only = true ];
