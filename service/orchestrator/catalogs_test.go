@@ -233,7 +233,7 @@ func TestService_ListCatalogs(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService(WithCatalogsFolder("catalogs"))
+	orchestratorService := NewService(WithCatalogsFolder("internal/testdata/catalogs"))
 	// 1st case: Default catalogs stored
 	listCatalogsResponse, err = orchestratorService.ListCatalogs(context.Background(), &orchestrator.ListCatalogsRequest{})
 	assert.NoError(t, err)
@@ -292,7 +292,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 		err                  error
 		listCatalogsResponse *orchestrator.ListCatalogsResponse
 	)
-	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs/emptyTestFolder"))
+	orchestratorService := NewService(WithCatalogsFolder("internal/testdata/empty_catalogs"))
 
 	// 1st case: Empty catalog ID error
 	_, err = orchestratorService.RemoveCatalog(context.Background(), &orchestrator.RemoveCatalogRequest{CatalogId: ""})
@@ -516,31 +516,31 @@ func TestService_ListControls(t *testing.T) {
 		err                  error
 	)
 
-	orchestratorService := NewService(WithCatalogsFolder("internal/testcatalogs/emptyTestFolder"))
+	orchestratorService := NewService(WithCatalogsFolder("internal/testdata/empty_catalogs"))
 	// 1st case: No Controls stored
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.Empty(t, listControlsResponse.Controls)
 
-	// 2nd case: 30 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
-	orchestratorService = NewService(WithCatalogsFolder("catalogs"))
+	// 2nd case: 3 controls stored; note that we do not have to create an extra catalog/control since NewService above already loads the default catalogs/controls
+	orchestratorService = NewService(WithCatalogsFolder("internal/testdata/catalogs"))
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are 36 default controls
-	assert.Equal(t, 36, len(listControlsResponse.Controls))
+	// there are 3 default controls
+	assert.Equal(t, 3, len(listControlsResponse.Controls))
 
 	// 3th case: List controls for a specific catalog and category.
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
-		CatalogId:    "DemoCatalog",
-		CategoryName: "Communication Security",
+		CatalogId:    "TestCatalog",
+		CategoryName: "Secure Category",
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	assert.Equal(t, 4, len(listControlsResponse.Controls))
+	assert.Equal(t, 3, len(listControlsResponse.Controls))
 }
 
 func TestService_loadCatalogs(t *testing.T) {
@@ -572,7 +572,7 @@ func TestService_loadCatalogs(t *testing.T) {
 		{
 			name: "storage error",
 			fields: fields{
-				catalogsFolder: "internal/testcatalogs/emptyTestFolder",
+				catalogsFolder: "internal/testdata/empty_catalogs",
 				storage:        &testutil.StorageWithError{SaveErr: ErrSomeError},
 			},
 			wantResult: assert.NotEmpty,
