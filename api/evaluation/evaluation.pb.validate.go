@@ -1129,6 +1129,10 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 
 	}
 
+	if m.ParentsOnly != nil {
+		// no validation rules for ParentsOnly
+	}
+
 	if len(errors) > 0 {
 		return ListEvaluationResultsRequest_FilterMultiError(errors)
 	}

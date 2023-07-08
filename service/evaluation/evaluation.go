@@ -371,6 +371,10 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 			query = append(query, "control_id LIKE ?")
 			args = append(args, fmt.Sprintf("%s%%", req.Filter.GetSubControls()))
 		}
+
+		if util.Deref(req.Filter.ParentsOnly) {
+			query = append(query, "parent_control_id IS NULL")
+		}
 	}
 
 	// In any case, we need to make sure that we only select evaluation results of cloud services that we have access to
@@ -478,7 +482,7 @@ func (svc *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
-		status     = evaluation.EvaluationStatus_EVALUATION_STATUS_UNSPECIFIED
+		status     = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
 		evalResult *evaluation.EvaluationResult
 	)
 
@@ -513,6 +517,8 @@ func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, catego
 	for _, r := range evaluations.Results {
 		if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT {
 			status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
+		} else if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING && status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING {
+			status = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
 		} else {
 			status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
@@ -560,7 +566,8 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, con
 	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
 		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, toe.GetCloudServiceId(), err)
-		// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
+		// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be
+		// evaluated when all sub-controls are evaluated.
 		if parentJobTag != "" && svc.wg[parentJobTag] != nil {
 			svc.wg[parentJobTag].Done()
 		}
@@ -804,8 +811,8 @@ func createControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsH
 }
 
 // createAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We
-// need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2
-// different metrics.
+// need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessment_results for
+// 2 different metrics.
 func createAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
 

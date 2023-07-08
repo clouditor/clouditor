@@ -100,7 +100,11 @@ message ListEvaluationResultsRequest {
     // substring, e.g., if the substring 'CMK-01.' is given it returns the
     // controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
     optional string sub_controls = 4 [ (validate.rules).string.min_len = 1 ];
+
+    // Optional. Lists only results for parent controls
+    optional bool parents_only = 5;
   }
+
   optional Filter filter = 1;
 
   // Optional. Latest results grouped by control_id.

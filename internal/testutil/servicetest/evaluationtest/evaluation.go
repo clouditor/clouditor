@@ -5,6 +5,7 @@ import (
 
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -27,6 +28,7 @@ var (
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
+		ParentControlId:            util.Ref(testdata.MockControlID1),
 		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult22 = &evaluation.EvaluationResult{
@@ -37,6 +39,7 @@ var (
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID11,
+		ParentControlId:            util.Ref(testdata.MockControlID1),
 		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
@@ -47,6 +50,7 @@ var (
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID12,
+		ParentControlId:            util.Ref(testdata.MockControlID1),
 		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult4 = &evaluation.EvaluationResult{
@@ -67,6 +71,7 @@ var (
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID21,
+		ParentControlId:            util.Ref(testdata.MockControlID2),
 		FailingAssessmentResultIds: []string{},
 	}
 	MockEvaluationResult6 = &evaluation.EvaluationResult{
@@ -77,6 +82,7 @@ var (
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 		ControlId:                  testdata.MockSubControlID22,
+		ParentControlId:            util.Ref(testdata.MockControlID2),
 		FailingAssessmentResultIds: []string{},
 	}
 
