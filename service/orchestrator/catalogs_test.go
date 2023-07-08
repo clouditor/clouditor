@@ -529,8 +529,8 @@ func TestService_ListControls(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listControlsResponse.Controls)
 	assert.NotEmpty(t, listControlsResponse.Controls)
-	// there are 30 default controls
-	assert.Equal(t, 30, len(listControlsResponse.Controls))
+	// there are 36 default controls
+	assert.Equal(t, 36, len(listControlsResponse.Controls))
 
 	// 3th case: List controls for a specific catalog and category.
 	listControlsResponse, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
