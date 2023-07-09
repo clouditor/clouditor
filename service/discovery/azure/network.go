@@ -28,6 +28,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 
@@ -285,7 +286,7 @@ func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) boo
 
 	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil {
 		vmNsg := ni.Properties.NetworkSecurityGroup
-		nsg, err := d.clients.networkSecurityGroupsClient.Get(context.Background(), resourceGroupName(*vmNsg.ID), "happyVM-nsg", &armnetwork.SecurityGroupsClientGetOptions{})
+		nsg, err := d.clients.networkSecurityGroupsClient.Get(context.Background(), resourceGroupName(*vmNsg.ID), getIDName(*vmNsg.ID), &armnetwork.SecurityGroupsClientGetOptions{})
 		if err != nil {
 			log.Errorf("error getting network security group: %v", err)
 			return false
@@ -384,6 +385,11 @@ func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 	}
 
 	return publicIPAddresses
+}
+
+// resourceGroupName returns the resource group name of a given Azure ID
+func getIDName(id string) string {
+	return strings.Split(id, "/")[8]
 }
 
 // initNetworkInterfacesClient creates the client if not already exists

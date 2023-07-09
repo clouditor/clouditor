@@ -59,24 +59,7 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"networkSecurityGroup": map[string]interface{}{
 							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-							"name":     "nsg1",
 							"location": "eastus",
-							"properties": map[string]interface{}{
-								"securityRules": []map[string]interface{}{ // Important: These properties must the same as for the path "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"
-									{
-										"properties": map[string]interface{}{
-											"access":          "Deny",
-											"sourcePortRange": "*",
-										},
-									},
-									{
-										"properties": map[string]interface{}{
-											"access":          "Deny",
-											"sourcePortRange": "*",
-										},
-									},
-								},
-							},
 						},
 					},
 				},
@@ -294,7 +277,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							},
 							Type:   voc.NetworkInterfaceType,
 							Labels: map[string]string{},
-							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\",\"name\":\"nsg1\",\"properties\":{\"securityRules\":[{\"properties\":{\"access\":\"Deny\",\"sourcePortRange\":\"*\"}},{\"properties\":{\"access\":\"Deny\",\"sourcePortRange\":\"*\"}}]}}}}]}",
+							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
 						},
 					},
 					AccessRestriction: &voc.L3Firewall{
@@ -727,32 +710,36 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 }
 
 func Test_nsgFirewallEnabled(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
 	type args struct {
 		ni *armnetwork.Interface
 	}
 	tests := []struct {
-		name string
-		args args
-		want bool
+		name   string
+		fields fields
+		args   args
+		want   bool
 	}{
 		{
 			name: "Empty input",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+			},
 			args: args{},
 			want: false,
 		},
 		{
 			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+			},
 			args: args{
 				ni: &armnetwork.Interface{
 					Properties: &armnetwork.InterfacePropertiesFormat{
 						NetworkSecurityGroup: &armnetwork.SecurityGroup{
-							Properties: &armnetwork.SecurityGroupPropertiesFormat{
-								SecurityRules: []*armnetwork.SecurityRule{
-									{
-										ID: util.Ref("test security rule"),
-									},
-								},
-							},
+							ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/nsg1"),
 						},
 					},
 				},
@@ -761,8 +748,11 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		d := &azureNetworkDiscovery{
+			azureDiscovery: tt.fields.azureDiscovery,
+		}
 		t.Run(tt.name, func(t *testing.T) {
-			if got := nsgFirewallEnabled(tt.args.ni); got != tt.want {
+			if got := d.nsgFirewallEnabled(tt.args.ni); got != tt.want {
 				t.Errorf("nsgFirewallEnabled() = %v, want %v", got, tt.want)
 			}
 		})
