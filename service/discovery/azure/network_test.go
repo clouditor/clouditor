@@ -758,3 +758,34 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		})
 	}
 }
+
+func Test_getIDName(t *testing.T) {
+	type args struct {
+		id string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Missing input",
+			args: args{},
+			want: "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/nsg1",
+			},
+			want: "nsg1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getIDName(tt.args.id); got != tt.want {
+				t.Errorf("getIDName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

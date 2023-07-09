@@ -389,6 +389,9 @@ func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 
 // resourceGroupName returns the resource group name of a given Azure ID
 func getIDName(id string) string {
+	if id == "" {
+		return ""
+	}
 	return strings.Split(id, "/")[8]
 }
 
