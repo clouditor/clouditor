@@ -6,7 +6,7 @@ default applicable = false
 
 default compliant = false
 
-restrictedPorts := input.l3Firewall.restrictedPorts
+restrictedPorts := input.accessRestriction.restrictedPorts
 
 applicable {
 	restrictedPorts != null
