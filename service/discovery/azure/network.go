@@ -26,6 +26,7 @@
 package azure
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -267,7 +268,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 			),
 		},
 		AccessRestriction: &voc.L3Firewall{
-			Enabled: nsgFirewallEnabled(ni),
+			Enabled: d.nsgFirewallEnabled(ni),
 			// Inbound: ,
 			// RestrictedPorts: ,
 		},
@@ -275,9 +276,26 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 }
 
 // nsgFirewallEnabled checks if network security group (NSG) rules are configured. A NSG is a firewall that operates at OSI layers 3 and 4 to filter ingress and egress traffic. (https://learn.microsoft.com/en-us/azure/firewall/firewall-faq#what-is-the-difference-between-network-security-groups--nsgs--and-azure-firewall, Last access: 05/02/2023)
-func nsgFirewallEnabled(ni *armnetwork.Interface) bool {
-	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil && ni.Properties.NetworkSecurityGroup.Properties != nil && ni.Properties.NetworkSecurityGroup.Properties.SecurityRules != nil && len(ni.Properties.NetworkSecurityGroup.Properties.SecurityRules) >= 1 {
-		return true
+func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
+	// initialize network interfaces client
+	if err := d.initNetworkSecurityGroupClient(); err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil {
+		vmNsg := ni.Properties.NetworkSecurityGroup
+		nsg, err := d.clients.networkSecurityGroupsClient.Get(context.Background(), resourceGroupName(*vmNsg.ID), "happyVM-nsg", &armnetwork.SecurityGroupsClientGetOptions{})
+		if err != nil {
+			log.Errorf("error getting network security group: %v", err)
+			return false
+		}
+
+		// TODO(all): We have to check more than len(securityRules) > 0. But what is a good check?
+		if len(nsg.SecurityGroup.Properties.SecurityRules) > 0 {
+			return true
+		}
+
 	}
 
 	return false
@@ -383,5 +401,11 @@ func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
 // initApplicationGatewayClient creates the client if not already exists
 func (d *azureNetworkDiscovery) initApplicationGatewayClient() (err error) {
 	d.clients.applicationGatewayClient, err = initClient(d.clients.applicationGatewayClient, d.azureDiscovery, armnetwork.NewApplicationGatewaysClient)
+	return
+}
+
+// initNetworkSecurityGroupClient creates the client if not already exists
+func (d *azureNetworkDiscovery) initNetworkSecurityGroupClient() (err error) {
+	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d.azureDiscovery, armnetwork.NewSecurityGroupsClient)
 	return
 }
