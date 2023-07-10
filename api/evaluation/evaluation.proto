@@ -63,6 +63,17 @@ service Evaluation {
       get : "/v1/evaluation/results"
     };
   }
+
+  // Manually creates an evaluation result. It only allows to create evaluation
+  // results with status EVALUATION_STATUS_DELEGATED or
+  // EVALUATION_STATUS_COMPLIANT_MANUALLY.
+  rpc CreateEvaluationResult(CreateEvaluationResultRequest)
+      returns (EvaluationResult) {
+    option (google.api.http) = {
+      post : "/v1/evaluation/results"
+      body : "result"
+    };
+  }
 }
 
 message StartEvaluationRequest {
@@ -121,6 +132,10 @@ message ListEvaluationResultsResponse {
   string next_page_token = 2;
 }
 
+message CreateEvaluationResultRequest {
+  EvaluationResult result = 1 [ (validate.rules).message.required = true ];
+}
+
 // A evaluation result resource, representing the result after evaluating the
 // cloud service with a specific control cloud_service_id, category_name and
 // catalog_id are necessary to get the corresponding TargetOfEvaluation
@@ -158,11 +173,16 @@ message EvaluationResult {
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated .items.string.min_len = 1
   ];
+
+  // Comment, especially for manually created results.
+  string comment = 10;
 }
 
 enum EvaluationStatus {
   EVALUATION_STATUS_UNSPECIFIED = 0;
   EVALUATION_STATUS_COMPLIANT = 1;
-  EVALUATION_STATUS_NOT_COMPLIANT = 2;
-  EVALUATION_STATUS_PENDING = 3;
+  EVALUATION_STATUS_COMPLIANT_MANUALLY = 2;
+  EVALUATION_STATUS_NOT_COMPLIANT = 3;
+  EVALUATION_STATUS_DELEGATED = 4;
+  EVALUATION_STATUS_PENDING = 10;
 }

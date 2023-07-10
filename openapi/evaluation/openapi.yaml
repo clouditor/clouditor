@@ -147,6 +147,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - Evaluation
+            description: |-
+                Manually creates an evaluation result. It only allows to create evaluation
+                 results with status EVALUATION_STATUS_DELEGATED or
+                 EVALUATION_STATUS_COMPLIANT_MANUALLY.
+            operationId: Evaluation_CreateEvaluationResult
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EvaluationResult'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EvaluationResult'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         EvaluationResult:
@@ -174,7 +201,9 @@ components:
                     enum:
                         - EVALUATION_STATUS_UNSPECIFIED
                         - EVALUATION_STATUS_COMPLIANT
+                        - EVALUATION_STATUS_COMPLIANT_MANUALLY
                         - EVALUATION_STATUS_NOT_COMPLIANT
+                        - EVALUATION_STATUS_DELEGATED
                         - EVALUATION_STATUS_PENDING
                     type: string
                     description: Evaluation status
@@ -188,6 +217,9 @@ components:
                     items:
                         type: string
                     description: List of assessment results because of which the evaluation status is not 'compliant'
+                comment:
+                    type: string
+                    description: Comment, especially for manually created results.
             description: A evaluation result resource, representing the result after evaluating the cloud service with a specific control cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
         GoogleProtobufAny:
             type: object

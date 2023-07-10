@@ -427,6 +427,31 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	return
 }
 
+// CreateEvaluationResult is a method implementation of the evaluation interface
+func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.CreateEvaluationResultRequest) (res *evaluation.EvaluationResult, err error) {
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Only allow manually compliant or delegated
+	if req.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY &&
+		req.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_DELEGATED {
+		return nil, status.Error(codes.InvalidArgument, "invalid status for evaluation result")
+	}
+
+	res = req.Result
+	res.Id = uuid.NewString()
+
+	err = svc.storage.Create(res)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	return
+}
+
 // addJobToScheduler adds a job for the given control to the scheduler and sets the scheduler interval to the given interval
 func (svc *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator.TargetOfEvaluation, parentJobTag string, interval int) (err error) {
 	// Check inputs and log error
