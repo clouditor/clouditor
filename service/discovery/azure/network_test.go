@@ -729,6 +729,21 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 			},
 			args: args{},
 			want: false,
+		}, {
+			name: "Error getting nsg",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+			},
+			args: args{
+				ni: &armnetwork.Interface{
+					Properties: &armnetwork.InterfacePropertiesFormat{
+						NetworkSecurityGroup: &armnetwork.SecurityGroup{
+							ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/false"),
+						},
+					},
+				},
+			},
+			want: false,
 		},
 		{
 			name: "Happy path",
