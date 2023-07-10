@@ -27,7 +27,10 @@ package constants
 
 const (
 	TLS    = "TLS"
-	AES    = "AES"
+	TLS1_0 = "TLS1_0"
+	TLS1_1 = "TLS1_1"
 	TLS1_2 = "TLS1_2"
+
+	AES    = "AES"
 	AES256 = "AES256"
 )
