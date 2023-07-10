@@ -76,6 +76,7 @@ var DefaultTypes = []any{
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},
+	&orchestrator.TargetOfEvaluation{},
 	&evaluation.EvaluationResult{},
 }
 
@@ -166,11 +167,6 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
-		err = fmt.Errorf("error during join-table: %w", err)
-		return
-	}
-
-	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlInScope{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

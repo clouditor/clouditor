@@ -30,6 +30,7 @@ package clouditor.evaluation.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -63,6 +64,15 @@ service Evaluation {
       get : "/v1/evaluation/results"
     };
   }
+
+  // Creates an evaluation result
+  rpc CreateEvaluationResult(CreateEvaluationResultRequest)
+      returns (EvaluationResult) {
+    option (google.api.http) = {
+      post : "/v1/evaluation/results"
+      body : "result"
+    };
+  }
 }
 
 message StartEvaluationRequest {
@@ -75,6 +85,8 @@ message StartEvaluationRequest {
 }
 
 message StartEvaluationResponse { bool successful = 1; }
+
+message CreateEvaluationResultRequest { EvaluationResult result = 1; }
 
 message StopEvaluationRequest {
   string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
@@ -103,6 +115,9 @@ message ListEvaluationResultsRequest {
 
     // Optional. Lists only results for parent controls
     optional bool parents_only = 5;
+
+    // Optional. Lists only manual results in their validity period
+    optional bool valid_manual_only = 6;
   }
 
   optional Filter filter = 1;
@@ -158,11 +173,21 @@ message EvaluationResult {
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated .items.string.min_len = 1
   ];
+
+  string comment = 10;
+
+  // Optional, but required if the status is one of the "manually" ones. This
+  // denotes how long the (manual) created evaluation result is valid. During
+  // this time, no automatic results are generated for the specific control.
+  optional google.protobuf.Timestamp valid_until = 20
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
 }
 
 enum EvaluationStatus {
   EVALUATION_STATUS_UNSPECIFIED = 0;
   EVALUATION_STATUS_COMPLIANT = 1;
-  EVALUATION_STATUS_NOT_COMPLIANT = 2;
-  EVALUATION_STATUS_PENDING = 3;
+  EVALUATION_STATUS_COMPLIANT_MANUALLY = 2;
+  EVALUATION_STATUS_NOT_COMPLIANT = 3;
+  EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY = 4;
+  EVALUATION_STATUS_PENDING = 10;
 }

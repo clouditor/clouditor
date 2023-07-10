@@ -28,7 +28,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine (dashboard development redirect)",
+            "name": "Launch engine (dashboard development redirect with Azure discovery)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -37,7 +37,9 @@
             "args": [
                 "--db-in-memory",
                 "--dashboard-url=http://localhost:5173",
-                "--api-cors-allowed-origins=http://localhost:5173"
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=azure"
             ],
             "env": {},
             "preLaunchTask": "go: generate"

@@ -76,9 +76,8 @@ func TestValidateRequest(t *testing.T) {
 			args: args{
 				req: &orchestrator.CreateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId:  "11111111-1111-1111-1111-111111111111",
-						CatalogId:       "0000",
-						ControlsInScope: []*orchestrator.Control{},
+						CloudServiceId: "11111111-1111-1111-1111-111111111111",
+						CatalogId:      "0000",
 					},
 				},
 			},

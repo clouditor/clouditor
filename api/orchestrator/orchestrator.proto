@@ -384,50 +384,6 @@ service Orchestrator {
     };
   }
 
-  // Lists all controls in scope of a target of evaluation.
-  rpc ListControlsInScope(ListControlsInScopeRequest)
-      returns (ListControlsInScopeResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-            "{catalog_id}/controls_in_scope"
-    };
-  }
-
-  // Adds the selected control as "in scope" for the target of evaluation.
-  rpc AddControlToScope(AddControlToScopeRequest) returns (ControlInScope) {
-    option (google.api.http) = {
-      post : "/v1/orchestrator/cloud_services/"
-             "{scope.target_of_evaluation_cloud_service_id}/toes/"
-             "{scope.target_of_evaluation_catalog_id}/controls_in_scope"
-      body : "scope"
-    };
-  }
-
-  // Updates a particular control in scope, e.g., its monitoring status.
-  rpc UpdateControlInScope(UpdateControlInScopeRequest)
-      returns (ControlInScope) {
-    option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/"
-            "{scope.target_of_evaluation_cloud_service_id}/toes/"
-            "{scope.target_of_evaluation_catalog_id}/controls_in_scope/"
-            "categories/{scope.control_category_name}/"
-            "controls/{scope.control_id}"
-      body : "scope"
-    };
-  }
-
-  // Adds the selected control as "in scope" for the target of evaluation.
-  rpc RemoveControlFromScope(RemoveControlFromScopeRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/"
-               "{cloud_service_id}/toes/"
-               "{catalog_id}/controls_in_scope/"
-               "categories/{control_category_name}/"
-               "controls/{control_id}"
-    };
-  }
-
   // Lists all Targets of Evaluation
   rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest)
       returns (ListTargetsOfEvaluationResponse) {
@@ -734,8 +690,8 @@ message Catalog {
 
   // A list of the assurance levels, e.g., basic, substantial and high for the
   // EUCS catalog.
-  repeated string assurance_levels = 7 [
-    (tagger.tags) = "gorm:\"serializer:json\"" ];
+  repeated string assurance_levels = 7
+      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
 
   // Catalogs short name, e.g. EUCS
   string short_name = 9;
@@ -846,22 +802,6 @@ message TargetOfEvaluation {
   optional string assurance_level = 3
       [ (validate.rules).string.pattern =
             "^(|basic|substantial|high|low|medium)$" ];
-
-  // the controls that are in scope of this ToE. Note: For some security
-  // catalogs, e.g., the EUCS, a specific set of controls (in the "worst case":
-  // all) are automatically in scope. In this case, this list needs auto-filled
-  // at an appropriate time, e.g,. in CreateTargetOfEvaluation.
-  //
-  // Note: Because of limitations of our ORM framework, this field only contains
-  // a list of controls that are in scope of the target, but not the actual
-  // meta-data associated it with it (which is of message type ControlInScope).
-  // In order to retrieve the meta-data of the controls, the RPC
-  // ListControlsInScope (or the associated REST path) must be called.
-  repeated Control controls_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:controls_in_scope;"
-                    "constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
-  ];
 }
 
 message GetAssessmentResultRequest {
@@ -882,83 +822,6 @@ message ListAssessmentResultsRequest {
 message ListAssessmentResultsResponse {
   repeated clouditor.assessment.v1.AssessmentResult results = 1;
   string next_page_token = 2;
-}
-
-message ListControlsInScopeRequest {
-  string cloud_service_id = 1 [ (validate.rules).string = {uuid : true} ];
-  string catalog_id = 2 [ (validate.rules).string = {min_len : 1} ];
-
-  int32 page_size = 10;
-  string page_token = 11;
-  string order_by = 12;
-  bool asc = 13;
-}
-
-message ListControlsInScopeResponse {
-  repeated ControlInScope controls_in_scope = 1;
-  string next_page_token = 2;
-}
-
-message UpdateControlInScopeRequest {
-  ControlInScope scope = 1 [ (validate.rules).message.required = true ];
-}
-
-message AddControlToScopeRequest {
-  ControlInScope scope = 1 [ (validate.rules).message.required = true ];
-}
-
-message RemoveControlFromScopeRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.min_len = 1 ];
-  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
-  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
-  string control_category_name = 4 [ (validate.rules).string.min_len = 1 ];
-}
-
-// MonitoringStatus describes how a particular control is handled by the
-// Clouditor framework.
-enum MonitoringStatus {
-  // The status is not yet decided.
-  MONITORING_STATUS_UNSPECIFIED = 0;
-  // Control is automatically assessed by the Clouditor security assessment
-  // engine or another tool, which forwards assessment results to the
-  // Orchestrator.
-  MONITORING_STATUS_AUTOMATICALLY_MONITORED = 1;
-  // Control is assessed manually and the result must be set via the Clouditor
-  // UI to be evaluated by the Clouditor.
-  MONITORING_STATUS_MANUALLY_MONITORED = 2;
-  // Control is checked by another party and the result is not used by the
-  // Clouditor evaluation. In the future this might be part of compositional
-  // certification.
-  MONITORING_STATUS_DELEGATED = 3;
-}
-
-// ControlInScope defines a control which is "in scope" of a target of
-// evaluation. Additional meta-data can be defined when a control is in scope,
-// e.g., its monitoring status (continuously monitored, delegated, etc.)
-message ControlInScope {
-  string target_of_evaluation_cloud_service_id = 1 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
-  ];
-  string target_of_evaluation_catalog_id = 2 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
-  ];
-
-  string control_id = 3 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
-  ];
-  string control_category_name = 4 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
-  ];
-  string control_category_catalog_id = 5 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
-  ];
-
-  MonitoringStatus monitoring_status = 6;
 }
 
 message CreateTargetOfEvaluationRequest {
@@ -1079,6 +942,14 @@ message ListControlsRequest {
   string catalog_id = 1;
   string category_name = 2;
 
+  message Filter {
+    // Optional. Lists only controls with the specified assurance levels.
+    repeated string assurance_levels = 1
+        [ (validate.rules).repeated .items.string.min_len = 1 ];
+  }
+
+  optional Filter filter = 3;
+
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
@@ -1137,10 +1008,6 @@ message TargetOfEvaluationChangeEvent {
     TYPE_TARGET_OF_EVALUATION_CREATED = 1;
     TYPE_TARGET_OF_EVALUATION_UPDATED = 2;
     TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
-
-    TYPE_CONTROL_IN_SCOPE_ADDED = 4;
-    TYPE_CONTROL_IN_SCOPE_UPDATED = 5;
-    TYPE_CONTROL_IN_SCOPE_REMOVED = 6;
   }
 
   Type type = 1 [ (validate.rules).enum.defined_only = true ];
@@ -1148,10 +1015,5 @@ message TargetOfEvaluationChangeEvent {
   // Optional. If the type is a TARGET_OF_EVALUATION_* the target_of_evaluation
   // field must be set
   optional TargetOfEvaluation target_of_evaluation = 2
-      [ (validate.rules).message.required = true ];
-
-  // Optional. If the type is a CONTROL_IN_SCOPE_* the
-  // control_in_scope fied must be set
-  optional ControlInScope control_in_scope = 3
       [ (validate.rules).message.required = true ];
 }

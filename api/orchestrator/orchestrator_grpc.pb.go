@@ -121,14 +121,6 @@ type OrchestratorClient interface {
 	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
 	// Retrieves a Target of Evaluation
 	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Lists all controls in scope of a target of evaluation.
-	ListControlsInScope(ctx context.Context, in *ListControlsInScopeRequest, opts ...grpc.CallOption) (*ListControlsInScopeResponse, error)
-	// Adds the selected control as "in scope" for the target of evaluation.
-	AddControlToScope(ctx context.Context, in *AddControlToScopeRequest, opts ...grpc.CallOption) (*ControlInScope, error)
-	// Updates a particular control in scope, e.g., its monitoring status.
-	UpdateControlInScope(ctx context.Context, in *UpdateControlInScopeRequest, opts ...grpc.CallOption) (*ControlInScope, error)
-	// Adds the selected control as "in scope" for the target of evaluation.
-	RemoveControlFromScope(ctx context.Context, in *RemoveControlFromScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
 	// Updates an existing Target of Evaluation
@@ -561,42 +553,6 @@ func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetT
 	return out, nil
 }
 
-func (c *orchestratorClient) ListControlsInScope(ctx context.Context, in *ListControlsInScopeRequest, opts ...grpc.CallOption) (*ListControlsInScopeResponse, error) {
-	out := new(ListControlsInScopeResponse)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListControlsInScope", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *orchestratorClient) AddControlToScope(ctx context.Context, in *AddControlToScopeRequest, opts ...grpc.CallOption) (*ControlInScope, error) {
-	out := new(ControlInScope)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/AddControlToScope", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *orchestratorClient) UpdateControlInScope(ctx context.Context, in *UpdateControlInScopeRequest, opts ...grpc.CallOption) (*ControlInScope, error) {
-	out := new(ControlInScope)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateControlInScope", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *orchestratorClient) RemoveControlFromScope(ctx context.Context, in *RemoveControlFromScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/RemoveControlFromScope", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
 	out := new(ListTargetsOfEvaluationResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation", in, out, opts...)
@@ -733,14 +689,6 @@ type OrchestratorServer interface {
 	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
 	// Retrieves a Target of Evaluation
 	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Lists all controls in scope of a target of evaluation.
-	ListControlsInScope(context.Context, *ListControlsInScopeRequest) (*ListControlsInScopeResponse, error)
-	// Adds the selected control as "in scope" for the target of evaluation.
-	AddControlToScope(context.Context, *AddControlToScopeRequest) (*ControlInScope, error)
-	// Updates a particular control in scope, e.g., its monitoring status.
-	UpdateControlInScope(context.Context, *UpdateControlInScopeRequest) (*ControlInScope, error)
-	// Adds the selected control as "in scope" for the target of evaluation.
-	RemoveControlFromScope(context.Context, *RemoveControlFromScopeRequest) (*emptypb.Empty, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
 	// Updates an existing Target of Evaluation
@@ -878,18 +826,6 @@ func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context,
 }
 func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
-}
-func (UnimplementedOrchestratorServer) ListControlsInScope(context.Context, *ListControlsInScopeRequest) (*ListControlsInScopeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListControlsInScope not implemented")
-}
-func (UnimplementedOrchestratorServer) AddControlToScope(context.Context, *AddControlToScopeRequest) (*ControlInScope, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddControlToScope not implemented")
-}
-func (UnimplementedOrchestratorServer) UpdateControlInScope(context.Context, *UpdateControlInScopeRequest) (*ControlInScope, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateControlInScope not implemented")
-}
-func (UnimplementedOrchestratorServer) RemoveControlFromScope(context.Context, *RemoveControlFromScopeRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveControlFromScope not implemented")
 }
 func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
@@ -1665,78 +1601,6 @@ func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_ListControlsInScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListControlsInScopeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrchestratorServer).ListControlsInScope(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListControlsInScope",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListControlsInScope(ctx, req.(*ListControlsInScopeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Orchestrator_AddControlToScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddControlToScopeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrchestratorServer).AddControlToScope(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/AddControlToScope",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).AddControlToScope(ctx, req.(*AddControlToScopeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Orchestrator_UpdateControlInScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateControlInScopeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrchestratorServer).UpdateControlInScope(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/UpdateControlInScope",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpdateControlInScope(ctx, req.(*UpdateControlInScopeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Orchestrator_RemoveControlFromScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveControlFromScopeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrchestratorServer).RemoveControlFromScope(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/RemoveControlFromScope",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).RemoveControlFromScope(ctx, req.(*RemoveControlFromScopeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListTargetsOfEvaluationRequest)
 	if err := dec(in); err != nil {
@@ -1971,22 +1835,6 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTargetOfEvaluation",
 			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
-		},
-		{
-			MethodName: "ListControlsInScope",
-			Handler:    _Orchestrator_ListControlsInScope_Handler,
-		},
-		{
-			MethodName: "AddControlToScope",
-			Handler:    _Orchestrator_AddControlToScope_Handler,
-		},
-		{
-			MethodName: "UpdateControlInScope",
-			Handler:    _Orchestrator_UpdateControlInScope_Handler,
-		},
-		{
-			MethodName: "RemoveControlFromScope",
-			Handler:    _Orchestrator_RemoveControlFromScope_Handler,
 		},
 		{
 			MethodName: "ListTargetsOfEvaluation",

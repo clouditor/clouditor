@@ -552,6 +552,31 @@ func TestService_ListControls(t *testing.T) {
 	assert.Equal(t, c.Id, util.Deref(sub.ParentControlId))
 	assert.Equal(t, c.CategoryName, util.Deref(sub.ParentControlCategoryName))
 	assert.Equal(t, c.CategoryCatalogId, util.Deref(sub.ParentControlCategoryCatalogId))
+
+	// 4th case: Filter by assurance level
+	res, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+		CatalogId:    "TestCatalog",
+		CategoryName: "Secure Category",
+		Filter: &orchestrator.ListControlsRequest_Filter{
+			AssuranceLevels: []string{"substantial"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, res.Controls)
+	assert.NotEmpty(t, res.Controls)
+	assert.Equal(t, 2, len(res.Controls))
+
+	res, err = orchestratorService.ListControls(context.Background(), &orchestrator.ListControlsRequest{
+		CatalogId:    "TestCatalog",
+		CategoryName: "Secure Category",
+		Filter: &orchestrator.ListControlsRequest_Filter{
+			AssuranceLevels: []string{"substantial", "high"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, res.Controls)
+	assert.NotEmpty(t, res.Controls)
+	assert.Equal(t, 3, len(res.Controls))
 }
 
 func TestService_loadCatalogs(t *testing.T) {

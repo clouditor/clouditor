@@ -32,6 +32,8 @@ type EvaluationClient interface {
 	// restricted by various filtering options. Part of the public API, also
 	// exposed as REST.
 	ListEvaluationResults(ctx context.Context, in *ListEvaluationResultsRequest, opts ...grpc.CallOption) (*ListEvaluationResultsResponse, error)
+	// Creates an evaluation result
+	CreateEvaluationResult(ctx context.Context, in *CreateEvaluationResultRequest, opts ...grpc.CallOption) (*EvaluationResult, error)
 }
 
 type evaluationClient struct {
@@ -69,6 +71,15 @@ func (c *evaluationClient) ListEvaluationResults(ctx context.Context, in *ListEv
 	return out, nil
 }
 
+func (c *evaluationClient) CreateEvaluationResult(ctx context.Context, in *CreateEvaluationResultRequest, opts ...grpc.CallOption) (*EvaluationResult, error) {
+	out := new(EvaluationResult)
+	err := c.cc.Invoke(ctx, "/clouditor.evaluation.v1.Evaluation/CreateEvaluationResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EvaluationServer is the server API for Evaluation service.
 // All implementations must embed UnimplementedEvaluationServer
 // for forward compatibility
@@ -83,6 +94,8 @@ type EvaluationServer interface {
 	// restricted by various filtering options. Part of the public API, also
 	// exposed as REST.
 	ListEvaluationResults(context.Context, *ListEvaluationResultsRequest) (*ListEvaluationResultsResponse, error)
+	// Creates an evaluation result
+	CreateEvaluationResult(context.Context, *CreateEvaluationResultRequest) (*EvaluationResult, error)
 	mustEmbedUnimplementedEvaluationServer()
 }
 
@@ -98,6 +111,9 @@ func (UnimplementedEvaluationServer) StopEvaluation(context.Context, *StopEvalua
 }
 func (UnimplementedEvaluationServer) ListEvaluationResults(context.Context, *ListEvaluationResultsRequest) (*ListEvaluationResultsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListEvaluationResults not implemented")
+}
+func (UnimplementedEvaluationServer) CreateEvaluationResult(context.Context, *CreateEvaluationResultRequest) (*EvaluationResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateEvaluationResult not implemented")
 }
 func (UnimplementedEvaluationServer) mustEmbedUnimplementedEvaluationServer() {}
 
@@ -166,6 +182,24 @@ func _Evaluation_ListEvaluationResults_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Evaluation_CreateEvaluationResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateEvaluationResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvaluationServer).CreateEvaluationResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.evaluation.v1.Evaluation/CreateEvaluationResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvaluationServer).CreateEvaluationResult(ctx, req.(*CreateEvaluationResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Evaluation_ServiceDesc is the grpc.ServiceDesc for Evaluation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -184,6 +218,10 @@ var Evaluation_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListEvaluationResults",
 			Handler:    _Evaluation_ListEvaluationResults_Handler,
+		},
+		{
+			MethodName: "CreateEvaluationResult",
+			Handler:    _Evaluation_CreateEvaluationResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
