@@ -1,4 +1,4 @@
 {
-  "operator" : "isIn",
-  "target_value" : ["SomeResourceId1","SomeResourceId2"]
+  "operator" : ">",
+  "target_value" : 0
 }
