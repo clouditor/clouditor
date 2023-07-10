@@ -30,6 +30,7 @@ package clouditor.orchestrator.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "api/assessment/metric.proto";
 import "api/assessment/assessment.proto";
 import "api/runtime/runtime.proto";
@@ -681,16 +682,29 @@ message CloudService {
     (validate.rules).repeated .items.message.required = true
   ];
 
-  // As long as repeated maps are not supported, we have to do this workaround. 
-  message Tag {
-    map<string, string> tag   = 1;
+  message Metadata {
+    // a map of key/value pairs, e.g., env:prod
+    map<string, string> labels = 1;
+
+    // an icon for the cloud service used by the UI
+    optional string icon = 2;
   }
 
-  // a tag list of key/value pairs, e.g., env:prod
-  repeated Tag tags = 6 [
-    (tagger.tags) = "gorm:\"serializer:json\""];
-  
-  
+  // creation time of the cloud_service
+  optional google.protobuf.Timestamp created_at = 6 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (validate.rules).timestamp.required = true
+  ];
+
+  // last update time of the cloud_service
+  optional google.protobuf.Timestamp updated_at = 7 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (validate.rules).timestamp.required = true
+  ];
+
+  // additional metadata of the cloud service, mostly used for the UI
+  optional Metadata metadata = 10
+      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
 }
 
 message Catalog {
@@ -713,17 +727,18 @@ message Catalog {
   // A list of the assurance levels, e.g., basic, substantial and high for the
   // EUCS catalog.
   repeated string assurance_levels = 7 [
-    (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated = {
-      min_items : 3
-      items : {string : {pattern : "^(|basic|substantial|high|low|medium)$"}}
-    }
-  ];
-
-  string color = 8;
+    (tagger.tags) = "gorm:\"serializer:json\"" ];
 
   // Catalogs short name, e.g. EUCS
   string short_name = 9;
+
+  message Metadata {
+    // a color for the cloud service used by the UI
+    optional string color = 3;
+  }
+
+  // metadata of the catalog
+  optional Metadata metadata = 6 [ (tagger.tags) = "gorm:\"serializer:json\"" ];
 }
 
 message Category {
