@@ -1,0 +1,51 @@
+[
+    {
+        "id": "TestCatalog",
+        "name": "Test Catalog",
+        "description": "A catalog for unit testing purposes",
+        "metadata": {
+            "color": "#007FC3"
+        },
+        "short_name": "T",
+        "assurance_levels": [
+            "substantial",
+            "high"
+        ],
+        "all_in_scope": true,
+        "categories": [
+            {
+                "name": "Secure Category",
+                "description": "The secure category",
+                "controls": [
+                    {
+                        "id": "Secure-01",
+                        "name": "Very Important Control",
+                        "description": "The CSP should do important things",
+                        "controls": [
+                            {
+                                "id": "Secure-01.1",
+                                "name": "The CSP shall do important things on a technical level",
+                                "metrics": [
+                                    {
+                                        "id": "TransportEncryptionProtocol"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "Secure-01.2",
+                                "name": "The CSP shall enforce important things on a technical level",
+                                "metrics": [
+                                    {
+                                        "id": "TransportEncryptionEnforced"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

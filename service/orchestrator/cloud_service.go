@@ -43,6 +43,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -64,7 +65,17 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 	res.Id = uuid.NewString()
 	res.Name = req.CloudService.Name
 	res.Description = req.CloudService.Description
-	res.Tags = req.CloudService.Tags
+
+	now := timestamppb.Now()
+
+	res.CreatedAt = now
+	res.UpdatedAt = now
+
+	res.Metadata = &orchestrator.CloudService_Metadata{}
+	if req.CloudService.Metadata != nil {
+		res.Metadata.Labels = req.CloudService.Metadata.Labels
+		res.Metadata.Icon = req.CloudService.Metadata.Icon
+	}
 
 	// Persist the service in our database
 	err = s.storage.Create(res)
@@ -137,7 +148,7 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 }
 
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
-func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (res *orchestrator.CloudService, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -159,15 +170,16 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	response = req.CloudService
+	res = req.CloudService
+	res.UpdatedAt = timestamppb.Now()
 
 	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(response, "Id = ?", req.CloudService.Id)
+	err = s.storage.Save(res, "Id = ?", req.CloudService.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go s.informHooks(ctx, response, nil)
+	go s.informHooks(ctx, res, nil)
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
 
@@ -266,12 +278,16 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 	}
 
 	if count == 0 {
+		now := timestamppb.Now()
+
 		// Create a default target cloud service
 		service =
 			&orchestrator.CloudService{
 				Id:          DefaultTargetCloudServiceId,
 				Name:        DefaultTargetCloudServiceName,
 				Description: DefaultTargetCloudServiceDescription,
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			}
 
 		// Save it in the database
