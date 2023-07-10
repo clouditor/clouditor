@@ -37,11 +37,13 @@ var (
 	log *logrus.Entry
 )
 
-// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
-// services, but we need this feature in the future. This serves as a default to already prepare the necessary
-// structures for this feature.
-const DefaultCloudServiceID = "00000000-0000-0000-0000-000000000000"
-const EvidenceCollectorToolId = "Clouditor Evidences Collection"
+const (
+	// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
+	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+	// structures for this feature.
+	DefaultCloudServiceID   = "00000000-0000-0000-0000-000000000000"
+	EvidenceCollectorToolId = "Clouditor Evidences Collection"
+)
 
 // Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
 // vocabulary objects.

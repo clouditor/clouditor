@@ -137,9 +137,10 @@ type clients struct {
 	accountsClient      *armstorage.AccountsClient
 
 	// Network
-	networkInterfacesClient  *armnetwork.InterfacesClient
-	loadBalancerClient       *armnetwork.LoadBalancersClient
-	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
+	networkInterfacesClient     *armnetwork.InterfacesClient
+	loadBalancerClient          *armnetwork.LoadBalancersClient
+	applicationGatewayClient    *armnetwork.ApplicationGatewaysClient
+	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
 	sitesClient *armappservice.WebAppsClient
