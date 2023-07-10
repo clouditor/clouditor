@@ -583,15 +583,15 @@ message GetCloudServiceStatisticsRequest {
 message GetCloudServiceStatisticsResponse {
   // number of discovered resources per cloud service
   int64 number_of_discovered_resources = 1;
-  
+
   // number of assessment results per cloud service
   int64 number_of_assessment_results = 2;
-  
+
   // number of evidences per cloud service
   int64 number_of_evidences = 3;
 
   // number of selected catalogs per cloud service
-  int64 number_of_selected_catalogs = 4;  
+  int64 number_of_selected_catalogs = 4;
 }
 
 message UpdateMetricConfigurationRequest {

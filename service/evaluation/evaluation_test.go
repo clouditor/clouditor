@@ -240,7 +240,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Filter latest_by_resource_id, control_id, sub_controls, cloud_service_id",
+			name: "Filter latest_by_control_id, control_id, sub_controls, cloud_service_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -250,7 +250,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId:      util.Ref(testdata.MockSubControlID11),
 						SubControls:    util.Ref(testdata.MockControlID1),
@@ -266,7 +266,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter latest_by_resource_id and control_id",
+			name: "Filter latest_by_control_id and control_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -276,7 +276,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
-					LatestByResourceId: util.Ref(true),
+					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId: util.Ref(testdata.MockSubControlID11),
 					},
@@ -284,14 +284,13 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					evaluationtest.MockEvaluationResult8,
 					evaluationtest.MockEvaluationResult22,
 				},
 			},
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter latest_by_resource_id",
+			name: "Filter latest_by_control_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -300,12 +299,41 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{LatestByResourceId: util.Ref(true)},
+				req: &evaluation.ListEvaluationResultsRequest{LatestByControlId: util.Ref(true)},
 			},
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
-					evaluationtest.MockEvaluationResult7,
 					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult22,
+					evaluationtest.MockEvaluationResult3,
+					evaluationtest.MockEvaluationResult4,
+					evaluationtest.MockEvaluationResult5,
+					evaluationtest.MockEvaluationResult6,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Filter latest_by_control_id, parents_only",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					LatestByControlId: util.Ref(true),
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ParentsOnly: util.Ref(true),
+					},
+				},
+			},
+			wantRes: &evaluation.ListEvaluationResultsResponse{
+				Results: []*evaluation.EvaluationResult{
+					evaluationtest.MockEvaluationResult1,
+					evaluationtest.MockEvaluationResult4,
 				},
 			},
 			wantErr: assert.NoError,
@@ -329,7 +357,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
-					evaluationtest.MockEvaluationResult7,
 				},
 			},
 			wantErr: assert.NoError,
@@ -356,8 +383,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					evaluationtest.MockEvaluationResult2,
 					evaluationtest.MockEvaluationResult22,
 					evaluationtest.MockEvaluationResult3,
-					evaluationtest.MockEvaluationResult7,
-					evaluationtest.MockEvaluationResult8,
 				},
 			},
 			wantErr: assert.NoError,
@@ -438,8 +463,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: &evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult6,
-					evaluationtest.MockEvaluationResult7,
-					evaluationtest.MockEvaluationResult8,
 				},
 			},
 			wantErr: assert.NoError,
@@ -474,7 +497,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			gotRes, err := s.ListEvaluationResults(tt.args.in0, tt.args.req)
 
 			tt.wantErr(t, err)
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("ListEvaluationResults() gotResp = %v, want %v", gotRes, tt.wantRes)
 			}
 
@@ -1506,7 +1529,7 @@ func TestService_evaluateControl(t *testing.T) {
 
 				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, 7, len(evalResults.Results))
+				assert.Equal(t, 6, len(evalResults.Results))
 
 				createdResult := evalResults.Results[len(evalResults.Results)-1]
 
@@ -1516,7 +1539,7 @@ func TestService_evaluateControl(t *testing.T) {
 				createdResult.Timestamp = nil
 				newEvalResults.Id = ""
 				newEvalResults.Timestamp = nil
-				return assert.Equal(t, newEvalResults, createdResult)
+				return proto.Equal(newEvalResults, createdResult)
 			},
 		},
 	}
@@ -1554,8 +1577,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 	}
 	type args struct {
 		toe                *orchestrator.TargetOfEvaluation
-		categoryName       string
-		controlId          string
+		control            *orchestrator.Control
 		parentSchedulerTag string
 	}
 	tests := []struct {
@@ -1580,8 +1602,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 			},
 			args: args{
-				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockControlID1,
+				control: &orchestrator.Control{
+					Id:           testdata.MockControlID1,
+					CategoryName: testdata.MockCategoryName,
+				},
 				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1615,8 +1639,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockSubControlID11,
+				control: &orchestrator.Control{
+					Id:           testdata.MockControlID1,
+					CategoryName: testdata.MockCategoryName,
+				},
 				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1648,8 +1674,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockSubControlID11,
+				control: &orchestrator.Control{
+					Id:           testdata.MockSubControlID11,
+					CategoryName: testdata.MockCategoryName,
+				},
 				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1683,8 +1711,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockSubControlID11,
+				control: &orchestrator.Control{
+					Id:           testdata.MockSubControlID11,
+					CategoryName: testdata.MockCategoryName,
+				},
 				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1725,8 +1755,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName:       testdata.MockCategoryName,
-				controlId:          testdata.MockSubControlID11,
+				control: &orchestrator.Control{
+					Id:           testdata.MockSubControlID11,
+					CategoryName: testdata.MockCategoryName,
+				},
 				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1754,7 +1786,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 			}
 
 			tt.fields.wg[tt.fields.schedulerTag].Add(tt.fields.wgCounter)
-			s.evaluateSubcontrol(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.parentSchedulerTag)
+			s.evaluateSubcontrol(tt.args.toe, tt.args.control, tt.args.parentSchedulerTag)
 
 			if tt.want != nil {
 				tt.want(t, s)
@@ -1813,89 +1845,6 @@ func Test_getSchedulerTag(t *testing.T) {
 			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
 				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_getEvaluationResultMap(t *testing.T) {
-	type args struct {
-		results []*evaluation.EvaluationResult
-	}
-	tests := []struct {
-		name string
-		args args
-		want assert.ValueAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			args: args{results: []*evaluation.EvaluationResult{}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				return assert.Empty(t, gotResults)
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				results: evaluationtest.MockEvaluationResults,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				wantResults := map[string][]*evaluation.EvaluationResult{
-					testdata.MockResourceID1: {
-						evaluationtest.MockEvaluationResult6,
-						evaluationtest.MockEvaluationResult5,
-						evaluationtest.MockEvaluationResult4,
-						evaluationtest.MockEvaluationResult3,
-						evaluationtest.MockEvaluationResult2,
-						evaluationtest.MockEvaluationResult22,
-						evaluationtest.MockEvaluationResult1,
-					},
-					testdata.MockResourceID2: {
-						evaluationtest.MockEvaluationResult8,
-						evaluationtest.MockEvaluationResult7,
-					},
-				}
-
-				for _, r := range gotResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-				for _, r := range wantResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-
-				assert.Equal(t, len(gotResults), len(wantResults))
-
-				for key, results := range gotResults {
-					if !assert.Equal(t, len(results), len(wantResults[key])) {
-						return false
-					}
-					for i := range results {
-						reflect.DeepEqual(results[i], wantResults[key][i])
-					}
-				}
-
-				return true
-			},
-			//
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := createEvaluationResultMap(tt.args.results)
-
-			tt.want(t, got)
 		})
 	}
 }
