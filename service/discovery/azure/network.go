@@ -286,7 +286,7 @@ func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) boo
 
 	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil {
 		vmNsg := ni.Properties.NetworkSecurityGroup
-		nsg, err := d.clients.networkSecurityGroupsClient.Get(context.Background(), resourceGroupName(*vmNsg.ID), getIDName(*vmNsg.ID), &armnetwork.SecurityGroupsClientGetOptions{})
+		nsg, err := d.clients.networkSecurityGroupsClient.Get(context.Background(), resourceGroupName(*vmNsg.ID), getName(*vmNsg.ID), &armnetwork.SecurityGroupsClientGetOptions{})
 		if err != nil {
 			log.Errorf("error getting network security group: %v", err)
 			return false

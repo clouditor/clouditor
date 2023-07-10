@@ -798,7 +798,7 @@ func Test_getIDName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getIDName(tt.args.id); got != tt.want {
+			if got := getName(tt.args.id); got != tt.want {
 				t.Errorf("getIDName() = %v, want %v", got, tt.want)
 			}
 		})
