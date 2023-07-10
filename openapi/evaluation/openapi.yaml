@@ -92,6 +92,11 @@ paths:
                   description: Optional. Lists only evaluation results for a specific cloud service.
                   schema:
                     type: string
+                - name: filter.catalogId
+                  in: query
+                  description: Optional. Lists only evaluation results for a specific catalog.
+                  schema:
+                    type: string
                 - name: filter.controlId
                   in: query
                   description: Optional. Lists only evaluation results for a specific control id.
@@ -102,9 +107,14 @@ paths:
                   description: Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
                   schema:
                     type: string
-                - name: latestByResourceId
+                - name: filter.parentsOnly
                   in: query
-                  description: Optional. Latest results grouped by resource_id and metric_id.
+                  description: Optional. Lists only results for parent controls
+                  schema:
+                    type: boolean
+                - name: latestByControlId
+                  in: query
+                  description: Optional. Latest results grouped by control_id.
                   schema:
                     type: boolean
                 - name: pageSize
@@ -157,9 +167,9 @@ components:
                 controlCatalogId:
                     type: string
                     description: The catalog the evaluated control belongs to
-                resourceId:
+                parentControlId:
                     type: string
-                    description: The evaluated resource
+                    description: Optionally, specifies the parent control ID, if this is a sub-control
                 status:
                     enum:
                         - EVALUATION_STATUS_UNSPECIFIED

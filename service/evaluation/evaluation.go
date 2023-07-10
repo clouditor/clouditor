@@ -355,6 +355,11 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 			args = append(args, req.Filter.GetCloudServiceId())
 		}
 
+		if req.Filter.CatalogId != nil {
+			query = append(query, "control_catalog_id = ?")
+			args = append(args, req.Filter.GetCatalogId())
+		}
+
 		if req.Filter.ControlId != nil {
 			query = append(query, "control_id = ?")
 			args = append(args, req.Filter.GetControlId())
@@ -365,6 +370,10 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 			partition = append(partition, "control_id")
 			query = append(query, "control_id LIKE ?")
 			args = append(args, fmt.Sprintf("%s%%", req.Filter.GetSubControls()))
+		}
+
+		if util.Deref(req.Filter.ParentsOnly) {
+			query = append(query, "parent_control_id IS NULL")
 		}
 	}
 
@@ -378,7 +387,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	res = new(evaluation.ListEvaluationResultsResponse)
 
 	// If we want to have it grouped by resource ID, we need to do a raw query
-	if req.GetLatestByResourceId() {
+	if req.GetLatestByControlId() {
 		// In the raw SQL, we need to build the whole WHERE statement
 		var where string
 		var p = ""
@@ -394,11 +403,11 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		// Execute the raw SQL statement
 		err = svc.storage.Raw(&res.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
-				SELECT *, ROW_NUMBER() OVER (PARTITION BY resource_id %s ORDER BY timestamp DESC) AS row_number
+				SELECT *, ROW_NUMBER() OVER (PARTITION BY control_id %s ORDER BY timestamp DESC) AS row_number
 				FROM evaluation_results
 				%s
 		  	)
-		  	SELECT * FROM sorted_results WHERE row_number = 1;`, p, where), args...)
+		  	SELECT * FROM sorted_results WHERE row_number = 1 ORDER BY control_catalog_id, control_id;`, p, where), args...)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "database error: %v", err)
 		}
@@ -454,7 +463,7 @@ func (svc *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator
 			Every(interval).
 			Minute().
 			Tag(jobTag).
-			Do(svc.evaluateSubcontrol, toe, c.GetCategoryName(), c.GetId(), parentJobTag)
+			Do(svc.evaluateSubcontrol, toe, c, parentJobTag)
 	}
 	if err != nil {
 		err = fmt.Errorf("evaluation for Cloud Service '%s' and Control ID '%s' cannot be scheduled: %w", toe.GetCloudServiceId(), c.GetId(), err)
@@ -473,7 +482,7 @@ func (svc *Service) addJobToScheduler(c *orchestrator.Control, toe *orchestrator
 // TODO(all): Note: That is a first try. I'm not convinced, but I can't think of anything better at the moment.
 func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, schedulerTag string, subControls []*orchestrator.Control) {
 	var (
-		status     = evaluation.EvaluationStatus_EVALUATION_STATUS_UNSPECIFIED
+		status     = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
 		evalResult *evaluation.EvaluationResult
 	)
 
@@ -490,7 +499,7 @@ func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, catego
 			CloudServiceId: &toe.CloudServiceId,
 			SubControls:    util.Ref(fmt.Sprintf("%s.", controlId)), // We only need the sub-controls for the evaluation.
 		},
-		LatestByResourceId: util.Ref(true),
+		LatestByControlId: util.Ref(true),
 	})
 	if err != nil {
 		err = fmt.Errorf("error list evaluation results: %w", err)
@@ -503,63 +512,62 @@ func (svc *Service) evaluateControl(toe *orchestrator.TargetOfEvaluation, catego
 		return
 	}
 
-	// Get a map of the evaluation results, so that we have all evaluation results for a specific resource_id together
-	// for evaluation
-	evaluationResultsMap := createEvaluationResultMap(evaluations.Results)
-	for resourceID, eval := range evaluationResultsMap {
-		var nonCompliantAssessmentResults = []string{}
+	var nonCompliantAssessmentResults = []string{}
 
-		for _, r := range eval {
-			if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT {
-				status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
-			} else {
-				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
-			}
+	for _, r := range evaluations.Results {
+		if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT && status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT {
+			status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
+		} else if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING && status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING {
+			status = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
+		} else {
+			status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 		}
-
-		// Create evaluation result
-		evalResult = &evaluation.EvaluationResult{
-			Id:                         uuid.NewString(),
-			Timestamp:                  timestamppb.Now(),
-			ControlCategoryName:        categoryName,
-			ControlId:                  controlId,
-			CloudServiceId:             toe.GetCloudServiceId(),
-			ControlCatalogId:           toe.GetCatalogId(),
-			ResourceId:                 resourceID,
-			Status:                     status,
-			FailingAssessmentResultIds: nonCompliantAssessmentResults,
-		}
-
-		err = svc.storage.Create(evalResult)
-		if err != nil {
-			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", evalResult.GetResourceId(), controlId, err)
-			return
-		}
-
-		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), evalResult.Id)
-
 	}
+
+	// Create evaluation result
+	evalResult = &evaluation.EvaluationResult{
+		Id:                         uuid.NewString(),
+		Timestamp:                  timestamppb.Now(),
+		ControlCategoryName:        categoryName,
+		ControlId:                  controlId,
+		CloudServiceId:             toe.GetCloudServiceId(),
+		ControlCatalogId:           toe.GetCatalogId(),
+		Status:                     status,
+		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+	}
+
+	err = svc.storage.Create(evalResult)
+	if err != nil {
+		log.Errorf("error storing evaluation result for control ID '%s' in database: %v", controlId, err)
+		return
+	}
+
+	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), evalResult.Id)
+
 }
 
 // evaluateSubcontrol evaluates the sub-controls, e.g., OPS-13.2
-func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, categoryName, controlId, parentJobTag string) {
+func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, control *orchestrator.Control, parentJobTag string) {
 	var (
-		eval              *evaluation.EvaluationResult
-		err               error
-		assessmentResults []*assessment.AssessmentResult
+		eval                          *evaluation.EvaluationResult
+		err                           error
+		assessmentResults             []*assessment.AssessmentResult
+		status                        evaluation.EvaluationStatus
+		nonCompliantAssessmentResults []string
 	)
 
-	if toe == nil || categoryName == "" || controlId == "" || parentJobTag == "" {
+	if toe == nil || control == nil || parentJobTag == "" {
 		log.Errorf("input is missing")
 		return
 	}
 
 	// Get metrics from control and sub-controls
-	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), categoryName, controlId)
+	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", controlId, toe.GetCloudServiceId(), err)
-		// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be evaluated when all sub-controls are evaluated.
+		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, toe.GetCloudServiceId(), err)
+		// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be
+		// evaluated when all sub-controls are evaluated.
 		if parentJobTag != "" && svc.wg[parentJobTag] != nil {
 			svc.wg[parentJobTag].Done()
 		}
@@ -593,19 +601,16 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 		log.Debugf("no metrics are available for the given control")
 	}
 
-	// Here the actual evaluation takes place. For every resource_id we check if the assessment results are compliant.
+	status = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
+
+	// Here the actual evaluation takes place. We check if the assessment results are compliant.
 	// If the latest assessment result per resource_id is not compliant the whole evaluation status is set to
 	// NOT_COMPLIANT. Furthermore, all non-compliant assessment_result_ids are stored in a separate list.
 
 	// Get a map of the assessment results, so that we have all assessment results for a specific resource_id and
 	// metric_id together for evaluation
 	assessmentResultsMap := createAssessmentResultMap(assessmentResults)
-	for key, results := range assessmentResultsMap {
-		var (
-			nonCompliantAssessmentResults []string
-			status                        evaluation.EvaluationStatus
-		)
-
+	for _, results := range assessmentResultsMap {
 		// If no assessment_results are available continue
 		if len(results) == 0 {
 			continue
@@ -621,28 +626,27 @@ func (svc *Service) evaluateSubcontrol(toe *orchestrator.TargetOfEvaluation, cat
 				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 			}
 		}
-
-		// Create evaluation result
-		eval = &evaluation.EvaluationResult{
-			Id:                         uuid.NewString(),
-			Timestamp:                  timestamppb.Now(),
-			ControlCategoryName:        categoryName,
-			ControlId:                  controlId,
-			CloudServiceId:             toe.GetCloudServiceId(),
-			ControlCatalogId:           toe.GetCatalogId(),
-			ResourceId:                 key,
-			Status:                     status,
-			FailingAssessmentResultIds: nonCompliantAssessmentResults,
-		}
-
-		err = svc.storage.Create(eval)
-		if err != nil {
-			log.Errorf("error storing evaluation result for resource ID '%s' and control ID '%s' in database: %v", results[0].GetResourceId(), controlId, err)
-			continue
-		}
-
-		log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", controlId, toe.GetCloudServiceId(), eval.Id)
 	}
+
+	// Create evaluation result
+	eval = &evaluation.EvaluationResult{
+		Id:                         uuid.NewString(),
+		Timestamp:                  timestamppb.Now(),
+		ControlCategoryName:        control.CategoryName,
+		ControlId:                  control.Id,
+		ParentControlId:            control.ParentControlId,
+		CloudServiceId:             toe.GetCloudServiceId(),
+		ControlCatalogId:           toe.GetCatalogId(),
+		Status:                     status,
+		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+	}
+
+	err = svc.storage.Create(eval)
+	if err != nil {
+		log.Errorf("error storing evaluation result for control ID '%s' in database: %v", control.Id, err)
+	}
+
+	log.Debugf("Evaluation result stored for ControlID '%s' and Cloud Service ID '%s' with ID '%s'.", control.Id, toe.GetCloudServiceId(), eval.Id)
 
 	// If the parentJobTag is not empty, we have do decrement the WaitGroup so that the parent control can also be
 	// evaluated when all sub-controls are evaluated.
@@ -807,23 +811,10 @@ func createControlsInScopeHierarchy(controls []*orchestrator.Control) (controlsH
 }
 
 // createAssessmentResultMap returns a map with the resource_id as key and the assessment results as a value slice. We
-// need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessmen_results for 2
-// different metrics.
+// need that map if we have more than one assessment_result for evaluation, e.g., if we have two assessment_results for
+// 2 different metrics.
 func createAssessmentResultMap(results []*assessment.AssessmentResult) map[string][]*assessment.AssessmentResult {
 	var hierarchyResults = make(map[string][]*assessment.AssessmentResult)
-
-	for _, result := range results {
-		hierarchyResults[result.GetResourceId()] = append(hierarchyResults[result.GetResourceId()], result)
-	}
-
-	return hierarchyResults
-}
-
-// createEvaluationResultMap returns a map with the resource_id as key and the evaluation results as a value slice. We
-// need that map if we have more than one evaluation_result for the parent control evaluation, e.g., if we have two
-// evaluation_results for OPS-01.1H and OPS-01.2H.
-func createEvaluationResultMap(results []*evaluation.EvaluationResult) map[string][]*evaluation.EvaluationResult {
-	var hierarchyResults = make(map[string][]*evaluation.EvaluationResult)
 
 	for _, result := range results {
 		hierarchyResults[result.GetResourceId()] = append(hierarchyResults[result.GetResourceId()], result)

@@ -30,8 +30,6 @@ package clouditor.evaluation.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "api/assessment/assessment.proto";
-import "api/orchestrator/orchestrator.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -92,18 +90,25 @@ message ListEvaluationResultsRequest {
     optional string cloud_service_id = 1
         [ (validate.rules).string.uuid = true ];
 
+    // Optional. Lists only evaluation results for a specific catalog.
+    optional string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+
     // Optional. Lists only evaluation results for a specific control id.
-    optional string control_id = 2 [ (validate.rules).string.min_len = 1 ];
+    optional string control_id = 3 [ (validate.rules).string.min_len = 1 ];
 
     // Optional. Lists all evaluation results for the given initial control id
     // substring, e.g., if the substring 'CMK-01.' is given it returns the
     // controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
-    optional string sub_controls = 3 [ (validate.rules).string.min_len = 1 ];
+    optional string sub_controls = 4 [ (validate.rules).string.min_len = 1 ];
+
+    // Optional. Lists only results for parent controls
+    optional bool parents_only = 5;
   }
+
   optional Filter filter = 1;
 
-  // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 2;
+  // Optional. Latest results grouped by control_id.
+  optional bool latest_by_control_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -137,8 +142,8 @@ message EvaluationResult {
   // The catalog the evaluated control belongs to
   string control_catalog_id = 5 [ (validate.rules).string.min_len = 1 ];
 
-  // The evaluated resource
-  string resource_id = 6 [ (validate.rules).string.min_len = 1 ];
+  // Optionally, specifies the parent control ID, if this is a sub-control
+  optional string parent_control_id = 6;
 
   // Evaluation status
   EvaluationStatus status = 7 [ (validate.rules).enum.defined_only = true ];
