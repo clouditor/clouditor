@@ -147,6 +147,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 								"patchSettings": map[string]interface{}{
 									"patchMode": "AutomaticByOS",
 								},
+								"enableAutomaticUpdates": true,
 							},
 						},
 						"diagnosticsProfile": map[string]interface{}{
@@ -808,7 +809,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"enableAutomaticUpdates\":true,\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -1306,7 +1307,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
+							Raw: "{\"*armcompute.VirtualMachine\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2\",\"location\":\"eastus\",\"name\":\"vm2\",\"properties\":{\"diagnosticsProfile\":{\"bootDiagnostics\":{\"enabled\":true}},\"networkProfile\":{\"networkInterfaces\":[{\"id\":\"987\"},{\"id\":\"654\"}]},\"osProfile\":{\"windowsConfiguration\":{\"enableAutomaticUpdates\":true,\"patchSettings\":{\"patchMode\":\"AutomaticByOS\"}}},\"storageProfile\":{\"dataDisks\":[{\"managedDisk\":{\"id\":\"data_disk_2\"}},{\"managedDisk\":{\"id\":\"data_disk_3\"}}],\"osDisk\":{\"managedDisk\":{\"id\":\"os_test_disk\"}}}},\"resources\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux\"}]}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"987", "654"},
 					},
@@ -2314,6 +2315,7 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 								PatchSettings: &armcompute.PatchSettings{
 									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
 								},
+								EnableAutomaticUpdates: util.Ref(true),
 							},
 						},
 					},
@@ -2393,6 +2395,7 @@ func Test_automaticUpdates(t *testing.T) {
 								PatchSettings: &armcompute.PatchSettings{
 									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByPlatform),
 								},
+								EnableAutomaticUpdates: util.Ref(true),
 							},
 						},
 					},
