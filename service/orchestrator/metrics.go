@@ -393,7 +393,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	req.Configuration.UpdatedAt = timestamppb.Now()
 	req.Configuration.IsDefault = false
 
-	err = svc.storage.Save(&req.Configuration)
+	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND cloud_service_id = ?", req.GetMetricId(), req.GetCloudServiceId())
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
