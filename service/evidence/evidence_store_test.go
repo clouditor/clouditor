@@ -529,14 +529,14 @@ func TestService_EvidenceHook(t *testing.T) {
 	)
 	wg.Add(2)
 
-	firstHookFunction := func(evidence *evidence.Evidence, err error) {
+	firstHookFunction := func(ctx context.Context, evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
 		wg.Done()
 	}
 
-	secondHookFunction := func(evidence *evidence.Evidence, err error) {
+	secondHookFunction := func(ctx context.Context, evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 

@@ -584,13 +584,13 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	firstHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	secondHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
@@ -957,7 +957,7 @@ func TestService_HandleEvidence(t *testing.T) {
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
-			results, err := s.handleEvidence(tt.args.evidence, tt.args.resourceId)
+			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.resourceId)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
 				assert.NotEmpty(t, results)
 				// Check the result by validation
