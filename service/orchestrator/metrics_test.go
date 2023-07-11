@@ -80,7 +80,7 @@ var (
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -629,7 +629,7 @@ func TestService_ListMetrics(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -701,7 +701,7 @@ func TestService_ListMetrics(t *testing.T) {
 
 func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		events                chan *orchestrator.MetricChangeEvent
@@ -798,7 +798,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -929,7 +929,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 
 func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -1075,7 +1075,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 
 func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -1183,7 +1183,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
