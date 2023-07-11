@@ -600,14 +600,14 @@ func TestAssessmentResultHook(t *testing.T) {
 	)
 	wg.Add(2)
 
-	firstHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	firstHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
 		wg.Done()
 	}
 
-	secondHookFunction := func(assessmentResult *assessment.AssessmentResult, err error) {
+	secondHookFunction := func(ctx context.Context, assessmentResult *assessment.AssessmentResult, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
