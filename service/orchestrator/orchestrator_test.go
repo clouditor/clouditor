@@ -40,7 +40,6 @@ import (
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 

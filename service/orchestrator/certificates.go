@@ -48,7 +48,7 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 	return
 }
 
-// GetCertificate implements method for getting a certificate, e.g. to show its state in the UI
+// GetCertificate implements method for getting a certificate, e.g. to show its state in the UI.
 func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCertificateRequest) (
 	res *orchestrator.Certificate, err error) {
 
@@ -75,7 +75,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	return
 }
 
-// ListCertificates implements method for getting all certificates, e.g. to show its state in the UI
+// ListCertificates implements method for getting all certificates, e.g. to show its state in the UI. The response does not indicate whether there are no certificates available or the access is denied.
 func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.ListCertificatesRequest) (
 	res *orchestrator.ListCertificatesResponse, err error) {
 
@@ -160,7 +160,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 	return
 }
 
-// RemoveCertificate implements method for removing a certificate
+// RemoveCertificate implements method for removing a certificate. The response does not indicate whether there are no certificates available or the access is denied.
 func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	if err = service.ValidateRequest(req); err != nil {
