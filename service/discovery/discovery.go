@@ -314,6 +314,9 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 }
 
 func (svc *Service) Shutdown() {
+	log.Info("Shutting down discovery service")
+
+	svc.assessmentStreams.CloseAll()
 	svc.scheduler.Stop()
 }
 

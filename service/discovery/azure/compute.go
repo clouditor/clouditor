@@ -123,41 +123,82 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, virtualMachines...)
 
-	// Discover functions
-	function, err := d.discoverFunctions()
+	// Discover functions and web apps
+	resources, err := d.discoverFunctionsWebApps()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover functions: %w", err)
 	}
-	list = append(list, function...)
+	// if resources != nil {
+	list = append(list, resources...)
+	// }
 
 	return
 }
 
-// Discover function
-func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, error) {
+// Discover functions and web apps
+func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize functions client
-	if err := d.initFunctionsClient(); err != nil {
+	if err := d.initWebAppsClient(); err != nil {
 		return nil, err
 	}
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.functionsClient.NewListPager,
-		d.clients.functionsClient.NewListByResourceGroupPager,
+		d.clients.sitesClient.NewListPager,
+		d.clients.sitesClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
 		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
 			return res.Value
 		},
-		func(function *armappservice.Site) error {
-			r := d.handleFunction(function)
+		func(site *armappservice.Site) error {
+			var r voc.IsCompute
 
-			log.Infof("Adding function %+v", r)
+			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
+			switch *site.Kind {
+			case "app": // Windows Web App
+				// TODO(all): TBD
+				log.Debug("Windows Web App currently not implemented.")
+			case "app,linux": // Linux Web app
+				// TODO(all): TBD
+				log.Debug("Linux Web App currently not implemented.")
+			case "app,linux,container": // Linux Container Web App
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App Web App currently not implemented.")
+			case "hyperV": // Windows Container Web App
+				// TODO(all): TBD
+				log.Debug("Windows Container Web App currently not implemented.")
+			case "app,container,windows": // Windows Container Web App
+				// TODO(all): TBD
+				log.Debug("Windows Web App currently not implemented.")
+			case "app,linux,kubernetes": // Linux Web App on ARC
+				// TODO(all): TBD
+				log.Debug("Linux Web App on ARC currently not implemented.")
+			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App on ARC currently not implemented.")
+			case "functionapp": // Function Code App
+				r = d.handleFunction(site)
+			case "functionapp,linux": // Linux Consumption Function app
+				log.Debug("Windows Web App currently not implemented.")
+				r = d.handleFunction(site)
+			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
+				// TODO(all): TBD
+				log.Debug("Function Container App on ARC currently not implemented.")
+			case "functionapp,linux,kubernetes": // Function Code App on ARC
+				// TODO(all): TBD
+				log.Debug("Function Code App on ARC currently not implemented.")
+			default:
+				log.Debugf("%s currently not supported.", *site.Kind)
+			}
 
-			list = append(list, r)
+			if r != nil {
+				log.Infof("Adding function %+v", r)
+				list = append(list, r)
+			}
 
 			return nil
 		})
@@ -169,12 +210,51 @@ func (d *azureComputeDiscovery) discoverFunctions() ([]voc.IsCloudResource, erro
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+	var (
+		runtimeLanguage string
+		runtimeVersion  string
+		config          armappservice.WebAppsClientGetConfigurationResponse
+		err             error
+	)
+
 	// If a mandatory field is empty, the whole function is empty
-	if function == nil || function.ID == nil {
+	if function == nil {
 		return nil
 	}
 
-	runtimeLanguage, runtimeVersion := runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+	if *function.Kind == "functionapp,linux" { // Linux function
+		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
+	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+		// Get site config
+		config, err = d.clients.sitesClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+		if err != nil {
+			log.Errorf("error getting site config: %v", err)
+		}
+
+		// Check all runtime versions to get the used runtime language and runtime version
+		if config.Properties.JavaVersion != nil {
+			runtimeLanguage = "Java"
+			runtimeVersion = *config.Properties.JavaVersion
+		} else if config.Properties.NodeVersion != nil {
+			runtimeLanguage = "Node.js"
+			runtimeVersion = *config.Properties.NodeVersion
+		} else if config.Properties.PowerShellVersion != nil {
+			runtimeLanguage = "PowerShell"
+			runtimeVersion = *config.Properties.PowerShellVersion
+		} else if config.Properties.PhpVersion != nil {
+			runtimeLanguage = "PHP"
+			runtimeVersion = *config.Properties.PhpVersion
+		} else if config.Properties.PythonVersion != nil {
+			runtimeLanguage = "Python"
+			runtimeVersion = *config.Properties.PythonVersion
+		} else if config.Properties.JavaContainer != nil {
+			runtimeLanguage = "JavaContainer"
+			runtimeVersion = *config.Properties.JavaContainer
+		} else if config.Properties.NetFrameworkVersion != nil {
+			runtimeLanguage = ".NET"
+			runtimeVersion = *config.Properties.NetFrameworkVersion
+		}
+	}
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -189,6 +269,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				labels(function.Tags),
 				voc.FunctionType,
 				function,
+				config,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
@@ -250,7 +331,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
 		bootLogging              = []voc.ResourceID{}
-		osLogging                = []voc.ResourceID{}
+		osLoggingEnabled         bool
 		autoUpdates              *voc.AutomaticUpdates
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
@@ -270,6 +351,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	if d.defenderProperties[DefenderVirtualMachineType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	// Check extensions
+	for _, extension := range vm.Resources {
+		// Azure Monitor Agent (AMA) collects monitoring data from the guest operating system of Azure and hybrid virtual machines and delivers it to Azure Monitor for use (https://learn.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview). The extension names are
+		// * OMSAgentForLinux for Linux VMs and (legacy agent)
+		// * MicrosoftMonitoringAgent for Windows VMs (legacy agent)
+		// * AzureMonitoringWindowsAgent (new agent)
+		// * AzureMonitoringLinuxAgent (new agent)
+		if strings.Contains(*extension.ID, "OmsAgentForLinux") || strings.Contains(*extension.ID, "MicrosoftMonitoringAgent") || strings.Contains(*extension.ID, "AzureMonitoringWindowsAgent") || strings.Contains(*extension.ID, "AzureMonitoringLinuxAgent") {
+			osLoggingEnabled = true
+		}
 	}
 
 	r := &voc.VirtualMachine{
@@ -303,14 +396,21 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		},
 		OsLogging: &voc.OSLogging{
 			Logging: &voc.Logging{
-				Enabled:         false,
+				Enabled:         osLoggingEnabled,
 				RetentionPeriod: 0,
-				LoggingService:  osLogging,
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
 				Auditing: &voc.Auditing{
 					SecurityFeature: &voc.SecurityFeature{},
 				},
 				MonitoringLogDataEnabled: monitoringLogDataEnabled,
 				SecurityAlertsEnabled:    monitoringLogDataEnabled,
+			},
+		},
+		ActivityLogging: &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled:         true, // is always enabled
+				RetentionPeriod: RetentionPeriod90Days,
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
 			},
 		},
 		AutomaticUpdates: autoUpdates,
@@ -348,8 +448,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Linux configuration is available
 	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
-			util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeImageDefault {
+		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -359,8 +458,8 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Windows configuration is available
 	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
 		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
+		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
+			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -534,9 +633,9 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
 }
 
-// initFunctionsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initFunctionsClient() (err error) {
-	d.clients.functionsClient, err = initClient(d.clients.functionsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+// initWebAppsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
+	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 
