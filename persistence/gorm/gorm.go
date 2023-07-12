@@ -126,6 +126,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	log.Println("Creating storage")
 	// Create storage with default gorm config
 	g := &storage{
+		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
 		config: gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},

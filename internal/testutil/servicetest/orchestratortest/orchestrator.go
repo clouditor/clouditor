@@ -11,14 +11,24 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// NewCertificate creates a mock certificate
-func NewCertificate() *orchestrator.Certificate {
+// NewCertificateOption is an option for NewCertificate to modify single properties for testing , e.g., Update endpoint
+type NewCertificateOption func(*orchestrator.Certificate)
+
+func WithDescription(description string) NewCertificateOption {
+	return func(certificate *orchestrator.Certificate) {
+		certificate.Description = description
+	}
+}
+
+// NewCertificate creates a mock certificate.
+func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
+	timeStamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
 		Name:           testdata.MockCertificateName,
 		CloudServiceId: testdata.MockCloudServiceID1,
-		IssueDate:      "2021-11-06",
-		ExpirationDate: "2024-11-06",
+		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName,
 		AssuranceLevel: testdata.AssuranceLevelHigh,
 		Cab:            testdata.MockCertificateCab,
@@ -26,12 +36,40 @@ func NewCertificate() *orchestrator.Certificate {
 		States: []*orchestrator.State{{
 			State:         testdata.MockStateState,
 			TreeId:        testdata.MockStateTreeID,
-			Timestamp:     time.Now().String(),
+			Timestamp:     timeStamp.String(),
 			CertificateId: testdata.MockCertificateID,
 			Id:            testdata.MockStateId,
 		}},
 	}
 
+	for _, o := range opts {
+		o(mockCertificate)
+	}
+
+	return mockCertificate
+}
+
+// NewCertificate2 creates a mock certificate with other properties than NewCertificate
+func NewCertificate2() *orchestrator.Certificate {
+	timeStamp := time.Date(2014, 12, 1, 0, 0, 0, 0, time.UTC)
+	var mockCertificate = &orchestrator.Certificate{
+		Id:             testdata.MockCertificateID2,
+		Name:           testdata.MockCertificateName2,
+		CloudServiceId: testdata.MockCloudServiceID2,
+		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
+		Standard:       testdata.MockCertificateName2,
+		AssuranceLevel: testdata.AssuranceLevelHigh,
+		Cab:            testdata.MockCertificateCab2,
+		Description:    testdata.MockCertificateDescription2,
+		States: []*orchestrator.State{{
+			State:         testdata.MockStateState2,
+			TreeId:        testdata.MockStateTreeID2,
+			Timestamp:     timeStamp.String(),
+			CertificateId: testdata.MockCertificateID2,
+			Id:            testdata.MockStateId2,
+		}},
+	}
 	return mockCertificate
 }
 

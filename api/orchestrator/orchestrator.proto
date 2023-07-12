@@ -270,6 +270,14 @@ service Orchestrator {
     };
   }
 
+  // Lists all target certificates without state history
+  rpc ListPublicCertificates(ListPublicCertificatesRequest)
+      returns (ListPublicCertificatesResponse) {
+    option (google.api.http) = {
+      get : "/v1/orchestrator/certificates/public"
+    };
+  }
+
   // Updates an existing certificate
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
@@ -1004,10 +1012,24 @@ message ListCertificatesRequest {
   string order_by = 12;
   bool asc = 13;
 }
+
 message ListCertificatesResponse {
   repeated Certificate certificates = 1;
   string next_page_token = 2;
 }
+
+message ListPublicCertificatesRequest {
+  int32 page_size = 10;
+  string page_token = 11;
+  string order_by = 12;
+  bool asc = 13;
+}
+
+message ListPublicCertificatesResponse {
+  repeated Certificate certificates = 1;
+  string next_page_token = 2;
+}
+
 
 message UpdateCertificateRequest {
   Certificate certificate = 1 [ (validate.rules).message.required = true ];
