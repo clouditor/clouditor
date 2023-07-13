@@ -7858,6 +7858,256 @@ var _ interface {
 	ErrorName() string
 } = ListCertificatesResponseValidationError{}
 
+// Validate checks the field values on ListPublicCertificatesRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPublicCertificatesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPublicCertificatesRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListPublicCertificatesRequestMultiError, or nil if none found.
+func (m *ListPublicCertificatesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPublicCertificatesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PageSize
+
+	// no validation rules for PageToken
+
+	// no validation rules for OrderBy
+
+	// no validation rules for Asc
+
+	if len(errors) > 0 {
+		return ListPublicCertificatesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPublicCertificatesRequestMultiError is an error wrapping multiple
+// validation errors returned by ListPublicCertificatesRequest.ValidateAll()
+// if the designated constraints aren't met.
+type ListPublicCertificatesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPublicCertificatesRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPublicCertificatesRequestMultiError) AllErrors() []error { return m }
+
+// ListPublicCertificatesRequestValidationError is the validation error
+// returned by ListPublicCertificatesRequest.Validate if the designated
+// constraints aren't met.
+type ListPublicCertificatesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPublicCertificatesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPublicCertificatesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPublicCertificatesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPublicCertificatesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPublicCertificatesRequestValidationError) ErrorName() string {
+	return "ListPublicCertificatesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPublicCertificatesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPublicCertificatesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPublicCertificatesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPublicCertificatesRequestValidationError{}
+
+// Validate checks the field values on ListPublicCertificatesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPublicCertificatesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPublicCertificatesResponse with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// ListPublicCertificatesResponseMultiError, or nil if none found.
+func (m *ListPublicCertificatesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPublicCertificatesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetCertificates() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListPublicCertificatesResponseValidationError{
+						field:  fmt.Sprintf("Certificates[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListPublicCertificatesResponseValidationError{
+						field:  fmt.Sprintf("Certificates[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListPublicCertificatesResponseValidationError{
+					field:  fmt.Sprintf("Certificates[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for NextPageToken
+
+	if len(errors) > 0 {
+		return ListPublicCertificatesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPublicCertificatesResponseMultiError is an error wrapping multiple
+// validation errors returned by ListPublicCertificatesResponse.ValidateAll()
+// if the designated constraints aren't met.
+type ListPublicCertificatesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPublicCertificatesResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPublicCertificatesResponseMultiError) AllErrors() []error { return m }
+
+// ListPublicCertificatesResponseValidationError is the validation error
+// returned by ListPublicCertificatesResponse.Validate if the designated
+// constraints aren't met.
+type ListPublicCertificatesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPublicCertificatesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPublicCertificatesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPublicCertificatesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPublicCertificatesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPublicCertificatesResponseValidationError) ErrorName() string {
+	return "ListPublicCertificatesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPublicCertificatesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPublicCertificatesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPublicCertificatesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPublicCertificatesResponseValidationError{}
+
 // Validate checks the field values on UpdateCertificateRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
