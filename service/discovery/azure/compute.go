@@ -232,25 +232,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		}
 
 		// Check all runtime versions to get the used runtime language and runtime version
-		if *config.Properties.JavaVersion != "" {
+		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"
 			runtimeVersion = *config.Properties.JavaVersion
-		} else if *config.Properties.NodeVersion != "" {
+		} else if util.Deref(config.Properties.NodeVersion) != "" {
 			runtimeLanguage = "Node.js"
 			runtimeVersion = *config.Properties.NodeVersion
-		} else if *config.Properties.PowerShellVersion != "" {
+		} else if util.Deref(config.Properties.PowerShellVersion) != "" {
 			runtimeLanguage = "PowerShell"
 			runtimeVersion = *config.Properties.PowerShellVersion
-		} else if *config.Properties.PhpVersion != "" {
+		} else if util.Deref(config.Properties.PhpVersion) != "" {
 			runtimeLanguage = "PHP"
 			runtimeVersion = *config.Properties.PhpVersion
-		} else if *config.Properties.PythonVersion != "" {
+		} else if util.Deref(config.Properties.PythonVersion) != "" {
 			runtimeLanguage = "Python"
 			runtimeVersion = *config.Properties.PythonVersion
-		} else if *config.Properties.JavaContainer != "" {
+		} else if util.Deref(config.Properties.JavaContainer) != "" {
 			runtimeLanguage = "JavaContainer"
 			runtimeVersion = *config.Properties.JavaContainer
-		} else if *config.Properties.NetFrameworkVersion != "" {
+		} else if util.Deref(config.Properties.NetFrameworkVersion) != "" {
 			runtimeLanguage = ".NET"
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
