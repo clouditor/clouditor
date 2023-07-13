@@ -66,7 +66,7 @@ type Service struct {
 	hookMutex sync.RWMutex
 
 	// Hook
-	AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+	AssessmentResultHooks []assessment.ResultHookFunc
 	// mu is used for (un)locking result hook calls
 	mu sync.Mutex
 
