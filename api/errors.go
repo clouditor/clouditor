@@ -32,4 +32,5 @@ import (
 var (
 	ErrInvalidColumnName = errors.New("column name is invalid")
 	ErrEmptyRequest      = errors.New("empty request")
+	ErrInvalidRequest    = errors.New("invalid request")
 )
