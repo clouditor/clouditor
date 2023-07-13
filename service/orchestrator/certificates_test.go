@@ -379,7 +379,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
 		cloudServiceHooks               []orchestrator.CloudServiceHookFunc
 		toeHooks                        []orchestrator.TargetOfEvaluationHookFunc
-		AssessmentResultHooks           []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
 		metricsFile                     string
 		loadMetricsFunc                 func() ([]*assessment.Metric, error)
