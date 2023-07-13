@@ -274,7 +274,7 @@ service Orchestrator {
   rpc ListPublicCertificates(ListPublicCertificatesRequest)
       returns (ListPublicCertificatesResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/certificates/public"
+      get : "/v1/orchestrator/public/certificates"
     };
   }
 
