@@ -55,7 +55,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)

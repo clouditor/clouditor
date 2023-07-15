@@ -383,7 +383,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 func TestService_ListCloudServices(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -531,7 +531,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)

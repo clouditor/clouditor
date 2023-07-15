@@ -329,7 +329,7 @@ func TestService_RemoveCatalog(t *testing.T) {
 func TestService_GetCategory(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -426,7 +426,7 @@ func TestService_GetCategory(t *testing.T) {
 func TestService_GetControl(t *testing.T) {
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -556,7 +556,7 @@ func TestService_ListControls(t *testing.T) {
 
 func TestService_loadCatalogs(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
