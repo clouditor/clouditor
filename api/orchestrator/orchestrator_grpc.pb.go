@@ -64,6 +64,8 @@ type OrchestratorClient interface {
 	ListCloudServices(ctx context.Context, in *ListCloudServicesRequest, opts ...grpc.CallOption) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(ctx context.Context, in *RemoveCloudServiceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Retrieves target cloud service statistics
+	GetCloudServiceStatistics(ctx context.Context, in *GetCloudServiceStatisticsRequest, opts ...grpc.CallOption) (*GetCloudServiceStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// service and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
@@ -84,6 +86,8 @@ type OrchestratorClient interface {
 	GetCertificate(ctx context.Context, in *GetCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Lists all target certificates
 	ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error)
+	// Lists all target certificates without state history
+	ListPublicCertificates(ctx context.Context, in *ListPublicCertificatesRequest, opts ...grpc.CallOption) (*ListPublicCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(ctx context.Context, in *UpdateCertificateRequest, opts ...grpc.CallOption) (*Certificate, error)
 	// Removes a certificate
@@ -327,6 +331,15 @@ func (c *orchestratorClient) RemoveCloudService(ctx context.Context, in *RemoveC
 	return out, nil
 }
 
+func (c *orchestratorClient) GetCloudServiceStatistics(ctx context.Context, in *GetCloudServiceStatisticsRequest, opts ...grpc.CallOption) (*GetCloudServiceStatisticsResponse, error) {
+	out := new(GetCloudServiceStatisticsResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/GetCloudServiceStatistics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orchestratorClient) UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error) {
 	out := new(assessment.MetricConfiguration)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/UpdateMetricConfiguration", in, out, opts...)
@@ -425,6 +438,15 @@ func (c *orchestratorClient) GetCertificate(ctx context.Context, in *GetCertific
 func (c *orchestratorClient) ListCertificates(ctx context.Context, in *ListCertificatesRequest, opts ...grpc.CallOption) (*ListCertificatesResponse, error) {
 	out := new(ListCertificatesResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListCertificates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orchestratorClient) ListPublicCertificates(ctx context.Context, in *ListPublicCertificatesRequest, opts ...grpc.CallOption) (*ListPublicCertificatesResponse, error) {
+	out := new(ListPublicCertificatesResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -654,6 +676,8 @@ type OrchestratorServer interface {
 	ListCloudServices(context.Context, *ListCloudServicesRequest) (*ListCloudServicesResponse, error)
 	// Removes a target cloud service
 	RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error)
+	// Retrieves target cloud service statistics
+	GetCloudServiceStatistics(context.Context, *GetCloudServiceStatisticsRequest) (*GetCloudServiceStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
 	// service and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
@@ -674,6 +698,8 @@ type OrchestratorServer interface {
 	GetCertificate(context.Context, *GetCertificateRequest) (*Certificate, error)
 	// Lists all target certificates
 	ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error)
+	// Lists all target certificates without state history
+	ListPublicCertificates(context.Context, *ListPublicCertificatesRequest) (*ListPublicCertificatesResponse, error)
 	// Updates an existing certificate
 	UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error)
 	// Removes a certificate
@@ -784,6 +810,9 @@ func (UnimplementedOrchestratorServer) ListCloudServices(context.Context, *ListC
 func (UnimplementedOrchestratorServer) RemoveCloudService(context.Context, *RemoveCloudServiceRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveCloudService not implemented")
 }
+func (UnimplementedOrchestratorServer) GetCloudServiceStatistics(context.Context, *GetCloudServiceStatisticsRequest) (*GetCloudServiceStatisticsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCloudServiceStatistics not implemented")
+}
 func (UnimplementedOrchestratorServer) UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMetricConfiguration not implemented")
 }
@@ -810,6 +839,9 @@ func (UnimplementedOrchestratorServer) GetCertificate(context.Context, *GetCerti
 }
 func (UnimplementedOrchestratorServer) ListCertificates(context.Context, *ListCertificatesRequest) (*ListCertificatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListCertificates not implemented")
+}
+func (UnimplementedOrchestratorServer) ListPublicCertificates(context.Context, *ListPublicCertificatesRequest) (*ListPublicCertificatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPublicCertificates not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateCertificate(context.Context, *UpdateCertificateRequest) (*Certificate, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCertificate not implemented")
@@ -1216,6 +1248,24 @@ func _Orchestrator_RemoveCloudService_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Orchestrator_GetCloudServiceStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCloudServiceStatisticsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).GetCloudServiceStatistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/GetCloudServiceStatistics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).GetCloudServiceStatistics(ctx, req.(*GetCloudServiceStatisticsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Orchestrator_UpdateMetricConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateMetricConfigurationRequest)
 	if err := dec(in); err != nil {
@@ -1377,6 +1427,24 @@ func _Orchestrator_ListCertificates_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrchestratorServer).ListCertificates(ctx, req.(*ListCertificatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Orchestrator_ListPublicCertificates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPublicCertificatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrchestratorServer).ListPublicCertificates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrchestratorServer).ListPublicCertificates(ctx, req.(*ListPublicCertificatesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1817,6 +1885,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_RemoveCloudService_Handler,
 		},
 		{
+			MethodName: "GetCloudServiceStatistics",
+			Handler:    _Orchestrator_GetCloudServiceStatistics_Handler,
+		},
+		{
 			MethodName: "UpdateMetricConfiguration",
 			Handler:    _Orchestrator_UpdateMetricConfiguration_Handler,
 		},
@@ -1847,6 +1919,10 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCertificates",
 			Handler:    _Orchestrator_ListCertificates_Handler,
+		},
+		{
+			MethodName: "ListPublicCertificates",
+			Handler:    _Orchestrator_ListPublicCertificates_Handler,
 		},
 		{
 			MethodName: "UpdateCertificate",

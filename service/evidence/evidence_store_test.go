@@ -529,14 +529,14 @@ func TestService_EvidenceHook(t *testing.T) {
 	)
 	wg.Add(2)
 
-	firstHookFunction := func(evidence *evidence.Evidence, err error) {
+	firstHookFunction := func(ctx context.Context, evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 
 		wg.Done()
 	}
 
-	secondHookFunction := func(evidence *evidence.Evidence, err error) {
+	secondHookFunction := func(ctx context.Context, evidence *evidence.Evidence, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 
@@ -664,12 +664,12 @@ func createMockStream(requests []*evidence.StoreEvidenceRequest) *mockStreamer {
 	return m
 }
 
-func (m mockStreamer) Send(response *evidence.StoreEvidencesResponse) error {
+func (m *mockStreamer) Send(response *evidence.StoreEvidencesResponse) error {
 	m.SentFromServer <- response
 	return nil
 }
 
-func (mockStreamer) SendAndClose(_ *emptypb.Empty) error {
+func (*mockStreamer) SendAndClose(_ *emptypb.Empty) error {
 	return nil
 }
 
@@ -685,27 +685,27 @@ func (m *mockStreamer) Recv() (req *evidence.StoreEvidenceRequest, err error) {
 	return req, nil
 }
 
-func (mockStreamer) SetHeader(_ metadata.MD) error {
+func (*mockStreamer) SetHeader(_ metadata.MD) error {
 	panic("implement me")
 }
 
-func (mockStreamer) SendHeader(_ metadata.MD) error {
+func (*mockStreamer) SendHeader(_ metadata.MD) error {
 	panic("implement me")
 }
 
-func (mockStreamer) SetTrailer(_ metadata.MD) {
+func (*mockStreamer) SetTrailer(_ metadata.MD) {
 	panic("implement me")
 }
 
-func (mockStreamer) Context() context.Context {
+func (*mockStreamer) Context() context.Context {
 	return context.TODO()
 }
 
-func (mockStreamer) SendMsg(_ interface{}) error {
+func (*mockStreamer) SendMsg(_ interface{}) error {
 	panic("implement me")
 }
 
-func (mockStreamer) RecvMsg(_ interface{}) error {
+func (*mockStreamer) RecvMsg(_ interface{}) error {
 	panic("implement me")
 }
 
@@ -719,11 +719,11 @@ func (*mockStreamerWithRecvErr) Context() context.Context {
 	return context.TODO()
 }
 
-func (mockStreamerWithRecvErr) Send(*evidence.StoreEvidencesResponse) error {
+func (*mockStreamerWithRecvErr) Send(*evidence.StoreEvidencesResponse) error {
 	panic("implement me")
 }
 
-func (mockStreamerWithRecvErr) Recv() (*evidence.StoreEvidenceRequest, error) {
+func (*mockStreamerWithRecvErr) Recv() (*evidence.StoreEvidenceRequest, error) {
 
 	err := errors.New("Recv()-error")
 

@@ -588,8 +588,8 @@ func (m *ListEvaluationResultsRequest) validate(all bool) error {
 
 	}
 
-	if m.LatestByResourceId != nil {
-		// no validation rules for LatestByResourceId
+	if m.LatestByControlId != nil {
+		// no validation rules for LatestByControlId
 	}
 
 	if len(errors) > 0 {
@@ -899,17 +899,6 @@ func (m *EvaluationResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetResourceId()) < 1 {
-		err := EvaluationResultValidationError{
-			field:  "ResourceId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if _, ok := EvaluationStatus_name[int32(m.GetStatus())]; !ok {
 		err := EvaluationResultValidationError{
 			field:  "Status",
@@ -964,6 +953,10 @@ func (m *EvaluationResult) validate(all bool) error {
 			errors = append(errors, err)
 		}
 
+	}
+
+	if m.ParentControlId != nil {
+		// no validation rules for ParentControlId
 	}
 
 	if len(errors) > 0 {
@@ -1091,6 +1084,21 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 
 	}
 
+	if m.CatalogId != nil {
+
+		if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
+			err := ListEvaluationResultsRequest_FilterValidationError{
+				field:  "CatalogId",
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if m.ControlId != nil {
 
 		if utf8.RuneCountInString(m.GetControlId()) < 1 {
@@ -1119,6 +1127,10 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 			errors = append(errors, err)
 		}
 
+	}
+
+	if m.ParentsOnly != nil {
+		// no validation rules for ParentsOnly
 	}
 
 	if len(errors) > 0 {

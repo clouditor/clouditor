@@ -259,13 +259,20 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 		catalogs = append(catalogs, catalogsFromFile...)
 	}
 
-	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set, otherwise we are failing a constraint.
+	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set,
+	// otherwise we are failing a constraint.
 	for _, catalog := range catalogs {
 		for _, category := range catalog.Categories {
 			for _, control := range category.Controls {
 				for _, sub := range control.Controls {
 					sub.CategoryName = category.Name
 					sub.CategoryCatalogId = catalog.Id
+
+					// Also set the parent information, so we do not need to set it in the original file to make it
+					// easier
+					sub.ParentControlCategoryCatalogId = &control.CategoryCatalogId
+					sub.ParentControlCategoryName = &control.CategoryName
+					sub.ParentControlId = &control.Id
 				}
 			}
 		}

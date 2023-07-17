@@ -232,25 +232,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		}
 
 		// Check all runtime versions to get the used runtime language and runtime version
-		if config.Properties.JavaVersion != nil {
+		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"
 			runtimeVersion = *config.Properties.JavaVersion
-		} else if config.Properties.NodeVersion != nil {
+		} else if util.Deref(config.Properties.NodeVersion) != "" {
 			runtimeLanguage = "Node.js"
 			runtimeVersion = *config.Properties.NodeVersion
-		} else if config.Properties.PowerShellVersion != nil {
+		} else if util.Deref(config.Properties.PowerShellVersion) != "" {
 			runtimeLanguage = "PowerShell"
 			runtimeVersion = *config.Properties.PowerShellVersion
-		} else if config.Properties.PhpVersion != nil {
+		} else if util.Deref(config.Properties.PhpVersion) != "" {
 			runtimeLanguage = "PHP"
 			runtimeVersion = *config.Properties.PhpVersion
-		} else if config.Properties.PythonVersion != nil {
+		} else if util.Deref(config.Properties.PythonVersion) != "" {
 			runtimeLanguage = "Python"
 			runtimeVersion = *config.Properties.PythonVersion
-		} else if config.Properties.JavaContainer != nil {
+		} else if util.Deref(config.Properties.JavaContainer) != "" {
 			runtimeLanguage = "JavaContainer"
 			runtimeVersion = *config.Properties.JavaContainer
-		} else if config.Properties.NetFrameworkVersion != nil {
+		} else if util.Deref(config.Properties.NetFrameworkVersion) != "" {
 			runtimeLanguage = ".NET"
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
@@ -448,8 +448,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Linux configuration is available
 	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform ||
-			util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeImageDefault {
+		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -459,8 +458,8 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	// Check if Windows configuration is available
 	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
 		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform {
+		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
+			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return

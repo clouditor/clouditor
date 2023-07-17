@@ -32,6 +32,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
@@ -400,7 +401,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
 		TlsVersion: string(util.Deref(account.Properties.MinimumTLSVersion)),
-		Algorithm:  "TLS",
+		Algorithm:  constants.TLS,
 	}
 
 	storageService := &voc.ObjectStorageService{

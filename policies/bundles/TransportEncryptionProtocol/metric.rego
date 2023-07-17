@@ -12,5 +12,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, enc.algorithm)
+	compare(data.operator, data.target_value, enc.tlsVersion)
 }

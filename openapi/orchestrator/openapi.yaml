@@ -705,6 +705,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/statistics:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves target cloud service statistics
+            operationId: Orchestrator_GetCloudServiceStatistics
+            parameters:
+                - name: cloudServiceId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetCloudServiceStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
@@ -1358,6 +1382,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/public/certificates:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates without state history
+            operationId: Orchestrator_ListPublicCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListPublicCertificatesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/runtime_info:
         get:
             tags:
@@ -1533,11 +1594,17 @@ components:
                     items:
                         type: string
                     description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
-                color:
-                    type: string
                 shortName:
                     type: string
                     description: Catalogs short name, e.g. EUCS
+                metadata:
+                    $ref: '#/components/schemas/Catalog_Metadata'
+        Catalog_Metadata:
+            type: object
+            properties:
+                color:
+                    type: string
+                    description: a color for the cloud service used by the UI
         Category:
             type: object
             properties:
@@ -1596,19 +1663,27 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
-                tags:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/CloudService_Tag'
-                    description: a tag list of key/value pairs, e.g., env:prod
-        CloudService_Tag:
+                createdAt:
+                    type: string
+                    description: creation time of the cloud_service
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: last update time of the cloud_service
+                    format: date-time
+                metadata:
+                    $ref: '#/components/schemas/CloudService_Metadata'
+        CloudService_Metadata:
             type: object
             properties:
-                tag:
+                labels:
                     type: object
                     additionalProperties:
                         type: string
-            description: As long as repeated maps are not supported, we have to do this workaround.
+                    description: a map of key/value pairs, e.g., env:prod
+                icon:
+                    type: string
+                    description: an icon for the cloud service used by the UI
         Control:
             type: object
             properties:
@@ -1675,6 +1750,25 @@ components:
                     type: string
                 version:
                     type: string
+        GetCloudServiceStatisticsResponse:
+            type: object
+            properties:
+                numberOfDiscoveredResources:
+                    type: integer
+                    description: number of discovered resources per cloud service
+                    format: int64
+                numberOfAssessmentResults:
+                    type: integer
+                    description: number of assessment results per cloud service
+                    format: int64
+                numberOfEvidences:
+                    type: integer
+                    description: number of evidences per cloud service
+                    format: int64
+                numberOfSelectedCatalogs:
+                    type: integer
+                    description: number of selected catalogs per cloud service
+                    format: int64
         GoogleProtobufAny:
             type: object
             properties:
@@ -1763,6 +1857,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
+        ListPublicCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
         ListTargetsOfEvaluationResponse:

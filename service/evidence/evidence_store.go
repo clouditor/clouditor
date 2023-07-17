@@ -29,10 +29,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"io"
 	"strings"
 	"sync"
+
+	"golang.org/x/exp/slices"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/logging"
@@ -119,7 +120,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informHooks(req.Evidence, nil)
+	go svc.informHooks(ctx, req.Evidence, nil)
 
 	res = &evidence.StoreEvidenceResponse{}
 
@@ -278,7 +279,7 @@ func (svc *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc)
 	svc.evidenceHooks = append(svc.evidenceHooks, evidenceHook)
 }
 
-func (svc *Service) informHooks(result *evidence.Evidence, err error) {
+func (svc *Service) informHooks(ctx context.Context, result *evidence.Evidence, err error) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
 
@@ -286,7 +287,7 @@ func (svc *Service) informHooks(result *evidence.Evidence, err error) {
 	if svc.evidenceHooks != nil {
 		for _, hook := range svc.evidenceHooks {
 			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(result, err)
+			hook(ctx, result, err)
 		}
 	}
 }

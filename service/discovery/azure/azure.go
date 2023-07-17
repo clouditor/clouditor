@@ -145,9 +145,10 @@ type clients struct {
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network
-	networkInterfacesClient  *armnetwork.InterfacesClient
-	loadBalancerClient       *armnetwork.LoadBalancersClient
-	applicationGatewayClient *armnetwork.ApplicationGatewaysClient
+	networkInterfacesClient     *armnetwork.InterfacesClient
+	loadBalancerClient          *armnetwork.LoadBalancersClient
+	applicationGatewayClient    *armnetwork.ApplicationGatewaysClient
+	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
 	sitesClient *armappservice.WebAppsClient

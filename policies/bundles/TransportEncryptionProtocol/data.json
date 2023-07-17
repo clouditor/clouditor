@@ -1,4 +1,4 @@
 {
   "operator" : "==",
-  "target_value" : "TLS 1.3"
+  "target_value" : "TLS1_2"
 }

@@ -14,5 +14,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, logging.loggingService)
+	compare(data.operator, data.target_value, count(logging.loggingService))
 }
