@@ -186,6 +186,27 @@
 | Algorithm  | ❌     | ❌   |
 | KeyUrl     | ✅     | ✅   |
 
+### Database Storage
+| Evidence     | Azure | AWS |
+|--------------|-------|-----|
+| Storage      | ✅     | ❌   |
+| Parent       |  ✅    | ❌   |
+
+### Database Service
+| Evidence     | Azure | AWS |
+|--------------|-------|-----|
+| NetworkService      | ✅     | ❌   |
+| AnomalyDetection       |  ✅    | ❌   |
+
+#### Networkservice
+| Evidence             | Azure | AWS |
+|----------------------|-------|-----|
+| Networking           | ✅     | ✅   |
+| Authenticity         | ❌     | ❌   |
+| Compute              | ❌     | ❌   |  
+| TransportEncryption  | ❌     | ✅   |
+| Ips                  | ❌     | ❌   |
+| Ports                | ❌     | ❌   |
 </details>
 
 # Azure Backup
@@ -209,3 +230,4 @@ There are 2 different backup solutions for different resources
 | Azure disks | x | |
 | Azure Database for PostgreSQL servers | x | |
 | Kubernetes Services | x | |
+</details>
