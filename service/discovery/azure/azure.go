@@ -141,7 +141,7 @@ type clients struct {
 
 	// DB
 	databasesClient        *armsql.DatabasesClient
-	serversClient          *armsql.ServersClient
+	sqlServersClient       *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network

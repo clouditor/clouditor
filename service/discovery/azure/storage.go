@@ -106,7 +106,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	list = append(list, storageAccounts...)
 
 	// Discover sql databases
-	dbs, err := d.discoverSqlServer()
+	dbs, err := d.discoverSqlServers()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
 	}
@@ -115,22 +115,22 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	return
 }
 
-// discoverSqlServer discovers the sql server and databases
-func (d *azureStorageDiscovery) discoverSqlServer() ([]voc.IsCloudResource, error) {
+// discoverSqlServers discovers the sql server and databases
+func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, error) {
 	var (
 		list []voc.IsCloudResource
 		err  error
 	)
 
 	// initialize SQL server client
-	if err := d.initServersClient(); err != nil {
+	if err := d.initSQLServersClient(); err != nil {
 		return nil, err
 	}
 
 	// Discover sql server
 	err = listPager(d.azureDiscovery,
-		d.clients.serversClient.NewListPager,
-		d.clients.serversClient.NewListByResourceGroupPager,
+		d.clients.sqlServersClient.NewListPager,
+		d.clients.sqlServersClient.NewListByResourceGroupPager,
 		func(res armsql.ServersClientListResponse) []*armsql.Server {
 			return res.Value
 		},
@@ -163,7 +163,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	)
 
 	// initialize SQL databases client
-	if err = d.initDatabsesClient(); err != nil {
+	if err = d.initDatabasesClient(); err != nil {
 		return nil, err
 	}
 
@@ -180,7 +180,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 			// Getting anomaly detection status
 			anomalyDetectionEnabeld, err := d.anomalyDetectionEnabled(server, value)
 			if err != nil {
-				log.Errorf("error getting anomlay detection info for database '%s': %v", *value.Name, err)
+				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
 
 			// Create database storage voc object
@@ -679,16 +679,16 @@ func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 	return
 }
 
-// initDatabsesClient creates the client if not already exists
-func (d *azureStorageDiscovery) initDatabsesClient() (err error) {
+// initDatabasesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
 	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d.azureDiscovery, armsql.NewDatabasesClient)
 
 	return
 }
 
-// initServersClient creates the client if not already exists
-func (d *azureStorageDiscovery) initServersClient() (err error) {
-	d.clients.serversClient, err = initClient(d.clients.serversClient, d.azureDiscovery, armsql.NewServersClient)
+// initSQLServersClient creates the client if not already exists
+func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
+	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
 
 	return
 }
