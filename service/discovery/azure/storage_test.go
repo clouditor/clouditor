@@ -40,6 +40,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -298,6 +299,41 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+					"name": "SQLServer1",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+					"name":     "SqlDatabase1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"isInfraEncryptionEnabled": true,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
+					"name":     "Default",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"state": "Enabled",
+					},
+				},
+			},
+		}, 200)
 	}
 
 	return m.mockSender.Do(req)
@@ -390,7 +426,7 @@ func TestStorage(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 9, len(list))
+	assert.Equal(t, 11, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -713,7 +749,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						Resource: &voc.Resource{
 							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
 							Name:         "account1-account1-22222222-2222-2222-2222-222222222222",
-							ServiceID:    "11111111-1111-1111-1111-111111111111",
+							ServiceID:    testdata.MockCloudServiceID1,
 							CreationTime: 0,
 							Type:         voc.ObjectStorageType,
 							GeoLocation: voc.GeoLocation{
@@ -721,6 +757,50 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							Raw: "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 						},
+					},
+				},
+				&voc.DatabaseStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "SqlDatabase1",
+							CreationTime: 0,
+							Type:         voc.DatabaseStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: make(map[string]string),
+							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
+						},
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled:   true,
+							Algorithm: AES256,
+						},
+					},
+					Parent: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"},
+				},
+				&voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+									ServiceID:    testdata.MockCloudServiceID1,
+									Name:         "SqlDatabase1",
+									CreationTime: 0,
+									Type:         voc.DatabaseServiceType,
+									GeoLocation: voc.GeoLocation{
+										Region: "eastus",
+									},
+									Labels: make(map[string]string),
+									Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}],\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"name\":\"SQLServer1\"}]}",
+								},
+							},
+						},
+					},
+					AnomalyDetection: &voc.AnomalyDetection{
+						Enabled: true,
 					},
 				},
 			},
@@ -1643,6 +1723,199 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		server *armsql.Server
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error list pager",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					clients: clients{},
+				},
+			},
+			args: args{
+				server: &armsql.Server{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+					Name:     util.Ref("SQLServer1"),
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting next page: ")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				server: &armsql.Server{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+					Name:     util.Ref("SQLServer1"),
+				},
+			},
+			want: []voc.IsCloudResource{
+				&voc.DatabaseStorage{
+					Storage: &voc.Storage{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+							Name:         "SqlDatabase1",
+							ServiceID:    testdata.MockCloudServiceID1,
+							CreationTime: 0,
+							Type:         voc.DatabaseStorageType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: make(map[string]string),
+							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
+						},
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled:   true,
+							Algorithm: AES256,
+						},
+					},
+					Parent: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"},
+				},
+				&voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+									ServiceID:    testdata.MockCloudServiceID1,
+									Name:         "SqlDatabase1",
+									CreationTime: 0,
+									Type:         voc.DatabaseServiceType,
+									GeoLocation: voc.GeoLocation{
+										Region: "eastus",
+									},
+									Labels: make(map[string]string),
+									Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}],\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\"}]}",
+								},
+							},
+						},
+					},
+					AnomalyDetection: &voc.AnomalyDetection{
+						Enabled: true,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+
+			got, err := d.handleSqlServer(tt.args.server)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleSqlServer(%v, %v)", tt.args.server, tt.args.server)) {
+				return
+			}
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		server *armsql.Server
+		db     *armsql.Database
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    bool
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error list pager",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					clients: clients{},
+				},
+			},
+			args: args{
+				server: &armsql.Server{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+					Name:     util.Ref("SQLServer1"),
+				},
+				db: &armsql.Database{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+					Name:     util.Ref("SqlDatabase1"),
+					Location: util.Ref("eastus"),
+					Properties: &armsql.DatabaseProperties{
+						IsInfraEncryptionEnabled: util.Ref(true),
+					},
+				},
+			},
+			want: false,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting next page: ")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				server: &armsql.Server{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+					Name:     util.Ref("SQLServer1"),
+				},
+				db: &armsql.Database{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+					Name:     util.Ref("SqlDatabase1"),
+					Location: util.Ref("eastus"),
+					Properties: &armsql.DatabaseProperties{
+						IsInfraEncryptionEnabled: util.Ref(true),
+					},
+				},
+			},
+			want:    true,
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			got, err := d.anomalyDetectionEnabled(tt.args.server, tt.args.db)
+
+			tt.wantErr(t, err)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }

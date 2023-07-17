@@ -37,6 +37,8 @@ import (
 	"clouditor.io/clouditor/voc"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
@@ -104,7 +106,138 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, storageAccounts...)
 
+	// Discover sql databases
+	dbs, err := d.discoverSqlServers()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+	}
+	list = append(list, dbs...)
+
 	return
+}
+
+// discoverSqlServers discovers the sql server and databases
+func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, error) {
+	var (
+		list []voc.IsCloudResource
+		err  error
+	)
+
+	// initialize SQL server client
+	if err := d.initSQLServersClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover sql server
+	err = listPager(d.azureDiscovery,
+		d.clients.sqlServersClient.NewListPager,
+		d.clients.sqlServersClient.NewListByResourceGroupPager,
+		func(res armsql.ServersClientListResponse) []*armsql.Server {
+			return res.Value
+		},
+		func(res armsql.ServersClientListByResourceGroupResponse) []*armsql.Server {
+			return res.Value
+		},
+		func(server *armsql.Server) error {
+			db, err := d.handleSqlServer(server)
+			if err != nil {
+				return fmt.Errorf("could not handle sql database: %w", err)
+			}
+			log.Infof("Adding sql database '%s", *server.Name)
+			list = append(list, db...)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.IsCloudResource, error) {
+	var (
+		dbStorage voc.IsCloudResource
+		dbService voc.IsCloudResource
+		list      []voc.IsCloudResource
+		err       error
+	)
+
+	// initialize SQL databases client
+	if err = d.initDatabasesClient(); err != nil {
+		return nil, err
+	}
+
+	// Get databases for given server
+	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	for serverlistPager.More() {
+		pageResponse, err := serverlistPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			// Getting anomaly detection status
+			anomalyDetectionEnabeld, err := d.anomalyDetectionEnabled(server, value)
+			if err != nil {
+				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
+			}
+
+			// Create database storage voc object
+			dbStorage = &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*value.ID),
+						*value.Name,
+						value.Properties.CreationDate,
+						voc.GeoLocation{
+							Region: *value.Location,
+						},
+						labels(value.Tags),
+						voc.DatabaseStorageType,
+						value),
+					AtRestEncryption: &voc.AtRestEncryption{
+						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
+						Algorithm: AES256,
+					},
+					// TODO(all): Backups
+
+				},
+				Parent: []voc.ResourceID{voc.ResourceID(*server.ID)},
+			}
+
+			list = append(list, dbStorage)
+
+			// Create database service voc object
+			dbService = &voc.DatabaseService{
+				StorageService: &voc.StorageService{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: discovery.NewResource(d,
+								voc.ResourceID(*value.ID),
+								*value.Name,
+								value.Properties.CreationDate,
+								voc.GeoLocation{
+									Region: *value.Location,
+								},
+								labels(value.Tags),
+								voc.DatabaseServiceType,
+								server,
+								value,
+							),
+						},
+						// TODO(all): TransportEncryption, HttpEndpoint
+					},
+				},
+				AnomalyDetection: &voc.AnomalyDetection{
+					Enabled: anomalyDetectionEnabeld,
+				},
+			}
+			list = append(list, dbService)
+		}
+	}
+	return list, nil
 }
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
@@ -428,7 +561,7 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
 		enc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "AES256",
+				Algorithm: AES256,
 				Enabled:   true,
 			},
 		}
@@ -443,6 +576,30 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	}
 
 	return enc, nil
+}
+
+// anomalyDetectionEnabled returns true if Azure Advanced Threat Protection is enabled for the database.
+func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *armsql.Database) (bool, error) {
+	// initialize threat protection client
+	if err := d.initThreatProtectionClient(); err != nil {
+		return false, err
+	}
+
+	listPager := d.clients.threatProtectionClient.NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return false, err
+		}
+
+		for _, value := range pageResponse.Value {
+			if *value.Properties.State == armsql.AdvancedThreatProtectionStateEnabled {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 // diskEncryptionSetName return the disk encryption set ID's name
@@ -519,6 +676,27 @@ func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
 // initBackupInstancesClient creates the client if not already exists
 func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
+	return
+}
+
+// initDatabasesClient creates the client if not already exists
+func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
+	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d.azureDiscovery, armsql.NewDatabasesClient)
+
+	return
+}
+
+// initSQLServersClient creates the client if not already exists
+func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
+	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
+
+	return
+}
+
+// initThreatProtectionClient creates the client if not already exists
+func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
+	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
 
 	return
 }
