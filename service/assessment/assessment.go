@@ -440,13 +440,10 @@ func (svc *Service) initOrchestratorStream(target string, _ ...grpc.DialOption) 
 func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 	var res *orchestrator.ListMetricsResponse
 
-	// Paginate the metrics according to the request
 	res, err = svc.orchestrator.Client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{PageSize: service.DefaultPaginationOpts.MaxPageSize})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
 	}
-
-	log.Warnf("!!!! Metrics(): len(metrics): %v", len(res.Metrics))
 
 	return res.Metrics, nil
 }
