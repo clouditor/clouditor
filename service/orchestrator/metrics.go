@@ -316,7 +316,6 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}
 
-	log.Warnf("!!!! ListMetrics(): len(metrics): %v", len(res.Metrics))
 	return res, nil
 }
 
