@@ -305,6 +305,7 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 				),
 			},
 			// Function-specific fields
+			// TODO(lebogg): Test
 			RuntimeLanguage: toRuntimeLanguage(f.Runtime),
 			RuntimeVersion:  toRuntimeVersion(f.Runtime),
 		})
@@ -312,16 +313,19 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 	return
 }
 
+// TODO(lebogg): Test
 func toRuntimeLanguage(runtime typesLambda.Runtime) (language string) {
 	language, _ = splitRuntime(runtime)
 	return
 }
 
+// TODO(lebogg): Test
 func toRuntimeVersion(runtime typesLambda.Runtime) (version string) {
 	_, version = splitRuntime(runtime)
 	return
 }
 
+// TODO(lebogg): Check with Rego Policy and Azure implementation - to be consistent.
 // splitRuntime splits runtime into the runtime language and version. It goes through the string, character by
 // character, and divides the string when the first digit is reached. If there is no digit, the most recent version
 // supported by lambda functions for this language is assumed.
