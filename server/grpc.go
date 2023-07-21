@@ -103,7 +103,8 @@ func WithReflection() StartGRPCServerOption {
 	}
 }
 
-// WithReflection is an option for [StartGRPCServer] to enable gRPC reflection.
+// WithPublicEndpoints is an option for [StartGRPCServer] to enable gRPC reflection.
+// For example, the endpoint must look like this: "/clouditor.orchestrator.v1.Orchestrator/ListPublicCertificates"
 func WithPublicEndpoints(endpoints []string) StartGRPCServerOption {
 	return func(c *config) {
 		c.publicEndpoints = endpoints
