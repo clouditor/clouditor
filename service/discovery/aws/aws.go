@@ -66,6 +66,7 @@ func NewClient() (*Client, error) {
 
 	// load configuration
 	cfg, err := loadDefaultConfig(context.TODO())
+	log.Infof("AWS Region is: %s", cfg.Region)
 	if err != nil {
 		return nil, fmt.Errorf("could not load default config: %w", err)
 	}

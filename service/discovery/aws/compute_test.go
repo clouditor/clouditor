@@ -512,3 +512,53 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		})
 	}
 }
+
+func Test_splitRuntime(t *testing.T) {
+	type args struct {
+		runtime lambdaTypes.Runtime
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantLanguage string
+		wantVersion  string
+	}{
+		{
+			name:         "Nodejs without version",
+			args:         args{runtime: lambdaTypes.RuntimeNodejs},
+			wantLanguage: string(lambdaTypes.RuntimeNodejs),
+			wantVersion:  LatestLambdaNodeJSVersion,
+		},
+		{
+			name:         "Nodejs with version",
+			args:         args{runtime: lambdaTypes.RuntimeNodejs12x},
+			wantLanguage: string(lambdaTypes.RuntimeNodejs),
+			wantVersion:  "12.x",
+		},
+		{
+			name:         "Java with version",
+			args:         args{runtime: lambdaTypes.RuntimeJava11},
+			wantLanguage: "java",
+			wantVersion:  "11",
+		},
+		{
+			name:         "Go (always latest official version)",
+			args:         args{runtime: lambdaTypes.RuntimeGo1x},
+			wantLanguage: "go",
+			wantVersion:  LatestLambdaGoVersion,
+		},
+		{
+			name:         "Some new language not considered yet",
+			args:         args{runtime: "SomeNewSupportedLanguage"},
+			wantLanguage: "SomeNewSupportedLanguage",
+			wantVersion:  "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotLanguage, gotVersion := splitRuntime(tt.args.runtime)
+			assert.Equalf(t, tt.wantLanguage, gotLanguage, "splitRuntime(%v)", tt.args.runtime)
+			assert.Equalf(t, tt.wantVersion, gotVersion, "splitRuntime(%v)", tt.args.runtime)
+		})
+	}
+}
