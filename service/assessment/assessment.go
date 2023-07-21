@@ -445,6 +445,8 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
 	}
 
+	log.Warnf("!!!! Metrics(): len(metrics): %v", len(res.Metrics))
+
 	return res.Metrics, nil
 }
 
