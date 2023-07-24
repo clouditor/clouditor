@@ -28,6 +28,7 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/internal/constants"
 	"context"
 	"fmt"
 	"strconv"
@@ -313,22 +314,21 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 	return
 }
 
-// TODO(lebogg): Test
+// toRuntimeLanguage returns the runtime language of runtime (runtime contains both language und version in one string)
 func toRuntimeLanguage(runtime typesLambda.Runtime) (language string) {
 	language, _ = splitRuntime(runtime)
 	return
 }
 
-// TODO(lebogg): Test
+// toRuntimeVersion returns the runtime version of runtime (runtime contains both language und version in one string)
 func toRuntimeVersion(runtime typesLambda.Runtime) (version string) {
 	_, version = splitRuntime(runtime)
 	return
 }
 
-// TODO(lebogg): Check with Rego Policy and Azure implementation - to be consistent.
 // splitRuntime splits runtime into the runtime language and version. It goes through the string, character by
-// character, and divides the string when the first digit is reached. If there is no digit, the most recent version
-// supported by lambda functions for this language is assumed.
+// character, and divides the string when the first digit is reached. If there is no version number, the most recent
+// version supported by lambda functions for this language is assumed.
 func splitRuntime(runtime typesLambda.Runtime) (language, version string) {
 	input := string(runtime)
 	var separator int
@@ -342,21 +342,36 @@ func splitRuntime(runtime typesLambda.Runtime) (language, version string) {
 	// Go lambda functions always use the latest go version according to documentation. See
 	// https://github.com/aws-samples/sessions-with-aws-sam/tree/master/go-al2#golang-installation)
 	if l := strArr[0]; l == "go" {
-		return l, LatestLambdaGoVersion
+		return useOfficialLanguageName(l), LatestLambdaGoVersion
 	}
 	// For node.js, there is the possibility that only nodejs is returned w/o a version attached. We assume the latest
 	// version supported by lambda functions
 	if l := strArr[0]; l == "nodejs" && len(strArr) == 1 {
-		return l, LatestLambdaNodeJSVersion
+		return useOfficialLanguageName(l), LatestLambdaNodeJSVersion
 	}
 	// Currently not reachable but to avoid "index out of range" error in the future when a new language might be
 	// supported which we won't have considered yet.
 	if l := strArr[0]; len(strArr) == 1 {
-		log.Warnf("This runtime '%s' is not considered yet. Maybe it got newly introduced into AWS lambdas.",
+		log.Warnf("Runtime '%s' is not considered yet. Maybe it got newly introduced into AWS lambdas.",
 			l)
 		return l, ""
 	}
-	return strArr[0], strconv.Itoa(separator) + strArr[1]
+	return useOfficialLanguageName(strArr[0]), strconv.Itoa(separator) + strArr[1]
+}
+
+// useOfficialLanguageName converts the given language names specified by AWS to the names needed for the Rego
+// expressions
+func useOfficialLanguageName(l string) string {
+	switch l {
+	case "go":
+		return constants.Go
+	case "java":
+		return constants.Java
+	case "nodejs":
+		return constants.NodeJS
+	default:
+		return l
+	}
 }
 
 // getBootLog checks if boot logging is enabled

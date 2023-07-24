@@ -28,6 +28,7 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/internal/constants"
 	"context"
 	"reflect"
 	"testing"
@@ -88,6 +89,7 @@ func (mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInp
 				FunctionArn:  aws.String(mockFunction1ID),
 				FunctionName: aws.String(mockFunction1),
 				LastModified: aws.String(mockFunction1CreationTime),
+				Runtime:      "Java11",
 			},
 		},
 		NextMarker:     nil,
@@ -395,42 +397,34 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []*voc.Function
+		want    assert.ValueAssertionFunc
 		wantErr bool
 	}{
-		// Test cases
 		{
-			"Test case 1 (no error)",
-			fields{
+			name: "Happy path",
+			fields: fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
 				csID:        testdata.MockCloudServiceID1,
 			},
-			//args: args{client: mockClient},
-			[]*voc.Function{
-				{Compute: &voc.Compute{
-					Resource: &voc.Resource{
-						ID:           mockFunction1ID,
-						ServiceID:    testdata.MockCloudServiceID1,
-						Name:         mockFunction1,
-						CreationTime: int64(0),
-						Type:         []string{"Function", "Compute", "Resource"},
-						GeoLocation: voc.GeoLocation{
-							Region: mockFunction1Region,
-						},
-						Raw: "{\"*types.FunctionConfiguration\":[{\"Architectures\":null,\"CodeSha256\":null,\"CodeSize\":0,\"DeadLetterConfig\":null,\"Description\":null,\"Environment\":null,\"EphemeralStorage\":null,\"FileSystemConfigs\":null,\"FunctionArn\":\"arn:aws:lambda:eu-central-1:123456789:function:mock-function:1\",\"FunctionName\":\"MockFunction1\",\"Handler\":null,\"ImageConfigResponse\":null,\"KMSKeyArn\":null,\"LastModified\":\"2012-11-01T22:08:41.0+00:00\",\"LastUpdateStatus\":\"\",\"LastUpdateStatusReason\":null,\"LastUpdateStatusReasonCode\":\"\",\"Layers\":null,\"MasterArn\":null,\"MemorySize\":null,\"PackageType\":\"\",\"RevisionId\":null,\"Role\":null,\"Runtime\":\"\",\"RuntimeVersionConfig\":null,\"SigningJobArn\":null,\"SigningProfileVersionArn\":null,\"SnapStart\":null,\"State\":\"\",\"StateReason\":null,\"StateReasonCode\":\"\",\"Timeout\":null,\"TracingConfig\":null,\"Version\":null,\"VpcConfig\":null}]}",
-					},
-				}},
+			want: func(t assert.TestingT, i1 interface{}, i ...interface{}) bool {
+				functions, ok := i1.([]*voc.Function)
+				assert.True(t, ok)
+				f := functions[0]
+				assert.Equal(t, mockClient.cfg.Region, f.GeoLocation.Region)
+				assert.Equal(t, "Java", f.RuntimeLanguage)
+				assert.Equal(t, "11", f.RuntimeVersion)
+				return assert.Equal(t, voc.ResourceID(mockFunction1ID), f.ID)
 			},
-			false,
+			wantErr: false,
 		},
 		{
-			"Test case 3 (API error)",
-			fields{
+			name: "Error - ",
+			fields: fields{
 				functionAPI: mockLambdaAPIWithErrors{},
 			},
-			nil,
-			true,
+			want:    assert.Nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -447,9 +441,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				t.Errorf("discoverFunctions() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("discoverFunctions() got = %v, want %v", got, tt.want)
-			}
+			tt.want(t, got)
 		})
 	}
 
@@ -559,6 +551,97 @@ func Test_splitRuntime(t *testing.T) {
 			gotLanguage, gotVersion := splitRuntime(tt.args.runtime)
 			assert.Equalf(t, tt.wantLanguage, gotLanguage, "splitRuntime(%v)", tt.args.runtime)
 			assert.Equalf(t, tt.wantVersion, gotVersion, "splitRuntime(%v)", tt.args.runtime)
+		})
+	}
+}
+
+func Test_useOfficialLanguageName(t *testing.T) {
+	type args struct {
+		l string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Go",
+			args: args{"go"},
+			want: constants.Go,
+		},
+		{
+			name: "Java",
+			args: args{"java"},
+			want: constants.Java,
+		},
+		{
+			name: "NodeJS",
+			args: args{"nodejs"},
+			want: constants.NodeJS,
+		},
+		{
+			name: "Version not supported yet",
+			args: args{"NotYetSupportedVersion"},
+			want: "NotYetSupportedVersion",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, useOfficialLanguageName(tt.args.l), "useOfficialLanguageName(%v)", tt.args.l)
+		})
+	}
+}
+
+func Test_toRuntimeLanguage(t *testing.T) {
+	type args struct {
+		runtime lambdaTypes.Runtime
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantLanguage string
+	}{
+		{
+			name:         "Java from Java11",
+			args:         args{"java11"},
+			wantLanguage: "Java",
+		},
+		{
+			name:         "New Language 42",
+			args:         args{"New42"},
+			wantLanguage: "New",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantLanguage, toRuntimeLanguage(tt.args.runtime), "toRuntimeLanguage(%v)", tt.args.runtime)
+		})
+	}
+}
+
+func Test_toRuntimeVersion(t *testing.T) {
+	type args struct {
+		runtime lambdaTypes.Runtime
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantVersion string
+	}{
+		{
+			name:        "Java from Java11",
+			args:        args{"java11"},
+			wantVersion: "11",
+		},
+		{
+			name:        "New Language 42",
+			args:        args{"New42"},
+			wantVersion: "42",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantVersion, toRuntimeVersion(tt.args.runtime), "toRuntimeVersion(%v)", tt.args.runtime)
 		})
 	}
 }
