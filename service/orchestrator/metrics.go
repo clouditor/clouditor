@@ -282,9 +282,14 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 
 	// Store it in the database
 	err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
-	if err != nil {
-		return nil, fmt.Errorf("could not save metric implementation: %w", err)
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Errorf(codes.NotFound, "metric id does not exist")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not save metric implementation: %w", err)
+	// }
 
 	// Notify event listeners
 	go func() {
