@@ -279,11 +279,13 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Update implementation
 	impl = req.Implementation
 	impl.UpdatedAt = timestamppb.Now()
+	var i []*assessment.MetricImplementation
+	i = append(i, impl)
 	log.Warnf("UpdateMetricImplementation: %v", impl)
 	log.Warnf("UpdateMetricImplementation: metricId: %s", impl.MetricId)
 
 	// Store it in the database
-	err = svc.storage.Save(&impl, "metric_id = ?", impl.MetricId)
+	err = svc.storage.Save(i, "metric_id = ?", impl.MetricId)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric id does not exist")
 	} else if err != nil {
