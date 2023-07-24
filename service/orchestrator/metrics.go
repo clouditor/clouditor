@@ -279,6 +279,8 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Update implementation
 	impl = req.Implementation
 	impl.UpdatedAt = timestamppb.Now()
+	log.Warnf("UpdateMetricImplementation: %v", impl)
+	log.Warnf("UpdateMetricImplementation: metricId: %s", impl.MetricId)
 
 	// Store it in the database
 	err = svc.storage.Save(&impl, "metric_id = ?", impl.MetricId)
