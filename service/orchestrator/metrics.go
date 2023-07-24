@@ -279,13 +279,9 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Update implementation
 	impl = req.Implementation
 	impl.UpdatedAt = timestamppb.Now()
-	log.Warnf("UpdateMetricImplementation: %v", impl)
-	log.Warnf("UpdateMetricImplementation: metricId: %s", impl.MetricId)
 
 	// Store it in the database
 	// First we try to update and if an error occurs we create the entry.
-	// TODO(all): Why is Save() not working properly?
-
 	err = svc.storage.Update(impl, "metric_id = ?", impl.MetricId)
 	if err != nil {
 		log.Debugf("metric implementation for metric %s not available, try to create the metric implementation", impl.MetricId)
@@ -296,13 +292,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 		}
 	}
 
-	// err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
-	// if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-	// 	return nil, status.Errorf(codes.NotFound, "metric id does not exist")
-	// } else if err != nil {
-	// 	return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	// }
-
+	// TODO(all): Why is Save() not working properly?
 	// err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
 	// if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 	// 	return nil, status.Errorf(codes.NotFound, "metric id does not exist")
