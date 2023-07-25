@@ -298,6 +298,7 @@ func (s *storage) Count(r any, conds ...any) (count int64, err error) {
 }
 
 func (s *storage) Save(r any, conds ...any) error {
+	// Save the record
 	tx := applyWhere(s.db, conds...).Save(r)
 	err := tx.Error
 
@@ -305,6 +306,7 @@ func (s *storage) Save(r any, conds ...any) error {
 		return nil
 	}
 
+	// If an error occurs, we try to create the record.
 	err = s.Create(r)
 	if err != nil {
 		return err
