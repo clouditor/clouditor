@@ -308,6 +308,8 @@ func (s *storage) Save(r any, conds ...any) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO (all): Why does it not work properly? See https://github.com/clouditor/clouditor/pull/1175
 	// tx := applyWhere(s.db, conds...).Save(r)
 	// err := tx.Error
 
