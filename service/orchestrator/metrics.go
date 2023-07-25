@@ -281,24 +281,12 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	impl.UpdatedAt = timestamppb.Now()
 
 	// Store it in the database
-	// First we try to update and if an error occurs we create the entry.
-	err = svc.storage.Update(impl, "metric_id = ?", impl.MetricId)
-	if err != nil {
-		log.Debugf("metric implementation for metric %s not available, try to create the metric implementation", impl.MetricId)
-		// Try to create the DB entry.
-		err = svc.storage.Create(impl)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "database error: %v", err)
-		}
+	err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Errorf(codes.NotFound, "metric id does not exist")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
-
-	// TODO(all): Why is Save() not working properly?
-	// err = svc.storage.Save(impl, "metric_id = ?", impl.MetricId)
-	// if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-	// 	return nil, status.Errorf(codes.NotFound, "metric id does not exist")
-	// } else if err != nil {
-	// 	return nil, status.Errorf(codes.Internal, "database error: %s", err)
-	// }
 
 	// Notify event listeners
 	go func() {

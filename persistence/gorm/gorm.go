@@ -298,12 +298,22 @@ func (s *storage) Count(r any, conds ...any) (count int64, err error) {
 }
 
 func (s *storage) Save(r any, conds ...any) error {
-	tx := applyWhere(s.db, conds...).Save(r)
-	err := tx.Error
 
-	if err != nil && strings.Contains(err.Error(), "constraint failed") {
-		return persistence.ErrConstraintFailed
+	err := s.Update(r, conds...)
+	if err == nil {
+		return nil
 	}
+
+	err = s.Create(r)
+	if err != nil {
+		return err
+	}
+	// tx := applyWhere(s.db, conds...).Save(r)
+	// err := tx.Error
+
+	// if err != nil && strings.Contains(err.Error(), "constraint failed") {
+	// 	return persistence.ErrConstraintFailed
+	// }
 
 	return err
 }
