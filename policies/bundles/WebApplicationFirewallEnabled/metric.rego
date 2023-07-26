@@ -10,9 +10,9 @@ enabled := input.webApplicationFirewall.enabled
 
 applicable {
 	enabled != null
+	compare("isIn",  "LoadBalancer", input.type)
 }
 
 compliant {
-	compare("isIn",  "LoadBalancer", input.type)
 	compare(data.operator, data.target_value, enabled)
 }
