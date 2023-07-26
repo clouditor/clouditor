@@ -442,18 +442,18 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 		wantList []voc.IsCloudResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Authorize error",
-		// 	fields: fields{
-		// 		azureDiscovery: &azureDiscovery{
-		// 			cred: nil,
-		// 		},
-		// 	},
-		// 	wantList: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-		// 	},
-		// },
+		{
+			name: "Authorize error",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
 		{
 			name: "Without errors",
 			fields: fields{
