@@ -6,7 +6,7 @@ default applicable = false
 
 default compliant = false
 
-enabled := input.webApplicationFirewall.enabled
+enabled := input.accessRestriction.enabled
 
 applicable {
 	enabled != null
