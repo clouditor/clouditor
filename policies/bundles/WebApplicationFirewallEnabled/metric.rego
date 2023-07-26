@@ -13,5 +13,6 @@ applicable {
 }
 
 compliant {
+	compare("isIn",  "LoadBalancer", input.type)
 	compare(data.operator, data.target_value, enabled)
 }
