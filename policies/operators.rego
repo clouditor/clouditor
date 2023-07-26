@@ -43,6 +43,15 @@ compare(operator, target_values, actual_value) {
 	actual_value in target_values
 }
 
+# Checks if the actual_values (array) contains the target_value (string)
+compare(operator, target_value, actual_values) {
+	operator == "isIn"
+    # Check if the input value actual_value is a string, otherwise the compare function for array must be used
+    is_string(target_value)
+    is_array(actual_values)
+	target_value in actual_values
+}
+
 # Checks if one element of actual_values (array) exists in target_values (array)
 compare(operator, target_values, actual_values) {
 	operator == "isIn"
