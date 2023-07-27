@@ -511,13 +511,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
 		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
 	}
-	if len(backups) == 0 {
-		backups = []*voc.Backup{
-			{
-				Enabled: false,
-			},
-		}
-	}
+	backups = d.backupsEmptyCheck(backups)
 
 	if d.defenderProperties[DefenderStorageType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled

@@ -549,6 +549,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
 		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
 	}
+	backups = d.backupsEmptyCheck(backups)
 
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{

@@ -355,6 +355,19 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 	return nil
 }
 
+// backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
+func (d *azureDiscovery) backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
+	if len(backups) == 0 {
+		return []*voc.Backup{
+			{
+				Enabled: false,
+			},
+		}
+	}
+
+	return backups
+}
+
 func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultResource, instance *armdataprotection.BackupInstanceResource) (resource voc.IsCloudResource, err error) {
 	if vault == nil || instance == nil {
 		return nil, ErrVaultInstanceIsEmpty
