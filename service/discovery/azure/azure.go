@@ -356,7 +356,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 }
 
 // backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
-func (d *azureDiscovery) backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
+func backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
 	if len(backups) == 0 {
 		return []*voc.Backup{
 			{

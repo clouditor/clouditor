@@ -917,3 +917,50 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		})
 	}
 }
+
+func Test_backupsEmptyCheck(t *testing.T) {
+	type args struct {
+		backups []*voc.Backup
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*voc.Backup
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				backups: []*voc.Backup{
+					{
+						Enabled:         true,
+						Interval:        90,
+						RetentionPeriod: 100,
+					},
+				},
+			},
+			want: []*voc.Backup{
+				{
+					Enabled:         true,
+					Interval:        90,
+					RetentionPeriod: 100,
+				},
+			},
+		},
+		{
+			name: "Happy path: empty input",
+			args: args{},
+			want: []*voc.Backup{
+				{
+					Enabled: false,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
