@@ -951,7 +951,9 @@ func Test_backupsEmptyCheck(t *testing.T) {
 			args: args{},
 			want: []*voc.Backup{
 				{
-					Enabled: false,
+					Enabled:         false,
+					RetentionPeriod: -1,
+					Interval:        -1,
 				},
 			},
 		},

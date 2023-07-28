@@ -708,7 +708,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -735,7 +737,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -976,7 +980,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1820,7 +1826,9 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1848,7 +1856,9 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1875,7 +1885,9 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -2009,7 +2021,9 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 					},
 					Backups: []*voc.Backup{
 						{
-							Enabled: false,
+							Enabled:         false,
+							RetentionPeriod: -1,
+							Interval:        -1,
 						},
 					},
 				},

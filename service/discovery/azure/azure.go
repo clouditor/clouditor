@@ -360,7 +360,9 @@ func backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
 	if len(backups) == 0 {
 		return []*voc.Backup{
 			{
-				Enabled: false,
+				Enabled:         false,
+				RetentionPeriod: -1,
+				Interval:        -1,
 			},
 		}
 	}
