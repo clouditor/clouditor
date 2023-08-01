@@ -438,14 +438,14 @@ func (svc *Service) initOrchestratorStream(target string, _ ...grpc.DialOption) 
 
 // Metrics implements MetricsSource by retrieving the metric list from the orchestrator.
 func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
-	var res *orchestrator.ListMetricsResponse
-
-	res, err = svc.orchestrator.Client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
+	metrics, err = api.ListAllPaginated(&orchestrator.ListMetricsRequest{}, svc.orchestrator.Client.ListMetrics, func(res *orchestrator.ListMetricsResponse) []*assessment.Metric {
+		return res.Metrics
+	})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
 	}
 
-	return res.Metrics, nil
+	return metrics, nil
 }
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
