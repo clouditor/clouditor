@@ -34,3 +34,17 @@ const (
 	AES    = "AES"
 	AES256 = "AES256"
 )
+
+type RuntimeLanguage string
+
+// Constants for runtime languages that all discoverers should use
+const (
+	DotNet        = ".NET"
+	Go            = "Go"
+	Java          = "Java"
+	JavaContainer = "JavaContainer"
+	NodeJS        = "Node.js"
+	PHP           = "PHP"
+	PowerShell    = "PowerShell"
+	Python        = "Python"
+)

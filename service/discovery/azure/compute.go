@@ -26,6 +26,7 @@
 package azure
 
 import (
+	"clouditor.io/clouditor/internal/constants"
 	"context"
 	"errors"
 	"fmt"
@@ -233,25 +234,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
-			runtimeLanguage = "Java"
+			runtimeLanguage = constants.Java
 			runtimeVersion = *config.Properties.JavaVersion
 		} else if util.Deref(config.Properties.NodeVersion) != "" {
-			runtimeLanguage = "Node.js"
+			runtimeLanguage = constants.NodeJS
 			runtimeVersion = *config.Properties.NodeVersion
 		} else if util.Deref(config.Properties.PowerShellVersion) != "" {
-			runtimeLanguage = "PowerShell"
+			runtimeLanguage = constants.PowerShell
 			runtimeVersion = *config.Properties.PowerShellVersion
 		} else if util.Deref(config.Properties.PhpVersion) != "" {
-			runtimeLanguage = "PHP"
+			runtimeLanguage = constants.PHP
 			runtimeVersion = *config.Properties.PhpVersion
 		} else if util.Deref(config.Properties.PythonVersion) != "" {
-			runtimeLanguage = "Python"
+			runtimeLanguage = constants.Python
 			runtimeVersion = *config.Properties.PythonVersion
 		} else if util.Deref(config.Properties.JavaContainer) != "" {
-			runtimeLanguage = "JavaContainer"
+			runtimeLanguage = constants.JavaContainer
 			runtimeVersion = *config.Properties.JavaContainer
 		} else if util.Deref(config.Properties.NetFrameworkVersion) != "" {
-			runtimeLanguage = ".NET"
+			runtimeLanguage = constants.DotNet
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}

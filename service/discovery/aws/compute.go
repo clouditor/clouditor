@@ -28,8 +28,12 @@
 package aws
 
 import (
+	"clouditor.io/clouditor/internal/constants"
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+	"unicode"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
@@ -39,12 +43,22 @@ import (
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	typesLambda "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
+
+// LatestLambdaGoVersion is the latest go version supported by Lambda functions:
+// According to doc it is always the latest version of the official go releases
+const LatestLambdaGoVersion = "20"
+
+// LatestLambdaNodeJSVersion is the latest node.js version supported by Lambda functions:
+// See aws-sdk-go-v2/service/lambda@v1.37.0/types/enums.go:338
+const LatestLambdaNodeJSVersion = "16"
 
 // computeDiscovery handles the AWS API requests regarding the computing services (EC2 and Lambda)
 type computeDiscovery struct {
 	virtualMachineAPI EC2API
 	functionAPI       LambdaAPI
+	systemManagerAPI  SSMAPI
 	isDiscovering     bool
 	awsConfig         *Client
 	csID              string
@@ -71,17 +85,33 @@ type LambdaAPI interface {
 		params *lambda.ListFunctionsInput, optFns ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
 }
 
+// SSMAPI describes the AWS Systems Manager api interface which is implemented by the official AWS client and mock
+// clients in tests
+type SSMAPI interface {
+	DescribeInstancePatchStates(ctx context.Context,
+		params *ssm.DescribeInstancePatchStatesInput,
+		optFns ...func(*ssm.Options)) (*ssm.DescribeInstancePatchStatesOutput, error)
+
+	GetPatchBaseline(ctx context.Context,
+		params *ssm.GetPatchBaselineInput,
+		optFns ...func(*ssm.Options)) (*ssm.GetPatchBaselineOutput, error)
+}
+
 // newFromConfigEC2 holds ec2.NewFromConfig(...) allowing a test function to mock it
 var newFromConfigEC2 = ec2.NewFromConfig
 
 // newFromConfigLambda holds lambda.NewFromConfig(...) allowing a test function tp mock it
 var newFromConfigLambda = lambda.NewFromConfig
 
+// newFromConfigSSM holds ssm.NewFromConfig(...) allowing a test function tp mock it
+var newFromConfigSSM = ssm.NewFromConfig
+
 // NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
 func NewAwsComputeDiscovery(client *Client, cloudServiceID string) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),
+		systemManagerAPI:  newFromConfigSSM(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
 		csID:              cloudServiceID,
@@ -239,10 +269,11 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 			}
 
 			resources = append(resources, &voc.VirtualMachine{
-				Compute:      computeResource,
-				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
-				BootLogging:  d.getBootLog(vm),
-				OsLogging:    d.getOSLog(vm),
+				Compute:          computeResource,
+				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
+				BootLogging:      d.getBootLog(vm),
+				OsLogging:        d.getOSLog(vm),
+				AutomaticUpdates: d.getAutomaticUpdates(vm),
 			})
 		}
 	}
@@ -275,14 +306,15 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
 	// TODO(all): Labels are missing
 	for i := range functions {
-		function := &functions[i]
+		f := &functions[i]
 
 		resources = append(resources, &voc.Function{
+			// General Compute fields
 			Compute: &voc.Compute{
 				Resource: discovery.NewResource(
 					d,
-					voc.ResourceID(aws.ToString(function.FunctionArn)),
-					aws.ToString(function.FunctionName),
+					voc.ResourceID(aws.ToString(f.FunctionArn)),
+					aws.ToString(f.FunctionName),
 					nil,
 					voc.GeoLocation{
 						Region: d.awsConfig.cfg.Region,
@@ -291,9 +323,74 @@ func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.Function
 					voc.FunctionType,
 					&functions[i],
 				),
-			}})
+			},
+			// Function-specific fields
+			// TODO(lebogg): Test
+			RuntimeLanguage: toRuntimeLanguage(f.Runtime),
+			RuntimeVersion:  toRuntimeVersion(f.Runtime),
+		})
 	}
 	return
+}
+
+// toRuntimeLanguage returns the runtime language of runtime (runtime contains both language und version in one string)
+func toRuntimeLanguage(runtime typesLambda.Runtime) (language string) {
+	language, _ = splitRuntime(runtime)
+	return
+}
+
+// toRuntimeVersion returns the runtime version of runtime (runtime contains both language und version in one string)
+func toRuntimeVersion(runtime typesLambda.Runtime) (version string) {
+	_, version = splitRuntime(runtime)
+	return
+}
+
+// splitRuntime splits runtime into the runtime language and version. It goes through the string, character by
+// character, and divides the string when the first digit is reached. If there is no version number, the most recent
+// version supported by lambda functions for this language is assumed.
+func splitRuntime(runtime typesLambda.Runtime) (language, version string) {
+	input := string(runtime)
+	var separator int
+	for i := 0; i < len(input); i++ {
+		if unicode.IsDigit(rune(input[i])) {
+			separator, _ = strconv.Atoi(string(input[i]))
+			break
+		}
+	}
+	strArr := strings.SplitN(input, strconv.Itoa(separator), 2)
+	// Go lambda functions always use the latest go version according to documentation. See
+	// https://github.com/aws-samples/sessions-with-aws-sam/tree/master/go-al2#golang-installation)
+	if l := strArr[0]; l == "go" {
+		return useOfficialLanguageName(l), LatestLambdaGoVersion
+	}
+	// For node.js, there is the possibility that only nodejs is returned w/o a version attached. We assume the latest
+	// version supported by lambda functions
+	if l := strArr[0]; l == "nodejs" && len(strArr) == 1 {
+		return useOfficialLanguageName(l), LatestLambdaNodeJSVersion
+	}
+	// Currently not reachable but to avoid "index out of range" error in the future when a new language might be
+	// supported which we won't have considered yet.
+	if l := strArr[0]; len(strArr) == 1 {
+		log.Warnf("Runtime '%s' is not considered yet. Maybe it got newly introduced into AWS lambdas.",
+			l)
+		return l, ""
+	}
+	return useOfficialLanguageName(strArr[0]), strconv.Itoa(separator) + strArr[1]
+}
+
+// useOfficialLanguageName converts the given language names specified by AWS to the names needed for the Rego
+// expressions
+func useOfficialLanguageName(l string) string {
+	switch l {
+	case "go":
+		return constants.Go
+	case "java":
+		return constants.Java
+	case "nodejs":
+		return constants.NodeJS
+	default:
+		return l
+	}
 }
 
 // getBootLog checks if boot logging is enabled
@@ -386,4 +483,39 @@ func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 		aws.ToString(d.awsConfig.accountID) +
 		":" + typ + "/" +
 		aws.ToString(ID))
+}
+
+func (d *computeDiscovery) getAutomaticUpdates(vm *typesEC2.Instance) (au *voc.AutomaticUpdates) {
+	au = new(voc.AutomaticUpdates)
+	// TODO(lebogg): Check if one instance can have only one patch state. I think it is: We get a slice of patches because we can set multiple instances as input
+	out, err := d.systemManagerAPI.DescribeInstancePatchStates(context.Background(),
+		&ssm.DescribeInstancePatchStatesInput{InstanceIds: []string{util.Deref(vm.InstanceId)}})
+	if err != nil {
+		log.Errorf("Could not get instance patch out: %v", err)
+	}
+	// If no InstancePatchStates are attached, we assume that SSM for this VM was not configured and therefore no
+	// automatic patches are enabled
+	if len(out.InstancePatchStates) != 0 {
+		au.Enabled = true
+		return
+	}
+
+	// Check if only security patches are involved: We first assume that only security patches are involved and as soon
+	// as we find one baseline which has also other patches, we set it to false
+	au.SecurityOnly = true
+	// TODO(lebogg): If we have olny one patch per instance we can directly index it with [0]
+	for _, s := range out.InstancePatchStates {
+		b, err := d.systemManagerAPI.GetPatchBaseline(context.Background(),
+			&ssm.GetPatchBaselineInput{BaselineId: s.BaselineId})
+		if err != nil {
+			log.Errorf("Could not get baseline for node (e.g. EC2 instance) '%s': %v", util.Deref(s.InstanceId), err)
+		}
+		if util.Deref(b.ApprovedPatchesEnableNonSecurity) {
+			au.SecurityOnly = false
+		}
+	}
+	// TODO(lebogg)
+	au.Interval = 1234
+
+	return
 }
