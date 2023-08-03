@@ -43,6 +43,7 @@ import (
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	typesLambda "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
 // LatestLambdaGoVersion is the latest go version supported by Lambda functions:
@@ -57,6 +58,7 @@ const LatestLambdaNodeJSVersion = "16"
 type computeDiscovery struct {
 	virtualMachineAPI EC2API
 	functionAPI       LambdaAPI
+	systemManagerAPI  SSMAPI
 	isDiscovering     bool
 	awsConfig         *Client
 	csID              string
@@ -83,17 +85,33 @@ type LambdaAPI interface {
 		params *lambda.ListFunctionsInput, optFns ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error)
 }
 
+// SSMAPI describes the AWS Systems Manager api interface which is implemented by the official AWS client and mock
+// clients in tests
+type SSMAPI interface {
+	DescribeInstancePatchStates(ctx context.Context,
+		params *ssm.DescribeInstancePatchStatesInput,
+		optFns ...func(*ssm.Options)) (*ssm.DescribeInstancePatchStatesOutput, error)
+
+	GetPatchBaseline(ctx context.Context,
+		params *ssm.GetPatchBaselineInput,
+		optFns ...func(*ssm.Options)) (*ssm.GetPatchBaselineOutput, error)
+}
+
 // newFromConfigEC2 holds ec2.NewFromConfig(...) allowing a test function to mock it
 var newFromConfigEC2 = ec2.NewFromConfig
 
 // newFromConfigLambda holds lambda.NewFromConfig(...) allowing a test function tp mock it
 var newFromConfigLambda = lambda.NewFromConfig
 
+// newFromConfigSSM holds ssm.NewFromConfig(...) allowing a test function tp mock it
+var newFromConfigSSM = ssm.NewFromConfig
+
 // NewAwsComputeDiscovery constructs a new awsS3Discovery initializing the s3-virtualMachineAPI and isDiscovering with true
 func NewAwsComputeDiscovery(client *Client, cloudServiceID string) discovery.Discoverer {
 	return &computeDiscovery{
 		virtualMachineAPI: newFromConfigEC2(client.cfg),
 		functionAPI:       newFromConfigLambda(client.cfg),
+		systemManagerAPI:  newFromConfigSSM(client.cfg),
 		isDiscovering:     true,
 		awsConfig:         client,
 		csID:              cloudServiceID,
@@ -251,10 +269,11 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, err
 			}
 
 			resources = append(resources, &voc.VirtualMachine{
-				Compute:      computeResource,
-				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
-				BootLogging:  d.getBootLog(vm),
-				OsLogging:    d.getOSLog(vm),
+				Compute:          computeResource,
+				BlockStorage:     d.mapBlockStorageIDsOfVM(vm),
+				BootLogging:      d.getBootLog(vm),
+				OsLogging:        d.getOSLog(vm),
+				AutomaticUpdates: d.getAutomaticUpdates(vm),
 			})
 		}
 	}
@@ -464,4 +483,39 @@ func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 		aws.ToString(d.awsConfig.accountID) +
 		":" + typ + "/" +
 		aws.ToString(ID))
+}
+
+func (d *computeDiscovery) getAutomaticUpdates(vm *typesEC2.Instance) (au *voc.AutomaticUpdates) {
+	au = new(voc.AutomaticUpdates)
+	// TODO(lebogg): Check if one instance can have only one patch state. I think it is: We get a slice of patches because we can set multiple instances as input
+	out, err := d.systemManagerAPI.DescribeInstancePatchStates(context.Background(),
+		&ssm.DescribeInstancePatchStatesInput{InstanceIds: []string{util.Deref(vm.InstanceId)}})
+	if err != nil {
+		log.Errorf("Could not get instance patch out: %v", err)
+	}
+	// If no InstancePatchStates are attached, we assume that SSM for this VM was not configured and therefore no
+	// automatic patches are enabled
+	if len(out.InstancePatchStates) != 0 {
+		au.Enabled = true
+		return
+	}
+
+	// Check if only security patches are involved: We first assume that only security patches are involved and as soon
+	// as we find one baseline which has also other patches, we set it to false
+	au.SecurityOnly = true
+	// TODO(lebogg): If we have olny one patch per instance we can directly index it with [0]
+	for _, s := range out.InstancePatchStates {
+		b, err := d.systemManagerAPI.GetPatchBaseline(context.Background(),
+			&ssm.GetPatchBaselineInput{BaselineId: s.BaselineId})
+		if err != nil {
+			log.Errorf("Could not get baseline for node (e.g. EC2 instance) '%s': %v", util.Deref(s.InstanceId), err)
+		}
+		if util.Deref(b.ApprovedPatchesEnableNonSecurity) {
+			au.SecurityOnly = false
+		}
+	}
+	// TODO(lebogg)
+	au.Interval = 1234
+
+	return
 }
