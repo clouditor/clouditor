@@ -30,10 +30,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"sync"
-
-	"golang.org/x/exp/slices"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/logging"

@@ -1,6 +1,6 @@
 module clouditor.io/clouditor
 
-go 1.20
+go 1.21
 
 // runtime dependencies (core)
 require (
@@ -19,7 +19,6 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
 	golang.org/x/crypto v0.12.0
-	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/oauth2 v0.11.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/grpc v1.57.0-dev.0.20230612212144-642dd63a8527
@@ -186,10 +185,9 @@ require (
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	go.opentelemetry.io/otel v1.16.0 // indirect
+	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 )
-
-require go.opentelemetry.io/otel/metric v1.16.0 // indirect
 
 retract v1.4.7

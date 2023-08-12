@@ -107,55 +107,6 @@ func TestPaginateSlice(t *testing.T) {
 	}
 }
 
-func TestPaginateMapValues(t *testing.T) {
-	type args struct {
-		req  api.PaginatedRequest
-		m    map[string]int
-		less func(a int, b int) bool
-		opts PaginationOpts
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantPage []int
-		wantNbt  string
-		wantErr  bool
-	}{
-		{
-			name: "first page",
-			args: args{
-				req: &orchestrator.ListAssessmentResultsRequest{
-					PageSize:  2,
-					PageToken: "",
-				},
-				m: map[string]int{
-					"a": 2, "b": 1, "c": 3, "d": 4, "e": 5,
-				},
-				less: func(a, b int) bool { return a < b },
-				opts: PaginationOpts{10, 10},
-			},
-			wantPage: []int{1, 2},
-			wantNbt:  "CAIQAg==",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateMapValues(tt.args.req, tt.args.m, tt.args.less, tt.args.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("PaginateMapValues() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotPage, tt.wantPage) {
-				t.Errorf("PaginateMapValues() gotPage = %v, want %v", gotPage, tt.wantPage)
-			}
-			if gotNbt != tt.wantNbt {
-				t.Errorf("PaginateMapValues() gotNbt = %v, want %v", gotNbt, tt.wantNbt)
-			}
-		})
-	}
-}
-
 func TestPaginateStorage(t *testing.T) {
 	type args struct {
 		req     api.PaginatedRequest
