@@ -15,3 +15,6 @@ updates:
       azure-sdk:
         patterns:
           - "github.com/Azure/azure-sdk-for-go/sdk/*"
+      k8s:
+        patterns:
+          - "k8s/*"
