@@ -29,8 +29,6 @@ import (
 	"fmt"
 	"sort"
 
-	"golang.org/x/exp/maps"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/persistence"
 )
@@ -97,16 +95,6 @@ func PaginateStorage[T any](req api.PaginatedRequest, storage persistence.Storag
 		}
 		return
 	})
-}
-
-// PaginateMapValues is a wrapper around PaginateSlice that uses maps.Values to
-// determine the maps values and sorts them according to the specified less
-// function, to return a deterministic result.
-func PaginateMapValues[T any](req api.PaginatedRequest, m map[string]T, less func(a T, b T) bool, opts PaginationOpts) (page []T, nbt string, err error) {
-	// We need to sort the values, because they are otherwise in a random order
-	var values = maps.Values(m)
-
-	return PaginateSlice(req, values, less, opts)
 }
 
 // paginate takes cares of the heavy lifting of handling the actual pagination request. It takes the paginated request

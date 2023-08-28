@@ -2,11 +2,10 @@ package servicetest
 
 import (
 	"context"
+	"slices"
 
 	"clouditor.io/clouditor/internal/api"
 	"clouditor.io/clouditor/service"
-
-	"golang.org/x/exp/slices"
 )
 
 // NewAuthorizationStrategy contains a mock for a

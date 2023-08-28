@@ -30,19 +30,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
-
-	"clouditor.io/clouditor/persistence"
-
-	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // GetAssessmentResult gets one assessment result by id
