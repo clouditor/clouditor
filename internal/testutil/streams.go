@@ -3,8 +3,8 @@ package testutil
 import (
 	"context"
 	"io"
+	"slices"
 
-	"golang.org/x/exp/slices"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 )
