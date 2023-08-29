@@ -1,6 +1,0 @@
-*     @oxisto @anatheka @lebogg
-
-.github @oxisto
-service/discovery @anatheka
-persistence @lebogg
-**/*.proto @lebogg
