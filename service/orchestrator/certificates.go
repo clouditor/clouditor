@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"slices"
+	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
@@ -88,7 +89,9 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	var conds []any
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
-		conds = append([]any{"cloud_service_id IN ?"}, []any{allowed})
+		ids := strings.Join(allowed, ",")
+		conds = append([]any{"cloud_service_id IN (?)"}, ids)
+		// conds = []any{"cloud_service_id IN (" + strings.Join(allowed, ",") + ")"}
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
@@ -102,7 +105,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	return
 }
 
-// ListPublicCertificates implements method for getting all certificates wihtout the state history, e.g. to show its state in the UI
+// ListPublicCertificates implements method for getting all certificates without the state history, e.g. to show its state in the UI
 func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
