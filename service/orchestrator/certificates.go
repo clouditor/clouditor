@@ -139,7 +139,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 		return
 	}
 
-	count, err := svc.storage.Count(req.Certificate, req.Certificate.Id)
+	count, err := svc.storage.Count(req.Certificate, "id=?", req.Certificate.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
