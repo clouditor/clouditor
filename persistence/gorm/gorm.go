@@ -283,8 +283,6 @@ func (s *storage) List(r any, orderBy string, asc bool, offset int, limit int, c
 	// Preload all associations of r if necessary
 	query, conds = applyPreload(query.Offset(offset), conds...)
 
-	fmt.Println(query.Debug().Order(orderStmt).Find(r, conds...))
-
 	return query.Order(orderStmt).Find(r, conds...).Error
 }
 
