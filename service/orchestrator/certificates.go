@@ -7,6 +7,7 @@ import (
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
@@ -92,10 +93,8 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
-		// Add all cloud_service_ids to the slice. We have to do it like that, because we need it for the sql query in the form '("11111111-1111-1111-1111-111111111111"),("22222222-2222-2222-2222-222222222222")'. By only using '[]any{allowed}' we would get '("11111111-1111-1111-1111-111111111111","22222222-2222-2222-2222-222222222222")'.
-		for j := range allowed {
-			ids = append(ids, []any{allowed[j]})
-		}
+		// Add all cloud_service_ids to the slice.
+		ids = util.StringToAnySlice(allowed)
 
 		conds = append([]any{"cloud_service_id IN ?"}, ids)
 	}

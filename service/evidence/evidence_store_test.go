@@ -317,6 +317,32 @@ func TestService_ListEvidences(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Successful List Of Evidences (with allowed cloud service)",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId, evidencetest.MockEvidence2.CloudServiceId),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
+					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
+				}),
+			},
+			args: args{
+				in0: context.TODO(),
+				req: &evidence.ListEvidencesRequest{},
+			},
+			wantErr: assert.NoError,
+			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evidence.ListEvidencesResponse)
+				assert.True(t, ok)
+				assert.Equal(t, len(res.Evidences), 2)
+
+				// Check cloud_service_id
+				assert.Equal(t, evidencetest.MockEvidence1.CloudServiceId, res.Evidences[0].CloudServiceId)
+				assert.Equal(t, evidencetest.MockEvidence2.CloudServiceId, res.Evidences[1].CloudServiceId)
+
+				return true
+			},
+		},
+		{
 			name: "Successful Filter Of Evidences (with allowed cloud service)",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId),
