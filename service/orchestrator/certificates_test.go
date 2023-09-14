@@ -345,7 +345,7 @@ func Test_ListCertificates(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate()))
 						assert.NoError(t, s.Create(orchestratortest.NewCertificate2()))
 					}),
-					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+					authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1, testdata.MockCloudServiceID2),
 				},
 			},
 			args: args{
@@ -355,8 +355,9 @@ func Test_ListCertificates(t *testing.T) {
 			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
 				res, ok := i.(*orchestrator.ListCertificatesResponse)
 				assert.True(t, ok)
-				assert.Len(t, res.Certificates, 1)
-				return assert.Equal(t, res.Certificates[0].Id, testdata.MockCertificateID)
+				assert.Len(t, res.Certificates, 2)
+				assert.Equal(t, res.Certificates[0].Id, testdata.MockCertificateID)
+				return assert.Equal(t, res.Certificates[1].Id, testdata.MockCertificateID2)
 
 			},
 			wantErr: assert.NoError,

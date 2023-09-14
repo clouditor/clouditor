@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
@@ -86,12 +85,19 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	}
 
 	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
-	var conds []any
+	var (
+		conds []any
+		ids   []any
+	)
+
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
-		ids := strings.Join(allowed, ",")
-		conds = append([]any{"cloud_service_id IN (?)"}, ids)
-		// conds = []any{"cloud_service_id IN (" + strings.Join(allowed, ",") + ")"}
+		// Add all cloud_service_ids to the slice. We have to do it like that, because we need it for the sql query in the form '("11111111-1111-1111-1111-111111111111"),("22222222-2222-2222-2222-222222222222")'. By only using '[]any{allowed}' we would get '("11111111-1111-1111-1111-111111111111","22222222-2222-2222-2222-222222222222")'.
+		for j := range allowed {
+			ids = append(ids, []any{allowed[j]})
+		}
+
+		conds = append([]any{"cloud_service_id IN ?"}, ids)
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
