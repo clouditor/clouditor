@@ -31,14 +31,14 @@ require (
 
 // runtime dependencies (Azure)
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.0-beta.2
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.8.0-beta.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2 v2.1.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3 v3.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection v1.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.11.0
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.3.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.1.0
 )
 
