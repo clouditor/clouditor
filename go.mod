@@ -2,6 +2,8 @@ module clouditor.io/clouditor
 
 go 1.21
 
+toolchain go1.21.0
+
 // runtime dependencies (core)
 require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
