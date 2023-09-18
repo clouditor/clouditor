@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"slices"
+	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
-	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
@@ -87,18 +87,17 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
 	var (
+		query []string
 		conds []any
-		ids   []any
 	)
 
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
-		// Add all cloud_service_ids to the slice.
-		ids = util.StringToAnySlice(allowed)
-
-		conds = append([]any{"cloud_service_id IN ?"}, ids)
+		query = append(query, "cloud_service_id IN ?")
+		conds = append(conds, allowed)
 	}
 
+	conds = append([]any{strings.Join(query, " AND ")}, conds...)
 	res = new(orchestrator.ListCertificatesResponse)
 
 	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,

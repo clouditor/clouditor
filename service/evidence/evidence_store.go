@@ -36,7 +36,6 @@ import (
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/logging"
-	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
@@ -206,7 +205,6 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	var (
 		query []string
-		ids   []any
 	)
 
 	// Apply filter options
@@ -223,12 +221,8 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// In any case, we need to make sure that we only select evidences of cloud services that we have access to
 	if !all {
-
 		query = append(query, "cloud_service_id IN ?")
-
-		// Add all cloud_service_ids to the slice
-		ids = util.StringToAnySlice(allowed)
-		conds = append(conds, ids)
+		conds = append(conds, allowed)
 	}
 
 	// Join query with AND and prepend the query
