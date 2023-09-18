@@ -706,7 +706,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
-						Backups: nil,
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
+							},
+						},
 					},
 				},
 				&voc.BlockStorage{
@@ -729,7 +735,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Enabled:   true,
 							},
 						},
-						Backups: nil,
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
+							},
+						},
 					},
 				},
 				&voc.BlockStorage{
@@ -966,7 +978,13 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Type:   voc.BlockStorageType,
 							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-						Backups: nil,
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
+							},
+						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
@@ -1800,11 +1818,17 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							Labels: map[string]string{},
 							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1\",\"location\":\"eastus\",\"name\":\"disk1\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1830,6 +1854,13 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 							KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 						},
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
+							},
+						},
 					},
 				},
 				&voc.BlockStorage{
@@ -1846,11 +1877,17 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							Type:   voc.BlockStorageType,
 							Raw:    "{\"*armcompute.Disk\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3\",\"location\":\"eastus\",\"name\":\"disk3\",\"properties\":{\"encryption\":{\"diskEncryptionSetId\":\"\",\"type\":\"EncryptionAtRestWithPlatformKey\"},\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\"},\"type\":\"Microsoft.Compute/disks\"}],\"*armcompute.DiskEncryptionSet\":[null]}",
 						},
-
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+							},
+						},
+						Backups: []*voc.Backup{
+							{
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1981,6 +2018,13 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 							Enabled:   true,
 						},
 						KeyUrl: "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+					},
+					Backups: []*voc.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: -1,
+							Interval:        -1,
+						},
 					},
 				},
 			},

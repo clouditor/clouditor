@@ -670,7 +670,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -706,7 +708,9 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1444,7 +1448,9 @@ func Test_handleObjectStorage(t *testing.T) {
 					},
 					Backups: []*voc.Backup{
 						{
-							Enabled: false,
+							Enabled:         false,
+							RetentionPeriod: -1,
+							Interval:        -1,
 						},
 					},
 				},
@@ -1686,7 +1692,9 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
@@ -1721,7 +1729,9 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 						},
 						Backups: []*voc.Backup{
 							{
-								Enabled: false,
+								Enabled:         false,
+								RetentionPeriod: -1,
+								Interval:        -1,
 							},
 						},
 					},
