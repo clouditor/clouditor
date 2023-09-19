@@ -29,7 +29,10 @@ package aws
 
 import (
 	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/internal/util"
 	"context"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	types2 "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"reflect"
 	"testing"
 	"time"
@@ -41,8 +44,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
-	lambdaTypes "github.com/aws/aws-sdk-go-v2/service/lambda/types"
+	typesLambda "github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"github.com/aws/smithy-go"
 	"github.com/aws/smithy-go/middleware"
 	"github.com/stretchr/testify/assert"
@@ -50,7 +54,7 @@ import (
 
 const (
 	mockVM1            = "mockVM1"
-	mockVM1ID          = "mockVM1ID"
+	mockVM1ID          = "i-0b0c58ade95f269f7"
 	blockVolumeId      = "blockVolumeID"
 	networkInterfaceId = "networkInterfaceId"
 	mockVMCreationTime = "2012-11-01T22:08:41+00:00"
@@ -59,6 +63,10 @@ const (
 	mockFunction1             = "MockFunction1"
 	mockFunction1Region       = "eu-central-1"
 	mockFunction1CreationTime = "2012-11-01T22:08:41.0+00:00"
+
+	mockDefaultBaselineID = "pb-09bcfbcf275c8c953"
+	// mockDefaultBaselineARN includes mockDefaultBaselineID at the end
+	mockDefaultBaselineARN = "arn:aws:ssm:eu-central-1:416089608788:patchbaseline/pb-09bcfbcf275c8c953"
 )
 
 // mockEC2API implements the EC2API interface for mock testing
@@ -81,10 +89,48 @@ type mockLambdaAPI51LambdaFunctions struct {
 type mockLambdaAPIWithErrors struct {
 }
 
+// mockSSMAPI implements the SystemsManagerAPI interface for mock testing
+type mockSSMAPI struct{}
+
+func (m mockSSMAPI) DescribeInstancePatchStates(ctx context.Context, params *ssm.DescribeInstancePatchStatesInput, optFns ...func(*ssm.Options)) (*ssm.DescribeInstancePatchStatesOutput, error) {
+	switch params.InstanceIds[0] {
+	case mockVM1ID:
+		return &ssm.DescribeInstancePatchStatesOutput{
+			InstancePatchStates: []types2.InstancePatchState{
+				{
+					BaselineId: util.Ref(mockDefaultBaselineID),
+					InstanceId: util.Ref(params.InstanceIds[0]),
+					PatchGroup: nil,
+				},
+			},
+		}, nil
+	}
+	panic("implement me")
+}
+
+func (m mockSSMAPI) GetPatchBaseline(ctx context.Context, params *ssm.GetPatchBaselineInput, optFns ...func(*ssm.Options)) (*ssm.GetPatchBaselineOutput, error) {
+	//TODO(lebogg): Add other cases
+	switch util.Deref(params.BaselineId) {
+	case mockVM1ID:
+		return &ssm.GetPatchBaselineOutput{
+			ApprovedPatchesEnableNonSecurity: util.Ref(false),
+			BaselineId:                       params.BaselineId,
+			ResultMetadata:                   middleware.Metadata{},
+		}, nil
+	default:
+		return &ssm.GetPatchBaselineOutput{
+			ApprovedPatchesEnableNonSecurity: util.Ref(false),
+			BaselineId:                       params.BaselineId,
+			ResultMetadata:                   middleware.Metadata{},
+		}, nil
+	}
+
+}
+
 // ListFunctions is the method implementation of the LambdaAPI interface
 func (mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (*lambda.ListFunctionsOutput, error) {
 	return &lambda.ListFunctionsOutput{
-		Functions: []lambdaTypes.FunctionConfiguration{
+		Functions: []typesLambda.FunctionConfiguration{
 			{
 				FunctionArn:  aws.String(mockFunction1ID),
 				FunctionName: aws.String(mockFunction1),
@@ -98,11 +144,11 @@ func (mockLambdaAPI) ListFunctions(_ context.Context, _ *lambda.ListFunctionsInp
 }
 
 func (mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *lambda.ListFunctionsInput, _ ...func(*lambda.Options)) (output *lambda.ListFunctionsOutput, err error) {
-	var lambdaFunctions []lambdaTypes.FunctionConfiguration
+	var lambdaFunctions []typesLambda.FunctionConfiguration
 	nextMarker := "ShowNext"
 	if input.Marker == nil {
 		for i := 0; i < 50; i++ {
-			lambdaFunctions = append(lambdaFunctions, lambdaTypes.FunctionConfiguration{
+			lambdaFunctions = append(lambdaFunctions, typesLambda.FunctionConfiguration{
 				// We have to set a time in a right format, otherwise the discoverer fails (parse error)
 				LastModified: aws.String(mockFunction1CreationTime),
 			})
@@ -113,7 +159,7 @@ func (mockLambdaAPI51LambdaFunctions) ListFunctions(_ context.Context, input *la
 		}
 	} else if *input.Marker == nextMarker {
 		for i := 0; i < 5; i++ {
-			lambdaFunctions = append(lambdaFunctions, lambdaTypes.FunctionConfiguration{
+			lambdaFunctions = append(lambdaFunctions, typesLambda.FunctionConfiguration{
 				// We have to set a time in a right format, otherwise the discoverer fails (parse error)
 				LastModified: aws.String(mockFunction1CreationTime),
 			})
@@ -507,7 +553,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 
 func Test_splitRuntime(t *testing.T) {
 	type args struct {
-		runtime lambdaTypes.Runtime
+		runtime typesLambda.Runtime
 	}
 	tests := []struct {
 		name         string
@@ -517,25 +563,25 @@ func Test_splitRuntime(t *testing.T) {
 	}{
 		{
 			name:         "Nodejs without version",
-			args:         args{runtime: lambdaTypes.RuntimeNodejs},
-			wantLanguage: string(lambdaTypes.RuntimeNodejs),
+			args:         args{runtime: typesLambda.RuntimeNodejs},
+			wantLanguage: string(typesLambda.RuntimeNodejs),
 			wantVersion:  LatestLambdaNodeJSVersion,
 		},
 		{
 			name:         "Nodejs with version",
-			args:         args{runtime: lambdaTypes.RuntimeNodejs12x},
-			wantLanguage: string(lambdaTypes.RuntimeNodejs),
+			args:         args{runtime: typesLambda.RuntimeNodejs12x},
+			wantLanguage: string(typesLambda.RuntimeNodejs),
 			wantVersion:  "12.x",
 		},
 		{
 			name:         "Java with version",
-			args:         args{runtime: lambdaTypes.RuntimeJava11},
+			args:         args{runtime: typesLambda.RuntimeJava11},
 			wantLanguage: "java",
 			wantVersion:  "11",
 		},
 		{
 			name:         "Go (always latest official version)",
-			args:         args{runtime: lambdaTypes.RuntimeGo1x},
+			args:         args{runtime: typesLambda.RuntimeGo1x},
 			wantLanguage: "go",
 			wantVersion:  LatestLambdaGoVersion,
 		},
@@ -594,7 +640,7 @@ func Test_useOfficialLanguageName(t *testing.T) {
 
 func Test_toRuntimeLanguage(t *testing.T) {
 	type args struct {
-		runtime lambdaTypes.Runtime
+		runtime typesLambda.Runtime
 	}
 	tests := []struct {
 		name         string
@@ -621,7 +667,7 @@ func Test_toRuntimeLanguage(t *testing.T) {
 
 func Test_toRuntimeVersion(t *testing.T) {
 	type args struct {
-		runtime lambdaTypes.Runtime
+		runtime typesLambda.Runtime
 	}
 	tests := []struct {
 		name        string
@@ -642,6 +688,52 @@ func Test_toRuntimeVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.wantVersion, toRuntimeVersion(tt.args.runtime), "toRuntimeVersion(%v)", tt.args.runtime)
+		})
+	}
+}
+
+func Test_computeDiscovery_getAutomaticUpdates(t *testing.T) {
+	type fields struct {
+		virtualMachineAPI EC2API
+		functionAPI       LambdaAPI
+		systemManagerAPI  SSMAPI
+		isDiscovering     bool
+		awsConfig         *Client
+		csID              string
+	}
+	type args struct {
+		vm *typesEC2.Instance
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wantAu *voc.AutomaticUpdates
+	}{
+		{
+			name: "Happy path - all compliant",
+			fields: fields{
+				systemManagerAPI: mockSSMAPI{},
+			},
+			args: args{vm: &typesEC2.Instance{InstanceId: util.Ref(mockVM1ID)}},
+			wantAu: &voc.AutomaticUpdates{
+				Enabled:      true,
+				SecurityOnly: true,
+				Interval:     1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &computeDiscovery{
+				virtualMachineAPI: tt.fields.virtualMachineAPI,
+				functionAPI:       tt.fields.functionAPI,
+				systemManagerAPI:  tt.fields.systemManagerAPI,
+				isDiscovering:     tt.fields.isDiscovering,
+				awsConfig:         tt.fields.awsConfig,
+				csID:              tt.fields.csID,
+			}
+			assert.Equalf(t, tt.wantAu, d.getAutomaticUpdates(tt.args.vm), "getAutomaticUpdates(%v)", tt.args.vm)
 		})
 	}
 }

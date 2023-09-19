@@ -54,6 +54,9 @@ const LatestLambdaGoVersion = "20"
 // See aws-sdk-go-v2/service/lambda@v1.37.0/types/enums.go:338
 const LatestLambdaNodeJSVersion = "16"
 
+// DefaultPatchScanInterval represents the interval for default scanning schedules in AWS Patch Polices
+const DefaultPatchScanInterval = 1
+
 // computeDiscovery handles the AWS API requests regarding the computing services (EC2 and Lambda)
 type computeDiscovery struct {
 	virtualMachineAPI EC2API
@@ -487,35 +490,75 @@ func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
 
 func (d *computeDiscovery) getAutomaticUpdates(vm *typesEC2.Instance) (au *voc.AutomaticUpdates) {
 	au = new(voc.AutomaticUpdates)
-	// TODO(lebogg): Check if one instance can have only one patch state. I think it is: We get a slice of patches because we can set multiple instances as input
 	out, err := d.systemManagerAPI.DescribeInstancePatchStates(context.Background(),
 		&ssm.DescribeInstancePatchStatesInput{InstanceIds: []string{util.Deref(vm.InstanceId)}})
 	if err != nil {
 		log.Errorf("Could not get instance patch out: %v", err)
+		return
 	}
 	// If no InstancePatchStates are attached, we assume that SSM for this VM was not configured and therefore no
 	// automatic patches are enabled
-	if len(out.InstancePatchStates) != 0 {
-		au.Enabled = true
+	if len(out.InstancePatchStates) == 0 {
+		au.Enabled = false
 		return
 	}
+	// Normally there is only one patch state since we asked for the patch state of ONE node (ec2 instance). If there
+	// are more, print out a warning
+	if len(out.InstancePatchStates) > 1 {
+		log.Warnf("There are more than 1 patch states for instance '%s'. Normally there should be only one.",
+			util.Deref(vm.InstanceId))
+	}
 
-	// Check if only security patches are involved: We first assume that only security patches are involved and as soon
-	// as we find one baseline which has also other patches, we set it to false
-	au.SecurityOnly = true
-	// TODO(lebogg): If we have olny one patch per instance we can directly index it with [0]
-	for _, s := range out.InstancePatchStates {
+	// Check if only security patches are involved
+	baselineID := out.InstancePatchStates[0].BaselineId
+
+	if d.isDefaultBaseline(baselineID) {
+		au.SecurityOnly = true
+	} else {
 		b, err := d.systemManagerAPI.GetPatchBaseline(context.Background(),
-			&ssm.GetPatchBaselineInput{BaselineId: s.BaselineId})
+			// arn: "arn:aws:ssm:eu-central-1:416089608788:patchbaseline/pb-09bcfbcf275c8c953"
+			&ssm.GetPatchBaselineInput{BaselineId: baselineID})
 		if err != nil {
-			log.Errorf("Could not get baseline for node (e.g. EC2 instance) '%s': %v", util.Deref(s.InstanceId), err)
+			log.Errorf("Could not get baseline '%s' for node (e.g. EC2 instance) '%s': %v",
+				util.Deref(baselineID), util.Deref(vm.InstanceId), err)
+			return
 		}
-		if util.Deref(b.ApprovedPatchesEnableNonSecurity) {
-			au.SecurityOnly = false
+		// TODO(lebogg): Check if it only works for linux
+		// TODO(lebogg): Check if works for default baseline
+		if !util.Deref(b.ApprovedPatchesEnableNonSecurity) {
+			au.SecurityOnly = true
 		}
 	}
-	// TODO(lebogg)
-	au.Interval = 1234
+
+	// TODO(lebogg): This is the default. Find out how to access configuration to see interval if it is set manually
+	au.Interval = DefaultPatchScanInterval
 
 	return
+}
+
+// isDefaultBaseline checks if the baseline is a default baseline provided by AWS.
+// The ARN of a default baseline provided by AWS always depends on a combination of the region and account id. Thus, the
+// account id differs for each region. We only support two EU regions so far, for demonstration purposes.
+func (d *computeDiscovery) isDefaultBaseline(baselineID *string) bool {
+	var (
+		baselineARN string
+		accountID   string
+	)
+
+	switch d.awsConfig.cfg.Region {
+	case "eu-central-1":
+		accountID = "416089608788"
+	case "ssm:eu-west-1":
+		accountID = "845259048710"
+	}
+	baselineARN = "arn:aws:ssm:" + d.awsConfig.cfg.Region + ":" + accountID + ":patchbaseline/" + util.Deref(baselineID)
+	_, err := d.systemManagerAPI.GetPatchBaseline(context.Background(),
+		&ssm.GetPatchBaselineInput{BaselineId: util.Ref(baselineARN)})
+	// TODO(lebogg): So far, I'm not happy with checking only err != nil
+	if err != nil {
+		// TODO(lebogg): Make debug or warning
+		log.Infof("Could not fetch default baseline. Thus, it is probably a custom one: %v", err)
+		return false
+	}
+	return true
 }
