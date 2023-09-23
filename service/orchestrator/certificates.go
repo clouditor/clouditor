@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
@@ -88,20 +87,19 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
 	var (
 		query []string
-		conds []any
+		args  []any
 	)
 
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
 		query = append(query, "cloud_service_id IN ?")
-		conds = append(conds, allowed)
+		args = append(args, allowed)
 	}
 
-	conds = append([]any{strings.Join(query, " AND ")}, conds...)
 	res = new(orchestrator.ListCertificatesResponse)
 
 	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
-		service.DefaultPaginationOpts, conds...)
+		service.DefaultPaginationOpts, persistence.BuildConds(query, args)...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

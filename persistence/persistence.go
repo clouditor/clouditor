@@ -27,6 +27,7 @@ package persistence
 
 import (
 	"errors"
+	"strings"
 )
 
 var (
@@ -68,4 +69,10 @@ type Storage interface {
 
 	// Raw executes a raw SQL statement and stores the result in r
 	Raw(r any, query string, args ...any) error
+}
+
+// BuildConds prepares the conds used in [Storage.List] out of arrays of query and args.
+func BuildConds(query []string, args []any) (conds []any) {
+	conds = append([]any{strings.Join(query, " AND ")}, args...)
+	return
 }
