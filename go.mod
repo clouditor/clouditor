@@ -64,7 +64,7 @@ require (
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/google/addlicense v1.1.0
-	github.com/google/gnostic v0.6.9
+	github.com/google/gnostic v0.7.0
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
 )
 
@@ -190,6 +190,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 )
 
-require github.com/google/gnostic-models v0.6.8 // indirect
+require github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 
 retract v1.4.7
