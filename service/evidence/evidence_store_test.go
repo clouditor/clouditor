@@ -35,8 +35,11 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/internal/util"
 
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/testdata"
@@ -339,7 +342,7 @@ func TestService_ListEvidences(t *testing.T) {
 				return true
 			},
 		},
-		/*{
+		{
 			name: "Successful Filter Of Evidences (with allowed cloud service)",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId),
@@ -529,7 +532,7 @@ func TestService_ListEvidences(t *testing.T) {
 				return assert.Equal(t, status.Code(err), codes.Internal)
 			},
 			wantResp: assert.Nil,
-		},*/
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
