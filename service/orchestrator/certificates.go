@@ -85,16 +85,21 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	}
 
 	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
-	var conds []any
+	var (
+		query []string
+		args  []any
+	)
+
 	all, allowed := svc.authz.AllowedCloudServices(ctx)
 	if !all {
-		conds = append([]any{"cloud_service_id IN ?"}, []any{allowed})
+		query = append(query, "cloud_service_id IN ?")
+		args = append(args, allowed)
 	}
 
 	res = new(orchestrator.ListCertificatesResponse)
 
 	res.Certificates, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Certificate](req, svc.storage,
-		service.DefaultPaginationOpts, conds...)
+		service.DefaultPaginationOpts, persistence.BuildConds(query, args)...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -102,7 +107,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	return
 }
 
-// ListPublicCertificates implements method for getting all certificates wihtout the state history, e.g. to show its state in the UI
+// ListPublicCertificates implements method for getting all certificates without the state history, e.g. to show its state in the UI
 func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)

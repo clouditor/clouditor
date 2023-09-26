@@ -26,6 +26,7 @@
 			"clientcredentials",
 			"clitest",
 			"Clouditor",
+			"conds",
 			"Debugf",
 			"dialector",
 			"emptypb",
