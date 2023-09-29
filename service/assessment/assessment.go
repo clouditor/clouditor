@@ -329,6 +329,12 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		return nil, err
 	}
 
+	if len(evaluations) == 0 {
+		log.Debugf("For evidence %s from Cloud Service '%s' no evaluations available", ev.GetId(), ev.GetCloudServiceId())
+	} else {
+		log.Debugf("%v evaluations for evidence %s from Cloud Service '%s' available.", len(evaluations), ev.GetId(), ev.GetCloudServiceId())
+	}
+
 	for _, data := range evaluations {
 		// That there is an empty (nil) evaluation should be caught beforehand, but you never know.
 		if data == nil {
