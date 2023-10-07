@@ -233,7 +233,11 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	log.Infof("Scheduled to evaluate catalog ID '%s' for cloud service '%s' every 5 minutes...", catalog.GetId(), toe.GetCloudServiceId())
+	log.Infof("Scheduled to evaluate catalog ID '%s' for cloud service '%s' every %d minutes...",
+		catalog.GetId(),
+		toe.GetCloudServiceId(),
+		interval,
+	)
 
 	resp = &evaluation.StartEvaluationResponse{Successful: true}
 
@@ -401,6 +405,8 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 		return nil, status.Errorf(codes.InvalidArgument, "only manually set statuses are allowed")
 	}
 
+	// The ValidUntil field must be checked separately as it is an optional field and not checked by the request
+	// validation. It is only mandatory when manually creating a result.
 	if req.Result.ValidUntil == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validity must be set")
 	}
@@ -511,13 +517,13 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 			continue
 		}
 
-		if c.IsRelevantFor(toe, catalog) {
-			relevant = append(relevant, c)
-		}
-
 		// If we ignore the control, we can skip it
 		if slices.Contains(ignored, c.Id) {
 			continue
+		}
+
+		if c.IsRelevantFor(toe, catalog) {
+			relevant = append(relevant, c)
 		}
 	}
 
@@ -567,20 +573,20 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 	)
 
 	// Gather a list of sub control IDs that we have manual results for and thus we are ignoring
-	ignored = make([]string, 0, len(results))
-	for _, result := range results {
+	ignored = make([]string, 0, len(manual))
+	for _, result := range manual {
 		ignored = append(ignored, result.ControlId)
 	}
 
 	// Filter relevant controls
 	for _, sub := range control.Controls {
-		if sub.IsRelevantFor(toe, catalog) {
-			relevant = append(relevant, sub)
-		}
-
 		// If we ignore the control, we can skip it
 		if slices.Contains(ignored, sub.Id) {
 			continue
+		}
+
+		if sub.IsRelevantFor(toe, catalog) {
+			relevant = append(relevant, sub)
 		}
 	}
 
@@ -641,19 +647,22 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 		Timestamp:                  timestamppb.Now(),
 		ControlCategoryName:        control.CategoryName,
 		ControlId:                  control.Id,
-		CloudServiceId:             toe.GetCloudServiceId(),
-		ControlCatalogId:           toe.GetCatalogId(),
+		CloudServiceId:             toe.CloudServiceId,
+		ControlCatalogId:           toe.CatalogId,
 		Status:                     status,
 		FailingAssessmentResultIds: nonCompliantAssessmentResults,
 	}
 
 	err = svc.storage.Create(result)
 	if err != nil {
-		log.Errorf("error storing evaluation result for control ID '%s' in database: %v", control.Id, err)
+		log.Errorf("error storing evaluation result for control ID '%s' (in cloud service %s) in database: %v",
+			control.Id,
+			toe.CloudServiceId,
+			err)
 		return
 	}
 
-	log.Infof("Evaluation result for %s (in cloud service %s) was %s", control.Id, toe.GetCloudServiceId(), result.Status.String())
+	log.Infof("Evaluation result for control ID '%s' (in cloud service %s) was %s", control.Id, toe.CloudServiceId, result.Status.String())
 
 	return
 }

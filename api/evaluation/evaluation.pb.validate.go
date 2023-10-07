@@ -312,6 +312,17 @@ func (m *CreateEvaluationResultRequest) validate(all bool) error {
 
 	var errors []error
 
+	if m.GetResult() == nil {
+		err := CreateEvaluationResultRequestValidationError{
+			field:  "Result",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetResult()).(type) {
 		case interface{ ValidateAll() error }:
@@ -1087,10 +1098,12 @@ func (m *EvaluationResult) validate(all bool) error {
 
 	}
 
-	// no validation rules for Comment
-
 	if m.ParentControlId != nil {
 		// no validation rules for ParentControlId
+	}
+
+	if m.Comment != nil {
+		// no validation rules for Comment
 	}
 
 	if m.ValidUntil != nil {

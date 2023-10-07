@@ -158,8 +158,8 @@ func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
 }
 
 // IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly
-// checks, whether the assurance level matches, if the TOE has one. In the future, this could also include checks,
-// if the control is somehow out of scope.
+// checks, whether the assurance level matches, if the ToE has one. In the future, this could also include checks, if
+// the control is somehow out of scope.
 func (c *Control) IsRelevantFor(toe *TargetOfEvaluation, catalog *Catalog) bool {
 	// If the catalog does not have an assurance level, we are good to go
 	if len(catalog.AssuranceLevels) == 0 {
@@ -172,7 +172,7 @@ func (c *Control) IsRelevantFor(toe *TargetOfEvaluation, catalog *Catalog) bool 
 	}
 
 	// Otherwise, we need to retrieve the possible assurance levels (in order) from the catalogs and compare the
-	// indicies
+	// indices
 	idxControl := slices.Index(catalog.AssuranceLevels, *c.AssuranceLevel)
 	idxToe := slices.Index(catalog.AssuranceLevels, *toe.AssuranceLevel)
 
