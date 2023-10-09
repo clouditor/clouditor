@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"clouditor.io/clouditor/api/orchestrator"
@@ -238,15 +238,15 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	// Get all filenames
 	fileList, err = util.GetJSONFilenames(svc.catalogsFolder)
 
-	log.Infof("Loading catalogs from files %s.", strings.Join(fileList, ", "))
+	log.Infof("Loading catalogs from files '%s'.", strings.Join(fileList, ", "))
 
 	// Get catalog for each file
 	for i := range fileList {
 		var catalogsFromFile []*orchestrator.Catalog
 
-		b, err = os.ReadFile(filepath.Join(fileList[i]))
+		b, err = os.ReadFile(path.Join(fileList[i]))
 		if err != nil {
-			log.Errorf("error while loading %s: %v", fileList[i], err)
+			log.Errorf("error while loading files '%s': %v", fileList[i], err)
 			continue
 		}
 
