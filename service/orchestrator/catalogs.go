@@ -238,7 +238,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 	// Get all filenames
 	fileList, err = util.GetJSONFilenames(svc.catalogsFolder)
 
-	log.Infof("Loading catalogs from files '%s'.", strings.Join(fileList, ", "))
+	log.Infof("Loading catalogs from file(s) '%s'.", strings.Join(fileList, ", "))
 
 	// Get catalog for each file
 	for i := range fileList {
@@ -246,7 +246,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 
 		b, err = os.ReadFile(path.Join(fileList[i]))
 		if err != nil {
-			log.Errorf("error while loading files '%s': %v", fileList[i], err)
+			log.Errorf("error while loading file '%s': %v", fileList[i], err)
 			continue
 		}
 
@@ -257,6 +257,7 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 		}
 
 		catalogs = append(catalogs, catalogsFromFile...)
+		log.Infof("Catalog %s from file '%s' loaded.", catalogsFromFile[i].Name, strings.Join(fileList, ", "))
 	}
 
 	// We need to make sure that sub-controls have the category_name and category_catalog_id of their parents set,
