@@ -24,7 +24,7 @@
                         "controls": [
                             {
                                 "id": "CommSec-01.1",
-                                "name": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
+                                "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionProtocol"
@@ -34,7 +34,7 @@
                             },
                             {
                                 "id": "CommSec-01.2",
-                                "name": "The CSP shall enforce encryption in all data transmissions",
+                                "description": "The CSP shall enforce encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnforced"
@@ -44,7 +44,7 @@
                             },
                             {
                                 "id": "CommSec-01.3",
-                                "name": "The CSP shall enable encryption in all data transmissions",
+                                "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnabled"
@@ -67,7 +67,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-01.1",
-                                "name": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
+                                "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionProtocol"
@@ -77,7 +77,7 @@
                             },
                             {
                                 "id": "SysHard-01.2",
-                                "name": "The CSP shall enforce encryption in all data transmissions.",
+                                "description": "The CSP shall enforce encryption in all data transmissions.",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnforced"
@@ -87,7 +87,7 @@
                             },
                             {
                                 "id": "SysHard-01.3",
-                                "name": "The CSP shall enable encryption in all data transmissions",
+                                "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnabled"
@@ -104,7 +104,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-02.1",
-                                "name": "The CSP shall enable the Web Application Firewall (WAF).",
+                                "description": "The CSP shall enable the Web Application Firewall (WAF).",
                                 "metrics": [
                                     {
                                         "id": "WebApplicationFirewallEnabled"
@@ -114,7 +114,7 @@
                             },
                             {
                                 "id": "SysHard-02.2",
-                                "name": "The CSP shall enable the L3 firewall and restrict specific ports.",
+                                "description": "The CSP shall enable the L3 firewall and restrict specific ports.",
                                 "metrics": [
                                     {
                                         "id": "L3FirewallEnabled"
@@ -134,7 +134,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-03.1",
-                                "name": "The CSP shall enable malware protection and store the log data.",
+                                "description": "The CSP shall enable malware protection and store the log data.",
                                 "metrics": [
                                     {
                                         "id": "MalwareProtectionEnabled"
@@ -154,7 +154,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-04.1",
-                                "name": "The CSP shall enable automatic updates and update in a specific time intervall.",
+                                "description": "The CSP shall enable automatic updates and update in a specific time intervall.",
                                 "metrics": [
                                     {
                                         "id": "AutomaticUpdatesEnabled"
@@ -174,7 +174,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-05.1",
-                                "name": "The CSP shall enable anomaly detection and store the log data.",
+                                "description": "The CSP shall enable anomaly detection and store the log data.",
                                 "metrics": [
                                     {
                                         "id": "AnomalyDetectionEnabled"
@@ -194,7 +194,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-06.1",
-                                "name": "The CSP shall use state-of-the-art runtime versions.",
+                                "description": "The CSP shall use state-of-the-art runtime versions.",
                                 "metrics": [
                                     {
                                         "id": "RuntimeVersion"
@@ -211,7 +211,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-07.1",
-                                "name": "The CSP shall enable at rest encryption.",
+                                "description": "The CSP shall enable at rest encryption.",
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionEnabled"
@@ -221,7 +221,7 @@
                             },
                             {
                                 "id": "SysHard-07.2",
-                                "name": "The CSP shall use state-of-the-art encryption algorithms for data at rest.",
+                                "description": "The CSP shall use state-of-the-art encryption algorithms for data at rest.",
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionAlgorithm"
@@ -244,7 +244,7 @@
                         "controls": [
                             {
                                 "id": "Log-01.1",
-                                "name": "The CSP shall log all boot activities in a dedicated storage and retain the data for a specific time.",
+                                "description": "The CSP shall log all boot activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "BootLoggingEnabled"
@@ -267,7 +267,7 @@
                         "controls": [
                             {
                                 "id": "Log-02.1",
-                                "name": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
+                                "description": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "OSLoggingEnabled"
@@ -290,7 +290,7 @@
                         "controls": [
                             {
                                 "id": "Log-03.1",
-                                "name": "The CSP shall log malware protection data.",
+                                "description": "The CSP shall log malware protection data.",
                                 "metrics": [
                                     {
                                         "id": "MalwareProtectionOutput"
@@ -323,7 +323,7 @@
                         "controls": [
                             {
                                 "id": "IdSec-01.1",
-                                "name": "The CSP shall check recent identity activities.",
+                                "description": "The CSP shall check recent identity activities.",
                                 "metrics": [
                                     {
                                         "id": "IdentityRecentActivity"
@@ -340,7 +340,7 @@
                         "controls": [
                             {
                                 "id": "IdSec-02.1",
-                                "name": "The CSP shall use password policies.",
+                                "description": "The CSP shall use password policies.",
                                 "metrics": [
                                     {
                                         "id": "IdentityPasswordPolicy"
@@ -363,7 +363,7 @@
                         "controls": [
                             {
                                 "id": "DataSec-01.1",
-                                "name": "The CSP shall check if data encryption is enabled.",
+                                "description": "The CSP shall check if data encryption is enabled.",
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionEnabled"
@@ -373,7 +373,7 @@
                             },
                             {
                                 "id": "DataSec-01.2",
-                                "name": "The CSP shall check if state-of-the-art algorithms are used for data at rest.",
+                                "description": "The CSP shall check if state-of-the-art algorithms are used for data at rest.",
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionAlgorithm"

@@ -5261,51 +5261,6 @@ func (m *TargetOfEvaluation) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	for idx, item := range m.GetControlsInScope() {
-		_, _ = idx, item
-
-		if item == nil {
-			err := TargetOfEvaluationValidationError{
-				field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-				reason: "value is required",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, TargetOfEvaluationValidationError{
-						field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, TargetOfEvaluationValidationError{
-						field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return TargetOfEvaluationValidationError{
-					field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
 	if m.AssuranceLevel != nil {
 
 		if !_TargetOfEvaluation_AssuranceLevel_Pattern.MatchString(m.GetAssuranceLevel()) {
@@ -5819,875 +5774,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListAssessmentResultsResponseValidationError{}
-
-// Validate checks the field values on ListControlsInScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListControlsInScopeRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListControlsInScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListControlsInScopeRequestMultiError, or nil if none found.
-func (m *ListControlsInScopeRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListControlsInScopeRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
-		err = ListControlsInScopeRequestValidationError{
-			field:  "CloudServiceId",
-			reason: "value must be a valid UUID",
-			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
-		err := ListControlsInScopeRequestValidationError{
-			field:  "CatalogId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for PageSize
-
-	// no validation rules for PageToken
-
-	// no validation rules for OrderBy
-
-	// no validation rules for Asc
-
-	if len(errors) > 0 {
-		return ListControlsInScopeRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-func (m *ListControlsInScopeRequest) _validateUuid(uuid string) error {
-	if matched := _orchestrator_uuidPattern.MatchString(uuid); !matched {
-		return errors.New("invalid uuid format")
-	}
-
-	return nil
-}
-
-// ListControlsInScopeRequestMultiError is an error wrapping multiple
-// validation errors returned by ListControlsInScopeRequest.ValidateAll() if
-// the designated constraints aren't met.
-type ListControlsInScopeRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListControlsInScopeRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListControlsInScopeRequestMultiError) AllErrors() []error { return m }
-
-// ListControlsInScopeRequestValidationError is the validation error returned
-// by ListControlsInScopeRequest.Validate if the designated constraints aren't met.
-type ListControlsInScopeRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ListControlsInScopeRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ListControlsInScopeRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ListControlsInScopeRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ListControlsInScopeRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ListControlsInScopeRequestValidationError) ErrorName() string {
-	return "ListControlsInScopeRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ListControlsInScopeRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sListControlsInScopeRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ListControlsInScopeRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ListControlsInScopeRequestValidationError{}
-
-// Validate checks the field values on ListControlsInScopeResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListControlsInScopeResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ListControlsInScopeResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ListControlsInScopeResponseMultiError, or nil if none found.
-func (m *ListControlsInScopeResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ListControlsInScopeResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	for idx, item := range m.GetControlsInScope() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListControlsInScopeResponseValidationError{
-						field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ListControlsInScopeResponseValidationError{
-						field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ListControlsInScopeResponseValidationError{
-					field:  fmt.Sprintf("ControlsInScope[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	// no validation rules for NextPageToken
-
-	if len(errors) > 0 {
-		return ListControlsInScopeResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// ListControlsInScopeResponseMultiError is an error wrapping multiple
-// validation errors returned by ListControlsInScopeResponse.ValidateAll() if
-// the designated constraints aren't met.
-type ListControlsInScopeResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListControlsInScopeResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListControlsInScopeResponseMultiError) AllErrors() []error { return m }
-
-// ListControlsInScopeResponseValidationError is the validation error returned
-// by ListControlsInScopeResponse.Validate if the designated constraints
-// aren't met.
-type ListControlsInScopeResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ListControlsInScopeResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ListControlsInScopeResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ListControlsInScopeResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ListControlsInScopeResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ListControlsInScopeResponseValidationError) ErrorName() string {
-	return "ListControlsInScopeResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ListControlsInScopeResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sListControlsInScopeResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ListControlsInScopeResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ListControlsInScopeResponseValidationError{}
-
-// Validate checks the field values on UpdateControlInScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpdateControlInScopeRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UpdateControlInScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UpdateControlInScopeRequestMultiError, or nil if none found.
-func (m *UpdateControlInScopeRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UpdateControlInScopeRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if m.GetScope() == nil {
-		err := UpdateControlInScopeRequestValidationError{
-			field:  "Scope",
-			reason: "value is required",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if all {
-		switch v := interface{}(m.GetScope()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateControlInScopeRequestValidationError{
-					field:  "Scope",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateControlInScopeRequestValidationError{
-					field:  "Scope",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetScope()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateControlInScopeRequestValidationError{
-				field:  "Scope",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return UpdateControlInScopeRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// UpdateControlInScopeRequestMultiError is an error wrapping multiple
-// validation errors returned by UpdateControlInScopeRequest.ValidateAll() if
-// the designated constraints aren't met.
-type UpdateControlInScopeRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateControlInScopeRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateControlInScopeRequestMultiError) AllErrors() []error { return m }
-
-// UpdateControlInScopeRequestValidationError is the validation error returned
-// by UpdateControlInScopeRequest.Validate if the designated constraints
-// aren't met.
-type UpdateControlInScopeRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UpdateControlInScopeRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UpdateControlInScopeRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UpdateControlInScopeRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UpdateControlInScopeRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UpdateControlInScopeRequestValidationError) ErrorName() string {
-	return "UpdateControlInScopeRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UpdateControlInScopeRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUpdateControlInScopeRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UpdateControlInScopeRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UpdateControlInScopeRequestValidationError{}
-
-// Validate checks the field values on AddControlToScopeRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *AddControlToScopeRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on AddControlToScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// AddControlToScopeRequestMultiError, or nil if none found.
-func (m *AddControlToScopeRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *AddControlToScopeRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if m.GetScope() == nil {
-		err := AddControlToScopeRequestValidationError{
-			field:  "Scope",
-			reason: "value is required",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if all {
-		switch v := interface{}(m.GetScope()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AddControlToScopeRequestValidationError{
-					field:  "Scope",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AddControlToScopeRequestValidationError{
-					field:  "Scope",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetScope()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AddControlToScopeRequestValidationError{
-				field:  "Scope",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return AddControlToScopeRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// AddControlToScopeRequestMultiError is an error wrapping multiple validation
-// errors returned by AddControlToScopeRequest.ValidateAll() if the designated
-// constraints aren't met.
-type AddControlToScopeRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m AddControlToScopeRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m AddControlToScopeRequestMultiError) AllErrors() []error { return m }
-
-// AddControlToScopeRequestValidationError is the validation error returned by
-// AddControlToScopeRequest.Validate if the designated constraints aren't met.
-type AddControlToScopeRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e AddControlToScopeRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e AddControlToScopeRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e AddControlToScopeRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e AddControlToScopeRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e AddControlToScopeRequestValidationError) ErrorName() string {
-	return "AddControlToScopeRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e AddControlToScopeRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sAddControlToScopeRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = AddControlToScopeRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = AddControlToScopeRequestValidationError{}
-
-// Validate checks the field values on RemoveControlFromScopeRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *RemoveControlFromScopeRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on RemoveControlFromScopeRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// RemoveControlFromScopeRequestMultiError, or nil if none found.
-func (m *RemoveControlFromScopeRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *RemoveControlFromScopeRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetCloudServiceId()) < 1 {
-		err := RemoveControlFromScopeRequestValidationError{
-			field:  "CloudServiceId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetCatalogId()) < 1 {
-		err := RemoveControlFromScopeRequestValidationError{
-			field:  "CatalogId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlId()) < 1 {
-		err := RemoveControlFromScopeRequestValidationError{
-			field:  "ControlId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlCategoryName()) < 1 {
-		err := RemoveControlFromScopeRequestValidationError{
-			field:  "ControlCategoryName",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return RemoveControlFromScopeRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// RemoveControlFromScopeRequestMultiError is an error wrapping multiple
-// validation errors returned by RemoveControlFromScopeRequest.ValidateAll()
-// if the designated constraints aren't met.
-type RemoveControlFromScopeRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m RemoveControlFromScopeRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m RemoveControlFromScopeRequestMultiError) AllErrors() []error { return m }
-
-// RemoveControlFromScopeRequestValidationError is the validation error
-// returned by RemoveControlFromScopeRequest.Validate if the designated
-// constraints aren't met.
-type RemoveControlFromScopeRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e RemoveControlFromScopeRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e RemoveControlFromScopeRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e RemoveControlFromScopeRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e RemoveControlFromScopeRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e RemoveControlFromScopeRequestValidationError) ErrorName() string {
-	return "RemoveControlFromScopeRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e RemoveControlFromScopeRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sRemoveControlFromScopeRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = RemoveControlFromScopeRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = RemoveControlFromScopeRequestValidationError{}
-
-// Validate checks the field values on ControlInScope with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *ControlInScope) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ControlInScope with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ControlInScopeMultiError,
-// or nil if none found.
-func (m *ControlInScope) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ControlInScope) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetTargetOfEvaluationCloudServiceId()) < 1 {
-		err := ControlInScopeValidationError{
-			field:  "TargetOfEvaluationCloudServiceId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetTargetOfEvaluationCatalogId()) < 1 {
-		err := ControlInScopeValidationError{
-			field:  "TargetOfEvaluationCatalogId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlId()) < 1 {
-		err := ControlInScopeValidationError{
-			field:  "ControlId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlCategoryName()) < 1 {
-		err := ControlInScopeValidationError{
-			field:  "ControlCategoryName",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetControlCategoryCatalogId()) < 1 {
-		err := ControlInScopeValidationError{
-			field:  "ControlCategoryCatalogId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for MonitoringStatus
-
-	if len(errors) > 0 {
-		return ControlInScopeMultiError(errors)
-	}
-
-	return nil
-}
-
-// ControlInScopeMultiError is an error wrapping multiple validation errors
-// returned by ControlInScope.ValidateAll() if the designated constraints
-// aren't met.
-type ControlInScopeMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ControlInScopeMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ControlInScopeMultiError) AllErrors() []error { return m }
-
-// ControlInScopeValidationError is the validation error returned by
-// ControlInScope.Validate if the designated constraints aren't met.
-type ControlInScopeValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ControlInScopeValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ControlInScopeValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ControlInScopeValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ControlInScopeValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ControlInScopeValidationError) ErrorName() string { return "ControlInScopeValidationError" }
-
-// Error satisfies the builtin error interface
-func (e ControlInScopeValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sControlInScope.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ControlInScopeValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ControlInScopeValidationError{}
 
 // Validate checks the field values on CreateTargetOfEvaluationRequest with the
 // rules defined in the proto definition for this message. If any rules are
@@ -9301,6 +8387,39 @@ func (m *ListControlsRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
+	if m.Filter != nil {
+
+		if all {
+			switch v := interface{}(m.GetFilter()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListControlsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListControlsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetFilter()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListControlsRequestValidationError{
+					field:  "Filter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return ListControlsRequestMultiError(errors)
 	}
@@ -10146,50 +9265,6 @@ func (m *TargetOfEvaluationChangeEvent) validate(all bool) error {
 
 	}
 
-	if m.ControlInScope != nil {
-
-		if m.GetControlInScope() == nil {
-			err := TargetOfEvaluationChangeEventValidationError{
-				field:  "ControlInScope",
-				reason: "value is required",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
-
-		if all {
-			switch v := interface{}(m.GetControlInScope()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
-						field:  "ControlInScope",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, TargetOfEvaluationChangeEventValidationError{
-						field:  "ControlInScope",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetControlInScope()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return TargetOfEvaluationChangeEventValidationError{
-					field:  "ControlInScope",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
 	if len(errors) > 0 {
 		return TargetOfEvaluationChangeEventMultiError(errors)
 	}
@@ -10482,3 +9557,121 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Catalog_MetadataValidationError{}
+
+// Validate checks the field values on ListControlsRequest_Filter with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListControlsRequest_Filter) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListControlsRequest_Filter with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListControlsRequest_FilterMultiError, or nil if none found.
+func (m *ListControlsRequest_Filter) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListControlsRequest_Filter) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetAssuranceLevels() {
+		_, _ = idx, item
+
+		if utf8.RuneCountInString(item) < 1 {
+			err := ListControlsRequest_FilterValidationError{
+				field:  fmt.Sprintf("AssuranceLevels[%v]", idx),
+				reason: "value length must be at least 1 runes",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListControlsRequest_FilterMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListControlsRequest_FilterMultiError is an error wrapping multiple
+// validation errors returned by ListControlsRequest_Filter.ValidateAll() if
+// the designated constraints aren't met.
+type ListControlsRequest_FilterMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListControlsRequest_FilterMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListControlsRequest_FilterMultiError) AllErrors() []error { return m }
+
+// ListControlsRequest_FilterValidationError is the validation error returned
+// by ListControlsRequest_Filter.Validate if the designated constraints aren't met.
+type ListControlsRequest_FilterValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListControlsRequest_FilterValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListControlsRequest_FilterValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListControlsRequest_FilterValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListControlsRequest_FilterValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListControlsRequest_FilterValidationError) ErrorName() string {
+	return "ListControlsRequest_FilterValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListControlsRequest_FilterValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListControlsRequest_Filter.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListControlsRequest_FilterValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListControlsRequest_FilterValidationError{}

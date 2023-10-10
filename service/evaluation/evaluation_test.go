@@ -30,8 +30,6 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"sort"
-	"sync"
 	"testing"
 	"time"
 
@@ -49,11 +47,11 @@ import (
 	"clouditor.io/clouditor/service"
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestMain(m *testing.M) {
@@ -149,65 +147,10 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func Test_createSchedulerTag(t *testing.T) {
-	type args struct {
-		cloudServiceId string
-		catalogId      string
-		controlId      string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Input controlId empty",
-			args: args{
-				controlId: testdata.MockSubControlID,
-				catalogId: testdata.MockCatalogID,
-			},
-			want: "",
-		},
-		{
-			name: "Input cloudServiceId empty",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				catalogId:      testdata.MockCatalogID,
-			},
-			want: "",
-		},
-		{
-			name: "Input catalogId empty",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				controlId:      testdata.MockSubControlID,
-			},
-			want: "",
-		},
-		{
-			name: "Happy path",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				catalogId:      testdata.MockCatalogID,
-				controlId:      testdata.MockSubControlID,
-			},
-			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockSubControlID),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
-				t.Errorf("createSchedulerTag() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestService_ListEvaluationResults(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
 	}
@@ -490,7 +433,6 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				storage:                       tt.fields.storage,
 				authz:                         tt.fields.authz,
 			}
@@ -509,7 +451,6 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
 		storage                       persistence.Storage
 		catalogControls               map[string]map[string]*orchestrator.Control
 	}
@@ -592,7 +533,6 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				storage:                       tt.fields.storage,
 				catalogControls:               tt.fields.catalogControls,
 			}
@@ -614,8 +554,7 @@ func TestService_StopEvaluation(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
+		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
 		toeTag                        string
@@ -623,7 +562,6 @@ func TestService_StopEvaluation(t *testing.T) {
 	type args struct {
 		in0              context.Context
 		req              *evaluation.StopEvaluationRequest
-		schedulerTag     string
 		schedulerRunning bool
 	}
 	tests := []struct {
@@ -672,13 +610,13 @@ func TestService_StopEvaluation(t *testing.T) {
 				schedulerRunning: false,
 			},
 			fields: fields{
-				scheduler: make(map[string]*gocron.Scheduler),
+				scheduler: gocron.NewScheduler(time.Local),
 				authz:     &service.AuthorizationStrategyAllowAll{},
 				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("evaluation for Cloud Service '%s' and Catalog '%s' not running", testdata.MockCloudServiceID1, testdata.MockCatalogID))
+				return assert.ErrorContains(t, err, fmt.Sprintf("job for cloud service '%s' and catalog '%s' not running", testdata.MockCloudServiceID1, testdata.MockCatalogID))
 			},
 		},
 		{
@@ -692,9 +630,16 @@ func TestService_StopEvaluation(t *testing.T) {
 				schedulerRunning: true,
 			},
 			fields: fields{
-				scheduler: map[string]*gocron.Scheduler{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
-				},
+				scheduler: func() *gocron.Scheduler {
+					s := gocron.NewScheduler(time.UTC)
+					_, err := s.Every(1).
+						Day().
+						Tag(testdata.MockCloudServiceID1, testdata.MockCatalogID).
+						Do(func() { fmt.Println("Scheduler") })
+					assert.NoError(t, err)
+
+					return s
+				}(),
 				authz:  &service.AuthorizationStrategyAllowAll{},
 				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 			},
@@ -707,17 +652,9 @@ func TestService_StopEvaluation(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
 				storage:                       tt.fields.storage,
 				authz:                         tt.fields.authz,
-			}
-
-			// Start the scheduler
-			if tt.args.schedulerRunning == true {
-				_, err := s.scheduler[tt.fields.toeTag].Every(1).Day().Tag(tt.args.schedulerTag).Do(func() { fmt.Println("Scheduler") })
-				require.NoError(t, err)
-
 			}
 
 			gotRes, err := s.StopEvaluation(tt.args.in0, tt.args.req)
@@ -731,11 +668,9 @@ func TestService_StopEvaluation(t *testing.T) {
 func TestService_StartEvaluation(t *testing.T) {
 	type fields struct {
 		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer      api.Authorizer
-		scheduler       map[string]*gocron.Scheduler
+		scheduler       *gocron.Scheduler
 		storage         persistence.Storage
 		authz           service.AuthorizationStrategy
-		wg              map[string]*sync.WaitGroup
 		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
@@ -782,6 +717,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			name: "error init orchestrator client",
 			fields: fields{
 				authz:        &service.AuthorizationStrategyAllowAll{},
+				scheduler:    gocron.NewScheduler(time.Local),
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
 			},
 			args: args{
@@ -801,6 +737,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			name: "error cache controls",
 			fields: fields{
 				orchestrator:    api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
+				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
@@ -823,6 +760,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})))),
+				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
@@ -840,16 +778,23 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 		},
 		{
-			name: "scheduler for control started already",
+			name: "scheduler for catalog started already",
 			fields: fields{
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 				})))),
-				scheduler: map[string]*gocron.Scheduler{
-					fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID): gocron.NewScheduler(time.UTC),
-				},
+				scheduler: func() *gocron.Scheduler {
+					s := gocron.NewScheduler(time.Local)
+					_, err := s.Every(1).
+						Day().
+						Tag(testdata.MockCloudServiceID1, testdata.MockCatalogID).
+						Do(func() { fmt.Println("Scheduler") })
+					assert.NoError(t, err)
+
+					return s
+				}(),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
 			},
@@ -863,42 +808,8 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Cloud Service ")
+				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Cloud Service")
 			},
-		},
-		{
-			name: "No controls_in_scope and no scheduler added",
-			fields: fields{
-				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
-					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluationWithoutControlsInScope(testdata.AssuranceLevelBasic)))
-					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
-				})))),
-				scheduler:       make(map[string]*gocron.Scheduler),
-				authz:           &service.AuthorizationStrategyAllowAll{},
-				catalogControls: make(map[string]map[string]*orchestrator.Control),
-			},
-			args: args{
-				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-				},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				_, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				gotResp, ok := i2[0].(*evaluation.StartEvaluationResponse)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				return assert.True(t, gotResp.Successful)
-			},
-			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: scheduler added",
@@ -909,8 +820,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				})))),
-				scheduler:       make(map[string]*gocron.Scheduler),
-				wg:              make(map[string]*sync.WaitGroup),
+				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},
 				storage:         testutil.NewInMemoryStorage(t),
 				catalogControls: make(map[string]map[string]*orchestrator.Control),
@@ -933,9 +843,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					return false
 				}
 				assert.True(t, gotResp.Successful)
-
-				toeTag := createSchedulerTag(testdata.MockCloudServiceID1, testdata.MockCatalogID)
-				return assert.Equal(t, 2, len(s.scheduler[toeTag].Jobs()))
+				return assert.Equal(t, 1, len(s.scheduler.Jobs()))
 			},
 			wantErr: assert.NoError,
 		},
@@ -944,21 +852,10 @@ func TestService_StartEvaluation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				orchestrator:    tt.fields.orchestrator,
-				authorizer:      tt.fields.authorizer,
 				scheduler:       tt.fields.scheduler,
 				storage:         tt.fields.storage,
-				wg:              tt.fields.wg,
 				authz:           tt.fields.authz,
 				catalogControls: tt.fields.catalogControls,
-			}
-
-			toeTag := createSchedulerTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId())
-			// Start the scheduler
-			if len(tt.fields.scheduler) != 0 {
-				tt.fields.scheduler[toeTag] = gocron.NewScheduler(time.UTC)
-				_, err := s.scheduler[toeTag].Every(1).Day().Tag(createJobTag(tt.args.req.GetCloudServiceId(), tt.args.req.GetCatalogId(), testdata.MockCatalogID)).Do(func() { fmt.Println("Scheduler") })
-				assert.NoError(t, err)
-				s.scheduler[toeTag].StartAsync()
 			}
 
 			gotResp, err := s.StartEvaluation(tt.args.in0, tt.args.req)
@@ -975,9 +872,7 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
+		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
 		catalogControls               map[string]map[string]*orchestrator.Control
 	}
@@ -1059,9 +954,7 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
 				storage:                       tt.fields.storage,
 				catalogControls:               tt.fields.catalogControls,
 			}
@@ -1119,9 +1012,7 @@ func TestService_getControl(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
+		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
 		catalogControls               map[string]map[string]*orchestrator.Control
 	}
@@ -1230,9 +1121,7 @@ func TestService_getControl(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
 				storage:                       tt.fields.storage,
 				catalogControls:               tt.fields.catalogControls,
 			}
@@ -1251,18 +1140,14 @@ func TestService_addJobToScheduler(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
+		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
-		schedulerRunning              bool
-		schedulerTag                  string
 	}
 	type args struct {
-		c                  *orchestrator.Control
-		toe                *orchestrator.TargetOfEvaluation
-		parentSchedulerTag string
-		interval           int
+		ctx      context.Context
+		toe      *orchestrator.TargetOfEvaluation
+		catalog  *orchestrator.Catalog
+		interval int
 	}
 	tests := []struct {
 		name    string
@@ -1281,23 +1166,16 @@ func TestService_addJobToScheduler(t *testing.T) {
 		{
 			name: "Interval invalid",
 			fields: fields{
-				scheduler: make(map[string]*gocron.Scheduler),
+				scheduler: gocron.NewScheduler(time.Local),
 			},
 			args: args{
-				c: &orchestrator.Control{
-					Id:                "sub_control_id",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "sub_control_id",
-					ParentControlId:   util.Ref("control_id"),
-				},
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
-				interval:           0,
+				catalog:  orchestratortest.NewCatalog(),
+				interval: 0,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evaluation cannot be scheduled")
@@ -1306,66 +1184,30 @@ func TestService_addJobToScheduler(t *testing.T) {
 		{
 			name: "ToE input empty",
 			args: args{
-				c: &orchestrator.Control{
-					Id:                "sub_control_id",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "sub_control_id",
-					ParentControlId:   util.Ref("control_id"),
-				},
-				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
+				catalog: orchestratortest.NewCatalog(),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "interval is invalid")
 			},
 		},
 		{
-			name: "Happy path: Add scheduler job for control",
+			name: "Happy path: Add scheduler job for catalog",
 			fields: fields{
-				scheduler: make(map[string]*gocron.Scheduler),
+				scheduler: gocron.NewScheduler(time.Local),
 			},
 			args: args{
-				c: &orchestrator.Control{
-					Id:                "control_id",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "control_id",
-				},
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				parentSchedulerTag: "",
-				interval:           2,
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path: Add scheduler job for sub-control",
-			fields: fields{
-				scheduler: make(map[string]*gocron.Scheduler),
-			},
-			args: args{
-				c: &orchestrator.Control{
-					Id:                "sub_control_id",
-					CategoryName:      testdata.MockCategoryName,
-					CategoryCatalogId: testdata.MockCatalogID,
-					Name:              "sub_control_id",
-					ParentControlId:   util.Ref("control_id"),
-				},
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
-				},
-				parentSchedulerTag: testdata.MockCloudServiceID1 + "control_id",
-				interval:           2,
+				catalog:  orchestratortest.NewCatalog(),
+				interval: 2,
 			},
 			wantErr: assert.NoError,
 		},
@@ -1375,50 +1217,29 @@ func TestService_addJobToScheduler(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
 				storage:                       tt.fields.storage,
 			}
-
-			toeTag := createSchedulerTag(tt.args.toe.GetCloudServiceId(), tt.args.toe.GetCatalogId())
-			// Start the scheduler
-			if tt.fields.schedulerRunning == true {
-				_, err := s.scheduler[toeTag].Every(1).Day().Tag(tt.fields.schedulerTag).Do(func() { fmt.Println("Scheduler") })
-				require.NoError(t, err)
-			}
-			if tt.fields.scheduler != nil {
-				tt.fields.scheduler[toeTag] = gocron.NewScheduler(time.UTC)
-			}
-
-			err := s.addJobToScheduler(tt.args.c, tt.args.toe, tt.args.parentSchedulerTag, tt.args.interval)
+			err := s.addJobToScheduler(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.interval)
 			tt.wantErr(t, err)
-
-			if err == nil {
-				tags, err := s.scheduler[toeTag].FindJobsByTag()
-				assert.NoError(t, err)
-				assert.NotEmpty(t, tags)
-			}
 		})
 	}
 }
 
 func TestService_evaluateControl(t *testing.T) {
 	type fields struct {
-		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
-		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
-		storage                       persistence.Storage
-		authz                         service.AuthorizationStrategy
+		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
+		scheduler       *gocron.Scheduler
+		storage         persistence.Storage
+		authz           service.AuthorizationStrategy
+		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
-		toe          *orchestrator.TargetOfEvaluation
-		categoryName string
-		controlId    string
-		schedulerTag string
-		subControls  []*orchestrator.Control
+		ctx     context.Context
+		toe     *orchestrator.TargetOfEvaluation
+		catalog *orchestrator.Catalog
+		control *orchestrator.Control
+		manual  []*evaluation.EvaluationResult
 	}
 	tests := []struct {
 		name                 string
@@ -1430,24 +1251,20 @@ func TestService_evaluateControl(t *testing.T) {
 		{
 			name: "AuthZ error in ListEvaluationResults",
 			fields: fields{
-				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
-				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
 				}),
 				authz: &service.AuthorizationStrategyJWT{},
 			},
 			args: args{
+				ctx: context.Background(),
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName: testdata.MockCategoryName,
-				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
-				subControls:  make([]*orchestrator.Control, 2),
+				catalog: orchestratortest.NewCatalog(),
+				control: orchestratortest.MockControl1,
 			},
 			newEvaluationResults: &evaluation.EvaluationResult{},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1462,24 +1279,27 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 		},
 		{
-			name: "No evaluation results for evaluation available",
+			name: "No assessment results for evaluation available",
 			fields: fields{
-				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
+				storage:      testutil.NewInMemoryStorage(t),
+				authz:        &service.AuthorizationStrategyAllowAll{},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
+				catalogControls: map[string]map[string]*orchestrator.Control{
+					testdata.MockCatalogID: {
+						testdata.MockCategoryName + "-" + testdata.MockControlID1:     orchestratortest.MockControl1,
+						testdata.MockCategoryName + "-" + testdata.MockSubControlID11: orchestratortest.MockControl11,
+					},
 				},
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
+				ctx: context.Background(),
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName: testdata.MockCategoryName,
-				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
-				subControls:  make([]*orchestrator.Control, 2),
+				catalog: orchestratortest.NewCatalog(),
+				control: orchestratortest.MockControl1,
 			},
 			newEvaluationResults: nil,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1488,32 +1308,43 @@ func TestService_evaluateControl(t *testing.T) {
 					return false
 				}
 
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
-				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				res, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+				return assert.NoError(t, err) &&
+					assert.Equal(t, 2, len(res.Results)) &&
+					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Results[0].Status) &&
+					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Results[1].Status)
 			},
 		},
 		{
 			name: "Happy path",
 			fields: fields{
-				wg: map[string]*sync.WaitGroup{
-					testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1: {},
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
+				catalogControls: map[string]map[string]*orchestrator.Control{
+					testdata.MockCatalogID: {
+						testdata.MockCategoryName + "-" + testdata.MockControlID1:     orchestratortest.MockControl1,
+						testdata.MockCategoryName + "-" + testdata.MockSubControlID11: orchestratortest.MockControl1.Controls[0],
+					},
 				},
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultsWithoutResultsForParentControl))
-				}),
-				authz: &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
+				ctx: context.Background(),
 				toe: &orchestrator.TargetOfEvaluation{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
-				categoryName: testdata.MockCategoryName,
-				controlId:    testdata.MockControlID1,
-				schedulerTag: testdata.MockCloudServiceID1 + "-" + testdata.MockControlID1,
-				subControls:  make([]*orchestrator.Control, 2),
+				catalog: orchestratortest.NewCatalog(),
+				control: orchestratortest.MockControl1,
+				manual: []*evaluation.EvaluationResult{
+					{
+						Status: evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+					},
+				},
 			},
 			newEvaluationResults: evaluationtest.MockEvaluationResult1,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
@@ -1529,7 +1360,7 @@ func TestService_evaluateControl(t *testing.T) {
 
 				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, 6, len(evalResults.Results))
+				assert.Equal(t, 2, len(evalResults.Results))
 
 				createdResult := evalResults.Results[len(evalResults.Results)-1]
 
@@ -1546,19 +1377,16 @@ func TestService_evaluateControl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
-				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
-				storage:                       tt.fields.storage,
-				authz:                         tt.fields.authz,
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				storage:         tt.fields.storage,
+				authz:           tt.fields.authz,
+				catalogControls: tt.fields.catalogControls,
 			}
 
-			s.evaluateControl(tt.args.toe, tt.args.categoryName, tt.args.controlId, tt.args.schedulerTag, tt.args.subControls)
+			_ = s.evaluateControl(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.control, tt.args.manual)
 
 			tt.want(t, s, tt.newEvaluationResults)
-			assert.NotEmpty(t, s.wg[tt.args.schedulerTag])
 		})
 	}
 }
@@ -1566,30 +1394,27 @@ func TestService_evaluateControl(t *testing.T) {
 func TestService_evaluateSubcontrol(t *testing.T) {
 	type fields struct {
 		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer      api.Authorizer
-		scheduler       map[string]*gocron.Scheduler
-		wg              map[string]*sync.WaitGroup
+		scheduler       *gocron.Scheduler
 		storage         persistence.Storage
 		authz           service.AuthorizationStrategy
-		schedulerTag    string
 		wgCounter       int
 		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
-		toe                *orchestrator.TargetOfEvaluation
-		control            *orchestrator.Control
-		parentSchedulerTag string
+		ctx     context.Context
+		toe     *orchestrator.TargetOfEvaluation
+		control *orchestrator.Control
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   assert.ValueAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantSvc assert.ValueAssertionFunc
 	}{
 		{
 			name: "ToE input empty", // we do not check the other input parameters
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -1597,18 +1422,14 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				storage:   testutil.NewInMemoryStorage(t),
 				authz:     &service.AuthorizationStrategyAllowAll{},
 				wgCounter: 2,
-				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
-				},
 			},
 			args: args{
 				control: &orchestrator.Control{
 					Id:           testdata.MockControlID1,
 					CategoryName: testdata.MockCategoryName,
 				},
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
@@ -1622,13 +1443,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "no assessment results available",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
-				wgCounter:    2,
-				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
-				},
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				wgCounter: 2,
+				storage:   testutil.NewInMemoryStorage(t),
+				authz:     &service.AuthorizationStrategyAllowAll{},
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})))),
@@ -1643,9 +1460,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					Id:           testdata.MockControlID1,
 					CategoryName: testdata.MockCategoryName,
 				},
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
@@ -1659,11 +1475,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting metrics",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 				wgCounter:    2,
-				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
-				},
 				storage:      testutil.NewInMemoryStorage(t),
 				authz:        &service.AuthorizationStrategyAllowAll{},
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
@@ -1678,9 +1490,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					Id:           testdata.MockSubControlID11,
 					CategoryName: testdata.MockCategoryName,
 				},
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
@@ -1694,13 +1505,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "error getting assessment results",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
-				wgCounter:    1,
-				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
-				},
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				wgCounter: 1,
+				storage:   testutil.NewInMemoryStorage(t),
+				authz:     &service.AuthorizationStrategyAllowAll{},
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -1715,9 +1522,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					Id:           testdata.MockSubControlID11,
 					CategoryName: testdata.MockCategoryName,
 				},
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
@@ -1731,13 +1537,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				schedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
-				wgCounter:    1,
-				wg: map[string]*sync.WaitGroup{
-					createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1): {},
-				},
-				storage: testutil.NewInMemoryStorage(t),
-				authz:   &service.AuthorizationStrategyAllowAll{},
+				wgCounter: 1,
+				storage:   testutil.NewInMemoryStorage(t),
+				authz:     &service.AuthorizationStrategyAllowAll{},
 				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -1759,9 +1561,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					Id:           testdata.MockSubControlID11,
 					CategoryName: testdata.MockCategoryName,
 				},
-				parentSchedulerTag: createJobTag(testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				service, ok := i1.(*Service)
 				if !assert.True(tt, ok) {
 					return false
@@ -1771,267 +1572,34 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				assert.NoError(t, err)
 				return assert.Equal(t, 1, len(evalResults.Results))
 			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				result, ok := i1.(*evaluation.EvaluationResult)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Equal(t, testdata.MockSubControlID11, result.ControlId)
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				orchestrator:    tt.fields.orchestrator,
-				authorizer:      tt.fields.authorizer,
 				scheduler:       tt.fields.scheduler,
-				wg:              tt.fields.wg,
 				storage:         tt.fields.storage,
 				authz:           tt.fields.authz,
 				catalogControls: tt.fields.catalogControls,
 			}
 
-			tt.fields.wg[tt.fields.schedulerTag].Add(tt.fields.wgCounter)
-			s.evaluateSubcontrol(tt.args.toe, tt.args.control, tt.args.parentSchedulerTag)
+			got, _ := s.evaluateSubcontrol(tt.args.ctx, tt.args.toe, tt.args.control)
+
+			if tt.wantSvc != nil {
+				tt.wantSvc(t, s)
+			}
 
 			if tt.want != nil {
-				tt.want(t, s)
-			}
-		})
-	}
-}
-
-func Test_getSchedulerTag(t *testing.T) {
-	type args struct {
-		cloudServiceId string
-		catalogId      string
-		controlId      string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "cloud_service_id empty",
-			args: args{
-				controlId: testdata.MockControlID1,
-				catalogId: testdata.MockCatalogID,
-			},
-			want: "",
-		},
-		{
-			name: "control_id empty",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				catalogId:      testdata.MockCatalogID,
-			},
-			want: "",
-		},
-		{
-			name: "catalog_id empty",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				controlId:      testdata.MockControlID1,
-			},
-			want: "",
-		},
-		{
-			name: "Happy path",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				controlId:      testdata.MockControlID1,
-				catalogId:      testdata.MockCatalogID,
-			},
-			want: fmt.Sprintf("%s-%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID, testdata.MockControlID1),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := createJobTag(tt.args.cloudServiceId, tt.args.catalogId, tt.args.controlId); got != tt.want {
-				t.Errorf("getSchedulerTag() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_getAssessmentResultMap(t *testing.T) {
-	type args struct {
-		results []*assessment.AssessmentResult
-	}
-	tests := []struct {
-		name string
-		args args
-		want assert.ValueAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			args: args{results: []*assessment.AssessmentResult{}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*assessment.AssessmentResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				return assert.Empty(t, gotResults)
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				results: orchestratortest.MockAssessmentResults,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.(map[string][]*assessment.AssessmentResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				wantResults := map[string][]*assessment.AssessmentResult{
-					testdata.MockResourceID1: {
-						orchestratortest.MockAssessmentResult1,
-						orchestratortest.MockAssessmentResult2,
-						orchestratortest.MockAssessmentResult3,
-					},
-					testdata.MockResourceID2: {
-						orchestratortest.MockAssessmentResult4,
-					},
-				}
-
-				for _, r := range gotResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-				for _, r := range wantResults {
-					sort.SliceStable(r, func(i, j int) bool {
-						return r[i].GetId() < r[j].GetId()
-					})
-				}
-
-				assert.Equal(t, len(gotResults), len(wantResults))
-
-				for key, results := range gotResults {
-					if !assert.Equal(t, len(results), len(wantResults[key])) {
-						return false
-					}
-					for i := range results {
-						reflect.DeepEqual(results[i], wantResults[key][i])
-					}
-				}
-
-				return true
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := createAssessmentResultMap(tt.args.results)
-
-			tt.want(t, got)
-		})
-	}
-}
-
-func Test_getControlsInScopeHierarchy(t *testing.T) {
-	type args struct {
-		controls []*orchestrator.Control
-	}
-	tests := []struct {
-		name string
-		args args
-		want assert.ValueAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			args: args{controls: []*orchestrator.Control{}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.([]*orchestrator.Control)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				return assert.Empty(t, gotResults)
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				controls: orchestratortest.MockControlsInScope,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotResults, ok := i1.([]*orchestrator.Control)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				wantResults := []*orchestrator.Control{
-					orchestratortest.MockControlsInScope5,
-					orchestratortest.MockControlsInScope4,
-					orchestratortest.MockControlsInScope3,
-					orchestratortest.MockControlsInScope2,
-					orchestratortest.MockControlsInScope1,
-				}
-				wantResults[3].Controls = append(wantResults[3].Controls, orchestratortest.MockControlsInScopeSubControl11)
-				wantResults[2].Controls = append(wantResults[2].Controls, orchestratortest.MockControlsInScopeSubControl21)
-				wantResults[1].Controls = append(wantResults[1].Controls, orchestratortest.MockControlsInScopeSubControl31)
-				wantResults[0].Controls = append(wantResults[0].Controls, orchestratortest.MockControlsInScopeSubControl32)
-
-				// Sort lists
-				sort.SliceStable(gotResults, func(i, j int) bool {
-					return gotResults[i].GetId() < gotResults[j].GetId()
-				})
-				sort.SliceStable(wantResults, func(i, j int) bool {
-					return wantResults[i].GetId() < wantResults[j].GetId()
-				})
-				assert.Equal(t, len(wantResults), len(gotResults))
-
-				for i := range gotResults {
-					reflect.DeepEqual(gotResults[i], wantResults[i])
-				}
-
-				return true
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotControlsHierarchy := createControlsInScopeHierarchy(tt.args.controls)
-
-			tt.want(t, gotControlsHierarchy)
-		})
-	}
-}
-
-func Test_getToeTag(t *testing.T) {
-	type args struct {
-		cloudServiceId string
-		catalogId      string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Empty cloud_service_id",
-			args: args{
-				catalogId: testdata.MockCatalogID,
-			},
-			want: "",
-		},
-		{
-			name: "Empty catalog_id",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-			},
-			want: "",
-		},
-		{
-			name: "Happy path",
-			args: args{
-				cloudServiceId: testdata.MockCloudServiceID1,
-				catalogId:      testdata.MockCatalogID,
-			},
-			want: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := createSchedulerTag(tt.args.cloudServiceId, tt.args.catalogId); got != tt.want {
-				t.Errorf("getToeTag() = %v, want %v", got, tt.want)
+				tt.want(t, got)
 			}
 		})
 	}
@@ -2041,9 +1609,7 @@ func TestService_cacheControls(t *testing.T) {
 	type fields struct {
 		UnimplementedEvaluationServer evaluation.UnimplementedEvaluationServer
 		orchestrator                  *api.RPCConnection[orchestrator.OrchestratorClient]
-		authorizer                    api.Authorizer
-		scheduler                     map[string]*gocron.Scheduler
-		wg                            map[string]*sync.WaitGroup
+		scheduler                     *gocron.Scheduler
 		authz                         service.AuthorizationStrategy
 		storage                       persistence.Storage
 		catalogControls               map[string]map[string]*orchestrator.Control
@@ -2117,9 +1683,7 @@ func TestService_cacheControls(t *testing.T) {
 			s := &Service{
 				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
 				orchestrator:                  tt.fields.orchestrator,
-				authorizer:                    tt.fields.authorizer,
 				scheduler:                     tt.fields.scheduler,
-				wg:                            tt.fields.wg,
 				authz:                         tt.fields.authz,
 				storage:                       tt.fields.storage,
 				catalogControls:               tt.fields.catalogControls,
@@ -2129,6 +1693,112 @@ func TestService_cacheControls(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want(t, s)
+			}
+		})
+	}
+}
+
+func TestService_CreateEvaluationResult(t *testing.T) {
+	type fields struct {
+		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
+		scheduler       *gocron.Scheduler
+		authz           service.AuthorizationStrategy
+		storage         persistence.Storage
+		catalogControls map[string]map[string]*orchestrator.Control
+	}
+	type args struct {
+		ctx context.Context
+		req *evaluation.CreateEvaluationResultRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.ValueAssertionFunc
+		wantErr bool
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+					},
+				},
+			},
+			wantRes: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				res, ok := i1.(*evaluation.EvaluationResult)
+				if !ok {
+					return false
+				}
+
+				return assert.Equal(t, orchestratortest.MockControl1.Id, res.ControlId)
+			},
+		},
+		{
+			name: "Wrong status",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+					},
+				},
+			},
+			wantRes: nil,
+			wantErr: true,
+		},
+		{
+			name: "Missing validity",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+					},
+				},
+			},
+			wantRes: nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				authz:           tt.fields.authz,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
+			}
+			gotRes, err := svc.CreateEvaluationResult(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.CreateEvaluationResult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantRes != nil {
+				tt.wantRes(t, gotRes)
 			}
 		})
 	}

@@ -27,6 +27,7 @@ package orchestrator
 
 import (
 	"context"
+	"slices"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -62,18 +63,6 @@ func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
 // the cloud service ID of the inner object.
 func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
 	return req.CloudService.GetId()
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *AddControlToScopeRequest) GetCloudServiceId() string {
-	return req.Scope.GetTargetOfEvaluationCloudServiceId()
-}
-
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateControlInScopeRequest) GetCloudServiceId() string {
-	return req.Scope.GetTargetOfEvaluationCloudServiceId()
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
@@ -140,18 +129,6 @@ func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
 	return &CloudService{Id: req.CloudServiceId}
 }
 
-func (req *AddControlToScopeRequest) GetPayload() proto.Message {
-	return req.Scope
-}
-
-func (req *UpdateControlInScopeRequest) GetPayload() proto.Message {
-	return req.Scope
-}
-
-func (req *RemoveControlFromScopeRequest) GetPayload() proto.Message {
-	return &ControlInScope{TargetOfEvaluationCloudServiceId: req.CloudServiceId, ControlId: req.ControlId}
-}
-
 func (req *CreateMetricRequest) GetPayload() proto.Message {
 	return req.Metric
 }
@@ -180,7 +157,24 @@ func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
 	return &TargetOfEvaluation{CloudServiceId: req.CloudServiceId, CatalogId: req.CatalogId}
 }
 
-// TableName overrides the table name used by ControlInScope to `controls_in_scope`
-func (*ControlInScope) TableName() string {
-	return "controls_in_scope"
+// IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly
+// checks, whether the assurance level matches, if the ToE has one. In the future, this could also include checks, if
+// the control is somehow out of scope.
+func (c *Control) IsRelevantFor(toe *TargetOfEvaluation, catalog *Catalog) bool {
+	// If the catalog does not have an assurance level, we are good to go
+	if len(catalog.AssuranceLevels) == 0 {
+		return true
+	}
+
+	// If the control does not explicitly specify an assurance level, we are also ok
+	if c.AssuranceLevel == nil || toe.AssuranceLevel == nil {
+		return true
+	}
+
+	// Otherwise, we need to retrieve the possible assurance levels (in order) from the catalogs and compare the
+	// indices
+	idxControl := slices.Index(catalog.AssuranceLevels, *c.AssuranceLevel)
+	idxToe := slices.Index(catalog.AssuranceLevels, *toe.AssuranceLevel)
+
+	return idxControl <= idxToe
 }

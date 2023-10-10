@@ -175,9 +175,13 @@ func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRe
 	return res, nil
 }
 
-// ListControls lists controls. If no additional parameters are specified, this lists all controls. If a
-// catalog ID and a category name is specified, then only controls containing in this category are returned.
+// ListControls lists controls. If no additional parameters are specified, this lists all controls. If a catalog ID and
+// a category name is specified, then only controls containing in this category are returned.
 func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListControlsRequest) (res *orchestrator.ListControlsResponse, err error) {
+	var (
+		args  []any
+		query []string
+	)
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -188,16 +192,27 @@ func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListContro
 
 	// If the category name is set (additional binding), forward it as a condition to the pagination method
 	if req.CategoryName != "" && req.CatalogId != "" {
-		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
-			service.DefaultPaginationOpts, "category_name = ? AND category_catalog_id = ?", req.CategoryName, req.CatalogId)
-	} else if req.CatalogId != "" {
-		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
-			service.DefaultPaginationOpts, "category_catalog_id = ?", req.CatalogId)
-	} else {
-		res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
-			service.DefaultPaginationOpts)
+		query = append(query, "category_name = ?")
+		args = append(args, req.CategoryName)
+	}
+	if req.CatalogId != "" {
+		query = append(query, "category_catalog_id = ?")
+		args = append(args, req.CatalogId)
 	}
 
+	// Apply additional filter
+	if req.Filter != nil {
+		if len(req.Filter.AssuranceLevels) > 0 {
+			query = append(query, "(assurance_level IN ? OR assurance_level IS NULL)")
+			args = append(args, req.Filter.AssuranceLevels)
+		}
+	}
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	res.Controls, res.NextPageToken, err = service.PaginateStorage[*orchestrator.Control](req, srv.storage,
+		service.DefaultPaginationOpts, args...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
@@ -268,8 +283,13 @@ func (svc *Service) loadEmbeddedCatalogs() (catalogs []*orchestrator.Catalog, er
 					sub.CategoryName = category.Name
 					sub.CategoryCatalogId = catalog.Id
 
-					// Also set the parent information, so we do not need to set it in the original file to make it
-					// easier
+					// Make sure we are dealing with a copy of control when we
+					// take an address of its property and not the loop var,
+					// which gets overridden in each loop.
+					control := control
+
+					// Also set the parent information, so we do not need to set
+					// it in the original file to make it easier
 					sub.ParentControlCategoryCatalogId = &control.CategoryCatalogId
 					sub.ParentControlCategoryName = &control.CategoryName
 					sub.ParentControlId = &control.Id

@@ -290,6 +290,149 @@ var _ interface {
 	ErrorName() string
 } = StartEvaluationResponseValidationError{}
 
+// Validate checks the field values on CreateEvaluationResultRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateEvaluationResultRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateEvaluationResultRequest with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// CreateEvaluationResultRequestMultiError, or nil if none found.
+func (m *CreateEvaluationResultRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateEvaluationResultRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetResult() == nil {
+		err := CreateEvaluationResultRequestValidationError{
+			field:  "Result",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetResult()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateEvaluationResultRequestValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateEvaluationResultRequestValidationError{
+					field:  "Result",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResult()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateEvaluationResultRequestValidationError{
+				field:  "Result",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateEvaluationResultRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateEvaluationResultRequestMultiError is an error wrapping multiple
+// validation errors returned by CreateEvaluationResultRequest.ValidateAll()
+// if the designated constraints aren't met.
+type CreateEvaluationResultRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateEvaluationResultRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateEvaluationResultRequestMultiError) AllErrors() []error { return m }
+
+// CreateEvaluationResultRequestValidationError is the validation error
+// returned by CreateEvaluationResultRequest.Validate if the designated
+// constraints aren't met.
+type CreateEvaluationResultRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateEvaluationResultRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateEvaluationResultRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateEvaluationResultRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateEvaluationResultRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateEvaluationResultRequestValidationError) ErrorName() string {
+	return "CreateEvaluationResultRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateEvaluationResultRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateEvaluationResultRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateEvaluationResultRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateEvaluationResultRequestValidationError{}
+
 // Validate checks the field values on StopEvaluationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -959,6 +1102,43 @@ func (m *EvaluationResult) validate(all bool) error {
 		// no validation rules for ParentControlId
 	}
 
+	if m.Comment != nil {
+		// no validation rules for Comment
+	}
+
+	if m.ValidUntil != nil {
+
+		if all {
+			switch v := interface{}(m.GetValidUntil()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, EvaluationResultValidationError{
+						field:  "ValidUntil",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, EvaluationResultValidationError{
+						field:  "ValidUntil",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetValidUntil()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return EvaluationResultValidationError{
+					field:  "ValidUntil",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return EvaluationResultMultiError(errors)
 	}
@@ -1131,6 +1311,10 @@ func (m *ListEvaluationResultsRequest_Filter) validate(all bool) error {
 
 	if m.ParentsOnly != nil {
 		// no validation rules for ParentsOnly
+	}
+
+	if m.ValidManualOnly != nil {
+		// no validation rules for ValidManualOnly
 	}
 
 	if len(errors) > 0 {
