@@ -526,9 +526,13 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 	// Gather a list of controls, we are ignoring
 	ignored = make([]string, 0, len(results))
 	for _, result := range results {
+		// If the ignored result is not a top-level evaluation result, we need to record it in the map of manual results
+		// and supply it to the appropriate evaluateControl function for the particular parent control
 		if result.ParentControlId != nil {
 			manual[*result.ParentControlId] = append(manual[*result.ParentControlId], result)
 		} else {
+			// Otherwise, we just add it to the list of ignored top-level controls, we use to filter the top-level
+			// controls; in this case we do not need to evaluate this particular top level control at all.
 			ignored = append(ignored, result.ControlId)
 		}
 	}
@@ -540,7 +544,7 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 			continue
 		}
 
-		// If we ignore the control, we can skip it
+		// If we ignore the whole control, we can skip it
 		if slices.Contains(ignored, c.Id) {
 			continue
 		}

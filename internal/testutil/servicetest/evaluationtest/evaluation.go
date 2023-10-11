@@ -103,4 +103,16 @@ var (
 		MockEvaluationResult5,
 		MockEvaluationResult6,
 	}
+
+	MockEvaluationResultControlID1CompliantManually = &evaluation.EvaluationResult{
+		Id:                         testdata.MockEvaluationResult1ID,
+		Timestamp:                  timestamppb.New(time.Now()),
+		CloudServiceId:             testdata.MockCloudServiceID1,
+		ControlCategoryName:        testdata.MockCategoryName,
+		ControlCatalogId:           testdata.MockCatalogID,
+		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY,
+		ValidUntil:                 timestamppb.New(time.Now().Add(5 * time.Hour)),
+		ControlId:                  testdata.MockControlID1,
+		FailingAssessmentResultIds: []string{},
+	}
 )

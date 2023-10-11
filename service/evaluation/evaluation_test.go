@@ -1735,3 +1735,85 @@ func TestDefaultServiceSpec(t *testing.T) {
 		})
 	}
 }
+
+func TestService_evaluateCatalog(t *testing.T) {
+	type fields struct {
+		orchestrator    *api.RPCConnection[orchestrator.OrchestratorClient]
+		scheduler       *gocron.Scheduler
+		authz           service.AuthorizationStrategy
+		storage         persistence.Storage
+		catalogControls map[string]map[string]*orchestrator.Control
+	}
+	type args struct {
+		ctx      context.Context
+		toe      *orchestrator.TargetOfEvaluation
+		catalog  *orchestrator.Catalog
+		interval int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+		wantSvc assert.ValueAssertionFunc
+	}{
+		{
+			name: "With manual top-level evaluation result",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResultControlID1CompliantManually))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+				orchestrator: api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
+					assert.NoError(t, s.Create(orchestratortest.NewCloudService()))
+					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
+				})))),
+				catalogControls: map[string]map[string]*orchestrator.Control{
+					testdata.MockCatalogID: {
+						testdata.MockCategoryName + "-" + testdata.MockControlID1:     orchestratortest.MockControl1,
+						testdata.MockCategoryName + "-" + testdata.MockSubControlID11: orchestratortest.MockControl1.Controls[0],
+						testdata.MockCategoryName + "-" + testdata.MockControlID2:     orchestratortest.MockControl2,
+						testdata.MockCategoryName + "-" + testdata.MockSubControlID21: orchestratortest.MockControl2.Controls[0],
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				toe: &orchestrator.TargetOfEvaluation{
+					CloudServiceId: testdata.MockCloudServiceID1,
+					CatalogId:      testdata.MockCatalogID,
+					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				},
+				catalog: orchestratortest.NewCatalog(),
+			},
+			wantErr: assert.NoError,
+			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				service, ok := i1.(*Service)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+				assert.NoError(t, err)
+				// In total three results should be in the database now (Cont1, Cont2, Cont2.1)
+				return assert.Equal(t, 3, len(evalResults.Results))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				authz:           tt.fields.authz,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
+			}
+
+			err := svc.evaluateCatalog(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.interval)
+			tt.wantErr(t, err)
+			tt.wantSvc(t, svc)
+		})
+	}
+}
