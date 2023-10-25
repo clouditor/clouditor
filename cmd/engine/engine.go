@@ -367,6 +367,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
 		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
+		server.WithExperimentalDiscovery(discoveryService),
 		server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),
 		server.WithEvidenceStore(evidenceStoreService),

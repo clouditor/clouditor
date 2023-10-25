@@ -88,6 +88,7 @@ func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *voc.Container {
 				// TODO(all): Add region to k8s container
 				voc.GeoLocation{},
 				pod.Labels,
+				"",
 				voc.ContainerType,
 				pod,
 			),
@@ -119,6 +120,7 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource
 				nil, // The CreationTime we have to get directly from the related storage
 				voc.GeoLocation{},
 				nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
+				"",
 				voc.BlockStorageType,
 				pod, &vol,
 			),

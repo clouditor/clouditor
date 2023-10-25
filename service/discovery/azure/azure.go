@@ -42,6 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -117,7 +118,7 @@ func init() {
 type azureDiscovery struct {
 	isAuthorized bool
 
-	sub  armsubscription.Subscription
+	sub  *armsubscription.Subscription
 	cred azcore.TokenCredential
 	// rg optionally contains the name of a resource group. If this is not nil, all discovery calls will be scoped to the particular resource group.
 	rg                  *string
@@ -165,6 +166,9 @@ type clients struct {
 	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
 	backupVaultClient     *armdataprotection.BackupVaultsClient
 	backupInstancesClient *armdataprotection.BackupInstancesClient
+
+	// Resource groups
+	rgClient *armresources.ResourceGroupsClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -207,7 +211,7 @@ func (a *azureDiscovery) authorize() (err error) {
 	}
 
 	// get first subscription
-	a.sub = *subList[0]
+	a.sub = subList[0]
 
 	log.Infof("Azure %s discoverer uses %s as subscription", a.discovererComponent, *a.sub.SubscriptionID)
 
@@ -393,6 +397,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 					Labels:    nil,
 					ServiceID: d.csID,
 					Type:      voc.ObjectStorageType,
+					Parent:    resourceGroupID(instance.ID),
 					Raw:       raw,
 				},
 			},
@@ -410,6 +415,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 						Region: *vault.Location,
 					},
 					Labels: nil,
+					Parent: resourceGroupID(instance.ID),
 					Raw:    raw,
 				},
 			},
@@ -453,7 +459,7 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 		return nil, errors.New("missing resource group and/or vault name")
 	}
 
-	// List all instances in the given backupp vault
+	// List all instances in the given backup vault
 	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())
@@ -469,6 +475,20 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 // resourceGroupName returns the resource group name of a given Azure ID
 func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
+}
+
+func resourceGroupID(ID *string) voc.ResourceID {
+	// split according to "/"
+	s := strings.Split(util.Deref(ID), "/")
+
+	// We cannot really return an error here, so we just return an empty string
+	if len(s) < 5 {
+		return ""
+	}
+
+	id := strings.Join(s[:5], "/")
+
+	return voc.ResourceID(id)
 }
 
 // backupPolicyName returns the backup policy name of a given Azure ID
@@ -496,7 +516,12 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 		return existingClient, nil
 	}
 
-	client, err = fun(util.Deref(d.sub.SubscriptionID), d.cred, &d.clientOptions)
+	var subID string
+	if d.sub != nil {
+		subID = util.Deref(d.sub.SubscriptionID)
+	}
+
+	client, err = fun(subID, d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get %T client: %w", new(T), err)
 		log.Debug(err)

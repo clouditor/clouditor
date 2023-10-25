@@ -3,10 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: Discovery API
-    description: |-
-        Discovers cloud resources and maps these properties to the format of the
-         ontology
+    title: ""
     version: 0.0.1
 paths:
     /v1/discovery/resources:
@@ -79,6 +76,83 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1experimental/discovery/graph/edges:
+        get:
+            tags:
+                - ExperimentalDiscovery
+            description: |-
+                ListGraphEdges returns the edges (relationship) between resources in our
+                 resource graph.
+
+                 Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+            operationId: ExperimentalDiscovery_ListGraphEdges
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListGraphEdgesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1experimental/discovery/resources/{resource.id}:
+        post:
+            tags:
+                - ExperimentalDiscovery
+            description: |-
+                UpdateResource updates a resource (or creates it, if it does not exist).
+                 This is used to give third-party tools the possibility to add something to
+                 the resource graph.
+
+                 Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
+            operationId: ExperimentalDiscovery_UpdateResource
+            parameters:
+                - name: resource.id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateResourceRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateResourceResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         GoogleProtobufAny:
@@ -91,6 +165,24 @@ components:
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         GoogleProtobufValue:
             description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
+        GraphEdge:
+            type: object
+            properties:
+                id:
+                    type: string
+                source:
+                    type: string
+                target:
+                    type: string
+        ListGraphEdgesResponse:
+            type: object
+            properties:
+                edges:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GraphEdge'
+                nextPageToken:
+                    type: string
         ListResourcesResponse:
             type: object
             properties:
@@ -141,5 +233,22 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        UpdateResourceRequest:
+            type: object
+            properties:
+                resource:
+                    $ref: '#/components/schemas/Resource'
+        UpdateResourceResponse:
+            type: object
+            properties:
+                resource:
+                    $ref: '#/components/schemas/Resource'
 tags:
     - name: Discovery
+      description: |-
+        Discovers cloud resources and maps these properties to the format of the
+         ontology
+    - name: ExperimentalDiscovery
+      description: |-
+        Discovers cloud resources and maps these properties to the format of the
+         ontology
