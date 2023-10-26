@@ -2,9 +2,12 @@ package azure
 
 import (
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
+	"context"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 )
 
@@ -102,6 +105,70 @@ func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
 }
 
 func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
-	//TODO
+	// Find out if key vault is actively used
+	isActive, err := d.isActive(kv)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle key vault: %v", err)
+	}
+	// Get the keys of the key vault
+	keys, err := d.getKeys(kv)
+	if err != nil {
+		return nil, fmt.Errorf("could not handle key vault: %v", err)
+	}
+
+	return &voc.KeyVault{
+		IsActive: isActive,
+		Keys:     keys,
+	}, nil
+}
+
+// isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
+// the key vault (API hits via Azure Monitoring). The number of required API hits and the time period measured are
+// defined by NumberOfAPIHits and PeriodOfAPIHits, respectively.
+func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
+	// Todo(lebogg): Have to do it via AZ Monitor -> maybe outsource it to more general azure package like the cloud defender
+	// Create metrics client (monitoring azquery package)
+	metricsClient, err := azquery.NewMetricsClient(d.cred, nil)
+	if err != nil {
+		return false, fmt.Errorf("could not create Azure Metrics Client (Monitoring): %v", err)
+	}
+	metrics, err := metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID), &azquery.MetricsClientQueryResourceOptions{
+		Aggregation:     nil,
+		Filter:          nil,
+		Interval:        util.Ref("PT1D"), // TODO(lebogg): For testing. In the end we probably want to use timespan to increase this number (max allowed is 1 day)
+		MetricNames:     util.Ref("ServiceApiHit"),
+		MetricNamespace: nil,
+		OrderBy:         nil,
+		ResultType:      nil,
+		Timespan:        nil,
+		Top:             nil,
+	})
+	if err != nil {
+		// TODO(lebogg): To Test: Maybe there are resources (in this case, key vaults) where no API Hit is defined -> Then it is not an error but, e.g., false?
+		return false, fmt.Errorf("could not query resource for metric (Monitoring): %v", err)
+	}
+	// TODO(lebogg): To test: Can this even happen?
+	if metrics.Value == nil {
+		return false, fmt.Errorf("something went wrong. There are no value(s) for this metric")
+	}
+	// TODO(lebogg): We only asked for one metric, so we should only get one value ?!
+	if l := len(metrics.Value); l != 1 {
+		return false, fmt.Errorf("we got %d metrics. But should be one", l)
+	}
+	metric := metrics.Value[0]
+	// TODO(lebogg): If timeseries or data is nil nothing is tracked -> No API Hit or error?
+	if metric.TimeSeries[0] == nil || metric.TimeSeries[0].Data[0] == nil {
+		return false, nil
+	}
+	if util.Deref(metric.TimeSeries[0].Data[0].Count) > 1 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+
+}
+
+// Todo(lebogg)ter
+func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, error) {
 	return nil, nil
 }
