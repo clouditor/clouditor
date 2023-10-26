@@ -34,6 +34,16 @@
                             },
                             {
                                 "id": "CommSec-01.2",
+                                "description": "The CSP shall use a state-of-the-art TLS version.",
+                                "metrics": [
+                                    {
+                                        "id": "TLSVersion"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "CommSec-01.3",
                                 "description": "The CSP shall enforce encryption in all data transmissions",
                                 "metrics": [
                                     {
@@ -43,7 +53,7 @@
                                 "assurance_level": "high"
                             },
                             {
-                                "id": "CommSec-01.3",
+                                "id": "CommSec-01.4",
                                 "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
@@ -51,6 +61,16 @@
                                     }
                                 ],
                                 "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "CommSec-01.5",
+                                "description": "The CSP shall use state-of-the-art encryption protocols.",
+                                "metrics": [
+                                    {
+                                        "id": "TLSCipherSuites"
+                                    }
+                                ],
+                                "assurance_level": "high"
                             }
                         ]
                     }
@@ -377,6 +397,59 @@
                                 "metrics": [
                                     {
                                         "id": "AtRestEncryptionAlgorithm"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Secure provisioning",
+                "description": "Secure provisioning to the production environment.",
+                "controls": [
+                    {
+                        "id": "SecProv-01",
+                        "name": "Commit",
+                        "description": "The CSP should check data at rest.",
+                        "controls": [
+                            {
+                                "id": "SecProv-01.1",
+                                "description": "The CSP shall check if Git commit messages contain a signoff.",
+                                "metrics": [
+                                    {
+                                        "id": "CodeSignoff"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "SecProv-01.1",
+                                "description": "The CSP shall check if Git commits are signed and contain a signoff.",
+                                "metrics": [
+                                    {
+                                        "id": "SignedSignoff"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "SecProv-01.1",
+                                "description": "The CSP shall check if Git commits are signed.",
+                                "metrics": [
+                                    {
+                                        "id": "SignedCommits"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "SecProv-01.2",
+                                "description": "The CSP shall check if only approved authors have committed new code.",
+                                "metrics": [
+                                    {
+                                        "id": "ApprovedCommitAuthor"
                                     }
                                 ],
                                 "assurance_level": "substantial"
