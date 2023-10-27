@@ -87,7 +87,7 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 				return fmt.Errorf("could not handle key vault: %w", err)
 			}
 
-			log.Infof("Adding block storage '%s'", keyVault.GetName())
+			log.Infof("Adding key vault '%s'", keyVault.GetName())
 
 			list = append(list, keyVault)
 			return nil
@@ -118,6 +118,16 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 	}
 
 	return &voc.KeyVault{
+		Resource: discovery.NewResource(d,
+			voc.ResourceID(util.Deref(kv.ID)),
+			util.Deref(kv.Name),
+			nil, //TODO(lebogg): Is there any inforamition about Creation Time?
+			voc.GeoLocation{
+				Region: util.Deref(kv.Location),
+			},
+			labels(kv.Tags),
+			voc.KeyVaultType,
+			kv),
 		IsActive: isActive,
 		Keys:     keys,
 	}, nil
