@@ -55,7 +55,7 @@ func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) 
 	return
 }
 
-// TODO(lebogg): Finished here last time. Not tested, yet. Next: Implement handleKeyVault
+// TODO(lebogg): Finished here last time. Not tested, yet
 func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// initialize key vault client
 	if err = d.initKeyVaultClient(); err != nil {
@@ -104,6 +104,7 @@ func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
 	return
 }
 
+// TODO(lebogg): Test
 func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
 	// Find out if key vault is actively used
 	isActive, err := d.isActive(kv)
@@ -135,7 +136,7 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
 	metrics, err := metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID), &azquery.MetricsClientQueryResourceOptions{
 		Aggregation:     nil,
 		Filter:          nil,
-		Interval:        util.Ref("PT1D"), // TODO(lebogg): For testing. In the end we probably want to use timespan to increase this number (max allowed is 1 day)
+		Interval:        util.Ref("P1D"), // TODO(lebogg): For testing. In the end we probably want to use timespan to increase this number (max allowed is 1 day)
 		MetricNames:     util.Ref("ServiceApiHit"),
 		MetricNamespace: nil,
 		OrderBy:         nil,
