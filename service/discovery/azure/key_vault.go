@@ -1,11 +1,15 @@
 package azure
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
@@ -153,17 +157,18 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("could not create Azure Metrics Client (Monitoring): %v", err)
 	}
-	metrics, err := metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID), &azquery.MetricsClientQueryResourceOptions{
-		Aggregation:     nil,
-		Filter:          nil,
-		Interval:        util.Ref("P1D"), // TODO(lebogg): For testing. In the end we probably want to use timespan to increase this number (max allowed is 1 day)
-		MetricNames:     util.Ref("ServiceApiHit"),
-		MetricNamespace: nil,
-		OrderBy:         nil,
-		ResultType:      nil,
-		Timespan:        nil,
-		Top:             nil,
-	})
+	metrics, err := metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID),
+		&azquery.MetricsClientQueryResourceOptions{
+			Aggregation:     nil,
+			Filter:          nil,
+			Interval:        util.Ref("P1D"), // TODO(lebogg): For testing. In the end we probably want to use timespan to increase this number (max allowed is 1 day)
+			MetricNames:     util.Ref("ServiceApiHit"),
+			MetricNamespace: nil,
+			OrderBy:         nil,
+			ResultType:      nil,
+			Timespan:        nil,
+			Top:             nil,
+		})
 	if err != nil {
 		// TODO(lebogg): To Test: Maybe there are resources (in this case, key vaults) where no API Hit is defined -> Then it is not an error but, e.g., false?
 		return false, fmt.Errorf("could not query resource for metric (Monitoring): %v", err)
@@ -189,7 +194,65 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
 
 }
 
-// Todo(lebogg)ter
+// Todo(lebogg): What happens with different versions of a key
 func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, error) {
+	var (
+		keys []voc.Key
+		c    *armkeyvault.KeysClient
+	)
+	c = d.clients.keysClient
+	if c == nil {
+		return nil, errors.New("keys client is empty")
+	}
+	pager := c.NewListPager(util.Deref(d.azureDiscovery.rg), util.Deref(kv.Name), &armkeyvault.KeysClientListOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("could not page next page (paging error): %v", err)
+		}
+		for _, k := range page.Value {
+			key := voc.Key{
+				Enabled:             util.Deref(k.Properties.Attributes.Enabled),
+				ActivationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Created), 0)),
+				ExpirationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Expires), 0)),
+				IsCustomerGenerated: true, // TODO(lebogg): All keys in Vault are customer ones. In contrast to managed keys in services
+				KeyType:             getKeyType(k.Properties.Kty),
+				KeySize:             0,
+				NumberOfUsages:      0,
+			}
+			keys = append(keys, key)
+			// TODO(lebogg): tbc here
+		}
+	}
 	return nil, nil
+}
+
+// TODO(lebogg): Convert types
+// func PossibleJSONWebKeyTypeValues ->
+// const (
+//
+//	JSONWebKeyTypeEC     JSONWebKeyType = "EC"
+//	JSONWebKeyTypeECHSM  JSONWebKeyType = "EC-HSM"
+//	JSONWebKeyTypeRSA    JSONWebKeyType = "RSA"
+//	JSONWebKeyTypeRSAHSM JSONWebKeyType = "RSA-HSM"
+//
+// )
+//
+// TODO(lebogg): Hot to define the range/scope of key types in the ontology?
+// TODO(lebogg): Extract these consts in a type or const to internal/api s.t. all discoverers use the same values
+func getKeyType(kt *armkeyvault.JSONWebKeyType) string {
+	switch util.Deref(kt) {
+	case armkeyvault.JSONWebKeyTypeEC:
+		return "EC"
+	case armkeyvault.JSONWebKeyTypeECHSM:
+		return "EC"
+	case armkeyvault.JSONWebKeyTypeRSA:
+		return "RSA"
+	case armkeyvault.JSONWebKeyTypeRSAHSM:
+		return "RSA"
+	}
+	// In the future, there could be new types not handled so far. Return it anyway but warn in console.
+	keyType := string(util.Deref(kt))
+	log.Warnf("This key is not supported yet: '%s'. Probably, metrics won't work properly.", keyType)
+	return keyType
 }
