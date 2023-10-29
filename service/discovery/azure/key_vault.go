@@ -217,8 +217,8 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 				ExpirationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Expires), 0)),
 				IsCustomerGenerated: true, // TODO(lebogg): All keys in Vault are customer ones. In contrast to managed keys in services
 				KeyType:             getKeyType(k.Properties.Kty),
-				KeySize:             0,
-				NumberOfUsages:      0,
+				KeySize:             int(util.Deref(k.Properties.KeySize)),
+				NumberOfUsages:      0, // TODO(lebogg): Won't probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
 			}
 			keys = append(keys, key)
 			// TODO(lebogg): tbc here
