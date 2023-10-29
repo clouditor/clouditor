@@ -171,6 +171,7 @@ type clients struct {
 
 	// Key Vault
 	keyVaultClient *armkeyvault.VaultsClient
+	keysClient     *armkeyvault.KeysClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {

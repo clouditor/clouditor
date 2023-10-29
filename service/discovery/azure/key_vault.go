@@ -59,8 +59,13 @@ func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) 
 func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// initialize key vault client
 	if err = d.initKeyVaultClient(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not initialize key vault client: %v", err)
 	}
+	// initialize keys client
+	if err = d.initKeysClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize keys client: %v", err)
+	}
+
 	err = listPager(d.azureDiscovery,
 		d.clients.keyVaultClient.NewListPager,
 		d.clients.keyVaultClient.NewListByResourceGroupPager,
@@ -104,6 +109,11 @@ func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
 	return
 }
 
+func (d *azureKeyVaultDiscovery) initKeysClient() (err error) {
+	d.clients.keysClient, err = initClient(d.clients.keysClient, d.azureDiscovery, armkeyvault.NewKeysClient)
+	return
+}
+
 // TODO(lebogg): Test
 func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
 	// Find out if key vault is actively used
@@ -121,7 +131,7 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(util.Deref(kv.ID)),
 			util.Deref(kv.Name),
-			nil, //TODO(lebogg): Is there any inforamition about Creation Time?
+			kv.SystemData.CreatedAt,
 			voc.GeoLocation{
 				Region: util.Deref(kv.Location),
 			},
@@ -171,7 +181,7 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
 	if metric.TimeSeries[0] == nil || metric.TimeSeries[0].Data[0] == nil {
 		return false, nil
 	}
-	if util.Deref(metric.TimeSeries[0].Data[0].Count) > 1 {
+	if util.Deref(metric.TimeSeries[0].Data[0].Count) >= 1 {
 		return true, nil
 	} else {
 		return false, nil
