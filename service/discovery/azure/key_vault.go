@@ -218,7 +218,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 				IsCustomerGenerated: true, // TODO(lebogg): All keys in Vault are customer ones. In contrast to managed keys in services
 				KeyType:             getKeyType(k.Properties.Kty),
 				KeySize:             int(util.Deref(k.Properties.KeySize)),
-				NumberOfUsages:      0, // TODO(lebogg): Won't probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
+				NumberOfUsages:      0, // TODO(lebogg): Will probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
 			}
 			keys = append(keys, key)
 			// TODO(lebogg): tbc here
@@ -227,19 +227,8 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 	return nil, nil
 }
 
-// TODO(lebogg): Convert types
-// func PossibleJSONWebKeyTypeValues ->
-// const (
-//
-//	JSONWebKeyTypeEC     JSONWebKeyType = "EC"
-//	JSONWebKeyTypeECHSM  JSONWebKeyType = "EC-HSM"
-//	JSONWebKeyTypeRSA    JSONWebKeyType = "RSA"
-//	JSONWebKeyTypeRSAHSM JSONWebKeyType = "RSA-HSM"
-//
-// )
-//
-// TODO(lebogg): Hot to define the range/scope of key types in the ontology?
-// TODO(lebogg): Extract these consts in a type or const to internal/api s.t. all discoverers use the same values
+// TODO(lebogg): How to define the range/scope of key types in the ontology?
+// TODO(lebogg): Extract these returned options in a type or const to internal/api s.t. all discoverers use the same values
 func getKeyType(kt *armkeyvault.JSONWebKeyType) string {
 	switch util.Deref(kt) {
 	case armkeyvault.JSONWebKeyTypeEC:

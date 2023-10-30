@@ -3,8 +3,10 @@ package azure
 import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -118,4 +120,46 @@ func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 	//req := "GET https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resources?$filter=resourceType eq 'Microsoft.KeyVault/vaults'&api-version=2015-11-01"
 
 	// TODO 2(lebogg): Use table
+}
+
+func Test_getKeyType(t *testing.T) {
+	type args struct {
+		kt *armkeyvault.JSONWebKeyType
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Unsupported key type",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyType("NotSupportedKeyType"))},
+			want: "NotSupportedKeyType",
+		},
+		{
+			name: "EC 1",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeEC)},
+			want: "EC",
+		},
+		{
+			name: "EC 2",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeECHSM)},
+			want: "EC",
+		},
+		{
+			name: "RSA 1",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSA)},
+			want: "RSA",
+		},
+		{
+			name: "RSA 2",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSAHSM)},
+			want: "RSA",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getKeyType(tt.args.kt), "getKeyType(%v)", tt.args.kt)
+		})
+	}
 }
