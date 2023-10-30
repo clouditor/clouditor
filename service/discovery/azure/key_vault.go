@@ -197,7 +197,7 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
 // Todo(lebogg): What happens with different versions of a key
 func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, error) {
 	var (
-		keys []voc.Key
+		keys []*voc.Key
 		c    *armkeyvault.KeysClient
 	)
 	c = d.clients.keysClient
@@ -211,9 +211,17 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 			return nil, fmt.Errorf("could not page next page (paging error): %v", err)
 		}
 		for _, k := range page.Value {
-			key := voc.Key{
+			key := &voc.Key{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(k.ID)),
+					util.Deref(k.Name),
+					util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Created), 0)),
+					voc.GeoLocation{Region: util.Deref(k.Location)},
+					labels(k.Tags),
+					voc.KeyType,
+					k, kv), // Combine key and key vault as raw field
 				Enabled:             util.Deref(k.Properties.Attributes.Enabled),
-				ActivationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Created), 0)),
+				ActivationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.NotBefore), 0)),
 				ExpirationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Expires), 0)),
 				IsCustomerGenerated: true, // TODO(lebogg): All keys in Vault are customer ones. In contrast to managed keys in services
 				KeyType:             getKeyType(k.Properties.Kty),
@@ -221,10 +229,9 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 				NumberOfUsages:      0, // TODO(lebogg): Will probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
 			}
 			keys = append(keys, key)
-			// TODO(lebogg): tbc here
 		}
 	}
-	return nil, nil
+	return keys, nil
 }
 
 // TODO(lebogg): How to define the range/scope of key types in the ontology?

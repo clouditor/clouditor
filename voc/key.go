@@ -2,7 +2,10 @@ package voc
 
 import "time"
 
+var KeyType = []string{"Key"}
+
 type Key struct {
+	*Resource
 	*Confidentiality
 	Enabled bool
 	// Todo(all): Is time the appropriate type here?
