@@ -211,6 +211,13 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 			return nil, fmt.Errorf("could not page next page (paging error): %v", err)
 		}
 		for _, k := range page.Value {
+			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
+			res, err := d.clients.keysClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
+				util.Deref(k.Name), &armkeyvault.KeysClientGetOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("could not get key: %v", err)
+			}
+			k = util.Ref(res.Key) // maybe not the most beautiful thing to re-use var `k`
 			key := &voc.Key{
 				Resource: discovery.NewResource(d,
 					voc.ResourceID(util.Deref(k.ID)),
