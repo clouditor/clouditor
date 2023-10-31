@@ -483,6 +483,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				},
 			},
 			AtRestEncryption: enc,
+			Redundancy:       getRedundancy(account),
 		},
 	}, nil
 }
@@ -544,10 +545,30 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
-			Backups: backups,
+			Backups:    backups,
+			Redundancy: getRedundancy(account),
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
+}
+
+// TODO(lebogg): Add test
+// TODO(lebogg): Check out all possible values in Azure
+func getRedundancy(account *armstorage.Account) (r *voc.Redundancy) {
+	r = new(voc.Redundancy)
+	name := string(util.Deref(account.SKU.Name))
+	switch name {
+	case "Standard_LRS":
+		r.Local = true
+	case "ZRS": // TODO(lebogg): Still right?
+		r.Zone = true
+	case "Standard_RAGRS":
+		r.Geo = true
+	default:
+		log.Warnf("Unknown redundancy model (via SKU) for storage account '%s': '%s'. Probably, we should add it.",
+			util.Deref(account.Name), name)
+	}
+	return
 }
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective

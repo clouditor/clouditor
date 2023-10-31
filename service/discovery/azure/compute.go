@@ -566,6 +566,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 			),
 			AtRestEncryption: enc,
 			Backups:          backups,
+			Redundancy:       nil, // TODO(lebogg): Check disk.SKU -> "Premium_LRS", "StandardSSD_LRS" -> Maybe combine with storage's getRedundancy
 		},
 	}, nil
 }
