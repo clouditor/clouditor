@@ -167,7 +167,7 @@ message EvaluationResult {
 
   // Time of evaluation
   google.protobuf.Timestamp timestamp = 8
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   // List of assessment results because of which the evaluation status is not
   // 'compliant'
@@ -182,7 +182,7 @@ message EvaluationResult {
   // denotes how long the (manual) created evaluation result is valid. During
   // this time, no automatic results are generated for the specific control.
   optional google.protobuf.Timestamp valid_until = 20
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 }
 
 enum EvaluationStatus {
