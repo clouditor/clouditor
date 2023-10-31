@@ -89,6 +89,14 @@ func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
 	}
 }
 
+// WithExperimentalDiscovery is an option for [StartGRPCServer] to register a [discovery.ExperimentalDiscoveryServer] at
+// start.
+func WithExperimentalDiscovery(svc discovery.ExperimentalDiscoveryServer) StartGRPCServerOption {
+	return func(c *config) {
+		c.services[&discovery.ExperimentalDiscovery_ServiceDesc] = svc
+	}
+}
+
 // WithEvaluation is an option for [StartGRPCServer] to register a [evaluation.EvaluationServer] at start.
 func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
 	return func(c *config) {

@@ -132,5 +132,6 @@ func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewStartDiscoveryCommand(),
 		NewQueryDiscoveryCommand(),
+		NewExperimentalCommand(),
 	)
 }

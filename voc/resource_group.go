@@ -27,6 +27,6 @@
 
 package voc
 
-type CloudResourceGroup struct {
-	Resources []*Resource `json:"resources"`
+type ResourceGroup struct {
+	*Resource
 }
