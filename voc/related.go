@@ -117,3 +117,15 @@ func (s Storage) Related() []string {
 
 	return list
 }
+
+func (a Application) Related() []string {
+	list := make([]string, 0)
+
+	for _, dep := range a.Dependencies {
+		list = append(list, string(dep))
+	}
+
+	list = append(list, a.Resource.Related()...)
+
+	return list
+}

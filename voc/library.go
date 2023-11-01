@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,12 +25,12 @@
 
 package voc
 
-// Application is an entity in our Cloud ontology. This encapsulates the whole (source) code of an application.
-type Application struct {
+// Library is an entity in our Cloud ontology. It encapsulates the (source) code of a library, similar to an application.
+// TODO(oxisto): Add this to the ontology and auto-generate it
+type Library struct {
 	*Resource
 	Functionalities     []*Functionality `json:"functionalities"`
-	Compute             []ResourceID     `json:"compute"`
 	ProgrammingLanguage string           `json:"programmingLanguage"`
-	TranslationUnits    []string         `json:"translationUnits"`
+	TranslationUnits    []ResourceID     `json:"translationUnits"`
 	Dependencies        []ResourceID     `json:"dependencies"`
 }

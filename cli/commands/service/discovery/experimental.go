@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // NewDiscoveryCommand returns a cobra command for `experimental` subcommands
@@ -50,6 +51,7 @@ func NewExperimentalCommand() *cobra.Command {
 func AddExperimentalCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
 		NewListGraphEdgesCommand(),
+		NewUpdateResourceCommand(),
 	)
 }
 
@@ -74,6 +76,44 @@ func NewListGraphEdgesCommand() *cobra.Command {
 			client = discovery.NewExperimentalDiscoveryClient(session)
 
 			res, err = client.ListGraphEdges(context.Background(), &discovery.ListGraphEdgesRequest{})
+
+			return session.HandleResponse(res, err)
+		},
+	}
+
+	return cmd
+}
+
+// NewUpdateResourceCommand returns a cobra command for the `list-graph-edges` subcommand
+func NewUpdateResourceCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-resource",
+		Short: "Updates a particular resource",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				err     error
+				session *cli.Session
+				client  discovery.ExperimentalDiscoveryClient
+				res     *discovery.UpdateResourceResponse
+				req     *discovery.UpdateResourceRequest
+			)
+
+			if session, err = cli.ContinueSession(); err != nil {
+				fmt.Printf("Error while retrieving the session. Please re-authenticate.\n")
+				return nil
+			}
+
+			client = discovery.NewExperimentalDiscoveryClient(session)
+
+			req = new(discovery.UpdateResourceRequest)
+			req.Resource = new(discovery.Resource)
+
+			err = protojson.Unmarshal([]byte(args[0]), req.Resource)
+			if err != nil {
+				return session.HandleResponse(nil, err)
+			}
+
+			res, err = client.UpdateResource(context.Background(), req)
 
 			return session.HandleResponse(res, err)
 		},
