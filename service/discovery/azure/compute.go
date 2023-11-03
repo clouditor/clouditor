@@ -566,9 +566,45 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 			),
 			AtRestEncryption: enc,
 			Backups:          backups,
-			Redundancy:       nil, // TODO(lebogg): Check disk.SKU -> "Premium_LRS", "StandardSSD_LRS" -> Maybe combine with storage's getRedundancy
+			// Todo(lebogg): Add tests
+			Redundancy: getDiskRedundancy(disk),
 		},
 	}, nil
+}
+
+// Todo(lebogg): Add tests
+// getDiskRedundancy maps Azure SKUs to the redundancy model provided by the ontology. Geo redundancy is currently
+// not supported in Azure. Therefore, an Azure disk can be either locally redundant, zone redundant or not redundant at
+// all.
+func getDiskRedundancy(disk *armcompute.Disk) (r *voc.Redundancy) {
+	r = new(voc.Redundancy)
+	// If SKU is nil, no redundancy is set. Therefore, we return false for all redundant options in the ontology
+	if disk.SKU == nil {
+		return
+	}
+	// The SKU (formerly called account types) name tells us which redundancy model is used. We compare all account type
+	// constants with the given name.
+	name := util.Deref(disk.SKU.Name)
+	switch name {
+	// Check constants indicating local redundancy
+	case armcompute.DiskStorageAccountTypesStandardLRS, armcompute.DiskStorageAccountTypesStandardSSDLRS,
+		armcompute.DiskStorageAccountTypesPremiumLRS, armcompute.DiskStorageAccountTypesPremiumV2LRS,
+		armcompute.DiskStorageAccountTypesUltraSSDLRS:
+		r.Local = true
+	// Check constants indicating zone redundancy
+	case armcompute.DiskStorageAccountTypesStandardSSDZRS, armcompute.DiskStorageAccountTypesPremiumZRS:
+		r.Zone = true
+	// When there are new names in the future we will probably miss it. Print out a warning if there is a name we don't
+	// consider so far.
+	default:
+		log.Warnf("Unknown redundancy model (via SKU) for disk '%s': '%s'. Probably, we should add it.",
+			util.Deref(disk.Name), name)
+		// consideredAccountTypes shows how many account types (SKUs) we consider so far. It has to be a "magic" number.
+		consideredAccountTypes := 7
+		log.Warnf("Currently there are %d different SKU types/name. We consider %d so far",
+			len(armcompute.PossibleDiskStorageAccountTypesValues()), consideredAccountTypes)
+	}
+	return
 }
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective

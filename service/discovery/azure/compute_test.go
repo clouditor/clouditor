@@ -2459,3 +2459,12 @@ func Test_automaticUpdates(t *testing.T) {
 		})
 	}
 }
+
+// TODO(lebogg asking oxisto): Is this valid to do so? We could also maybe write some tools independent of the repo to
+// check such things.
+// Test_IfWeConsiderAllPossibleDiskStorageAccountTypes checks if we still consider all possible SKU names/Storage
+// account types for Azure Disks. Currently, the number is [clients].
+func Test_IfWeConsiderAllPossibleDiskStorageAccountTypes(t *testing.T) {
+	currentlyConsideredDiskStorageAccountTypeValues := 7
+	assert.Equal(t, len(armcompute.PossibleDiskStorageAccountTypesValues()), currentlyConsideredDiskStorageAccountTypeValues)
+}

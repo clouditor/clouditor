@@ -483,7 +483,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				},
 			},
 			AtRestEncryption: enc,
-			Redundancy:       getRedundancy(account),
+			Redundancy:       getStorageAccountRedundancy(account),
 		},
 	}, nil
 }
@@ -545,28 +545,35 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
-			Backups:    backups,
-			Redundancy: getRedundancy(account),
+			Backups: backups,
+			// Todo(lebogg): Add tests
+			Redundancy: getStorageAccountRedundancy(account),
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }
 
-// TODO(lebogg): Add test
-// TODO(lebogg): Check out all possible values in Azure
-func getRedundancy(account *armstorage.Account) (r *voc.Redundancy) {
+// TODO(lebogg): Add tests
+func getStorageAccountRedundancy(account *armstorage.Account) (r *voc.Redundancy) {
 	r = new(voc.Redundancy)
-	name := string(util.Deref(account.SKU.Name))
+	name := util.Deref(account.SKU.Name)
 	switch name {
-	case "Standard_LRS":
+	case armstorage.SKUNameStandardLRS, armstorage.SKUNamePremiumLRS:
 		r.Local = true
-	case "ZRS": // TODO(lebogg): Still right?
+	case armstorage.SKUNameStandardZRS, armstorage.SKUNamePremiumZRS:
 		r.Zone = true
-	case "Standard_RAGRS":
+	case armstorage.SKUNameStandardGRS, armstorage.SKUNameStandardGZRS, armstorage.SKUNameStandardRAGRS,
+		armstorage.SKUNameStandardRAGZRS:
 		r.Geo = true
+	// When there are new names in the future we will probably miss it. Print out a warning if there is a name we don't
+	// consider so far.
 	default:
 		log.Warnf("Unknown redundancy model (via SKU) for storage account '%s': '%s'. Probably, we should add it.",
-			util.Deref(account.Name), name)
+			util.Deref(account.SKU.Name), name)
+		// consideredAccountTypes shows how many account types (SKUs) we consider so far. It has to be a "magic" number.
+		consideredAccountTypes := 8
+		log.Warnf("Currently there are %d different SKU types/name. We consider %d so far",
+			len(armstorage.PossibleSKUNameValues()), consideredAccountTypes)
 	}
 	return
 }

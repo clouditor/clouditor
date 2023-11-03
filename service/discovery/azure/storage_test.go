@@ -1951,3 +1951,12 @@ func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
 		})
 	}
 }
+
+// TODO(lebogg asking oxisto): Is this valid to do so? We could also maybe write some tools independent of the repo to
+// check such things.
+// Test_IfWeConsiderAllPossibleDiskStorageAccountTypes checks if we still consider all possible SKU names/Storage
+// account types for storage accounts. Currently, the number is [clients].
+func Test_IfWeConsiderAllPossibleStorageAccountSKUs(t *testing.T) {
+	currentlyConsideredDiskStorageAccountTypeValues := 8
+	assert.Equal(t, len(armstorage.PossibleSKUNameValues()), currentlyConsideredDiskStorageAccountTypeValues)
+}
