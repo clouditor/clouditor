@@ -41,10 +41,9 @@ func (v VirtualMachine) Related() []string {
 		list = append(list, string(b))
 	}
 
-	// Boot/os logging in Azure points to a URL, not a Resource ID, this is broken!
-	// if v.BootLogging != nil {
-	// 	list = append(list, v.BootLogging.Related()...)
-	// }
+	if v.BootLogging != nil {
+		list = append(list, v.BootLogging.Related()...)
+	}
 
 	if v.OsLogging != nil {
 		list = append(list, v.OsLogging.Related()...)

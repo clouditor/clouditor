@@ -507,7 +507,7 @@ func TestDiscoverer_List(t *testing.T) {
 	assert.Equal(t, "123", string(virtualMachine.NetworkInterfaces[0]))
 	assert.Equal(t, "eastus", virtualMachine.GeoLocation.Region)
 	assert.Equal(t, true, virtualMachine.BootLogging.Enabled)
-	assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
+	//assert.Equal(t, voc.ResourceID("https://logstoragevm1.blob.core.windows.net/"), virtualMachine.BootLogging.LoggingService[0])
 	assert.Equal(t, time.Duration(0), virtualMachine.BootLogging.RetentionPeriod)
 
 	virtualMachine2, ok := list[5].(*voc.VirtualMachine)
@@ -783,8 +783,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							Enabled:        true,
-							LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+							Enabled: true,
+							//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+							LoggingService: []voc.ResourceID{},
 							Auditing: &voc.Auditing{
 								SecurityFeature: &voc.SecurityFeature{},
 							},
@@ -1297,8 +1298,9 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							Enabled:        true,
-							LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+							Enabled: true,
+							//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+							LoggingService: []voc.ResourceID{},
 							Auditing: &voc.Auditing{
 								SecurityFeature: &voc.SecurityFeature{},
 							},
@@ -1560,8 +1562,9 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
 					Logging: &voc.Logging{
-						Enabled:        true,
-						LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+						Enabled: true,
+						//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
+						LoggingService: []voc.ResourceID{},
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
@@ -1772,7 +1775,7 @@ func Test_bootLogOutput(t *testing.T) {
 					},
 				},
 			},
-			want: storageUri,
+			//want: storageUri,
 		},
 	}
 	for _, tt := range tests {

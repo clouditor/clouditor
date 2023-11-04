@@ -487,9 +487,9 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
 		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
-		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-			return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		}
+		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
+		// }
 
 		return ""
 	}
