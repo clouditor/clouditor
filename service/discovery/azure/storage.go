@@ -558,21 +558,29 @@ func getStorageAccountRedundancy(account *armstorage.Account) (r *voc.Redundancy
 	r = new(voc.Redundancy)
 	name := util.Deref(account.SKU.Name)
 	switch name {
+	// LRS denotes local redundancy
 	case armstorage.SKUNameStandardLRS, armstorage.SKUNamePremiumLRS:
 		r.Local = true
+	// ZRS denotes zone redundancy
 	case armstorage.SKUNameStandardZRS, armstorage.SKUNamePremiumZRS:
 		r.Zone = true
-	case armstorage.SKUNameStandardGRS, armstorage.SKUNameStandardGZRS, armstorage.SKUNameStandardRAGRS,
-		armstorage.SKUNameStandardRAGZRS:
+	// GRS denotes geo redundancy which also includes local redundancy in Azure
+	case armstorage.SKUNameStandardGRS, armstorage.SKUNameStandardRAGRS:
+		r.Local = true
 		r.Geo = true
-	// When there are new names in the future we will probably miss it. Print out a warning if there is a name we don't
-	// consider so far.
+	// GZRS denotes geo redundancy + zone redundancy
+	case armstorage.SKUNameStandardGZRS, armstorage.SKUNameStandardRAGZRS:
+		// r.Local = true // local redundancy only in secondary location. TODO(all): Discuss all options
+		r.Zone = true
+		r.Geo = true
+	// When there are new SKU types in the future we will probably miss it. Print out a warning if there is a name we
+	// don't consider so far.
 	default:
 		log.Warnf("Unknown redundancy model (via SKU) for storage account '%s': '%s'. Probably, we should add it.",
 			util.Deref(account.SKU.Name), name)
 		// consideredAccountTypes shows how many account types (SKUs) we consider so far. It has to be a "magic" number.
 		consideredAccountTypes := 8
-		log.Warnf("Currently there are %d different SKU types/name. We consider %d so far",
+		log.Warnf("Currently there are %d different SKU types. We consider %d types so far",
 			len(armstorage.PossibleSKUNameValues()), consideredAccountTypes)
 	}
 	return
