@@ -184,32 +184,12 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
 
-			// Create database storage voc object
-			dbStorage = &voc.DatabaseStorage{
-				Storage: &voc.Storage{
-					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
-						*value.Name,
-						value.Properties.CreationDate,
-						voc.GeoLocation{
-							Region: *value.Location,
-						},
-						labels(value.Tags),
-						voc.DatabaseStorageType,
-						value),
-					AtRestEncryption: &voc.AtRestEncryption{
-						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
-						Algorithm: AES256,
-					},
-					// TODO(all): Backups
-
-				},
-				Parent: []voc.ResourceID{voc.ResourceID(*server.ID)},
-			}
-
-			list = append(list, dbStorage)
-
 			// Create database service voc object
+			//
+			// TODO(oxisto): This is not 100 % accurate. According to our ontology definition, the SQL server would be
+			// the database service and individual databases would be DatabaseStorage objects. However, the problem is
+			// that azure defines anomaly detection on a per-database level and we currently have anomaly detection as
+			// part of the service
 			dbService = &voc.DatabaseService{
 				StorageService: &voc.StorageService{
 					NetworkService: &voc.NetworkService{
@@ -222,6 +202,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 									Region: *value.Location,
 								},
 								labels(value.Tags),
+								resourceGroupID(value.ID),
 								voc.DatabaseServiceType,
 								server,
 								value,
@@ -234,7 +215,33 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 					Enabled: anomalyDetectionEnabeld,
 				},
 			}
+
 			list = append(list, dbService)
+
+			// Create database storage voc object
+			dbStorage = &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*value.ID),
+						*value.Name,
+						value.Properties.CreationDate,
+						voc.GeoLocation{
+							Region: *value.Location,
+						},
+						labels(value.Tags),
+						// the DB service is our parent
+						dbService.GetID(),
+						voc.DatabaseStorageType,
+						value),
+					AtRestEncryption: &voc.AtRestEncryption{
+						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
+						Algorithm: AES256,
+					},
+					// TODO(all): Backups
+				},
+			}
+
+			list = append(list, dbStorage)
 		}
 	}
 	return list, nil
@@ -417,6 +424,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 							Region: util.Deref(account.Location),
 						},
 						labels(account.Tags),
+						resourceGroupID(account.ID),
 						voc.ObjectStorageServiceType,
 						account,
 					),
@@ -473,6 +481,8 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				},
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
 				voc.FileStorageType,
 				account, fileshare,
 			),
@@ -531,6 +541,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				},
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
 				voc.ObjectStorageType,
 				account, container,
 			),

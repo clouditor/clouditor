@@ -85,6 +85,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 			// TODO(all) Add region
 			voc.GeoLocation{},
 			pv.Labels,
+			"",
 			voc.BlockStorageType,
 			pv,
 		),

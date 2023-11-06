@@ -45,11 +45,13 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
-
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 func TestMain(m *testing.M) {
@@ -499,11 +501,7 @@ func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 		return []voc.IsCloudResource{
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
-					Resource: discovery.NewResource(m,
-						"some-id",
-						"some-name", nil, voc.GeoLocation{}, nil,
-						[]string{"ObjectStorage", "Storage", "Resource"},
-						map[string][]interface{}{"raw": {"raw"}}),
+					Resource: discovery.NewResource(m, "some-id", "some-name", nil, voc.GeoLocation{}, nil, "", []string{"ObjectStorage", "Storage", "Resource"}, map[string][]interface{}{"raw": {"raw"}}),
 				},
 			},
 			&voc.ObjectStorageService{
@@ -511,11 +509,7 @@ func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 					Storage: []voc.ResourceID{"some-id"},
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
-							Resource: discovery.NewResource(m,
-								"some-storage-account-id",
-								"some-storage-account-name", nil, voc.GeoLocation{}, nil,
-								[]string{"StorageService", "NetworkService", "Networking", "Resource"},
-								map[string][]interface{}{"raw": {"raw"}}),
+							Resource: discovery.NewResource(m, "some-storage-account-id", "some-storage-account-name", nil, voc.GeoLocation{}, nil, "", []string{"StorageService", "NetworkService", "Networking", "Resource"}, map[string][]interface{}{"raw": {"raw"}}),
 						},
 					},
 				},
@@ -665,4 +659,117 @@ func (mockIsCloudResource) SetRaw(_ string) {
 
 func (mockIsCloudResource) Related() []string {
 	return []string{}
+}
+
+func Test_toDiscoveryResource(t *testing.T) {
+	type args struct {
+		resource voc.IsCloudResource
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantR   *discovery.Resource
+		wantV   *structpb.Value
+		wantErr bool
+	}{
+		{
+			name: "happy path",
+			args: args{
+				resource: &voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   "my-resource-id",
+							Name: "my-resource-name",
+							Type: voc.VirtualMachineType,
+						},
+					},
+				},
+			},
+			wantV: &structpb.Value{
+				Kind: &structpb.Value_StructValue{
+					StructValue: &structpb.Struct{
+						Fields: map[string]*structpb.Value{
+							"activityLogging":  structpb.NewNullValue(),
+							"automaticUpdates": structpb.NewNullValue(),
+							"blockStorage":     structpb.NewNullValue(),
+							"bootLogging":      structpb.NewNullValue(),
+							"creationTime":     structpb.NewNumberValue(0),
+							"geoLocation": structpb.NewStructValue(&structpb.Struct{
+								Fields: map[string]*structpb.Value{
+									"region": structpb.NewStringValue(""),
+								}}),
+							"id":                structpb.NewStringValue("my-resource-id"),
+							"labels":            structpb.NewNullValue(),
+							"malwareProtection": structpb.NewNullValue(),
+							"name":              structpb.NewStringValue("my-resource-name"),
+							"networkInterfaces": structpb.NewNullValue(),
+							"osLogging":         structpb.NewNullValue(),
+							"parent":            structpb.NewStringValue(""),
+							"raw":               structpb.NewStringValue(""),
+							"resourceLogging":   structpb.NewNullValue(),
+							"serviceId":         structpb.NewStringValue(""),
+							"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
+								structpb.NewStringValue("VirtualMachine"),
+								structpb.NewStringValue("Compute"),
+								structpb.NewStringValue("Resource"),
+							}}),
+						},
+					},
+				},
+			},
+			wantR: &discovery.Resource{
+				Id:           "my-resource-id",
+				ResourceType: "VirtualMachine,Compute,Resource",
+				Properties: &structpb.Value{
+					Kind: &structpb.Value_StructValue{
+						StructValue: &structpb.Struct{
+							Fields: map[string]*structpb.Value{
+								"activityLogging":  structpb.NewNullValue(),
+								"automaticUpdates": structpb.NewNullValue(),
+								"blockStorage":     structpb.NewNullValue(),
+								"bootLogging":      structpb.NewNullValue(),
+								"creationTime":     structpb.NewNumberValue(0),
+								"geoLocation": structpb.NewStructValue(&structpb.Struct{
+									Fields: map[string]*structpb.Value{
+										"region": structpb.NewStringValue(""),
+									}}),
+								"id":                structpb.NewStringValue("my-resource-id"),
+								"labels":            structpb.NewNullValue(),
+								"malwareProtection": structpb.NewNullValue(),
+								"name":              structpb.NewStringValue("my-resource-name"),
+								"networkInterfaces": structpb.NewNullValue(),
+								"osLogging":         structpb.NewNullValue(),
+								"parent":            structpb.NewStringValue(""),
+								"raw":               structpb.NewStringValue(""),
+								"resourceLogging":   structpb.NewNullValue(),
+								"serviceId":         structpb.NewStringValue(""),
+								"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
+									structpb.NewStringValue("VirtualMachine"),
+									structpb.NewStringValue("Compute"),
+									structpb.NewStringValue("Resource"),
+								}}),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotR, gotV, err := toDiscoveryResource(tt.args.resource)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("toDiscoveryResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !proto.Equal(gotR, tt.wantR) {
+				t.Errorf("toDiscoveryResource() r = %v, want %v", gotR, tt.wantR)
+			}
+
+			if !proto.Equal(gotV, tt.wantV) {
+				t.Errorf("toDiscoveryResource() v = %v, want %v", gotV, tt.wantV)
+			}
+		})
+	}
 }

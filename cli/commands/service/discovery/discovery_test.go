@@ -48,7 +48,10 @@ func TestMain(m *testing.M) {
 	svc := service_discovery.NewService()
 	svc.StartDiscovery(mockDiscoverer{testCase: 2})
 
-	os.Exit(clitest.RunCLITest(m, server.WithDiscovery(svc)))
+	os.Exit(clitest.RunCLITest(m,
+		server.WithDiscovery(svc),
+		server.WithExperimentalDiscovery(svc),
+	))
 }
 
 func TestAddCommands(t *testing.T) {
@@ -122,9 +125,10 @@ func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
 			&voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:   testdata.MockResourceID1,
-						Name: testdata.MockResourceName1,
-						Type: []string{"ObjectStorage", "Storage", "Resource"},
+						ID:     testdata.MockResourceID1,
+						Name:   testdata.MockResourceName1,
+						Type:   []string{"ObjectStorage", "Storage", "Resource"},
+						Parent: testdata.MockResourceStorageID,
 					},
 				},
 			},

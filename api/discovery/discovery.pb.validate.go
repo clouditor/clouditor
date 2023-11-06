@@ -551,11 +551,10 @@ func (m *Resource) validate(all bool) error {
 
 	var errors []error
 
-	if err := m._validateUuid(m.GetId()); err != nil {
-		err = ResourceValidationError{
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := ResourceValidationError{
 			field:  "Id",
-			reason: "value must be a valid UUID",
-			cause:  err,
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err

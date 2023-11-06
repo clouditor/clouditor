@@ -25,6 +25,14 @@
 
 package voc
 
+func (r *Resource) Related() []string {
+	if r.Parent != "" {
+		return []string{string(r.Parent)}
+	}
+
+	return nil
+}
+
 // Related returns related resources for the virtual machine, e.g., its attached storage and network interfaces.
 func (v VirtualMachine) Related() []string {
 	list := make([]string, 0)
@@ -33,7 +41,38 @@ func (v VirtualMachine) Related() []string {
 		list = append(list, string(b))
 	}
 
-	for _, n := range v.NetworkInterfaces {
+	if v.BootLogging != nil {
+		list = append(list, v.BootLogging.Related()...)
+	}
+
+	if v.OsLogging != nil {
+		list = append(list, v.OsLogging.Related()...)
+	}
+
+	list = append(list, v.Compute.Related()...)
+
+	return list
+}
+
+func (c Compute) Related() []string {
+	list := make([]string, 0)
+
+	for _, n := range c.NetworkInterfaces {
+		list = append(list, string(n))
+	}
+
+	if c.ResourceLogging != nil {
+		list = append(list, c.ResourceLogging.Related()...)
+	}
+	list = append(list, c.Resource.Related()...)
+
+	return list
+}
+
+func (r *Logging) Related() []string {
+	list := make([]string, 0)
+
+	for _, n := range r.LoggingService {
 		list = append(list, string(n))
 	}
 
@@ -47,6 +86,34 @@ func (l LoggingService) Related() []string {
 	for _, s := range l.Storage {
 		list = append(list, string(s))
 	}
+
+	list = append(list, l.Resource.Related()...)
+
+	return list
+}
+
+func (s StorageService) Related() []string {
+	list := make([]string, 0)
+
+	for _, s := range s.Storage {
+		list = append(list, string(s))
+	}
+
+	list = append(list, s.Resource.Related()...)
+
+	return list
+}
+
+func (s Storage) Related() []string {
+	list := make([]string, 0)
+
+	for _, b := range s.Backups {
+		if b.Storage != "" {
+			list = append(list, string(b.Storage))
+		}
+	}
+
+	list = append(list, s.Resource.Related()...)
 
 	return list
 }

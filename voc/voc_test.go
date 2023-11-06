@@ -154,6 +154,7 @@ func TestToStruct(t *testing.T) {
 							"id":        structpb.NewStringValue("my-resource-id"),
 							"labels":    structpb.NewNullValue(),
 							"name":      structpb.NewStringValue("my-resource-name"),
+							"parent":    structpb.NewStringValue(""),
 							"raw":       structpb.NewStringValue(""),
 							"serviceId": structpb.NewStringValue(""),
 							"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
