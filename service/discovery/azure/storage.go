@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos/v2"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -110,6 +111,13 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	dbs, err := d.discoverSqlServers()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+	}
+	list = append(list, dbs...)
+
+	// TODO(lebogg): 1. Merge with sql DBs above -> `d.discoverDatabases`; 2. or discover NoSQL databases here in general
+	dbs, err = d.discoverCosmosDBs()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover CosmosDB")
 	}
 	list = append(list, dbs...)
 
@@ -671,6 +679,69 @@ func generalizeURL(url string) string {
 	return newURL
 }
 
+func (d *azureStorageDiscovery) discoverCosmosDBs() (list []voc.IsCloudResource, err error) {
+	// TODO(lebogg): Compare with discover SQL whether I do it right with different clients (in discoverX and handleY)
+	if err = d.initCosmosDBClient(); err != nil {
+		err = fmt.Errorf("could not initialize Cosmos DB Client: %v", err)
+		return
+	}
+
+	err = listPager(d.azureDiscovery,
+		d.clients.cosmosMongoDBClient.NewListPager,
+		d.clients.cosmosMongoDBClient.NewListByResourceGroupPager,
+		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(res armcosmos.DatabaseAccountsClientListByResourceGroupResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(account *armcosmos.DatabaseAccountGetResults) (err error) {
+			list, err = d.handleCosmosDBAccount(account)
+			if err != nil {
+				err = fmt.Errorf("could not handle Cosmos DB Account Client: %v", err)
+				return
+			}
+			log.Infof("Adding Cosmos DB '%s'", account.Name)
+			return
+		})
+	if err != nil {
+		return nil, fmt.Errorf("could not list Cosmos DB accounts: %v", err)
+	}
+	return
+
+	//pager := d.clients.cosmosMongoDBClient.NewListPager(&armcosmos.DatabaseAccountsClientListOptions{})
+	//for pager.More() {
+	//	page, err := pager.NextPage(context.Background())
+	//	if err != nil {
+	//		err = fmt.Errorf("could not get next page for cosmos database accounts: %v", err)
+	//		return nil, err
+	//	}
+	//	accounts := page.Value
+	//	// TODO(lebogg): Continue here. Currently only debugging.
+	//	for a := range accounts {
+	//		r := &voc.DatabaseStorage{
+	//			Storage: &voc.Storage{
+	//				Resource:         nil,
+	//				AtRestEncryption: nil,
+	//				Backups:          nil,
+	//				Immutability:     nil,
+	//				Redundancy:       nil,
+	//				ResourceLogging:  nil,
+	//			},
+	//			Redundancy: nil,
+	//			Parent:     []voc.ResourceID{voc.ResourceID(util.Deref(d.rg))},
+	//		}
+	//	}
+	//
+	//}
+	//return
+}
+
+func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
+	d.clients.cosmosMongoDBClient, err = initClient(d.clients.cosmosMongoDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
+	return
+}
+
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
 	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
@@ -736,4 +807,9 @@ func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
 	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
 
 	return
+}
+
+// TODO(lebogg): Continue here
+func (d *azureStorageDiscovery) handleCosmosDBAccount(account *armcosmos.DatabaseAccountGetResults) (list []voc.IsCloudResource, err error) {
+	return nil, nil
 }
