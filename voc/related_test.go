@@ -201,7 +201,7 @@ func TestApplication_Related(t *testing.T) {
 		Functionalities     []*Functionality
 		Compute             []ResourceID
 		ProgrammingLanguage string
-		TranslationUnits    []string
+		TranslationUnits    []ResourceID
 		Dependencies        []ResourceID
 	}
 	tests := []struct {
@@ -212,10 +212,11 @@ func TestApplication_Related(t *testing.T) {
 		{
 			name: "Related Application resources",
 			fields: fields{
-				Resource:     &Resource{},
-				Dependencies: []ResourceID{"log4j"},
+				Resource:         &Resource{},
+				Dependencies:     []ResourceID{"log4j"},
+				TranslationUnits: []ResourceID{"Main.java"},
 			},
-			want: []string{"log4j"},
+			want: []string{"log4j", "Main.java"},
 		},
 	}
 	for _, tt := range tests {

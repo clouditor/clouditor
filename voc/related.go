@@ -125,6 +125,10 @@ func (a Application) Related() []string {
 		list = append(list, string(dep))
 	}
 
+	for _, tu := range a.TranslationUnits {
+		list = append(list, string(tu))
+	}
+
 	list = append(list, a.Resource.Related()...)
 
 	return list

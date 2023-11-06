@@ -70,6 +70,7 @@ func init() {
 	types := []any{
 		voc.Application{},
 		voc.Library{},
+		voc.TranslationUnitDeclaration{},
 		voc.Function{},
 		voc.VirtualMachine{},
 		voc.ObjectStorageService{},

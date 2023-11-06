@@ -27,14 +27,11 @@
 
 package voc
 
-var ApplicationType = []string{"Application", "Resource"}
+var TranslationUnitDeclarationType = []string{"TranslationUnitDeclaration", "Resource"}
 
-// Application is an entity in our Cloud ontology. This encapsulates the whole (source) code of an application.
-type Application struct {
+// TranslationUnitDeclaration is an entity in our Cloud ontology. It refers to https://fraunhofer-aisec.github.io/cpg/CPG/specs/graph/#translationunitdeclaration
+type TranslationUnitDeclaration struct {
 	*Resource
-	Functionalities     []*Functionality `json:"functionalities"`
-	Compute             []ResourceID     `json:"compute"`
-	ProgrammingLanguage string           `json:"programmingLanguage"`
-	TranslationUnits    []ResourceID     `json:"translationUnits"`
-	Dependencies        []ResourceID     `json:"dependencies"`
+	Name string `json:"name"`
+	Code string `json:"code"`
 }
