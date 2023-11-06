@@ -25,6 +25,8 @@
 
 package voc
 
+var LibraryType = []string{"Library", "Resource"}
+
 // Library is an entity in our Cloud ontology. It encapsulates the (source) code of a library, similar to an application.
 // TODO(oxisto): Add this to the ontology and auto-generate it
 type Library struct {

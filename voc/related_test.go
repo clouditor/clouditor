@@ -194,3 +194,43 @@ func TestStorage_Related(t *testing.T) {
 		})
 	}
 }
+
+func TestApplication_Related(t *testing.T) {
+	type fields struct {
+		Resource            *Resource
+		Functionalities     []*Functionality
+		Compute             []ResourceID
+		ProgrammingLanguage string
+		TranslationUnits    []string
+		Dependencies        []ResourceID
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related Application resources",
+			fields: fields{
+				Resource:     &Resource{},
+				Dependencies: []ResourceID{"log4j"},
+			},
+			want: []string{"log4j"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Application{
+				Resource:            tt.fields.Resource,
+				Functionalities:     tt.fields.Functionalities,
+				Compute:             tt.fields.Compute,
+				ProgrammingLanguage: tt.fields.ProgrammingLanguage,
+				TranslationUnits:    tt.fields.TranslationUnits,
+				Dependencies:        tt.fields.Dependencies,
+			}
+			if got := a.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Application.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

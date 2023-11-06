@@ -27,6 +27,8 @@
 
 package voc
 
+var ApplicationType = []string{"Application", "Resource"}
+
 // Application is an entity in our Cloud ontology. This encapsulates the whole (source) code of an application.
 type Application struct {
 	*Resource

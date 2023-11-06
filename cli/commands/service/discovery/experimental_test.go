@@ -52,3 +52,21 @@ func TestNewListGraphEdgesCommandNoArgs(t *testing.T) {
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Edges)
 }
+
+func TestNewUpdateResourceCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewUpdateResourceCommand()
+	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication"}}`})
+	assert.NoError(t, err)
+
+	var response = &discovery.Resource{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
+}

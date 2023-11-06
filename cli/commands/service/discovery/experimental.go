@@ -89,12 +89,13 @@ func NewUpdateResourceCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-resource",
 		Short: "Updates a particular resource",
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  discovery.ExperimentalDiscoveryClient
-				res     *discovery.UpdateResourceResponse
+				res     *discovery.Resource
 				req     *discovery.UpdateResourceRequest
 			)
 
