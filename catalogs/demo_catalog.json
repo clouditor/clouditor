@@ -73,7 +73,7 @@
                                 "assurance_level": "high"
                             },
                              {
-                                "id": "CommSec-01.6",
+                                "id": "CommSec-01.7",
                                 "description": "The CSP shall use state-of-the-art TLS signature algorithms.",
                                 "metrics": [
                                     {
@@ -435,7 +435,7 @@
                                 "assurance_level": "substantial"
                             },
                             {
-                                "id": "SecProv-01.1",
+                                "id": "SecProv-01.2",
                                 "description": "The CSP shall check if Git commits are signed and contain a signoff.",
                                 "metrics": [
                                     {
@@ -445,7 +445,7 @@
                                 "assurance_level": "high"
                             },
                             {
-                                "id": "SecProv-01.1",
+                                "id": "SecProv-01.3",
                                 "description": "The CSP shall check if Git commits are signed.",
                                 "metrics": [
                                     {
@@ -455,7 +455,7 @@
                                 "assurance_level": "high"
                             },
                             {
-                                "id": "SecProv-01.2",
+                                "id": "SecProv-01.4",
                                 "description": "The CSP shall check if only approved authors have committed new code.",
                                 "metrics": [
                                     {
