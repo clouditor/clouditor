@@ -33,16 +33,6 @@
                                 "assurance_level": "substantial"
                             },
                             {
-                                "id": "CommSec-01.2",
-                                "description": "The CSP shall use a state-of-the-art TLS version.",
-                                "metrics": [
-                                    {
-                                        "id": "TLSVersion"
-                                    }
-                                ],
-                                "assurance_level": "substantial"
-                            },
-                            {
                                 "id": "CommSec-01.3",
                                 "description": "The CSP shall enforce encryption in all data transmissions",
                                 "metrics": [
@@ -64,10 +54,30 @@
                             },
                             {
                                 "id": "CommSec-01.5",
-                                "description": "The CSP shall use state-of-the-art encryption protocols.",
+                                "description": "The CSP shall use state-of-the-art TLS cipher suites.",
                                 "metrics": [
                                     {
-                                        "id": "TLSCipherSuites"
+                                        "id": "TlsCipherSuites"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "CommSec-01.6",
+                                "description": "The CSP shall use state-of-the-art TLS Diffie-Hellman groups.",
+                                "metrics": [
+                                    {
+                                        "id": "TlsDHGroups"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                             {
+                                "id": "CommSec-01.6",
+                                "description": "The CSP shall use state-of-the-art TLS signature algorithms.",
+                                "metrics": [
+                                    {
+                                        "id": "TlsSignatureAlgorithms"
                                     }
                                 ],
                                 "assurance_level": "high"
