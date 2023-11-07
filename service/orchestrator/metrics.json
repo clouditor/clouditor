@@ -67,6 +67,20 @@
     }
   },
   {
+    "id": "ApprovedCommitAuthor",
+    "name": "",
+    "description": "This metric is used to assess if committed code is from approved authors",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
     "description": "This metric is used to assess the algorithm of a storage encryption block cipher",
@@ -173,6 +187,20 @@
       "minMax": {
         "min": 0,
         "max": 365
+      }
+    }
+  },
+  {
+    "id": "CodeSignoff",
+    "name": "",
+    "description": "This metric is used to assess if Git commit messages contain a signoff",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
       }
     }
   },
@@ -372,6 +400,34 @@
       "allowedValues": {
         "values": [
           "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "SignedSignoff",
+    "name": "",
+    "description": "This metric is used to assess if Git commit messages are signed and contain a signoff",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "SignedCommits",
+    "name": "",
+    "description": "This metric is used to assess if Git commit messages are signed",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
         ]
       }
     }
