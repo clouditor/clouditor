@@ -391,6 +391,45 @@
     }
   },
   {
+    "id": "TlsCipherSuites",
+    "name": "TLS Cipher Suites",
+    "description": "This metric is used to assess if an up-to-date TLS cipher suite is used",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TlsDHGroups",
+    "name": "TLS Diffie-Hellman Groups",
+    "description": "This metric is used to assess if an up-to-date TLS Diffie-Hellman group is used",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TlsSignatureAlgorithms",
+    "name": "TLS Signature Algorithms",
+    "description": "This metric is used to assess if an up-to-date TLS signature algorithm is used",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
     "id": "TransportEncryptionProtocol",
     "name": "Transport Encryption Protocol",
     "category": "CKM-02",
