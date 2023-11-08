@@ -32,6 +32,5 @@ var TranslationUnitDeclarationType = []string{"TranslationUnitDeclaration", "Res
 // TranslationUnitDeclaration is an entity in our Cloud ontology. It refers to https://fraunhofer-aisec.github.io/cpg/CPG/specs/graph/#translationunitdeclaration
 type TranslationUnitDeclaration struct {
 	*Resource
-	Name string `json:"name"`
 	Code string `json:"code"`
 }
