@@ -35,4 +35,9 @@ type Library struct {
 	ProgrammingLanguage string           `json:"programmingLanguage"`
 	TranslationUnits    []ResourceID     `json:"translationUnits"`
 	Dependencies        []ResourceID     `json:"dependencies"`
+	GroupID             string           `json:"groupId"`
+	ArtifactID          string           `json:"artifactId"`
+	Version             string           `json:"version"`
+	DependencyType      string           `json:"dependencyType"` // DependencyType denotes which type of dependency it is, e.g., maven or npm
+	URL                 string           `json:"url"`
 }
