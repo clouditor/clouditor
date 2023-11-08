@@ -46,7 +46,7 @@ service ExperimentalDiscovery {
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
   rpc UpdateResource(UpdateResourceRequest)
-      returns (clouditor.discovery.v1.Resource) {
+      returns (UpdateResourceResponse) {
     option (google.api.http) = {
       post : "/v1experimental/discovery/resources/{resource.id}"
       body : "*"
@@ -65,6 +65,7 @@ service ExperimentalDiscovery {
 }
 
 message UpdateResourceRequest { clouditor.discovery.v1.Resource resource = 1; }
+message UpdateResourceResponse { clouditor.discovery.v1.Resource resource = 1; }
 
 message ListGraphEdgesRequest {
   int32 page_size = 10;

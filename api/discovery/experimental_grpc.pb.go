@@ -27,7 +27,7 @@ type ExperimentalDiscoveryClient interface {
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error)
+	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*UpdateResourceResponse, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
@@ -43,8 +43,8 @@ func NewExperimentalDiscoveryClient(cc grpc.ClientConnInterface) ExperimentalDis
 	return &experimentalDiscoveryClient{cc}
 }
 
-func (c *experimentalDiscoveryClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*Resource, error) {
-	out := new(Resource)
+func (c *experimentalDiscoveryClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*UpdateResourceResponse, error) {
+	out := new(UpdateResourceResponse)
 	err := c.cc.Invoke(ctx, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ type ExperimentalDiscoveryServer interface {
 	// the resource graph.
 	//
 	// Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-	UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error)
+	UpdateResource(context.Context, *UpdateResourceRequest) (*UpdateResourceResponse, error)
 	// ListGraphEdges returns the edges (relationship) between resources in our
 	// resource graph.
 	//
@@ -83,7 +83,7 @@ type ExperimentalDiscoveryServer interface {
 type UnimplementedExperimentalDiscoveryServer struct {
 }
 
-func (UnimplementedExperimentalDiscoveryServer) UpdateResource(context.Context, *UpdateResourceRequest) (*Resource, error) {
+func (UnimplementedExperimentalDiscoveryServer) UpdateResource(context.Context, *UpdateResourceRequest) (*UpdateResourceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResource not implemented")
 }
 func (UnimplementedExperimentalDiscoveryServer) ListGraphEdges(context.Context, *ListGraphEdgesRequest) (*ListGraphEdgesResponse, error) {
