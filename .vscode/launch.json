@@ -40,7 +40,6 @@
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
-                "--discovery-resource-group=DemoClouditorHappy"
             ],
             "env": {},
             "preLaunchTask": "go: generate"

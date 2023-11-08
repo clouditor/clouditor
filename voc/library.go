@@ -23,50 +23,21 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package discovery
+package voc
 
-import (
-	"bytes"
-	"testing"
+var LibraryType = []string{"Library", "Resource"}
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
-)
-
-func TestNewListGraphEdgesCommandNoArgs(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewListGraphEdgesCommand()
-	err = cmd.RunE(nil, []string{})
-	assert.NoError(t, err)
-
-	var response = &discovery.ListGraphEdgesResponse{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response.Edges)
-}
-
-func TestNewUpdateResourceCommand(t *testing.T) {
-	var err error
-	var b bytes.Buffer
-
-	cli.Output = &b
-
-	cmd := NewUpdateResourceCommand()
-	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication"}}`})
-	assert.NoError(t, err)
-
-	var response = &discovery.Resource{}
-	err = protojson.Unmarshal(b.Bytes(), response)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, response)
-	assert.NotEmpty(t, response)
+// Library is an entity in our Cloud ontology. It encapsulates the (source) code of a library, similar to an application.
+// TODO(oxisto): Add this to the ontology and auto-generate it
+type Library struct {
+	*Resource
+	Functionalities     []*Functionality `json:"functionalities"`
+	ProgrammingLanguage string           `json:"programmingLanguage"`
+	TranslationUnits    []ResourceID     `json:"translationUnits"`
+	Dependencies        []ResourceID     `json:"dependencies"`
+	GroupID             string           `json:"groupId"`
+	ArtifactID          string           `json:"artifactId"`
+	Version             string           `json:"version"`
+	DependencyType      string           `json:"dependencyType"` // DependencyType denotes which type of dependency it is, e.g., maven or npm
+	URL                 string           `json:"url"`
 }

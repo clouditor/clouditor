@@ -68,6 +68,9 @@ var typeRegistry = make(map[string]reflect.Type)
 // TODO(oxisto): auto-generate them as part of the voc?
 func init() {
 	types := []any{
+		voc.Application{},
+		voc.Library{},
+		voc.TranslationUnitDeclaration{},
 		voc.Function{},
 		voc.VirtualMachine{},
 		voc.ObjectStorageService{},

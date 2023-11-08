@@ -245,7 +245,7 @@ func TestService_UpdateResource(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.UpdateResourceResponse
+		wantRes *discovery.Resource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -317,19 +317,17 @@ func TestService_UpdateResource(t *testing.T) {
 					)),
 				},
 			},
-			wantRes: &discovery.UpdateResourceResponse{
-				Resource: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
-					csID: testdata.MockCloudServiceID1,
-				},
-					"some-id",
-					"some-name",
-					nil,
-					voc.GeoLocation{},
-					nil,
-					"",
-					[]string{"Resource"},
-				)),
+			wantRes: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
+				csID: testdata.MockCloudServiceID1,
 			},
+				"some-id",
+				"some-name",
+				nil,
+				voc.GeoLocation{},
+				nil,
+				"",
+				[]string{"Resource"},
+			)),
 			wantErr: assert.NoError,
 		},
 	}

@@ -90,7 +90,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 	return
 }
 
-func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.UpdateResourceResponse, err error) {
+func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.Resource, err error) {
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -106,8 +106,7 @@ func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateRes
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	res = new(discovery.UpdateResourceResponse)
-	res.Resource = req.Resource
+	res = req.Resource
 
 	return
 }

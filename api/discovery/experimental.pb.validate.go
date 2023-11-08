@@ -35,111 +35,6 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on GraphEdge with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *GraphEdge) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GraphEdge with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in GraphEdgeMultiError, or nil
-// if none found.
-func (m *GraphEdge) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GraphEdge) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Id
-
-	// no validation rules for Source
-
-	// no validation rules for Target
-
-	if len(errors) > 0 {
-		return GraphEdgeMultiError(errors)
-	}
-
-	return nil
-}
-
-// GraphEdgeMultiError is an error wrapping multiple validation errors returned
-// by GraphEdge.ValidateAll() if the designated constraints aren't met.
-type GraphEdgeMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GraphEdgeMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GraphEdgeMultiError) AllErrors() []error { return m }
-
-// GraphEdgeValidationError is the validation error returned by
-// GraphEdge.Validate if the designated constraints aren't met.
-type GraphEdgeValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GraphEdgeValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GraphEdgeValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GraphEdgeValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GraphEdgeValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GraphEdgeValidationError) ErrorName() string { return "GraphEdgeValidationError" }
-
-// Error satisfies the builtin error interface
-func (e GraphEdgeValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGraphEdge.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GraphEdgeValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GraphEdgeValidationError{}
-
 // Validate checks the field values on UpdateResourceRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -270,137 +165,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateResourceRequestValidationError{}
-
-// Validate checks the field values on UpdateResourceResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UpdateResourceResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UpdateResourceResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UpdateResourceResponseMultiError, or nil if none found.
-func (m *UpdateResourceResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UpdateResourceResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetResource()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateResourceResponseValidationError{
-					field:  "Resource",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateResourceResponseValidationError{
-					field:  "Resource",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetResource()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateResourceResponseValidationError{
-				field:  "Resource",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return UpdateResourceResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// UpdateResourceResponseMultiError is an error wrapping multiple validation
-// errors returned by UpdateResourceResponse.ValidateAll() if the designated
-// constraints aren't met.
-type UpdateResourceResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UpdateResourceResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UpdateResourceResponseMultiError) AllErrors() []error { return m }
-
-// UpdateResourceResponseValidationError is the validation error returned by
-// UpdateResourceResponse.Validate if the designated constraints aren't met.
-type UpdateResourceResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UpdateResourceResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UpdateResourceResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UpdateResourceResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UpdateResourceResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UpdateResourceResponseValidationError) ErrorName() string {
-	return "UpdateResourceResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UpdateResourceResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUpdateResourceResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UpdateResourceResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UpdateResourceResponseValidationError{}
 
 // Validate checks the field values on ListGraphEdgesRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -649,3 +413,108 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListGraphEdgesResponseValidationError{}
+
+// Validate checks the field values on GraphEdge with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GraphEdge) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GraphEdge with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GraphEdgeMultiError, or nil
+// if none found.
+func (m *GraphEdge) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GraphEdge) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Source
+
+	// no validation rules for Target
+
+	if len(errors) > 0 {
+		return GraphEdgeMultiError(errors)
+	}
+
+	return nil
+}
+
+// GraphEdgeMultiError is an error wrapping multiple validation errors returned
+// by GraphEdge.ValidateAll() if the designated constraints aren't met.
+type GraphEdgeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GraphEdgeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GraphEdgeMultiError) AllErrors() []error { return m }
+
+// GraphEdgeValidationError is the validation error returned by
+// GraphEdge.Validate if the designated constraints aren't met.
+type GraphEdgeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GraphEdgeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GraphEdgeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GraphEdgeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GraphEdgeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GraphEdgeValidationError) ErrorName() string { return "GraphEdgeValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GraphEdgeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGraphEdge.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GraphEdgeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GraphEdgeValidationError{}
