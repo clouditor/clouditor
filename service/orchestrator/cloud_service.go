@@ -48,8 +48,8 @@ import (
 
 const (
 	DefaultTargetCloudServiceId          = "00000000-0000-0000-0000-000000000000"
-	DefaultTargetCloudServiceName        = "default"
-	DefaultTargetCloudServiceDescription = "The default target cloud service"
+	DefaultTargetCloudServiceName        = "RideShareService"
+	DefaultTargetCloudServiceDescription = "Manage your ridesharing fleet - but do it smart"
 )
 
 func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (res *orchestrator.CloudService, err error) {
