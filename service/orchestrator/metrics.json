@@ -580,5 +580,20 @@
         ]
       }
     }
+  },
+  {
+    "id": "KnownVulnerabilities",
+    "name": "Library: No known vulnerabilites",
+    "description": "This metric is used to assess if a library contains no known vulnarabilities",
+    "category": "Application Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   }
 ]
