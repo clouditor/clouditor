@@ -106,7 +106,7 @@
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
     "description": "This metric is used to assess if storage encryption is enabled",
-    "category": "Transport Encryption",
+    "category": "Storage Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -466,7 +466,7 @@
     "id": "SingleSignOnEnabled",
     "name": "Single Sign On Enabled",
     "description": "This metric is used to assess if SSO is enabled",
-    "category": "Development Life-Cycle",
+    "category": "Identity Management",
     "scale": 1,
     "range": {
       "allowedValues": {
