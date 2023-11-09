@@ -1,5 +1,10 @@
 name: Publish Docker image
 
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
 on:
   release:
     types: [published]
@@ -37,3 +42,27 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+  deploy:
+    needs: push_to_registries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login via Az module
+        uses: azure/login@v1.1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+      - uses: azure/setup-kubectl@v1
+        id: install
+      - uses: azure/aks-set-context@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: cloud-working-group
+          cluster-name: aks
+        id: login
+      - uses: Azure/k8s-deploy@v1
+        with:
+          namespace: clouditor
+          manifests: |
+            kubernetes/engine.yml
+          images: |
+            ghcr.io/clouditor/engine:${{ github.event.release.tag_name }}
