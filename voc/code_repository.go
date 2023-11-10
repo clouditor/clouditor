@@ -25,20 +25,9 @@
 
 package voc
 
-var LibraryType = []string{"Library", "Resource"}
+var CodeRepositoryType = []string{"CodeRepository", "Resource"}
 
-// Library is an entity in our Cloud ontology. It encapsulates the (source) code of a library, similar to an application.
-// TODO(oxisto): Add this to the ontology and auto-generate it
-type Library struct {
+type CodeRepository struct {
 	*Resource
-	Functionalities     []*Functionality `json:"functionalities"`
-	ProgrammingLanguage string           `json:"programmingLanguage"`
-	TranslationUnits    []ResourceID     `json:"translationUnits"`
-	Dependencies        []ResourceID     `json:"dependencies"`
-	Vulnerabilities     []string         `json:"vulnerabilities"` // Vulnerabilities contains a list of known CVEs for this particular library
-	GroupID             string           `json:"groupId"`
-	ArtifactID          string           `json:"artifactId"`
-	Version             string           `json:"version"`
-	DependencyType      string           `json:"dependencyType"` // DependencyType denotes which type of dependency it is, e.g., maven or npm
-	URL                 string           `json:"url"`
+	URL string `json:"url"`
 }
