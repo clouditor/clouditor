@@ -90,7 +90,7 @@
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
     "description": "This metric is used to assess the algorithm of a storage encryption block cipher",
-    "category": "Transport Encryption",
+    "category": "Storage Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {
