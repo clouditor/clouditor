@@ -108,6 +108,7 @@ func (config *AuthConfig) AuthFunc() grpc_auth.AuthFunc {
 	return func(ctx context.Context) (newCtx context.Context, err error) {
 		// Lazy loading of JWKS
 		if config.jwks == nil && config.useJWKS {
+			log.Debugf("Trying to retrieve JWKS from %s", config.jwksURL)
 			config.jwks, err = keyfunc.Get(config.jwksURL, keyfunc.Options{
 				RefreshInterval: time.Hour,
 			})
