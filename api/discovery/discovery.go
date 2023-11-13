@@ -71,6 +71,7 @@ func init() {
 		voc.Application{},
 		voc.Library{},
 		voc.TranslationUnitDeclaration{},
+		voc.CodeRepository{},
 		voc.Function{},
 		voc.VirtualMachine{},
 		voc.ObjectStorageService{},
