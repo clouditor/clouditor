@@ -656,13 +656,13 @@ message CloudService {
 
   // creation time of the cloud_service
   optional google.protobuf.Timestamp created_at = 6 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
     (validate.rules).timestamp.required = true
   ];
 
   // last update time of the cloud_service
   optional google.protobuf.Timestamp updated_at = 7 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
     (validate.rules).timestamp.required = true
   ];
 
@@ -892,7 +892,6 @@ message ListPublicCertificatesResponse {
   repeated Certificate certificates = 1;
   string next_page_token = 2;
 }
-
 
 message UpdateCertificateRequest {
   Certificate certificate = 1 [ (validate.rules).message.required = true ];

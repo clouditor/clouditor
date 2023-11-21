@@ -167,15 +167,25 @@ func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
 	return func(c *config, sm *runtime.ServeMux) {
-		opts = append(opts, oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
-			return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
-		}), oauth2.WithPublicURL(fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)))
+		publicURL := fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
 
+		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
+
+		// Configure the options for the embedded auth server
+		opts = append(opts,
+			oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
+				return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
+			}),
+			oauth2.WithPublicURL(publicURL),
+		)
+
+		// Create a new embedded OAuth 2.0 server to serve as our auth server
 		authSrv := oauth2.NewServer("", opts...)
 		authHandler := func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			http.StripPrefix("/v1/auth", authSrv.Handler).ServeHTTP(w, r)
 		}
 
+		// Map specific paths in our REST server to our auth server
 		WithAdditionalHandler("GET", "/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 			authSrv.Handler.ServeHTTP(w, r)
 		})(c, sm)
@@ -204,6 +214,10 @@ func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...
 	}
 
 	if err := discovery.RegisterDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
+		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
+	}
+
+	if err := discovery.RegisterExperimentalDiscoveryHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), cnf.opts); err != nil {
 		return fmt.Errorf("failed to connect to discovery gRPC service %w", err)
 	}
 

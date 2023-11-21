@@ -101,7 +101,7 @@ message AssessmentResult {
 
   // Time of assessment
   google.protobuf.Timestamp timestamp = 2 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
     (validate.rules).timestamp.required = true
   ];
 
@@ -154,7 +154,7 @@ message ComplianceResult {
   Status status = 2;
 
   google.protobuf.Timestamp timestamp = 3
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   string control_id = 4;
 

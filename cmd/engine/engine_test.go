@@ -38,6 +38,7 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
 				viper.Set(APIHTTPPortFlag, 0)
 				viper.Set(APIgRPCPortFlag, 0)
+				viper.Set(LogLevelFlag, DefaultLogLevel)
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				discoveryService := i1.(*service_discovery.Service)
