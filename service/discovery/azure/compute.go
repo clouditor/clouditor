@@ -163,7 +163,6 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			case "app": // Windows Web App
 				r = d.handleWebApp(site)
 			case "app,linux": // Linux Web app
-				log.Debug("Linux Web App currently not implemented.")
 				r = d.handleWebApp(site)
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
@@ -279,15 +278,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 }
 
 func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+	var tlsVersion = ""
+
 	// If a mandatory field is empty, the whole function is empty
 	if webApp == nil {
 		return nil
 	}
 
+	if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne2 {
+		tlsVersion = constants.TLS1_2
+	} else if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne1 {
+		tlsVersion = constants.TLS1_1
+	} else if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne0 {
+		tlsVersion = constants.TLS1_0
+	}
+
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.Name)),
+				voc.ResourceID(util.Deref(webApp.ID)),
 				util.Deref(webApp.Name),
 				// No creation time available
 				nil, // Only the last modified time is available
@@ -305,7 +314,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: &voc.TransportEncryption{
 				Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
-				TlsVersion: string(*webApp.Properties.SiteConfig.MinTLSVersion),
+				TlsVersion: tlsVersion,
 				Algorithm:  constants.TLS,
 				// Enabled: ,
 			},
