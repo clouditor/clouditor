@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 
@@ -113,7 +114,100 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, dbs...)
 
+	// Discover CosmosDB
+	cosmosDB, err := d.discoverCosmosDB()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+	}
+	list = append(list, cosmosDB...)
+
 	return
+}
+
+// discoverCosmosDB discovers CosmosDB
+func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
+	var (
+		list []voc.IsCloudResource
+		err  error
+	)
+
+	// initialize CosmosDB client
+	if err := d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover CosmosDB
+	err = listPager(d.azureDiscovery,
+		d.clients.cosmosDBClient.NewListPager,
+		d.clients.cosmosDBClient.NewListByResourceGroupPager,
+		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(res armcosmos.DatabaseAccountsClientListByResourceGroupResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(dbAccount *armcosmos.DatabaseAccountGetResults) error {
+			cosmos, err := d.handleCosmosDB(dbAccount)
+			if err != nil {
+				return fmt.Errorf("could not handle sql database: %w", err)
+			}
+			log.Infof("Adding CosmosDB '%s", *dbAccount.Name)
+			list = append(list, cosmos)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
+	var (
+		keyVaultURI = ""
+		enabled     = false
+		algorithm   = ""
+		err         error
+	)
+
+	// initialize CosmosDB client
+	if err = d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Check if KeyVaultURI is set
+	if *account.Properties.KeyVaultKeyURI != "" {
+		enabled = true
+		algorithm = *account.Properties.KeyVaultKeyURI
+	}
+
+	// Create CosmosDB database account voc object
+	dbStorage := &voc.DatabaseStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(*account.ID),
+				*account.Name,
+				account.SystemData.CreatedAt,
+				voc.GeoLocation{
+					Region: *account.Location,
+				},
+				labels(account.Tags),
+				resourceGroupID(account.ID),
+				voc.DatabaseStorageType,
+				account),
+
+			AtRestEncryption: &voc.CustomerKeyEncryption{
+				AtRestEncryption: &voc.AtRestEncryption{
+					Enabled:   enabled,
+					Algorithm: algorithm,
+				},
+				KeyUrl: keyVaultURI,
+			},
+		},
+	}
+
+	return dbStorage, nil
 }
 
 // discoverSqlServers discovers the sql server and databases
@@ -703,6 +797,13 @@ func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
 // initSQLServersClient creates the client if not already exists
 func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
 	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
+
+	return
+}
+
+// initCosmosDBClient creates the client if not already exists
+func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
+	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
 
 	return
 }
