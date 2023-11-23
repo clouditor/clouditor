@@ -36,6 +36,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 )
@@ -160,11 +161,10 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
 			switch *site.Kind {
 			case "app": // Windows Web App
-				// TODO(all): TBD
-				log.Debug("Windows Web App currently not implemented.")
+				r = d.handleWebApp(site)
 			case "app,linux": // Linux Web app
-				// TODO(all): TBD
 				log.Debug("Linux Web App currently not implemented.")
+				r = d.handleWebApp(site)
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App Web App currently not implemented.")
@@ -183,7 +183,6 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			case "functionapp": // Function Code App
 				r = d.handleFunction(site)
 			case "functionapp,linux": // Linux Consumption Function app
-				log.Debug("Windows Web App currently not implemented.")
 				r = d.handleFunction(site)
 			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
 				// TODO(all): TBD
@@ -276,6 +275,41 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		},
 		RuntimeLanguage: runtimeLanguage,
 		RuntimeVersion:  runtimeVersion,
+	}
+}
+
+func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+	// If a mandatory field is empty, the whole function is empty
+	if webApp == nil {
+		return nil
+	}
+
+	return &voc.WebApp{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(webApp.Name)),
+				util.Deref(webApp.Name),
+				// No creation time available
+				nil, // Only the last modified time is available
+				voc.GeoLocation{
+					Region: util.Deref(webApp.Location),
+				},
+				labels(webApp.Tags),
+				resourceGroupID(webApp.ID),
+				voc.WebAppType,
+				webApp,
+				// config,
+			),
+			NetworkInterfaces: []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}, // Add the Virtual Network Subnet ID
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: &voc.TransportEncryption{
+				Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
+				TlsVersion: string(*webApp.Properties.SiteConfig.MinTLSVersion),
+				Algorithm:  constants.TLS,
+				// Enabled: ,
+			},
+		},
 	}
 }
 
