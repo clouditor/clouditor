@@ -1023,6 +1023,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_1,
 							Algorithm:  constants.TLS,
@@ -1051,6 +1052,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_2,
 							Algorithm:  constants.TLS,
@@ -1212,6 +1214,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_1,
 							Algorithm:  constants.TLS,
@@ -1240,6 +1243,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_2,
 							Algorithm:  constants.TLS,
@@ -2706,6 +2710,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					TransportEncryption: &voc.TransportEncryption{
+						Enabled:    true,
 						Enforced:   true,
 						TlsVersion: constants.TLS1_2,
 						Algorithm:  constants.TLS,
@@ -2760,6 +2765,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					TransportEncryption: &voc.TransportEncryption{
+						Enabled:    true,
 						Enforced:   true,
 						TlsVersion: constants.TLS1_2,
 						Algorithm:  constants.TLS,

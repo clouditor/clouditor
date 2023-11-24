@@ -278,19 +278,25 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 }
 
 func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
-	var tlsVersion = ""
+	var (
+		tlsVersion = ""
+		enabled    = false
+	)
 
 	// If a mandatory field is empty, the whole function is empty
 	if webApp == nil {
 		return nil
 	}
 
-	if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne2 {
+	if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne2 {
 		tlsVersion = constants.TLS1_2
-	} else if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne1 {
+		enabled = true
+	} else if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne1 {
 		tlsVersion = constants.TLS1_1
-	} else if *webApp.Properties.SiteConfig.MinTLSVersion == armappservice.SupportedTLSVersionsOne0 {
+		enabled = true
+	} else if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne0 {
 		tlsVersion = constants.TLS1_0
+		enabled = true
 	}
 
 	return &voc.WebApp{
@@ -316,7 +322,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 				Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
 				TlsVersion: tlsVersion,
 				Algorithm:  constants.TLS,
-				// Enabled: ,
+				Enabled:    enabled,
 			},
 		},
 	}
