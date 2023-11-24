@@ -280,7 +280,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
 	var (
 		tlsVersion = ""
-		enabled    = false
+		enc        *voc.TransportEncryption
 	)
 
 	// If a mandatory field is empty, the whole function is empty
@@ -288,15 +288,27 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		return nil
 	}
 
-	if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne2 {
+	switch util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) {
+	case armappservice.SupportedTLSVersionsOne2:
 		tlsVersion = constants.TLS1_2
-		enabled = true
-	} else if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne1 {
+	case armappservice.SupportedTLSVersionsOne1:
 		tlsVersion = constants.TLS1_1
-		enabled = true
-	} else if util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) == armappservice.SupportedTLSVersionsOne0 {
+	case armappservice.SupportedTLSVersionsOne0:
 		tlsVersion = constants.TLS1_0
-		enabled = true
+	}
+
+	if tlsVersion != "" {
+		enc = &voc.TransportEncryption{
+			Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
+			TlsVersion: tlsVersion,
+			Algorithm:  AES256,
+			Enabled:    true,
+		}
+	} else {
+		enc = &voc.TransportEncryption{
+			Enforced: util.Deref(webApp.Properties.HTTPSOnly),
+			Enabled:  false,
+		}
 	}
 
 	return &voc.WebApp{
@@ -318,12 +330,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 			NetworkInterfaces: []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}, // Add the Virtual Network Subnet ID
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: &voc.TransportEncryption{
-				Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
-				TlsVersion: tlsVersion,
-				Algorithm:  constants.TLS,
-				Enabled:    enabled,
-			},
+			TransportEncryption: enc,
 		},
 	}
 }
