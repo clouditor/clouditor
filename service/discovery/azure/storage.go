@@ -114,7 +114,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, dbs...)
 
-	// Discover CosmosDB
+	// Discover Cosmos DB
 	cosmosDB, err := d.discoverCosmosDB()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
@@ -124,19 +124,19 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	return
 }
 
-// discoverCosmosDB discovers CosmosDB
+// discoverCosmosDB discovers Cosmos DB accounts
 func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
 	var (
 		list []voc.IsCloudResource
 		err  error
 	)
 
-	// initialize CosmosDB client
+	// initialize Cosmos DB client
 	if err := d.initCosmosDBClient(); err != nil {
 		return nil, err
 	}
 
-	// Discover CosmosDB
+	// Discover Cosmos DB
 	err = listPager(d.azureDiscovery,
 		d.clients.cosmosDBClient.NewListPager,
 		d.clients.cosmosDBClient.NewListByResourceGroupPager,
@@ -151,7 +151,7 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 			if err != nil {
 				return fmt.Errorf("could not handle sql database: %w", err)
 			}
-			log.Infof("Adding CosmosDB '%s", *dbAccount.Name)
+			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
 			list = append(list, cosmos)
 
 			return nil
@@ -169,7 +169,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		err error
 	)
 
-	// initialize CosmosDB client
+	// initialize Cosmos DB client
 	if err = d.initCosmosDBClient(); err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
-	// Create CosmosDB database account voc object
+	// Create Cosmos DB database account voc object
 	dbStorage := &voc.DatabaseStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
