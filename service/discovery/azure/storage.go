@@ -165,10 +165,8 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
 	var (
-		keyVaultURI = ""
-		enabled     = false
-		algorithm   = ""
-		err         error
+		enc voc.IsAtRestEncryption
+		err error
 	)
 
 	// initialize CosmosDB client
@@ -177,9 +175,22 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	}
 
 	// Check if KeyVaultURI is set
-	if *account.Properties.KeyVaultKeyURI != "" {
-		enabled = true
-		algorithm = *account.Properties.KeyVaultKeyURI
+	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
+	if account.Properties.KeyVaultKeyURI != nil {
+		enc = &voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled: true,
+				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
+			},
+			KeyUrl: *account.Properties.KeyVaultKeyURI,
+		}
+	} else {
+		enc = &voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled:   true,
+				Algorithm: AES256,
+			},
+		}
 	}
 
 	// Create CosmosDB database account voc object
@@ -197,13 +208,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 				voc.DatabaseStorageType,
 				account),
 
-			AtRestEncryption: &voc.CustomerKeyEncryption{
-				AtRestEncryption: &voc.AtRestEncryption{
-					Enabled:   enabled,
-					Algorithm: algorithm,
-				},
-				KeyUrl: keyVaultURI,
-			},
+			AtRestEncryption: enc,
 		},
 	}
 
