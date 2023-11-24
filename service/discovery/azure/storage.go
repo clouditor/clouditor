@@ -117,7 +117,7 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// Discover Cosmos DB
 	cosmosDB, err := d.discoverCosmosDB()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+		return nil, fmt.Errorf("could not discover cosmos db accounts: %w", err)
 	}
 	list = append(list, cosmosDB...)
 
