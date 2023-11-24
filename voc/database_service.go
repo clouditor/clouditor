@@ -33,4 +33,5 @@ var DatabaseServiceType = []string{"DatabaseService", "StorageService", "Network
 type DatabaseService struct {
 	*StorageService
 	AnomalyDetection *AnomalyDetection `json:"anomalyDetection"`
+	HttpEndpoint     *HttpEndpoint     `json:"httpEndpoint"`
 }
