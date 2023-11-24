@@ -182,7 +182,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 				Enabled: true,
 				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
 			},
-			KeyUrl: *account.Properties.KeyVaultKeyURI,
+			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
 		}
 	} else {
 		enc = &voc.ManagedKeyEncryption{
@@ -198,7 +198,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
 				voc.ResourceID(*account.ID),
-				*account.Name,
+				util.Deref(account.Name),
 				account.SystemData.CreatedAt,
 				voc.GeoLocation{
 					Region: *account.Location,
