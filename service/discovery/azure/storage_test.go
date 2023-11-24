@@ -2179,7 +2179,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Happy path",
+			name: "Happy path: ManagedKeyEncryption",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
 			},
@@ -2221,6 +2221,56 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							Enabled:   true,
 							Algorithm: AES256,
 						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: CustomerKeyEncryption",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				account: &armcosmos.DatabaseAccountGetResults{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2"),
+					Name:     util.Ref("CosmosDB2"),
+					Tags: map[string]*string{
+						"testKey1": util.Ref("testTag1"),
+						"testKey2": util.Ref("testTag2"),
+					},
+					Properties: &armcosmos.DatabaseAccountGetProperties{
+						KeyVaultKeyURI: util.Ref("https://testvault.vault.azure.net/keys/testkey/123456"),
+					},
+					SystemData: &armcosmos.SystemData{
+						CreatedAt: &time.Time{},
+					},
+				},
+			},
+			want: &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: &voc.Resource{
+						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
+						Name:         "CosmosDB2",
+						ServiceID:    testdata.MockCloudServiceID1,
+						CreationTime: util.SafeTimestamp(&time.Time{}),
+						Type:         voc.DatabaseStorageType,
+						GeoLocation: voc.GeoLocation{
+							Region: "eastus",
+						},
+						Labels: map[string]string{
+							"testKey1": "testTag1",
+							"testKey2": "testTag2",
+						},
+						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					},
+					AtRestEncryption: &voc.CustomerKeyEncryption{
+						AtRestEncryption: &voc.AtRestEncryption{
+							Enabled: true,
+						},
+						KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 					},
 				},
 			},
