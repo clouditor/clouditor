@@ -149,7 +149,7 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 		func(dbAccount *armcosmos.DatabaseAccountGetResults) error {
 			cosmos, err := d.handleCosmosDB(dbAccount)
 			if err != nil {
-				return fmt.Errorf("could not handle sql database: %w", err)
+				return fmt.Errorf("could not cosmos db accounts: %w", err)
 			}
 			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
 			list = append(list, cosmos)
