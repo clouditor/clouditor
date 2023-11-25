@@ -17,8 +17,8 @@ import (
 
 type azureKeyVaultDiscovery struct {
 	*azureDiscovery
-	// TODO(lebogg): Don't know if we need these defenderProperties here as well
-	//defenderProperties map[string]*defenderProperties
+	// metricsClient is a client to query Azure Monitor w.r.t. given metrics (e.g. API Hits)
+	metricsClient *azquery.MetricsClient
 }
 
 func NewKeyVaultDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
@@ -131,6 +131,14 @@ func (d *azureKeyVaultDiscovery) initKeysClient() (err error) {
 	return
 }
 
+func (d *azureKeyVaultDiscovery) initMetricsClient() (err error) {
+	d.metricsClient, err = azquery.NewMetricsClient(d.cred, &azquery.MetricsClientOptions{})
+	// TODO(all): I cannot use the generic initClient function (see below) since `azquery.NewMetricsClient()`
+	// has another structure. But I think that is the reason I cannot successfully use it in tests either...
+	// d.metricsClient, err = initClient(d.metricsClient, d.azureDiscovery, azquery.NewMetricsClient)
+	return
+}
+
 // TODO(lebogg): Test
 func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
 	// Find out if key vault is actively used
@@ -156,7 +164,8 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 	}, nil
 }
 
-// getIDs returns the ID values corresponding to the given keys
+// getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
+// resourceIDs (not nil slice)
 func getIDs(keys []*voc.Key) []voc.ResourceID {
 	keyIDs := []voc.ResourceID{}
 	for _, k := range keys {
@@ -168,14 +177,13 @@ func getIDs(keys []*voc.Key) []voc.ResourceID {
 // isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
 // the key vault (API hits via Azure Monitoring). The number of required API hits and the time period measured are
 // defined by NumberOfAPIHits and PeriodOfAPIHits, respectively.
-func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (bool, error) {
-	// Todo(lebogg): Have to do it via AZ Monitor -> maybe outsource it to more general azure package like the cloud defender
-	// Create metrics client (monitoring azquery package)
-	metricsClient, err := azquery.NewMetricsClient(d.cred, nil)
+func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (isActive bool, err error) {
+	// We need the client for doing metric queries to Azure Monitor
+	err = d.initMetricsClient()
 	if err != nil {
-		return false, fmt.Errorf("could not create Azure Metrics Client (Monitoring): %v", err)
+		return false, fmt.Errorf("could not create Azure Metrics Client (Azure Monitor): %v", err)
 	}
-	metrics, err := metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID),
+	metrics, err := d.metricsClient.QueryResource(context.TODO(), util.Deref(kv.ID),
 		&azquery.MetricsClientQueryResourceOptions{
 			Aggregation:     nil,
 			Filter:          nil,

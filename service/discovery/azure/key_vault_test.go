@@ -5,8 +5,10 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
+	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -206,6 +208,46 @@ func Test_getIDs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.wantKeyIDs, getIDs(tt.args.keys), "getIDs(%v)", tt.args.keys)
+		})
+	}
+}
+
+func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+		metricsClient  *azquery.MetricsClient
+	}
+	type args struct {
+		kv *armkeyvault.Vault
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantIsActive bool
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name: "happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(&mockKeyVaultSender{}),
+			},
+			args:         args{kv: &armkeyvault.Vault{ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.KeyVault/vaults/myKeyVault")}},
+			wantIsActive: true,
+			wantErr:      assert.NoError, // TODO(lebogg): Does not work yet. Since I cannot mock it currently
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureKeyVaultDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+				metricsClient:  tt.fields.metricsClient,
+			}
+			gotIsActive, err := d.isActive(tt.args.kv)
+			if !tt.wantErr(t, err, fmt.Sprintf("isActive(%v)", tt.args.kv)) {
+				return
+			}
+			assert.Equalf(t, tt.wantIsActive, gotIsActive, "isActive(%v)", tt.args.kv)
 		})
 	}
 }
