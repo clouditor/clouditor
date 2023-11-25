@@ -4,6 +4,7 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
@@ -160,6 +161,51 @@ func Test_getKeyType(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, getKeyType(tt.args.kt), "getKeyType(%v)", tt.args.kt)
+		})
+	}
+}
+
+func Test_getIDs(t *testing.T) {
+	type args struct {
+		keys []*voc.Key
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantKeyIDs []voc.ResourceID
+	}{
+		{
+			name: "happy path - 2 keys",
+			args: args{
+				keys: []*voc.Key{
+					{
+						Resource: &voc.Resource{ID: "key1"},
+					},
+					{
+						Resource: &voc.Resource{ID: "key2"},
+					},
+				},
+			},
+			wantKeyIDs: []voc.ResourceID{"key1", "key2"},
+		},
+		{
+			name: "slice of keys is empty - return empty slice of resource ids",
+			args: args{
+				keys: []*voc.Key{},
+			},
+			wantKeyIDs: []voc.ResourceID{},
+		},
+		{
+			name: "slice of keys is nil - return empty slice of resource ids",
+			args: args{
+				keys: nil,
+			},
+			wantKeyIDs: []voc.ResourceID{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantKeyIDs, getIDs(tt.args.keys), "getIDs(%v)", tt.args.keys)
 		})
 	}
 }

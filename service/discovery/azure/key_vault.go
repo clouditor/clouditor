@@ -156,11 +156,13 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 	}, nil
 }
 
-func getIDs(keys []*voc.Key) (keyIDs []voc.ResourceID) {
+// getIDs returns the ID values corresponding to the given keys
+func getIDs(keys []*voc.Key) []voc.ResourceID {
+	keyIDs := []voc.ResourceID{}
 	for _, k := range keys {
 		keyIDs = append(keyIDs, k.GetID())
 	}
-	return
+	return keyIDs
 }
 
 // isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
