@@ -1,21 +1,17 @@
 package voc
 
-import "time"
-
 var KeyType = []string{"Key"}
 
 type Key struct {
 	*Resource
 	*Confidentiality
-	Enabled bool
+	Enabled bool `json:"enabled"`
 	// Todo(all): Is time the appropriate type here?
-	ActivationDate *time.Time
-	ExpirationDate *time.Time
-	// Todo(all): Think
-	IsCustomerGenerated bool
-	KeyType             string
-	KeySize             int
-	NumberOfUsages      int
+	ActivationDate int64  `json:"activationDate"`
+	ExpirationDate int64  `json:"expirationDate"`
+	KeyType        string `json:"keyType"`
+	KeySize        int    `json:"keySize"`
+	NumberOfUsages int    `json:"numberOfUsages"`
 }
 
 func (*Key) Type() string {

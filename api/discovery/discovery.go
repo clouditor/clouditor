@@ -83,6 +83,8 @@ func init() {
 		voc.DatabaseStorage{},
 		voc.FileStorageService{},
 		voc.FileStorage{},
+		voc.KeyVault{},
+		voc.Key{},
 	}
 	for _, v := range types {
 		t := reflect.TypeOf(v)

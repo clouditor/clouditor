@@ -60,6 +60,7 @@ func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) 
 }
 
 // TODO(lebogg): Finished here last time. Not tested, yet
+// discoverKeyVaults discovers all key vaults as well as all belonging keys
 func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// initialize key vault client
 	if err = d.initKeyVaultClient(); err != nil {
@@ -95,10 +96,22 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			if err != nil {
 				return fmt.Errorf("could not handle key vault: %w", err)
 			}
+			keys, err := d.getKeys(kv)
+			if err != nil {
+				return fmt.Errorf("could not handle keys: %w", err)
+			}
+			// Add key IDs to keyvault
+			keyIDs := getIDs(keys)
+			keyVault.Keys = keyIDs
 
-			log.Infof("Adding key vault '%s'", keyVault.GetName())
-
+			log.Infof("Adding key vault '%s'", keyVault.GetID())
 			list = append(list, keyVault)
+
+			log.Infof("Adding keys '%s'", keyIDs)
+			for _, k := range keys {
+				list = append(list, k)
+			}
+
 			return nil
 		})
 	if err != nil {
@@ -125,11 +138,6 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 	if err != nil {
 		return nil, fmt.Errorf("could not handle key vault: %v", err)
 	}
-	// Get the keys of the key vault
-	keys, err := d.getKeys(kv)
-	if err != nil {
-		return nil, fmt.Errorf("could not handle key vault: %v", err)
-	}
 
 	return &voc.KeyVault{
 		Resource: discovery.NewResource(d,
@@ -140,11 +148,19 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 				Region: util.Deref(kv.Location),
 			},
 			labels(kv.Tags),
+			resourceGroupID(kv.ID),
 			voc.KeyVaultType,
 			kv),
 		IsActive: isActive,
-		Keys:     keys,
+		Keys:     []voc.ResourceID{}, // Will be added later when we retrieve the single keys
 	}, nil
+}
+
+func getIDs(keys []*voc.Key) (keyIDs []voc.ResourceID) {
+	for _, k := range keys {
+		keyIDs = append(keyIDs, k.GetID())
+	}
+	return
 }
 
 // isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
@@ -225,15 +241,15 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 					util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Created), 0)),
 					voc.GeoLocation{Region: util.Deref(k.Location)},
 					labels(k.Tags),
+					voc.ResourceID(util.Deref(kv.ID)),
 					voc.KeyType,
-					k, kv), // Combine key and key vault as raw field
-				Enabled:             util.Deref(k.Properties.Attributes.Enabled),
-				ActivationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.NotBefore), 0)),
-				ExpirationDate:      util.Ref(time.Unix(util.Deref(k.Properties.Attributes.Expires), 0)),
-				IsCustomerGenerated: true, // TODO(lebogg): All keys in Vault are customer ones. In contrast to managed keys in services
-				KeyType:             getKeyType(k.Properties.Kty),
-				KeySize:             int(util.Deref(k.Properties.KeySize)),
-				NumberOfUsages:      0, // TODO(lebogg): Will probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
+					kv),
+				Enabled:        util.Deref(k.Properties.Attributes.Enabled),
+				ActivationDate: util.Deref(k.Properties.Attributes.NotBefore),
+				ExpirationDate: util.Deref(k.Properties.Attributes.Expires),
+				KeyType:        getKeyType(k.Properties.Kty),
+				KeySize:        int(util.Deref(k.Properties.KeySize)),
+				NumberOfUsages: 0, // TODO(lebogg): Will probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
 			}
 			keys = append(keys, key)
 		}
