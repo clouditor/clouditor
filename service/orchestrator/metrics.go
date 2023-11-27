@@ -546,15 +546,3 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 		}
 	}
 }
-
-// checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
-func (svc *Service) checkMetricExistence(req *orchestrator.RemoveMetricRequest) error {
-	count, err := svc.storage.Count(&assessment.Metric{}, "Id = ?", req.MetricId)
-	if err != nil {
-		return status.Errorf(codes.Internal, "database error: %v", err)
-	}
-	if count == 0 {
-		return ErrMetricNotFound
-	}
-	return nil
-}
