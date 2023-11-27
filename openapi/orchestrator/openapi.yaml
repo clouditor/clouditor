@@ -1719,6 +1719,9 @@ components:
                     format: int64
                 implementation:
                     $ref: '#/components/schemas/MetricImplementation'
+                deprecated:
+                    type: boolean
+                    description: If the metric is deleted we do not really delete the metric for backward compatibility, but set the field to true.
             description: A metric resource
         MetricConfiguration:
             type: object

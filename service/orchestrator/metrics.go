@@ -194,6 +194,10 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	// Build a new metric out of the request
 	metric = req.Metric
 
+	if metric.Deprecated {
+		return nil, status.Errorf(codes.FailedPrecondition, "the metric shouldn't be set to deprecated at creation time")
+	}
+
 	// Append metric
 	err = svc.storage.Create(metric)
 	if err != nil {
@@ -237,6 +241,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	metric.Category = req.Metric.Category
 	metric.Range = req.Metric.Range
 	metric.Scale = req.Metric.Scale
+	metric.Deprecated = req.Metric.Deprecated
 
 	err = svc.storage.Save(metric, "id = ? ", metric.Id)
 	if err != nil {

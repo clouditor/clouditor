@@ -138,6 +138,8 @@ func (m *Metric) validate(all bool) error {
 
 	// no validation rules for Interval
 
+	// no validation rules for Deprecated
+
 	if m.Implementation != nil {
 
 		if all {

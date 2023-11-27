@@ -72,6 +72,9 @@ message Metric {
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
   optional MetricImplementation implementation = 8;
+
+  // If the metric is deleted we do not really delete the metric for backward compatibility, but set the field to true. 
+  bool deprecated = 9;
 }
 
 // A range resource representing the range of values
