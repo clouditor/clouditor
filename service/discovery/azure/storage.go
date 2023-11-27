@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 
@@ -113,7 +114,105 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, dbs...)
 
+	// Discover Cosmos DB
+	cosmosDB, err := d.discoverCosmosDB()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover cosmos db accounts: %w", err)
+	}
+	list = append(list, cosmosDB...)
+
 	return
+}
+
+// discoverCosmosDB discovers Cosmos DB accounts
+func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
+	var (
+		list []voc.IsCloudResource
+		err  error
+	)
+
+	// initialize Cosmos DB client
+	if err := d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover Cosmos DB
+	err = listPager(d.azureDiscovery,
+		d.clients.cosmosDBClient.NewListPager,
+		d.clients.cosmosDBClient.NewListByResourceGroupPager,
+		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(res armcosmos.DatabaseAccountsClientListByResourceGroupResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(dbAccount *armcosmos.DatabaseAccountGetResults) error {
+			cosmos, err := d.handleCosmosDB(dbAccount)
+			if err != nil {
+				return fmt.Errorf("could not cosmos db accounts: %w", err)
+			}
+			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
+			list = append(list, cosmos)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
+	var (
+		enc voc.IsAtRestEncryption
+		err error
+	)
+
+	// initialize Cosmos DB client
+	if err = d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Check if KeyVaultURI is set
+	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
+	if account.Properties.KeyVaultKeyURI != nil {
+		enc = &voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled: true,
+				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
+			},
+			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
+		}
+	} else {
+		enc = &voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled:   true,
+				Algorithm: AES256,
+			},
+		}
+	}
+
+	// Create Cosmos DB database account voc object
+	dbStorage := &voc.DatabaseStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(*account.ID),
+				util.Deref(account.Name),
+				account.SystemData.CreatedAt,
+				voc.GeoLocation{
+					Region: *account.Location,
+				},
+				labels(account.Tags),
+				resourceGroupID(account.ID),
+				voc.DatabaseStorageType,
+				account),
+
+			AtRestEncryption: enc,
+		},
+	}
+
+	return dbStorage, nil
 }
 
 // discoverSqlServers discovers the sql server and databases
@@ -703,6 +802,13 @@ func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
 // initSQLServersClient creates the client if not already exists
 func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
 	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
+
+	return
+}
+
+// initCosmosDBClient creates the client if not already exists
+func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
+	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
 
 	return
 }

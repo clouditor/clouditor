@@ -35,6 +35,7 @@ type Library struct {
 	ProgrammingLanguage string           `json:"programmingLanguage"`
 	TranslationUnits    []ResourceID     `json:"translationUnits"`
 	Dependencies        []ResourceID     `json:"dependencies"`
+	Vulnerabilities     []string         `json:"vulnerabilities"` // Vulnerabilities contains a list of known CVEs for this particular library
 	GroupID             string           `json:"groupId"`
 	ArtifactID          string           `json:"artifactId"`
 	Version             string           `json:"version"`

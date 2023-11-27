@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +25,9 @@
 
 package voc
 
-var DatabaseServiceType = []string{"DatabaseService", "StorageService", "NetworkService", "Networking", "Resource"}
+var CodeRepositoryType = []string{"CodeRepository", "Resource"}
 
-// DatabaseService is an entity in our Cloud ontology. This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
-type DatabaseService struct {
-	*StorageService
-	AnomalyDetection *AnomalyDetection `json:"anomalyDetection"`
-	HttpEndpoint     *HttpEndpoint     `json:"httpEndpoint"`
+type CodeRepository struct {
+	*Resource
+	URL string `json:"url"`
 }
