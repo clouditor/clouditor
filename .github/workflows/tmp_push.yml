@@ -24,4 +24,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: clouditor/engine-extend-discovery:latest
+          tags: clouditor/engine:temporary
