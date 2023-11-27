@@ -148,7 +148,7 @@ service Orchestrator {
 
   // Removes a new metric
   rpc RemoveMetric(RemoveMetricRequest)
-      returns (clouditor.assessment.v1.Metric) {
+      returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/metrics/{metric_id}"
     };
