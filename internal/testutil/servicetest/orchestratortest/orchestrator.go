@@ -381,3 +381,38 @@ var (
 	}
 	MockControls = []*orchestrator.Control{MockControl1, MockControl2, MockControl3, MockControl4, MockControl5}
 )
+
+// NewMetricOption is an option for NewMetric to modify single properties for testing , e.g., property deprecated
+type NewMetricOption func(*assessment.Metric)
+
+func WithDeprecated(deprecated bool) NewMetricOption {
+	return func(metric *assessment.Metric) {
+		metric.Deprecated = deprecated
+	}
+}
+
+func NewMetric(opts ...NewMetricOption) *assessment.Metric {
+	var mockMetric = &assessment.Metric{
+		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
+		Description: testdata.MockMetricDescription1,
+		Scale:       assessment.Metric_ORDINAL,
+		Range: &assessment.Range{
+			Range: &assessment.Range_AllowedValues{
+				AllowedValues: &assessment.AllowedValues{
+					Values: []*structpb.Value{
+						structpb.NewBoolValue(false),
+						structpb.NewBoolValue(true),
+					},
+				},
+			},
+		},
+		Deprecated: false,
+	}
+
+	for _, o := range opts {
+		o(mockMetric)
+	}
+
+	return mockMetric
+}

@@ -39,15 +39,18 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
+	persistence_gorm "clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
-
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"gorm.io/gorm"
+	// "gorm.io/gorm"
 )
 
 var (
@@ -1520,7 +1523,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				svc := i2[0].(*Service)
 
 				var config *assessment.MetricConfiguration
-				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
+				err := svc.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -1561,7 +1564,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				svc := i2[0].(*Service)
 
 				var config *assessment.MetricConfiguration
-				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
+				err := svc.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -1600,5 +1603,131 @@ func wantStatusCode(code codes.Code) assert.ErrorAssertionFunc {
 			return false
 		}
 		return assert.Equal(t, gotStatus.Code(), code)
+	}
+}
+
+func TestService_RemoveMetric(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RemoveMetricRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Validation Error - Request is nil",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: nil,
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Validation Error - metric id is empty",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: ""},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrInvalidRequest.Error())
+			},
+		},
+		{
+			name: "Error - Internal (Get)",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: gorm.ErrInvalidDB},
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: testdata.MockMetricID1},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Error - Not Found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: testdata.MockMetricID1},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, ErrMetricNotFound.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(orchestratortest.NewMetric())
+				}),
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.RemoveMetricRequest{
+					MetricId: testdata.MockMetricID1,
+				},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				_, ok := i.(*emptypb.Empty)
+				assert.True(t, ok)
+
+				assert.NotNil(t, i2)
+				s, ok := i2[0].(persistence.Storage)
+				assert.True(t, ok)
+
+				var metric *assessment.Metric
+
+				err := s.Get(&metric, "id = ?", testdata.MockMetricID1)
+				assert.NoError(t, err)
+
+				return assert.True(t, metric.Deprecated)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+			}
+
+			res, err := svc.RemoveMetric(context.TODO(), tt.args.req)
+
+			// Run ErrorAssertionFunc
+			tt.wantErr(t, err)
+
+			tt.wantRes(t, res, tt.fields.storage)
+		})
 	}
 }

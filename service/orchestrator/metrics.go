@@ -43,8 +43,12 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// ErrCertificationNotFound indicates the certification was not found
+var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
 // well as the default metric implementations from the Rego files.
@@ -230,7 +234,7 @@ func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetr
 	// Check, if metric exists according to req.Metric.Id
 	err = svc.storage.Get(&metric, "id = ?", req.Metric.Id)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "metric not found")
+		return nil, ErrMetricNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -276,7 +280,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	// Check, if metric exists according to the metric ID
 	err = svc.storage.Get(&metric, "id = ?", req.Implementation.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "metric not found")
+		return nil, ErrMetricNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -324,6 +328,40 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	return res, nil
 }
 
+// RemoveMetric removes a metric specified by req.MetricId. The metric is not deleted, but the property deprecated is set to true for backward compatibility reasons.
+func (svc *Service) RemoveMetric(ctx context.Context, req *orchestrator.RemoveMetricRequest) (res *emptypb.Empty, err error) {
+	var (
+		metric *assessment.Metric
+	)
+
+	// Validate request
+	err = service.ValidateRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check, if metric exists according to the metric ID
+	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
+	if errors.Is(err, persistence.ErrRecordNotFound) {
+		return nil, ErrMetricNotFound
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %s", err)
+	}
+
+	// Set property deprecated to true
+	metric.Deprecated = true
+
+	// Update metric with property deprecated is true
+	err = svc.storage.Update(metric, "Id = ?", req.MetricId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+	}
+
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
+
+	return &emptypb.Empty{}, nil
+}
+
 // GetMetric retrieves a metric specified by req.MetricId.
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	// Validate request
@@ -334,7 +372,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 
 	err = svc.storage.Get(&metric, "id = ?", req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "metric not found")
+		return nil, ErrMetricNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -507,4 +545,16 @@ func (svc *Service) SubscribeMetricChangeEvents(_ *orchestrator.SubscribeMetricC
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 	}
+}
+
+// checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
+func (svc *Service) checkMetricExistence(req *orchestrator.RemoveMetricRequest) error {
+	count, err := svc.storage.Count(&assessment.Metric{}, "Id = ?", req.MetricId)
+	if err != nil {
+		return status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	if count == 0 {
+		return ErrMetricNotFound
+	}
+	return nil
 }

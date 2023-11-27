@@ -146,6 +146,14 @@ service Orchestrator {
     };
   }
 
+  // Removes a new metric
+  rpc RemoveMetric(RemoveMetricRequest)
+      returns (clouditor.assessment.v1.Metric) {
+    option (google.api.http) = {
+      delete : "/v1/orchestrator/metrics/{metric_id}"
+    };
+  }
+
   // Registers a new target cloud service
   rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
@@ -506,6 +514,10 @@ message ListMetricsRequest {
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
+}
+
+message RemoveMetricRequest {
+  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
 }
 
 message ListMetricsResponse {

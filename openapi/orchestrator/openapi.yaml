@@ -1198,6 +1198,27 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a new metric
+            operationId: Orchestrator_RemoveMetric
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}/implementation:
         get:
             tags:
