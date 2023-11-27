@@ -45,7 +45,6 @@ import (
 
 func TestService_ListGraphEdges(t *testing.T) {
 	type fields struct {
-		configurations    map[discovery.Discoverer]*Configuration
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
@@ -198,7 +197,6 @@ func TestService_ListGraphEdges(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				configurations:    tt.fields.configurations,
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
@@ -227,7 +225,6 @@ func panicToDiscoveryResource(t *testing.T, resource voc.IsCloudResource) *disco
 
 func TestService_UpdateResource(t *testing.T) {
 	type fields struct {
-		configurations    map[discovery.Discoverer]*Configuration
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
@@ -334,7 +331,6 @@ func TestService_UpdateResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				configurations:    tt.fields.configurations,
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
