@@ -301,7 +301,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		enc = &voc.TransportEncryption{
 			Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
 			TlsVersion: tlsVersion,
-			Algorithm:  AES256,
+			Algorithm:  "", // The information is currently not available (11/2023)
 			Enabled:    true,
 		}
 	} else {
