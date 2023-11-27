@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -93,7 +94,7 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 						ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 							SSEAlgorithm: "AES256",
 						},
-						BucketKeyEnabled: false,
+						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
@@ -108,7 +109,7 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 							SSEAlgorithm:   "aws:kms",
 							KMSMasterKeyID: aws.String(mockBucket2KeyId),
 						},
-						BucketKeyEnabled: false,
+						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
