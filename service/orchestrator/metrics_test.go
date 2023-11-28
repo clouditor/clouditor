@@ -51,7 +51,6 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
-	// "gorm.io/gorm"
 )
 
 var (
@@ -1675,6 +1674,9 @@ func wantStatusCode(code codes.Code) assert.ErrorAssertionFunc {
 }
 
 func TestService_RemoveMetric(t *testing.T) {
+	timestamp := timestamppb.New(time.Date(2017, 12, 1, 0, 0, 0, 0, time.Local))
+	// timestamp := timestamppb.New(time.Time{})
+	// timestamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -1779,6 +1781,55 @@ func TestService_RemoveMetric(t *testing.T) {
 				err := s.Get(&gotMetric, "id = ?", testdata.MockMetricID1)
 				assert.NoError(t, err)
 
+				return assert.NotEmpty(t, gotMetric.DeprecatedSince)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: metric already removed in the past",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range: &assessment.Range{
+							Range: &assessment.Range_AllowedValues{
+								AllowedValues: &assessment.AllowedValues{
+									Values: []*structpb.Value{
+										structpb.NewBoolValue(false),
+										structpb.NewBoolValue(true),
+									},
+								},
+							},
+						},
+						DeprecatedSince: timestamp,
+					},
+					)
+				}),
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.RemoveMetricRequest{
+					MetricId: testdata.MockMetricID1,
+				},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				_, ok := i.(*emptypb.Empty)
+				assert.True(t, ok)
+
+				assert.NotNil(t, i2)
+				s, ok := i2[0].(persistence.Storage)
+				assert.True(t, ok)
+
+				var gotMetric *assessment.Metric
+
+				err := s.Get(&gotMetric, "id = ?", testdata.MockMetricID1)
+				assert.NoError(t, err)
+
+				assert.Equal(t, timestamp, gotMetric.DeprecatedSince)
 				return assert.NotEmpty(t, gotMetric.DeprecatedSince)
 			},
 			wantErr: assert.NoError,

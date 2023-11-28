@@ -354,8 +354,10 @@ func (svc *Service) RemoveMetric(ctx context.Context, req *orchestrator.RemoveMe
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
 
-	// Set timestamp
-	metric.DeprecatedSince = timestamppb.Now()
+	// Set timestamp if not already set
+	if metric.DeprecatedSince == nil {
+		metric.DeprecatedSince = timestamppb.Now()
+	}
 
 	// Update metric with property deprecated is true
 	err = svc.storage.Update(metric, "Id = ?", req.MetricId)
