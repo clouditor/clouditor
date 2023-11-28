@@ -398,7 +398,7 @@ func NewMetric() *assessment.Metric {
 				},
 			},
 		},
-		Deprecated: false,
+		DeprecatedSince: timestamppb.Now(),
 	}
 
 }

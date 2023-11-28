@@ -1783,6 +1783,10 @@ func (m *ListMetricsRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
+	if m.IncludeDeprecated != nil {
+		// no validation rules for IncludeDeprecated
+	}
+
 	if len(errors) > 0 {
 		return ListMetricsRequestMultiError(errors)
 	}

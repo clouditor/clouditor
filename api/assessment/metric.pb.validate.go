@@ -138,8 +138,6 @@ func (m *Metric) validate(all bool) error {
 
 	// no validation rules for Interval
 
-	// no validation rules for Deprecated
-
 	if m.Implementation != nil {
 
 		if all {
@@ -169,6 +167,21 @@ func (m *Metric) validate(all bool) error {
 					cause:  err,
 				}
 			}
+		}
+
+	}
+
+	if m.DeprecatedSince != nil {
+
+		if m.GetDeprecatedSince() == nil {
+			err := MetricValidationError{
+				field:  "DeprecatedSince",
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
 
 	}

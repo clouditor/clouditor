@@ -49,6 +49,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 	// "gorm.io/gorm"
 )
@@ -307,12 +308,12 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:         "TLSVersion",
-						Name:       "TLSMetricMockName",
-						Category:   "",
-						Scale:      assessment.Metric_NOMINAL,
-						Range:      &assessment.Range{},
-						Deprecated: true,
+						Id:              "TLSVersion",
+						Name:            "TLSMetricMockName",
+						Category:        "",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{},
+						DeprecatedSince: timestamppb.Now(),
 					},
 				},
 			},
@@ -407,6 +408,8 @@ func TestService_CreateMetric(t *testing.T) {
 }
 
 func TestService_UpdateMetric(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -432,20 +435,20 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:         "TransportEncryptionEnabled",
-						Name:       "A slightly updated metric",
-						Scale:      assessment.Metric_NOMINAL,
-						Range:      &assessment.Range{Range: &assessment.Range_AllowedValues{}},
-						Deprecated: true,
+						Id:              "TransportEncryptionEnabled",
+						Name:            "A slightly updated metric",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:         "TransportEncryptionEnabled",
-				Name:       "A slightly updated metric",
-				Scale:      assessment.Metric_NOMINAL,
-				Range:      &assessment.Range{Range: &assessment.Range_AllowedValues{}},
-				Deprecated: true,
+				Id:              "TransportEncryptionEnabled",
+				Name:            "A slightly updated metric",
+				Scale:           assessment.Metric_NOMINAL,
+				Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+				DeprecatedSince: timestamp,
 			},
 			wantErr: assert.NoError,
 		},
@@ -458,11 +461,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:         "TransportEncryptionEnabled",
-						Name:       "A slightly updated metric",
-						Scale:      assessment.Metric_NOMINAL,
-						Range:      &assessment.Range{Range: &assessment.Range_AllowedValues{}},
-						Deprecated: true,
+						Id:              "TransportEncryptionEnabled",
+						Name:            "A slightly updated metric",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -478,13 +481,13 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "TransportEncryptionEnabled",
-						Description: testdata.MockMetricDescription1,
-						Category:    testdata.MockMetricCategory1,
-						Scale:       assessment.Metric_NOMINAL,
-						Range:       &assessment.Range{Range: &assessment.Range_AllowedValues{}},
-						Deprecated:  true,
+						Id:              "TransportEncryptionEnabled",
+						Name:            "TransportEncryptionEnabled",
+						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -500,11 +503,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:         "DoesProbablyNotExist",
-						Name:       "UpdateMetricName",
-						Scale:      assessment.Metric_NOMINAL,
-						Range:      &assessment.Range{Range: &assessment.Range_AllowedValues{}},
-						Deprecated: true,
+						Id:              "DoesProbablyNotExist",
+						Name:            "UpdateMetricName",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -1711,7 +1714,7 @@ func TestService_RemoveMetric(t *testing.T) {
 				err := s.Get(&metric, "id = ?", testdata.MockMetricID1)
 				assert.NoError(t, err)
 
-				return assert.True(t, metric.Deprecated)
+				return assert.NotNil(t, metric.DeprecatedSince)
 			},
 			wantErr: assert.NoError,
 		},
