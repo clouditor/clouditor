@@ -542,8 +542,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
 					orchestratortest.MockAssessmentResult4,
-					orchestratortest.MockAssessmentResult3,
 					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult3,
 				},
 			},
 			wantErr: assert.NoError,
@@ -566,8 +566,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: &orchestrator.ListAssessmentResultsResponse{
 				Results: []*assessment.AssessmentResult{
-					orchestratortest.MockAssessmentResult3,
 					orchestratortest.MockAssessmentResult1,
+					orchestratortest.MockAssessmentResult3,
 				},
 			},
 			wantErr: assert.NoError,

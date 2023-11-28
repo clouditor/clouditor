@@ -1057,7 +1057,7 @@ paths:
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
             parameters:
-                - name: includeDeprecated
+                - name: filter.includeDeprecated
                   in: query
                   schema:
                     type: boolean

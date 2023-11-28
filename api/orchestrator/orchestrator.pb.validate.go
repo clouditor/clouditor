@@ -1783,8 +1783,37 @@ func (m *ListMetricsRequest) validate(all bool) error {
 
 	// no validation rules for Asc
 
-	if m.IncludeDeprecated != nil {
-		// no validation rules for IncludeDeprecated
+	if m.Filter != nil {
+
+		if all {
+			switch v := interface{}(m.GetFilter()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListMetricsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListMetricsRequestValidationError{
+						field:  "Filter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetFilter()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListMetricsRequestValidationError{
+					field:  "Filter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -9462,6 +9491,112 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TargetOfEvaluationChangeEventValidationError{}
+
+// Validate checks the field values on ListMetricsRequest_Filter with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListMetricsRequest_Filter) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListMetricsRequest_Filter with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListMetricsRequest_FilterMultiError, or nil if none found.
+func (m *ListMetricsRequest_Filter) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListMetricsRequest_Filter) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.IncludeDeprecated != nil {
+		// no validation rules for IncludeDeprecated
+	}
+
+	if len(errors) > 0 {
+		return ListMetricsRequest_FilterMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListMetricsRequest_FilterMultiError is an error wrapping multiple validation
+// errors returned by ListMetricsRequest_Filter.ValidateAll() if the
+// designated constraints aren't met.
+type ListMetricsRequest_FilterMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListMetricsRequest_FilterMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListMetricsRequest_FilterMultiError) AllErrors() []error { return m }
+
+// ListMetricsRequest_FilterValidationError is the validation error returned by
+// ListMetricsRequest_Filter.Validate if the designated constraints aren't met.
+type ListMetricsRequest_FilterValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListMetricsRequest_FilterValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListMetricsRequest_FilterValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListMetricsRequest_FilterValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListMetricsRequest_FilterValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListMetricsRequest_FilterValidationError) ErrorName() string {
+	return "ListMetricsRequest_FilterValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListMetricsRequest_FilterValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListMetricsRequest_Filter.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListMetricsRequest_FilterValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListMetricsRequest_FilterValidationError{}
 
 // Validate checks the field values on CloudService_Metadata with the rules
 // defined in the proto definition for this message. If any rules are

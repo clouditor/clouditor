@@ -510,7 +510,11 @@ message GetMetricRequest {
 }
 
 message ListMetricsRequest {
-  optional bool include_deprecated = 1;
+  message Filter {
+    optional bool include_deprecated = 1;
+  }
+  
+  optional Filter filter = 1;
   
   int32 page_size = 10;
   string page_token = 11;

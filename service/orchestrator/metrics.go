@@ -317,10 +317,16 @@ func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetrics
 	}
 
 	res = new(orchestrator.ListMetricsResponse)
+	var conds []any
+
+	// Add the deprecated metrics as well if requested
+	if !req.Filter.GetIncludeDeprecated() {
+		conds = append(conds, "deprecated_since IS NULL")
+	}
 
 	// Paginate the metrics according to the request
 	res.Metrics, res.NextPageToken, err = service.PaginateStorage[*assessment.Metric](req, svc.storage,
-		service.DefaultPaginationOpts)
+		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate metrics: %v", err)
 	}

@@ -660,6 +660,8 @@ func TestService_GetMetric(t *testing.T) {
 }
 
 func TestService_ListMetrics(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
@@ -691,10 +693,24 @@ func TestService_ListMetrics(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path",
+			name: "Happy path: all active metrics",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(MockMetric1)
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					})
+					_ = s.Create(&assessment.Metric{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					})
 				}),
 			},
 			args: args{
@@ -702,6 +718,55 @@ func TestService_ListMetrics(t *testing.T) {
 			},
 			wantRes: &orchestrator.ListMetricsResponse{
 				Metrics: []*assessment.Metric{MockMetric1},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: including deprecated metrics",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					})
+					_ = s.Create(&assessment.Metric{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					})
+				}),
+			},
+			args: args{
+				req: &orchestrator.ListMetricsRequest{
+					Filter: &orchestrator.ListMetricsRequest_Filter{
+						IncludeDeprecated: proto.Bool(true),
+					},
+				},
+			},
+			wantRes: &orchestrator.ListMetricsResponse{
+				Metrics: []*assessment.Metric{
+					{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					},
+					{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -1709,12 +1774,12 @@ func TestService_RemoveMetric(t *testing.T) {
 				s, ok := i2[0].(persistence.Storage)
 				assert.True(t, ok)
 
-				var metric *assessment.Metric
+				var gotMetric *assessment.Metric
 
-				err := s.Get(&metric, "id = ?", testdata.MockMetricID1)
+				err := s.Get(&gotMetric, "id = ?", testdata.MockMetricID1)
 				assert.NoError(t, err)
 
-				return assert.NotNil(t, metric.DeprecatedSince)
+				return assert.NotEmpty(t, gotMetric.DeprecatedSince)
 			},
 			wantErr: assert.NoError,
 		},
