@@ -15,6 +15,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 )
 
+// TODO(lebogg): Do this for all storage and other resources we currently discover and support BYOK
+var keyUsage map[string][]string
+
 type azureKeyVaultDiscovery struct {
 	*azureDiscovery
 	// metricsClient is a client to query Azure Monitor w.r.t. given metrics (e.g. API Hits)
@@ -259,7 +262,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 				ExpirationDate: util.Deref(k.Properties.Attributes.Expires),
 				KeyType:        getKeyType(k.Properties.Kty),
 				KeySize:        int(util.Deref(k.Properties.KeySize)),
-				NumberOfUsages: 0, // TODO(lebogg): Will probably not work this way. maybe with "related evidences" feature" on metric/policy level but not here. In Azure, we only see in the respective services if a key is used but not the other way around
+				NumberOfUsages: len(keyUsage[util.Deref(k.Properties.KeyURI)]), // TODO(lebogg): Test this!
 			}
 			keys = append(keys, key)
 		}
