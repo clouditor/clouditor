@@ -47,7 +47,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// ErrCertificationNotFound indicates the certification was not found
+// ErrMetricNotFound indicates the certification was not found
 var ErrMetricNotFound = status.Error(codes.NotFound, "metric not found")
 
 // loadMetrics takes care of loading the metric definitions from the (embedded) metrics.json as
