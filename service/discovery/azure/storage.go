@@ -188,9 +188,9 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		// Hacky, but we haven't related Evidences yet
 		// TODO: Refactor/Remove before merge into main
 		// We add the ID of this resource to the list of usages for the given key. But only if it is not there already
-		keySlice := keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)]
-		if !slices.Contains(keySlice, util.Deref(account.ID)) {
-			keySlice = append(keySlice, util.Deref(account.ID))
+		if !slices.Contains(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID)) {
+			keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)] =
+				append(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID))
 		}
 	} else {
 		enc = &voc.ManagedKeyEncryption{

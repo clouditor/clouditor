@@ -16,7 +16,7 @@ import (
 )
 
 // TODO(lebogg): Do this for all storage and other resources we currently discover and support BYOK
-var keyUsage map[string][]string
+var keyUsage = make(map[string][]string)
 
 type azureKeyVaultDiscovery struct {
 	*azureDiscovery
