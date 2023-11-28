@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"strconv"
 	"strings"
 	"time"
@@ -60,6 +61,8 @@ const (
 	StorageComponent = "storage"
 	ComputeComponent = "compute"
 	NetworkComponent = "network"
+	//TODO(all): Does the naming have to follow some Azure terminology?
+	KeyVaultComponent = "keyvault"
 
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
@@ -168,6 +171,10 @@ type clients struct {
 	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
 	backupVaultClient     *armdataprotection.BackupVaultsClient
 	backupInstancesClient *armdataprotection.BackupInstancesClient
+
+	// Key Vault
+	keyVaultClient *armkeyvault.VaultsClient
+	keysClient     *armkeyvault.KeysClient
 
 	// Resource groups
 	rgClient *armresources.ResourceGroupsClient
