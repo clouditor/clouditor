@@ -295,13 +295,13 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 
 	for _, v := range discoverer {
 		svc.configurations[v] = &Configuration{
-			Interval: 5 * time.Minute,
+			Interval: 1 * time.Minute,
 		}
 
 		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
 
 		_, err = svc.scheduler.
-			Every(5).
+			Every(1).
 			Minute().
 			Tag(v.Name()).
 			Do(svc.StartDiscovery, v)
