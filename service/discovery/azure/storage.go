@@ -51,6 +51,9 @@ var (
 	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
 
+// Currently supports only one backup. There could be more and even a metric that may check multiple backups
+var backupOf = make(map[string]string)
+
 type azureStorageDiscovery struct {
 	*azureDiscovery
 	defenderProperties map[string]*defenderProperties
@@ -633,6 +636,10 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	if d.defenderProperties[DefenderStorageType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	if b, ok := container.Properties.Metadata["backupOf"]; ok {
+		backupOf[util.Deref(b)] = util.Deref(container.ID)
 	}
 
 	return &voc.ObjectStorage{
