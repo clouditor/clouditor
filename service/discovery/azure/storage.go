@@ -688,8 +688,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
-	// Check if container is acting as a backups. If so, they are added to backupOf
-	d.checkIfBackup(account, container)
+	// Check if container is acting as a backups. If so, they are also added to backupOf
+	isBackup := d.isBackup(account, container)
 
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
@@ -722,23 +722,27 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			Backups: backups,
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+		IsBackup:     isBackup,
 	}, nil
 }
 
-// checkIfBackup checks if container is used as a backup - and metadata.  If so, it is
+// isBackup checks if container is used as a backup - and metadata.  If so, it is
 // added to backupOf
-func (d *azureStorageDiscovery) checkIfBackup(account *armstorage.Account, container *armstorage.ListContainerItem) {
+func (d *azureStorageDiscovery) isBackup(account *armstorage.Account, container *armstorage.ListContainerItem) bool {
 	// Get specific container with mor details, e.g. meta data
 	res, err := d.clients.blobContainerClient.Get(context.Background(), resourceGroupName(util.Deref(account.ID)),
 		util.Deref(account.Name), util.Deref(container.Name), &armstorage.BlobContainersClientGetOptions{})
 	if err != nil {
 		log.Warnf("Error while retrieving container '%s' to find out if it is a backup", util.Deref(container.Name))
+		return false
 	}
 
-	// Check if the entire container serves as backup
+	// Check if the container serves as backup
 	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
 		backupOf[util.Deref(b)] = util.Deref(container.ID)
+		return true
 	}
+	return false
 }
 
 func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table) (*voc.DatabaseStorage, error) {
