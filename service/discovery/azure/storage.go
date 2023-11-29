@@ -390,6 +390,11 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// initialize table client
+	if err := d.initTableStorageClient(); err != nil {
+		return nil, err
+	}
+
 	// Discover backup vaults
 	err := d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
@@ -419,8 +424,15 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 				return fmt.Errorf("could not handle file storages: %w", err)
 			}
 
+			// Discover file storages
+			tableStorages, err := d.discoverTableStorages(account)
+			if err != nil {
+				return fmt.Errorf("could not handle table storages: %w", err)
+			}
+
 			storageResourcesList = append(storageResourcesList, objectStorages...)
 			storageResourcesList = append(storageResourcesList, fileStorages...)
+			storageResourcesList = append(storageResourcesList, tableStorages...)
 
 			// Create storage service for all storage account resources
 			storageService, err := d.handleStorageAccount(account, storageResourcesList)
@@ -491,6 +503,33 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 			list = append(list, objectStorages)
+
+		}
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// List all blob containers in the specified resource group
+	listPager := d.clients.tableStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.TableClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			tableStorage, err := d.handleTableStorage(account, value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle table storage: %w", err)
+			}
+			log.Infof("Adding table storage '%s'", tableStorage.Name)
+
+			list = append(list, tableStorage)
 
 		}
 	}
@@ -638,7 +677,14 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
-	if b, ok := container.Properties.Metadata["backupOf"]; ok {
+	// Get specific container with mor details, e.g. meta data
+	res, err := d.clients.blobContainerClient.Get(context.Background(), resourceGroupName(util.Deref(account.ID)),
+		util.Deref(account.Name), util.Deref(container.Name), &armstorage.BlobContainersClientGetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("could not get container '%s'", util.Deref(container.Name))
+	}
+
+	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
 		backupOf[util.Deref(b)] = util.Deref(container.ID)
 	}
 
@@ -673,6 +719,80 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			Backups: backups,
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+	}, nil
+}
+
+func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table) (*voc.DatabaseStorage, error) {
+	var (
+		backups                  []*voc.Backup
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the table is empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if table == nil || table.ID == nil {
+		return nil, fmt.Errorf("table is nil")
+	}
+
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	}
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
+	} else { // approach with Tagging
+		if backupLocation, ok := backupOf["https://"+util.Deref(account.Name)+".table.core.windows.net/"+util.Deref(table.Name)]; ok {
+			backups = []*voc.Backup{
+				&voc.Backup{
+					Availability:        nil,
+					TransportEncryption: nil,
+					Storage:             voc.ResourceID(backupLocation),
+					Enabled:             true,
+					RetentionPeriod:     0,
+					Interval:            0,
+				},
+			}
+		}
+	}
+	backups = backupsEmptyCheck(backups)
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	return &voc.DatabaseStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(table.ID)),
+				util.Deref(table.Name),
+				// We only have the creation time of the storage account the object storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
+					Region: util.Deref(account.Location),
+				},
+				// The storage account labels the object storage belongs to
+				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
+				voc.DatabaseStorageType,
+				account, table,
+			),
+			AtRestEncryption: enc,
+			Backups:          backups,
+			Immutability:     nil, // TODO
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
+		},
 	}, nil
 }
 
@@ -776,6 +896,11 @@ func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
+	return
+}
+
+func (d *azureStorageDiscovery) initTableStorageClient() (err error) {
+	d.clients.tableStorageClient, err = initClient(d.clients.tableStorageClient, d.azureDiscovery, armstorage.NewTableClient)
 	return
 }
 
