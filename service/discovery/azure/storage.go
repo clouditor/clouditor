@@ -701,7 +701,7 @@ func (d *azureStorageDiscovery) discoverCosmosDBs() (list []voc.IsCloudResource,
 				err = fmt.Errorf("could not handle Cosmos DB Account Client: %v", err)
 				return
 			}
-			log.Infof("Adding Cosmos DB '%s'", account.Name)
+			log.Infof("Adding Cosmos DB '%s'", util.Deref(account.Name))
 			return
 		})
 	if err != nil {
