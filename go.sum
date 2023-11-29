@@ -604,8 +604,12 @@ github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0 h1:BMAjVKJM0U/CYF27gA0ZM
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0/go.mod h1:1fXstnBMas5kzG+S3q8UoJcmyU6nUeunJcMDHcRYHhs=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.0 h1:d81/ng9rET2YqdVkVwkb6EXeRrLJIwyGnJcAlAWKwhs=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.0/go.mod h1:s4kgfzA0covAXNicZHDMN58jExvcng2mC/DepXiF1EI=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appconfiguration/armappconfiguration v1.1.1 h1:iRc20pGuVlc1HwRO2bg0m1tfP9rkPB0K88trl8Fei2w=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appconfiguration/armappconfiguration v1.1.1/go.mod h1:21Lewei+tg5zp5xmyOxfDY//2tBvWQXee0UoM8xZjr8=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2 v2.2.0 h1:CHxh1AOdeBM8MuuEGEJ3qHb8A854mYdJ40p9nx3RNSY=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2 v2.2.0/go.mod h1:nJLFPGJkyKfDDyJiPuHIXsCi/gpJkm07EvRgiX7SGlI=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2 v2.3.0 h1:JI8PcWOImyvIUEZ0Bbmfe05FOlWkMi2KhjG+cAKaUms=
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2 v2.3.0/go.mod h1:nJLFPGJkyKfDDyJiPuHIXsCi/gpJkm07EvRgiX7SGlI=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute v1.0.0 h1:/Di3vB4sNeQ+7A8efjUVENvyB945Wruvstucqp7ZArg=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute v1.0.0/go.mod h1:gM3K25LQlsET3QR+4V74zxCsFAy0r6xMNN9n80SZn+4=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3 v3.0.0 h1:/CpfzcaYyHdMdx545O0y+oN1jnyePITaZPq9udnw3So=
