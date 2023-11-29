@@ -39,9 +39,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
@@ -684,6 +683,13 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		return nil, fmt.Errorf("could not get container '%s'", util.Deref(container.Name))
 	}
 
+	// TODO(lebogg): Does not work currently due to insufficient permissions
+	// Get blobs and check their tags + metadata
+	//_, err = d.getBlobs(account, container)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not get blobs of container `%s`: %v", util.Deref(container.Name), err)
+	//}
+
 	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
 		backupOf[util.Deref(b)] = util.Deref(container.ID)
 	}
@@ -721,6 +727,34 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }
+
+// TODO(lebogg): Unfortunately, doesnt work for now due to insufficient permissions (although I set roles to Principal according to https://learn.microsoft.com/en-us/azure/storage/blobs/assign-azure-role-data-access?tabs=portal)
+// -> RESPONSE 403: 403 This request is not authorized to perform this operation using this permission.
+// ERROR CODE: AuthorizationPermissionMismatch
+//func (d *azureStorageDiscovery) getBlobs(acc *armstorage.Account, container *armstorage.ListContainerItem) (
+//	blobs []any, err error) {
+//	var (
+//		client *azblob.Client
+//	)
+//
+//	client, err = azblob.NewClient(util.Deref(acc.Properties.PrimaryEndpoints.Blob), d.cred, nil)
+//	if err != nil {
+//		return nil, fmt.Errorf("could not creat azblob client: %v", err)
+//	}
+//	pager := client.NewListBlobsFlatPager(util.Deref(container.Name), &azblob.ListBlobsFlatOptions{
+//		Include: azblob.ListBlobsInclude{Tags: true, Metadata: true},
+//	})
+//	for pager.More() {
+//		page, err := pager.NextPage(context.Background())
+//		if err != nil {
+//			return nil, fmt.Errorf("could not load next page: %v", err)
+//		}
+//		for _, blob := range page.Segment.BlobItems {
+//			blobs = append(blobs, blob)
+//		}
+//	}
+//	return
+//}
 
 func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table) (*voc.DatabaseStorage, error) {
 	var (
