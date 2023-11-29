@@ -381,3 +381,23 @@ var (
 	}
 	MockControls = []*orchestrator.Control{MockControl1, MockControl2, MockControl3, MockControl4, MockControl5}
 )
+
+func NewMetric() *assessment.Metric {
+	return &assessment.Metric{
+		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
+		Description: testdata.MockMetricDescription1,
+		Scale:       assessment.Metric_ORDINAL,
+		Range: &assessment.Range{
+			Range: &assessment.Range_AllowedValues{
+				AllowedValues: &assessment.AllowedValues{
+					Values: []*structpb.Value{
+						structpb.NewBoolValue(false),
+						structpb.NewBoolValue(true),
+					},
+				},
+			},
+		},
+	}
+
+}
