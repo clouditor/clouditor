@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +25,9 @@
 
 package voc
 
-var StorageServiceType = []string{"StorageService", "NetworkService", "Networking", "Resource"}
-
-// StorageService is an entity in our Cloud ontology. This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
-type StorageService struct {
-	*NetworkService
-	Redundancy *Redundancy  `json:"redundancy"`
-	Storage    []ResourceID `json:"storage"`
+type Redundancy struct {
+	*Availability
+	Local bool // True when local redundancy is enabled
+	Zone  bool // True when zone redundancy is enabled
+	Geo   bool // True when geo redundancy is enabled
 }

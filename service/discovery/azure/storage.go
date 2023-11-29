@@ -221,10 +221,27 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 				account),
 
 			AtRestEncryption: enc,
+			Redundancy:       getCosmosDBRedundancy(account),
 		},
 	}
 
 	return dbStorage, nil
+}
+
+func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
+	r := &voc.Redundancy{}
+	locations := acc.Properties.Locations
+	// If one location has zone redundancy enabled, we define the resource as zone redundant
+	for _, l := range locations {
+		if util.Deref(l.IsZoneRedundant) {
+			r.Zone = true
+		}
+	}
+	// If there are more than 1 region that means data is replicated geo-redundantly
+	if len(locations) > 1 {
+		r.Geo = true
+	}
+	return r
 }
 
 // discoverSqlServers discovers the sql server and databases
@@ -591,6 +608,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 				},
 				TransportEncryption: te,
 			},
+			Redundancy: getStorageAccountRedundancy(account),
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
@@ -653,6 +671,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				},
 			},
 			AtRestEncryption: enc,
+			Redundancy:       getStorageAccountRedundancy(account),
 		},
 	}, nil
 }
@@ -720,6 +739,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				},
 			},
 			Backups: backups,
+			// Todo(lebogg): Add tests
+			Redundancy: getStorageAccountRedundancy(account),
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 		IsBackup:     isBackup,
@@ -815,8 +836,42 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
+			Redundancy: getStorageAccountRedundancy(account),
 		},
 	}, nil
+}
+
+// TODO(lebogg): Add tests
+func getStorageAccountRedundancy(account *armstorage.Account) (r *voc.Redundancy) {
+	r = new(voc.Redundancy)
+	name := util.Deref(account.SKU.Name)
+	switch name {
+	// LRS denotes local redundancy
+	case armstorage.SKUNameStandardLRS, armstorage.SKUNamePremiumLRS:
+		r.Local = true
+	// ZRS denotes zone redundancy
+	case armstorage.SKUNameStandardZRS, armstorage.SKUNamePremiumZRS:
+		r.Zone = true
+	// GRS denotes geo redundancy which also includes local redundancy in Azure
+	case armstorage.SKUNameStandardGRS, armstorage.SKUNameStandardRAGRS:
+		r.Local = true
+		r.Geo = true
+	// GZRS denotes geo redundancy + zone redundancy
+	case armstorage.SKUNameStandardGZRS, armstorage.SKUNameStandardRAGZRS:
+		// r.Local = true // local redundancy only in secondary location. TODO(all): Discuss all options
+		r.Zone = true
+		r.Geo = true
+	// When there are new SKU types in the future we will probably miss it. Print out a warning if there is a name we
+	// don't consider so far.
+	default:
+		log.Warnf("Unknown redundancy model (via SKU) for storage account '%s': '%s'. Probably, we should add it.",
+			util.Deref(account.SKU.Name), name)
+		// consideredAccountTypes shows how many account types (SKUs) we consider so far. It has to be a "magic" number.
+		consideredAccountTypes := 8
+		log.Warnf("Currently there are %d different SKU types. We consider %d types so far",
+			len(armstorage.PossibleSKUNameValues()), consideredAccountTypes)
+	}
+	return
 }
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
