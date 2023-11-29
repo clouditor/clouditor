@@ -72,6 +72,7 @@ type Resource struct {
 	GeoLocation GeoLocation       `json:"geoLocation"`
 	Labels      map[string]string `json:"labels"`
 	Raw         string            `json:"raw"`
+	Parent      ResourceID        `json:"parent"`
 }
 
 func (r *Resource) GetID() ResourceID {
@@ -113,10 +114,6 @@ func (r *Resource) GetRaw() string {
 func (r *Resource) GetCreationTime() *time.Time {
 	t := time.Unix(r.CreationTime, 0)
 	return &t
-}
-
-func (*Resource) Related() []string {
-	return []string{}
 }
 
 // ToStringInterface returns a string representation of the input

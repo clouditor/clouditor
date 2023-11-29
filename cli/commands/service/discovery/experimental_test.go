@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +23,50 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package discovery
 
-type CloudResourceGroup struct {
-	Resources []*Resource `json:"resources"`
+import (
+	"bytes"
+	"testing"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/cli"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
+)
+
+func TestNewListGraphEdgesCommandNoArgs(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewListGraphEdgesCommand()
+	err = cmd.RunE(nil, []string{})
+	assert.NoError(t, err)
+
+	var response = &discovery.ListGraphEdgesResponse{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response.Edges)
+}
+
+func TestNewUpdateResourceCommand(t *testing.T) {
+	var err error
+	var b bytes.Buffer
+
+	cli.Output = &b
+
+	cmd := NewUpdateResourceCommand()
+	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication"}}`})
+	assert.NoError(t, err)
+
+	var response = &discovery.Resource{}
+	err = protojson.Unmarshal(b.Bytes(), response)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.NotEmpty(t, response)
 }

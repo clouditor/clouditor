@@ -267,6 +267,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 					Region: util.Deref(function.Location),
 				},
 				labels(function.Tags),
+				resourceGroupID(function.ID),
 				voc.FunctionType,
 				function,
 				config,
@@ -375,6 +376,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 					Region: util.Deref(vm.Location),
 				},
 				labels(vm.Tags),
+				resourceGroupID(vm.ID),
 				voc.VirtualMachineType,
 				vm,
 			),
@@ -484,9 +486,10 @@ func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
 func bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-			return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		}
+		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
+		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
+		// }
 
 		return ""
 	}
@@ -561,6 +564,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 					Region: util.Deref(disk.Location),
 				},
 				labels(disk.Tags),
+				resourceGroupID(disk.ID),
 				voc.BlockStorageType,
 				disk, rawKeyUrl,
 			),

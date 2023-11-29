@@ -33,5 +33,4 @@ var DatabaseStorageType = []string{"DatabaseStorage", "Storage", "Resource"}
 type DatabaseStorage struct {
 	*Storage
 	*Redundancy
-	Parent []ResourceID `json:"parent"`
 }

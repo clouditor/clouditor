@@ -28,7 +28,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine (dashboard development redirect with Azure discovery)",
+            "name": "Launch engine (in-memory, dashboard development redirect with Azure discovery)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -36,6 +36,22 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
+                "--dashboard-url=http://localhost:5173",
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=azure",
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine (database, dashboard development redirect with Azure discovery)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine",
+            "cwd": "${workspaceFolder}",
+            "args": [
                 "--dashboard-url=http://localhost:5173",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",

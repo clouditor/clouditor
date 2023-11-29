@@ -216,6 +216,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 						Region: util.Deref(lb.Location),
 					},
 					labels(lb.Tags),
+					resourceGroupID(lb.ID),
 					voc.LoadBalancerType,
 					lb,
 				),
@@ -241,6 +242,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 					nil,
 					voc.GeoLocation{Region: util.Deref(ag.Location)},
 					labels(ag.Tags),
+					resourceGroupID(ag.ID),
 					voc.LoadBalancerType,
 					ag,
 				),
@@ -264,6 +266,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 					Region: util.Deref(ni.Location),
 				},
 				labels(ni.Tags),
+				resourceGroupID(ni.ID),
 				voc.NetworkInterfaceType,
 				ni,
 			),
@@ -387,7 +390,7 @@ func publicIPAddressFromLoadBalancer(lb *armnetwork.LoadBalancer) []string {
 	return publicIPAddresses
 }
 
-// getName returns the resource group name of a given Azure ID
+// getName returns the name of a given Azure ID
 func getName(id string) string {
 	if id == "" {
 		return ""

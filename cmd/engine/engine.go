@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evaluation"
@@ -87,6 +88,7 @@ const (
 	DiscoveryProviderFlag            = "discovery-provider"
 	DiscoveryResourceGroupFlag       = "discovery-resource-group"
 	DashboardURLFlag                 = "dashboard-url"
+	LogLevelFlag                     = "log-level"
 
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
@@ -106,6 +108,7 @@ const (
 	DefaultDiscoveryAutoStart                  = false
 	DefaultDiscoveryResourceGroup              = ""
 	DefaultDashboardURL                        = "http://localhost:8080"
+	DefaultLogLevel                            = "info"
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -162,6 +165,7 @@ func init() {
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
+	engineCmd.Flags().String(LogLevelFlag, DefaultLogLevel, "The default log level")
 
 	_ = viper.BindPFlag(APIDefaultUserFlag, engineCmd.Flags().Lookup(APIDefaultUserFlag))
 	_ = viper.BindPFlag(APIDefaultPasswordFlag, engineCmd.Flags().Lookup(APIDefaultPasswordFlag))
@@ -190,6 +194,7 @@ func init() {
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
+	_ = viper.BindPFlag(LogLevelFlag, engineCmd.Flags().Lookup(LogLevelFlag))
 }
 
 func initConfig() {
@@ -202,7 +207,10 @@ func initConfig() {
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
-	var rt, _ = service.GetRuntimeInfo()
+	var (
+		rt, _ = service.GetRuntimeInfo()
+		level logrus.Level
+	)
 
 	fmt.Printf(`
            $$\                           $$\ $$\   $$\
@@ -217,6 +225,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
   Version %s
   `, rt.VersionString())
 	fmt.Println()
+
+	level, err = logrus.ParseLevel(viper.GetString(LogLevelFlag))
+	if err != nil {
+		return err
+	}
+	logrus.SetLevel(level)
 
 	if viper.GetBool(DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
@@ -351,6 +365,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
+			time.Sleep(1 * time.Second)
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
 			})
@@ -367,6 +382,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
 		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
+		server.WithExperimentalDiscovery(discoveryService),
 		server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),
 		server.WithEvidenceStore(evidenceStoreService),

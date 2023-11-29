@@ -85,11 +85,11 @@ type DiscoveryEvent struct {
 	Time            time.Time
 }
 
-// Service is an implementation of the Clouditor Discovery service.
-// It should not be used directly, but rather the NewService constructor
-// should be used.
+// Service is an implementation of the Clouditor Discovery service (plus its experimental extensions). It should not be
+// used directly, but rather the NewService constructor should be used.
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
+	discovery.UnimplementedExperimentalDiscoveryServer
 
 	configurations map[discovery.Discoverer]*Configuration
 
@@ -262,9 +262,11 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			}
 
 			discoverer = append(discoverer,
+				azure.NewAzureResourceGroupDiscovery(opts...),
 				azure.NewAzureComputeDiscovery(opts...),
 				azure.NewAzureStorageDiscovery(opts...),
-				azure.NewAzureNetworkDiscovery(opts...))
+				azure.NewAzureNetworkDiscovery(opts...),
+				azure.NewKeyVaultDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
@@ -352,22 +354,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		var (
-			v *structpb.Value
-		)
-
-		v, err = voc.ToStruct(resource)
-		if err != nil {
-			log.Errorf("Could not convert resource to protobuf struct: %v", err)
-		}
-
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r := &discovery.Resource{
-			Id:             string(resource.GetID()),
-			ResourceType:   strings.Join(resource.GetType(), ","),
-			CloudServiceId: resource.GetServiceID(),
-			Properties:     v,
+		r, v, err := toDiscoveryResource(resource)
+		if err != nil {
+			log.Errorf("Could not convert resource: %v", err)
+			continue
 		}
 
 		// Persist the latest state of the resource
@@ -456,4 +448,24 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 // cloud service ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCloudServiceId() string {
 	return svc.csID
+}
+
+// toDiscoveryResource converts a [voc.IsCloudResource] into a resource that can be persisted in our database
+// ([discovery.Resource]). In the future we want to merge those two structs
+func toDiscoveryResource(resource voc.IsCloudResource) (r *discovery.Resource, v *structpb.Value, err error) {
+	v, err = voc.ToStruct(resource)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
+	}
+
+	// Build a resource struct. This will hold the latest sync state of the
+	// resource for our storage layer.
+	r = &discovery.Resource{
+		Id:             string(resource.GetID()),
+		ResourceType:   strings.Join(resource.GetType(), ","),
+		CloudServiceId: resource.GetServiceID(),
+		Properties:     v,
+	}
+
+	return
 }

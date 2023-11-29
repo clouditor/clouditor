@@ -29,7 +29,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos/v2"
+
+	"slices"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -37,11 +38,12 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
 var (
@@ -49,6 +51,9 @@ var (
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
+
+// Currently supports only one backup. There could be more and even a metric that may check multiple backups
+var backupOf = make(map[string]string)
 
 type azureStorageDiscovery struct {
 	*azureDiscovery
@@ -114,14 +119,112 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, dbs...)
 
-	// TODO(lebogg): 1. Merge with sql DBs above -> `d.discoverDatabases`; 2. or discover NoSQL databases here in general
-	dbs, err = d.discoverCosmosDBs()
+	// Discover Cosmos DB
+	cosmosDB, err := d.discoverCosmosDB()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover CosmosDB")
+		return nil, fmt.Errorf("could not discover cosmos db accounts: %w", err)
 	}
-	list = append(list, dbs...)
+	list = append(list, cosmosDB...)
 
 	return
+}
+
+// discoverCosmosDB discovers Cosmos DB accounts
+func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
+	var (
+		list []voc.IsCloudResource
+		err  error
+	)
+
+	// initialize Cosmos DB client
+	if err := d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover Cosmos DB
+	err = listPager(d.azureDiscovery,
+		d.clients.cosmosDBClient.NewListPager,
+		d.clients.cosmosDBClient.NewListByResourceGroupPager,
+		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(res armcosmos.DatabaseAccountsClientListByResourceGroupResponse) []*armcosmos.DatabaseAccountGetResults {
+			return res.Value
+		},
+		func(dbAccount *armcosmos.DatabaseAccountGetResults) error {
+			cosmos, err := d.handleCosmosDB(dbAccount)
+			if err != nil {
+				return fmt.Errorf("could not cosmos db accounts: %w", err)
+			}
+			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
+			list = append(list, cosmos)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
+	var (
+		enc voc.IsAtRestEncryption
+		err error
+	)
+
+	// initialize Cosmos DB client
+	if err = d.initCosmosDBClient(); err != nil {
+		return nil, err
+	}
+
+	// Check if KeyVaultURI is set
+	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
+	if account.Properties.KeyVaultKeyURI != nil {
+		enc = &voc.CustomerKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled: true,
+				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
+			},
+			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
+		}
+		// Hacky, but we haven't related Evidences yet
+		// TODO: Refactor/Remove before merge into main
+		// We add the ID of this resource to the list of usages for the given key. But only if it is not there already
+		if !slices.Contains(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID)) {
+			keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)] =
+				append(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID))
+		}
+	} else {
+		enc = &voc.ManagedKeyEncryption{
+			AtRestEncryption: &voc.AtRestEncryption{
+				Enabled:   true,
+				Algorithm: AES256,
+			},
+		}
+	}
+
+	// Create Cosmos DB database account voc object
+	dbStorage := &voc.DatabaseStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(*account.ID),
+				util.Deref(account.Name),
+				account.SystemData.CreatedAt,
+				voc.GeoLocation{
+					Region: *account.Location,
+				},
+				labels(account.Tags),
+				resourceGroupID(account.ID),
+				voc.DatabaseStorageType,
+				account),
+
+			AtRestEncryption: enc,
+		},
+	}
+
+	return dbStorage, nil
 }
 
 // discoverSqlServers discovers the sql server and databases
@@ -192,32 +295,12 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
 
-			// Create database storage voc object
-			dbStorage = &voc.DatabaseStorage{
-				Storage: &voc.Storage{
-					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
-						*value.Name,
-						value.Properties.CreationDate,
-						voc.GeoLocation{
-							Region: *value.Location,
-						},
-						labels(value.Tags),
-						voc.DatabaseStorageType,
-						value),
-					AtRestEncryption: &voc.AtRestEncryption{
-						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
-						Algorithm: AES256,
-					},
-					// TODO(all): Backups
-
-				},
-				Parent: []voc.ResourceID{voc.ResourceID(*server.ID)},
-			}
-
-			list = append(list, dbStorage)
-
 			// Create database service voc object
+			//
+			// TODO(oxisto): This is not 100 % accurate. According to our ontology definition, the SQL server would be
+			// the database service and individual databases would be DatabaseStorage objects. However, the problem is
+			// that azure defines anomaly detection on a per-database level and we currently have anomaly detection as
+			// part of the service
 			dbService = &voc.DatabaseService{
 				StorageService: &voc.StorageService{
 					NetworkService: &voc.NetworkService{
@@ -230,6 +313,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 									Region: *value.Location,
 								},
 								labels(value.Tags),
+								resourceGroupID(value.ID),
 								voc.DatabaseServiceType,
 								server,
 								value,
@@ -242,7 +326,33 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 					Enabled: anomalyDetectionEnabeld,
 				},
 			}
+
 			list = append(list, dbService)
+
+			// Create database storage voc object
+			dbStorage = &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*value.ID),
+						*value.Name,
+						value.Properties.CreationDate,
+						voc.GeoLocation{
+							Region: *value.Location,
+						},
+						labels(value.Tags),
+						// the DB service is our parent
+						dbService.GetID(),
+						voc.DatabaseStorageType,
+						value),
+					AtRestEncryption: &voc.AtRestEncryption{
+						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
+						Algorithm: AES256,
+					},
+					// TODO(all): Backups
+				},
+			}
+
+			list = append(list, dbStorage)
 		}
 	}
 	return list, nil
@@ -281,6 +391,11 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// initialize table client
+	if err := d.initTableStorageClient(); err != nil {
+		return nil, err
+	}
+
 	// Discover backup vaults
 	err := d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
@@ -310,8 +425,15 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 				return fmt.Errorf("could not handle file storages: %w", err)
 			}
 
+			// Discover file storages
+			tableStorages, err := d.discoverTableStorages(account)
+			if err != nil {
+				return fmt.Errorf("could not handle table storages: %w", err)
+			}
+
 			storageResourcesList = append(storageResourcesList, objectStorages...)
 			storageResourcesList = append(storageResourcesList, fileStorages...)
+			storageResourcesList = append(storageResourcesList, tableStorages...)
 
 			// Create storage service for all storage account resources
 			storageService, err := d.handleStorageAccount(account, storageResourcesList)
@@ -380,8 +502,45 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
-
 			list = append(list, objectStorages)
+
+			// Add objects as well (mainly for UI rendering and connections, to avoid UI bugs)
+			objects, err := d.handleObjects(account, value)
+			if err != nil {
+				// We don't quit here since it is not crucial to have objects.
+				log.Warnf("could not handle objects of object storage: %s", err.Error())
+				objects = []*voc.Object{}
+			}
+			for _, o := range objects {
+				list = append(list, o)
+			}
+
+		}
+	}
+
+	return list, nil
+}
+
+func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// List all blob containers in the specified resource group
+	listPager := d.clients.tableStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.TableClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			tableStorage, err := d.handleTableStorage(account, value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle table storage: %w", err)
+			}
+			log.Infof("Adding table storage '%s'", tableStorage.Name)
+
+			list = append(list, tableStorage)
 
 		}
 	}
@@ -425,12 +584,14 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 							Region: util.Deref(account.Location),
 						},
 						labels(account.Tags),
+						resourceGroupID(account.ID),
 						voc.ObjectStorageServiceType,
 						account,
 					),
 				},
 				TransportEncryption: te,
 			},
+			Redundancy: getStorageAccountRedundancy(account),
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
@@ -481,6 +642,8 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				},
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
 				voc.FileStorageType,
 				account, fileshare,
 			),
@@ -527,6 +690,9 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
 	}
 
+	// Check if container is acting as a backups. If so, they are also added to backupOf
+	isBackup := d.isBackup(account, container)
+
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
@@ -540,6 +706,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				},
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
 				voc.ObjectStorageType,
 				account, container,
 			),
@@ -558,6 +726,101 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			Redundancy: getStorageAccountRedundancy(account),
 		},
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+		IsBackup:     isBackup,
+	}, nil
+}
+
+// isBackup checks if container is used as a backup - and metadata.  If so, it is
+// added to backupOf
+func (d *azureStorageDiscovery) isBackup(account *armstorage.Account, container *armstorage.ListContainerItem) bool {
+	// Get specific container with mor details, e.g. meta data
+	res, err := d.clients.blobContainerClient.Get(context.Background(), resourceGroupName(util.Deref(account.ID)),
+		util.Deref(account.Name), util.Deref(container.Name), &armstorage.BlobContainersClientGetOptions{})
+	if err != nil {
+		log.Warnf("Error while retrieving container '%s' to find out if it is a backup", util.Deref(container.Name))
+		return false
+	}
+
+	// Check if the container serves as backup
+	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
+		backupOf[util.Deref(b)] = util.Deref(container.ID)
+		return true
+	}
+	return false
+}
+
+func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table) (*voc.DatabaseStorage, error) {
+	var (
+		backups                  []*voc.Backup
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+
+	if account == nil {
+		return nil, ErrEmptyStorageAccount
+	}
+
+	// It is possible that the table is empty. In that case we have to check if a mandatory field is empty, so the whole disk is empty
+	if table == nil || table.ID == nil {
+		return nil, fmt.Errorf("table is nil")
+	}
+
+	enc, err := storageAtRestEncryption(account)
+	if err != nil {
+		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
+	}
+	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
+	} else { // approach with Tagging
+		if backupLocation, ok := backupOf["https://"+util.Deref(account.Name)+".table.core.windows.net/"+util.Deref(table.Name)]; ok {
+			backups = []*voc.Backup{
+				{
+					Availability:        nil,
+					TransportEncryption: nil,
+					Storage:             voc.ResourceID(backupLocation),
+					Enabled:             true,
+					RetentionPeriod:     0,
+					Interval:            0,
+				},
+			}
+		}
+	}
+	backups = backupsEmptyCheck(backups)
+
+	if d.defenderProperties[DefenderStorageType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	return &voc.DatabaseStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(table.ID)),
+				util.Deref(table.Name),
+				// We only have the creation time of the storage account the object storage belongs to
+				account.Properties.CreationTime,
+				voc.GeoLocation{
+					// The location is the same as the storage account
+					Region: util.Deref(account.Location),
+				},
+				// The storage account labels the object storage belongs to
+				labels(account.Tags),
+				// the storage account is our parent
+				voc.ResourceID(util.Deref(account.ID)),
+				voc.DatabaseStorageType,
+				account, table,
+			),
+			AtRestEncryption: enc,
+			Backups:          backups,
+			Immutability:     nil, // TODO
+			ResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					MonitoringLogDataEnabled: monitoringLogDataEnabled,
+					SecurityAlertsEnabled:    securityAlertsEnabled,
+				},
+			},
+			Redundancy: getStorageAccountRedundancy(account),
+		},
 	}, nil
 }
 
@@ -679,69 +942,6 @@ func generalizeURL(url string) string {
 	return newURL
 }
 
-func (d *azureStorageDiscovery) discoverCosmosDBs() (list []voc.IsCloudResource, err error) {
-	// TODO(lebogg): Compare with discover SQL whether I do it right with different clients (in discoverX and handleY)
-	if err = d.initCosmosDBClient(); err != nil {
-		err = fmt.Errorf("could not initialize Cosmos DB Client: %v", err)
-		return
-	}
-
-	err = listPager(d.azureDiscovery,
-		d.clients.cosmosMongoDBClient.NewListPager,
-		d.clients.cosmosMongoDBClient.NewListByResourceGroupPager,
-		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
-			return res.Value
-		},
-		func(res armcosmos.DatabaseAccountsClientListByResourceGroupResponse) []*armcosmos.DatabaseAccountGetResults {
-			return res.Value
-		},
-		func(account *armcosmos.DatabaseAccountGetResults) (err error) {
-			list, err = d.handleCosmosDBAccount(account)
-			if err != nil {
-				err = fmt.Errorf("could not handle Cosmos DB Account Client: %v", err)
-				return
-			}
-			log.Infof("Adding Cosmos DB '%s'", util.Deref(account.Name))
-			return
-		})
-	if err != nil {
-		return nil, fmt.Errorf("could not list Cosmos DB accounts: %v", err)
-	}
-	return
-
-	//pager := d.clients.cosmosMongoDBClient.NewListPager(&armcosmos.DatabaseAccountsClientListOptions{})
-	//for pager.More() {
-	//	page, err := pager.NextPage(context.Background())
-	//	if err != nil {
-	//		err = fmt.Errorf("could not get next page for cosmos database accounts: %v", err)
-	//		return nil, err
-	//	}
-	//	accounts := page.Value
-	//	// TODO(lebogg): Continue here. Currently only debugging.
-	//	for a := range accounts {
-	//		r := &voc.DatabaseStorage{
-	//			Storage: &voc.Storage{
-	//				Resource:         nil,
-	//				AtRestEncryption: nil,
-	//				Backups:          nil,
-	//				Immutability:     nil,
-	//				Redundancy:       nil,
-	//				ResourceLogging:  nil,
-	//			},
-	//			Redundancy: nil,
-	//			Parent:     []voc.ResourceID{voc.ResourceID(util.Deref(d.rg))},
-	//		}
-	//	}
-	//
-	//}
-	//return
-}
-
-func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
-	d.clients.cosmosMongoDBClient, err = initClient(d.clients.cosmosMongoDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
-	return
-}
-
 // initAccountsClient creates the client if not already exists
 func (d *azureStorageDiscovery) initAccountsClient() (err error) {
 	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
@@ -757,6 +957,11 @@ func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
 // initFileStorageClient creates the client if not already exists
 func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
+	return
+}
+
+func (d *azureStorageDiscovery) initTableStorageClient() (err error) {
+	d.clients.tableStorageClient, err = initClient(d.clients.tableStorageClient, d.azureDiscovery, armstorage.NewTableClient)
 	return
 }
 
@@ -802,6 +1007,13 @@ func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
 	return
 }
 
+// initCosmosDBClient creates the client if not already exists
+func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
+	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
+
+	return
+}
+
 // initThreatProtectionClient creates the client if not already exists
 func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
 	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
@@ -809,7 +1021,89 @@ func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
 	return
 }
 
-// TODO(lebogg): Continue here
-func (d *azureStorageDiscovery) handleCosmosDBAccount(account *armcosmos.DatabaseAccountGetResults) (list []voc.IsCloudResource, err error) {
-	return nil, nil
+// handleObjects returns all objects of a container. It also checks if single Objects are backups and add these to the
+// backupOf map accordingly.
+func (d *azureStorageDiscovery) handleObjects(acc *armstorage.Account, container *armstorage.ListContainerItem) (objects []*voc.Object, err error) {
+	// Get blobs and check their tags + metadata to check if there are backups
+	var (
+		client *azblob.Client
+		// Determines if the given blob is a backup
+		isBackup bool
+	)
+
+	client, err = azblob.NewClient(util.Deref(acc.Properties.PrimaryEndpoints.Blob), d.cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not creat azblob client: %v", err)
+	}
+	pager := client.NewListBlobsFlatPager(util.Deref(container.Name), &azblob.ListBlobsFlatOptions{
+		Include: azblob.ListBlobsInclude{Tags: true, Metadata: true},
+	})
+	for pager.More() {
+		page, err := pager.NextPage(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("could not load next page, probably you do not have the right "+
+				"permissions ('Storage Blob Data Contributor' and 'Reader' roles are needed at least): %v", err)
+		}
+		// If there is no segment (although it is required) continue with next page
+		if page.Segment == nil {
+			continue
+		}
+		for _, blobItem := range page.Segment.BlobItems {
+			// Label and Backup Stuff
+			blobLabels := make(map[string]string)
+			if blobItem.BlobTags != nil {
+				for _, t := range blobItem.BlobTags.BlobTagSet {
+					k := util.Deref(t.Key)
+					v := util.Deref(t.Value)
+					// Add to blob labels
+					blobLabels[k] = v
+					// Check backup label
+					if k == "backupOf" {
+						isBackup = true
+						backupOf[v] =
+							"https://" + util.Deref(acc.Name) + ".blob.core.windows.net/" +
+								util.Deref(container.Name) + "/" + util.Deref(blobItem.Name)
+					}
+				}
+
+			}
+			// This can potentially overwrite a 'backupOf' defined in Tags, but they should be the same.
+			if blobItem.Metadata != nil {
+				for k, value := range blobItem.Metadata {
+					v := util.Deref(value)
+					// Add to blob labels
+					blobLabels[k] = v
+					// Check backup lable
+					if k == "backupof" { // only lowercase
+						isBackup = true
+						backupOf[v] =
+							"https://" + util.Deref(acc.Name) + ".blob.core.windows.net/" +
+								util.Deref(container.Name) + "/" + util.Deref(blobItem.Name)
+					}
+				}
+			}
+
+			// Add resource to list
+			objects = append(objects, &voc.Object{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID("https://"+util.Deref(acc.Name)+".blob.core.windows.net/"+
+						util.Deref(container.Name)+"/"+util.Deref(blobItem.Name)),
+					util.Deref(blobItem.Name),
+					// We only have the creation time of the storage account the object storage belongs to
+					acc.Properties.CreationTime,
+					voc.GeoLocation{
+						// The location is the same as the storage account
+						Region: util.Deref(acc.Location),
+					},
+					blobLabels,
+					// the storage account is our parent
+					voc.ResourceID(util.Deref(container.ID)),
+					voc.ObjectType,
+					container, blobItem,
+				),
+				IsBackup: isBackup,
+			})
+		}
+	}
+	return
 }
