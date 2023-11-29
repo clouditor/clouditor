@@ -143,6 +143,7 @@ type clients struct {
 	blobContainerClient *armstorage.BlobContainersClient
 	fileStorageClient   *armstorage.FileSharesClient
 	accountsClient      *armstorage.AccountsClient
+	tableStorageClient  *armstorage.TableClient
 
 	// DB
 	databasesClient        *armsql.DatabasesClient

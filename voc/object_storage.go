@@ -32,4 +32,12 @@ var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
 type ObjectStorage struct {
 	*Storage
 	PublicAccess bool `json:"publicAccess"`
+	IsBackup     bool `json:"isBackup"`
+}
+
+var ObjectType = []string{"Object", "Resource"}
+
+type Object struct {
+	*Resource
+	IsBackup bool `json:"isBackup"`
 }
