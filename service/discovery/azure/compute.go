@@ -209,15 +209,20 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
 	var (
-		runtimeLanguage string
-		runtimeVersion  string
-		config          armappservice.WebAppsClientGetConfigurationResponse
-		err             error
+		runtimeLanguage     string
+		runtimeVersion      string
+		config              armappservice.WebAppsClientGetConfigurationResponse
+		err                 error
+		publicNetworkAccess = false
 	)
 
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil {
 		return nil
+	}
+
+	if util.Deref(function.Properties.PublicNetworkAccess) == "Enabled" {
+		publicNetworkAccess = true
 	}
 
 	if *function.Kind == "functionapp,linux" { // Linux function
@@ -272,15 +277,18 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
-		RuntimeLanguage: runtimeLanguage,
-		RuntimeVersion:  runtimeVersion,
+		RuntimeLanguage:     runtimeLanguage,
+		RuntimeVersion:      runtimeVersion,
+		PublicNetworkAccess: publicNetworkAccess,
 	}
 }
 
 func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
 	var (
-		tlsVersion = ""
-		enc        *voc.TransportEncryption
+		tlsVersion          = ""
+		enc                 *voc.TransportEncryption
+		ni                  []voc.ResourceID
+		publicNetworkAccess = false
 	)
 
 	// If a mandatory field is empty, the whole function is empty
@@ -297,6 +305,10 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		tlsVersion = constants.TLS1_0
 	}
 
+	if webApp.Properties.VirtualNetworkSubnetID != nil {
+		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
+	}
+
 	if tlsVersion != "" {
 		enc = &voc.TransportEncryption{
 			Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
@@ -309,6 +321,10 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 			Enforced: util.Deref(webApp.Properties.HTTPSOnly),
 			Enabled:  false,
 		}
+	}
+
+	if util.Deref(webApp.Properties.PublicNetworkAccess) == "Enabled" {
+		publicNetworkAccess = true
 	}
 
 	return &voc.WebApp{
@@ -327,11 +343,12 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 				webApp,
 				// config,
 			),
-			NetworkInterfaces: []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}, // Add the Virtual Network Subnet ID
+			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: enc,
 		},
+		PublicNetworkAccess: publicNetworkAccess,
 	}
 }
 
