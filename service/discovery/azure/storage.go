@@ -221,10 +221,27 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 				account),
 
 			AtRestEncryption: enc,
+			Redundancy:       getCosmosDBRedundancy(account),
 		},
 	}
 
 	return dbStorage, nil
+}
+
+func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
+	r := &voc.Redundancy{}
+	locations := acc.Properties.Locations
+	// If one location has zone redundancy enabled, we define the resource as zone redundant
+	for _, l := range locations {
+		if util.Deref(l.IsZoneRedundant) {
+			r.Zone = true
+		}
+	}
+	// If there are more than 1 region that means data is replicated geo-redundantly
+	if len(locations) > 1 {
+		r.Geo = true
+	}
+	return r
 }
 
 // discoverSqlServers discovers the sql server and databases
