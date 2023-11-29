@@ -1057,6 +1057,10 @@ paths:
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
             parameters:
+                - name: filter.includeDeprecated
+                  in: query
+                  schema:
+                    type: boolean
                 - name: pageSize
                   in: query
                   schema:
@@ -1192,6 +1196,27 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Metric'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a new metric
+            operationId: Orchestrator_RemoveMetric
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -1719,6 +1744,10 @@ components:
                     format: int64
                 implementation:
                     $ref: '#/components/schemas/MetricImplementation'
+                deprecatedSince:
+                    type: string
+                    description: Optional, but required if the metric is removed. The metric is not deleted for backward compatibility and the timestamp is set to the time of removal.
+                    format: date-time
             description: A metric resource
         MetricConfiguration:
             type: object
