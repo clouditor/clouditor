@@ -300,7 +300,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 					"properties": map[string]interface{}{
 						"siteConfig": map[string]interface{}{
-							"minTlsVersion": "1.1",
+							"minTlsVersion":     "1.1",
+							"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
 						},
 						"httpsOnly":              true,
 						"resourceGroup":          "res1",
@@ -319,7 +320,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 					"properties": map[string]interface{}{
 						"siteConfig": map[string]interface{}{
-							"minTlsVersion": nil,
+							"minTlsVersion":     nil,
+							"minTlsCipherSuite": "",
 						},
 						"httpsOnly":              false,
 						"resourceGroup":          "res1",
@@ -977,7 +979,14 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
-
+					HttpEndpoint: &voc.HttpEndpoint{
+						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    false,
+							Enforced:   false,
+							TlsVersion: "",
+							Algorithm:  "",
+						},
+					},
 					RuntimeVersion:      "3.8",
 					RuntimeLanguage:     "PYTHON",
 					PublicNetworkAccess: true,
@@ -1002,7 +1011,14 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
-
+					HttpEndpoint: &voc.HttpEndpoint{
+						TransportEncryption: &voc.TransportEncryption{
+							Enabled:    false,
+							Enforced:   false,
+							TlsVersion: "",
+							Algorithm:  "",
+						},
+					},
 					RuntimeVersion:      "1.8",
 					RuntimeLanguage:     "Java",
 					PublicNetworkAccess: false,
@@ -1023,7 +1039,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1"},
 					},
@@ -1032,7 +1048,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_1,
-							Algorithm:  "",
+							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
 					PublicNetworkAccess: true,
@@ -1053,7 +1069,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"},
 					},
@@ -1174,6 +1190,14 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					HttpEndpoint: &voc.HttpEndpoint{
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   false,
+							Enabled:    false,
+							TlsVersion: "",
+							Algorithm:  "",
+						},
+					},
 					RuntimeVersion:      "3.8",
 					RuntimeLanguage:     "PYTHON",
 					PublicNetworkAccess: true,
@@ -1198,6 +1222,14 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 						},
 						NetworkInterfaces: []voc.ResourceID{},
 					},
+					HttpEndpoint: &voc.HttpEndpoint{
+						TransportEncryption: &voc.TransportEncryption{
+							Enforced:   false,
+							Enabled:    false,
+							TlsVersion: "",
+							Algorithm:  "",
+						},
+					},
 					RuntimeVersion:      "1.8",
 					RuntimeLanguage:     "Java",
 					PublicNetworkAccess: false,
@@ -1218,7 +1250,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1\",\"kind\":\"app\",\"location\":\"West Europe\",\"name\":\"WebApp1\",\"properties\":{\"httpsOnly\":true,\"publicNetworkAccess\":\"Enabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1"},
 					},
@@ -1227,7 +1259,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Enabled:    true,
 							Enforced:   true,
 							TlsVersion: constants.TLS1_1,
-							Algorithm:  "",
+							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
 					PublicNetworkAccess: true,
@@ -1248,7 +1280,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"},
 					},
@@ -1322,8 +1354,11 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 					Kind: util.Ref("functionapp,linux"),
 					Properties: &armappservice.SiteProperties{
 						SiteConfig: &armappservice.SiteConfig{
-							LinuxFxVersion: util.Ref("PYTHON|3.8"),
+							LinuxFxVersion:    util.Ref("PYTHON|3.8"),
+							MinTLSVersion:     util.Ref(armappservice.SupportedTLSVersionsOne2),
+							MinTLSCipherSuite: util.Ref(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
+						HTTPSOnly: util.Ref(true),
 					},
 				},
 			},
@@ -1343,9 +1378,17 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 							Region: "West Europe",
 						},
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
+						Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1\",\"kind\":\"functionapp,linux\",\"location\":\"West Europe\",\"name\":\"function1\",\"properties\":{\"httpsOnly\":true,\"siteConfig\":{\"linuxFxVersion\":\"PYTHON|3.8\",\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
+				},
+				HttpEndpoint: &voc.HttpEndpoint{
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						TlsVersion: constants.TLS1_2,
+						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
+					},
 				},
 				RuntimeVersion:  "3.8",
 				RuntimeLanguage: "PYTHON",
@@ -1368,8 +1411,12 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 					},
 					Kind: util.Ref("functionapp"),
 					Properties: &armappservice.SiteProperties{
-						SiteConfig:    &armappservice.SiteConfig{},
+						SiteConfig: &armappservice.SiteConfig{
+							MinTLSVersion:     util.Ref(armappservice.SupportedTLSVersionsOne2),
+							MinTLSCipherSuite: util.Ref(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
+						},
 						ResourceGroup: util.Ref("res1"),
+						HTTPSOnly:     util.Ref(true),
 					},
 				},
 			},
@@ -1389,9 +1436,17 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 							Region: "West Europe",
 						},
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"resourceGroup\":\"res1\",\"siteConfig\":{}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
+						Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2\",\"kind\":\"functionapp\",\"location\":\"West Europe\",\"name\":\"function2\",\"properties\":{\"httpsOnly\":true,\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"minTlsVersion\":\"1.2\"}},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"javaVersion\":\"1.8\"}}]}",
 					},
 					NetworkInterfaces: []voc.ResourceID{},
+				},
+				HttpEndpoint: &voc.HttpEndpoint{
+					TransportEncryption: &voc.TransportEncryption{
+						Enforced:   true,
+						Enabled:    true,
+						TlsVersion: constants.TLS1_2,
+						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
+					},
 				},
 				RuntimeVersion:  "1.8",
 				RuntimeLanguage: "Java",
@@ -2794,6 +2849,58 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 			}
 
 			assert.Equalf(t, tt.want, d.handleWebApp(tt.args.webApp), "handleWebApps(%v)", tt.args.webApp)
+		})
+	}
+}
+
+func Test_getTransportEncryption(t *testing.T) {
+	type args struct {
+		siteProps *armappservice.SiteProperties
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantEnc *voc.TransportEncryption
+	}{
+		{
+			name: "Happy path: TLSVersion/CipherSuite not available",
+			args: args{
+				siteProps: &armappservice.SiteProperties{
+					SiteConfig: &armappservice.SiteConfig{},
+					HTTPSOnly:  util.Ref(false),
+				},
+			},
+			wantEnc: &voc.TransportEncryption{
+				Enforced:   false,
+				Enabled:    false,
+				TlsVersion: "",
+				Algorithm:  "",
+			},
+		},
+		{
+			name: "Happy path: TLSVersion/CipherSuite available",
+			args: args{
+				siteProps: &armappservice.SiteProperties{
+					SiteConfig: &armappservice.SiteConfig{
+						MinTLSVersion:     util.Ref(armappservice.SupportedTLSVersionsOne2),
+						MinTLSCipherSuite: util.Ref(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
+					},
+					HTTPSOnly: util.Ref(true),
+				},
+			},
+			wantEnc: &voc.TransportEncryption{
+				Enforced:   true,
+				Enabled:    true,
+				TlsVersion: constants.TLS1_2,
+				Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotEnc := getTransportEncryption(tt.args.siteProps); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
+				t.Errorf("getTransportEncryption() = %v, want %v", gotEnc, tt.wantEnc)
+			}
 		})
 	}
 }

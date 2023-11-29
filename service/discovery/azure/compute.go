@@ -277,6 +277,9 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: getTransportEncryption(function.Properties),
+		},
 		RuntimeLanguage:     runtimeLanguage,
 		RuntimeVersion:      runtimeVersion,
 		PublicNetworkAccess: publicNetworkAccess,
@@ -285,8 +288,6 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 
 func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
 	var (
-		tlsVersion          = ""
-		enc                 *voc.TransportEncryption
 		ni                  []voc.ResourceID
 		publicNetworkAccess = false
 	)
@@ -296,33 +297,12 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		return nil
 	}
 
-	switch util.Deref(webApp.Properties.SiteConfig.MinTLSVersion) {
-	case armappservice.SupportedTLSVersionsOne2:
-		tlsVersion = constants.TLS1_2
-	case armappservice.SupportedTLSVersionsOne1:
-		tlsVersion = constants.TLS1_1
-	case armappservice.SupportedTLSVersionsOne0:
-		tlsVersion = constants.TLS1_0
-	}
-
+	// Get virtual network subnet ID
 	if webApp.Properties.VirtualNetworkSubnetID != nil {
 		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
 	}
 
-	if tlsVersion != "" {
-		enc = &voc.TransportEncryption{
-			Enforced:   util.Deref(webApp.Properties.HTTPSOnly),
-			TlsVersion: tlsVersion,
-			Algorithm:  "", // The information is currently not available (11/2023)
-			Enabled:    true,
-		}
-	} else {
-		enc = &voc.TransportEncryption{
-			Enforced: util.Deref(webApp.Properties.HTTPSOnly),
-			Enabled:  false,
-		}
-	}
-
+	// Check if resource is public available
 	if util.Deref(webApp.Properties.PublicNetworkAccess) == "Enabled" {
 		publicNetworkAccess = true
 	}
@@ -346,10 +326,43 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: enc,
+			TransportEncryption: getTransportEncryption(webApp.Properties),
 		},
 		PublicNetworkAccess: publicNetworkAccess,
 	}
+}
+
+func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.TransportEncryption) {
+	var (
+		tlsVersion string
+	)
+
+	switch util.Deref(siteProps.SiteConfig.MinTLSVersion) {
+	case armappservice.SupportedTLSVersionsOne2:
+		tlsVersion = constants.TLS1_2
+	case armappservice.SupportedTLSVersionsOne1:
+		tlsVersion = constants.TLS1_1
+	case armappservice.SupportedTLSVersionsOne0:
+		tlsVersion = constants.TLS1_0
+
+	}
+	// Check TLS version
+	if tlsVersion != "" {
+		enc = &voc.TransportEncryption{
+			Enforced:   util.Deref(siteProps.HTTPSOnly),
+			TlsVersion: tlsVersion,
+			Algorithm:  string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+			Enabled:    true,
+		}
+	} else {
+		enc = &voc.TransportEncryption{
+			Enforced:  util.Deref(siteProps.HTTPSOnly),
+			Enabled:   false,
+			Algorithm: string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+		}
+	}
+
+	return
 }
 
 // runtimeInfo returns the runtime language and version
