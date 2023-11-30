@@ -118,21 +118,6 @@
     }
   },
   {
-    "id": "AutomaticUpdatesEnabled",
-    "name": "Automatic Updates: Enabled",
-    "description": "This metric is used to assess if automatic updates are enabled",
-    "category": "Endpoint Security",
-    "scale": 1,
-    "range": {
-      "allowedValues": {
-        "values": [
-          true,
-          false
-        ]
-      }
-    }
-  },
-  {
     "id": "AutomaticUpdatesInterval",
     "name": "Automatic Updates: Interval",
     "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
@@ -142,21 +127,6 @@
       "minMax": {
         "min": 1,
         "max": 365
-      }
-    }
-  },
-  {
-    "id": "AutomaticUpdatesSecurityOnly",
-    "name": "Automatic Updates: Security Only",
-    "description": "This metric is used to assess if only security updates are performed",
-    "category": "Endpoint Security",
-    "scale": 1,
-    "range": {
-      "allowedValues": {
-        "values": [
-          true,
-          false
-        ]
       }
     }
   },
@@ -207,21 +177,6 @@
     "name": "Code Commits: Requires Sign-Off",
     "description": "This metric is used to assess if Git commit messages contain a signoff",
     "category": "Development Life-Cycle",
-    "scale": 1,
-    "range": {
-      "allowedValues": {
-        "values": [
-          true,
-          false
-        ]
-      }
-    }
-  },
-  {
-    "id": "CustomerKeyEncryption",
-    "name": "Storage Encryption: Customer Key Encryption",
-    "description": "This metric is used to assess if encryption is done via customer keys",
-    "category": "Storage Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {

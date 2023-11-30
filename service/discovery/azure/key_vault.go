@@ -245,7 +245,7 @@ func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (isActive bool,
 	if metric.TimeSeries[0] == nil || metric.TimeSeries[0].Data[0] == nil {
 		return false, nil
 	}
-	if util.Deref(metric.TimeSeries[0].Data[0].Count) >= 10 {
+	if util.Deref(metric.TimeSeries[0].Data[0].Count) >= 5 {
 		return true, nil
 	} else {
 		return false, nil
