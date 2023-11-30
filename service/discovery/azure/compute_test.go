@@ -987,9 +987,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "3.8",
-					RuntimeLanguage:     "PYTHON",
-					PublicNetworkAccess: true,
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
+					PublicAccess:    true,
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -1019,9 +1019,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "1.8",
-					RuntimeLanguage:     "Java",
-					PublicNetworkAccess: false,
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
+					PublicAccess:    false,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1051,7 +1051,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
-					PublicNetworkAccess: true,
+					PublicAccess: true,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1081,7 +1081,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					PublicNetworkAccess: false,
+					PublicAccess: false,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1198,9 +1198,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "3.8",
-					RuntimeLanguage:     "PYTHON",
-					PublicNetworkAccess: true,
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
+					PublicAccess:    true,
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -1230,9 +1230,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "1.8",
-					RuntimeLanguage:     "Java",
-					PublicNetworkAccess: false,
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
+					PublicAccess:    false,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1262,7 +1262,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
-					PublicNetworkAccess: true,
+					PublicAccess: true,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1292,7 +1292,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					PublicNetworkAccess: false,
+					PublicAccess: false,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1323,6 +1323,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 	}
 	type args struct {
 		function *armappservice.Site
+		config   armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name   string
@@ -1464,7 +1465,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				_ = az.initWebAppsClient()
 			}
 
-			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function), "handleFunction(%v)", tt.args.function)
+			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function, tt.args.config), "handleFunction(%v)", tt.args.function)
 		})
 	}
 }
@@ -2716,6 +2717,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 	}
 	type args struct {
 		webApp *armappservice.Site
+		config armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name   string
@@ -2848,7 +2850,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				defenderProperties: tt.fields.defenderProperties,
 			}
 
-			assert.Equalf(t, tt.want, d.handleWebApp(tt.args.webApp), "handleWebApps(%v)", tt.args.webApp)
+			assert.Equalf(t, tt.want, d.handleWebApp(tt.args.webApp, tt.args.config), "handleWebApps(%v)", tt.args.webApp)
 		})
 	}
 }
@@ -2856,6 +2858,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 func Test_getTransportEncryption(t *testing.T) {
 	type args struct {
 		siteProps *armappservice.SiteProperties
+		config    armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name    string
@@ -2898,9 +2901,18 @@ func Test_getTransportEncryption(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotEnc := getTransportEncryption(tt.args.siteProps); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
+			if gotEnc := getTransportEncryption(tt.args.siteProps, tt.args.config); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
 				t.Errorf("getTransportEncryption() = %v, want %v", gotEnc, tt.wantEnc)
 			}
 		})
 	}
+}
+
+// TODO(lebogg asking oxisto): Is this valid to do so? We could also maybe write some tools independent of the repo to
+// check such things.
+// Test_IfWeConsiderAllPossibleDiskStorageAccountTypes checks if we still consider all possible SKU names/Storage
+// account types for Azure Disks. Currently, the number is [clients].
+func Test_IfWeConsiderAllPossibleDiskStorageAccountTypes(t *testing.T) {
+	currentlyConsideredDiskStorageAccountTypeValues := 7
+	assert.Equal(t, len(armcompute.PossibleDiskStorageAccountTypesValues()), currentlyConsideredDiskStorageAccountTypeValues)
 }

@@ -187,9 +187,6 @@
                                 "description": "The CSP shall enable automatic updates and update in a specific time intervall.",
                                 "metrics": [
                                     {
-                                        "id": "AutomaticUpdatesEnabled"
-                                    },
-                                    {
                                         "id": "AutomaticUpdatesInterval"
                                     }
                                 ],

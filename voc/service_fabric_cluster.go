@@ -27,11 +27,9 @@
 
 package voc
 
-var ObjectStorageServiceType = []string{"ObjectStorageService", "StorageService", "NetworkService", "Networking", "Resource"}
+var ClusterType = []string{"ContainerOrchestration", "Resource"}
 
-// ObjectStorageService is an entity in our Cloud ontology. An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
-type ObjectStorageService struct {
-	*StorageService
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
-	PublicAccess bool          `json:"publicAccess"`
+type Cluster struct {
+	*Resource
+	Redundancy *Redundancy `json:"redundancy"`
 }

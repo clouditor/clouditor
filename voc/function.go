@@ -31,8 +31,9 @@ var FunctionType = []string{"Function", "Compute", "Resource"}
 
 type Function struct {
 	*Compute
-	HttpEndpoint        *HttpEndpoint `json:"httpEndpoint"`
-	RuntimeVersion      string        `json:"runtimeVersion"`
-	RuntimeLanguage     string        `json:"runtimeLanguage"`
-	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
+	HttpEndpoint    *HttpEndpoint `json:"httpEndpoint"`
+	RuntimeVersion  string        `json:"runtimeVersion"`
+	RuntimeLanguage string        `json:"runtimeLanguage"`
+	PublicAccess    bool          `json:"publicAccess"`
+	Redundancy      *Redundancy   `json:"redundancy"`
 }

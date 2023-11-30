@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +25,20 @@
 
 package voc
 
-var ObjectStorageServiceType = []string{"ObjectStorageService", "StorageService", "NetworkService", "Networking", "Resource"}
+var KeyType = []string{"Key"}
 
-// ObjectStorageService is an entity in our Cloud ontology. An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
-type ObjectStorageService struct {
-	*StorageService
-	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
-	PublicAccess bool          `json:"publicAccess"`
+type Key struct {
+	*Resource
+	*Confidentiality
+	Enabled bool `json:"enabled"`
+	// Todo(all): Is time the appropriate type here?
+	ActivationDate int64  `json:"activationDate"`
+	ExpirationDate int64  `json:"expirationDate"`
+	KeyType        string `json:"keyType"`
+	KeySize        int    `json:"keySize"`
+	NumberOfUsages int    `json:"numberOfUsages"`
+}
+
+func (*Key) Type() string {
+	return "Key"
 }
