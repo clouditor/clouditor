@@ -1323,6 +1323,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 	}
 	type args struct {
 		function *armappservice.Site
+		config   armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name   string
@@ -1464,7 +1465,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				_ = az.initWebAppsClient()
 			}
 
-			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function), "handleFunction(%v)", tt.args.function)
+			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function, tt.args.config), "handleFunction(%v)", tt.args.function)
 		})
 	}
 }
@@ -2716,6 +2717,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 	}
 	type args struct {
 		webApp *armappservice.Site
+		config armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name   string
@@ -2848,7 +2850,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				defenderProperties: tt.fields.defenderProperties,
 			}
 
-			assert.Equalf(t, tt.want, d.handleWebApp(tt.args.webApp), "handleWebApps(%v)", tt.args.webApp)
+			assert.Equalf(t, tt.want, d.handleWebApp(tt.args.webApp, tt.args.config), "handleWebApps(%v)", tt.args.webApp)
 		})
 	}
 }
@@ -2856,6 +2858,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 func Test_getTransportEncryption(t *testing.T) {
 	type args struct {
 		siteProps *armappservice.SiteProperties
+		config    armappservice.WebAppsClientGetConfigurationResponse
 	}
 	tests := []struct {
 		name    string
@@ -2898,7 +2901,7 @@ func Test_getTransportEncryption(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotEnc := getTransportEncryption(tt.args.siteProps); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
+			if gotEnc := getTransportEncryption(tt.args.siteProps, tt.args.config); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
 				t.Errorf("getTransportEncryption() = %v, want %v", gotEnc, tt.wantEnc)
 			}
 		})
