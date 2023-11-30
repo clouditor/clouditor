@@ -87,6 +87,7 @@ func init() {
 		voc.Key{},
 		voc.Object{},
 		voc.WebApp{},
+		voc.Cluster{},
 	}
 	for _, v := range types {
 		t := reflect.TypeOf(v)

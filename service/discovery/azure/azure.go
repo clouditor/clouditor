@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
 	"strconv"
 	"strings"
 	"time"
@@ -62,7 +63,8 @@ const (
 	ComputeComponent = "compute"
 	NetworkComponent = "network"
 	//TODO(all): Does the naming have to follow some Azure terminology?
-	KeyVaultComponent = "keyvault"
+	KeyVaultComponent      = "keyvault"
+	ServiceFabricComponent = "servicefabric"
 
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
@@ -176,6 +178,9 @@ type clients struct {
 	// Key Vault
 	keyVaultClient *armkeyvault.VaultsClient
 	keysClient     *armkeyvault.KeysClient
+
+	// Service Fabrics
+	fabricsServiceClusterClient *armservicefabric.ClustersClient
 
 	// Resource groups
 	rgClient *armresources.ResourceGroupsClient

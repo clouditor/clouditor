@@ -266,7 +266,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				azure.NewAzureComputeDiscovery(opts...),
 				azure.NewAzureStorageDiscovery(opts...),
 				azure.NewAzureNetworkDiscovery(opts...),
-				azure.NewKeyVaultDiscovery(opts...))
+				azure.NewKeyVaultDiscovery(opts...),
+				azure.NewFabricServiceDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
