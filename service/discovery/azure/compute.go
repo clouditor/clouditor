@@ -280,10 +280,10 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties),
 		},
-		RuntimeLanguage:     runtimeLanguage,
-		RuntimeVersion:      runtimeVersion,
-		PublicNetworkAccess: publicNetworkAccess,
-		Redundancy:          getRedundancy(function),
+		RuntimeLanguage: runtimeLanguage,
+		RuntimeVersion:  runtimeVersion,
+		PublicAccess:    publicNetworkAccess,
+		Redundancy:      getRedundancy(function),
 	}
 }
 
@@ -329,8 +329,8 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties),
 		},
-		PublicNetworkAccess: publicNetworkAccess,
-		Redundancy:          getRedundancy(webApp),
+		PublicAccess: publicNetworkAccess,
+		Redundancy:   getRedundancy(webApp),
 	}
 }
 
