@@ -283,6 +283,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		RuntimeLanguage:     runtimeLanguage,
 		RuntimeVersion:      runtimeVersion,
 		PublicNetworkAccess: publicNetworkAccess,
+		Redundancy:          getRedundancy(function),
 	}
 }
 
@@ -329,7 +330,22 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 			TransportEncryption: getTransportEncryption(webApp.Properties),
 		},
 		PublicNetworkAccess: publicNetworkAccess,
+		Redundancy:          getRedundancy(webApp),
 	}
+}
+
+func getRedundancy(app *armappservice.Site) *voc.Redundancy {
+	r := &voc.Redundancy{}
+	switch util.Deref(app.Properties.RedundancyMode) {
+	case armappservice.RedundancyModeNone:
+		break
+	case armappservice.RedundancyModeActiveActive:
+		r.Zone = true
+	case armappservice.RedundancyModeFailover, armappservice.RedundancyModeGeoRedundant:
+		r.Zone = true
+		r.Geo = true
+	}
+	return r
 }
 
 func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.TransportEncryption) {

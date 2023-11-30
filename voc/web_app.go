@@ -33,4 +33,5 @@ type WebApp struct {
 	*Compute
 	HttpEndpoint        *HttpEndpoint `json:"httpEndpoint"`
 	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
+	Redundancy          *Redundancy   `json:"redundancy"`
 }

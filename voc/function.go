@@ -35,4 +35,5 @@ type Function struct {
 	RuntimeVersion      string        `json:"runtimeVersion"`
 	RuntimeLanguage     string        `json:"runtimeLanguage"`
 	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
+	Redundancy          *Redundancy   `json:"redundancy"`
 }
