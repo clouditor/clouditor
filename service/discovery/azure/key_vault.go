@@ -187,9 +187,17 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 			resourceGroupID(kv.ID),
 			voc.KeyVaultType,
 			kv),
-		IsActive: isActive,
-		Keys:     []voc.ResourceID{}, // Will be added later when we retrieve the single keys
+		IsActive:     isActive,
+		Keys:         []voc.ResourceID{}, // Will be added later when we retrieve the single keys
+		PublicAccess: getPublicAccess(kv),
 	}, nil
+}
+
+func getPublicAccess(kv *armkeyvault.Vault) bool {
+	if util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled" {
+		return true
+	}
+	return false
 }
 
 // getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of

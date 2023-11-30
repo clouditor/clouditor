@@ -29,6 +29,7 @@ var KeyVaultType = []string{"KeyVault", "Resource"}
 
 type KeyVault struct {
 	*Resource
-	IsActive bool         `json:"isActive"`
-	Keys     []ResourceID `json:"keys"`
+	IsActive     bool         `json:"isActive"`
+	Keys         []ResourceID `json:"keys"`
+	PublicAccess bool         `json:"publicAccess"`
 }
