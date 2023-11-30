@@ -285,7 +285,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 }
 
 // discoverBackupVaults receives all backup vaults in the subscription.
-// Since the backups for storage and compute are discovered togehter, the discovery is performed here and results are stored in the azureDiscovery receiver.
+// Since the backups for storage and compute are discovered together, the discovery is performed here and results are stored in the azureDiscovery receiver.
 func (d *azureDiscovery) discoverBackupVaults() error {
 
 	if d.backupMap != nil && len(d.backupMap) > 0 {

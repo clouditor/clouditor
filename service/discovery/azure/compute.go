@@ -36,6 +36,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 )
@@ -160,11 +161,9 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
 			switch *site.Kind {
 			case "app": // Windows Web App
-				// TODO(all): TBD
-				log.Debug("Windows Web App currently not implemented.")
+				r = d.handleWebApp(site)
 			case "app,linux": // Linux Web app
-				// TODO(all): TBD
-				log.Debug("Linux Web App currently not implemented.")
+				r = d.handleWebApp(site)
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App Web App currently not implemented.")
@@ -183,7 +182,6 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			case "functionapp": // Function Code App
 				r = d.handleFunction(site)
 			case "functionapp,linux": // Linux Consumption Function app
-				log.Debug("Windows Web App currently not implemented.")
 				r = d.handleFunction(site)
 			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
 				// TODO(all): TBD
@@ -211,15 +209,20 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
 	var (
-		runtimeLanguage string
-		runtimeVersion  string
-		config          armappservice.WebAppsClientGetConfigurationResponse
-		err             error
+		runtimeLanguage     string
+		runtimeVersion      string
+		config              armappservice.WebAppsClientGetConfigurationResponse
+		err                 error
+		publicNetworkAccess = false
 	)
 
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil {
 		return nil
+	}
+
+	if util.Deref(function.Properties.PublicNetworkAccess) == "Enabled" {
+		publicNetworkAccess = true
 	}
 
 	if *function.Kind == "functionapp,linux" { // Linux function
@@ -274,9 +277,92 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 		},
-		RuntimeLanguage: runtimeLanguage,
-		RuntimeVersion:  runtimeVersion,
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: getTransportEncryption(function.Properties),
+		},
+		RuntimeLanguage:     runtimeLanguage,
+		RuntimeVersion:      runtimeVersion,
+		PublicNetworkAccess: publicNetworkAccess,
 	}
+}
+
+func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+	var (
+		ni                  []voc.ResourceID
+		publicNetworkAccess = false
+	)
+
+	// If a mandatory field is empty, the whole function is empty
+	if webApp == nil {
+		return nil
+	}
+
+	// Get virtual network subnet ID
+	if webApp.Properties.VirtualNetworkSubnetID != nil {
+		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
+	}
+
+	// Check if resource is public available
+	if util.Deref(webApp.Properties.PublicNetworkAccess) == "Enabled" {
+		publicNetworkAccess = true
+	}
+
+	return &voc.WebApp{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(webApp.ID)),
+				util.Deref(webApp.Name),
+				// No creation time available
+				nil, // Only the last modified time is available
+				voc.GeoLocation{
+					Region: util.Deref(webApp.Location),
+				},
+				labels(webApp.Tags),
+				resourceGroupID(webApp.ID),
+				voc.WebAppType,
+				webApp,
+				// config,
+			),
+			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: getTransportEncryption(webApp.Properties),
+		},
+		PublicNetworkAccess: publicNetworkAccess,
+	}
+}
+
+func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.TransportEncryption) {
+	var (
+		tlsVersion string
+	)
+
+	switch util.Deref(siteProps.SiteConfig.MinTLSVersion) {
+	case armappservice.SupportedTLSVersionsOne2:
+		tlsVersion = constants.TLS1_2
+	case armappservice.SupportedTLSVersionsOne1:
+		tlsVersion = constants.TLS1_1
+	case armappservice.SupportedTLSVersionsOne0:
+		tlsVersion = constants.TLS1_0
+
+	}
+	// Check TLS version
+	if tlsVersion != "" {
+		enc = &voc.TransportEncryption{
+			Enforced:   util.Deref(siteProps.HTTPSOnly),
+			TlsVersion: tlsVersion,
+			Algorithm:  string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+			Enabled:    true,
+		}
+	} else {
+		enc = &voc.TransportEncryption{
+			Enforced:  util.Deref(siteProps.HTTPSOnly),
+			Enabled:   false,
+			Algorithm: string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+		}
+	}
+
+	return
 }
 
 // runtimeInfo returns the runtime language and version

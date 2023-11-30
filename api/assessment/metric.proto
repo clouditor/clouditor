@@ -72,6 +72,12 @@ message Metric {
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
   optional MetricImplementation implementation = 8;
+
+  // Optional, but required if the metric is removed. The metric is not deleted for backward compatibility and the timestamp is set to the time of removal. 
+  optional google.protobuf.Timestamp deprecated_since = 10 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
+    (validate.rules).timestamp.required = true
+  ];
 }
 
 // A range resource representing the range of values

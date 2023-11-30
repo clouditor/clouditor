@@ -171,6 +171,21 @@ func (m *Metric) validate(all bool) error {
 
 	}
 
+	if m.DeprecatedSince != nil {
+
+		if m.GetDeprecatedSince() == nil {
+			err := MetricValidationError{
+				field:  "DeprecatedSince",
+				reason: "value is required",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return MetricMultiError(errors)
 	}

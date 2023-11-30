@@ -86,6 +86,7 @@ func init() {
 		voc.KeyVault{},
 		voc.Key{},
 		voc.Object{},
+		voc.WebApp{},
 	}
 	for _, v := range types {
 		t := reflect.TypeOf(v)
