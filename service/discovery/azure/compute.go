@@ -307,6 +307,12 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		publicNetworkAccess = true
 	}
 
+	config, err := d.clients.sitesClient.ListApplicationSettings(context.Background(), *webApp.Properties.ResourceGroup, *webApp.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
+	if err != nil {
+		log.Errorf("error getting site config: %v", err)
+	}
+	_ = config
+
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
