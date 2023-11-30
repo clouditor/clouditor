@@ -197,4 +197,6 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+require github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric v1.2.0
+
 retract v1.4.7

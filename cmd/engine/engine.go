@@ -365,7 +365,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
-			time.Sleep(20 * time.Second)
+			time.Sleep(1 * time.Second)
 			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
 			})
