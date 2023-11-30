@@ -158,12 +158,18 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 		func(site *armappservice.Site) error {
 			var r voc.IsCompute
 
+			// Get configuration
+			config, err := d.clients.sitesClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+			if err != nil {
+				log.Errorf("error getting site config: %v", err)
+			}
+
 			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
 			switch *site.Kind {
 			case "app": // Windows Web App
-				r = d.handleWebApp(site)
+				r = d.handleWebApp(site, config)
 			case "app,linux": // Linux Web app
-				r = d.handleWebApp(site)
+				r = d.handleWebApp(site, config)
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App Web App currently not implemented.")
@@ -180,9 +186,9 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App on ARC currently not implemented.")
 			case "functionapp": // Function Code App
-				r = d.handleFunction(site)
+				r = d.handleFunction(site, config)
 			case "functionapp,linux": // Linux Consumption Function app
-				r = d.handleFunction(site)
+				r = d.handleFunction(site, config)
 			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
 				// TODO(all): TBD
 				log.Debug("Function Container App on ARC currently not implemented.")
@@ -207,12 +213,10 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
 		runtimeLanguage     string
 		runtimeVersion      string
-		config              armappservice.WebAppsClientGetConfigurationResponse
-		err                 error
 		publicNetworkAccess = false
 	)
 
@@ -228,11 +232,6 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	if *function.Kind == "functionapp,linux" { // Linux function
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
-		// Get site config
-		config, err = d.clients.sitesClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
-		if err != nil {
-			log.Errorf("error getting site config: %v", err)
-		}
 
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
@@ -258,6 +257,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
+	resourceLogging := d.getResourceLoggingWebApp(function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -276,9 +276,10 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				config,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
+			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(function.Properties),
+			TransportEncryption: getTransportEncryption(function.Properties, config),
 		},
 		RuntimeLanguage:     runtimeLanguage,
 		RuntimeVersion:      runtimeVersion,
@@ -286,7 +287,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	}
 }
 
-func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
 		ni                  []voc.ResourceID
 		publicNetworkAccess = false
@@ -307,11 +308,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 		publicNetworkAccess = true
 	}
 
-	config, err := d.clients.sitesClient.ListApplicationSettings(context.Background(), *webApp.Properties.ResourceGroup, *webApp.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
-	if err != nil {
-		log.Errorf("error getting site config: %v", err)
-	}
-	_ = config
+	resourceLogging := d.getResourceLoggingWebApp(webApp)
 
 	return &voc.WebApp{
 		Compute: &voc.Compute{
@@ -330,20 +327,22 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 				// config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
+			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(webApp.Properties),
+			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},
 		PublicNetworkAccess: publicNetworkAccess,
 	}
 }
 
-func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.TransportEncryption) {
+// We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
+func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *voc.TransportEncryption) {
 	var (
 		tlsVersion string
 	)
 
-	switch util.Deref(siteProps.SiteConfig.MinTLSVersion) {
+	switch util.Deref(config.Properties.MinTLSVersion) {
 	case armappservice.SupportedTLSVersionsOne2:
 		tlsVersion = constants.TLS1_2
 	case armappservice.SupportedTLSVersionsOne1:
@@ -355,16 +354,16 @@ func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.T
 	// Check TLS version
 	if tlsVersion != "" {
 		enc = &voc.TransportEncryption{
-			Enforced:   util.Deref(siteProps.HTTPSOnly),
+			Enforced:   util.Deref(siteProperties.HTTPSOnly),
 			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)),
 			Enabled:    true,
 		}
 	} else {
 		enc = &voc.TransportEncryption{
-			Enforced:  util.Deref(siteProps.HTTPSOnly),
+			Enforced:  util.Deref(siteProperties.HTTPSOnly),
 			Enabled:   false,
-			Algorithm: string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
+			Algorithm: string(util.Deref(config.Properties.MinTLSCipherSuite)),
 		}
 	}
 
@@ -773,4 +772,22 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
 
 	return
+}
+
+// getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
+func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
+	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
+		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
+	if err != nil {
+		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
+		return
+	}
+	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
+		rl.Enabled = true
+		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
+
+	}
+	return
+
 }
