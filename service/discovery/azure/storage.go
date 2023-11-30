@@ -49,7 +49,6 @@ import (
 var (
 	ErrEmptyStorageAccount        = errors.New("storage account is empty")
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
-	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
 
 // Currently supports only one backup. There could be more and even a metric that may check multiple backups
@@ -223,9 +222,14 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			AtRestEncryption: enc,
 			Redundancy:       getCosmosDBRedundancy(account),
 		},
+		PublicAccess: getPublicAccessOfCosmosDB(account),
 	}
 
 	return dbStorage, nil
+}
+
+func getPublicAccessOfCosmosDB(acc *armcosmos.DatabaseAccountGetResults) bool {
+	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
 }
 
 func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
@@ -614,9 +618,14 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
 			TransportEncryption: te,
 		},
+		PublicAccess: getPublicAccessOfStorageAccount(account),
 	}
 
 	return storageService, nil
+}
+
+func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
+	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {

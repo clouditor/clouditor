@@ -33,4 +33,5 @@ var ObjectStorageServiceType = []string{"ObjectStorageService", "StorageService"
 type ObjectStorageService struct {
 	*StorageService
 	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+	PublicAccess bool          `json:"publicAccess"`
 }
