@@ -223,9 +223,17 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			AtRestEncryption: enc,
 			Redundancy:       getCosmosDBRedundancy(account),
 		},
+		PublicAccess: getPublicAccessOfCosmosDB(account),
 	}
 
 	return dbStorage, nil
+}
+
+func getPublicAccessOfCosmosDB(acc *armcosmos.DatabaseAccountGetResults) bool {
+	if util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+		return true
+	}
+	return false
 }
 
 func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
@@ -614,9 +622,17 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
 			TransportEncryption: te,
 		},
+		PublicAccess: getPublicAccessOfStorageAccount(account),
 	}
 
 	return storageService, nil
+}
+
+func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
+	if util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+		return true
+	}
+	return false
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
