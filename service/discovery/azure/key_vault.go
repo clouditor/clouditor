@@ -194,10 +194,7 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 }
 
 func getPublicAccess(kv *armkeyvault.Vault) bool {
-	if util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled" {
-		return true
-	}
-	return false
+	return util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled"
 }
 
 // getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
