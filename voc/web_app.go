@@ -31,6 +31,7 @@ var WebAppType = []string{"WebApp", "Compute", "Resource"}
 
 type WebApp struct {
 	*Compute
-	HttpEndpoint        *HttpEndpoint `json:"httpEndpoint"`
-	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
+	HttpEndpoint *HttpEndpoint `json:"httpEndpoint"`
+	PublicAccess bool          `json:"publicNetworkAccess"`
+	Redundancy   *Redundancy   `json:"redundancy"`
 }

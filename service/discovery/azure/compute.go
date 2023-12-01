@@ -158,12 +158,18 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 		func(site *armappservice.Site) error {
 			var r voc.IsCompute
 
+			// Get configuration
+			config, err := d.clients.sitesClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+			if err != nil {
+				log.Errorf("error getting site config: %v", err)
+			}
+
 			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
 			switch *site.Kind {
 			case "app": // Windows Web App
-				r = d.handleWebApp(site)
+				r = d.handleWebApp(site, config)
 			case "app,linux": // Linux Web app
-				r = d.handleWebApp(site)
+				r = d.handleWebApp(site, config)
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App Web App currently not implemented.")
@@ -180,9 +186,9 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App on ARC currently not implemented.")
 			case "functionapp": // Function Code App
-				r = d.handleFunction(site)
+				r = d.handleFunction(site, config)
 			case "functionapp,linux": // Linux Consumption Function app
-				r = d.handleFunction(site)
+				r = d.handleFunction(site, config)
 			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
 				// TODO(all): TBD
 				log.Debug("Function Container App on ARC currently not implemented.")
@@ -207,18 +213,23 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+// TODO(anatheka): handleFunction and handleWebbApp is duplicated code. Merge!
+func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
+		ni                  []voc.ResourceID
 		runtimeLanguage     string
 		runtimeVersion      string
-		config              armappservice.WebAppsClientGetConfigurationResponse
-		err                 error
 		publicNetworkAccess = false
 	)
 
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil {
 		return nil
+	}
+
+	// Get virtual network subnet ID
+	if function.Properties.VirtualNetworkSubnetID != nil {
+		ni = []voc.ResourceID{voc.ResourceID(util.Deref(function.Properties.VirtualNetworkSubnetID))}
 	}
 
 	if util.Deref(function.Properties.PublicNetworkAccess) == "Enabled" {
@@ -228,12 +239,6 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	if *function.Kind == "functionapp,linux" { // Linux function
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
-		// Get site config
-		config, err = d.clients.sitesClient.GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
-		if err != nil {
-			log.Errorf("error getting site config: %v", err)
-		}
-
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"
@@ -259,6 +264,9 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		}
 	}
 
+	// Get resource logging status
+	resourceLogging := d.getResourceLoggingWebApp(function)
+
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -275,18 +283,20 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 				function,
 				config,
 			),
-			NetworkInterfaces: []voc.ResourceID{},
+			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
+			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(function.Properties),
+			TransportEncryption: getTransportEncryption(function.Properties, config),
 		},
-		RuntimeLanguage:     runtimeLanguage,
-		RuntimeVersion:      runtimeVersion,
-		PublicNetworkAccess: publicNetworkAccess,
+		RuntimeLanguage: runtimeLanguage,
+		RuntimeVersion:  runtimeVersion,
+		PublicAccess:    publicNetworkAccess,
+		Redundancy:      getRedundancy(function),
 	}
 }
 
-func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
 		ni                  []voc.ResourceID
 		publicNetworkAccess = false
@@ -299,13 +309,16 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 
 	// Get virtual network subnet ID
 	if webApp.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
+		ni = []voc.ResourceID{voc.ResourceID(util.Deref(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
 	// Check if resource is public available
 	if util.Deref(webApp.Properties.PublicNetworkAccess) == "Enabled" {
 		publicNetworkAccess = true
 	}
+
+	// Get resource logging status
+	resourceLogging := d.getResourceLoggingWebApp(webApp)
 
 	return &voc.WebApp{
 		Compute: &voc.Compute{
@@ -324,57 +337,14 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsC
 				// config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
+			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(webApp.Properties),
+			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},
-		PublicNetworkAccess: publicNetworkAccess,
+		PublicAccess: publicNetworkAccess,
+		Redundancy:   getRedundancy(webApp),
 	}
-}
-
-func getTransportEncryption(siteProps *armappservice.SiteProperties) (enc *voc.TransportEncryption) {
-	var (
-		tlsVersion string
-	)
-
-	switch util.Deref(siteProps.SiteConfig.MinTLSVersion) {
-	case armappservice.SupportedTLSVersionsOne2:
-		tlsVersion = constants.TLS1_2
-	case armappservice.SupportedTLSVersionsOne1:
-		tlsVersion = constants.TLS1_1
-	case armappservice.SupportedTLSVersionsOne0:
-		tlsVersion = constants.TLS1_0
-
-	}
-	// Check TLS version
-	if tlsVersion != "" {
-		enc = &voc.TransportEncryption{
-			Enforced:   util.Deref(siteProps.HTTPSOnly),
-			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
-			Enabled:    true,
-		}
-	} else {
-		enc = &voc.TransportEncryption{
-			Enforced:  util.Deref(siteProps.HTTPSOnly),
-			Enabled:   false,
-			Algorithm: string(util.Deref(siteProps.SiteConfig.MinTLSCipherSuite)),
-		}
-	}
-
-	return
-}
-
-// runtimeInfo returns the runtime language and version
-func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string) {
-	if runtime == "" || !strings.Contains(runtime, "|") {
-		return "", ""
-	}
-	split := strings.Split(runtime, "|")
-	runtimeLanguage = split[0]
-	runtimeVersion = split[1]
-
-	return
 }
 
 // Discover virtual machines
@@ -525,63 +495,6 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	return r, nil
 }
 
-// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
-func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
-	automaticUpdates = &voc.AutomaticUpdates{}
-
-	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
-		return
-	}
-
-	// Check if Linux configuration is available
-	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
-		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-		}
-	}
-
-	// Check if Windows configuration is available
-	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
-		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
-	}
-
-	return
-}
-
-func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
-	if vm == nil || vm.Properties == nil || vm.Properties.DiagnosticsProfile == nil || vm.Properties.DiagnosticsProfile.BootDiagnostics == nil {
-		return false
-	} else {
-		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
-	}
-}
-
-func bootLogOutput(vm *armcompute.VirtualMachine) string {
-	if isBootDiagnosticEnabled(vm) {
-		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
-		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		// }
-
-		return ""
-	}
-	return ""
-}
-
 func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -722,6 +635,142 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	}
 
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
+}
+
+// getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
+func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
+	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
+		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
+	if err != nil {
+		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
+		return
+	}
+	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
+		rl.Enabled = true
+		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
+
+	}
+	return
+
+}
+
+// getRedundancy returns the redundancy status
+func getRedundancy(app *armappservice.Site) *voc.Redundancy {
+	r := &voc.Redundancy{}
+	switch util.Deref(app.Properties.RedundancyMode) {
+	case armappservice.RedundancyModeNone:
+		break
+	case armappservice.RedundancyModeActiveActive:
+		r.Zone = true
+	case armappservice.RedundancyModeFailover, armappservice.RedundancyModeGeoRedundant:
+		r.Zone = true
+		r.Geo = true
+	}
+	return r
+}
+
+// We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
+func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *voc.TransportEncryption) {
+	var (
+		tlsVersion string
+	)
+
+	switch util.Deref(config.Properties.MinTLSVersion) {
+	case armappservice.SupportedTLSVersionsOne2:
+		tlsVersion = constants.TLS1_2
+	case armappservice.SupportedTLSVersionsOne1:
+		tlsVersion = constants.TLS1_1
+	case armappservice.SupportedTLSVersionsOne0:
+		tlsVersion = constants.TLS1_0
+
+	}
+	// Check TLS version
+	if tlsVersion != "" {
+		enc = &voc.TransportEncryption{
+			Enforced:   util.Deref(siteProperties.HTTPSOnly),
+			TlsVersion: tlsVersion,
+			Algorithm:  string(util.Deref(siteProperties.SiteConfig.MinTLSCipherSuite)),
+			Enabled:    true,
+		}
+	} else {
+		enc = &voc.TransportEncryption{
+			Enforced:  util.Deref(siteProperties.HTTPSOnly),
+			Enabled:   false,
+			Algorithm: string(util.Deref(siteProperties.SiteConfig.MinTLSCipherSuite)),
+		}
+	}
+
+	return
+}
+
+// runtimeInfo returns the runtime language and version
+func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string) {
+	if runtime == "" || !strings.Contains(runtime, "|") {
+		return "", ""
+	}
+	split := strings.Split(runtime, "|")
+	runtimeLanguage = split[0]
+	runtimeVersion = split[1]
+
+	return
+}
+
+// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
+func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
+	automaticUpdates = &voc.AutomaticUpdates{}
+
+	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
+		return
+	}
+
+	// Check if Linux configuration is available
+	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
+		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+		}
+	}
+
+	// Check if Windows configuration is available
+	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
+		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
+		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
+			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+
+		} else {
+			return
+
+		}
+	}
+
+	return
+}
+
+func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
+	if vm == nil || vm.Properties == nil || vm.Properties.DiagnosticsProfile == nil || vm.Properties.DiagnosticsProfile.BootDiagnostics == nil {
+		return false
+	} else {
+		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
+	}
+}
+
+func bootLogOutput(vm *armcompute.VirtualMachine) string {
+	if isBootDiagnosticEnabled(vm) {
+		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
+		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
+		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
+		// }
+
+		return ""
+	}
+	return ""
 }
 
 // initWebAppsClient creates the client if not already exists

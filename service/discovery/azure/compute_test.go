@@ -987,9 +987,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "3.8",
-					RuntimeLanguage:     "PYTHON",
-					PublicNetworkAccess: true,
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
+					PublicAccess:    true,
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -1019,9 +1019,9 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "1.8",
-					RuntimeLanguage:     "Java",
-					PublicNetworkAccess: false,
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
+					PublicAccess:    false,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1051,7 +1051,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
-					PublicNetworkAccess: true,
+					PublicAccess: true,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1081,7 +1081,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					PublicNetworkAccess: false,
+					PublicAccess: false,
 				},
 			},
 			wantErr: assert.NoError,
@@ -1198,9 +1198,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "3.8",
-					RuntimeLanguage:     "PYTHON",
-					PublicNetworkAccess: true,
+					RuntimeVersion:  "3.8",
+					RuntimeLanguage: "PYTHON",
+					PublicAccess:    true,
 				},
 				&voc.Function{
 					Compute: &voc.Compute{
@@ -1230,9 +1230,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					RuntimeVersion:      "1.8",
-					RuntimeLanguage:     "Java",
-					PublicNetworkAccess: false,
+					RuntimeVersion:  "1.8",
+					RuntimeLanguage: "Java",
+					PublicAccess:    false,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1262,7 +1262,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
 					},
-					PublicNetworkAccess: true,
+					PublicAccess: true,
 				},
 				&voc.WebApp{
 					Compute: &voc.Compute{
@@ -1292,7 +1292,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							Algorithm:  "",
 						},
 					},
-					PublicNetworkAccess: false,
+					PublicAccess: false,
 				},
 			},
 			wantErr: assert.NoError,
