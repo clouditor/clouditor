@@ -213,32 +213,21 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	return list, nil
 }
 
-// TODO(anatheka): handleFunction and handleWebbApp is duplicated code. Merge!
-func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
+func (d *azureComputeDiscovery) handleFunction(site *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
-		ni                  []voc.ResourceID
-		runtimeLanguage     string
-		runtimeVersion      string
-		publicNetworkAccess = false
+		ni              []voc.ResourceID
+		publicAccess    = false
+		resourceLogging *voc.ResourceLogging
+		runtimeLanguage string
+		runtimeVersion  string
 	)
 
-	// If a mandatory field is empty, the whole function is empty
-	if function == nil {
-		return nil
-	}
+	// Get properties for the function
+	ni, publicAccess, resourceLogging = d.getSiteProperties(site)
 
-	// Get virtual network subnet ID
-	if function.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(util.Deref(function.Properties.VirtualNetworkSubnetID))}
-	}
-
-	if util.Deref(function.Properties.PublicNetworkAccess) == "Enabled" {
-		publicNetworkAccess = true
-	}
-
-	if *function.Kind == "functionapp,linux" { // Linux function
-		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
-	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+	if *site.Kind == "functionapp,linux" { // Linux function
+		runtimeLanguage, runtimeVersion = runtimeInfo(*site.Properties.SiteConfig.LinuxFxVersion)
+	} else if *site.Kind == "functionapp" { // Windows function, we need to get also the config information
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
 			runtimeLanguage = "Java"
@@ -264,86 +253,68 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 		}
 	}
 
-	// Get resource logging status
-	resourceLogging := d.getResourceLoggingWebApp(function)
-
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(function.ID)),
-				util.Deref(function.Name),
+				voc.ResourceID(util.Deref(site.ID)),
+				util.Deref(site.Name),
 				// No creation time available
 				nil,
 				voc.GeoLocation{
-					Region: util.Deref(function.Location),
+					Region: util.Deref(site.Location),
 				},
-				labels(function.Tags),
-				resourceGroupID(function.ID),
+				labels(site.Tags),
+				resourceGroupID(site.ID),
 				voc.FunctionType,
-				function,
+				site,
 				config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(function.Properties, config),
+			TransportEncryption: getTransportEncryption(site.Properties, config),
 		},
 		RuntimeLanguage: runtimeLanguage,
 		RuntimeVersion:  runtimeVersion,
-		PublicAccess:    publicNetworkAccess,
-		Redundancy:      getRedundancy(function),
+		PublicAccess:    publicAccess,
+		Redundancy:      getRedundancy(site),
 	}
 }
 
-func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
+func (d *azureComputeDiscovery) handleWebApp(site *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
-		ni                  []voc.ResourceID
-		publicNetworkAccess = false
+		ni              []voc.ResourceID
+		publicAccess    = false
+		resourceLogging *voc.ResourceLogging
 	)
 
-	// If a mandatory field is empty, the whole function is empty
-	if webApp == nil {
-		return nil
-	}
-
-	// Get virtual network subnet ID
-	if webApp.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(util.Deref(webApp.Properties.VirtualNetworkSubnetID))}
-	}
-
-	// Check if resource is public available
-	if util.Deref(webApp.Properties.PublicNetworkAccess) == "Enabled" {
-		publicNetworkAccess = true
-	}
-
-	// Get resource logging status
-	resourceLogging := d.getResourceLoggingWebApp(webApp)
+	// Get properties for the webApp
+	ni, publicAccess, resourceLogging = d.getSiteProperties(site)
 
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.ID)),
-				util.Deref(webApp.Name),
-				// No creation time available
-				nil, // Only the last modified time is available
+				voc.ResourceID(util.Deref(site.ID)),
+				util.Deref(site.Name),
+				nil, // TODO(all): Only the last modified time is available, do we want that information?
 				voc.GeoLocation{
-					Region: util.Deref(webApp.Location),
+					Region: util.Deref(site.Location),
 				},
-				labels(webApp.Tags),
-				resourceGroupID(webApp.ID),
+				labels(site.Tags),
+				resourceGroupID(site.ID),
 				voc.WebAppType,
-				webApp,
-				// config,
+				site,
+				config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 			ResourceLogging:   resourceLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(webApp.Properties, config),
+			TransportEncryption: getTransportEncryption(site.Properties, config),
 		},
-		PublicAccess: publicNetworkAccess,
-		Redundancy:   getRedundancy(webApp),
+		PublicAccess: publicAccess,
+		Redundancy:   getRedundancy(site),
 	}
 }
 
@@ -635,6 +606,30 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	}
 
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
+}
+
+// getSiteProperties returns properties for WebApp und functions
+func (d *azureComputeDiscovery) getSiteProperties(site *armappservice.Site) (ni []voc.ResourceID, publicAccess bool, resourceLogging *voc.ResourceLogging) {
+
+	// If a mandatory field is empty, the whole function is empty
+	if site == nil {
+		return []voc.ResourceID{}, false, &voc.ResourceLogging{}
+	}
+
+	// Get virtual network subnet ID
+	if site.Properties.VirtualNetworkSubnetID != nil {
+		ni = []voc.ResourceID{voc.ResourceID(util.Deref(site.Properties.VirtualNetworkSubnetID))}
+	}
+
+	// Check if resource is public available
+	if util.Deref(site.Properties.PublicNetworkAccess) == "Enabled" {
+		publicAccess = true
+	}
+
+	// Get resource logging status
+	resourceLogging = d.getResourceLoggingWebApp(site)
+
+	return ni, publicAccess, resourceLogging
 }
 
 // getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
