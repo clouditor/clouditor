@@ -599,25 +599,6 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 	assert.Nil(t, discoverVirtualMachineResponse)
 }
 
-func TestBootLogOutput(t *testing.T) {
-	// Get mocked compute.VirtualMachine
-	reqURL := "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines"
-	mockedVirtualMachinesResponse, err := mockedVirtualMachines(reqURL)
-	if err != nil {
-		fmt.Println("error getting mocked storage account object: %w", err)
-	}
-
-	virtualMachine := mockedVirtualMachinesResponse[0]
-
-	assert.NotEmpty(t, virtualMachine)
-	// Delete the "diagnosticsProfile" property
-	virtualMachine.Properties.DiagnosticsProfile = nil
-
-	getBootLogOutputResponse := bootLogOutput(&virtualMachine)
-
-	assert.Empty(t, getBootLogOutputResponse)
-}
-
 // mockedVirtualMachines returns the mocked virtualMachines list
 func mockedVirtualMachines(reqUrl string) (virtualMachines []armcompute.VirtualMachine, err error) {
 	var mockedVirtualMachinesResponse mockedVirtualMachinesResponse
@@ -825,9 +806,8 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							Enabled: true,
-							//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-							LoggingService: []voc.ResourceID{},
+							Enabled:        true,
+							LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/logstoragevm1"},
 							Auditing: &voc.Auditing{
 								SecurityFeature: &voc.SecurityFeature{},
 							},
@@ -1517,9 +1497,8 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							Enabled: true,
-							//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-							LoggingService: []voc.ResourceID{},
+							Enabled:        true,
+							LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/logstoragevm1"},
 							Auditing: &voc.Auditing{
 								SecurityFeature: &voc.SecurityFeature{},
 							},
@@ -1781,9 +1760,8 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
 					Logging: &voc.Logging{
-						Enabled: true,
-						//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-						LoggingService: []voc.ResourceID{},
+						Enabled:        true,
+						LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/logstoragevm1"},
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
@@ -1915,91 +1893,6 @@ func Test_isBootDiagnosticEnabled(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, isBootDiagnosticEnabled(tt.args.vm))
-		})
-	}
-}
-
-func Test_bootLogOutput(t *testing.T) {
-	ID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1"
-	name := "vm1"
-	enabledTrue := true
-	enabledFalse := false
-	storageUri := "https://logstoragevm1.blob.core.windows.net/"
-	emptyStorageUri := ""
-
-	type args struct {
-		vm *armcompute.VirtualMachine
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Empty input",
-			args: args{
-				vm: nil,
-			},
-			want: "",
-		},
-		{
-			name: "StorageURI is nil",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
-					Properties: &armcompute.VirtualMachineProperties{
-						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
-							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledFalse,
-								StorageURI: nil,
-							},
-						},
-					},
-				},
-			},
-			want: "",
-		},
-		{
-			name: "BootDiagnostics disabled",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
-					Properties: &armcompute.VirtualMachineProperties{
-						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
-							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledFalse,
-								StorageURI: &emptyStorageUri,
-							},
-						},
-					},
-				},
-			},
-			want: "",
-		},
-		{
-			name: "BootDiagnostics enabled",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
-					Properties: &armcompute.VirtualMachineProperties{
-						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
-							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledTrue,
-								StorageURI: &storageUri,
-							},
-						},
-					},
-				},
-			},
-			//want: storageUri,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, bootLogOutput(tt.args.vm))
 		})
 	}
 }
@@ -2900,6 +2793,140 @@ func Test_getTransportEncryption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if gotEnc := getTransportEncryption(tt.args.siteProps); !reflect.DeepEqual(gotEnc, tt.wantEnc) {
 				t.Errorf("getTransportEncryption() = %v, want %v", gotEnc, tt.wantEnc)
+			}
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_getResourceId(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		uri string
+		rg  string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "input empty",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				uri: "testResourceGroup",
+			},
+			want: "",
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				uri: "https://testDiagnostics.blob.core.windows.net/",
+				rg:  "testResourceGroup",
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/testResourceGroup/providers/Microsoft.Storage/storageAccounts/testDiagnostics",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			if got := d.getResourceId(tt.args.uri, tt.args.rg); got != tt.want {
+				t.Errorf("azureComputeDiscovery.getResourceId() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_bootLogOutput(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		vm *armcompute.VirtualMachine
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "bootDiagnosticsEnabled but storage URI nil",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
+							BootDiagnostics: &armcompute.BootDiagnostics{
+								Enabled: util.Ref(true),
+							},
+						},
+					},
+				},
+			},
+			want: "",
+		},
+		{
+			name: "Happy path: bootDiagnosticsDisabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
+							BootDiagnostics: &armcompute.BootDiagnostics{
+								Enabled: util.Ref(false),
+							},
+						},
+					},
+				},
+			},
+			want: "",
+		},
+		{
+			name: "Happy path: bootDiagnosticsEnabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				vm: &armcompute.VirtualMachine{
+					Properties: &armcompute.VirtualMachineProperties{
+						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
+							BootDiagnostics: &armcompute.BootDiagnostics{
+								StorageURI: util.Ref("https://testDiagnostics.blob.core.windows.net/"),
+								Enabled:    util.Ref(true),
+							},
+						},
+					},
+					ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1"),
+				},
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/testDiagnostics",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			if got := d.bootLogOutput(tt.args.vm); got != tt.want {
+				t.Errorf("azureComputeDiscovery.bootLogOutput() = %v, want %v", got, tt.want)
 			}
 		})
 	}

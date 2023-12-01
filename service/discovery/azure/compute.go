@@ -429,8 +429,8 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		return nil, ErrEmptyVirtualMachine
 	}
 
-	if bootLogOutput(vm) != "" {
-		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	if d.bootLogOutput(vm) != "" {
+		bootLogging = []voc.ResourceID{voc.ResourceID(d.bootLogOutput(vm))}
 	}
 
 	autoUpdates = automaticUpdates(vm)
@@ -569,17 +569,33 @@ func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
 	}
 }
 
-func bootLogOutput(vm *armcompute.VirtualMachine) string {
+func (d *azureComputeDiscovery) bootLogOutput(vm *armcompute.VirtualMachine) string {
 	if isBootDiagnosticEnabled(vm) {
 		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
-		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		// }
+		if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
+			return d.getResourceId(util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI), resourceGroupName(util.Deref(vm.ID)))
+		}
 
 		return ""
 	}
 	return ""
+}
+
+// getResourceId returns the resource ID of a given URI
+func (d *azureComputeDiscovery) getResourceId(uri string, rg string) string {
+	// Check if needed values are available
+	if uri == "" || rg == "" || d.sub == nil || util.Deref(d.sub.SubscriptionID) == "" {
+		return ""
+	}
+
+	// Get storage account name from URI
+	// Example of the given URI: "https://democlouditordiagnostics.blob.core.windows.net/"
+	tmp := strings.Split(uri, ".")
+	accountName := strings.Split(tmp[0], "/")[2]
+
+	// return the resource ID
+	// Example resource ID:/subscriptions/196946e1-7029-4d97-8f65-ba6c6138c93f/resourceGroups/DemoClouditorHappy/providers/Microsoft.Storage/storageAccounts/democlouditordiagnostics
+	return "/subscriptions/" + util.Deref(d.sub.SubscriptionID) + "/resourceGroups/" + rg + "/providers/Microsoft.Storage/storageAccounts/" + accountName
 }
 
 func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
