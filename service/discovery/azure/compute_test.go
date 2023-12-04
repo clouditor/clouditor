@@ -26,9 +26,7 @@
 package azure
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -53,10 +51,6 @@ type mockComputeSender struct {
 func newMockComputeSender() *mockComputeSender {
 	m := &mockComputeSender{}
 	return m
-}
-
-type mockedVirtualMachinesResponse struct {
-	Value []armcompute.VirtualMachine `json:"value,omitempty"`
 }
 
 func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
@@ -597,40 +591,6 @@ func TestComputeDiscoverVirtualMachines(t *testing.T) {
 
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverVirtualMachineResponse)
-}
-
-// mockedVirtualMachines returns the mocked virtualMachines list
-func mockedVirtualMachines(reqUrl string) (virtualMachines []armcompute.VirtualMachine, err error) {
-	var mockedVirtualMachinesResponse mockedVirtualMachinesResponse
-
-	m := newMockComputeSender()
-	req, err := http.NewRequest("GET", reqUrl, nil)
-	if err != nil {
-		return virtualMachines, fmt.Errorf("error creating new request: %w", err)
-	}
-	resp, err := m.Do(req)
-	if err != nil || resp.StatusCode == 404 {
-		return virtualMachines, fmt.Errorf("error getting mock http response: %w", err)
-	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Println("error io.ReadCloser: %w", err)
-		}
-	}(resp.Body)
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return virtualMachines, fmt.Errorf("error read all: %w", err)
-	}
-	err = json.Unmarshal(responseBody, &mockedVirtualMachinesResponse)
-	if err != nil {
-		return virtualMachines, fmt.Errorf("error unmarshalling: %w", err)
-	}
-
-	virtualMachines = mockedVirtualMachinesResponse.Value
-
-	return virtualMachines, nil
 }
 
 func Test_azureComputeDiscovery_List(t *testing.T) {
