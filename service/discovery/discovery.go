@@ -91,8 +91,6 @@ type Service struct {
 	discovery.UnimplementedDiscoveryServer
 	discovery.UnimplementedExperimentalDiscoveryServer
 
-	configurations map[discovery.Discoverer]*Configuration
-
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
@@ -104,14 +102,12 @@ type Service struct {
 
 	providers []string
 
+	discoveryInterval time.Duration
+
 	Events chan *DiscoveryEvent
 
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
-}
-
-type Configuration struct {
-	Interval time.Duration
 }
 
 func init() {
@@ -167,6 +163,13 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
+func WithDiscoveryInterval(interval time.Duration) ServiceOption {
+	return func(s *Service) {
+		s.discoveryInterval = interval
+	}
+}
+
 // WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
 func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
 	return func(s *Service) {
@@ -180,10 +183,10 @@ func NewService(opts ...ServiceOption) *Service {
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
-		configurations:    make(map[discovery.Discoverer]*Configuration),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              discovery.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
+		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
 
 	// Apply any options
@@ -293,14 +296,10 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	}
 
 	for _, v := range discoverer {
-		svc.configurations[v] = &Configuration{
-			Interval: 5 * time.Minute,
-		}
-
-		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
+		log.Infof("Scheduling {%s} to execute every {%d} minutes...", v.Name(), svc.discoveryInterval)
 
 		_, err = svc.scheduler.
-			Every(5).
+			Every(svc.discoveryInterval).
 			Minute().
 			Tag(v.Name()).
 			Do(svc.StartDiscovery, v)
