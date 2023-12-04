@@ -147,8 +147,8 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.sitesClient.NewListPager,
-		d.clients.sitesClient.NewListByResourceGroupPager,
+		d.clients.webAppClient.NewListPager,
+		d.clients.webAppClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
@@ -159,7 +159,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			var r voc.IsCompute
 
 			// Get configuration
-			config, err := d.clients.sitesClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+			config, err := d.clients.webAppClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
 			if err != nil {
 				log.Errorf("error getting site config: %v", err)
 			}
@@ -222,11 +222,16 @@ func (d *azureComputeDiscovery) handleFunction(site *armappservice.Site, config 
 		runtimeVersion  string
 	)
 
+	if site == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
+		log.Error("input parameter empty")
+		return nil
+	}
+
 	// Get properties for the function
 	ni, publicAccess, resourceLogging = d.getSiteProperties(site)
 
 	if *site.Kind == "functionapp,linux" { // Linux function
-		runtimeLanguage, runtimeVersion = runtimeInfo(*site.Properties.SiteConfig.LinuxFxVersion)
+		runtimeLanguage, runtimeVersion = runtimeInfo(util.Deref(site.Properties.SiteConfig.LinuxFxVersion))
 	} else if *site.Kind == "functionapp" { // Windows function, we need to get also the config information
 		// Check all runtime versions to get the used runtime language and runtime version
 		if util.Deref(config.Properties.JavaVersion) != "" {
@@ -288,6 +293,11 @@ func (d *azureComputeDiscovery) handleWebApp(site *armappservice.Site, config ar
 		publicAccess    = false
 		resourceLogging *voc.ResourceLogging
 	)
+
+	if site == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
+		log.Error("input parameter empty")
+		return nil
+	}
 
 	// Get properties for the webApp
 	ni, publicAccess, resourceLogging = d.getSiteProperties(site)
@@ -611,6 +621,9 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 // getSiteProperties returns properties for WebApp und functions
 func (d *azureComputeDiscovery) getSiteProperties(site *armappservice.Site) (ni []voc.ResourceID, publicAccess bool, resourceLogging *voc.ResourceLogging) {
 
+	ni = []voc.ResourceID{}
+	resourceLogging = &voc.ResourceLogging{}
+
 	// If a mandatory field is empty, the whole function is empty
 	if site == nil {
 		return []voc.ResourceID{}, false, &voc.ResourceLogging{}
@@ -634,8 +647,13 @@ func (d *azureComputeDiscovery) getSiteProperties(site *armappservice.Site) (ni 
 
 // getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
 func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
+	if site == nil {
+		log.Error("given parameter is empty")
+		return
+	}
+
 	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
-	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
+	appSettings, err := d.clients.webAppClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
@@ -671,6 +689,7 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 		tlsVersion string
 	)
 
+	// Check TLS version
 	switch util.Deref(config.Properties.MinTLSVersion) {
 	case armappservice.SupportedTLSVersionsOne2:
 		tlsVersion = constants.TLS1_2
@@ -678,21 +697,21 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 		tlsVersion = constants.TLS1_1
 	case armappservice.SupportedTLSVersionsOne0:
 		tlsVersion = constants.TLS1_0
-
 	}
-	// Check TLS version
+
+	// Create transportEncryption voc object
 	if tlsVersion != "" {
 		enc = &voc.TransportEncryption{
 			Enforced:   util.Deref(siteProperties.HTTPSOnly),
 			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(siteProperties.SiteConfig.MinTLSCipherSuite)),
+			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)),
 			Enabled:    true,
 		}
 	} else {
 		enc = &voc.TransportEncryption{
 			Enforced:  util.Deref(siteProperties.HTTPSOnly),
 			Enabled:   false,
-			Algorithm: string(util.Deref(siteProperties.SiteConfig.MinTLSCipherSuite)),
+			Algorithm: string(util.Deref(config.Properties.MinTLSCipherSuite)),
 		}
 	}
 
@@ -770,7 +789,7 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+	d.clients.webAppClient, err = initClient(d.clients.webAppClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 
