@@ -647,12 +647,13 @@ func (d *azureComputeDiscovery) getSiteProperties(site *armappservice.Site) (ni 
 
 // getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
 func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
+	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+
 	if site == nil {
 		log.Error("given parameter is empty")
 		return
 	}
 
-	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
 	appSettings, err := d.clients.webAppClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {

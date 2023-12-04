@@ -3042,3 +3042,248 @@ func Test_getTransportEncryption(t *testing.T) {
 		})
 	}
 }
+
+func Test_azureComputeDiscovery_getSiteProperties(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+		clientWebApp       bool
+	}
+	type args struct {
+		site *armappservice.Site
+	}
+	tests := []struct {
+		name                string
+		fields              fields
+		args                args
+		wantNi              []voc.ResourceID
+		wantPublicAccess    bool
+		wantResourceLogging *voc.ResourceLogging
+	}{
+		{
+			name: "Input empty",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				site: nil,
+			},
+			wantNi:              []voc.ResourceID{},
+			wantPublicAccess:    false,
+			wantResourceLogging: &voc.ResourceLogging{},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				clientWebApp:   true,
+			},
+			args: args{
+				site: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2"),
+					Name: util.Ref("WebApp2"),
+					Kind: util.Ref("app"),
+					Properties: &armappservice.SiteProperties{
+						PublicNetworkAccess:    util.Ref("Enabled"),
+						ResourceGroup:          util.Ref("res1"),
+						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"),
+					},
+				},
+			},
+			wantNi:           []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"},
+			wantPublicAccess: true,
+			wantResourceLogging: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					Enabled: false,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+
+			// Set clients if needed
+			if tt.fields.clientWebApp {
+				// initialize webApps client
+				_ = d.initWebAppsClient()
+			}
+
+			gotNi, gotPublicAccess, gotResourceLogging := d.getSiteProperties(tt.args.site)
+			if !reflect.DeepEqual(gotNi, tt.wantNi) {
+				t.Errorf("azureComputeDiscovery.getSiteProperties() gotNi = %v, want %v", gotNi, tt.wantNi)
+			}
+			if gotPublicAccess != tt.wantPublicAccess {
+				t.Errorf("azureComputeDiscovery.getSiteProperties() gotPublicAccess = %v, want %v", gotPublicAccess, tt.wantPublicAccess)
+			}
+			if !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
+				t.Errorf("azureComputeDiscovery.getSiteProperties() gotResourceLogging = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
+			}
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+		clientWebApp       bool
+	}
+	type args struct {
+		site *armappservice.Site
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wantRl *voc.ResourceLogging
+	}{
+		{
+			name: "Input empty",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				site: nil,
+			},
+			wantRl: &voc.ResourceLogging{
+				Logging: &voc.Logging{},
+			},
+		},
+		{
+			name: "Happy path: logging disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				clientWebApp:   true,
+			},
+			args: args{
+				site: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2"),
+					Name: util.Ref("WebApp2"),
+					Kind: util.Ref("app"),
+					Properties: &armappservice.SiteProperties{
+						PublicNetworkAccess:    util.Ref("Enabled"),
+						ResourceGroup:          util.Ref("res1"),
+						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"),
+					},
+				},
+			},
+			wantRl: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					Enabled: false,
+				},
+			},
+		},
+		{
+			name: "Happy path: logging enabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				clientWebApp:   true,
+			},
+			args: args{
+				site: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1"),
+					Name: util.Ref("WebApp1"),
+					Kind: util.Ref("app"),
+					Properties: &armappservice.SiteProperties{
+						PublicNetworkAccess:    util.Ref("Enabled"),
+						ResourceGroup:          util.Ref("res1"),
+						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"),
+					},
+				},
+			},
+			wantRl: &voc.ResourceLogging{
+				Logging: &voc.Logging{
+					Enabled: true,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			// Set clients if needed
+			if tt.fields.clientWebApp {
+				// initialize webApps client
+				_ = d.initWebAppsClient()
+			}
+
+			if gotRl := d.getResourceLoggingWebApp(tt.args.site); !reflect.DeepEqual(gotRl, tt.wantRl) {
+				t.Errorf("azureComputeDiscovery.getResourceLoggingWebApp() = %v, want %v", gotRl, tt.wantRl)
+			}
+		})
+	}
+}
+
+func Test_getRedundancy(t *testing.T) {
+	type args struct {
+		app *armappservice.Site
+	}
+	tests := []struct {
+		name string
+		args args
+		want *voc.Redundancy
+	}{
+		{
+			name: "Happy path: no redundancy",
+			args: args{
+				app: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1"),
+					Name: util.Ref("WebApp1"),
+					Properties: &armappservice.SiteProperties{
+						RedundancyMode: util.Ref(armappservice.RedundancyModeNone),
+					},
+				},
+			},
+			want: &voc.Redundancy{
+				Zone: false,
+				Geo:  false,
+			},
+		},
+		{
+			name: "Happy path: zone redundancy",
+			args: args{
+				app: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1"),
+					Name: util.Ref("WebApp1"),
+					Properties: &armappservice.SiteProperties{
+						RedundancyMode: util.Ref(armappservice.RedundancyModeActiveActive),
+					},
+				},
+			},
+			want: &voc.Redundancy{
+				Zone: true,
+				Geo:  false,
+			},
+		},
+		{
+			name: "Happy path: zone and geo redundancy",
+			args: args{
+				app: &armappservice.Site{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1"),
+					Name: util.Ref("WebApp1"),
+					Properties: &armappservice.SiteProperties{
+						RedundancyMode: util.Ref(armappservice.RedundancyModeGeoRedundant),
+					},
+				},
+			},
+			want: &voc.Redundancy{
+				Zone: true,
+				Geo:  true,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getRedundancy(tt.args.app); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getRedundancy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
