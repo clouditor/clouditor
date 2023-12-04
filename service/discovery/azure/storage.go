@@ -165,8 +165,9 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
 	var (
-		enc voc.IsAtRestEncryption
-		err error
+		enc          voc.IsAtRestEncryption
+		err          error
+		publicAccess bool
 	)
 
 	// initialize Cosmos DB client
@@ -193,6 +194,11 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
+	// Check if public access is enabled
+	if util.Deref(account.Properties.PublicNetworkAccess) == "Enabled" {
+		publicAccess = true
+	}
+
 	// Create Cosmos DB database account voc object
 	dbStorage := &voc.DatabaseStorage{
 		Storage: &voc.Storage{
@@ -210,6 +216,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 
 			AtRestEncryption: enc,
 		},
+		PublicAccess: publicAccess,
 	}
 
 	return dbStorage, nil

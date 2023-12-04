@@ -2192,7 +2192,9 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						"testKey1": util.Ref("testTag1"),
 						"testKey2": util.Ref("testTag2"),
 					},
-					Properties: &armcosmos.DatabaseAccountGetProperties{},
+					Properties: &armcosmos.DatabaseAccountGetProperties{
+						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
+					},
 					SystemData: &armcosmos.SystemData{
 						CreatedAt: &time.Time{},
 					},
@@ -2214,7 +2216,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							"testKey2": "testTag2",
 						},
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -2223,6 +2225,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						},
 					},
 				},
+				PublicAccess: true,
 			},
 			wantErr: assert.NoError,
 		},
