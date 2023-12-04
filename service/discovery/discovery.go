@@ -186,7 +186,7 @@ func NewService(opts ...ServiceOption) *Service {
 		Events:            make(chan *DiscoveryEvent),
 		csID:              discovery.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
-		discoveryInterval: 5, // Default discovery interval is 5 minutes
+		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
 
 	// Apply any options
