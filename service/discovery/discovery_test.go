@@ -126,12 +126,12 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithDiscoveryInterval'",
 			args: args{
 				opts: []ServiceOption{
-					WithDiscoveryInterval(8),
+					WithDiscoveryInterval(time.Duration(8)),
 				},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				s := i1.(*Service)
-				return assert.Equal(t, s.discoveryInterval, 8)
+				return assert.Equal(t, s.discoveryInterval, time.Duration(8))
 			},
 		},
 	}

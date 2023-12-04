@@ -102,7 +102,7 @@ type Service struct {
 
 	providers []string
 
-	discoveryInterval int
+	discoveryInterval time.Duration
 
 	Events chan *DiscoveryEvent
 
@@ -164,7 +164,7 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 }
 
 // WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
-func WithDiscoveryInterval(interval int) ServiceOption {
+func WithDiscoveryInterval(interval time.Duration) ServiceOption {
 	return func(s *Service) {
 		s.discoveryInterval = interval
 	}
