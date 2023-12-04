@@ -29,6 +29,8 @@ import (
 	"context"
 	"slices"
 
+	"clouditor.io/clouditor/api/assessment"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -135,6 +137,10 @@ func (req *CreateMetricRequest) GetPayload() proto.Message {
 
 func (req *UpdateMetricRequest) GetPayload() proto.Message {
 	return req.Metric
+}
+
+func (req *RemoveMetricRequest) GetPayload() proto.Message {
+	return &assessment.Metric{Id: req.MetricId}
 }
 
 func (req *UpdateMetricConfigurationRequest) GetPayload() proto.Message {

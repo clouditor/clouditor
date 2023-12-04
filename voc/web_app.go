@@ -27,12 +27,10 @@
 
 package voc
 
-var FunctionType = []string{"Function", "Compute", "Resource"}
+var WebAppType = []string{"WebApp", "Compute", "Resource"}
 
-type Function struct {
+type WebApp struct {
 	*Compute
 	HttpEndpoint        *HttpEndpoint `json:"httpEndpoint"`
-	RuntimeVersion      string        `json:"runtimeVersion"`
-	RuntimeLanguage     string        `json:"runtimeLanguage"`
 	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
 }
