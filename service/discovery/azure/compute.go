@@ -216,7 +216,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 func (d *azureComputeDiscovery) handleFunction(site *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
 		ni              []voc.ResourceID
-		publicAccess    = false
+		publicAccess    bool
 		resourceLogging *voc.ResourceLogging
 		runtimeLanguage string
 		runtimeVersion  string
@@ -290,7 +290,7 @@ func (d *azureComputeDiscovery) handleFunction(site *armappservice.Site, config 
 func (d *azureComputeDiscovery) handleWebApp(site *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
 		ni              []voc.ResourceID
-		publicAccess    = false
+		publicAccess    bool
 		resourceLogging *voc.ResourceLogging
 	)
 
@@ -626,7 +626,7 @@ func (d *azureComputeDiscovery) getSiteProperties(site *armappservice.Site) (ni 
 
 	// If a mandatory field is empty, the whole function is empty
 	if site == nil {
-		return []voc.ResourceID{}, false, &voc.ResourceLogging{}
+		return
 	}
 
 	// Get virtual network subnet ID
