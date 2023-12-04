@@ -9,7 +9,7 @@ require (
 	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-co-op/gocron v1.36.0
-	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
