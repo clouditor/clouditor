@@ -54,7 +54,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 const (
@@ -296,7 +295,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	}
 
 	for _, v := range discoverer {
-		log.Infof("Scheduling {%s} to execute every {%f} minutes...", v.Name(), svc.discoveryInterval.Minutes())
+		log.Infof("Scheduling {%s} to execute every {%v} minutes...", v.Name(), svc.discoveryInterval.Minutes())
 
 		_, err = svc.scheduler.
 			Every(svc.discoveryInterval).

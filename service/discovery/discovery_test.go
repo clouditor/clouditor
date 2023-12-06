@@ -46,6 +46,7 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
+
 	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -53,7 +54,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 func TestMain(m *testing.M) {
