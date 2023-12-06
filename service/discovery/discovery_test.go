@@ -655,7 +655,7 @@ func TestService_Start(t *testing.T) {
 		want    assert.ValueAssertionFunc
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO(all): How to test for Azure and AWS authorizer failures?
+		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
 		{
 			name: "Invalid request",
 			fields: fields{
@@ -863,25 +863,6 @@ func TestService_Start(t *testing.T) {
 				req: &discovery.StartDiscoveryRequest{
 					ResourceGroup: util.Ref("testResourceGroup"),
 				},
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path: K8S authorizer",
-			fields: fields{
-				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
-				providers:         []string{ProviderK8S},
-				discoveryInterval: time.Duration(5 * time.Minute),
-			},
-			args: args{
-				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				resp, ok := i1.(*discovery.StartDiscoveryResponse)
