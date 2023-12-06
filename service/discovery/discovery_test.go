@@ -707,7 +707,7 @@ func TestService_Start(t *testing.T) {
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
 				scheduler:         gocron.NewScheduler(time.UTC),
-				providers:         []string{ProviderAWS},
+				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(-5 * time.Minute),
 				envVariables: []envVariable{
 					{
@@ -766,7 +766,7 @@ func TestService_Start(t *testing.T) {
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
 				scheduler:         gocron.NewScheduler(time.UTC),
-				providers:         []string{ProviderAWS},
+				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
 					{
