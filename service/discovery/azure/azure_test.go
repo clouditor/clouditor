@@ -44,7 +44,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -349,10 +349,8 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	type fields struct {
 		azureDiscovery            *azureDiscovery
-		clientBackupVault         bool
-		clientBackupInstance      bool
+		clientdataprotection      bool
 		emptyClientBackupInstance bool
-		clientBackupPolicy        bool
 	}
 	tests := []struct {
 		name    string
@@ -364,9 +362,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			name: "all clients missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    false,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
+				clientdataprotection: false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -377,9 +373,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			name: "backup instance client missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
+				clientdataprotection: true,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -390,9 +384,8 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			name: "backup instance client empty",
 			fields: fields{
 				azureDiscovery:            NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:         true,
+				clientdataprotection:      true,
 				emptyClientBackupInstance: true,
-				clientBackupPolicy:        false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -404,9 +397,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: true,
-				clientBackupPolicy:   true,
+				clientdataprotection: true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureStorageDiscovery)
@@ -442,23 +433,23 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			}
 
 			// Set clients if needed
-			if tt.fields.clientBackupVault {
-				// initialize backup vaults client
-				_ = d.initBackupVaultsClient()
+			if tt.fields.clientdataprotection {
+				// initialize dataprotection factory client
+				_ = d.initClientDataprotectionFactory()
 			}
-			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
-			}
-			if tt.fields.clientBackupPolicy {
-				// initialize backup policies client
-				_ = d.initBackupPoliciesClient()
-			}
+			// if tt.fields.clientBackupInstance {
+			// 	// initialize dataprotection factory client
+			// 	_ = d.initBackupInstancesClient()
+			// }
+			// if tt.fields.clientBackupPolicy {
+			// 	// initialize backup policies client
+			// 	_ = d.initBackupPoliciesClient()
+			// }
 
 			// Set empty client if needed
 			if tt.fields.emptyClientBackupInstance {
 				// empty backup instances client
-				d.clients.backupInstancesClient = &armdataprotection.BackupInstancesClient{}
+				d.clients.clientDataprotectionFactory = &armdataprotection.ClientFactory{}
 			}
 
 			err := d.discoverBackupVaults()
@@ -475,9 +466,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 	type fields struct {
 		azureDiscovery       *azureDiscovery
-		clientBackupVault    bool
-		clientBackupInstance bool
-		clientBackupPolicy   bool
+		clientDataprotection bool
 	}
 	tests := []struct {
 		name    string
@@ -489,9 +478,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 			name: "both clients missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    false,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
+				clientDataprotection: false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -502,9 +489,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 			name: "backup instance client missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
+				clientDataprotection: true,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -515,9 +500,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: true,
-				clientBackupPolicy:   true,
+				clientDataprotection: true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureComputeDiscovery)
@@ -550,19 +533,25 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 			}
 
 			// Set clients if needed
-			if tt.fields.clientBackupVault {
-				// initialize backup vaults client
-				_ = d.initBackupVaultsClient()
-			}
-			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
+			if tt.fields.clientDataprotection {
+				// initialize dataprotection factory client
+				_ = d.initClientDataprotectionFactory()
 			}
 
-			if tt.fields.clientBackupPolicy {
-				// initialize backup policies client
-				_ = d.initBackupPoliciesClient()
-			}
+			// // Set clients if needed
+			// if tt.fields.clientBackupVault {
+			// 	// initialize backup vaults client
+			// 	_ = d.initBackupVaultsClient()
+			// }
+			// if tt.fields.clientBackupInstance {
+			// 	// initialize backup instances client
+			// 	_ = d.initBackupInstancesClient()
+			// }
+
+			// if tt.fields.clientBackupPolicy {
+			// 	// initialize backup policies client
+			// 	_ = d.initBackupPoliciesClient()
+			// }
 
 			err := d.discoverBackupVaults()
 
@@ -618,7 +607,7 @@ func Test_retentionDuration(t *testing.T) {
 func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	type fields struct {
 		azureDiscovery      *azureDiscovery
-		clientDefender      bool
+		clientSecurity      bool
 		emptyDefenderClient bool
 	}
 	tests := []struct {
@@ -631,7 +620,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			name: "defenderClient not set",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-				clientDefender: false,
+				clientSecurity: false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -642,7 +631,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			name: "empty defenderClient",
 			fields: fields{
 				azureDiscovery:      NewMockAzureDiscovery(newMockStorageSender()),
-				clientDefender:      false,
+				clientSecurity:      false,
 				emptyDefenderClient: true,
 			},
 			want: nil,
@@ -654,7 +643,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-				clientDefender: true,
+				clientSecurity: true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				got, ok := i1.(map[string]*defenderProperties)
@@ -679,15 +668,15 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			}
 
 			// Set client if needed
-			if tt.fields.clientDefender {
+			if tt.fields.clientSecurity {
 				// initialize backup vaults client
-				_ = d.initDefenderClient()
+				_ = d.initClientSecurityFactory()
 			}
 
 			// Set empty defender client if needed
 			if tt.fields.emptyDefenderClient {
 				// initialize backup vaults client
-				d.clients.defenderClient = &armsecurity.PricingsClient{}
+				d.clients.clientSecurityFactory = &armsecurity.ClientFactory{}
 			}
 
 			got, err := d.discoverDefender()
@@ -775,8 +764,8 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			}
 
 			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
+				// initialize dataprotection factory client
+				_ = d.initClientDataprotectionFactory()
 			}
 			got, err := d.discoverBackupInstances(tt.args.resourceGroup, tt.args.vaultName)
 

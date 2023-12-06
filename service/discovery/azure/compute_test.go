@@ -42,7 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1318,8 +1318,8 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 	testTag2 := "testTag2"
 
 	type fields struct {
-		azureDiscovery *azureDiscovery
-		clientWebApps  bool
+		azureDiscovery   *azureDiscovery
+		clientAppservice bool
 	}
 	type args struct {
 		function *armappservice.Site
@@ -1397,8 +1397,8 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 		{
 			name: "Happy path: Windows function",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
-				clientWebApps:  true,
+				azureDiscovery:   NewMockAzureDiscovery(newMockComputeSender()),
+				clientAppservice: true,
 			},
 			args: args{
 				function: &armappservice.Site{
@@ -1459,9 +1459,9 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 			// Set clients if needed
-			if tt.fields.clientWebApps {
+			if tt.fields.clientAppservice {
 				// initialize backup vaults client
-				_ = az.initWebAppsClient()
+				_ = az.initClientAppserviceFactory()
 			}
 
 			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function), "handleFunction(%v)", tt.args.function)

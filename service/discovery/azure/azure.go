@@ -39,10 +39,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v4"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
@@ -137,40 +137,50 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
-	accountsClient      *armstorage.AccountsClient
+	clientStorageFactory *armstorage.ClientFactory
+	// blobContainerClient *armstorage.BlobContainersClient
+	// fileStorageClient   *armstorage.FileSharesClient
+	// accountsClient      *armstorage.AccountsClient
 
 	// DB
-	databasesClient        *armsql.DatabasesClient
-	sqlServersClient       *armsql.ServersClient
-	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
-	cosmosDBClient         *armcosmos.DatabaseAccountsClient
+	clientSqlFactory    *armsql.ClientFactory
+	clientCosmosFactory *armcosmos.ClientFactory
+	// clientCosmosFactory *armcosmos.ClientFactory
+	// cosmosDBClient   *armcosmos.DatabaseAccountsClient
+	// databasesClient        *armsql.DatabasesClient
+	// sqlServersClient       *armsql.ServersClient
+	// threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network
-	networkInterfacesClient     *armnetwork.InterfacesClient
-	loadBalancerClient          *armnetwork.LoadBalancersClient
-	applicationGatewayClient    *armnetwork.ApplicationGatewaysClient
-	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
+	clientNetworkFactory *armnetwork.ClientFactory
+	// networkInterfacesClient     *armnetwork.InterfacesClient
+	// loadBalancerClient          *armnetwork.LoadBalancersClient
+	// applicationGatewayClient    *armnetwork.ApplicationGatewaysClient
+	// networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
-	sitesClient *armappservice.WebAppsClient
+	clientAppserviceFactory *armappservice.ClientFactory
+	// sitesClient *armappservice.WebAppsClient
 
 	// Compute
-	virtualMachinesClient *armcompute.VirtualMachinesClient
-	blockStorageClient    *armcompute.DisksClient
-	diskEncSetClient      *armcompute.DiskEncryptionSetsClient
+	clientComputeFactory *armcompute.ClientFactory
+	// virtualMachinesClient *armcompute.VirtualMachinesClient
+	// blockStorageClient    *armcompute.DisksClient
+	// diskEncSetClient      *armcompute.DiskEncryptionSetsClient
 
 	// Security
-	defenderClient *armsecurity.PricingsClient
+	// defenderClient *armsecurity.PricingsClient
+	clientSecurityFactory *armsecurity.ClientFactory
 
 	// Data protection
-	backupPoliciesClient  *armdataprotection.BackupPoliciesClient
-	backupVaultClient     *armdataprotection.BackupVaultsClient
-	backupInstancesClient *armdataprotection.BackupInstancesClient
+	clientDataprotectionFactory *armdataprotection.ClientFactory
+	// backupPoliciesClient  *armdataprotection.BackupPoliciesClient
+	// backupVaultClient     *armdataprotection.BackupVaultsClient
+	// backupInstancesClient *armdataprotection.BackupInstancesClient
 
 	// Resource groups
-	rgClient *armresources.ResourceGroupsClient
+	clientResourcesFactory *armresources.ClientFactory
+	// rgClient               *armresources.ResourceGroupsClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -249,12 +259,12 @@ type defenderProperties struct {
 func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, error) {
 	var pricings = make(map[string]*defenderProperties)
 
-	if d.clients.defenderClient == nil {
+	if d.clients.clientSecurityFactory == nil {
 		return nil, errors.New("defenderClient not set")
 	}
 
 	// List all pricings to get the enabled Defender for X
-	pricingsList, err := d.clients.defenderClient.List(context.Background(), nil)
+	pricingsList, err := d.clients.clientSecurityFactory.NewPricingsClient().List(context.Background(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover pricings")
 	}
@@ -285,14 +295,14 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 		return nil
 	}
 
-	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
+	if d.clients.clientDataprotectionFactory == nil {
 		return errors.New("backupVaultClient and/or backupInstancesClient missing")
 	}
 
 	// List all backup vaults
 	err := listPager(d,
-		d.clients.backupVaultClient.NewGetInSubscriptionPager,
-		d.clients.backupVaultClient.NewGetInResourceGroupPager,
+		d.clients.clientDataprotectionFactory.NewBackupVaultsClient().NewGetInSubscriptionPager,
+		d.clients.clientDataprotectionFactory.NewBackupVaultsClient().NewGetInResourceGroupPager,
 		func(res armdataprotection.BackupVaultsClientGetInSubscriptionResponse) []*armdataprotection.BackupVaultResource {
 			return res.Value
 		},
@@ -310,7 +320,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				dataSourceType := util.Deref(instance.Properties.DataSourceInfo.DatasourceType)
 
 				// Get retention from backup policy
-				policy, err := d.clients.backupPoliciesClient.Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
+				policy, err := d.clients.clientDataprotectionFactory.NewBackupPoliciesClient().Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
 				if err != nil {
 					err := fmt.Errorf("could not get backup policy '%s': %w", *instance.Properties.PolicyInfo.PolicyID, err)
 					log.Error(err)
@@ -462,7 +472,7 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 	}
 
 	// List all instances in the given backup vault
-	listPager := d.clients.backupInstancesClient.NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
+	listPager := d.clients.clientDataprotectionFactory.NewBackupInstancesClient().NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())
 		if err != nil {

@@ -36,11 +36,11 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
@@ -89,9 +89,9 @@ func (d *azureStorageDiscovery) List() (list []voc.IsCloudResource, err error) {
 
 	log.Info("Discover Azure storage resources")
 
-	// initialize defender client
-	if err := d.initDefenderClient(); err != nil {
-		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+	// initialize security factory client
+	if err := d.initClientSecurityFactory(); err != nil {
+		return nil, fmt.Errorf("could not initialize security factory client: %w", err)
 	}
 
 	// Discover Defender for X properties to add it to the required resource properties
@@ -131,15 +131,15 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 		err  error
 	)
 
-	// initialize Cosmos DB client
-	if err := d.initCosmosDBClient(); err != nil {
+	// initialize cosmos factory client
+	if err := d.initClientCosmosFactory(); err != nil {
 		return nil, err
 	}
 
 	// Discover Cosmos DB
 	err = listPager(d.azureDiscovery,
-		d.clients.cosmosDBClient.NewListPager,
-		d.clients.cosmosDBClient.NewListByResourceGroupPager,
+		d.clients.clientCosmosFactory.NewDatabaseAccountsClient().NewListPager,
+		d.clients.clientCosmosFactory.NewDatabaseAccountsClient().NewListByResourceGroupPager,
 		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
 			return res.Value
 		},
@@ -169,8 +169,8 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		err error
 	)
 
-	// initialize Cosmos DB client
-	if err = d.initCosmosDBClient(); err != nil {
+	// initialize cosmos factory client
+	if err = d.initClientCosmosFactory(); err != nil {
 		return nil, err
 	}
 
@@ -222,15 +222,15 @@ func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, err
 		err  error
 	)
 
-	// initialize SQL server client
-	if err := d.initSQLServersClient(); err != nil {
+	// initialize sql factory client
+	if err := d.initClientSqlFactory(); err != nil {
 		return nil, err
 	}
 
 	// Discover sql server
 	err = listPager(d.azureDiscovery,
-		d.clients.sqlServersClient.NewListPager,
-		d.clients.sqlServersClient.NewListByResourceGroupPager,
+		d.clients.clientSqlFactory.NewServersClient().NewListPager,
+		d.clients.clientSqlFactory.NewServersClient().NewListByResourceGroupPager,
 		func(res armsql.ServersClientListResponse) []*armsql.Server {
 			return res.Value
 		},
@@ -262,13 +262,13 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 		err       error
 	)
 
-	// initialize SQL databases client
-	if err = d.initDatabasesClient(); err != nil {
+	// initialize sql factory client
+	if err = d.initClientSqlFactory(); err != nil {
 		return nil, err
 	}
 
 	// Get databases for given server
-	serverlistPager := d.clients.databasesClient.NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	serverlistPager := d.clients.clientSqlFactory.NewDatabasesClient().NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
@@ -349,35 +349,35 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
 	var storageResourcesList []voc.IsCloudResource
 
-	// initialize backup policies client
-	if err := d.initBackupPoliciesClient(); err != nil {
+	// initialize dataprotection factory client
+	if err := d.initClientDataprotectionFactory(); err != nil {
 		return nil, err
 	}
 
-	// initialize backup instances client
-	if err := d.initBackupInstancesClient(); err != nil {
+	// // initialize backup instances client
+	// if err := d.initBackupInstancesClient(); err != nil {
+	// 	return nil, err
+	// }
+
+	// // initialize backup vaults client
+	// if err := d.initBackupVaultsClient(); err != nil {
+	// 	return nil, err
+	// }
+
+	// initialize storage factory client
+	if err := d.initClientStorageFactory(); err != nil {
 		return nil, err
 	}
 
-	// initialize backup vaults client
-	if err := d.initBackupVaultsClient(); err != nil {
-		return nil, err
-	}
+	// // initialize blob container client
+	// if err := d.initClientFactory(); err != nil {
+	// 	return nil, err
+	// }
 
-	// initialize storage accounts client
-	if err := d.initAccountsClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize blob container client
-	if err := d.initBlobContainerClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize file share client
-	if err := d.initFileStorageClient(); err != nil {
-		return nil, err
-	}
+	// // initialize file share client
+	// if err := d.initFileStorageClient(); err != nil {
+	// 	return nil, err
+	// }
 
 	// Discover backup vaults
 	err := d.azureDiscovery.discoverBackupVaults()
@@ -387,8 +387,8 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	// Discover object and file storages
 	err = listPager(d.azureDiscovery,
-		d.clients.accountsClient.NewListPager,
-		d.clients.accountsClient.NewListByResourceGroupPager,
+		d.clients.clientStorageFactory.NewAccountsClient().NewListPager,
+		d.clients.clientStorageFactory.NewAccountsClient().NewListByResourceGroupPager,
 		func(res armstorage.AccountsClientListResponse) []*armstorage.Account {
 			return res.Value
 		},
@@ -437,7 +437,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	var list []voc.IsCloudResource
 
 	// List all file shares in the specified resource group
-	listPager := d.clients.fileStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
+	listPager := d.clients.clientStorageFactory.NewFileSharesClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -464,7 +464,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// List all blob containers in the specified resource group
-	listPager := d.clients.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+	listPager := d.clients.clientStorageFactory.NewBlobContainersClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -692,12 +692,12 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 
 // anomalyDetectionEnabled returns true if Azure Advanced Threat Protection is enabled for the database.
 func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *armsql.Database) (bool, error) {
-	// initialize threat protection client
-	if err := d.initThreatProtectionClient(); err != nil {
+	// initialize sql factory client
+	if err := d.initClientSqlFactory(); err != nil {
 		return false, err
 	}
 
-	listPager := d.clients.threatProtectionClient.NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	listPager := d.clients.clientSqlFactory.NewDatabaseAdvancedThreatProtectionSettingsClient().NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -746,76 +746,124 @@ func generalizeURL(url string) string {
 	return newURL
 }
 
-// initAccountsClient creates the client if not already exists
-func (d *azureStorageDiscovery) initAccountsClient() (err error) {
-	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
+// // initAccountsClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initAccountsClient() (err error) {
+// 	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d.azureDiscovery, armstorage.NewAccountsClient)
+// 	return
+// }
+
+// // initBlobContainerClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
+// 	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, d.azureDiscovery, armstorage.NewBlobContainersClient)
+// 	return
+// }
+
+// // initFileStorageClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
+// 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
+// 	return
+// }
+
+// // initDefenderClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initDefenderClient() (err error) {
+// 	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d.azureDiscovery, armsecurity.NewPricingsClient)
+
+// 	return
+// }
+
+// // initBackupPoliciesClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initBackupPoliciesClient() (err error) {
+// 	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+
+// 	return
+// }
+
+// // initBackupVaultsClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
+// 	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+
+// 	return
+// }
+
+// // initBackupInstancesClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
+// 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+
+// 	return
+// }
+
+// // initDatabasesClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
+// 	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d.azureDiscovery, armsql.NewDatabasesClient)
+
+// 	return
+// }
+
+// // initSQLServersClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
+// 	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
+
+// 	return
+// }
+
+// // initCosmosDBClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
+// 	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
+
+// 	return
+// }
+
+// // initThreatProtectionClient creates the client if not already exists
+// func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
+// 	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
+
+// 	return
+// }
+
+func (d *azureStorageDiscovery) initClientStorageFactory() (err error) {
+	d.clients.clientStorageFactory, err = initClient(d.clients.clientStorageFactory, d.azureDiscovery, armstorage.NewClientFactory)
+
 	return
 }
 
-// initBlobContainerClient creates the client if not already exists
-func (d *azureStorageDiscovery) initBlobContainerClient() (err error) {
-	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, d.azureDiscovery, armstorage.NewBlobContainersClient)
-	return
-}
-
-// initFileStorageClient creates the client if not already exists
-func (d *azureStorageDiscovery) initFileStorageClient() (err error) {
-	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d.azureDiscovery, armstorage.NewFileSharesClient)
-	return
-}
-
-// initDefenderClient creates the client if not already exists
-func (d *azureStorageDiscovery) initDefenderClient() (err error) {
-	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d.azureDiscovery, armsecurity.NewPricingsClient)
+func (d *azureStorageDiscovery) initClientSqlFactory() (err error) {
+	d.clients.clientSqlFactory, err = initClient(d.clients.clientSqlFactory, d.azureDiscovery, armsql.NewClientFactory)
 
 	return
 }
 
-// initBackupPoliciesClient creates the client if not already exists
-func (d *azureStorageDiscovery) initBackupPoliciesClient() (err error) {
-	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+func (d *azureStorageDiscovery) initClientCosmosFactory() (err error) {
+	d.clients.clientCosmosFactory, err = initClient(d.clients.clientCosmosFactory, d.azureDiscovery, armcosmos.NewClientFactory)
 
 	return
 }
 
-// initBackupVaultsClient creates the client if not already exists
-func (d *azureStorageDiscovery) initBackupVaultsClient() (err error) {
-	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+// func (d *azureStorageDiscovery) initClientAppserviceFactory() (err error) {
+// 	d.clients.clientAppserviceFactory, err = initClient(d.clients.clientAppserviceFactory, d.azureDiscovery, armappservice.NewClientFactory)
+
+// 	return
+// }
+
+// func (d *azureStorageDiscovery) initClientComputeFactory() (err error) {
+// 	d.clients.clientComputeFactory, err = initClient(d.clients.clientComputeFactory, d.azureDiscovery, armcompute.NewClientFactory)
+
+// 	return
+// }
+
+func (d *azureStorageDiscovery) initClientSecurityFactory() (err error) {
+	d.clients.clientSecurityFactory, err = initClient(d.clients.clientSecurityFactory, d.azureDiscovery, armsecurity.NewClientFactory)
 
 	return
 }
 
-// initBackupInstancesClient creates the client if not already exists
-func (d *azureStorageDiscovery) initBackupInstancesClient() (err error) {
-	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+func (d *azureStorageDiscovery) initClientDataprotectionFactory() (err error) {
+	d.clients.clientDataprotectionFactory, err = initClient(d.clients.clientDataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
 
 	return
 }
 
-// initDatabasesClient creates the client if not already exists
-func (d *azureStorageDiscovery) initDatabasesClient() (err error) {
-	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d.azureDiscovery, armsql.NewDatabasesClient)
+// func (d *azureStorageDiscovery) initClientResourcesFactory() (err error) {
+// 	d.clients.clientResourcesFactory, err = initClient(d.clients.clientResourcesFactory, d.azureDiscovery, armresources.NewClientFactory)
 
-	return
-}
-
-// initSQLServersClient creates the client if not already exists
-func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
-	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d.azureDiscovery, armsql.NewServersClient)
-
-	return
-}
-
-// initCosmosDBClient creates the client if not already exists
-func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
-	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
-
-	return
-}
-
-// initThreatProtectionClient creates the client if not already exists
-func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
-	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d.azureDiscovery, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
-
-	return
-}
+// 	return
+// }

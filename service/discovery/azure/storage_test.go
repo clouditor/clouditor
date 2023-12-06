@@ -39,7 +39,7 @@ import (
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -1703,8 +1703,9 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			// initialize file share client
-			_ = d.initFileStorageClient()
+
+			// initialize storage factory client
+			_ = d.initClientStorageFactory()
 
 			got, err := d.discoverFileStorages(tt.args.account)
 			if !tt.wantErr(t, err) {
@@ -1857,8 +1858,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 
-			// initialize blob container client
-			_ = d.initBlobContainerClient()
+			// initialize storage factory client
+			_ = d.initClientStorageFactory()
 
 			got, err := d.discoverObjectStorages(tt.args.account)
 			if !tt.wantErr(t, err) {

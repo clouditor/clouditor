@@ -48,7 +48,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 	}
 
 	// initialize client
-	if err := d.initResourceGroupsClient(); err != nil {
+	if err := d.initClientResourcesFactory(); err != nil {
 		return nil, err
 	}
 
@@ -57,7 +57,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 
 	list = append(list, acc)
 
-	listPager := d.clients.rgClient.NewListPager(&armresources.ResourceGroupsClientListOptions{})
+	listPager := d.clients.clientResourcesFactory.NewResourceGroupsClient().NewListPager(&armresources.ResourceGroupsClientListOptions{})
 	for listPager.More() {
 		page, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -82,9 +82,15 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 	return
 }
 
-// azureResourceGroupDiscovery creates the client if not already exists
-func (d *azureResourceGroupDiscovery) initResourceGroupsClient() (err error) {
-	d.clients.rgClient, err = initClient(d.clients.rgClient, d.azureDiscovery, armresources.NewResourceGroupsClient)
+// // azureResourceGroupDiscovery creates the client if not already exists
+// func (d *azureResourceGroupDiscovery) initResourceGroupsClient() (err error) {
+// 	d.clients.rgClient, err = initClient(d.clients.rgClient, d.azureDiscovery, armresources.NewResourceGroupsClient)
+// 	return
+// }
+
+func (d *azureResourceGroupDiscovery) initClientResourcesFactory() (err error) {
+	d.clients.clientResourcesFactory, err = initClient(d.clients.clientResourcesFactory, d.azureDiscovery, armresources.NewClientFactory)
+
 	return
 }
 
