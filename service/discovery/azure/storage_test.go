@@ -814,7 +814,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							//Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
+							Raw:    "{\"*armdataprotection.BackupInstanceResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\",\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\",\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer\"}}}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 						},
 					},
 				},
@@ -880,7 +880,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								"testKey2": "testTag2",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
+							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"databaseAccountOfferType\":\"Standard\",\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -906,7 +906,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								"testKey2": "testTag2",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
+							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"databaseAccountOfferType\":\"Standard\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -2109,7 +2109,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								"testKey2": "testTag2",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
+							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"databaseAccountOfferType\":\"Standard\",\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -2135,7 +2135,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								"testKey2": "testTag2",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
+							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"databaseAccountOfferType\":\"Standard\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -2215,7 +2215,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							"testKey2": "testTag2",
 						},
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"databaseAccountOfferType\":\"Standard\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -2265,7 +2265,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							"testKey2": "testTag2",
 						},
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+						Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"databaseAccountOfferType\":\"Standard\",\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 					},
 					AtRestEncryption: &voc.CustomerKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{

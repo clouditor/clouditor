@@ -398,30 +398,7 @@ func getName(id string) string {
 	return strings.Split(id, "/")[8]
 }
 
-// // initNetworkInterfacesClient creates the client if not already exists
-// func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-// 	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d.azureDiscovery, armnetwork.NewInterfacesClient)
-// 	return
-// }
-
-// // initLoadBalancersClient creates the client if not already exists
-// func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-// 	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
-// 	return
-// }
-
-// // initApplicationGatewayClient creates the client if not already exists
-// func (d *azureNetworkDiscovery) initApplicationGatewayClient() (err error) {
-// 	d.clients.applicationGatewayClient, err = initClient(d.clients.applicationGatewayClient, d.azureDiscovery, armnetwork.NewApplicationGatewaysClient)
-// 	return
-// }
-
-// // initNetworkSecurityGroupClient creates the client if not already exists
-// func (d *azureNetworkDiscovery) initNetworkSecurityGroupClient() (err error) {
-// 	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d.azureDiscovery, armnetwork.NewSecurityGroupsClient)
-// 	return
-// }
-
+// initClientNetworkFactory creates the client if not already exists
 func (d *azureNetworkDiscovery) initClientNetworkFactory() (err error) {
 	d.clients.clientNetworkFactory, err = initClient(d.clients.clientNetworkFactory, d.azureDiscovery, armnetwork.NewClientFactory)
 

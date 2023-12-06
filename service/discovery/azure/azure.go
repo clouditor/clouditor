@@ -138,49 +138,28 @@ type backup struct {
 type clients struct {
 	// Storage
 	clientStorageFactory *armstorage.ClientFactory
-	// blobContainerClient *armstorage.BlobContainersClient
-	// fileStorageClient   *armstorage.FileSharesClient
-	// accountsClient      *armstorage.AccountsClient
 
 	// DB
 	clientSqlFactory    *armsql.ClientFactory
 	clientCosmosFactory *armcosmos.ClientFactory
-	// clientCosmosFactory *armcosmos.ClientFactory
-	// cosmosDBClient   *armcosmos.DatabaseAccountsClient
-	// databasesClient        *armsql.DatabasesClient
-	// sqlServersClient       *armsql.ServersClient
-	// threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 
 	// Network
 	clientNetworkFactory *armnetwork.ClientFactory
-	// networkInterfacesClient     *armnetwork.InterfacesClient
-	// loadBalancerClient          *armnetwork.LoadBalancersClient
-	// applicationGatewayClient    *armnetwork.ApplicationGatewaysClient
-	// networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
 	clientAppserviceFactory *armappservice.ClientFactory
-	// sitesClient *armappservice.WebAppsClient
 
 	// Compute
 	clientComputeFactory *armcompute.ClientFactory
-	// virtualMachinesClient *armcompute.VirtualMachinesClient
-	// blockStorageClient    *armcompute.DisksClient
-	// diskEncSetClient      *armcompute.DiskEncryptionSetsClient
 
 	// Security
-	// defenderClient *armsecurity.PricingsClient
 	clientSecurityFactory *armsecurity.ClientFactory
 
 	// Data protection
 	clientDataprotectionFactory *armdataprotection.ClientFactory
-	// backupPoliciesClient  *armdataprotection.BackupPoliciesClient
-	// backupVaultClient     *armdataprotection.BackupVaultsClient
-	// backupInstancesClient *armdataprotection.BackupInstancesClient
 
 	// Resource groups
 	clientResourcesFactory *armresources.ClientFactory
-	// rgClient               *armresources.ResourceGroupsClient
 }
 
 func (a *azureDiscovery) CloudServiceID() string {

@@ -348,9 +348,8 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 
 func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	type fields struct {
-		azureDiscovery            *azureDiscovery
-		clientdataprotection      bool
-		emptyClientBackupInstance bool
+		azureDiscovery       *azureDiscovery
+		clientDataprotection bool
 	}
 	tests := []struct {
 		name    string
@@ -359,45 +358,45 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "all clients missing",
+			name: "backup vaults already discovered",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  &armsubscription.Subscription{ID: util.Ref("00000000-0000-0000-0000-000000000000")},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: newMockStorageSender(),
+						},
+					},
+					csID: testdata.MockCloudServiceID1,
+					backupMap: map[string]*backup{
+						"first": {
+							backup:         make(map[string][]*voc.Backup),
+							backupStorages: []voc.IsCloudResource{},
+						},
+					},
+				},
+				clientDataprotection: false,
+			},
+			want:    nil,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "dataprotection factory client missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientdataprotection: false,
+				clientDataprotection: false,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
 			},
 		},
-		{
-			name: "backup instance client missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientdataprotection: true,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "backup instance client empty",
-			fields: fields{
-				azureDiscovery:            NewMockAzureDiscovery(newMockStorageSender()),
-				clientdataprotection:      true,
-				emptyClientBackupInstance: true,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover backup instances:")
-			},
-		},
-
 		{
 			name: "Happy path",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientdataprotection: true,
+				clientDataprotection: true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureStorageDiscovery)
@@ -432,24 +431,9 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 
-			// Set clients if needed
-			if tt.fields.clientdataprotection {
-				// initialize dataprotection factory client
+			// Set dataprotection factory client if needed
+			if tt.fields.clientDataprotection {
 				_ = d.initClientDataprotectionFactory()
-			}
-			// if tt.fields.clientBackupInstance {
-			// 	// initialize dataprotection factory client
-			// 	_ = d.initBackupInstancesClient()
-			// }
-			// if tt.fields.clientBackupPolicy {
-			// 	// initialize backup policies client
-			// 	_ = d.initBackupPoliciesClient()
-			// }
-
-			// Set empty client if needed
-			if tt.fields.emptyClientBackupInstance {
-				// empty backup instances client
-				d.clients.clientDataprotectionFactory = &armdataprotection.ClientFactory{}
 			}
 
 			err := d.discoverBackupVaults()
@@ -475,21 +459,34 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "both clients missing",
+			name: "backup vaults already discovered",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					sub:  &armsubscription.Subscription{ID: util.Ref("00000000-0000-0000-0000-000000000000")},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: newMockComputeSender(),
+						},
+					},
+					csID: testdata.MockCloudServiceID1,
+					backupMap: map[string]*backup{
+						"first": {
+							backup:         make(map[string][]*voc.Backup),
+							backupStorages: []voc.IsCloudResource{},
+						},
+					},
+				},
+				clientDataprotection: false,
+			},
+			want:    nil,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "dataprotection client missing",
 			fields: fields{
 				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
 				clientDataprotection: false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "backup instance client missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientDataprotection: true,
 			},
 			want: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -532,26 +529,10 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 
-			// Set clients if needed
+			// Set dataprotection factory client if needed
 			if tt.fields.clientDataprotection {
-				// initialize dataprotection factory client
 				_ = d.initClientDataprotectionFactory()
 			}
-
-			// // Set clients if needed
-			// if tt.fields.clientBackupVault {
-			// 	// initialize backup vaults client
-			// 	_ = d.initBackupVaultsClient()
-			// }
-			// if tt.fields.clientBackupInstance {
-			// 	// initialize backup instances client
-			// 	_ = d.initBackupInstancesClient()
-			// }
-
-			// if tt.fields.clientBackupPolicy {
-			// 	// initialize backup policies client
-			// 	_ = d.initBackupPoliciesClient()
-			// }
 
 			err := d.discoverBackupVaults()
 
@@ -841,7 +822,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						Type:         voc.ObjectStorageType,
 						Labels:       nil,
 						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
+						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\",\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}}}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
 			},
@@ -881,7 +862,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						Type:         voc.BlockStorageType,
 						Labels:       nil,
 						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
+						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\",\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}}}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
 			},

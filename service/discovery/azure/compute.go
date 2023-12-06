@@ -87,16 +87,6 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		return nil, err
 	}
 
-	// // initialize backup vaults client
-	// if err := d.initBackupVaultsClient(); err != nil {
-	// 	return nil, err
-	// }
-
-	// // initialize backup instances client
-	// if err := d.initBackupInstancesClient(); err != nil {
-	// 	return nil, err
-	// }
-
 	// Discover backup vaults
 	err = d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
@@ -724,63 +714,21 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
 }
 
-// // initWebAppsClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-// 	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
-// 	return
-// }
-
-// // initVirtualMachinesClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-// 	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
-// 	return
-// }
-
-// // initBlockStoragesClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-// 	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, d.azureDiscovery, armcompute.NewDisksClient)
-// 	return
-// }
-
-// // initBlockStoragesClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-// 	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
-// 	return
-// }
-
-// // initBackupPoliciesClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initBackupPoliciesClient() (err error) {
-// 	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
-
-// 	return
-// }
-
-// // initBackupVaultsClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initBackupVaultsClient() (err error) {
-// 	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
-
-// 	return
-// }
-
-// // initBackupInstancesClient creates the client if not already exists
-// func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
-// 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
-
-// 	return
-// }
-
+// initClientNetworkFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientAppserviceFactory() (err error) {
 	d.clients.clientAppserviceFactory, err = initClient(d.clients.clientAppserviceFactory, d.azureDiscovery, armappservice.NewClientFactory)
 
 	return
 }
 
+// initClientComputeFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientComputeFactory() (err error) {
 	d.clients.clientComputeFactory, err = initClient(d.clients.clientComputeFactory, d.azureDiscovery, armcompute.NewClientFactory)
 
 	return
 }
 
+// initClientDataprotectionFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientDataprotectionFactory() (err error) {
 	d.clients.clientDataprotectionFactory, err = initClient(d.clients.clientDataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
 
