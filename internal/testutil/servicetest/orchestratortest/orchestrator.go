@@ -11,14 +11,24 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// NewCertificate creates a mock certificate
-func NewCertificate() *orchestrator.Certificate {
+// NewCertificateOption is an option for NewCertificate to modify single properties for testing , e.g., Update endpoint
+type NewCertificateOption func(*orchestrator.Certificate)
+
+func WithDescription(description string) NewCertificateOption {
+	return func(certificate *orchestrator.Certificate) {
+		certificate.Description = description
+	}
+}
+
+// NewCertificate creates a mock certificate.
+func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
+	timeStamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
 	var mockCertificate = &orchestrator.Certificate{
 		Id:             testdata.MockCertificateID,
 		Name:           testdata.MockCertificateName,
 		CloudServiceId: testdata.MockCloudServiceID1,
-		IssueDate:      "2021-11-06",
-		ExpirationDate: "2024-11-06",
+		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
 		Standard:       testdata.MockCertificateName,
 		AssuranceLevel: testdata.AssuranceLevelHigh,
 		Cab:            testdata.MockCertificateCab,
@@ -26,12 +36,40 @@ func NewCertificate() *orchestrator.Certificate {
 		States: []*orchestrator.State{{
 			State:         testdata.MockStateState,
 			TreeId:        testdata.MockStateTreeID,
-			Timestamp:     time.Now().String(),
+			Timestamp:     timeStamp.String(),
 			CertificateId: testdata.MockCertificateID,
 			Id:            testdata.MockStateId,
 		}},
 	}
 
+	for _, o := range opts {
+		o(mockCertificate)
+	}
+
+	return mockCertificate
+}
+
+// NewCertificate2 creates a mock certificate with other properties than NewCertificate
+func NewCertificate2() *orchestrator.Certificate {
+	timeStamp := time.Date(2014, 12, 1, 0, 0, 0, 0, time.UTC)
+	var mockCertificate = &orchestrator.Certificate{
+		Id:             testdata.MockCertificateID2,
+		Name:           testdata.MockCertificateName2,
+		CloudServiceId: testdata.MockCloudServiceID2,
+		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
+		Standard:       testdata.MockCertificateName2,
+		AssuranceLevel: testdata.AssuranceLevelHigh,
+		Cab:            testdata.MockCertificateCab2,
+		Description:    testdata.MockCertificateDescription2,
+		States: []*orchestrator.State{{
+			State:         testdata.MockStateState2,
+			TreeId:        testdata.MockStateTreeID2,
+			Timestamp:     timeStamp.String(),
+			CertificateId: testdata.MockCertificateID2,
+			Id:            testdata.MockStateId2,
+		}},
+	}
 	return mockCertificate
 }
 
@@ -58,42 +96,6 @@ func NewCatalog() *orchestrator.Catalog {
 
 // NewTargetOfEvaluation creates a new Target of Evaluation. The assurance level is set if available.
 func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluation {
-	var toe = &orchestrator.TargetOfEvaluation{
-		CloudServiceId: testdata.MockCloudServiceID1,
-		CatalogId:      testdata.MockCatalogID,
-	}
-
-	if assuranceLevel != "" {
-		toe.AssuranceLevel = &assuranceLevel
-	}
-
-	// Our test catalog does not allow scoping, so we need to emulate what we do in CreateTargetOfEvaluation
-	toe.ControlsInScope = []*orchestrator.Control{
-		{
-			Id:                testdata.MockControlID1,
-			CategoryName:      testdata.MockCategoryName,
-			CategoryCatalogId: testdata.MockCatalogID,
-			Name:              testdata.MockControlName,
-			Description:       testdata.MockControlDescription,
-		},
-		{
-			Id:                             testdata.MockSubControlID11,
-			CategoryName:                   testdata.MockCategoryName,
-			CategoryCatalogId:              testdata.MockCatalogID,
-			Name:                           testdata.MockSubControlName,
-			Description:                    testdata.MockSubControlDescription,
-			ParentControlId:                util.Ref(testdata.MockControlID1),
-			ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-			ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-			AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-		},
-	}
-
-	return toe
-}
-
-// NewTargetOfEvaluationWithoutControlsInScope creates a new Target of Evaluation without controls_in_scope. The assurance level is set if available.
-func NewTargetOfEvaluationWithoutControlsInScope(assuranceLevel string) *orchestrator.TargetOfEvaluation {
 	var toe = &orchestrator.TargetOfEvaluation{
 		CloudServiceId: testdata.MockCloudServiceID1,
 		CatalogId:      testdata.MockCatalogID,
@@ -378,145 +380,24 @@ var (
 		Description:       testdata.MockControlDescription,
 	}
 	MockControls = []*orchestrator.Control{MockControl1, MockControl2, MockControl3, MockControl4, MockControl5}
-
-	MockControlsInScope1 = &orchestrator.Control{
-		Id:                testdata.MockControlID1,
-		Name:              testdata.MockControlName,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Description:       testdata.MockControlDescription,
-	}
-	MockControlsInScopeSubControl11 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID11,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-		ParentControlId:                util.Ref(testdata.MockControlID1),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID1,
-			Name:        testdata.MockMetricName1,
-			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
-		}}}
-	MockControlsInScope2 = &orchestrator.Control{
-		Id:                testdata.MockControlID2,
-		Name:              testdata.MockControlName,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Description:       testdata.MockControlDescription,
-	}
-	MockControlsInScopeSubControl21 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID21,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelBasic,
-		ParentControlId:                util.Ref(testdata.MockControlID2),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID1,
-			Name:        testdata.MockMetricName1,
-			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
-		}},
-	}
-	MockControlsInScope3 = &orchestrator.Control{
-		Id:                testdata.MockControlID3,
-		Name:              testdata.MockControlName,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Description:       testdata.MockControlDescription,
-	}
-	MockControlsInScopeSubControl31 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID31,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelSubstantial,
-		ParentControlId:                util.Ref(testdata.MockControlID3),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-	}
-	MockControlsInScopeSubControl32 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID32,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelHigh,
-		ParentControlId:                util.Ref(testdata.MockControlID3),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-	}
-	MockControlsInScope4 = &orchestrator.Control{
-		Id:                testdata.MockControlID4,
-		Name:              testdata.MockControlName,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Description:       testdata.MockControlDescription,
-		Metrics:           []*assessment.Metric{},
-	}
-	MockControlsInScopeSubControl4 = &orchestrator.Control{
-		Id:                             testdata.MockSubControlID32,
-		Name:                           testdata.MockControlName,
-		CategoryName:                   testdata.MockCategoryName,
-		CategoryCatalogId:              testdata.MockCatalogID,
-		Description:                    testdata.MockControlDescription,
-		AssuranceLevel:                 &testdata.AssuranceLevelSubstantial,
-		ParentControlId:                util.Ref(testdata.MockControlID3),
-		ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
-		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
-	}
-	MockControlsInScope5 = &orchestrator.Control{
-		Id:                testdata.MockControlID5,
-		Name:              testdata.MockControlName,
-		CategoryName:      testdata.MockCategoryName,
-		CategoryCatalogId: testdata.MockCatalogID,
-		Description:       testdata.MockControlDescription,
-		AssuranceLevel:    nil,
-		Metrics: []*assessment.Metric{{
-			Id:          testdata.MockMetricID1,
-			Name:        testdata.MockMetricName1,
-			Description: testdata.MockMetricDescription1,
-			Scale:       assessment.Metric_ORDINAL,
-			Range: &assessment.Range{
-				Range: &assessment.Range_AllowedValues{
-					AllowedValues: &assessment.AllowedValues{
-						Values: []*structpb.Value{
-							structpb.NewBoolValue(false),
-							structpb.NewBoolValue(true),
-						},
-					},
-				},
-			},
-		}},
-	}
-	MockControlsInScope = []*orchestrator.Control{MockControlsInScope1, MockControlsInScopeSubControl11, MockControlsInScope2, MockControlsInScopeSubControl21, MockControlsInScope3, MockControlsInScopeSubControl31, MockControlsInScope4, MockControlsInScope5, MockControlsInScopeSubControl32}
 )
+
+func NewMetric() *assessment.Metric {
+	return &assessment.Metric{
+		Id:          testdata.MockMetricID1,
+		Name:        testdata.MockMetricName1,
+		Description: testdata.MockMetricDescription1,
+		Scale:       assessment.Metric_ORDINAL,
+		Range: &assessment.Range{
+			Range: &assessment.Range_AllowedValues{
+				AllowedValues: &assessment.AllowedValues{
+					Values: []*structpb.Value{
+						structpb.NewBoolValue(false),
+						structpb.NewBoolValue(true),
+					},
+				},
+			},
+		},
+	}
+
+}

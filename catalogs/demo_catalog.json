@@ -1,9 +1,16 @@
 [
     {
         "id": "DemoCatalog",
-        "name": "A demo catalog for testing purposes",
-        "description": "A mock catalog for testing purposes",
-        "assurance_levels": ["low", "medium", "high"],
+        "name": "Clouditor Demo Catalog",
+        "description": "A catalog for demonstration purposes",
+        "metadata": {
+            "color": "#007FC3"
+        },
+        "short_name": "CD",
+        "assurance_levels": [
+            "substantial",
+            "high"
+        ],
         "all_in_scope": true,
         "categories": [
             {
@@ -17,42 +24,63 @@
                         "controls": [
                             {
                                 "id": "CommSec-01.1",
-                                "name": "The CSP shall use an up-to-date TLS version in all data transmissions",
+                                "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TLSVersion"
-                                    },
-                                    {
-                                        "id": "TransportEncryptionAlgorihm"
+                                        "id": "TransportEncryptionProtocol"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             },
                             {
-                                "id": "CommSec-01.2",
-                                "name": "The CSP shall enforce encryption in all data transmissions",
+                                "id": "CommSec-01.3",
+                                "description": "The CSP shall enforce encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnforced"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             },
                             {
-                                "id": "CommSec-01.3",
-                                "name": "The CSP shall enable encryption in all data transmissions",
+                                "id": "CommSec-01.4",
+                                "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "CommSec-01",
-                                "parent_control_category_name": "Communication Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "CommSec-01.5",
+                                "description": "The CSP shall use state-of-the-art TLS cipher suites.",
+                                "metrics": [
+                                    {
+                                        "id": "TlsCipherSuites"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "CommSec-01.6",
+                                "description": "The CSP shall use state-of-the-art TLS Diffie-Hellman groups.",
+                                "metrics": [
+                                    {
+                                        "id": "TlsDHGroups"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                             {
+                                "id": "CommSec-01.7",
+                                "description": "The CSP shall use state-of-the-art TLS signature algorithms.",
+                                "metrics": [
+                                    {
+                                        "id": "TlsSignatureAlgorithms"
+                                    }
+                                ],
+                                "assurance_level": "high"
                             }
                         ]
                     }
@@ -64,47 +92,38 @@
                 "controls": [
                     {
                         "id": "SysHard-01",
-                        "name": "Transport",
+                        "name": "Harden transmissions",
                         "description": "The CSP should encrypt all data transmissions",
                         "controls": [
                             {
                                 "id": "SysHard-01.1",
-                                "name": "The CSP shall use an up-to-date TLS version in all data transmissions",
+                                "description": "The CSP shall use an up-to-date TLS protocol in all data transmissions",
                                 "metrics": [
                                     {
-                                        "id": "TLSVersion"
-                                    },
-                                    {
-                                        "id": "TransportEncryptionAlgorihm"
+                                        "id": "TransportEncryptionProtocol"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             },
                             {
                                 "id": "SysHard-01.2",
-                                "name": "The CSP shall enforce encryption in all data transmissions.",
+                                "description": "The CSP shall enforce encryption in all data transmissions.",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnforced"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             },
                             {
                                 "id": "SysHard-01.3",
-                                "name": "The CSP shall enable encryption in all data transmissions",
+                                "description": "The CSP shall enable encryption in all data transmissions",
                                 "metrics": [
                                     {
                                         "id": "TransportEncryptionEnabled"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-01",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
@@ -115,19 +134,17 @@
                         "controls": [
                             {
                                 "id": "SysHard-02.1",
-                                "name": "The CSP shall enable the Web Application Firewall (WAF).",
+                                "description": "The CSP shall enable the Web Application Firewall (WAF).",
                                 "metrics": [
                                     {
-                                        "id": "WebApplicationFireall"
+                                        "id": "WebApplicationFirewallEnabled"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-02",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             },
                             {
                                 "id": "SysHard-02.2",
-                                "name": "The CSP shall enable the L3 firewall and restrict specific ports.",
+                                "description": "The CSP shall enable the L3 firewall and restrict specific ports.",
                                 "metrics": [
                                     {
                                         "id": "L3FirewallEnabled"
@@ -136,9 +153,7 @@
                                         "id": "L3FirewallRestrictedPorts"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-02",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             }
                         ]
                     },
@@ -149,7 +164,7 @@
                         "controls": [
                             {
                                 "id": "SysHard-03.1",
-                                "name": "The CSP shall enable malware protection and store all log data.",
+                                "description": "The CSP shall enable malware protection and store the log data.",
                                 "metrics": [
                                     {
                                         "id": "MalwareProtectionEnabled"
@@ -158,20 +173,18 @@
                                         "id": "MalwareProtectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-03",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
                     {
                         "id": "SysHard-04",
                         "name": "Automatic Updates",
-                        "description": "The CSP should enable firewalls",
+                        "description": "The CSP should enable automatic updates",
                         "controls": [
                             {
                                 "id": "SysHard-04.1",
-                                "name": "The CSP shall enable automatic updates and execute in a specific time interall.",
+                                "description": "The CSP shall enable automatic updates and update in a specific time intervall.",
                                 "metrics": [
                                     {
                                         "id": "AutomaticUpdatesEnabled"
@@ -180,20 +193,18 @@
                                         "id": "AutomaticUpdatesInterval"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-04",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
                     {
                         "id": "SysHard-05",
                         "name": "Anomaly Detection",
-                        "description": "The CSP should provide anomaly detection mechanisms.",
+                        "description": "The CSP should provide anomaly detection tools.",
                         "controls": [
                             {
                                 "id": "SysHard-05.1",
-                                "name": "The CSP shall enable anomaly detection and store all log data.",
+                                "description": "The CSP shall enable anomaly detection and store the log data.",
                                 "metrics": [
                                     {
                                         "id": "AnomalyDetectionEnabled"
@@ -202,12 +213,10 @@
                                         "id": "AnomalyDetectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-05",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             }
                         ]
-                    }, 
+                    },
                     {
                         "id": "SysHard-06",
                         "name": "Runtime",
@@ -215,15 +224,40 @@
                         "controls": [
                             {
                                 "id": "SysHard-06.1",
-                                "name": "The CSP shall use state-of-the-art runtime versions.",
+                                "description": "The CSP shall use state-of-the-art runtime versions.",
                                 "metrics": [
                                     {
                                         "id": "RuntimeVersion"
                                     }
                                 ],
-                                "parent_control_id": "SysHard-06",
-                                "parent_control_category_name": "System Hardening",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "SysHard-07",
+                        "name": "Harden storage resources",
+                        "description": "The CSP should provide state-of-the art techniques to encrypt storage data.",
+                        "controls": [
+                            {
+                                "id": "SysHard-07.1",
+                                "description": "The CSP shall enable at rest encryption.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionEnabled"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "SysHard-07.2",
+                                "description": "The CSP shall use state-of-the-art encryption algorithms for data at rest.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionAlgorithm"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
                             }
                         ]
                     }
@@ -240,7 +274,7 @@
                         "controls": [
                             {
                                 "id": "Log-01.1",
-                                "name": "The CSP shall log all activies in a dedicated storage and retain the data for a specific time.",
+                                "description": "The CSP shall log all boot activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "BootLoggingEnabled"
@@ -252,9 +286,7 @@
                                         "id": "BootLoggingRetention"
                                     }
                                 ],
-                                "parent_control_id": "Log-01",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             }
                         ]
                     },
@@ -265,7 +297,7 @@
                         "controls": [
                             {
                                 "id": "Log-02.1",
-                                "name": "The CSP shall log all activies in a dedicated storage and retain the data for a specific time.",
+                                "description": "The CSP shall log all activities in a dedicated storage and retain the data for a specific time.",
                                 "metrics": [
                                     {
                                         "id": "OSLoggingEnabled"
@@ -277,40 +309,34 @@
                                         "id": "OSLoggingRetention"
                                     }
                                 ],
-                                "parent_control_id": "Log-02",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             }
                         ]
                     },
                     {
                         "id": "Log-03",
                         "name": "Protection Mechanisms",
-                        "description": "The CSP should log data from additional protection mechanisms.",
+                        "description": "The CSP should log data from additional protection tools.",
                         "controls": [
                             {
                                 "id": "Log-03.1",
-                                "name": "The CSP shall log malware protection log data.",
+                                "description": "The CSP shall log malware protection data.",
                                 "metrics": [
                                     {
                                         "id": "MalwareProtectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "Log-03",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             },
                             {
                                 "id": "Log-03.2",
-                                "name": "The CSP shall log anomaly detection log data.",
+                                "name": "The CSP shall log anomaly detection data.",
                                 "metrics": [
                                     {
                                         "id": "AnomalyDetectionOutput"
                                     }
                                 ],
-                                "parent_control_id": "Log-03",
-                                "parent_control_category_name": "Logging",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
                             }
                         ]
                     }
@@ -327,15 +353,13 @@
                         "controls": [
                             {
                                 "id": "IdSec-01.1",
-                                "name": "The CSP shall check recent identity activities.",
+                                "description": "The CSP shall check recent identity activities.",
                                 "metrics": [
                                     {
                                         "id": "IdentityRecentActivity"
                                     }
                                 ],
-                                "parent_control_id": "IdSec-01",
-                                "parent_control_category_name": "Identity Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "high"
                             }
                         ]
                     },
@@ -346,15 +370,99 @@
                         "controls": [
                             {
                                 "id": "IdSec-02.1",
-                                "name": "The CSP shall use password policies.",
+                                "description": "The CSP shall use password policies.",
                                 "metrics": [
                                     {
                                         "id": "IdentityPasswordPolicy"
                                     }
                                 ],
-                                "parent_control_id": "IdSec-02",
-                                "parent_control_category_name": "Identity Security",
-                                "parent_control_category_catalog_id": "DemoCatalog"
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Data Security",
+                "description": "Secure all stored data.",
+                "controls": [
+                    {
+                        "id": "DataSec-01",
+                        "name": "Data Encryption",
+                        "description": "The CSP should check data at rest.",
+                        "controls": [
+                            {
+                                "id": "DataSec-01.1",
+                                "description": "The CSP shall check if data encryption is enabled.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionEnabled"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "DataSec-01.2",
+                                "description": "The CSP shall check if state-of-the-art algorithms are used for data at rest.",
+                                "metrics": [
+                                    {
+                                        "id": "AtRestEncryptionAlgorithm"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Secure provisioning",
+                "description": "Secure provisioning to the production environment.",
+                "controls": [
+                    {
+                        "id": "SecProv-01",
+                        "name": "Commit",
+                        "description": "The CSP should check data at rest.",
+                        "controls": [
+                            {
+                                "id": "SecProv-01.1",
+                                "description": "The CSP shall check if Git commit messages contain a signoff.",
+                                "metrics": [
+                                    {
+                                        "id": "CodeSignoff"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
+                            },
+                            {
+                                "id": "SecProv-01.2",
+                                "description": "The CSP shall check if Git commits are signed and contain a signoff.",
+                                "metrics": [
+                                    {
+                                        "id": "SignedSignoff"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "SecProv-01.3",
+                                "description": "The CSP shall check if Git commits are signed.",
+                                "metrics": [
+                                    {
+                                        "id": "SignedCommits"
+                                    }
+                                ],
+                                "assurance_level": "high"
+                            },
+                            {
+                                "id": "SecProv-01.4",
+                                "description": "The CSP shall check if only approved authors have committed new code.",
+                                "metrics": [
+                                    {
+                                        "id": "ApprovedCommitAuthor"
+                                    }
+                                ],
+                                "assurance_level": "substantial"
                             }
                         ]
                     }

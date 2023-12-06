@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine as builder
+FROM golang:1.21-alpine as builder
 
 WORKDIR /build
 
@@ -29,14 +29,13 @@ WORKDIR /app
 
 COPY --from=builder /build/engine .
 COPY --from=builder /build/cl .
+COPY --from=builder /build/catalogs ./catalogs
 COPY --from=builder /build/policies ./policies
 COPY --from=builder /build/service/orchestrator/metrics.json .
 
-# Expose port fer rest gateway (For OAuth to work you also should publish this port when running the container image)
+# Expose port for rest gateway (For OAuth to work you also should publish this port when running the container image)
 EXPOSE 8080
 # Expose port for grpc
 EXPOSE 9090
 
-
-# Set program arguments via ENV variables
-CMD ["./engine"]
+ENTRYPOINT ["./engine"]

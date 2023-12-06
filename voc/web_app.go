@@ -27,6 +27,10 @@
 
 package voc
 
-type CloudResourceGroup struct {
-	Resources []*Resource `json:"resources"`
+var WebAppType = []string{"WebApp", "Compute", "Resource"}
+
+type WebApp struct {
+	*Compute
+	HttpEndpoint        *HttpEndpoint `json:"httpEndpoint"`
+	PublicNetworkAccess bool          `json:"publicNetworkAccess"`
 }

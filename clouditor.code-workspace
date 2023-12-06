@@ -1,64 +1,68 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"workbench.colorCustomizations": {
-			"debugConsole.errorForeground": "#a8a8a8"
-		},
-		"protoc": {
-			"options": [
-				"--proto_path=${workspaceRoot}proto",
-				"--proto_path=${workspaceRoot}/third_party",
-				"--proto_path=${env.GOPATH}/src"
-			]
-		},
-		"go.coverOnSave": true,
-		"rewrap.wrappingColumn": 120,
-		"yaml.schemas": {
-			"https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
-		},
-		"cSpell.words": [
-			"AISEC",
-			"bufnet",
-			"clientcredentials",
-			"clitest",
-			"Clouditor",
-			"Debugf",
-			"dialector",
-			"emptypb",
-			"Equalf",
-			"evaluationtest",
-			"gocron",
-			"GOPATH",
-			"gorm",
-			"grpcserver",
-			"Infof",
-			"inmem",
-			"inmemory",
-			"jwks",
-			"JWKSURL",
-			"Kube",
-			"Kubernetes",
-			"logrus",
-			"orchestratortest",
-			"oxisto",
-			"PBES",
-			"proto",
-			"protobuf",
-			"protoc",
-			"Rego",
-			"servicetest",
-			"sirupsen",
-			"stretchr",
-			"structpb",
-			"testdata",
-			"testutil",
-			"timestamppb",
-			"unmarshalling",
-			"Warnf"
-		]
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "workbench.colorCustomizations": {
+      "debugConsole.errorForeground": "#a8a8a8"
+    },
+    "protoc": {
+      "options": [
+        "--proto_path=${workspaceRoot}proto",
+        "--proto_path=${workspaceRoot}/third_party",
+        "--proto_path=${env.GOPATH}/src"
+      ]
+    },
+    "go.coverOnSave": true,
+    "rewrap.wrappingColumn": 120,
+    "yaml.schemas": {
+      "https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
+    },
+    "cSpell.words": [
+      "AISEC",
+      "armsubscription",
+      "bufnet",
+      "clientcredentials",
+      "clitest",
+      "Clouditor",
+      "conds",
+      "Debugf",
+      "dialector",
+      "emptypb",
+      "Equalf",
+      "errgroup",
+      "evaluationtest",
+      "gocron",
+      "GOPATH",
+      "gorm",
+      "grpcserver",
+      "Infof",
+      "inmem",
+      "inmemory",
+      "jwks",
+      "JWKSURL",
+      "Kube",
+      "Kubernetes",
+      "logrus",
+      "orchestratortest",
+      "oxisto",
+      "PBES",
+      "proto",
+      "protobuf",
+      "protoc",
+      "Rego",
+      "servicetest",
+      "sirupsen",
+      "stretchr",
+      "structpb",
+      "Subcontrol",
+      "testdata",
+      "testutil",
+      "timestamppb",
+      "unmarshalling",
+      "Warnf"
+    ]
+  }
 }

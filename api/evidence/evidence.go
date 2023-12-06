@@ -26,6 +26,7 @@
 package evidence
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -33,7 +34,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type EvidenceHookFunc func(result *Evidence, err error)
+type EvidenceHookFunc func(ctx context.Context, evidence *Evidence, err error)
 
 var (
 	ErrResourceNotStruct             = errors.New("resource in evidence is not struct value")

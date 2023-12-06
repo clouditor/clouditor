@@ -224,7 +224,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	}
 
 	// Assess evidence
-	_, err = svc.handleEvidence(req.Evidence, resourceId)
+	_, err = svc.handleEvidence(ctx, req.Evidence, resourceId)
 	if err != nil {
 		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
@@ -290,7 +290,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 }
 
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, resourceId string) (results []*assessment.AssessmentResult, err error) {
 	var types []string
 
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
@@ -300,7 +300,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 
-		go svc.informHooks(nil, newError)
+		go svc.informHooks(ctx, nil, newError)
 
 		return nil, newError
 	}
@@ -312,7 +312,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 		if err != nil {
 			err = fmt.Errorf("could not get stream to evidence store (%s): %w", svc.evidenceStore.Target, err)
 
-			go svc.informHooks(nil, err)
+			go svc.informHooks(ctx, nil, err)
 
 			return nil, err
 		}
@@ -324,7 +324,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 	if err != nil {
 		err = fmt.Errorf("could not get stream to orchestrator (%s): %w", svc.orchestrator.Target, err)
 
-		go svc.informHooks(nil, err)
+		go svc.informHooks(ctx, nil, err)
 
 		return nil, err
 	}
@@ -360,7 +360,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 		}
 
 		// Inform hooks about new assessment result
-		go svc.informHooks(result, nil)
+		go svc.informHooks(ctx, result, nil)
 
 		// Send assessment result in orchestratorChannel
 		channelOrchestrator.Send(&orchestrator.StoreAssessmentResultRequest{Result: result})
@@ -372,7 +372,7 @@ func (svc *Service) handleEvidence(ev *evidence.Evidence, resourceId string) (re
 }
 
 // informHooks informs the registered hook functions
-func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) {
+func (svc *Service) informHooks(ctx context.Context, result *assessment.AssessmentResult, err error) {
 	svc.hookMutex.RLock()
 	hooks := svc.resultHooks
 	defer svc.hookMutex.RUnlock()
@@ -381,12 +381,12 @@ func (svc *Service) informHooks(result *assessment.AssessmentResult, err error) 
 	if len(hooks) > 0 {
 		for _, hook := range hooks {
 			// We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(result, err)
+			hook(ctx, result, err)
 		}
 	}
 }
 
-func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(result *assessment.AssessmentResult, err error)) {
+func (svc *Service) RegisterAssessmentResultHook(assessmentResultsHook func(ctx context.Context, result *assessment.AssessmentResult, err error)) {
 	svc.hookMutex.Lock()
 	defer svc.hookMutex.Unlock()
 	svc.resultHooks = append(svc.resultHooks, assessmentResultsHook)
@@ -438,14 +438,14 @@ func (svc *Service) initOrchestratorStream(target string, _ ...grpc.DialOption) 
 
 // Metrics implements MetricsSource by retrieving the metric list from the orchestrator.
 func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
-	var res *orchestrator.ListMetricsResponse
-
-	res, err = svc.orchestrator.Client.ListMetrics(context.Background(), &orchestrator.ListMetricsRequest{})
+	metrics, err = api.ListAllPaginated(&orchestrator.ListMetricsRequest{}, svc.orchestrator.Client.ListMetrics, func(res *orchestrator.ListMetricsResponse) []*assessment.Metric {
+		return res.Metrics
+	})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve metric list from orchestrator: %w", err)
 	}
 
-	return res.Metrics, nil
+	return metrics, nil
 }
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
@@ -507,6 +507,11 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	}
 
 	return cache.MetricConfiguration, nil
+}
+
+func (svc *Service) Shutdown() {
+	svc.evidenceStoreStreams.CloseAll()
+	svc.orchestratorStreams.CloseAll()
 }
 
 // recvEventsLoop continuously tries to receive events on the metricEventStream

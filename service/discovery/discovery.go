@@ -85,13 +85,11 @@ type DiscoveryEvent struct {
 	Time            time.Time
 }
 
-// Service is an implementation of the Clouditor Discovery service.
-// It should not be used directly, but rather the NewService constructor
-// should be used.
+// Service is an implementation of the Clouditor Discovery service (plus its experimental extensions). It should not be
+// used directly, but rather the NewService constructor should be used.
 type Service struct {
 	discovery.UnimplementedDiscoveryServer
-
-	configurations map[discovery.Discoverer]*Configuration
+	discovery.UnimplementedExperimentalDiscoveryServer
 
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
@@ -104,14 +102,12 @@ type Service struct {
 
 	providers []string
 
+	discoveryInterval time.Duration
+
 	Events chan *DiscoveryEvent
 
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
-}
-
-type Configuration struct {
-	Interval time.Duration
 }
 
 func init() {
@@ -167,6 +163,13 @@ func WithStorage(storage persistence.Storage) ServiceOption {
 	}
 }
 
+// WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
+func WithDiscoveryInterval(interval time.Duration) ServiceOption {
+	return func(s *Service) {
+		s.discoveryInterval = interval
+	}
+}
+
 // WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
 func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
 	return func(s *Service) {
@@ -180,10 +183,10 @@ func NewService(opts ...ServiceOption) *Service {
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
-		configurations:    make(map[discovery.Discoverer]*Configuration),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              discovery.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
+		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
 
 	// Apply any options
@@ -262,6 +265,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			}
 
 			discoverer = append(discoverer,
+				azure.NewAzureResourceGroupDiscovery(opts...),
 				azure.NewAzureComputeDiscovery(opts...),
 				azure.NewAzureStorageDiscovery(opts...),
 				azure.NewAzureNetworkDiscovery(opts...),
@@ -293,14 +297,10 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	}
 
 	for _, v := range discoverer {
-		svc.configurations[v] = &Configuration{
-			Interval: 5 * time.Minute,
-		}
-
-		log.Infof("Scheduling {%s} to execute every 5 minutes...", v.Name())
+		log.Infof("Scheduling {%s} to execute every {%d} minutes...", v.Name(), svc.discoveryInterval)
 
 		_, err = svc.scheduler.
-			Every(5).
+			Every(svc.discoveryInterval).
 			Minute().
 			Tag(v.Name()).
 			Do(svc.StartDiscovery, v)
@@ -315,6 +315,9 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 }
 
 func (svc *Service) Shutdown() {
+	log.Info("Shutting down discovery service")
+
+	svc.assessmentStreams.CloseAll()
 	svc.scheduler.Stop()
 }
 
@@ -350,22 +353,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}()
 
 	for _, resource := range list {
-		var (
-			v *structpb.Value
-		)
-
-		v, err = voc.ToStruct(resource)
-		if err != nil {
-			log.Errorf("Could not convert resource to protobuf struct: %v", err)
-		}
-
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r := &discovery.Resource{
-			Id:             string(resource.GetID()),
-			ResourceType:   strings.Join(resource.GetType(), ","),
-			CloudServiceId: resource.GetServiceID(),
-			Properties:     v,
+		r, v, err := toDiscoveryResource(resource)
+		if err != nil {
+			log.Errorf("Could not convert resource: %v", err)
+			continue
 		}
 
 		// Persist the latest state of the resource
@@ -454,4 +447,24 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 // cloud service ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCloudServiceId() string {
 	return svc.csID
+}
+
+// toDiscoveryResource converts a [voc.IsCloudResource] into a resource that can be persisted in our database
+// ([discovery.Resource]). In the future we want to merge those two structs
+func toDiscoveryResource(resource voc.IsCloudResource) (r *discovery.Resource, v *structpb.Value, err error) {
+	v, err = voc.ToStruct(resource)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
+	}
+
+	// Build a resource struct. This will hold the latest sync state of the
+	// resource for our storage layer.
+	r = &discovery.Resource{
+		Id:             string(resource.GetID()),
+		ResourceType:   strings.Join(resource.GetType(), ","),
+		CloudServiceId: resource.GetServiceID(),
+		Properties:     v,
+	}
+
+	return
 }

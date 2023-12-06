@@ -6,10 +6,11 @@ default applicable = false
 
 default compliant = false
 
-enabled := input.l3Firewall.enabled
+enabled := input.accessRestriction.enabled
 
 applicable {
 	enabled != null
+	compare("isIn",  "NetworkInterface", input.type)
 }
 
 compliant {

@@ -27,20 +27,25 @@ package orchestrator
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestService_RegisterCloudService(t *testing.T) {
@@ -78,9 +83,44 @@ func TestService_RegisterCloudService(t *testing.T) {
 			},
 		},
 		{
-			name:    "valid",
-			req:     &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "test", Description: "some"}},
-			res:     &orchestrator.CloudService{Name: "test", Description: "some"},
+			name: "Happy path: without metadata as input",
+			req: &orchestrator.RegisterCloudServiceRequest{
+				CloudService: &orchestrator.CloudService{
+					Name:        "test",
+					Description: "some",
+				},
+			},
+			res: &orchestrator.CloudService{
+				Name:        "test",
+				Description: "some",
+				Metadata:    &orchestrator.CloudService_Metadata{},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: with metadata as input",
+			req: &orchestrator.RegisterCloudServiceRequest{
+				CloudService: &orchestrator.CloudService{
+					Name:        "test",
+					Description: "some",
+					Metadata: &orchestrator.CloudService_Metadata{
+						Labels: map[string]string{
+							"owner": "testOwner",
+							"env":   "prod",
+						},
+					},
+				},
+			},
+			res: &orchestrator.CloudService{
+				Name:        "test",
+				Description: "some",
+				Metadata: &orchestrator.CloudService_Metadata{
+					Labels: map[string]string{
+						"owner": "testOwner",
+						"env":   "prod",
+					},
+				},
+			},
 			wantErr: assert.NoError,
 		},
 	}
@@ -104,8 +144,13 @@ func TestService_RegisterCloudService(t *testing.T) {
 			// reset the IDs because we cannot compare them, since they are randomly generated
 			if res != nil {
 				res.Id = ""
-			}
+				// check creation/update time and reset
+				assert.NotEmpty(t, res.CreatedAt)
+				res.CreatedAt = nil
 
+				assert.NotEmpty(t, res.UpdatedAt)
+				res.UpdatedAt = nil
+			}
 			if tt.res != nil {
 				tt.res.Id = ""
 			}
@@ -173,8 +218,10 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "permission granted",
 			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 				_ = s.Create(&orchestrator.CloudService{
-					Id:   testdata.MockCloudServiceID1,
-					Name: "service1",
+					Id:        testdata.MockCloudServiceID1,
+					Name:      "service1",
+					CreatedAt: timestamppb.Now(),
+					UpdatedAt: timestamppb.Now(),
 				})
 			}))),
 			ctx: context.TODO(),
@@ -199,6 +246,11 @@ func TestService_GetCloudService(t *testing.T) {
 
 			if tt.res != nil {
 				assert.NotEmpty(t, res.Id)
+				// Check if timestamps are set and then delete for further checking
+				assert.NotEmpty(t, res.CreatedAt)
+				assert.NotEmpty(t, res.UpdatedAt)
+				res.CreatedAt = nil
+				res.UpdatedAt = nil
 			}
 
 			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
@@ -308,6 +360,12 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	// 1st case: No records for cloud services -> Default target service is created
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
+	// Check timestamps and delete it for further tests
+	assert.NotEmpty(t, cloudServiceResponse.CreatedAt)
+	assert.NotEmpty(t, cloudServiceResponse.UpdatedAt)
+	cloudServiceResponse.CreatedAt = nil
+	cloudServiceResponse.UpdatedAt = nil
+
 	assert.Equal(t, &orchestrator.CloudService{
 		Id:          DefaultTargetCloudServiceId,
 		Name:        DefaultTargetCloudServiceName,
@@ -325,7 +383,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 
 func TestService_ListCloudServices(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -392,7 +450,7 @@ func TestService_ListCloudServices(t *testing.T) {
 					})
 					_ = s.Create(&orchestrator.CloudService{
 						Id:   testdata.MockCloudServiceID2,
-						Name: testdata.MockCloudServiceName1,
+						Name: testdata.MockCloudServiceName2,
 					})
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
@@ -464,6 +522,185 @@ func TestService_ListCloudServices(t *testing.T) {
 
 			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListCloudServices() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
+}
+
+func TestService_GetCloudServiceStatistics(t *testing.T) {
+	type fields struct {
+		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
+		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks []assessment.ResultHookFunc
+		storage               persistence.Storage
+		metricsFile           string
+		loadMetricsFunc       func() ([]*assessment.Metric, error)
+		catalogsFolder        string
+		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
+		events                chan *orchestrator.MetricChangeEvent
+		authz                 service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.GetCloudServiceStatisticsRequest
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantResponse *orchestrator.GetCloudServiceStatisticsResponse
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Validate request error",
+			args: args{
+				ctx: context.TODO(),
+			},
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.GetCloudServiceStatisticsRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
+					assert.Equal(t, codes.PermissionDenied, status.Code(err))
+			},
+		},
+		{
+			name: "Storage error: Get CloudService 'service not found'",
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.GetCloudServiceStatisticsRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "service not found") &&
+					assert.Equal(t, codes.NotFound, status.Code(err))
+			},
+		},
+		{
+			name: "Storage error: Get CloudService",
+			fields: fields{
+				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.GetCloudServiceStatisticsRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantResponse: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "database error getting cloud service: some error") &&
+					assert.Equal(t, codes.Internal, status.Code(err))
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// Store one cloud services
+					_ = s.Create(&orchestrator.CloudService{
+						Id:          testdata.MockCloudServiceID1,
+						Name:        testdata.MockCloudServiceName1,
+						Description: testdata.MockCloudServiceDescription1,
+						CatalogsInScope: []*orchestrator.Catalog{
+							{
+								Id:          testdata.MockCatalogID,
+								Name:        testdata.MockCatalogName,
+								Description: testdata.MockCatalogDescription,
+							},
+						},
+					})
+					_ = s.Create(&orchestrator.CloudService{
+						Id:   testdata.MockCloudServiceID2,
+						Name: testdata.MockCloudServiceName2,
+					})
+					_ = s.Create(&evidence.Evidence{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID1,
+					})
+					_ = s.Create(&evidence.Evidence{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID2,
+					})
+					_ = s.Create(&assessment.AssessmentResult{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID1,
+					})
+					_ = s.Create(&assessment.AssessmentResult{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID1,
+					})
+					_ = s.Create(&assessment.AssessmentResult{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID2,
+					})
+					_ = s.Create(&discovery.Resource{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID1,
+					})
+					_ = s.Create(&discovery.Resource{
+						Id:             uuid.NewString(),
+						CloudServiceId: testdata.MockCloudServiceID2,
+					})
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+			},
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.GetCloudServiceStatisticsRequest{
+					CloudServiceId: testdata.MockCloudServiceID1,
+				},
+			},
+			wantResponse: &orchestrator.GetCloudServiceStatisticsResponse{
+				NumberOfDiscoveredResources: 1,
+				NumberOfAssessmentResults:   2,
+				NumberOfEvidences:           1,
+				NumberOfSelectedCatalogs:    1,
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Service{
+				cloudServiceHooks:     tt.fields.cloudServiceHooks,
+				toeHooks:              tt.fields.toeHooks,
+				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
+				storage:               tt.fields.storage,
+				metricsFile:           tt.fields.metricsFile,
+				loadMetricsFunc:       tt.fields.loadMetricsFunc,
+				catalogsFolder:        tt.fields.catalogsFolder,
+				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
+				events:                tt.fields.events,
+				authz:                 tt.fields.authz,
+			}
+			gotResponse, err := s.GetCloudServiceStatistics(tt.args.ctx, tt.args.req)
+
+			tt.wantErr(t, err)
+
+			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+				t.Errorf("Service.GetCloudServiceStatistics() = %v, want %v", gotResponse, tt.wantResponse)
 			}
 		})
 	}

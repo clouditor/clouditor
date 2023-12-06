@@ -15,7 +15,6 @@ const (
 
 	MockAuthClientID     = "client"
 	MockAuthClientSecret = "secret"
-	MockCustomClaims     = "cloudserviceid"
 
 	// Cloud Service
 	MockCloudServiceID1          = "11111111-1111-1111-1111-111111111111"
@@ -53,7 +52,10 @@ const (
 	MockMetricName1        = "Mock Metric Name"
 	MockMetricDescription1 = "This is a mock metric"
 	MockMetricCategory1    = "Mock Category 1"
-	MockMetricID2          = "Another Mock Metric"
+	MockMetricID2          = "Mock Metric 2"
+	MockMetricName2        = "Mock Metric Name 2"
+	MockMetricDescription2 = "This is mock metric 2"
+	MockMetricCategory2    = "Mock Category 2"
 
 	// Assessment result
 	MockAssessmentResultID                   = "11111111-1111-1111-1111-111111111111"
@@ -73,17 +75,25 @@ const (
 	MockResourceStorageName = "some-storage-service-name"
 	MockResourceID2         = "my-other-resource"
 
-	// Certificate
+	// Properties for a Certificate
 	MockCertificateID          = "1234"
 	MockCertificateName        = "EUCS"
-	MockCertificateDescription = "This is a mock certificate"
+	MockCertificateDescription = "This is the default mock certificate"
 	MockCertificateCab         = "Cab123"
-	MockCertificateStandard    = "EUCS"
+	// Properties for an alternative Certificate
+	MockCertificateID2          = "4321"
+	MockCertificateName2        = "MDR"
+	MockCertificateDescription2 = "This is another mock certificate"
+	MockCertificateCab2         = "Cab321"
 
-	// State
+	// Properties for a State
 	MockStateId     = "12345"
 	MockStateState  = "new"
 	MockStateTreeID = "12345"
+	// Properties for an alternative State
+	MockStateId2     = "54321"
+	MockStateState2  = "suspended"
+	MockStateTreeID2 = "54321"
 
 	// Assessment Results
 	MockAssessmentResult1ID = "11111111-1111-1111-1111-111111111111"

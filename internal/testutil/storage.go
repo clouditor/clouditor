@@ -32,6 +32,7 @@ type StorageWithError struct {
 	GetErr    error
 	ListErr   error
 	RawErr    error
+	CountRes  int64
 	CountErr  error
 	DeleteErr error
 }
@@ -49,6 +50,6 @@ func (s *StorageWithError) Raw(_ any, _ string, _ ...any) error {
 	return s.RawErr
 }
 func (s *StorageWithError) Count(_ any, _ ...any) (int64, error) {
-	return 0, s.CountErr
+	return s.CountRes, s.CountErr
 }
 func (s *StorageWithError) Delete(_ any, _ ...any) error { return s.DeleteErr }

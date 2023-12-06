@@ -34,6 +34,8 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -92,7 +94,7 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 						ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 							SSEAlgorithm: "AES256",
 						},
-						BucketKeyEnabled: false,
+						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
@@ -107,7 +109,7 @@ func (mockS3APINew) GetBucketEncryption(_ context.Context,
 							SSEAlgorithm:   "aws:kms",
 							KMSMasterKeyID: aws.String(mockBucket2KeyId),
 						},
-						BucketKeyEnabled: false,
+						BucketKeyEnabled: util.Ref(false),
 					},
 				},
 			},
@@ -410,7 +412,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err := d.getTransportEncryption(mockBucket1)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
 	assert.True(t, encryptionAtTransit.Enforced)
 	assert.NotEmpty(t, rawBucketPolicy)
 
@@ -424,7 +426,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket3)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
 	assert.NotEmpty(t, rawBucketPolicy)
 
@@ -432,7 +434,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption("")
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, "TLS1.2", encryptionAtTransit.TlsVersion)
+	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
 	assert.Empty(t, rawBucketPolicy)
 }

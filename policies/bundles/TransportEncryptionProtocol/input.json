@@ -8,7 +8,8 @@
         "url": "clouditor.io",
         "transportEncryption": {
             "enabled": true,
-            "algorithm": "TLS"
+            "algorithm": "TLS",
+            "tlsVersion": "TLS1_2"
         }
     }
 }

@@ -26,6 +26,10 @@
 package discovery
 
 import (
+	"encoding/json"
+	"errors"
+	"reflect"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/internal/util"
@@ -37,11 +41,13 @@ var (
 	log *logrus.Entry
 )
 
-// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
-// services, but we need this feature in the future. This serves as a default to already prepare the necessary
-// structures for this feature.
-const DefaultCloudServiceID = "00000000-0000-0000-0000-000000000000"
-const EvidenceCollectorToolId = "Clouditor Evidences Collection"
+const (
+	// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
+	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+	// structures for this feature.
+	DefaultCloudServiceID   = "00000000-0000-0000-0000-000000000000"
+	EvidenceCollectorToolId = "Clouditor Evidences Collection"
+)
 
 // Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
 // vocabulary objects.
@@ -56,8 +62,37 @@ type Authorizer interface {
 	Authorize() (err error)
 }
 
+// typeRegistry
+var typeRegistry = make(map[string]reflect.Type)
+
+// TODO(oxisto): auto-generate them as part of the voc?
+func init() {
+	types := []any{
+		voc.Application{},
+		voc.Library{},
+		voc.TranslationUnitDeclaration{},
+		voc.CodeRepository{},
+		voc.Function{},
+		voc.VirtualMachine{},
+		voc.ObjectStorageService{},
+		voc.ObjectStorage{},
+		voc.NetworkInterface{},
+		voc.ResourceGroup{},
+		voc.BlockStorage{},
+		voc.DatabaseService{},
+		voc.DatabaseStorage{},
+		voc.FileStorageService{},
+		voc.FileStorage{},
+		voc.WebApp{},
+	}
+	for _, v := range types {
+		t := reflect.TypeOf(v)
+		typeRegistry[t.String()] = t
+	}
+}
+
 // NewResource creates a new voc resource.
-func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, typ []string, raw ...interface{}) *voc.Resource {
+func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, parent voc.ResourceID, typ []string, raw ...interface{}) *voc.Resource {
 	rawString, err := voc.ToStringInterface(raw)
 	if err != nil {
 		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
@@ -71,6 +106,36 @@ func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *tim
 		GeoLocation:  location,
 		Type:         typ,
 		Labels:       labels,
+		Parent:       parent,
 		Raw:          rawString,
 	}
+}
+
+func (r *Resource) ToVocResource() (voc.IsCloudResource, error) {
+	var (
+		b   []byte
+		err error
+	)
+
+	typ := strings.Split(r.ResourceType, ",")[0]
+
+	var t, ok = typeRegistry["voc."+typ]
+	if !ok {
+		return nil, errors.New("invalid type")
+	}
+	var v = reflect.New(t).Interface().(voc.IsCloudResource)
+
+	b, err = r.Properties.GetStructValue().MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(b, v)
+	return v, err
+}
+
+// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// the cloud service ID of the inner object.
+func (req *UpdateResourceRequest) GetCloudServiceId() string {
+	return req.Resource.GetCloudServiceId()
 }

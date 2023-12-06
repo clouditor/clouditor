@@ -42,7 +42,7 @@ message Evidence {
 
   // time of evidence creation
   google.protobuf.Timestamp timestamp = 2 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
     (validate.rules).timestamp.required = true
   ];
 

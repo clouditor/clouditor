@@ -30,19 +30,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
-
-	"clouditor.io/clouditor/persistence"
-
-	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
+
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // GetAssessmentResult gets one assessment result by id
@@ -188,7 +187,7 @@ func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informHook(req.Result, nil)
+	go svc.informHook(ctx, req.Result, nil)
 
 	res = &orchestrator.StoreAssessmentResultResponse{}
 
@@ -249,20 +248,20 @@ func (s *Service) StoreAssessmentResults(stream orchestrator.Orchestrator_StoreA
 	}
 }
 
-func (s *Service) RegisterAssessmentResultHook(hook func(result *assessment.AssessmentResult, err error)) {
+func (s *Service) RegisterAssessmentResultHook(hook assessment.ResultHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.AssessmentResultHooks = append(s.AssessmentResultHooks, hook)
 }
 
-func (s *Service) informHook(result *assessment.AssessmentResult, err error) {
+func (s *Service) informHook(ctx context.Context, result *assessment.AssessmentResult, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	// Inform our hook, if we have any
 	if s.AssessmentResultHooks != nil {
 		for _, hook := range s.AssessmentResultHooks {
 			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(result, err)
+			hook(ctx, result, err)
 		}
 	}
 }

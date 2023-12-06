@@ -29,27 +29,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 
-	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
-	var (
-		c        *orchestrator.Catalog
-		controls []*orchestrator.Control
-	)
-
 	// Validate request
 	err = service.ValidateRequest(req)
 	if err != nil {
@@ -61,40 +53,11 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, service.ErrPermissionDenied
 	}
 
-	// We need to retrieve some additional meta-data about the security catalog, so we need to query it as well
-	c, err = svc.GetCatalog(ctx, &orchestrator.GetCatalogRequest{CatalogId: req.TargetOfEvaluation.CatalogId})
-	if err != nil {
-		// The error is already a gRPC error, so we can just return it
-		return nil, err
-	}
-
-	// Certain catalogs do not allow scoping, in this case we need to pre-populate all controls into the scope.
-	if c.AllInScope {
-		controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{CatalogId: c.Id}, func(ctx context.Context, req *orchestrator.ListControlsRequest, opts ...grpc.CallOption) (*orchestrator.ListControlsResponse, error) {
-			return svc.ListControls(ctx, req)
-		}, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
-			return res.Controls
-		})
-		if err != nil {
-			// The error is already a gRPC error, so we can just return it
-			return nil, err
-		}
-
-		// If the catalog allows assurance levels, add only controls with the corresponsing assurance level.
-		// Note: The upper assurance level includes the underlying assurance levels. Substantial includes basic and substantial and high include all control.
-		if len(c.AssuranceLevels) > 0 {
-			req.TargetOfEvaluation.ControlsInScope, err = getControls(controls, c.GetAssuranceLevels(), req.TargetOfEvaluation.GetAssuranceLevel())
-			if err != nil {
-				return nil, status.Errorf(codes.Internal, "assurance level error: %v", err)
-			}
-		} else {
-			// The catalog does not allow assurance levels, add all controls.
-			req.TargetOfEvaluation.ControlsInScope = controls
-		}
-	}
-
 	// Create the ToE
 	err = svc.storage.Create(&req.TargetOfEvaluation)
+	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or cloud service")
+	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -122,7 +85,7 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, gorm.WithPreload("ControlsInScope"), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CloudServiceId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
@@ -133,7 +96,7 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 
 // ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
 func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
-	var conds = []any{gorm.WithPreload("ControlsInScope")}
+	var conds = []any{gorm.WithoutPreload()}
 
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -245,201 +208,4 @@ func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) 
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.toeHooks = append(s.toeHooks, hook)
-}
-
-func (svc *Service) ListControlsInScope(ctx context.Context, req *orchestrator.ListControlsInScopeRequest) (res *orchestrator.ListControlsInScopeResponse, err error) {
-	var conds = []any{gorm.WithoutPreload()}
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	conds = append(conds, "target_of_evaluation_cloud_service_id = ? AND target_of_evaluation_catalog_id = ?", req.CloudServiceId, req.CatalogId)
-
-	res = new(orchestrator.ListControlsInScopeResponse)
-	res.ControlsInScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.ControlInScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	return
-}
-
-func (svc *Service) AddControlToScope(ctx context.Context, req *orchestrator.AddControlToScopeRequest) (res *orchestrator.ControlInScope, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	err = svc.storage.Create(req.Scope)
-	if err != nil && errors.Is(err, persistence.ErrUniqueConstraintFailed) {
-		return nil, status.Error(codes.AlreadyExists, "entry already exists")
-	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	res = req.Scope
-
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_ADDED, ControlInScope: req.GetScope()}, nil)
-
-	logging.LogRequest(log, logrus.DebugLevel, logging.Add, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
-
-	return
-}
-
-func (svc *Service) UpdateControlInScope(ctx context.Context, req *orchestrator.UpdateControlInScopeRequest) (res *orchestrator.ControlInScope, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	err = svc.storage.Update(req.Scope,
-		"target_of_evaluation_cloud_service_id = ? AND "+
-			"target_of_evaluation_catalog_id = ? AND "+
-			"control_category_catalog_id = ? AND "+
-			"control_category_name = ? AND "+
-			"control_id = ?",
-		req.Scope.TargetOfEvaluationCloudServiceId,
-		req.Scope.TargetOfEvaluationCatalogId,
-		req.Scope.ControlCategoryCatalogId,
-		req.Scope.ControlCategoryName,
-		req.Scope.ControlId)
-	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	res = req.Scope
-
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_UPDATED, ControlInScope: req.GetScope()}, nil)
-
-	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("with Control ID '%s'", req.Scope.GetControlId()))
-
-	return
-}
-
-func (svc *Service) RemoveControlFromScope(ctx context.Context, req *orchestrator.RemoveControlFromScopeRequest) (res *emptypb.Empty, err error) {
-	// Validate request
-	err = service.ValidateRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	err = svc.storage.Delete(orchestrator.ControlInScope{},
-		"target_of_evaluation_cloud_service_id = ? AND "+
-			"target_of_evaluation_catalog_id = ? AND "+
-			"control_category_catalog_id = ? AND "+
-			"control_category_name = ? AND "+
-			"control_id = ?",
-		req.CloudServiceId,
-		req.CatalogId,
-		req.CatalogId,
-		req.ControlCategoryName,
-		req.ControlId)
-	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
-	}
-
-	res = &emptypb.Empty{}
-
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_CONTROL_IN_SCOPE_REMOVED, ControlInScope: nil}, nil)
-
-	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("with Control ID '%s'", req.GetControlId()))
-
-	return
-}
-
-// getControls returns all controls based on the assurance level
-func getControls(controls []*orchestrator.Control, levels []string, level string) ([]*orchestrator.Control, error) {
-	var (
-		levelControls = make(map[string][]*orchestrator.Control)
-		c             = []*orchestrator.Control{}
-	)
-
-	// Check that levels and level is not empty
-	if len(levels) == 0 {
-		err := errors.New("assurance levels are empty")
-		return c, err
-	}
-
-	if level == "" {
-		err := errors.New("assurance level is empty")
-		return c, err
-	}
-
-	// Add controls based on their assurance level to the map. If a controls is not defined regarding the assurance level it is dropped.
-	for _, control := range controls {
-		if control.AssuranceLevel == nil {
-			continue
-		}
-		levelControls[control.GetAssuranceLevel()] = append(levelControls[control.GetAssuranceLevel()], control)
-	}
-
-	// Add all needed controls based on the assurance level.
-	// Note: The assurance levels must be sorted in ascending order, e.g., low, medium, high, because the controls of the lower assurance levels must be present in the higger assurance levels. If this is not the case, the controls with assurance levels low will not be included in medium.
-	for i := range levels {
-		c = append(c, levelControls[levels[i]]...)
-		if level == levels[i] {
-			break
-		}
-	}
-
-	// Add parent controls to the sub-control included in the list. That results in duplicates that we can remove later.
-	for i := range c {
-		for j := range controls {
-			if c[i].GetParentControlId() == controls[j].GetId() {
-				c = append(c, controls[j])
-			}
-		}
-	}
-
-	// Deduplicate controls
-	dedupControls := deduplicate(c)
-
-	return dedupControls, nil
-}
-
-// deduplicate removes all duplicates
-func deduplicate(result []*orchestrator.Control) []*orchestrator.Control {
-	// Sort slice by ID
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].GetId() > result[j].GetId()
-	})
-
-	// Compare elements and delete if it is a duplicate
-	for i := len(result) - 1; i > 0; i-- {
-		if result[i] == result[i-1] {
-			result = append(result[:i], result[i+1:]...)
-		}
-	}
-
-	return result
 }

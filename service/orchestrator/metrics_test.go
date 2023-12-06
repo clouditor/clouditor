@@ -39,15 +39,18 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
+	persistence_gorm "clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
-
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm"
 )
 
 var (
@@ -80,7 +83,7 @@ var (
 
 func TestService_loadMetrics(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -103,6 +106,15 @@ func TestService_loadMetrics(t *testing.T) {
 			},
 		},
 		{
+			// There is a storage error for creating a single metric which is not forwarded/returned
+			name: "storage error (but not returned)",
+			fields: fields{
+				metricsFile: "metrics.json",
+				storage:     &testutil.StorageWithError{CreateErr: ErrSomeError},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "custom loading function with error",
 			fields: fields{
 				loadMetricsFunc: func() ([]*assessment.Metric, error) {
@@ -112,6 +124,18 @@ func TestService_loadMetrics(t *testing.T) {
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, ErrSomeError)
 			},
+		},
+		{
+			// To test more accurately, we would need, e.g. an integration test since this function only returns error
+			name: "happy path",
+			fields: fields{
+				// nil enforce the local embedded metric function to be used
+				loadMetricsFunc: nil,
+				// empty string enforces the DefaultValue to be used
+				metricsFile: DefaultMetricsFile,
+				storage:     testutil.NewInMemoryStorage(t),
+			},
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -275,6 +299,29 @@ func TestService_CreateMetric(t *testing.T) {
 			},
 		},
 		{
+			name: "Create metric and set to deprecated",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.CreateMetricRequest{
+					Metric: &assessment.Metric{
+						Id:              "TLSVersion",
+						Name:            "TLSMetricMockName",
+						Category:        "",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{},
+						DeprecatedSince: timestamppb.Now(),
+					},
+				},
+			},
+			wantMetric: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "the metric shouldn't be set to deprecated at creation time")
+			},
+		},
+		{
 			name: "Create metric which already exists",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -360,6 +407,8 @@ func TestService_CreateMetric(t *testing.T) {
 }
 
 func TestService_UpdateMetric(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type fields struct {
 		storage persistence.Storage
 	}
@@ -385,18 +434,20 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    "TransportEncryptionEnabled",
-						Name:  "A slightly updated metric",
-						Scale: assessment.Metric_NOMINAL,
-						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Id:              "TransportEncryptionEnabled",
+						Name:            "A slightly updated metric",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:    "TransportEncryptionEnabled",
-				Name:  "A slightly updated metric",
-				Scale: assessment.Metric_NOMINAL,
-				Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+				Id:              "TransportEncryptionEnabled",
+				Name:            "A slightly updated metric",
+				Scale:           assessment.Metric_NOMINAL,
+				Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+				DeprecatedSince: timestamp,
 			},
 			wantErr: assert.NoError,
 		},
@@ -409,10 +460,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    "TransportEncryptionEnabled",
-						Name:  "A slightly updated metric",
-						Scale: assessment.Metric_NOMINAL,
-						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Id:              "TransportEncryptionEnabled",
+						Name:            "A slightly updated metric",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -428,12 +480,13 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:          "TransportEncryptionEnabled",
-						Name:        "TransportEncryptionEnabled",
-						Description: testdata.MockMetricDescription1,
-						Category:    testdata.MockMetricCategory1,
-						Scale:       assessment.Metric_NOMINAL,
-						Range:       &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Id:              "TransportEncryptionEnabled",
+						Name:            "TransportEncryptionEnabled",
+						Description:     testdata.MockMetricDescription1,
+						Category:        testdata.MockMetricCategory1,
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -449,10 +502,11 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    "DoesProbablyNotExist",
-						Name:  "UpdateMetricName",
-						Scale: assessment.Metric_NOMINAL,
-						Range: &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						Id:              "DoesProbablyNotExist",
+						Name:            "UpdateMetricName",
+						Scale:           assessment.Metric_NOMINAL,
+						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
+						DeprecatedSince: timestamp,
 					},
 				},
 			},
@@ -605,10 +659,12 @@ func TestService_GetMetric(t *testing.T) {
 }
 
 func TestService_ListMetrics(t *testing.T) {
+	timestamp := timestamppb.Now()
+
 	type fields struct {
 		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
 		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -636,10 +692,24 @@ func TestService_ListMetrics(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path",
+			name: "Happy path: all active metrics",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Create(MockMetric1)
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					})
+					_ = s.Create(&assessment.Metric{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					})
 				}),
 			},
 			args: args{
@@ -647,6 +717,55 @@ func TestService_ListMetrics(t *testing.T) {
 			},
 			wantRes: &orchestrator.ListMetricsResponse{
 				Metrics: []*assessment.Metric{MockMetric1},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: including deprecated metrics",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					})
+					_ = s.Create(&assessment.Metric{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					})
+				}),
+			},
+			args: args{
+				req: &orchestrator.ListMetricsRequest{
+					Filter: &orchestrator.ListMetricsRequest_Filter{
+						IncludeDeprecated: proto.Bool(true),
+					},
+				},
+			},
+			wantRes: &orchestrator.ListMetricsResponse{
+				Metrics: []*assessment.Metric{
+					{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range:       MockMetricRange1,
+					},
+					{
+						Id:              testdata.MockMetricID2,
+						Name:            testdata.MockMetricName2,
+						Description:     testdata.MockMetricDescription2,
+						Scale:           assessment.Metric_ORDINAL,
+						Range:           MockMetricRange1,
+						DeprecatedSince: timestamp,
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -680,7 +799,7 @@ func TestService_ListMetrics(t *testing.T) {
 
 func TestService_GetMetricImplementation(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		events                chan *orchestrator.MetricChangeEvent
@@ -777,7 +896,7 @@ func TestService_GetMetricImplementation(t *testing.T) {
 
 func TestService_UpdateMetricImplementation(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -908,7 +1027,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 
 func TestService_GetMetricConfiguration(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -1054,7 +1173,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 
 func TestService_ListMetricConfigurations(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		catalogsFolder        string
@@ -1162,7 +1281,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 
 func TestService_UpdateMetricConfiguration(t *testing.T) {
 	type fields struct {
-		AssessmentResultHooks []func(result *assessment.AssessmentResult, err error)
+		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
 		metricsFile           string
 		loadMetricsFunc       func() ([]*assessment.Metric, error)
@@ -1471,7 +1590,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				svc := i2[0].(*Service)
 
 				var config *assessment.MetricConfiguration
-				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
+				err := svc.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -1512,7 +1631,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				svc := i2[0].(*Service)
 
 				var config *assessment.MetricConfiguration
-				err := svc.storage.Get(&config, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
+				err := svc.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCloudServiceID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -1551,5 +1670,183 @@ func wantStatusCode(code codes.Code) assert.ErrorAssertionFunc {
 			return false
 		}
 		return assert.Equal(t, gotStatus.Code(), code)
+	}
+}
+
+func TestService_RemoveMetric(t *testing.T) {
+	timestamp := timestamppb.New(time.Date(2017, 12, 1, 0, 0, 0, 0, time.Local))
+	// timestamp := timestamppb.New(time.Time{})
+	// timestamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
+	type fields struct {
+		storage persistence.Storage
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RemoveMetricRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Validation Error - Request is nil",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: nil,
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Validation Error - metric id is empty",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: ""},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrInvalidRequest.Error())
+			},
+		},
+		{
+			name: "Error - Internal (Get)",
+			fields: fields{
+				storage: &testutil.StorageWithError{GetErr: gorm.ErrInvalidDB},
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: testdata.MockMetricID1},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
+			},
+		},
+		{
+			name: "Error - Not Found",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				}),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveMetricRequest{MetricId: testdata.MockMetricID1},
+			},
+			wantRes: assert.Nil,
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, ErrMetricNotFound.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(orchestratortest.NewMetric())
+				}),
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.RemoveMetricRequest{
+					MetricId: testdata.MockMetricID1,
+				},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				_, ok := i.(*emptypb.Empty)
+				assert.True(t, ok)
+
+				assert.NotNil(t, i2)
+				s, ok := i2[0].(persistence.Storage)
+				assert.True(t, ok)
+
+				var gotMetric *assessment.Metric
+
+				err := s.Get(&gotMetric, "id = ?", testdata.MockMetricID1)
+				assert.NoError(t, err)
+
+				return assert.NotEmpty(t, gotMetric.DeprecatedSince)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: metric already removed in the past",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					_ = s.Create(&assessment.Metric{
+						Id:          testdata.MockMetricID1,
+						Name:        testdata.MockMetricName1,
+						Description: testdata.MockMetricDescription1,
+						Scale:       assessment.Metric_ORDINAL,
+						Range: &assessment.Range{
+							Range: &assessment.Range_AllowedValues{
+								AllowedValues: &assessment.AllowedValues{
+									Values: []*structpb.Value{
+										structpb.NewBoolValue(false),
+										structpb.NewBoolValue(true),
+									},
+								},
+							},
+						},
+						DeprecatedSince: timestamp,
+					},
+					)
+				}),
+			},
+			args: args{
+				context.TODO(),
+				&orchestrator.RemoveMetricRequest{
+					MetricId: testdata.MockMetricID1,
+				},
+			},
+			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				assert.NotNil(t, i)
+				_, ok := i.(*emptypb.Empty)
+				assert.True(t, ok)
+
+				assert.NotNil(t, i2)
+				s, ok := i2[0].(persistence.Storage)
+				assert.True(t, ok)
+
+				var gotMetric *assessment.Metric
+
+				err := s.Get(&gotMetric, "id = ?", testdata.MockMetricID1)
+				assert.NoError(t, err)
+
+				assert.Equal(t, timestamp, gotMetric.DeprecatedSince)
+				return assert.NotEmpty(t, gotMetric.DeprecatedSince)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+			}
+
+			res, err := svc.RemoveMetric(context.TODO(), tt.args.req)
+
+			// Run ErrorAssertionFunc
+			tt.wantErr(t, err)
+
+			tt.wantRes(t, res, tt.fields.storage)
+		})
 	}
 }

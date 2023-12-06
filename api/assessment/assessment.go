@@ -26,12 +26,13 @@
 package assessment
 
 import (
+	"context"
 	"errors"
 
 	"google.golang.org/protobuf/proto"
 )
 
-type ResultHookFunc func(result *AssessmentResult, err error)
+type ResultHookFunc func(ctx context.Context, result *AssessmentResult, err error)
 
 var (
 	ErrMetricConfigurationMissing            = errors.New("metric configuration in assessment result is missing")

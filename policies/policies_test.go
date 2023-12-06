@@ -32,13 +32,13 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"clouditor.io/clouditor/api/assessment"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -76,6 +76,14 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	err = json.Unmarshal(b, &metrics)
 	if err != nil {
 		return nil, fmt.Errorf("error in JSON marshal: %w", err)
+	}
+	for _, m := range metrics {
+		if m.Scale == assessment.Metric_SCALE_UNSPECIFIED {
+			return nil, fmt.Errorf("no scale specified for metric '%s'", m.Name)
+		}
+		if m.Range == nil {
+			return nil, fmt.Errorf("no range specified for metric '%s'", m.Name)
+		}
 	}
 
 	return

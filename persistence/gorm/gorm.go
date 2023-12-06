@@ -76,6 +76,7 @@ var DefaultTypes = []any{
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},
+	&orchestrator.TargetOfEvaluation{},
 	&evaluation.EvaluationResult{},
 }
 
@@ -126,6 +127,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	log.Println("Creating storage")
 	// Create storage with default gorm config
 	g := &storage{
+		// We ignore Deepsource issue GO-W1004 (SkipDefaultTransaction of config is "false"): skipcq: GO-W1004
 		config: gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},
@@ -165,11 +167,6 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	}
 
 	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
-		err = fmt.Errorf("error during join-table: %w", err)
-		return
-	}
-
-	if err = g.db.SetupJoinTable(orchestrator.TargetOfEvaluation{}, "ControlsInScope", orchestrator.ControlInScope{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

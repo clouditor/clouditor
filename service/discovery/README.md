@@ -33,7 +33,7 @@
 | Resource          | ✅     | ✅   |
 | NetworkInterfaces | ✅     | ✅   |
 | ResourceLogging  | ✅     |    |
-| Backup  | ✅    |    |
+| Backups  | ❌ |    |
 
 #### Resource
 | Evidence    | Azure | AWS |
@@ -76,6 +76,7 @@
 | Resource          | ✅     | ✅   |
 | AtRestEncryption  | ✅     | ✅   |
 | Immutability      | ✅     | ❌   |
+| Backups      | ✅     |  ❌  |
 
 #### ManagedKeyEncryption
 | Evidence  | Azure | AWS |
@@ -133,6 +134,7 @@
 |--------------|-------|-----|
 | Storage      | ✅     | ✅   |
 | PublicAccess | ✅     | ❌   |
+| Backups  | ✅     |    |
 
 #### Storage
 | Evidence         | Azure | AWS |
@@ -141,7 +143,7 @@
 | AtRestEncryption | ✅     | ✅   |
 | Immutability     | ✅     | ❌   |
 | ResourceLogging  | ✅     |    |
-| Backup  | ✅     |    |
+| Backups  | ✅     |    |
 
 ### ObjectStorageService
 | Evidence       | Azure | AWS |
@@ -169,6 +171,7 @@
 | Evidence          | Azure | AWS |
 |-------------------|-------|-----|
 | Storage           | ✅     | ❌   |
+|Backups             |         |  ❌  |
 
 #### ManagedKeyEncryption
 | Evidence  | Azure | AWS |
@@ -183,23 +186,48 @@
 | Algorithm  | ❌     | ❌   |
 | KeyUrl     | ✅     | ✅   |
 
+### Database Storage
+| Evidence     | Azure | AWS |
+|--------------|-------|-----|
+| Storage      | ✅     | ❌   |
+| Parent       |  ✅    | ❌   |
+
+### Database Service
+| Evidence     | Azure | AWS |
+|--------------|-------|-----|
+| NetworkService      | ✅     | ❌   |
+| AnomalyDetection       |  ✅    | ❌   |
+
+#### Networkservice
+| Evidence             | Azure | AWS |
+|----------------------|-------|-----|
+| Networking           | ✅     | ✅   |
+| Authenticity         | ❌     | ❌   |
+| Compute              | ❌     | ❌   |  
+| TransportEncryption  | ❌     | ✅   |
+| Ips                  | ❌     | ❌   |
+| Ports                | ❌     | ❌   |
 </details>
 
 # Azure Backup
+<details>
+<summary>Expand</summary>
+
 There are 2 different backup solutions for different resources
 - Backup Vaults and
 - Recovery Services Vault.
 
 | Resource   | Backup Vaults | Recovery Services Vault |
 |------------|-------|-----|
-| Azure Virtual Machine | | ✅ |
-| Azure Storage (Files)| | ✅ |
-| Azure Backup Agent| | ✅ |
-| Azure Backup Server| | ✅ |
-| DPM| | ✅ |
-| SQL in Azure VM | | ✅ |
-| SAP HANA in Azure VM | | ✅ |
-| Azure Storage (Blobs) | ✅ | |
-| Azure disks | ✅ | |
-| Azure Database for PostgreSQL servers | ✅ | |
-| Kubernetes Services | ✅ | |
+| Azure Virtual Machine | | x |
+| Azure Storage (Files)| | x |
+| Azure Backup Agent| | x |
+| Azure Backup Server| | x |
+| DPM| | x |
+| SQL in Azure VM | | x |
+| SAP HANA in Azure VM | | x |
+| Azure Storage (Blobs) | x | |
+| Azure disks | x | |
+| Azure Database for PostgreSQL servers | x | |
+| Kubernetes Services | x | |
+</details>

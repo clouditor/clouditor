@@ -29,9 +29,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"io"
-	"strings"
+	"slices"
 	"sync"
 
 	"clouditor.io/clouditor/api/evidence"
@@ -119,7 +118,7 @@ func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEviden
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informHooks(req.Evidence, nil)
+	go svc.informHooks(ctx, req.Evidence, nil)
 
 	res = &evidence.StoreEvidenceResponse{}
 
@@ -186,7 +185,8 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	var (
 		all     bool
 		allowed []string
-		conds   []any
+		query   []string
+		args    []any
 	)
 	// Validate request
 	err = service.ValidateRequest(req)
@@ -203,32 +203,27 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	res = new(evidence.ListEvidencesResponse)
 
-	var query []string
-
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
 		if cloudServiceId := filter.GetCloudServiceId(); cloudServiceId != "" {
 			query = append(query, "cloud_service_id = ?")
-			conds = append(conds, cloudServiceId)
+			args = append(args, cloudServiceId)
 		}
 		if toolId := filter.GetToolId(); toolId != "" {
 			query = append(query, "tool_id = ?")
-			conds = append(conds, toolId)
+			args = append(args, toolId)
 		}
 	}
 
 	// In any case, we need to make sure that we only select evidences of cloud services that we have access to
 	if !all {
 		query = append(query, "cloud_service_id IN ?")
-		conds = append(conds, allowed)
+		args = append(args, allowed)
 	}
-
-	// Join query with AND and prepend the query
-	conds = append([]any{strings.Join(query, " AND ")}, conds...)
 
 	// Paginate the evidences according to the request
 	res.Evidences, res.NextPageToken, err = service.PaginateStorage[*evidence.Evidence](req, svc.storage,
-		service.DefaultPaginationOpts, conds...)
+		service.DefaultPaginationOpts, persistence.BuildConds(query, args)...)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
@@ -278,7 +273,7 @@ func (svc *Service) RegisterEvidenceHook(evidenceHook evidence.EvidenceHookFunc)
 	svc.evidenceHooks = append(svc.evidenceHooks, evidenceHook)
 }
 
-func (svc *Service) informHooks(result *evidence.Evidence, err error) {
+func (svc *Service) informHooks(ctx context.Context, result *evidence.Evidence, err error) {
 	svc.mu.Lock()
 	defer svc.mu.Unlock()
 
@@ -286,7 +281,7 @@ func (svc *Service) informHooks(result *evidence.Evidence, err error) {
 	if svc.evidenceHooks != nil {
 		for _, hook := range svc.evidenceHooks {
 			// TODO(all): We could do hook concurrent again (assuming different hooks don't interfere with each other)
-			hook(result, err)
+			hook(ctx, result, err)
 		}
 	}
 }

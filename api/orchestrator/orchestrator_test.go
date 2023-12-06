@@ -176,68 +176,6 @@ func TestGetMetricConfigurationRequest_Validate(t *testing.T) {
 	}
 }
 
-func TestAddControlToScopeRequest_GetCloudServiceId(t *testing.T) {
-	type fields struct {
-		Scope *ControlInScope
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "Happy path",
-			fields: fields{
-				&ControlInScope{
-					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
-				},
-			},
-			want: testdata.MockCloudServiceID1,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := &AddControlToScopeRequest{
-				Scope: tt.fields.Scope,
-			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("AddControlToScopeRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestUpdateControlInScopeRequest_GetCloudServiceId(t *testing.T) {
-	type fields struct {
-		Scope *ControlInScope
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "Happy path",
-			fields: fields{
-				&ControlInScope{
-					TargetOfEvaluationCloudServiceId: testdata.MockCloudServiceID1,
-				},
-			},
-			want: testdata.MockCloudServiceID1,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			req := &UpdateControlInScopeRequest{
-				Scope: tt.fields.Scope,
-			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("AddControlToScopeRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {
 	type fields struct {
 		CloudService *CloudService
@@ -326,26 +264,6 @@ func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			}
 			if got := req.GetCloudServiceId(); got != tt.want {
 				t.Errorf("CreateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestControlInScope_TableName(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "Happy path",
-			want: "controls_in_scope",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &ControlInScope{}
-			if got := c.TableName(); got != tt.want {
-				t.Errorf("ControlInScope.TableName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

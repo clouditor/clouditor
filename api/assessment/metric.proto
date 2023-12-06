@@ -72,6 +72,12 @@ message Metric {
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
   optional MetricImplementation implementation = 8;
+
+  // Optional, but required if the metric is removed. The metric is not deleted for backward compatibility and the timestamp is set to the time of removal. 
+  optional google.protobuf.Timestamp deprecated_since = 10 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
+    (validate.rules).timestamp.required = true
+  ];
 }
 
 // A range resource representing the range of values
@@ -107,7 +113,8 @@ message Order { repeated google.protobuf.Value values = 1; }
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1 [ (validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$" ];
+  string operator = 1
+      [ (validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$" ];
 
   // The target value
   google.protobuf.Value target_value = 2 [
@@ -120,7 +127,7 @@ message MetricConfiguration {
 
   // The last time of update
   google.protobuf.Timestamp updated_at = 4
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   // The metric this configuration belongs to
   string metric_id = 5 [
@@ -138,7 +145,10 @@ message MetricConfiguration {
 // MetricImplementation defines the implementation of an individual metric.
 message MetricImplementation {
   // The metric which is implemented
-  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 1 [
+    (validate.rules).string.min_len = 1,
+    (tagger.tags) = "gorm:\"primaryKey\""
+  ];
 
   enum Language {
     LANGUAGE_UNSPECIFIED = 0;
@@ -153,5 +163,5 @@ message MetricImplementation {
 
   // The last time of update
   google.protobuf.Timestamp updated_at = 4
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 }

@@ -63,7 +63,7 @@ func createEvidences(n int, m int, b *testing.B) int {
 
 	svc := NewService(WithOrchestratorAddress(addr), WithEvidenceStoreAddress(addr))
 
-	orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {
+	orchestratorService.RegisterAssessmentResultHook(func(ctx context.Context, result *assessment.AssessmentResult, err error) {
 		wg.Done()
 		current := atomic.AddInt64(&count, 1)
 		log.Debugf("Current count: %v", current)

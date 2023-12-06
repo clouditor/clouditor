@@ -1,4 +1,4 @@
-package clouditor.metrics.tls_version
+package clouditor.metrics.transport_encryption_protocol
 
 import data.clouditor.compare
 import input.transportEncryption as enc
@@ -12,6 +12,5 @@ applicable {
 }
 
 compliant {
-	# If target_value is the version number represented as int/float
 	compare(data.operator, data.target_value, enc.tlsVersion)
 }

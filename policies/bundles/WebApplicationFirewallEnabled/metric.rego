@@ -6,10 +6,11 @@ default applicable = false
 
 default compliant = false
 
-enabled := input.webApplicationFirewall.enabled
+enabled := input.accessRestriction.enabled
 
 applicable {
 	enabled != null
+	compare("isIn",  "LoadBalancer", input.type)
 }
 
 compliant {

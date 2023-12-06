@@ -68,6 +68,19 @@ The Go components contain a basic CLI command called `cl`. It can be installed u
 cl login <host:grpcPort>
 ```
 
+The CLI can also be used to interact with the experimental resource graph, for example to add additional information about an application and its dependencies:
+
+```bash
+cl service discovery experimental update-resource \
+'{"id": "log4j", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Library,Resource", "properties":{"name": "log4j", "groupId": "org.apache.logging.log4j", "artifactId": "log4j-core", "version": "2.17.0", "dependencyType": "maven", "url": "https://github.com/apache/logging-log4j2", "vulnerabilities": ["CVE-2021-44832"]}}'
+cl service discovery experimental update-resource \
+'{"id": "Main.java", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "TranslationUnitDeclaration,Resource", "properties":{"name": "Main.java", "code": "class Main { public static void main(String[] args) { return; } }"}}'
+cl service discovery experimental update-resource \
+'{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication","dependencies":["log4j"],"translationUnits":["Main.java"]}}'
+cl service discovery experimental update-resource \
+'{"id": "github.com/org/app", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "CodeRepository,Resource", "properties":{"id:": "github.com/org/app", "name": "github.com/org/app", "parent": "MyApplication", "url": "github.com/org/app"}}'
+```
+
 ### Command Completion
 
 The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.

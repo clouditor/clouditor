@@ -37,6 +37,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/voc"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -148,6 +149,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 							Region: b.region,
 						},
 						nil,
+						"",
 						voc.ObjectStorageType,
 						&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw),
 					AtRestEncryption: encryptionAtRest,
@@ -165,6 +167,7 @@ func (d *awsS3Discovery) List() (resources []voc.IsCloudResource, err error) {
 								&b.creationTime,
 								voc.GeoLocation{Region: b.region},
 								nil,
+								"",
 								voc.ObjectStorageServiceType,
 								&b, &rawBucketEncOutput, &rawBucketTranspEnc, &b.raw,
 							),
@@ -303,8 +306,8 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 				return &voc.TransportEncryption{
 					Enforced:   false,
 					Enabled:    true,
-					TlsVersion: "TLS1.2",
-					Algorithm:  "TLS",
+					TlsVersion: constants.TLS1_2,
+					Algorithm:  constants.TLS,
 				}, resp, nil
 			}
 			// Any other error is a connection error with AWS : Format err and return it
@@ -328,8 +331,8 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 				return &voc.TransportEncryption{
 					Enforced:   true,
 					Enabled:    true,
-					TlsVersion: "TLS1.2",
-					Algorithm:  "TLS",
+					TlsVersion: constants.TLS1_2,
+					Algorithm:  constants.TLS,
 				}, resp, nil
 			}
 		}
@@ -339,8 +342,8 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 					return &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
-						TlsVersion: "TLS1.2",
-						Algorithm:  "TLS",
+						TlsVersion: constants.TLS1_2,
+						Algorithm:  constants.TLS,
 					}, resp, nil
 				}
 			}
@@ -349,8 +352,8 @@ func (d *awsS3Discovery) getTransportEncryption(bucket string) (*voc.TransportEn
 	return &voc.TransportEncryption{
 		Enforced:   false,
 		Enabled:    true,
-		TlsVersion: "TLS1.2",
-		Algorithm:  "TLS",
+		TlsVersion: constants.TLS1_2,
+		Algorithm:  constants.TLS,
 	}, resp, nil
 
 }

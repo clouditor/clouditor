@@ -34,10 +34,11 @@ import (
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/server"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+	"google.golang.org/grpc/reflection/grpc_reflection_v1"
 )
 
 func TestMain(m *testing.M) {
@@ -50,9 +51,9 @@ func TestReflectionNoAuth(t *testing.T) {
 	var (
 		session *cli.Session
 		conn    *grpc.ClientConn
-		client  grpc_reflection_v1alpha.ServerReflectionClient
-		sclient grpc_reflection_v1alpha.ServerReflection_ServerReflectionInfoClient
-		res     *grpc_reflection_v1alpha.ServerReflectionResponse
+		client  grpc_reflection_v1.ServerReflectionClient
+		sclient grpc_reflection_v1.ServerReflection_ServerReflectionInfoClient
+		res     *grpc_reflection_v1.ServerReflectionResponse
 		err     error
 	)
 
@@ -64,13 +65,13 @@ func TestReflectionNoAuth(t *testing.T) {
 	conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
 
-	client = grpc_reflection_v1alpha.NewServerReflectionClient(conn)
+	client = grpc_reflection_v1.NewServerReflectionClient(conn)
 	sclient, err = client.ServerReflectionInfo(context.TODO())
 	assert.NoError(t, err)
 
-	err = sclient.Send(&grpc_reflection_v1alpha.ServerReflectionRequest{
+	err = sclient.Send(&grpc_reflection_v1.ServerReflectionRequest{
 		Host:           "localhost",
-		MessageRequest: &grpc_reflection_v1alpha.ServerReflectionRequest_ListServices{},
+		MessageRequest: &grpc_reflection_v1.ServerReflectionRequest_ListServices{},
 	})
 	assert.NoError(t, err)
 

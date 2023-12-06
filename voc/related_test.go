@@ -46,12 +46,24 @@ func TestVirtualMachine_Related(t *testing.T) {
 		{
 			name: "Related VM resources",
 			fields: fields{
+				BootLogging: &BootLogging{
+					Logging: &Logging{LoggingService: []ResourceID{"3"}},
+				},
+				OSLogging: &OSLogging{
+					Logging: &Logging{LoggingService: []ResourceID{"5"}},
+				},
 				BlockStorage: []ResourceID{"1"},
 				Compute: &Compute{
+					Resource: &Resource{
+						Parent: "6",
+					},
+					ResourceLogging: &ResourceLogging{
+						&Logging{LoggingService: []ResourceID{"4"}},
+					},
 					NetworkInterfaces: []ResourceID{"2"},
 				},
 			},
-			want: []string{"1", "2"},
+			want: []string{"1", "3", "5", "2", "4", "6"},
 		},
 	}
 	for _, tt := range tests {
@@ -82,6 +94,11 @@ func TestLoggingService_Related(t *testing.T) {
 		{
 			name: "Related LoggingService resources",
 			fields: fields{
+				NetworkService: &NetworkService{
+					Networking: &Networking{
+						Resource: &Resource{},
+					},
+				},
 				Storage: []ResourceID{"1"},
 			},
 			want: []string{"1"},
@@ -95,6 +112,125 @@ func TestLoggingService_Related(t *testing.T) {
 			}
 			if got := v.Related(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("VirtualMachine.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStorageService_Related(t *testing.T) {
+	type fields struct {
+		NetworkService *NetworkService
+		Storage        []ResourceID
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related LoggingService resources",
+			fields: fields{
+				NetworkService: &NetworkService{
+					Networking: &Networking{
+						Resource: &Resource{},
+					},
+				},
+				Storage: []ResourceID{"1"},
+			},
+			want: []string{"1"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := StorageService{
+				NetworkService: tt.fields.NetworkService,
+				Storage:        tt.fields.Storage,
+			}
+			if got := s.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StorageService.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStorage_Related(t *testing.T) {
+	type fields struct {
+		Resource         *Resource
+		AtRestEncryption IsAtRestEncryption
+		Backups          []*Backup
+		Immutability     *Immutability
+		ResourceLogging  *ResourceLogging
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related LoggingService resources",
+			fields: fields{
+				Resource: &Resource{},
+				Backups: []*Backup{
+					{
+						Storage: "1",
+					},
+				},
+			},
+			want: []string{"1"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := Storage{
+				Resource:         tt.fields.Resource,
+				AtRestEncryption: tt.fields.AtRestEncryption,
+				Backups:          tt.fields.Backups,
+				Immutability:     tt.fields.Immutability,
+				ResourceLogging:  tt.fields.ResourceLogging,
+			}
+			if got := s.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Storage.Related() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_Related(t *testing.T) {
+	type fields struct {
+		Resource            *Resource
+		Functionalities     []*Functionality
+		Compute             []ResourceID
+		ProgrammingLanguage string
+		TranslationUnits    []ResourceID
+		Dependencies        []ResourceID
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Related Application resources",
+			fields: fields{
+				Resource:         &Resource{},
+				Dependencies:     []ResourceID{"log4j"},
+				TranslationUnits: []ResourceID{"Main.java"},
+			},
+			want: []string{"log4j", "Main.java"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Application{
+				Resource:            tt.fields.Resource,
+				Functionalities:     tt.fields.Functionalities,
+				Compute:             tt.fields.Compute,
+				ProgrammingLanguage: tt.fields.ProgrammingLanguage,
+				TranslationUnits:    tt.fields.TranslationUnits,
+				Dependencies:        tt.fields.Dependencies,
+			}
+			if got := a.Related(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Application.Related() = %v, want %v", got, tt.want)
 			}
 		})
 	}

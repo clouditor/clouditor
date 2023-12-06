@@ -30,8 +30,7 @@ package clouditor.evaluation.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "api/assessment/assessment.proto";
-import "api/orchestrator/orchestrator.proto";
+import "google/protobuf/duration.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -65,6 +64,15 @@ service Evaluation {
       get : "/v1/evaluation/results"
     };
   }
+
+  // Creates an evaluation result
+  rpc CreateEvaluationResult(CreateEvaluationResultRequest)
+      returns (EvaluationResult) {
+    option (google.api.http) = {
+      post : "/v1/evaluation/results"
+      body : "result"
+    };
+  }
 }
 
 message StartEvaluationRequest {
@@ -77,6 +85,10 @@ message StartEvaluationRequest {
 }
 
 message StartEvaluationResponse { bool successful = 1; }
+
+message CreateEvaluationResultRequest {
+  EvaluationResult result = 1 [ (validate.rules).message.required = true ];
+}
 
 message StopEvaluationRequest {
   string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
@@ -92,18 +104,28 @@ message ListEvaluationResultsRequest {
     optional string cloud_service_id = 1
         [ (validate.rules).string.uuid = true ];
 
+    // Optional. Lists only evaluation results for a specific catalog.
+    optional string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+
     // Optional. Lists only evaluation results for a specific control id.
-    optional string control_id = 2 [ (validate.rules).string.min_len = 1 ];
+    optional string control_id = 3 [ (validate.rules).string.min_len = 1 ];
 
     // Optional. Lists all evaluation results for the given initial control id
     // substring, e.g., if the substring 'CMK-01.' is given it returns the
     // controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
-    optional string sub_controls = 3 [ (validate.rules).string.min_len = 1 ];
+    optional string sub_controls = 4 [ (validate.rules).string.min_len = 1 ];
+
+    // Optional. Lists only results for parent controls
+    optional bool parents_only = 5;
+
+    // Optional. Lists only manual results in their validity period
+    optional bool valid_manual_only = 6;
   }
+
   optional Filter filter = 1;
 
-  // Optional. Latest results grouped by resource_id and metric_id.
-  optional bool latest_by_resource_id = 2;
+  // Optional. Latest results grouped by control_id.
+  optional bool latest_by_control_id = 2;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -137,15 +159,15 @@ message EvaluationResult {
   // The catalog the evaluated control belongs to
   string control_catalog_id = 5 [ (validate.rules).string.min_len = 1 ];
 
-  // The evaluated resource
-  string resource_id = 6 [ (validate.rules).string.min_len = 1 ];
+  // Optionally, specifies the parent control ID, if this is a sub-control
+  optional string parent_control_id = 6;
 
   // Evaluation status
   EvaluationStatus status = 7 [ (validate.rules).enum.defined_only = true ];
 
   // Time of evaluation
   google.protobuf.Timestamp timestamp = 8
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:time\"" ];
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   // List of assessment results because of which the evaluation status is not
   // 'compliant'
@@ -153,11 +175,21 @@ message EvaluationResult {
     (tagger.tags) = "gorm:\"serializer:json\"",
     (validate.rules).repeated .items.string.min_len = 1
   ];
+
+  optional string comment = 10;
+
+  // Optional, but required if the status is one of the "manually" ones. This
+  // denotes how long the (manual) created evaluation result is valid. During
+  // this time, no automatic results are generated for the specific control.
+  optional google.protobuf.Timestamp valid_until = 20
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 }
 
 enum EvaluationStatus {
   EVALUATION_STATUS_UNSPECIFIED = 0;
   EVALUATION_STATUS_COMPLIANT = 1;
-  EVALUATION_STATUS_NOT_COMPLIANT = 2;
-  EVALUATION_STATUS_PENDING = 3;
+  EVALUATION_STATUS_COMPLIANT_MANUALLY = 2;
+  EVALUATION_STATUS_NOT_COMPLIANT = 3;
+  EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY = 4;
+  EVALUATION_STATUS_PENDING = 10;
 }

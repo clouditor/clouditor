@@ -159,7 +159,7 @@ func Test_labels(t *testing.T) {
 func Test_azureDiscovery_authorize(t *testing.T) {
 	type fields struct {
 		isAuthorized  bool
-		sub           armsubscription.Subscription
+		sub           *armsubscription.Subscription
 		cred          azcore.TokenCredential
 		clientOptions arm.ClientOptions
 	}
@@ -249,7 +249,7 @@ func Test_initClient(t *testing.T) {
 				existingClient: nil,
 				d: &azureDiscovery{
 					cred: &mockAuthorizer{},
-					sub: armsubscription.Subscription{
+					sub: &armsubscription.Subscription{
 						SubscriptionID: &subID,
 					},
 					clientOptions: arm.ClientOptions{
@@ -269,7 +269,7 @@ func Test_initClient(t *testing.T) {
 				existingClient: nil,
 				d: &azureDiscovery{
 					cred: &mockAuthorizer{},
-					sub: armsubscription.Subscription{
+					sub: &armsubscription.Subscription{
 						SubscriptionID: &subID,
 					},
 					clientOptions: arm.ClientOptions{
@@ -293,7 +293,7 @@ func Test_initClient(t *testing.T) {
 				existingClient: someClient,
 				d: &azureDiscovery{
 					cred: &mockAuthorizer{},
-					sub: armsubscription.Subscription{
+					sub: &armsubscription.Subscription{
 						SubscriptionID: &subID,
 					},
 					clientOptions: arm.ClientOptions{
@@ -322,7 +322,7 @@ func Test_initClient(t *testing.T) {
 
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	var subID = "00000000-0000-0000-0000-000000000000"
-	sub := armsubscription.Subscription{
+	sub := &armsubscription.Subscription{
 		SubscriptionID: &subID,
 	}
 
@@ -417,7 +417,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				want := []*voc.Backup{{
 					RetentionPeriod: Duration7Days,
 					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
@@ -427,7 +427,9 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+				got := d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"]
+
+				return assert.Equal(t, want, got)
 
 			},
 			wantErr: assert.NoError,
@@ -526,7 +528,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				want := []*voc.Backup{{
 					RetentionPeriod: Duration30Days,
 					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
 					TransportEncryption: &voc.TransportEncryption{
 						Enforced:   true,
 						Enabled:    true,
@@ -751,7 +753,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			wantErr: assert.NoError,
 			want: []*armdataprotection.BackupInstanceResource{
 				{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
 					Properties: &armdataprotection.BackupInstance{
 						DataSourceInfo: &armdataprotection.Datasource{
@@ -790,7 +792,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 func Test_azureDiscovery_handleInstances(t *testing.T) {
 	type fields struct {
 		isAuthorized        bool
-		sub                 armsubscription.Subscription
+		sub                 *armsubscription.Subscription
 		cred                azcore.TokenCredential
 		rg                  *string
 		clientOptions       arm.ClientOptions
@@ -823,12 +825,12 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
 					Name:     util.Ref("backupAccount1"),
 					Location: util.Ref("westeurope"),
 				},
 				instance: &armdataprotection.BackupInstanceResource{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
 					Properties: &armdataprotection.BackupInstance{
 						DataSourceInfo: &armdataprotection.Datasource{
@@ -840,7 +842,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			wantResource: &voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
 						ServiceID: testdata.MockCloudServiceID1,
 						Name:      "account1-account1-22222222-2222-2222-2222-222222222222",
 						GeoLocation: voc.GeoLocation{
@@ -849,7 +851,8 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						CreationTime: 0,
 						Type:         voc.ObjectStorageType,
 						Labels:       nil,
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
+						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
 			},
@@ -862,12 +865,12 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
 					Name:     util.Ref("backupAccount1"),
 					Location: util.Ref("westeurope"),
 				},
 				instance: &armdataprotection.BackupInstanceResource{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
 					Name: util.Ref("disk1-disk1-22222222-2222-2222-2222-222222222222"),
 					Properties: &armdataprotection.BackupInstance{
 						DataSourceInfo: &armdataprotection.Datasource{
@@ -879,7 +882,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			wantResource: &voc.BlockStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
 						ServiceID: testdata.MockCloudServiceID1,
 						Name:      "disk1-disk1-22222222-2222-2222-2222-222222222222",
 						GeoLocation: voc.GeoLocation{
@@ -888,7 +891,8 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						CreationTime: 0,
 						Type:         voc.BlockStorageType,
 						Labels:       nil,
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
+						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
 			},
@@ -911,8 +915,88 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			gotResource, err := d.handleInstances(tt.args.vault, tt.args.instance)
 			tt.wantErr(t, err)
 
-			if !reflect.DeepEqual(gotResource, tt.wantResource) {
-				t.Errorf("azureDiscovery.handleInstances() = %v, want %v", gotResource, tt.wantResource)
+			assert.Equal(t, tt.wantResource, gotResource)
+		})
+	}
+}
+
+func Test_backupsEmptyCheck(t *testing.T) {
+	type args struct {
+		backups []*voc.Backup
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*voc.Backup
+	}{
+		{
+			name: "Happy path",
+			args: args{
+				backups: []*voc.Backup{
+					{
+						Enabled:         true,
+						Interval:        90,
+						RetentionPeriod: 100,
+					},
+				},
+			},
+			want: []*voc.Backup{
+				{
+					Enabled:         true,
+					Interval:        90,
+					RetentionPeriod: 100,
+				},
+			},
+		},
+		{
+			name: "Happy path: empty input",
+			args: args{},
+			want: []*voc.Backup{
+				{
+					Enabled:         false,
+					RetentionPeriod: -1,
+					Interval:        -1,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_resourceGroupID(t *testing.T) {
+	type args struct {
+		ID *string
+	}
+	tests := []struct {
+		name string
+		args args
+		want voc.ResourceID
+	}{
+		{
+			name: "invalid",
+			args: args{
+				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
+			},
+			want: "",
+		},
+		{
+			name: "happy path",
+			args: args{
+				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

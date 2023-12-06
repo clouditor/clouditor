@@ -705,6 +705,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/statistics:
+        get:
+            tags:
+                - Orchestrator
+            description: Retrieves target cloud service statistics
+            operationId: Orchestrator_GetCloudServiceStatistics
+            parameters:
+                - name: cloudServiceId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetCloudServiceStatisticsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloudServiceId}:
         get:
             tags:
@@ -903,90 +927,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope:
-        get:
-            tags:
-                - Orchestrator
-            description: Lists all controls in scope of a target of evaluation.
-            operationId: Orchestrator_ListControlsInScope
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListControlsInScopeResponse'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{cloudServiceId}/toes/{catalogId}/controls_in_scope/categories/{controlCategoryName}/controls/{controlId}
-    :   delete:
-            tags:
-                - Orchestrator
-            description: Adds the selected control as "in scope" for the target of evaluation.
-            operationId: Orchestrator_RemoveControlFromScope
-            parameters:
-                - name: cloudServiceId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: controlCategoryName
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: controlId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/cloud_services/{cloud_service.id}:
         put:
             tags:
@@ -1012,88 +952,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CloudService'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope
-    :   post:
-            tags:
-                - Orchestrator
-            description: Adds the selected control as "in scope" for the target of evaluation.
-            operationId: Orchestrator_AddControlToScope
-            parameters:
-                - name: scope.target_of_evaluation_cloud_service_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: scope.target_of_evaluation_catalog_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ControlInScope'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ControlInScope'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    ? /v1/orchestrator/cloud_services/{scope.target_of_evaluation_cloud_service_id}/toes/{scope.target_of_evaluation_catalog_id}/controls_in_scope/categories/{scope.control_category_name}/controls/{scope.control_id}
-    :   put:
-            tags:
-                - Orchestrator
-            description: Updates a particular control in scope, e.g., its monitoring status.
-            operationId: Orchestrator_UpdateControlInScope
-            parameters:
-                - name: scope.target_of_evaluation_cloud_service_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: scope.target_of_evaluation_catalog_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: scope.control_category_name
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: scope.control_id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ControlInScope'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ControlInScope'
                 default:
                     description: Default error response
                     content:
@@ -1155,6 +1013,13 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: filter.assuranceLevels
+                  in: query
+                  description: Optional. Lists only controls with the specified assurance levels.
+                  schema:
+                    type: array
+                    items:
+                        type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -1192,6 +1057,10 @@ paths:
             description: List all metrics provided by the metric catalog
             operationId: Orchestrator_ListMetrics
             parameters:
+                - name: filter.includeDeprecated
+                  in: query
+                  schema:
+                    type: boolean
                 - name: pageSize
                   in: query
                   schema:
@@ -1333,6 +1202,27 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a new metric
+            operationId: Orchestrator_RemoveMetric
+            parameters:
+                - name: metricId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/metrics/{metricId}/implementation:
         get:
             tags:
@@ -1352,6 +1242,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricImplementation'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/public/certificates:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all target certificates without state history
+            operationId: Orchestrator_ListPublicCertificates
+            parameters:
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListPublicCertificatesResponse'
                 default:
                     description: Default error response
                     content:
@@ -1533,6 +1460,17 @@ components:
                     items:
                         type: string
                     description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
+                shortName:
+                    type: string
+                    description: Catalogs short name, e.g. EUCS
+                metadata:
+                    $ref: '#/components/schemas/Catalog_Metadata'
+        Catalog_Metadata:
+            type: object
+            properties:
+                color:
+                    type: string
+                    description: a color for the cloud service used by the UI
         Category:
             type: object
             properties:
@@ -1591,6 +1529,27 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                createdAt:
+                    type: string
+                    description: creation time of the cloud_service
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: last update time of the cloud_service
+                    format: date-time
+                metadata:
+                    $ref: '#/components/schemas/CloudService_Metadata'
+        CloudService_Metadata:
+            type: object
+            properties:
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: a map of key/value pairs, e.g., env:prod
+                icon:
+                    type: string
+                    description: an icon for the cloud service used by the UI
         Control:
             type: object
             properties:
@@ -1628,28 +1587,6 @@ components:
                     type: string
                     description: An assurance level is not offered by every catalog, therefore it is optional.
             description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
-        ControlInScope:
-            type: object
-            properties:
-                targetOfEvaluationCloudServiceId:
-                    type: string
-                targetOfEvaluationCatalogId:
-                    type: string
-                controlId:
-                    type: string
-                controlCategoryName:
-                    type: string
-                controlCategoryCatalogId:
-                    type: string
-                monitoringStatus:
-                    enum:
-                        - MONITORING_STATUS_UNSPECIFIED
-                        - MONITORING_STATUS_AUTOMATICALLY_MONITORED
-                        - MONITORING_STATUS_MANUALLY_MONITORED
-                        - MONITORING_STATUS_DELEGATED
-                    type: string
-                    format: enum
-            description: ControlInScope defines a control which is "in scope" of a target of evaluation. Additional meta-data can be defined when a control is in scope, e.g., its monitoring status (continuously monitored, delegated, etc.)
         Dependency:
             type: object
             properties:
@@ -1657,6 +1594,25 @@ components:
                     type: string
                 version:
                     type: string
+        GetCloudServiceStatisticsResponse:
+            type: object
+            properties:
+                numberOfDiscoveredResources:
+                    type: integer
+                    description: number of discovered resources per cloud service
+                    format: int64
+                numberOfAssessmentResults:
+                    type: integer
+                    description: number of assessment results per cloud service
+                    format: int64
+                numberOfEvidences:
+                    type: integer
+                    description: number of evidences per cloud service
+                    format: int64
+                numberOfSelectedCatalogs:
+                    type: integer
+                    description: number of selected catalogs per cloud service
+                    format: int64
         GoogleProtobufAny:
             type: object
             properties:
@@ -1712,15 +1668,6 @@ components:
                         $ref: '#/components/schemas/CloudService'
                 nextPageToken:
                     type: string
-        ListControlsInScopeResponse:
-            type: object
-            properties:
-                controlsInScope:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/ControlInScope'
-                nextPageToken:
-                    type: string
         ListControlsResponse:
             type: object
             properties:
@@ -1745,6 +1692,15 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
+                nextPageToken:
+                    type: string
+        ListPublicCertificatesResponse:
+            type: object
+            properties:
+                certificates:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Certificate'
                 nextPageToken:
                     type: string
         ListTargetsOfEvaluationResponse:
@@ -1788,6 +1744,10 @@ components:
                     format: int64
                 implementation:
                     $ref: '#/components/schemas/MetricImplementation'
+                deprecatedSince:
+                    type: string
+                    description: Optional, but required if the metric is removed. The metric is not deleted for backward compatibility and the timestamp is set to the time of removal.
+                    format: date-time
             description: A metric resource
         MetricConfiguration:
             type: object
@@ -1932,11 +1892,6 @@ components:
                 assuranceLevel:
                     type: string
                     description: an assurance level is not offered by every catalog, therefore it is optional
-                controlsInScope:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Control'
-                    description: 'the controls that are in scope of this ToE. Note: For some security catalogs, e.g., the EUCS, a specific set of controls (in the "worst case": all) are automatically in scope. In this case, this list needs auto-filled at an appropriate time, e.g,. in CreateTargetOfEvaluation. Note: Because of limitations of our ORM framework, this field only contains a list of controls that are in scope of the target, but not the actual meta-data associated it with it (which is of message type ControlInScope). In order to retrieve the meta-data of the controls, the RPC ListControlsInScope (or the associated REST path) must be called.'
             description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

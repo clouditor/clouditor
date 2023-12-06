@@ -1,120 +1,529 @@
 [
   {
-    "id": "AdminMFAEnabled"
+    "id": "AdminMFAEnabled",
+    "name": "Admin's MFA: Enabled",
+    "description": "This metric is used to assess if MFA for admins is enabled",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "OTPBasedAuthentication",
+          "PasswordBasedAuthentication"
+        ]
+      }
+    }
   },
   {
-    "id": "AdminMixedDuties"
+    "id": "AdminMixedDuties",
+    "name": "Mixed Duties Applied To Admins",
+    "description": "This metric is used to assess if Mixed Duties is applied appropriately",
+    "category": "Identity Management",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 1
+      }
+    }
   },
   {
-    "id": "AnomalyDetectionEnabled"
+    "id": "AnomalyDetectionEnabled",
+    "name": "Anomaly Detection: Enabled",
+    "description": "This metric is used to assess if Anomaly Detection is enabled",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "AnomalyDetectionOutput"
+    "id": "AnomalyDetectionOutput",
+    "name": "Anomaly Detection: Output",
+    "description": "This metric is used to assess if the output (results) of the anomaly detection is valid",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
   },
   {
-    "id": "AnonymousAuthentication"
+    "id": "AnonymousAuthentication",
+    "name": "Anonymous Authentication",
+    "description": "This metric is used to assess if it is possible to authenticate anonymously",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "ApprovedCommitAuthor",
+    "name": "Code Commits: Approved Author",
+    "description": "This metric is used to assess if committed code is from approved authors",
+    "category": "Development Life-Cycle",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
     "id": "AtRestEncryptionAlgorithm",
     "name": "Storage Encryption: Algorithm",
-    "description": "This metric describes the algorithm of a storage encryption block cipher",
-    "category": "CKM-03",
+    "description": "This metric is used to assess the algorithm of a storage encryption block cipher",
+    "category": "Storage Encryption",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        "AES128",
-        "AES256",
-        ""
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          "AES128",
+          "AES256",
+          ""
+        ]
+      }
     }
   },
   {
     "id": "AtRestEncryptionEnabled",
     "name": "Storage Encryption: Enabled",
-    "category": "CKM-03",
-    "description": "This metric describes whether storage encryption is enabled",
+    "description": "This metric is used to assess if storage encryption is enabled",
+    "category": "Storage Encryption",
     "scale": 1,
-    "allowedValues": {
-      "values": [
-        false,
-        true
-      ]
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
     }
   },
   {
-    "id": "AutomaticUpdatesEnabled"
+    "id": "AutomaticUpdatesEnabled",
+    "name": "Automatic Updates: Enabled",
+    "description": "This metric is used to assess if automatic updates are enabled",
+    "category": "Endpoint Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "AutomaticUpdatesInterval"
+    "id": "AutomaticUpdatesInterval",
+    "name": "Automatic Updates: Interval",
+    "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
+    "category": "Endpoint Security",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 1,
+        "max": 365
+      }
+    }
   },
   {
-    "id": "AutomaticUpdatesSecurityOnly"
+    "id": "AutomaticUpdatesSecurityOnly",
+    "name": "Automatic Updates: Security Only",
+    "description": "This metric is used to assess if only security updates are performed",
+    "category": "Endpoint Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "BootLoggingEnabled"
+    "id": "BootLoggingEnabled",
+    "name": "Boot Logging: Enabled",
+    "description": "This metric is used to assess if boot logs are enabled",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "BootLoggingOutput"
+    "id": "BootLoggingOutput",
+    "name": "Boot Logging: Output",
+    "description": "This metric is used to assess the output destination of boot logs",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
   },
   {
-    "id": "BootLoggingRetention"
+    "id": "BootLoggingRetention",
+    "name": "Boot Logging: Retention",
+    "description": "This metric is used to assess the configured log retention (days)",
+    "category": "Logging & Monitoring",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 365
+      }
+    }
   },
   {
-    "id": "CustomerKeyEncryption"
+    "id": "CodeSignoff",
+    "name": "Code Commits: Requires Sign-Off",
+    "description": "This metric is used to assess if Git commit messages contain a signoff",
+    "category": "Development Life-Cycle",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "IdentityPasswordPolicy"
+    "id": "CustomerKeyEncryption",
+    "name": "Storage Encryption: Customer Key Encryption",
+    "description": "This metric is used to assess if encryption is done via customer keys",
+    "category": "Storage Encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "IdentityRecentActivity"
-  },
-    {
-    "id": "L3FirewallEnabled"
-  },
-  {
-    "id": "L3FirewallRestrictedPorts"
-  },
-  {
-    "id": "MalwareProtectionEnabled"
-  },
-  {
-    "id": "MalwareProtectionOutput"
-  },
-  {
-    "id": "MutualAuthentication"
+    "id": "IdentityPasswordPolicy",
+    "name": "Identity: Password Policy",
+    "description": "This metric is used to assess if a password policy is in place",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "ObjectStoragePublicAccessDisabled"
+    "id": "IdentityRecentActivity",
+    "name": "Identity: Recent Activity",
+    "description": "This metric is used to assess if a user is still active (days)",
+    "category": "Identity Management",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 365
+      }
+    }
   },
   {
-    "id": "OSLoggingEnabled"
+    "id": "L3FirewallEnabled",
+    "name": "L3 Firewall: Enabled",
+    "description": "This metric is used to assess if a L3 firewall is in place",
+    "category": "Network Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "OSLoggingOutput"
+    "id": "L3FirewallRestrictedPorts",
+    "name": "L3 Firewall: Restricted Ports",
+    "description": "This metric is used to assess the restricted ports of a L3 firewall",
+    "category": "Network Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
   },
   {
-    "id": "OSLoggingRetention"
+    "id": "MalwareProtectionEnabled",
+    "name": "Malware Protection: Enabled",
+    "description": "This metric is used to assess if Malware Protection is enabled",
+    "category": "Endpoint Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "ResourceInventory"
+    "id": "MalwareProtectionOutput",
+    "name": "Malware Protection: Output",
+    "description": "This metric is used to assess to which service the Malware Protection results are sent",
+    "category": "Endpoint Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
   },
   {
-    "id": "RoleBroadAssignments"
+    "id": "MutualAuthentication",
+    "name": "Mutual Authentication",
+    "description": "This metric is used to assess if mutual authentication, including client certificate, has been enabled",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "RuntimeVersion"
+    "id": "ObjectStoragePublicAccessDisabled",
+    "name": "Object Storage: Public Access Disabled",
+    "description": "This metric is used to assess if public acess is disabled for a object storage",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "SingleSignOnEnabled"
+    "id": "OSLoggingEnabled",
+    "name": "OS Logging: Enabled",
+    "description": "This metric is used to assess if OS logging is enabled",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "TLSVersion"
+    "id": "OSLoggingOutput",
+    "name": "OS Logging: Output",
+    "description": "This metric is used to assess to which service the OS logs are sent",
+    "category": "Logging & Monitoring",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
   },
   {
-    "id": "TransportEncryptionAlgorithm",
-    "name": "Transport Encryption: Protocol Version",
-    "category": "CKM-02",
-    "description": "This metric describes, whether a up-to-date transport encryption protocol version is used",
+    "id": "OSLoggingRetention",
+    "name": "OS Logging: Retention",
+    "description": "This metric is used to assess the configured OS log retention (days)",
+    "category": "Logging & Monitoring",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 365
+      }
+    }
+  },
+  {
+    "id": "ResourceInventory",
+    "name": "Resource Inventory",
+    "description": "This metric is used to assess if an inventory is set up for resources",
+    "category": "Inventory",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "RoleBroadAssignments",
+    "name": "Role Broad Assignments",
+    "description": "This metric is used to assess the broad assignments of roles",
+    "category": "Identity Management",
+    "scale": 3,
+    "range": {
+      "minMax": {
+        "min": 0,
+        "max": 1
+      }
+    }
+  },
+  {
+    "id": "RuntimeVersion",
+    "name": "Runtime Version",
+    "description": "This metric is used to assess the runtime version of a given programming language",
+    "category": "Platform Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "SignedSignoff",
+    "name": "Code Commits: Requires Signed Sign-Off",
+    "description": "This metric is used to assess if Git commit messages are signed and contain a signoff",
+    "category": "Development Life-Cycle",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "SignedCommits",
+    "name": "Code Commits: Requires Signed Commits",
+    "description": "This metric is used to assess if Git commit messages are signed",
+    "category": "Development Life-Cycle",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "SingleSignOnEnabled",
+    "name": "Single Sign On Enabled",
+    "description": "This metric is used to assess if SSO is enabled",
+    "category": "Identity Management",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "TlsCipherSuites",
+    "name": "TLS Cipher Suites",
+    "description": "This metric is used to assess if an up-to-date TLS cipher suite is used",
+    "category": "Transport Encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TlsDHGroups",
+    "name": "TLS Diffie-Hellman Groups",
+    "description": "This metric is used to assess if an up-to-date TLS Diffie-Hellman group is used",
+    "category": "Transport Encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TlsSignatureAlgorithms",
+    "name": "TLS Signature Algorithms",
+    "description": "This metric is used to assess if an up-to-date TLS signature algorithm is used",
+    "category": "Transport Encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
+    "id": "TransportEncryptionProtocol",
+    "name": "Transport Encryption Protocol",
+    "description": "This metric is used to assess if an up-to-date transport encryption protocol is used",
+    "category": "Transport Encryption",
     "scale": 1,
     "range": {
       "order": {
@@ -130,8 +539,8 @@
   {
     "id": "TransportEncryptionEnabled",
     "name": "Transport Encryption: Enabled",
-    "category": "CKM-02",
-    "description": "This metric describes, whether transport encryption is turned on or not",
+    "description": "This metric is used if transport encryption is enabled",
+    "category": "Transport Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -144,9 +553,47 @@
   },
   {
     "id": "TransportEncryptionEnforced",
-    "category": "CKM-02"
+    "name": "Transport Encryption: Enforced",
+    "description": "This metric is used to assess if transport encryption is enforced",
+    "category": "Transport Encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
   },
   {
-    "id": "WebApplicationFirewallEnabled"
+    "id": "WebApplicationFirewallEnabled",
+    "name": "Web Application Firewall: Enabled",
+    "description": "This metric is used to assess if Web Application Firewall is enabled",
+    "category": "Network Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "NoKnownVulnerabilities",
+    "name": "Library: No known vulnerabilities",
+    "description": "This metric is used to assess if a library contains no known vulnerabilities",
+    "category": "Application Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
   }
 ]
