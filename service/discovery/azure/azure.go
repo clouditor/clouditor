@@ -48,6 +48,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 
 	"github.com/sirupsen/logrus"
 
@@ -531,6 +532,16 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	}
 
 	return
+}
+
+func initIdentityClient(existingClient *graphrbac.UsersClient) (client graphrbac.UsersClient) {
+	if existingClient != nil {
+		return *existingClient
+	}
+
+	client = graphrbac.NewUsersClient(os.Getenv("AZURE_TENANT_ID"))
+
+	return client
 }
 
 // listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It
