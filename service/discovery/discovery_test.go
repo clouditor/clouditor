@@ -709,6 +709,23 @@ func TestService_Start(t *testing.T) {
 				scheduler:         gocron.NewScheduler(time.UTC),
 				providers:         []string{ProviderAWS},
 				discoveryInterval: time.Duration(-5 * time.Minute),
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+				},
 			},
 			args: args{
 				ctx: context.Background(),
