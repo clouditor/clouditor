@@ -82,12 +82,6 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 	return
 }
 
-// // azureResourceGroupDiscovery creates the client if not already exists
-// func (d *azureResourceGroupDiscovery) initResourceGroupsClient() (err error) {
-// 	d.clients.rgClient, err = initClient(d.clients.rgClient, d.azureDiscovery, armresources.NewResourceGroupsClient)
-// 	return
-// }
-
 func (d *azureResourceGroupDiscovery) initClientResourcesFactory() (err error) {
 	d.clients.resourcesFactory, err = initClient(d.clients.resourcesFactory, d.azureDiscovery, armresources.NewClientFactory)
 
