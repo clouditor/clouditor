@@ -34,6 +34,6 @@ type Function struct {
 	HttpEndpoint    *HttpEndpoint `json:"httpEndpoint"`
 	RuntimeVersion  string        `json:"runtimeVersion"`
 	RuntimeLanguage string        `json:"runtimeLanguage"`
-	PublicAccess    bool          `json:"publicNetworkAccess"`
+	PublicAccess    bool          `json:"publicAccess"`
 	Redundancy      *Redundancy   `json:"redundancy"`
 }
