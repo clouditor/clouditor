@@ -657,7 +657,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			// Set empty defender client if needed
 			if tt.fields.emptyDefenderClient {
 				// initialize backup vaults client
-				d.clients.clientSecurityFactory = &armsecurity.ClientFactory{}
+				d.clients.securityFactory = &armsecurity.ClientFactory{}
 			}
 
 			got, err := d.discoverDefender()

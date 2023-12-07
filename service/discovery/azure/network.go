@@ -109,8 +109,8 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 
 	// List all network interfaces
 	err := listPager(d.azureDiscovery,
-		d.clients.clientNetworkFactory.NewInterfacesClient().NewListAllPager,
-		d.clients.clientNetworkFactory.NewInterfacesClient().NewListPager,
+		d.clients.networkFactory.NewInterfacesClient().NewListAllPager,
+		d.clients.networkFactory.NewInterfacesClient().NewListPager,
 		func(res armnetwork.InterfacesClientListAllResponse) []*armnetwork.Interface {
 			return res.Value
 		},
@@ -144,8 +144,8 @@ func (d *azureNetworkDiscovery) discoverApplicationGateway() ([]voc.IsCloudResou
 
 	// List all application gateways
 	err := listPager(d.azureDiscovery,
-		d.clients.clientNetworkFactory.NewApplicationGatewaysClient().NewListAllPager,
-		d.clients.clientNetworkFactory.NewApplicationGatewaysClient().NewListPager,
+		d.clients.networkFactory.NewApplicationGatewaysClient().NewListAllPager,
+		d.clients.networkFactory.NewApplicationGatewaysClient().NewListPager,
 		func(res armnetwork.ApplicationGatewaysClientListAllResponse) []*armnetwork.ApplicationGateway {
 			return res.Value
 		},
@@ -179,8 +179,8 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 
 	// List all load balancers
 	err := listPager(d.azureDiscovery,
-		d.clients.clientNetworkFactory.NewLoadBalancersClient().NewListAllPager,
-		d.clients.clientNetworkFactory.NewLoadBalancersClient().NewListPager,
+		d.clients.networkFactory.NewLoadBalancersClient().NewListAllPager,
+		d.clients.networkFactory.NewLoadBalancersClient().NewListPager,
 		func(res armnetwork.LoadBalancersClientListAllResponse) []*armnetwork.LoadBalancer {
 			return res.Value
 		},
@@ -289,7 +289,7 @@ func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) boo
 
 	if ni != nil && ni.Properties != nil && ni.Properties.NetworkSecurityGroup != nil {
 		vmNsg := ni.Properties.NetworkSecurityGroup
-		nsg, err := d.clients.clientNetworkFactory.NewSecurityGroupsClient().Get(context.Background(), resourceGroupName(*vmNsg.ID), getName(*vmNsg.ID), &armnetwork.SecurityGroupsClientGetOptions{})
+		nsg, err := d.clients.networkFactory.NewSecurityGroupsClient().Get(context.Background(), resourceGroupName(*vmNsg.ID), getName(*vmNsg.ID), &armnetwork.SecurityGroupsClientGetOptions{})
 		if err != nil {
 			log.Errorf("error getting network security group: %v", err)
 			return false
@@ -400,7 +400,7 @@ func getName(id string) string {
 
 // initClientNetworkFactory creates the client if not already exists
 func (d *azureNetworkDiscovery) initClientNetworkFactory() (err error) {
-	d.clients.clientNetworkFactory, err = initClient(d.clients.clientNetworkFactory, d.azureDiscovery, armnetwork.NewClientFactory)
+	d.clients.networkFactory, err = initClient(d.clients.networkFactory, d.azureDiscovery, armnetwork.NewClientFactory)
 
 	return
 }

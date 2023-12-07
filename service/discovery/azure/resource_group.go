@@ -57,7 +57,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 
 	list = append(list, acc)
 
-	listPager := d.clients.clientResourcesFactory.NewResourceGroupsClient().NewListPager(&armresources.ResourceGroupsClientListOptions{})
+	listPager := d.clients.resourcesFactory.NewResourceGroupsClient().NewListPager(&armresources.ResourceGroupsClientListOptions{})
 	for listPager.More() {
 		page, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -89,7 +89,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 // }
 
 func (d *azureResourceGroupDiscovery) initClientResourcesFactory() (err error) {
-	d.clients.clientResourcesFactory, err = initClient(d.clients.clientResourcesFactory, d.azureDiscovery, armresources.NewClientFactory)
+	d.clients.resourcesFactory, err = initClient(d.clients.resourcesFactory, d.azureDiscovery, armresources.NewClientFactory)
 
 	return
 }

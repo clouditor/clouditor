@@ -137,8 +137,8 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.clientAppserviceFactory.NewWebAppsClient().NewListPager,
-		d.clients.clientAppserviceFactory.NewWebAppsClient().NewListByResourceGroupPager,
+		d.clients.appserviceFactory.NewWebAppsClient().NewListPager,
+		d.clients.appserviceFactory.NewWebAppsClient().NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
@@ -219,7 +219,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 		runtimeLanguage, runtimeVersion = runtimeInfo(*function.Properties.SiteConfig.LinuxFxVersion)
 	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
 		// Get site config
-		config, err = d.clients.clientAppserviceFactory.NewWebAppsClient().GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+		config, err = d.clients.appserviceFactory.NewWebAppsClient().GetConfiguration(context.Background(), *function.Properties.ResourceGroup, *function.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
 		if err != nil {
 			log.Errorf("error getting site config: %v", err)
 		}
@@ -378,8 +378,8 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 
 	// List all VMs
 	err := listPager(d.azureDiscovery,
-		d.clients.clientComputeFactory.NewVirtualMachinesClient().NewListAllPager,
-		d.clients.clientComputeFactory.NewVirtualMachinesClient().NewListPager,
+		d.clients.computeFactory.NewVirtualMachinesClient().NewListAllPager,
+		d.clients.computeFactory.NewVirtualMachinesClient().NewListPager,
 		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
 			return res.Value
 		},
@@ -582,8 +582,8 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 
 	// List all disks
 	err := listPager(d.azureDiscovery,
-		d.clients.clientComputeFactory.NewDisksClient().NewListPager,
-		d.clients.clientComputeFactory.NewDisksClient().NewListByResourceGroupPager,
+		d.clients.computeFactory.NewDisksClient().NewListPager,
+		d.clients.computeFactory.NewDisksClient().NewListByResourceGroupPager,
 		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
 			return res.Value
 		},
@@ -699,7 +699,7 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	}
 
 	// Get disk encryption set
-	kv, err := d.clients.clientComputeFactory.NewDiskEncryptionSetsClient().Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
+	kv, err := d.clients.computeFactory.NewDiskEncryptionSetsClient().Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
 		return "", nil, err
@@ -716,21 +716,21 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 
 // initClientNetworkFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientAppserviceFactory() (err error) {
-	d.clients.clientAppserviceFactory, err = initClient(d.clients.clientAppserviceFactory, d.azureDiscovery, armappservice.NewClientFactory)
+	d.clients.appserviceFactory, err = initClient(d.clients.appserviceFactory, d.azureDiscovery, armappservice.NewClientFactory)
 
 	return
 }
 
 // initClientComputeFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientComputeFactory() (err error) {
-	d.clients.clientComputeFactory, err = initClient(d.clients.clientComputeFactory, d.azureDiscovery, armcompute.NewClientFactory)
+	d.clients.computeFactory, err = initClient(d.clients.computeFactory, d.azureDiscovery, armcompute.NewClientFactory)
 
 	return
 }
 
 // initClientDataprotectionFactory creates the client if not already exists
 func (d *azureComputeDiscovery) initClientDataprotectionFactory() (err error) {
-	d.clients.clientDataprotectionFactory, err = initClient(d.clients.clientDataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
+	d.clients.dataprotectionFactory, err = initClient(d.clients.dataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
 
 	return
 }

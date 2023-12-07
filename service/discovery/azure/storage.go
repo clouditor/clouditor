@@ -138,8 +138,8 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 	// Discover Cosmos DB
 	err = listPager(d.azureDiscovery,
-		d.clients.clientCosmosFactory.NewDatabaseAccountsClient().NewListPager,
-		d.clients.clientCosmosFactory.NewDatabaseAccountsClient().NewListByResourceGroupPager,
+		d.clients.cosmosFactory.NewDatabaseAccountsClient().NewListPager,
+		d.clients.cosmosFactory.NewDatabaseAccountsClient().NewListByResourceGroupPager,
 		func(res armcosmos.DatabaseAccountsClientListResponse) []*armcosmos.DatabaseAccountGetResults {
 			return res.Value
 		},
@@ -229,8 +229,8 @@ func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, err
 
 	// Discover sql server
 	err = listPager(d.azureDiscovery,
-		d.clients.clientSqlFactory.NewServersClient().NewListPager,
-		d.clients.clientSqlFactory.NewServersClient().NewListByResourceGroupPager,
+		d.clients.sqlFactory.NewServersClient().NewListPager,
+		d.clients.sqlFactory.NewServersClient().NewListByResourceGroupPager,
 		func(res armsql.ServersClientListResponse) []*armsql.Server {
 			return res.Value
 		},
@@ -268,7 +268,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	}
 
 	// Get databases for given server
-	serverlistPager := d.clients.clientSqlFactory.NewDatabasesClient().NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
+	serverlistPager := d.clients.sqlFactory.NewDatabasesClient().NewListByServerPager(resourceGroupName(util.Deref(server.ID)), *server.Name, &armsql.DatabasesClientListByServerOptions{})
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
@@ -367,8 +367,8 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 
 	// Discover object and file storages
 	err = listPager(d.azureDiscovery,
-		d.clients.clientStorageFactory.NewAccountsClient().NewListPager,
-		d.clients.clientStorageFactory.NewAccountsClient().NewListByResourceGroupPager,
+		d.clients.storageFactory.NewAccountsClient().NewListPager,
+		d.clients.storageFactory.NewAccountsClient().NewListByResourceGroupPager,
 		func(res armstorage.AccountsClientListResponse) []*armstorage.Account {
 			return res.Value
 		},
@@ -417,7 +417,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	var list []voc.IsCloudResource
 
 	// List all file shares in the specified resource group
-	listPager := d.clients.clientStorageFactory.NewFileSharesClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
+	listPager := d.clients.storageFactory.NewFileSharesClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -444,7 +444,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	var list []voc.IsCloudResource
 
 	// List all blob containers in the specified resource group
-	listPager := d.clients.clientStorageFactory.NewBlobContainersClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
+	listPager := d.clients.storageFactory.NewBlobContainersClient().NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -677,7 +677,7 @@ func (d *azureStorageDiscovery) anomalyDetectionEnabled(server *armsql.Server, d
 		return false, err
 	}
 
-	listPager := d.clients.clientSqlFactory.NewDatabaseAdvancedThreatProtectionSettingsClient().NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
+	listPager := d.clients.sqlFactory.NewDatabaseAdvancedThreatProtectionSettingsClient().NewListByDatabasePager(resourceGroupName(util.Deref(db.ID)), *server.Name, *db.Name, &armsql.DatabaseAdvancedThreatProtectionSettingsClientListByDatabaseOptions{})
 	for listPager.More() {
 		pageResponse, err := listPager.NextPage(context.TODO())
 		if err != nil {
@@ -728,35 +728,35 @@ func generalizeURL(url string) string {
 
 // initClientStorageFactory creates the client if not already exists
 func (d *azureStorageDiscovery) initClientStorageFactory() (err error) {
-	d.clients.clientStorageFactory, err = initClient(d.clients.clientStorageFactory, d.azureDiscovery, armstorage.NewClientFactory)
+	d.clients.storageFactory, err = initClient(d.clients.storageFactory, d.azureDiscovery, armstorage.NewClientFactory)
 
 	return
 }
 
 // initClientSqlFactory creates the client if not already exists
 func (d *azureStorageDiscovery) initClientSqlFactory() (err error) {
-	d.clients.clientSqlFactory, err = initClient(d.clients.clientSqlFactory, d.azureDiscovery, armsql.NewClientFactory)
+	d.clients.sqlFactory, err = initClient(d.clients.sqlFactory, d.azureDiscovery, armsql.NewClientFactory)
 
 	return
 }
 
 // initClientCosmosFactory creates the client if not already exists
 func (d *azureStorageDiscovery) initClientCosmosFactory() (err error) {
-	d.clients.clientCosmosFactory, err = initClient(d.clients.clientCosmosFactory, d.azureDiscovery, armcosmos.NewClientFactory)
+	d.clients.cosmosFactory, err = initClient(d.clients.cosmosFactory, d.azureDiscovery, armcosmos.NewClientFactory)
 
 	return
 }
 
 // initClientSecurityFactory creates the client if not already exists
 func (d *azureStorageDiscovery) initClientSecurityFactory() (err error) {
-	d.clients.clientSecurityFactory, err = initClient(d.clients.clientSecurityFactory, d.azureDiscovery, armsecurity.NewClientFactory)
+	d.clients.securityFactory, err = initClient(d.clients.securityFactory, d.azureDiscovery, armsecurity.NewClientFactory)
 
 	return
 }
 
 // initClientDataprotectionFactory creates the client if not already exists
 func (d *azureStorageDiscovery) initClientDataprotectionFactory() (err error) {
-	d.clients.clientDataprotectionFactory, err = initClient(d.clients.clientDataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
+	d.clients.dataprotectionFactory, err = initClient(d.clients.dataprotectionFactory, d.azureDiscovery, armdataprotection.NewClientFactory)
 
 	return
 }

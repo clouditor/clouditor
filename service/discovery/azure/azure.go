@@ -137,29 +137,29 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	clientStorageFactory *armstorage.ClientFactory
+	storageFactory *armstorage.ClientFactory
 
 	// DB
-	clientSqlFactory    *armsql.ClientFactory
-	clientCosmosFactory *armcosmos.ClientFactory
+	sqlFactory    *armsql.ClientFactory
+	cosmosFactory *armcosmos.ClientFactory
 
 	// Network
-	clientNetworkFactory *armnetwork.ClientFactory
+	networkFactory *armnetwork.ClientFactory
 
 	// AppService
-	clientAppserviceFactory *armappservice.ClientFactory
+	appserviceFactory *armappservice.ClientFactory
 
 	// Compute
-	clientComputeFactory *armcompute.ClientFactory
+	computeFactory *armcompute.ClientFactory
 
 	// Security
-	clientSecurityFactory *armsecurity.ClientFactory
+	securityFactory *armsecurity.ClientFactory
 
 	// Data protection
-	clientDataprotectionFactory *armdataprotection.ClientFactory
+	dataprotectionFactory *armdataprotection.ClientFactory
 
 	// Resource groups
-	clientResourcesFactory *armresources.ClientFactory
+	resourcesFactory *armresources.ClientFactory
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -238,12 +238,12 @@ type defenderProperties struct {
 func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, error) {
 	var pricings = make(map[string]*defenderProperties)
 
-	if d.clients.clientSecurityFactory == nil {
+	if d.clients.securityFactory == nil {
 		return nil, errors.New("defenderClient not set")
 	}
 
 	// List all pricings to get the enabled Defender for X
-	pricingsList, err := d.clients.clientSecurityFactory.NewPricingsClient().List(context.Background(), nil)
+	pricingsList, err := d.clients.securityFactory.NewPricingsClient().List(context.Background(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover pricings")
 	}
@@ -274,14 +274,14 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 		return nil
 	}
 
-	if d.clients.clientDataprotectionFactory == nil {
+	if d.clients.dataprotectionFactory == nil {
 		return errors.New("backupVaultClient and/or backupInstancesClient missing")
 	}
 
 	// List all backup vaults
 	err := listPager(d,
-		d.clients.clientDataprotectionFactory.NewBackupVaultsClient().NewGetInSubscriptionPager,
-		d.clients.clientDataprotectionFactory.NewBackupVaultsClient().NewGetInResourceGroupPager,
+		d.clients.dataprotectionFactory.NewBackupVaultsClient().NewGetInSubscriptionPager,
+		d.clients.dataprotectionFactory.NewBackupVaultsClient().NewGetInResourceGroupPager,
 		func(res armdataprotection.BackupVaultsClientGetInSubscriptionResponse) []*armdataprotection.BackupVaultResource {
 			return res.Value
 		},
@@ -299,7 +299,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				dataSourceType := util.Deref(instance.Properties.DataSourceInfo.DatasourceType)
 
 				// Get retention from backup policy
-				policy, err := d.clients.clientDataprotectionFactory.NewBackupPoliciesClient().Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
+				policy, err := d.clients.dataprotectionFactory.NewBackupPoliciesClient().Get(context.Background(), resourceGroupName(*vault.ID), *vault.Name, backupPolicyName(*instance.Properties.PolicyInfo.PolicyID), &armdataprotection.BackupPoliciesClientGetOptions{})
 				if err != nil {
 					err := fmt.Errorf("could not get backup policy '%s': %w", *instance.Properties.PolicyInfo.PolicyID, err)
 					log.Error(err)
@@ -451,7 +451,7 @@ func (d *azureDiscovery) discoverBackupInstances(resourceGroup, vaultName string
 	}
 
 	// List all instances in the given backup vault
-	listPager := d.clients.clientDataprotectionFactory.NewBackupInstancesClient().NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
+	listPager := d.clients.dataprotectionFactory.NewBackupInstancesClient().NewListPager(resourceGroup, vaultName, &armdataprotection.BackupInstancesClientListOptions{})
 	for listPager.More() {
 		list, err = listPager.NextPage(context.TODO())
 		if err != nil {
