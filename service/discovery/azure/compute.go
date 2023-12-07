@@ -147,8 +147,8 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 	// List functions
 	err := listPager(d.azureDiscovery,
-		d.clients.webAppClient.NewListPager,
-		d.clients.webAppClient.NewListByResourceGroupPager,
+		d.clients.webAppsClient.NewListPager,
+		d.clients.webAppsClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
 			return res.Value
 		},
@@ -158,8 +158,8 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 		func(site *armappservice.Site) error {
 			var r voc.IsCompute
 
-			// Get configuration
-			config, err := d.clients.webAppClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
+			// Get configuration for detailed properties
+			config, err := d.clients.webAppsClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
 			if err != nil {
 				log.Errorf("error getting site config: %v", err)
 			}
@@ -222,6 +222,7 @@ func (d *azureComputeDiscovery) handleFunction(site *armappservice.Site, config 
 		runtimeVersion  string
 	)
 
+	// If a mandatory field is empty, the whole function is empty
 	if site == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
 		log.Error("input parameter empty")
 		return nil
@@ -307,7 +308,7 @@ func (d *azureComputeDiscovery) handleWebApp(site *armappservice.Site, config ar
 			Resource: discovery.NewResource(d,
 				voc.ResourceID(util.Deref(site.ID)),
 				util.Deref(site.Name),
-				nil, // TODO(all): Only the last modified time is available, do we want that information?
+				nil, // Only the last modified time is available.
 				voc.GeoLocation{
 					Region: util.Deref(site.Location),
 				},
@@ -654,7 +655,7 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 		return
 	}
 
-	appSettings, err := d.clients.webAppClient.ListApplicationSettings(context.Background(),
+	appSettings, err := d.clients.webAppsClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
@@ -705,7 +706,7 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 		enc = &voc.TransportEncryption{
 			Enforced:   util.Deref(siteProperties.HTTPSOnly),
 			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)),
+			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)), // MinTLSCipherSuite is a new property and currently not filled from Azure side
 			Enabled:    true,
 		}
 	} else {
@@ -790,7 +791,7 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-	d.clients.webAppClient, err = initClient(d.clients.webAppClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
 	return
 }
 

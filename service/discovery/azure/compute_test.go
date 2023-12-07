@@ -270,8 +270,6 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					"properties": map[string]interface{}{
 						"siteConfig": map[string]interface{}{
 							"linuxFxVersion": "PYTHON|3.8",
-							// "minTlsVersion":     "1.1", // is not set in Azure
-							// "minTlsCipherSuite": "TLS_AES_128_GCM_SHA256", // is not set in Azure
 						},
 						"resourceGroup":       "res1",
 						"publicNetworkAccess": "Enabled",
@@ -287,11 +285,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							// "minTlsVersion":     "1.1", // is not set in Azure
-							// "minTlsCipherSuite": "TLS_AES_128_GCM_SHA256", // is not set in Azure
-
-						},
+						"siteConfig":          map[string]interface{}{},
 						"resourceGroup":       "res1",
 						"publicNetworkAccess": "Disabled",
 					},
@@ -306,10 +300,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							// "minTlsVersion":     "1.1", // is not set in Azure
-							// "minTlsCipherSuite": "TLS_AES_128_GCM_SHA256", // is not set in Azure
-						},
+						"siteConfig":             map[string]interface{}{},
 						"httpsOnly":              true,
 						"resourceGroup":          "res1",
 						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1",
@@ -326,10 +317,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							// "minTlsVersion":     nil, // is not set in Azure
-							// "minTlsCipherSuite": "", // is not set in Azure
-						},
+						"siteConfig":             map[string]interface{}{},
 						"httpsOnly":              false,
 						"resourceGroup":          "res1",
 						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2",

@@ -154,7 +154,7 @@ type clients struct {
 	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
-	webAppClient *armappservice.WebAppsClient
+	webAppsClient *armappservice.WebAppsClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
