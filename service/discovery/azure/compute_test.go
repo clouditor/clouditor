@@ -3031,89 +3031,6 @@ func Test_getTransportEncryption(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_getSiteProperties(t *testing.T) {
-	type fields struct {
-		azureDiscovery     *azureDiscovery
-		defenderProperties map[string]*defenderProperties
-		clientWebApp       bool
-	}
-	type args struct {
-		site *armappservice.Site
-	}
-	tests := []struct {
-		name                string
-		fields              fields
-		args                args
-		wantNi              []voc.ResourceID
-		wantPublicAccess    bool
-		wantResourceLogging *voc.ResourceLogging
-	}{
-		{
-			name: "Input empty",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
-			},
-			args: args{
-				site: nil,
-			},
-			wantNi:              []voc.ResourceID{},
-			wantPublicAccess:    false,
-			wantResourceLogging: &voc.ResourceLogging{},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
-				clientWebApp:   true,
-			},
-			args: args{
-				site: &armappservice.Site{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2"),
-					Name: util.Ref("WebApp2"),
-					Kind: util.Ref("app"),
-					Properties: &armappservice.SiteProperties{
-						PublicNetworkAccess:    util.Ref("Enabled"),
-						ResourceGroup:          util.Ref("res1"),
-						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"),
-					},
-				},
-			},
-			wantNi:           []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2"},
-			wantPublicAccess: true,
-			wantResourceLogging: &voc.ResourceLogging{
-				Logging: &voc.Logging{
-					Enabled: false,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureComputeDiscovery{
-				azureDiscovery:     tt.fields.azureDiscovery,
-				defenderProperties: tt.fields.defenderProperties,
-			}
-
-			// Set clients if needed
-			if tt.fields.clientWebApp {
-				// initialize webApps client
-				_ = d.initWebAppsClient()
-			}
-
-			gotNi, gotPublicAccess, gotResourceLogging := d.getSiteProperties(tt.args.site)
-			if !reflect.DeepEqual(gotNi, tt.wantNi) {
-				t.Errorf("azureComputeDiscovery.getSiteProperties() gotNi = %v, want %v", gotNi, tt.wantNi)
-			}
-			if gotPublicAccess != tt.wantPublicAccess {
-				t.Errorf("azureComputeDiscovery.getSiteProperties() gotPublicAccess = %v, want %v", gotPublicAccess, tt.wantPublicAccess)
-			}
-			if !reflect.DeepEqual(gotResourceLogging, tt.wantResourceLogging) {
-				t.Errorf("azureComputeDiscovery.getSiteProperties() gotResourceLogging = %v, want %v", gotResourceLogging, tt.wantResourceLogging)
-			}
-		})
-	}
-}
-
 func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 	type fields struct {
 		azureDiscovery     *azureDiscovery
@@ -3202,7 +3119,7 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 				_ = d.initWebAppsClient()
 			}
 
-			if gotRl := d.getResourceLoggingWebApp(tt.args.site); !reflect.DeepEqual(gotRl, tt.wantRl) {
+			if gotRl := d.getResourceLoggingWebApps(tt.args.site); !reflect.DeepEqual(gotRl, tt.wantRl) {
 				t.Errorf("azureComputeDiscovery.getResourceLoggingWebApp() = %v, want %v", gotRl, tt.wantRl)
 			}
 		})
@@ -3271,6 +3188,96 @@ func Test_getRedundancy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getRedundancy(tt.args.app); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getRedundancy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getPublicAccessStatus(t *testing.T) {
+	type args struct {
+		site *armappservice.Site
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: false,
+		},
+		{
+			name: "Happy path: Enabled",
+			args: args{
+				site: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{
+						PublicNetworkAccess: util.Ref("Enabled"),
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Happy path: Empty String",
+			args: args{
+				site: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{
+						PublicNetworkAccess: util.Ref(""),
+					},
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getPublicAccessStatus(tt.args.site); got != tt.want {
+				t.Errorf("getPublicAccessStatus() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getVirtualNetworkSubnetId(t *testing.T) {
+	type args struct {
+		site *armappservice.Site
+	}
+	tests := []struct {
+		name string
+		args args
+		want []voc.ResourceID
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: []voc.ResourceID{},
+		},
+		{
+			name: "Happy path: with virtual network subnet ID",
+			args: args{
+				site: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{
+						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1"),
+					},
+				},
+			},
+			want: []voc.ResourceID{voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1")},
+		},
+		{
+			name: "Happy path: without virtual network subnet ID",
+			args: args{
+				site: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{},
+				},
+			},
+			want: []voc.ResourceID{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getVirtualNetworkSubnetId(tt.args.site); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getVirtualNetworkSubnetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}

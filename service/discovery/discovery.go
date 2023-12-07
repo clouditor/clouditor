@@ -300,7 +300,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 
 		_, err = svc.scheduler.
 			Every(svc.discoveryInterval).
-			Minute().
 			Tag(v.Name()).
 			Do(svc.StartDiscovery, v)
 		if err != nil {
