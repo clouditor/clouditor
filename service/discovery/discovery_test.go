@@ -43,15 +43,17 @@ import (
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
+
+	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 func TestMain(m *testing.M) {
@@ -319,168 +321,6 @@ func TestService_ListResources(t *testing.T) {
 
 			if err == nil {
 				assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
-			}
-		})
-	}
-}
-
-func TestService_Start(t *testing.T) {
-
-	type envVariable struct {
-		hasEnvVariable   bool
-		envVariableKey   string
-		envVariableValue string
-	}
-
-	type fields struct {
-		envVariables []envVariable
-		authz        service.AuthorizationStrategy
-	}
-
-	tests := []struct {
-		name           string
-		fields         fields
-		req            *discovery.StartDiscoveryRequest
-		providers      []string
-		wantResp       *discovery.StartDiscoveryResponse
-		wantErr        bool
-		wantErrMessage string
-	}{
-		{
-			name: "No Azure authorizer",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{ProviderAzure},
-			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
-			wantErr:        false,
-			wantErrMessage: "could not authenticate to Azure:",
-		},
-		{
-			name: "Azure authorizer from ENV",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				envVariables: []envVariable{
-					// We must set AZURE_AUTH_LOCATION to the Azure credentials test file and the set HOME to a
-					// wrong path so that the Azure authorizer passes and the K8S authorizer fails
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_TENANT_ID",
-						envVariableValue: "tenant-id-123",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CLIENT_ID",
-						envVariableValue: "client-id-123",
-					},
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "AZURE_CLIENT_SECRET",
-						envVariableValue: "client-secret-456",
-					},
-				},
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{ProviderAzure},
-			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
-			wantErr:        false,
-			wantErrMessage: "",
-		},
-		{
-			name: "No K8s authorizer",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				envVariables: []envVariable{
-					// We must set HOME to a wrong path so that the K8S authorizer fails
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
-				},
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{ProviderK8S},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "could not authenticate to Kubernetes",
-		},
-		{
-			name: "Request with 2 providers",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-				envVariables: []envVariable{
-					// We must set HOME to a wrong path so that the AWS and k8s authorizer fails in all systems, regardless if AWS and k8s paths are set or not
-					{
-						hasEnvVariable:   true,
-						envVariableKey:   "HOME",
-						envVariableValue: "",
-					},
-				},
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{"aws", "k8s"},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "could not authenticate to",
-		},
-		{
-			name: "Empty request",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{},
-			wantResp:       &discovery.StartDiscoveryResponse{Successful: true},
-			wantErr:        false,
-			wantErrMessage: "",
-		},
-		{
-			name: "Request with wrong provider name",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(true),
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{"falseProvider"},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "provider falseProvider not known",
-		},
-		{
-			name: "Permission denied",
-			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
-			},
-			req:            &discovery.StartDiscoveryRequest{},
-			providers:      []string{},
-			wantResp:       nil,
-			wantErr:        true,
-			wantErrMessage: "access denied",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithProviders(tt.providers))
-			s.authz = tt.fields.authz
-
-			for _, env := range tt.fields.envVariables {
-				if env.hasEnvVariable {
-					t.Setenv(env.envVariableKey, env.envVariableValue)
-				}
-			}
-
-			resp, err := s.Start(context.TODO(), tt.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got Start() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			} else {
-				assert.Equal(t, tt.wantResp, resp)
-			}
-
-			if err != nil {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
 			}
 		})
 	}
@@ -782,6 +622,281 @@ func Test_toDiscoveryResource(t *testing.T) {
 			if !proto.Equal(gotV, tt.wantV) {
 				t.Errorf("toDiscoveryResource() v = %v, want %v", gotV, tt.wantV)
 			}
+		})
+	}
+}
+
+func TestService_Start(t *testing.T) {
+	type envVariable struct {
+		hasEnvVariable   bool
+		envVariableKey   string
+		envVariableValue string
+	}
+	type fields struct {
+		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
+		assessment        *api.RPCConnection[assessment.AssessmentClient]
+		storage           persistence.Storage
+		scheduler         *gocron.Scheduler
+		authz             service.AuthorizationStrategy
+		providers         []string
+		discoveryInterval time.Duration
+		Events            chan *DiscoveryEvent
+		csID              string
+		envVariables      []envVariable
+	}
+	type args struct {
+		ctx context.Context
+		req *discovery.StartDiscoveryRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
+		{
+			name: "Invalid request",
+			fields: fields{
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: nil,
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Request with wrong provider name",
+			fields: fields{
+				authz:     servicetest.NewAuthorizationStrategy(true),
+				scheduler: gocron.NewScheduler(time.UTC),
+				providers: []string{"falseProvider"},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "provider falseProvider not known")
+			},
+		},
+		{
+			name: "Wrong permission",
+			fields: fields{
+				authz:     servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+				scheduler: gocron.NewScheduler(time.UTC),
+				providers: []string{},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "access denied")
+			},
+		},
+		{
+			name: "discovery interval error",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderAzure},
+				discoveryInterval: time.Duration(-5 * time.Minute),
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not schedule job for ", ".Every() interval must be greater than 0")
+			},
+		},
+		{
+			name: "K8S authorizer error",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderK8S},
+				discoveryInterval: time.Duration(5 * time.Minute),
+				envVariables: []envVariable{
+					// We must set HOME to a wrong path so that the K8S authorizer fails
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "HOME",
+						envVariableValue: "",
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: assert.Nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not authenticate to Kubernetes")
+			},
+		},
+		{
+			name: "Happy path: no discovery interval error",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderAzure},
+				discoveryInterval: time.Duration(5 * time.Minute),
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*discovery.StartDiscoveryResponse)
+				assert.True(t, ok)
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: Azure authorizer from ENV",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderAzure},
+				discoveryInterval: time.Duration(5 * time.Minute),
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*discovery.StartDiscoveryResponse)
+				assert.True(t, ok)
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: Azure with resource group",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderAzure},
+				discoveryInterval: time.Duration(5 * time.Minute),
+				envVariables: []envVariable{
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_TENANT_ID",
+						envVariableValue: "tenant-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_ID",
+						envVariableValue: "client-id-123",
+					},
+					{
+						hasEnvVariable:   true,
+						envVariableKey:   "AZURE_CLIENT_SECRET",
+						envVariableValue: "client-secret-456",
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{
+					ResourceGroup: util.Ref("testResourceGroup"),
+				},
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				resp, ok := i1.(*discovery.StartDiscoveryResponse)
+				assert.True(t, ok)
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				assessmentStreams: tt.fields.assessmentStreams,
+				assessment:        tt.fields.assessment,
+				storage:           tt.fields.storage,
+				scheduler:         tt.fields.scheduler,
+				authz:             tt.fields.authz,
+				providers:         tt.fields.providers,
+				discoveryInterval: tt.fields.discoveryInterval,
+				Events:            tt.fields.Events,
+				csID:              tt.fields.csID,
+			}
+
+			// Set env variables
+			for _, env := range tt.fields.envVariables {
+				if env.hasEnvVariable {
+					t.Setenv(env.envVariableKey, env.envVariableValue)
+				}
+			}
+
+			gotResp, err := svc.Start(tt.args.ctx, tt.args.req)
+
+			tt.want(t, gotResp)
+			tt.wantErr(t, err)
 		})
 	}
 }
