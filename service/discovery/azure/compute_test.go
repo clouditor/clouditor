@@ -416,7 +416,6 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 			},
-			// },
 		}, 200)
 	}
 
