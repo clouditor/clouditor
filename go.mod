@@ -15,7 +15,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/open-policy-agent/opa v0.59.0
-	github.com/oxisto/oauth2go v0.11.0
+	github.com/oxisto/oauth2go v0.12.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
