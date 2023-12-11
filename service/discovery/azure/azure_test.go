@@ -321,8 +321,8 @@ func Test_initClient(t *testing.T) {
 
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	sub := &armsubscription.Subscription{
-		SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
-		ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+		SubscriptionID: util.Ref(testdata.MockSubscriptionID),
+		ID:             util.Ref(testdata.MockSubscriptionResourceID),
 	}
 
 	d := &azureDiscovery{
