@@ -119,7 +119,7 @@ func (d *azureResourceGroupDiscovery) handleResourceGroup(rg *armresources.Resou
 				Region: util.Deref(rg.Location),
 			},
 			labels(rg.Tags),
-			voc.ResourceID(*d.sub.SubscriptionID),
+			voc.ResourceID(*d.sub.ID),
 			voc.ResourceGroupType,
 		),
 	}
@@ -130,7 +130,7 @@ func (d *azureResourceGroupDiscovery) handleSubscription(s *armsubscription.Subs
 	return &voc.Account{
 		Resource: discovery.NewResource(
 			d,
-			voc.ResourceID(util.Deref(s.SubscriptionID)),
+			voc.ResourceID(util.Deref(s.ID)),
 			util.Deref(s.DisplayName),
 			// subscriptions do not have a creation date
 			nil,

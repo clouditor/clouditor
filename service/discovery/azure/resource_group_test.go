@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ package azure
 
 import (
 	"net/http"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -108,13 +107,14 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 			},
 			args: args{
 				s: &armsubscription.Subscription{
-					SubscriptionID: util.Ref("/subscriptions/" + discovery.DefaultCloudServiceID),
+					SubscriptionID: util.Ref(testdata.MockSubscriptionID),
 					DisplayName:    util.Ref(discovery.DefaultCloudServiceID),
+					ID:             util.Ref(testdata.MockSubscriptionResourceID),
 				},
 			},
 			want: &voc.Account{
 				Resource: &voc.Resource{
-					ID:        voc.ResourceID("/subscriptions/" + discovery.DefaultCloudServiceID),
+					ID:        voc.ResourceID(testdata.MockSubscriptionResourceID),
 					ServiceID: testdata.MockCloudServiceID1,
 					Name:      discovery.DefaultCloudServiceID,
 					Type:      voc.AccountType,
@@ -127,9 +127,8 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 			d := &azureResourceGroupDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			if got := d.handleSubscription(tt.args.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("azureResourceGroupDiscovery.handleSubscription() = %v, want %v", got, tt.want)
-			}
+			got := d.handleSubscription(tt.args.s)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -150,11 +149,11 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				NewMockAzureDiscovery(newMockResourceGroupSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender()),
 			},
 			args: args{
 				rg: &armresources.ResourceGroup{
-					ID:       util.Ref("/subscriptions/" + testdata.MockCloudServiceID1 + "/resourceGroups/res1"),
+					ID:       util.Ref(testdata.MockResourceGroupID),
 					Name:     util.Ref("res1"),
 					Location: util.Ref("westus"),
 					Tags: map[string]*string{
@@ -165,7 +164,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 			},
 			want: &voc.ResourceGroup{
 				Resource: &voc.Resource{
-					ID:        voc.ResourceID("/subscriptions/" + testdata.MockCloudServiceID1 + "/resourceGroups/res1"),
+					ID:        voc.ResourceID(testdata.MockResourceGroupID),
 					ServiceID: testdata.MockCloudServiceID1,
 					Name:      "res1",
 					Type:      voc.ResourceGroupType,
@@ -176,7 +175,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 						"tag2Key": "tag2",
 						"tag1Key": "tag1",
 					},
-					Parent: "/subscriptions/" + discovery.DefaultCloudServiceID,
+					Parent: testdata.MockSubscriptionResourceID,
 				},
 			},
 		},
