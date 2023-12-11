@@ -1048,8 +1048,8 @@ github.com/onsi/gomega v1.27.6/go.mod h1:PIQNjfQwkP3aQAH7lf7j87O/5FiNr+ZR8+ipb+q
 github.com/open-policy-agent/opa v0.59.0 h1:1WFU/KUhJAr3qatm0Lf8Ea5jp10ZmlE2M07oaLiHypg=
 github.com/open-policy-agent/opa v0.59.0/go.mod h1:rdJSkEc4oQ+0074/3Fsgno5bkPsYxTjU5aLNmMujIvI=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
-github.com/oxisto/oauth2go v0.11.0 h1:OTGxr7NAakqF+j36Aqa+a36KR/1mymScZcDIJhm42eQ=
-github.com/oxisto/oauth2go v0.11.0/go.mod h1:xv5mSuVkAUl9xTew8/t1UJuWEB4t/HpOra7Bcul34cg=
+github.com/oxisto/oauth2go v0.12.0 h1:MQd9ZdI7NO/hNrbmuLyuR4kUT2sbHhZeEBHUSdlUjFM=
+github.com/oxisto/oauth2go v0.12.0/go.mod h1:IKjnDnmIiXQTaHYhuWgDMXDg8kqZzLYb8ClQs3r0n6Q=
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
 github.com/pelletier/go-toml/v2 v2.1.0/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/phpdave11/gofpdf v1.4.2/go.mod h1:zpO6xFn9yxo3YLyMvW8HcKWVdbNqgIfOOp2dXMnm1mY=
