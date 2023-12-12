@@ -146,6 +146,7 @@ type clients struct {
 	sqlServersClient       *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 	cosmosDBClient         *armcosmos.DatabaseAccountsClient
+	mongoDBResourcesClient *armcosmos.MongoDBResourcesClient
 
 	// Network
 	networkInterfacesClient     *armnetwork.InterfacesClient

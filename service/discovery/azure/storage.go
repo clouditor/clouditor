@@ -152,7 +152,7 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 				return fmt.Errorf("could not cosmos db accounts: %w", err)
 			}
 			log.Infof("Adding Cosmos DB account '%s", *dbAccount.Name)
-			list = append(list, cosmos)
+			list = append(list, cosmos...)
 
 			return nil
 		})
@@ -163,11 +163,11 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) (voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) ([]voc.IsCloudResource, error) {
 	var (
-		enc          voc.IsAtRestEncryption
-		err          error
-		publicAccess bool
+		atRestEnc voc.IsAtRestEncryption
+		err       error
+		list      []voc.IsCloudResource
 	)
 
 	// initialize Cosmos DB client
@@ -175,10 +175,10 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		return nil, err
 	}
 
-	// Check if KeyVaultURI is set
+	// Check if KeyVaultURI is set for Cosmos DB account
 	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
 	if account.Properties.KeyVaultKeyURI != nil {
-		enc = &voc.CustomerKeyEncryption{
+		atRestEnc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Enabled: true,
 				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
@@ -186,7 +186,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
 		}
 	} else {
-		enc = &voc.ManagedKeyEncryption{
+		atRestEnc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Enabled:   true,
 				Algorithm: AES256,
@@ -194,32 +194,93 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
-	// Check if public access is enabled
-	if util.Deref(account.Properties.PublicNetworkAccess) == "Enabled" {
-		publicAccess = true
-	}
-
-	// Create Cosmos DB database account voc object
-	dbStorage := &voc.DatabaseStorage{
-		Storage: &voc.Storage{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(*account.ID),
-				util.Deref(account.Name),
-				account.SystemData.CreatedAt,
-				voc.GeoLocation{
-					Region: *account.Location,
+	// Create Cosmos DB database service voc object
+	dbService := &voc.DatabaseService{
+		StorageService: &voc.StorageService{
+			NetworkService: &voc.NetworkService{
+				Networking: &voc.Networking{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*account.ID),
+						*account.Name,
+						account.SystemData.CreatedAt,
+						voc.GeoLocation{
+							Region: *account.Location,
+						},
+						labels(account.Tags),
+						resourceGroupID(account.ID),
+						voc.DatabaseServiceType,
+						account,
+					),
 				},
-				labels(account.Tags),
-				resourceGroupID(account.ID),
-				voc.DatabaseStorageType,
-				account),
-
-			AtRestEncryption: enc,
+			},
 		},
-		PublicAccess: publicAccess,
 	}
 
-	return dbStorage, nil
+	list = append(list, dbService)
+
+	// Check account kind and get databases
+	switch util.Deref(account.Kind) {
+	case armcosmos.DatabaseAccountKindMongoDB:
+		// Get Mongo databases
+		list = append(list, d.getMongoDBs(account, atRestEnc)...)
+	case armcosmos.DatabaseAccountKindGlobalDocumentDB:
+		log.Infof("%s not yet implemented", armcosmos.DatabaseAccountKindGlobalDocumentDB)
+	case armcosmos.DatabaseAccountKindParse:
+		log.Infof("%s not yet implemented", armcosmos.DatabaseAccountKindParse)
+	default:
+		log.Warningf("Account kind '%s' not yet implemented", util.Deref(account.Kind))
+	}
+
+	return list, nil
+}
+
+// getMongoDBs returns a list of Mongo DB databases for a specific Mongo DB account
+func (d *azureStorageDiscovery) getMongoDBs(account *armcosmos.DatabaseAccountGetResults, atRestEnc voc.IsAtRestEncryption) []voc.IsCloudResource {
+	var (
+		list []voc.IsCloudResource
+		err  error
+	)
+
+	// initialize Mongo DB resources client
+	if err = d.initMongoDResourcesBClient(); err != nil {
+		log.Errorf("error initializing Mongo DB resource client: %v", err)
+		return list
+	}
+
+	// Discover Mongo DB databases
+	serverlistPager := d.clients.mongoDBResourcesClient.NewListMongoDBDatabasesPager(resourceGroupName(util.Deref(account.ID)), *account.Name, &armcosmos.MongoDBResourcesClientListMongoDBDatabasesOptions{})
+	for serverlistPager.More() {
+		pageResponse, err := serverlistPager.NextPage(context.TODO())
+		if err != nil {
+			log.Errorf("%s: %v", ErrGettingNextPage, err)
+			return list
+		}
+
+		for _, value := range pageResponse.Value {
+			// Create Cosmos DB database storage voc object
+			mongoDB := &voc.DatabaseStorage{
+				Storage: &voc.Storage{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*value.ID),
+						util.Deref(value.Name),
+						nil, // creation time of database not available
+						voc.GeoLocation{
+							Region: *value.Location,
+						},
+						labels(value.Tags),
+						voc.ResourceID(*account.ID),
+						voc.DatabaseStorageType,
+						account,
+						value),
+
+					AtRestEncryption: atRestEnc,
+				},
+			}
+			list = append(list, mongoDB)
+		}
+	}
+
+	return list
 }
 
 // discoverSqlServers discovers the sql server and databases
@@ -285,7 +346,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 
 		for _, value := range pageResponse.Value {
 			// Getting anomaly detection status
-			anomalyDetectionEnabeld, err := d.anomalyDetectionEnabled(server, value)
+			anomalyDetectionEnabled, err := d.anomalyDetectionEnabled(server, value)
 			if err != nil {
 				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
@@ -318,7 +379,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 					},
 				},
 				AnomalyDetection: &voc.AnomalyDetection{
-					Enabled: anomalyDetectionEnabeld,
+					Enabled: anomalyDetectionEnabled,
 				},
 			}
 
@@ -816,6 +877,13 @@ func (d *azureStorageDiscovery) initSQLServersClient() (err error) {
 // initCosmosDBClient creates the client if not already exists
 func (d *azureStorageDiscovery) initCosmosDBClient() (err error) {
 	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d.azureDiscovery, armcosmos.NewDatabaseAccountsClient)
+
+	return
+}
+
+// initMongoDResourcesBClient creates the client if not already exists
+func (d *azureStorageDiscovery) initMongoDResourcesBClient() (err error) {
+	d.clients.mongoDBResourcesClient, err = initClient(d.clients.mongoDBResourcesClient, d.azureDiscovery, armcosmos.NewMongoDBResourcesClient)
 
 	return
 }

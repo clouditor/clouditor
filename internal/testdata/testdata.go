@@ -8,6 +8,8 @@ import (
 
 const (
 	MockOrchestratorAddress = "bufnet"
+	MockLocationWestEurope  = "West Europe"
+	MockLocationEastUs      = "eastus"
 
 	// Auth
 	MockAuthUser     = "clouditor"
