@@ -30,6 +30,11 @@ package voc
 // AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices)
 type AnomalyDetection struct {
 	*Auditing
+	Resource           ResourceID          `json:"resource"`
 	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
 	Enabled            bool                `json:"enabled"`
+}
+
+func (*AnomalyDetection) Type() string {
+	return "AnomalyDetection"
 }

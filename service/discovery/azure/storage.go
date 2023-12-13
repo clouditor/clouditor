@@ -194,7 +194,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
-	// Create Cosmos DB database service voc object
+	// Create Cosmos DB database service voc object for the database account
 	dbService := &voc.DatabaseService{
 		StorageService: &voc.StorageService{
 			NetworkService: &voc.NetworkService{
@@ -216,9 +216,10 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		},
 	}
 
+	// Add Mongo DB database service
 	list = append(list, dbService)
 
-	// Check account kind and get databases
+	// Check account kind and add Mongo DB databases storages
 	switch util.Deref(account.Kind) {
 	case armcosmos.DatabaseAccountKindMongoDB:
 		// Get Mongo databases
@@ -324,15 +325,70 @@ func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, err
 
 func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.IsCloudResource, error) {
 	var (
-		dbStorage voc.IsCloudResource
-		dbService voc.IsCloudResource
-		list      []voc.IsCloudResource
-		err       error
+		dbList               []voc.IsCloudResource
+		anomalyDetectionList []voc.IsAnomalyDetection
+		dbService            voc.IsCloudResource
+		list                 []voc.IsCloudResource
+	)
+
+	// Get SQL database storages and the corresponding anomaly detection property
+	dbList, anomalyDetectionList = d.getSqlDBs(server)
+
+	// Create SQL database service voc object for SQL server
+	// TODO(anatheka): Delete?
+	// TODO(oxisto): This is not 100 % accurate. According to our ontology definition, the SQL server would be
+	// the database service and individual databases would be DatabaseStorage objects. However, the problem is
+	// that azure defines anomaly detection on a per-database level and we currently have anomaly detection as
+	// part of the service
+	dbService = &voc.DatabaseService{
+		StorageService: &voc.StorageService{
+			NetworkService: &voc.NetworkService{
+				Networking: &voc.Networking{
+					Resource: discovery.NewResource(d,
+						voc.ResourceID(*server.ID),
+						*server.Name,
+						nil, // creation time not available
+						voc.GeoLocation{
+							Region: *server.Location,
+						},
+						labels(server.Tags),
+						resourceGroupID(server.ID),
+						voc.DatabaseServiceType,
+						server,
+					),
+				},
+				// TODO(all): HttpEndpoint
+				TransportEncryption: &voc.TransportEncryption{
+					Enabled:    true,
+					Enforced:   true,
+					TlsVersion: *server.Properties.MinimalTLSVersion,
+				},
+			},
+		},
+		AnomalyDetection: anomalyDetectionList,
+	}
+
+	// Add SQL database service
+	list = append(list, dbService)
+
+	// Add SQL database storages
+	list = append(list, dbList...)
+
+	return list, nil
+}
+
+// getSqlDBs returns a list of SQL databases for a specific SQL account
+func (d *azureStorageDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudResource, []voc.IsAnomalyDetection) {
+	var (
+		list                 []voc.IsCloudResource
+		anomalyDetectionList []voc.IsAnomalyDetection
+		err                  error
 	)
 
 	// initialize SQL databases client
 	if err = d.initDatabasesClient(); err != nil {
-		return nil, err
+		log.Errorf("error initializing database client: %v", err)
+		return list, anomalyDetectionList
 	}
 
 	// Get databases for given server
@@ -340,53 +396,27 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	for serverlistPager.More() {
 		pageResponse, err := serverlistPager.NextPage(context.TODO())
 		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
+			log.Errorf("%s: %v", ErrGettingNextPage, err)
+			return list, anomalyDetectionList
 		}
 
 		for _, value := range pageResponse.Value {
-			// Getting anomaly detection status
+			// Create anomaly detection property
+			// Get anomaly detection status
 			anomalyDetectionEnabled, err := d.anomalyDetectionEnabled(server, value)
 			if err != nil {
 				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
 
-			// Create database service voc object
-			//
-			// TODO(oxisto): This is not 100 % accurate. According to our ontology definition, the SQL server would be
-			// the database service and individual databases would be DatabaseStorage objects. However, the problem is
-			// that azure defines anomaly detection on a per-database level and we currently have anomaly detection as
-			// part of the service
-			dbService = &voc.DatabaseService{
-				StorageService: &voc.StorageService{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: discovery.NewResource(d,
-								voc.ResourceID(*value.ID),
-								*value.Name,
-								value.Properties.CreationDate,
-								voc.GeoLocation{
-									Region: *value.Location,
-								},
-								labels(value.Tags),
-								resourceGroupID(value.ID),
-								voc.DatabaseServiceType,
-								server,
-								value,
-							),
-						},
-						// TODO(all): TransportEncryption, HttpEndpoint
-					},
-				},
-				AnomalyDetection: &voc.AnomalyDetection{
-					Enabled: anomalyDetectionEnabled,
-				},
+			a := &voc.AnomalyDetection{
+				Resource: voc.ResourceID(*value.ID),
+				Enabled:  anomalyDetectionEnabled,
 			}
 
-			list = append(list, dbService)
+			anomalyDetectionList = append(anomalyDetectionList, a)
 
 			// Create database storage voc object
-			dbStorage = &voc.DatabaseStorage{
+			sqlDB := &voc.DatabaseStorage{
 				Storage: &voc.Storage{
 					Resource: discovery.NewResource(d,
 						voc.ResourceID(*value.ID),
@@ -396,8 +426,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 							Region: *value.Location,
 						},
 						labels(value.Tags),
-						// the DB service is our parent
-						dbService.GetID(),
+						voc.ResourceID(*server.ID),
 						voc.DatabaseStorageType,
 						value),
 					AtRestEncryption: &voc.AtRestEncryption{
@@ -407,11 +436,29 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 					// TODO(all): Backups
 				},
 			}
-
-			list = append(list, dbStorage)
+			list = append(list, sqlDB)
 		}
 	}
-	return list, nil
+
+	return list, anomalyDetectionList
+}
+
+// checkTlsVersion returns Clouditor's TLS version constants for the given TLS version
+func checkTlsVersion(version string) string {
+	// Check TLS version
+	switch version {
+	case constants.TLS1_0, constants.TLS1_1, constants.TLS1_2:
+		return version
+	case "1.0", "1_0":
+		return constants.TLS1_0
+	case "1.1", "1_1":
+		return constants.TLS1_1
+	case "1.2", "1_2":
+		return constants.TLS1_0
+	default:
+		log.Warningf("'%s' is no implemented TLS version.", version)
+		return ""
+	}
 }
 
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
