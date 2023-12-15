@@ -27,6 +27,8 @@
 
 package voc
 
+var ResourceGroupType = []string{"ResourceGroup", "Resource"}
+
 type ResourceGroup struct {
 	*Resource
 }
