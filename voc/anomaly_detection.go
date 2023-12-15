@@ -27,10 +27,10 @@
 
 package voc
 
-// AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices)
+// AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices). Scope contains the resource ID of the protected resource.
 type AnomalyDetection struct {
 	*Auditing
-	Resource           ResourceID          `json:"resource"`
+	Scope              ResourceID          `json:"scope"`
 	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
 	Enabled            bool                `json:"enabled"`
 }

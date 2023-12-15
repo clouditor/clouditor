@@ -335,11 +335,6 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	dbList, anomalyDetectionList = d.getSqlDBs(server)
 
 	// Create SQL database service voc object for SQL server
-	// TODO(anatheka): Delete?
-	// TODO(oxisto): This is not 100 % accurate. According to our ontology definition, the SQL server would be
-	// the database service and individual databases would be DatabaseStorage objects. However, the problem is
-	// that azure defines anomaly detection on a per-database level and we currently have anomaly detection as
-	// part of the service
 	dbService = &voc.DatabaseService{
 		StorageService: &voc.StorageService{
 			NetworkService: &voc.NetworkService{
@@ -361,7 +356,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 				TransportEncryption: &voc.TransportEncryption{
 					Enabled:    true,
 					Enforced:   true,
-					TlsVersion: *server.Properties.MinimalTLSVersion,
+					TlsVersion: checkTlsVersion(*server.Properties.MinimalTLSVersion),
 				},
 			},
 		},
@@ -409,8 +404,8 @@ func (d *azureStorageDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudR
 			}
 
 			a := &voc.AnomalyDetection{
-				Resource: voc.ResourceID(*value.ID),
-				Enabled:  anomalyDetectionEnabled,
+				Scope:   voc.ResourceID(*value.ID),
+				Enabled: anomalyDetectionEnabled,
 			}
 
 			anomalyDetectionList = append(anomalyDetectionList, a)
@@ -454,7 +449,7 @@ func checkTlsVersion(version string) string {
 	case "1.1", "1_1":
 		return constants.TLS1_1
 	case "1.2", "1_2":
-		return constants.TLS1_0
+		return constants.TLS1_2
 	default:
 		log.Warningf("'%s' is no implemented TLS version.", version)
 		return ""
@@ -621,7 +616,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	te := &voc.TransportEncryption{
 		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
-		TlsVersion: string(util.Deref(account.Properties.MinimumTLSVersion)),
+		TlsVersion: checkTlsVersion((string(util.Deref(account.Properties.MinimumTLSVersion)))),
 		Algorithm:  constants.TLS,
 	}
 

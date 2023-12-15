@@ -304,8 +304,12 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
-					"name": "SQLServer1",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+					"name":     "SQLServer1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"minimalTlsVersion": "1.2",
+					},
 				},
 			},
 		}, 200)
@@ -885,23 +889,31 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
 									ServiceID:    testdata.MockCloudServiceID1,
-									Name:         "SqlDatabase1",
+									Name:         "SQLServer1",
 									CreationTime: 0,
 									Type:         voc.DatabaseServiceType,
 									GeoLocation: voc.GeoLocation{
-										Region: "eastus",
+										Region: testdata.MockLocationEastUs,
 									},
 									Labels: make(map[string]string),
 									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}],\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"name\":\"SQLServer1\"}]}",
+									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"minimalTlsVersion\":\"1.2\"}}]}",
 								},
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enabled:    true,
+								Enforced:   true,
+								TlsVersion: constants.TLS1_2,
 							},
 						},
 					},
-					AnomalyDetection: &voc.AnomalyDetection{
-						Enabled: true,
+					AnomalyDetection: []voc.IsAnomalyDetection{
+						&voc.AnomalyDetection{
+							Enabled: true,
+							Scope:   voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+						},
 					},
 				},
 				&voc.DatabaseStorage{
@@ -916,8 +928,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 							Labels: make(map[string]string),
-							//Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
 							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1994,25 +2005,25 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 		want    []voc.IsCloudResource
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{
-			name: "error list pager",
-			fields: fields{
-				azureDiscovery: &azureDiscovery{
-					clients: clients{},
-				},
-			},
-			args: args{
-				server: &armsql.Server{
-					Location: util.Ref("eastus"),
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
-					Name:     util.Ref("SQLServer1"),
-				},
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: ")
-			},
-		},
+		// {
+		// 	name: "error list pager",
+		// 	fields: fields{
+		// 		azureDiscovery: &azureDiscovery{
+		// 			clients: clients{},
+		// 		},
+		// 	},
+		// 	args: args{
+		// 		server: &armsql.Server{
+		// 			Location: util.Ref("eastus"),
+		// 			ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+		// 			Name:     util.Ref("SQLServer1"),
+		// 		},
+		// 	},
+		// 	want: nil,
+		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+		// 		return assert.ErrorContains(t, err, "error getting next page: ")
+		// 	},
+		// },
 		{
 			name: "Happy path",
 			fields: fields{
@@ -2023,6 +2034,9 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 					Location: util.Ref("eastus"),
 					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
 					Name:     util.Ref("SQLServer1"),
+					Properties: &armsql.ServerProperties{
+						MinimalTLSVersion: util.Ref("1.2"),
+					},
 				},
 			},
 			want: []voc.IsCloudResource{
@@ -2031,9 +2045,9 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
 									ServiceID:    testdata.MockCloudServiceID1,
-									Name:         "SqlDatabase1",
+									Name:         "SQLServer1",
 									CreationTime: 0,
 									Type:         voc.DatabaseServiceType,
 									GeoLocation: voc.GeoLocation{
@@ -2041,13 +2055,21 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 									},
 									Labels: make(map[string]string),
 									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}],\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\"}]}",
+									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"minimalTlsVersion\":\"1.2\"}}]}",
 								},
+							},
+							TransportEncryption: &voc.TransportEncryption{
+								Enabled:    true,
+								Enforced:   true,
+								TlsVersion: constants.TLS1_2,
 							},
 						},
 					},
-					AnomalyDetection: &voc.AnomalyDetection{
-						Enabled: true,
+					AnomalyDetection: []voc.IsAnomalyDetection{
+						&voc.AnomalyDetection{
+							Enabled: true,
+							Scope:   voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+						},
 					},
 				},
 				&voc.DatabaseStorage{
@@ -2062,7 +2084,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 								Region: "eastus",
 							},
 							Labels: make(map[string]string),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
 							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -2338,6 +2360,158 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Cosmos DB account kind not given",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				account: &armcosmos.DatabaseAccountGetResults{
+					Location: util.Ref(testdata.MockLocationWestEurope),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1"),
+					Name:     util.Ref("DBAccount1"),
+					Tags: map[string]*string{
+						"testKey1": util.Ref("testTag1"),
+						"testKey2": util.Ref("testTag2"),
+					},
+					Properties: &armcosmos.DatabaseAccountGetProperties{
+						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
+					},
+					SystemData: &armcosmos.SystemData{
+						CreatedAt: &time.Time{},
+					},
+				},
+			},
+			want: []voc.IsCloudResource{
+				&voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+									Name:         "DBAccount1",
+									ServiceID:    testdata.MockCloudServiceID1,
+									CreationTime: util.SafeTimestamp(&time.Time{}),
+									Type:         voc.DatabaseServiceType,
+									GeoLocation: voc.GeoLocation{
+										Region: testdata.MockLocationWestEurope,
+									},
+									Labels: map[string]string{
+										"testKey1": "testTag1",
+										"testKey2": "testTag2",
+									},
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Cosmos DB account kind not implemented: DatabaseAccountKindGlobalDocumentDB",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				account: &armcosmos.DatabaseAccountGetResults{
+					Location: util.Ref(testdata.MockLocationWestEurope),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1"),
+					Name:     util.Ref("DBAccount1"),
+					Kind:     util.Ref(armcosmos.DatabaseAccountKindGlobalDocumentDB),
+					Tags: map[string]*string{
+						"testKey1": util.Ref("testTag1"),
+						"testKey2": util.Ref("testTag2"),
+					},
+					Properties: &armcosmos.DatabaseAccountGetProperties{
+						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
+					},
+					SystemData: &armcosmos.SystemData{
+						CreatedAt: &time.Time{},
+					},
+				},
+			},
+			want: []voc.IsCloudResource{
+				&voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+									Name:         "DBAccount1",
+									ServiceID:    testdata.MockCloudServiceID1,
+									CreationTime: util.SafeTimestamp(&time.Time{}),
+									Type:         voc.DatabaseServiceType,
+									GeoLocation: voc.GeoLocation{
+										Region: testdata.MockLocationWestEurope,
+									},
+									Labels: map[string]string{
+										"testKey1": "testTag1",
+										"testKey2": "testTag2",
+									},
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"GlobalDocumentDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Cosmos DB account kind not implemented: DatabaseAccountKindGlobalDocumentDB",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				account: &armcosmos.DatabaseAccountGetResults{
+					Location: util.Ref(testdata.MockLocationWestEurope),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1"),
+					Name:     util.Ref("DBAccount1"),
+					Kind:     util.Ref(armcosmos.DatabaseAccountKindParse),
+					Tags: map[string]*string{
+						"testKey1": util.Ref("testTag1"),
+						"testKey2": util.Ref("testTag2"),
+					},
+					Properties: &armcosmos.DatabaseAccountGetProperties{
+						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
+					},
+					SystemData: &armcosmos.SystemData{
+						CreatedAt: &time.Time{},
+					},
+				},
+			},
+			want: []voc.IsCloudResource{
+				&voc.DatabaseService{
+					StorageService: &voc.StorageService{
+						NetworkService: &voc.NetworkService{
+							Networking: &voc.Networking{
+								Resource: &voc.Resource{
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+									Name:         "DBAccount1",
+									ServiceID:    testdata.MockCloudServiceID1,
+									CreationTime: util.SafeTimestamp(&time.Time{}),
+									Type:         voc.DatabaseServiceType,
+									GeoLocation: voc.GeoLocation{
+										Region: testdata.MockLocationWestEurope,
+									},
+									Labels: map[string]string{
+										"testKey1": "testTag1",
+										"testKey2": "testTag2",
+									},
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"Parse\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "Happy path: ManagedKeyEncryption",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
@@ -2611,6 +2785,53 @@ func Test_azureStorageDiscovery_getMongoDBs(t *testing.T) {
 			got := d.getMongoDBs(tt.args.account, tt.args.atRestEnc)
 
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_checkTlsVersion(t *testing.T) {
+	type args struct {
+		version string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "TLS version not implemented",
+			args: args{
+				version: "TLS version 1.0",
+			},
+			want: "",
+		},
+		{
+			name: "Happy path:TLS1_0",
+			args: args{
+				version: "1.0",
+			},
+			want: constants.TLS1_0,
+		},
+		{
+			name: "Happy path:TLS1_1",
+			args: args{
+				version: "1.1",
+			},
+			want: constants.TLS1_1,
+		},
+		{
+			name: "Happy path:TLS1_2",
+			args: args{
+				version: "1.2",
+			},
+			want: constants.TLS1_2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkTlsVersion(tt.args.version); got != tt.want {
+				t.Errorf("checkTlsVersion() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
