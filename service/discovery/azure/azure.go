@@ -200,19 +200,26 @@ func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-// List all Azure resources
+// List discovers the following Azure resources types:
+// - Storage resource
+// - Compute resource
+// - Network resource
+// - ResourceGroup resource
 func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
 
+	// Discover resource group resources
+	log.Info("Discover Azure resource group resources...")
+	rg, err := d.discoverResourceGroups()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover resource groups: %w", err)
+	}
+	list = append(list, rg...)
+
 	// Discover storage resources
 	log.Info("Discover Azure storage resources...")
-
-	// initialize defender client
-	if err := d.initDefenderClient(); err != nil {
-		return nil, fmt.Errorf("could not initialize defender client: %w", err)
-	}
 
 	// Discover Defender for X properties to add it to the required resource properties
 	d.defenderProperties, err = d.discoverDefender()
@@ -243,21 +250,6 @@ func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
 
 	// Discover compute resources
 	log.Info("Discover Azure compute resources...")
-
-	// initialize backup policies client
-	if err := d.initBackupPoliciesClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize backup vaults client
-	if err := d.initBackupVaultsClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize backup instances client
-	if err := d.initBackupInstancesClient(); err != nil {
-		return nil, err
-	}
 
 	// Discover backup vaults
 	err = d.discoverBackupVaults()
@@ -395,6 +387,11 @@ type defenderProperties struct {
 func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, error) {
 	var pricings = make(map[string]*defenderProperties)
 
+	// initialize defender client
+	if err := d.initDefenderClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+	}
+
 	if d.clients.defenderClient == nil {
 		return nil, errors.New("defenderClient not set")
 	}
@@ -429,6 +426,21 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 	if d.backupMap != nil && len(d.backupMap) > 0 {
 		log.Debug("Backup Vaults already discovered.")
 		return nil
+	}
+
+	// initialize backup vaults client
+	if err := d.initBackupVaultsClient(); err != nil {
+		return err
+	}
+
+	// initialize backup instances client
+	if err := d.initBackupInstancesClient(); err != nil {
+		return err
+	}
+
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return err
 	}
 
 	if d.clients.backupVaultClient == nil || d.clients.backupInstancesClient == nil {
@@ -662,30 +674,6 @@ func labels(tags map[string]*string) map[string]string {
 	return l
 }
 
-// ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
-type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
-
-// initClient creates an Azure client if not already exists
-func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T]) (client *T, err error) {
-	if existingClient != nil {
-		return existingClient, nil
-	}
-
-	var subID string
-	if d.sub != nil {
-		subID = util.Deref(d.sub.SubscriptionID)
-	}
-
-	client, err = fun(subID, d.cred, &d.clientOptions)
-	if err != nil {
-		err = fmt.Errorf("could not get %T client: %w", new(T), err)
-		log.Debug(err)
-		return nil, err
-	}
-
-	return
-}
-
 // listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It
 // takes the following arguments:
 //   - d, an [azureDiscovery] struct,
@@ -766,25 +754,4 @@ func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error
 	}
 
 	return nil
-}
-
-// initBackupPoliciesClient creates the client if not already exists
-func (d *azureDiscovery) initBackupPoliciesClient() (err error) {
-	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d, armdataprotection.NewBackupPoliciesClient)
-
-	return
-}
-
-// initBackupVaultsClient creates the client if not already exists
-func (d *azureDiscovery) initBackupVaultsClient() (err error) {
-	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d, armdataprotection.NewBackupVaultsClient)
-
-	return
-}
-
-// initBackupInstancesClient creates the client if not already exists
-func (d *azureDiscovery) initBackupInstancesClient() (err error) {
-	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d, armdataprotection.NewBackupInstancesClient)
-
-	return
 }

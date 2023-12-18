@@ -124,9 +124,8 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got := d.handleSubscription(tt.args.s)
 			assert.Equal(t, tt.want, got)
 		})
@@ -182,16 +181,15 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got := d.handleResourceGroup(tt.args.rg)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func Test_azureResourceGroupDiscovery_List(t *testing.T) {
+func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
 	}
@@ -201,18 +199,6 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 		wantList []voc.IsCloudResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
-		{
-			name: "Authorize error",
-			fields: fields{
-				azureDiscovery: &azureDiscovery{
-					cred: nil,
-				},
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-			},
-		},
 		{
 			name: "Discovery error",
 			fields: fields{
@@ -309,10 +295,9 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-			gotList, err := d.List()
+			d := tt.fields.azureDiscovery
+
+			gotList, err := d.discoverResourceGroups()
 
 			assert.Equal(t, tt.wantList, gotList)
 			tt.wantErr(t, err)

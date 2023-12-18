@@ -38,8 +38,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
@@ -48,80 +46,6 @@ var (
 	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
 )
-
-// type azureDiscovery struct {
-// 	*azureDiscovery
-// 	defenderProperties map[string]*defenderProperties
-// }
-
-// func NewazureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-// 	d := &azureDiscovery{
-// 		&azureDiscovery{
-// 			discovererComponent: StorageComponent,
-// 			csID:                discovery.DefaultCloudServiceID,
-// 			backupMap:           make(map[string]*backup),
-// 		},
-// 		make(map[string]*defenderProperties),
-// 	}
-
-// 	// Apply options
-// 	for _, opt := range opts {
-// 		opt(d.azureDiscovery)
-// 	}
-//
-// 	return d
-// }
-
-// func (*azureDiscovery) Name() string {
-// 	return "Azure Storage Account"
-// }
-
-// func (*azureDiscovery) Description() string {
-// 	return "Discovery Azure storage accounts."
-// }
-
-// func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
-// 	// // make sure, we are authorized
-// 	// if err = d.authorize(); err != nil {
-// 	// 	return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-// 	// }
-
-// 	log.Info("Discover Azure storage resources")
-
-// 	// initialize defender client
-// 	if err := d.initDefenderClient(); err != nil {
-// 		return nil, fmt.Errorf("could not initialize defender client: %w", err)
-// 	}
-
-// 	// Discover Defender for X properties to add it to the required resource properties
-// 	d.defenderProperties, err = d.discoverDefender()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover Defender for X: %w", err)
-// 	}
-
-// 	// Discover storage accounts
-// 	storageAccounts, err := d.discoverStorageAccounts()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover storage accounts: %w", err)
-// 	}
-// 	list = append(list, storageAccounts...)
-
-// 	// Discover sql databases
-// 	dbs, err := d.discoverSqlServers()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover sql databases: %w", err)
-// 	}
-// 	list = append(list, dbs...)
-
-// 	// Discover Cosmos DB
-// 	cosmosDB, err := d.discoverCosmosDB()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover cosmos db accounts: %w", err)
-// 	}
-// 	list = append(list, cosmosDB...)
-
-// 	return
-// }
 
 // discoverCosmosDB discovers Cosmos DB accounts
 func (d *azureDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
@@ -660,8 +584,7 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 	}, nil
 }
 
-// storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective
-// ontology object.
+// storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective ontology object.
 func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncryption, err error) {
 	if account == nil {
 		return enc, ErrEmptyStorageAccount
@@ -743,78 +666,4 @@ func generalizeURL(url string) string {
 	newURL := strings.Join(urlSplit, ".")
 
 	return newURL
-}
-
-// initAccountsClient creates the client if not already exists
-func (d *azureDiscovery) initAccountsClient() (err error) {
-	d.clients.accountsClient, err = initClient(d.clients.accountsClient, d, armstorage.NewAccountsClient)
-	return
-}
-
-// initBlobContainerClient creates the client if not already exists
-func (d *azureDiscovery) initBlobContainerClient() (err error) {
-	d.clients.blobContainerClient, err = initClient(d.clients.blobContainerClient, d, armstorage.NewBlobContainersClient)
-	return
-}
-
-// initFileStorageClient creates the client if not already exists
-func (d *azureDiscovery) initFileStorageClient() (err error) {
-	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d, armstorage.NewFileSharesClient)
-	return
-}
-
-// initDefenderClient creates the client if not already exists
-func (d *azureDiscovery) initDefenderClient() (err error) {
-	d.clients.defenderClient, err = initClient(d.clients.defenderClient, d, armsecurity.NewPricingsClient)
-
-	return
-}
-
-// // initBackupPoliciesClient creates the client if not already exists
-// func (d *azureDiscovery) initBackupPoliciesClient() (err error) {
-// 	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d, armdataprotection.NewBackupPoliciesClient)
-
-// 	return
-// }
-
-// // initBackupVaultsClient creates the client if not already exists
-// func (d *azureDiscovery) initBackupVaultsClient() (err error) {
-// 	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d, armdataprotection.NewBackupVaultsClient)
-
-// 	return
-// }
-
-// // initBackupInstancesClient creates the client if not already exists
-// func (d *azureDiscovery) initBackupInstancesClient() (err error) {
-// 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d, armdataprotection.NewBackupInstancesClient)
-
-// 	return
-// }
-
-// initDatabasesClient creates the client if not already exists
-func (d *azureDiscovery) initDatabasesClient() (err error) {
-	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d, armsql.NewDatabasesClient)
-
-	return
-}
-
-// initSQLServersClient creates the client if not already exists
-func (d *azureDiscovery) initSQLServersClient() (err error) {
-	d.clients.sqlServersClient, err = initClient(d.clients.sqlServersClient, d, armsql.NewServersClient)
-
-	return
-}
-
-// initCosmosDBClient creates the client if not already exists
-func (d *azureDiscovery) initCosmosDBClient() (err error) {
-	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d, armcosmos.NewDatabaseAccountsClient)
-
-	return
-}
-
-// initThreatProtectionClient creates the client if not already exists
-func (d *azureDiscovery) initThreatProtectionClient() (err error) {
-	d.clients.threatProtectionClient, err = initClient(d.clients.threatProtectionClient, d, armsql.NewDatabaseAdvancedThreatProtectionSettingsClient)
-
-	return
 }

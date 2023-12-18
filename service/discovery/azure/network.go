@@ -97,7 +97,7 @@ import (
 // 	return
 // }
 
-// Discover network interfaces
+// discoverNetworkInterfaces discovers network interfaces
 func (d *azureDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -395,28 +395,4 @@ func getName(id string) string {
 		return ""
 	}
 	return strings.Split(id, "/")[8]
-}
-
-// initNetworkInterfacesClient creates the client if not already exists
-func (d *azureDiscovery) initNetworkInterfacesClient() (err error) {
-	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d, armnetwork.NewInterfacesClient)
-	return
-}
-
-// initLoadBalancersClient creates the client if not already exists
-func (d *azureDiscovery) initLoadBalancersClient() (err error) {
-	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d, armnetwork.NewLoadBalancersClient)
-	return
-}
-
-// initApplicationGatewayClient creates the client if not already exists
-func (d *azureDiscovery) initApplicationGatewayClient() (err error) {
-	d.clients.applicationGatewayClient, err = initClient(d.clients.applicationGatewayClient, d, armnetwork.NewApplicationGatewaysClient)
-	return
-}
-
-// initNetworkSecurityGroupClient creates the client if not already exists
-func (d *azureDiscovery) initNetworkSecurityGroupClient() (err error) {
-	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d, armnetwork.NewSecurityGroupsClient)
-	return
 }
