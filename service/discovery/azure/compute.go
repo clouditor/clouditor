@@ -33,7 +33,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/constants"
@@ -45,99 +44,99 @@ var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
 )
 
-type azureComputeDiscovery struct {
-	*azureDiscovery
-	defenderProperties map[string]*defenderProperties
-}
+// type azureDiscovery struct {
+// 	*azureDiscovery
+// 	defenderProperties map[string]*defenderProperties
+// }
 
-func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureComputeDiscovery{
-		&azureDiscovery{
-			discovererComponent: ComputeComponent,
-			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*backup),
-		},
-		make(map[string]*defenderProperties),
-	}
+// func NewazureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+// 	d := &azureDiscovery{
+// 		&azureDiscovery{
+// 			discovererComponent: ComputeComponent,
+// 			csID:                discovery.DefaultCloudServiceID,
+// 			backupMap:           make(map[string]*backup),
+// 		},
+// 		make(map[string]*defenderProperties),
+// 	}
 
-	// Apply options
-	for _, opt := range opts {
-		opt(d.azureDiscovery)
-	}
+// 	// Apply options
+// 	for _, opt := range opts {
+// 		opt(d)
+// 	}
 
-	return d
-}
+// 	return d
+// }
 
-func (*azureComputeDiscovery) Name() string {
+func (*azureDiscovery) Name() string {
 	return "Azure Compute"
 }
 
-func (*azureComputeDiscovery) Description() string {
+func (*azureDiscovery) Description() string {
 	return "Discovery Azure compute."
 }
 
-// List compute resources
-func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
+// // List compute resources
+// func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
+// 	// if err = d.authorize(); err != nil {
+// 	// 	return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+// 	// }
 
-	// initialize backup policies client
-	if err := d.initBackupPoliciesClient(); err != nil {
-		return nil, err
-	}
+// 	// initialize backup policies client
+// 	if err := d.initBackupPoliciesClient(); err != nil {
+// 		return nil, err
+// 	}
 
-	// initialize backup vaults client
-	if err := d.initBackupVaultsClient(); err != nil {
-		return nil, err
-	}
+// 	// initialize backup vaults client
+// 	if err := d.initBackupVaultsClient(); err != nil {
+// 		return nil, err
+// 	}
 
-	// initialize backup instances client
-	if err := d.initBackupInstancesClient(); err != nil {
-		return nil, err
-	}
+// 	// initialize backup instances client
+// 	if err := d.initBackupInstancesClient(); err != nil {
+// 		return nil, err
+// 	}
 
-	// Discover backup vaults
-	err = d.azureDiscovery.discoverBackupVaults()
-	if err != nil {
-		log.Errorf("could not discover backup vaults: %v", err)
-	}
+// 	// Discover backup vaults
+// 	err = d.discoverBackupVaults()
+// 	if err != nil {
+// 		log.Errorf("could not discover backup vaults: %v", err)
+// 	}
 
-	log.Info("Discover Azure block storage")
-	// Discover block storage
-	storage, err := d.discoverBlockStorages()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover block storage: %w", err)
-	}
-	list = append(list, storage...)
+// 	log.Info("Discover Azure block storage")
+// 	// Discover block storage
+// 	storage, err := d.discoverBlockStorages()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not discover block storage: %w", err)
+// 	}
+// 	list = append(list, storage...)
 
-	// Add backup block storages
-	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
-		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
-	}
+// 	// Add backup block storages
+// 	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
+// 		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
+// 	}
 
-	log.Info("Discover Azure compute resources")
-	// Discover virtual machines
-	virtualMachines, err := d.discoverVirtualMachines()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
-	}
-	list = append(list, virtualMachines...)
+// 	log.Info("Discover Azure compute resources")
+// 	// Discover virtual machines
+// 	virtualMachines, err := d.discoverVirtualMachines()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+// 	}
+// 	list = append(list, virtualMachines...)
 
-	// Discover functions and web apps
-	resources, err := d.discoverFunctionsWebApps()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover functions: %w", err)
-	}
-	// if resources != nil {
-	list = append(list, resources...)
-	// }
+// 	// Discover functions and web apps
+// 	resources, err := d.discoverFunctionsWebApps()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not discover functions: %w", err)
+// 	}
+// 	// if resources != nil {
+// 	list = append(list, resources...)
+// 	// }
 
-	return
-}
+// 	return
+// }
 
 // Discover functions and web apps
-func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize functions client
@@ -146,7 +145,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	}
 
 	// List functions
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.sitesClient.NewListPager,
 		d.clients.sitesClient.NewListByResourceGroupPager,
 		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
@@ -207,7 +206,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
+func (d *azureDiscovery) handleFunction(function *armappservice.Site) voc.IsCompute {
 	var (
 		runtimeLanguage     string
 		runtimeVersion      string
@@ -286,7 +285,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site) voc
 	}
 }
 
-func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
+func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site) voc.IsCompute {
 	var (
 		ni                  []voc.ResourceID
 		publicNetworkAccess = false
@@ -378,7 +377,7 @@ func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string)
 }
 
 // Discover virtual machines
-func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize virtual machines client
@@ -387,7 +386,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	}
 
 	// List all VMs
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.virtualMachinesClient.NewListAllPager,
 		d.clients.virtualMachinesClient.NewListPager,
 		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
@@ -415,7 +414,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
 		bootLogging              = []voc.ResourceID{}
 		osLoggingEnabled         bool
@@ -582,7 +581,7 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 	return ""
 }
 
-func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize block storages client
@@ -591,7 +590,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	// List all disks
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.blockStorageClient.NewListPager,
 		d.clients.blockStorageClient.NewListByResourceGroupPager,
 		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
@@ -618,7 +617,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
 	var (
 		rawKeyUrl *armcompute.DiskEncryptionSet
 		backups   []*voc.Backup
@@ -662,7 +661,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
 // ontology object.
-func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
+func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
 	var (
 		diskEncryptionSetID string
 		keyUrl              string
@@ -699,7 +698,7 @@ func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Di
 	return enc, rawKeyUrl, nil
 }
 
-func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute.DiskEncryptionSet, error) {
+func (d *azureDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute.DiskEncryptionSet, error) {
 	if diskEncryptionSetID == "" {
 		return "", nil, ErrMissingDiskEncryptionSetID
 	}
@@ -725,46 +724,46 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 }
 
 // initWebAppsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+func (d *azureDiscovery) initWebAppsClient() (err error) {
+	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d, armappservice.NewWebAppsClient)
 	return
 }
 
 // initVirtualMachinesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
+func (d *azureDiscovery) initVirtualMachinesClient() (err error) {
+	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d, armcompute.NewVirtualMachinesClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, d.azureDiscovery, armcompute.NewDisksClient)
+func (d *azureDiscovery) initBlockStoragesClient() (err error) {
+	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, d, armcompute.NewDisksClient)
 	return
 }
 
 // initBlockStoragesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+func (d *azureDiscovery) initDiskEncryptonSetClient() (err error) {
+	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d, armcompute.NewDiskEncryptionSetsClient)
 	return
 }
 
-// initBackupPoliciesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupPoliciesClient() (err error) {
-	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
+// // initBackupPoliciesClient creates the client if not already exists
+// func (d *azureDiscovery) initBackupPoliciesClient() (err error) {
+// 	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d, armdataprotection.NewBackupPoliciesClient)
 
-	return
-}
+// 	return
+// }
 
-// initBackupVaultsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupVaultsClient() (err error) {
-	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
+// // initBackupVaultsClient creates the client if not already exists
+// func (d *azureDiscovery) initBackupVaultsClient() (err error) {
+// 	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d, armdataprotection.NewBackupVaultsClient)
 
-	return
-}
+// 	return
+// }
 
-// initBackupInstancesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
-	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
+// // initBackupInstancesClient creates the client if not already exists
+// func (d *azureDiscovery) initBackupInstancesClient() (err error) {
+// 	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d, armdataprotection.NewBackupInstancesClient)
 
-	return
-}
+// 	return
+// }

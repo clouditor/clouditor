@@ -40,22 +40,22 @@ type azureResourceGroupDiscovery struct {
 	*azureDiscovery
 }
 
-func NewAzureResourceGroupDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureResourceGroupDiscovery{
-		&azureDiscovery{
-			discovererComponent: ComputeComponent,
-			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*backup),
-		},
-	}
+// func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+// 	d := &azureResourceGroupDiscovery{
+// 		&azureDiscovery{
+// 			discovererComponent: ComputeComponent,
+// 			csID:                discovery.DefaultCloudServiceID,
+// 			backupMap:           make(map[string]*backup),
+// 		},
+// 	}
 
-	// Apply options
-	for _, opt := range opts {
-		opt(d.azureDiscovery)
-	}
+// 	// Apply options
+// 	for _, opt := range opts {
+// 		opt(d.azureDiscovery)
+// 	}
 
-	return d
-}
+// 	return d
+// }
 
 func (*azureResourceGroupDiscovery) Name() string {
 	return "Azure Resource Group"
@@ -67,10 +67,10 @@ func (*azureResourceGroupDiscovery) Description() string {
 
 // List resource groups and cloud account
 func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err error) {
-	// make sure we are authorized
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
+	// // make sure we are authorized
+	// if err = d.authorize(); err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+	// }
 
 	// initialize client
 	if err := d.initResourceGroupsClient(); err != nil {

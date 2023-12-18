@@ -408,7 +408,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				clientBackupPolicy:   true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureStorageDiscovery)
+				d, ok := i1.(*azureDiscovery)
 				if !assert.True(tt, ok) {
 					return false
 				}
@@ -436,9 +436,10 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			// d := &azureDiscovery{
+			// 	azureDiscovery: tt.fields.azureDiscovery,
+			// }
+			d := tt.fields.azureDiscovery
 
 			// Set clients if needed
 			if tt.fields.clientBackupVault {
@@ -519,7 +520,7 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 				clientBackupPolicy:   true,
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureComputeDiscovery)
+				d, ok := i1.(*azureDiscovery)
 				if !assert.True(tt, ok) {
 					return false
 				}
@@ -544,9 +545,10 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureComputeDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			// d := &azureDiscovery{
+			// 	azureDiscovery: tt.fields.azureDiscovery,
+			// }
+			d := tt.fields.azureDiscovery
 
 			// Set clients if needed
 			if tt.fields.clientBackupVault {
@@ -660,9 +662,11 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			// d := &azureDiscovery{
+			// 	azureDiscovery: tt.fields.azureDiscovery,
+			// }
+
+			d := tt.fields.azureDiscovery
 
 			// Set client if needed
 			if tt.fields.clientDefender {
@@ -750,9 +754,11 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			// d := &azureDiscovery{
+			// 	azureDiscovery: tt.fields.azureDiscovery,
+			// }
+
+			d := tt.fields.azureDiscovery
 
 			if tt.fields.clientBackupInstance {
 				// initialize backup instances client

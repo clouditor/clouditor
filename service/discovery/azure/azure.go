@@ -51,6 +51,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -84,6 +85,16 @@ var (
 	ErrGettingNextPage          = errors.New("error getting next page")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
+
+// TODO (anatheka): Merge discoverers:
+// - fix backupStorage
+// - fix tests
+
+// TODO (anatheka): Discoveres:
+// NewAzureResourceGroupDiscovery
+// NewAzureComputeDiscovery
+// NewAzureStorageDiscovery
+// NewAzureNetworkDiscovery
 
 type DiscoveryOption func(a *azureDiscovery)
 
@@ -128,6 +139,7 @@ type azureDiscovery struct {
 	clients             clients
 	csID                string
 	backupMap           map[string]*backup
+	defenderProperties  map[string]*defenderProperties
 }
 
 type backup struct {
@@ -171,6 +183,141 @@ type clients struct {
 
 	// Resource groups
 	rgClient *armresources.ResourceGroupsClient
+}
+
+func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	d := &azureDiscovery{
+		discovererComponent: ComputeComponent,
+		csID:                discovery.DefaultCloudServiceID,
+		backupMap:           make(map[string]*backup),
+		defenderProperties:  make(map[string]*defenderProperties),
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
+}
+
+// List all Azure resources
+func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+	}
+
+	// Discover storage resources
+	log.Info("Discover Azure storage resources...")
+
+	// initialize defender client
+	if err := d.initDefenderClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+	}
+
+	// Discover Defender for X properties to add it to the required resource properties
+	d.defenderProperties, err = d.discoverDefender()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover Defender for X: %w", err)
+	}
+
+	// Discover storage accounts
+	storageAccounts, err := d.discoverStorageAccounts()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover storage accounts: %w", err)
+	}
+	list = append(list, storageAccounts...)
+
+	// Discover sql databases
+	dbs, err := d.discoverSqlServers()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover sql databases: %w", err)
+	}
+	list = append(list, dbs...)
+
+	// Discover Cosmos DB
+	cosmosDB, err := d.discoverCosmosDB()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover cosmos db accounts: %w", err)
+	}
+	list = append(list, cosmosDB...)
+
+	// Discover compute resources
+	log.Info("Discover Azure compute resources...")
+
+	// initialize backup policies client
+	if err := d.initBackupPoliciesClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup vaults client
+	if err := d.initBackupVaultsClient(); err != nil {
+		return nil, err
+	}
+
+	// initialize backup instances client
+	if err := d.initBackupInstancesClient(); err != nil {
+		return nil, err
+	}
+
+	// Discover backup vaults
+	err = d.discoverBackupVaults()
+	if err != nil {
+		log.Errorf("could not discover backup vaults: %v", err)
+	}
+
+	// Discover block storage
+	storage, err := d.discoverBlockStorages()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover block storage: %w", err)
+	}
+	list = append(list, storage...)
+
+	// Add backup block storages
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
+		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
+	}
+
+	// Discover virtual machines
+	virtualMachines, err := d.discoverVirtualMachines()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
+	}
+	list = append(list, virtualMachines...)
+
+	// Discover functions and web apps
+	resources, err := d.discoverFunctionsWebApps()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover functions: %w", err)
+	}
+
+	list = append(list, resources...)
+
+	// Discover network resources
+	log.Info("Discover Azure network resources...")
+
+	// Discover network interfaces
+	networkInterfaces, err := d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+	}
+	list = append(list, networkInterfaces...)
+
+	// Discover Load Balancer
+	loadBalancer, err := d.discoverLoadBalancer()
+	if err != nil {
+		return list, fmt.Errorf("could not discover load balancer: %w", err)
+	}
+	list = append(list, loadBalancer...)
+
+	// Discover Application Gateway
+	ag, err := d.discoverApplicationGateway()
+	if err != nil {
+		return list, fmt.Errorf("could not discover application gateways: %w", err)
+	}
+	list = append(list, ag...)
+
+	return list, nil
 }
 
 func (a *azureDiscovery) CloudServiceID() string {
@@ -613,4 +760,25 @@ func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error
 	}
 
 	return nil
+}
+
+// initBackupPoliciesClient creates the client if not already exists
+func (d *azureDiscovery) initBackupPoliciesClient() (err error) {
+	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d, armdataprotection.NewBackupPoliciesClient)
+
+	return
+}
+
+// initBackupVaultsClient creates the client if not already exists
+func (d *azureDiscovery) initBackupVaultsClient() (err error) {
+	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d, armdataprotection.NewBackupVaultsClient)
+
+	return
+}
+
+// initBackupInstancesClient creates the client if not already exists
+func (d *azureDiscovery) initBackupInstancesClient() (err error) {
+	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d, armdataprotection.NewBackupInstancesClient)
+
+	return
 }
