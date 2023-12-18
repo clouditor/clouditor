@@ -11,6 +11,7 @@ const (
 	MockSubscriptionID         = "00000000-0000-0000-0000-000000000000"
 	MockSubscriptionResourceID = "/subscriptions/00000000-0000-0000-0000-000000000000"
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"
+	MockResourceGroup          = "TestResourceGroup"
 
 	// Auth
 	MockAuthUser     = "clouditor"

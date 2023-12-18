@@ -37,6 +37,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
@@ -99,58 +100,175 @@ func createResponse(req *http.Request, object map[string]interface{}, statusCode
 	}, nil
 }
 
-func TestGetResourceGroupName(t *testing.T) {
-	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
-	result := resourceGroupName(accountId)
-
-	assert.Equal(t, "res1", result)
-}
-
-func Test_labels(t *testing.T) {
-
-	testValue1 := "testValue1"
-	testValue2 := "testValue2"
-	testValue3 := "testValue3"
-
+func TestNewAzureDiscovery(t *testing.T) {
 	type args struct {
-		tags map[string]*string
+		opts []DiscoveryOption
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[string]string
+		want discovery.Discoverer
 	}{
 		{
-			name: "Empty map of tags",
-			args: args{
-				tags: map[string]*string{},
-			},
-			want: map[string]string{},
-		},
-		{
-			name: "Tags are nil",
+			name: "Happy path",
 			args: args{},
-			want: map[string]string{},
+			want: &azureDiscovery{
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
 		},
 		{
-			name: "Valid tags",
+			name: "Happy path: with sender",
 			args: args{
-				tags: map[string]*string{
-					"testTag1": &testValue1,
-					"testTag2": &testValue2,
-					"testTag3": &testValue3,
-				},
+				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
 			},
-			want: map[string]string{
-				"testTag1": testValue1,
-				"testTag2": testValue2,
-				"testTag3": testValue3,
+			want: &azureDiscovery{
+				csID:               testdata.MockCloudServiceID1,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with resource group",
+			args: args{
+				opts: []DiscoveryOption{WithResourceGroup(testdata.MockResourceGroup)},
+			},
+			want: &azureDiscovery{
+				rg:                 util.Ref(testdata.MockResourceGroup),
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with sender",
+			args: args{
+				opts: []DiscoveryOption{WithSender(mockSender{})},
+			},
+			want: &azureDiscovery{
+				clientOptions: arm.ClientOptions{
+					ClientOptions: policy.ClientOptions{
+						Transport: mockSender{},
+					},
+				},
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with authorizer",
+			args: args{
+				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
+			},
+			want: &azureDiscovery{
+				cred:               &mockAuthorizer{},
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+			got := NewAzureDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// TODO(anatheka): Write test
+func Test_azureDiscovery_List(t *testing.T) {
+	type fields struct {
+		isAuthorized        bool
+		sub                 *armsubscription.Subscription
+		cred                azcore.TokenCredential
+		rg                  *string
+		clientOptions       arm.ClientOptions
+		discovererComponent string
+		clients             clients
+		csID                string
+		backupMap           map[string]*backup
+		defenderProperties  map[string]*defenderProperties
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList []voc.IsCloudResource
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureDiscovery{
+				isAuthorized:        tt.fields.isAuthorized,
+				sub:                 tt.fields.sub,
+				cred:                tt.fields.cred,
+				rg:                  tt.fields.rg,
+				clientOptions:       tt.fields.clientOptions,
+				discovererComponent: tt.fields.discovererComponent,
+				clients:             tt.fields.clients,
+				csID:                tt.fields.csID,
+				backupMap:           tt.fields.backupMap,
+				defenderProperties:  tt.fields.defenderProperties,
+			}
+			gotList, err := d.List()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("azureDiscovery.List() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotList, tt.wantList) {
+				t.Errorf("azureDiscovery.List() = %v, want %v", gotList, tt.wantList)
+			}
+		})
+	}
+}
+
+func Test_azureDiscovery_CloudServiceID(t *testing.T) {
+	type fields struct {
+		isAuthorized        bool
+		sub                 *armsubscription.Subscription
+		cred                azcore.TokenCredential
+		rg                  *string
+		clientOptions       arm.ClientOptions
+		discovererComponent string
+		clients             clients
+		csID                string
+		backupMap           map[string]*backup
+		defenderProperties  map[string]*defenderProperties
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				csID: testdata.MockCloudServiceID1,
+			},
+			want: testdata.MockCloudServiceID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &azureDiscovery{
+				isAuthorized:        tt.fields.isAuthorized,
+				sub:                 tt.fields.sub,
+				cred:                tt.fields.cred,
+				rg:                  tt.fields.rg,
+				clientOptions:       tt.fields.clientOptions,
+				discovererComponent: tt.fields.discovererComponent,
+				clients:             tt.fields.clients,
+				csID:                tt.fields.csID,
+				backupMap:           tt.fields.backupMap,
+				defenderProperties:  tt.fields.defenderProperties,
+			}
+			if got := a.CloudServiceID(); got != tt.want {
+				t.Errorf("azureDiscovery.CloudServiceID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -220,6 +338,128 @@ func Test_azureDiscovery_authorize(t *testing.T) {
 				clientOptions: tt.fields.clientOptions,
 			}
 			tt.wantErr(t, a.authorize())
+		})
+	}
+}
+
+func TestGetResourceGroupName(t *testing.T) {
+	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
+	result := resourceGroupName(accountId)
+
+	assert.Equal(t, "res1", result)
+}
+
+func Test_resourceGroupID(t *testing.T) {
+	type args struct {
+		ID *string
+	}
+	tests := []struct {
+		name string
+		args args
+		want voc.ResourceID
+	}{
+		{
+			name: "invalid",
+			args: args{
+				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
+			},
+			want: "",
+		},
+		{
+			name: "happy path",
+			args: args{
+				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_backupPolicyName(t *testing.T) {
+	type args struct {
+		id string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "invalid",
+			args: args{
+				id: "this is not a resource ID but it should not crash the Clouditor",
+			},
+			want: "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+			},
+			want: "backupPolicyDisk",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := backupPolicyName(tt.args.id); got != tt.want {
+				t.Errorf("backupPolicyName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_labels(t *testing.T) {
+
+	testValue1 := "testValue1"
+	testValue2 := "testValue2"
+	testValue3 := "testValue3"
+
+	type args struct {
+		tags map[string]*string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "Empty map of tags",
+			args: args{
+				tags: map[string]*string{},
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "Tags are nil",
+			args: args{},
+			want: map[string]string{},
+		},
+		{
+			name: "Valid tags",
+			args: args{
+				tags: map[string]*string{
+					"testTag1": &testValue1,
+					"testTag2": &testValue2,
+					"testTag3": &testValue3,
+				},
+			},
+			want: map[string]string{
+				"testTag1": testValue1,
+				"testTag2": testValue2,
+				"testTag3": testValue3,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
 		})
 	}
 }
@@ -950,39 +1190,6 @@ func Test_backupsEmptyCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_resourceGroupID(t *testing.T) {
-	type args struct {
-		ID *string
-	}
-	tests := []struct {
-		name string
-		args args
-		want voc.ResourceID
-	}{
-		{
-			name: "invalid",
-			args: args{
-				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
-			},
-			want: "",
-		},
-		{
-			name: "happy path",
-			args: args{
-				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-			},
-			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

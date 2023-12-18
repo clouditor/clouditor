@@ -187,10 +187,9 @@ type clients struct {
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureDiscovery{
-		discovererComponent: ComputeComponent,
-		csID:                discovery.DefaultCloudServiceID,
-		backupMap:           make(map[string]*backup),
-		defenderProperties:  make(map[string]*defenderProperties),
+		csID:               discovery.DefaultCloudServiceID,
+		backupMap:          make(map[string]*backup),
+		defenderProperties: make(map[string]*defenderProperties),
 	}
 
 	// Apply options
@@ -574,7 +573,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 	return
 }
 
-// retentionDuration returns the rentention string as time.Duration
+// retentionDuration returns the retention string as time.Duration
 func retentionDuration(retention string) time.Duration {
 	if retention == "" {
 		return time.Duration(0)
@@ -642,7 +641,14 @@ func resourceGroupID(ID *string) voc.ResourceID {
 
 // backupPolicyName returns the backup policy name of a given Azure ID
 func backupPolicyName(id string) string {
-	return strings.Split(id, "/")[10]
+	// split according to "/"
+	s := strings.Split(id, "/")
+
+	// We cannot really return an error here, so we just return an empty string
+	if len(s) < 10 {
+		return ""
+	}
+	return s[10]
 }
 
 // labels converts the resource tags to the vocabulary label
