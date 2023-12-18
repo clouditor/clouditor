@@ -44,96 +44,231 @@ var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
 )
 
-// type azureDiscovery struct {
-// 	*azureDiscovery
-// 	defenderProperties map[string]*defenderProperties
-// }
+// Discover virtual machines
+func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
-// func NewazureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-// 	d := &azureDiscovery{
-// 		&azureDiscovery{
-// 			discovererComponent: ComputeComponent,
-// 			csID:                discovery.DefaultCloudServiceID,
-// 			backupMap:           make(map[string]*backup),
-// 		},
-// 		make(map[string]*defenderProperties),
-// 	}
+	// initialize virtual machines client
+	if err := d.initVirtualMachinesClient(); err != nil {
+		return nil, err
+	}
 
-// 	// Apply options
-// 	for _, opt := range opts {
-// 		opt(d)
-// 	}
+	// List all VMs
+	err := listPager(d,
+		d.clients.virtualMachinesClient.NewListAllPager,
+		d.clients.virtualMachinesClient.NewListPager,
+		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
+			return res.Value
+		},
+		func(res armcompute.VirtualMachinesClientListResponse) []*armcompute.VirtualMachine {
+			return res.Value
+		},
+		func(vm *armcompute.VirtualMachine) error {
+			r, err := d.handleVirtualMachines(vm)
+			if err != nil {
+				return fmt.Errorf("could not handle virtual machine: %w", err)
+			}
 
-// 	return d
-// }
+			log.Infof("Adding virtual machine '%s'", r.GetName())
 
-func (*azureDiscovery) Name() string {
-	return "Azure Compute"
+			list = append(list, r)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
 
-func (*azureDiscovery) Description() string {
-	return "Discovery Azure compute."
+func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+	var (
+		bootLogging              = []voc.ResourceID{}
+		osLoggingEnabled         bool
+		autoUpdates              *voc.AutomaticUpdates
+		monitoringLogDataEnabled bool
+		securityAlertsEnabled    bool
+	)
+
+	// If a mandatory field is empty, the whole disk is empty
+	if vm == nil || vm.ID == nil {
+		return nil, ErrEmptyVirtualMachine
+	}
+
+	if bootLogOutput(vm) != "" {
+		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	}
+
+	autoUpdates = automaticUpdates(vm)
+
+	if d.defenderProperties[DefenderVirtualMachineType] != nil {
+		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
+		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
+	}
+
+	// Check extensions
+	for _, extension := range vm.Resources {
+		// Azure Monitor Agent (AMA) collects monitoring data from the guest operating system of Azure and hybrid virtual machines and delivers it to Azure Monitor for use (https://learn.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview). The extension names are
+		// * OMSAgentForLinux for Linux VMs and (legacy agent)
+		// * MicrosoftMonitoringAgent for Windows VMs (legacy agent)
+		// * AzureMonitoringWindowsAgent (new agent)
+		// * AzureMonitoringLinuxAgent (new agent)
+		if strings.Contains(*extension.ID, "OmsAgentForLinux") || strings.Contains(*extension.ID, "MicrosoftMonitoringAgent") || strings.Contains(*extension.ID, "AzureMonitoringWindowsAgent") || strings.Contains(*extension.ID, "AzureMonitoringLinuxAgent") {
+			osLoggingEnabled = true
+		}
+	}
+
+	r := &voc.VirtualMachine{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(vm.ID)),
+				util.Deref(vm.Name),
+				vm.Properties.TimeCreated,
+				voc.GeoLocation{
+					Region: util.Deref(vm.Location),
+				},
+				labels(vm.Tags),
+				resourceGroupID(vm.ID),
+				voc.VirtualMachineType,
+				vm,
+			),
+			NetworkInterfaces: []voc.ResourceID{},
+		},
+		BlockStorage:      []voc.ResourceID{},
+		MalwareProtection: &voc.MalwareProtection{},
+		BootLogging: &voc.BootLogging{
+			Logging: &voc.Logging{
+				Enabled:         isBootDiagnosticEnabled(vm),
+				LoggingService:  bootLogging,
+				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    securityAlertsEnabled,
+			},
+		},
+		OsLogging: &voc.OSLogging{
+			Logging: &voc.Logging{
+				Enabled:         osLoggingEnabled,
+				RetentionPeriod: 0,
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
+				Auditing: &voc.Auditing{
+					SecurityFeature: &voc.SecurityFeature{},
+				},
+				MonitoringLogDataEnabled: monitoringLogDataEnabled,
+				SecurityAlertsEnabled:    monitoringLogDataEnabled,
+			},
+		},
+		ActivityLogging: &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled:         true, // is always enabled
+				RetentionPeriod: RetentionPeriod90Days,
+				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
+			},
+		},
+		AutomaticUpdates: autoUpdates,
+	}
+
+	// Reference to networkInterfaces
+	if vm.Properties.NetworkProfile != nil {
+		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
+			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+		}
+	}
+
+	// Reference to blockstorage
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+	}
+
+	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
+		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+		}
+	}
+
+	return r, nil
 }
 
-// // List compute resources
-// func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
-// 	// if err = d.authorize(); err != nil {
-// 	// 	return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-// 	// }
+func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
 
-// 	// initialize backup policies client
-// 	if err := d.initBackupPoliciesClient(); err != nil {
-// 		return nil, err
-// 	}
+	// initialize block storages client
+	if err := d.initBlockStoragesClient(); err != nil {
+		return nil, err
+	}
 
-// 	// initialize backup vaults client
-// 	if err := d.initBackupVaultsClient(); err != nil {
-// 		return nil, err
-// 	}
+	// List all disks
+	err := listPager(d,
+		d.clients.blockStorageClient.NewListPager,
+		d.clients.blockStorageClient.NewListByResourceGroupPager,
+		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
+			return res.Value
+		},
+		func(res armcompute.DisksClientListByResourceGroupResponse) []*armcompute.Disk {
+			return res.Value
+		},
+		func(disk *armcompute.Disk) error {
+			blockStorage, err := d.handleBlockStorage(disk)
+			if err != nil {
+				return fmt.Errorf("could not handle block storage: %w", err)
+			}
 
-// 	// initialize backup instances client
-// 	if err := d.initBackupInstancesClient(); err != nil {
-// 		return nil, err
-// 	}
+			log.Infof("Adding block storage '%s'", blockStorage.GetName())
 
-// 	// Discover backup vaults
-// 	err = d.discoverBackupVaults()
-// 	if err != nil {
-// 		log.Errorf("could not discover backup vaults: %v", err)
-// 	}
+			list = append(list, blockStorage)
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
 
-// 	log.Info("Discover Azure block storage")
-// 	// Discover block storage
-// 	storage, err := d.discoverBlockStorages()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover block storage: %w", err)
-// 	}
-// 	list = append(list, storage...)
+	return list, nil
+}
 
-// 	// Add backup block storages
-// 	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
-// 		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
-// 	}
+func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+	var (
+		rawKeyUrl *armcompute.DiskEncryptionSet
+		backups   []*voc.Backup
+	)
 
-// 	log.Info("Discover Azure compute resources")
-// 	// Discover virtual machines
-// 	virtualMachines, err := d.discoverVirtualMachines()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
-// 	}
-// 	list = append(list, virtualMachines...)
+	// If a mandatory field is empty, the whole disk is empty
+	if disk == nil || disk.ID == nil {
+		return nil, fmt.Errorf("disk is nil")
+	}
 
-// 	// Discover functions and web apps
-// 	resources, err := d.discoverFunctionsWebApps()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover functions: %w", err)
-// 	}
-// 	// if resources != nil {
-// 	list = append(list, resources...)
-// 	// }
+	enc, rawKeyUrl, err := d.blockStorageAtRestEncryption(disk)
+	if err != nil {
+		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
+	}
 
-// 	return
-// }
+	// Get voc.Backup
+	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
+		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
+	}
+	backups = backupsEmptyCheck(backups)
+
+	return &voc.BlockStorage{
+		Storage: &voc.Storage{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(disk.ID)),
+				util.Deref(disk.Name),
+				disk.Properties.TimeCreated,
+				voc.GeoLocation{
+					Region: util.Deref(disk.Location),
+				},
+				labels(disk.Tags),
+				resourceGroupID(disk.ID),
+				voc.BlockStorageType,
+				disk, rawKeyUrl,
+			),
+			AtRestEncryption: enc,
+			Backups:          backups,
+		},
+	}, nil
+}
 
 // Discover functions and web apps
 func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
@@ -376,154 +511,6 @@ func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string)
 	return
 }
 
-// Discover virtual machines
-func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize virtual machines client
-	if err := d.initVirtualMachinesClient(); err != nil {
-		return nil, err
-	}
-
-	// List all VMs
-	err := listPager(d,
-		d.clients.virtualMachinesClient.NewListAllPager,
-		d.clients.virtualMachinesClient.NewListPager,
-		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
-			return res.Value
-		},
-		func(res armcompute.VirtualMachinesClientListResponse) []*armcompute.VirtualMachine {
-			return res.Value
-		},
-		func(vm *armcompute.VirtualMachine) error {
-			r, err := d.handleVirtualMachines(vm)
-			if err != nil {
-				return fmt.Errorf("could not handle virtual machine: %w", err)
-			}
-
-			log.Infof("Adding virtual machine '%s'", r.GetName())
-
-			list = append(list, r)
-
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
-	var (
-		bootLogging              = []voc.ResourceID{}
-		osLoggingEnabled         bool
-		autoUpdates              *voc.AutomaticUpdates
-		monitoringLogDataEnabled bool
-		securityAlertsEnabled    bool
-	)
-
-	// If a mandatory field is empty, the whole disk is empty
-	if vm == nil || vm.ID == nil {
-		return nil, ErrEmptyVirtualMachine
-	}
-
-	if bootLogOutput(vm) != "" {
-		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
-	}
-
-	autoUpdates = automaticUpdates(vm)
-
-	if d.defenderProperties[DefenderVirtualMachineType] != nil {
-		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
-		securityAlertsEnabled = d.defenderProperties[DefenderVirtualMachineType].securityAlertsEnabled
-	}
-
-	// Check extensions
-	for _, extension := range vm.Resources {
-		// Azure Monitor Agent (AMA) collects monitoring data from the guest operating system of Azure and hybrid virtual machines and delivers it to Azure Monitor for use (https://learn.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview). The extension names are
-		// * OMSAgentForLinux for Linux VMs and (legacy agent)
-		// * MicrosoftMonitoringAgent for Windows VMs (legacy agent)
-		// * AzureMonitoringWindowsAgent (new agent)
-		// * AzureMonitoringLinuxAgent (new agent)
-		if strings.Contains(*extension.ID, "OmsAgentForLinux") || strings.Contains(*extension.ID, "MicrosoftMonitoringAgent") || strings.Contains(*extension.ID, "AzureMonitoringWindowsAgent") || strings.Contains(*extension.ID, "AzureMonitoringLinuxAgent") {
-			osLoggingEnabled = true
-		}
-	}
-
-	r := &voc.VirtualMachine{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(vm.ID)),
-				util.Deref(vm.Name),
-				vm.Properties.TimeCreated,
-				voc.GeoLocation{
-					Region: util.Deref(vm.Location),
-				},
-				labels(vm.Tags),
-				resourceGroupID(vm.ID),
-				voc.VirtualMachineType,
-				vm,
-			),
-			NetworkInterfaces: []voc.ResourceID{},
-		},
-		BlockStorage:      []voc.ResourceID{},
-		MalwareProtection: &voc.MalwareProtection{},
-		BootLogging: &voc.BootLogging{
-			Logging: &voc.Logging{
-				Enabled:         isBootDiagnosticEnabled(vm),
-				LoggingService:  bootLogging,
-				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-				Auditing: &voc.Auditing{
-					SecurityFeature: &voc.SecurityFeature{},
-				},
-				MonitoringLogDataEnabled: monitoringLogDataEnabled,
-				SecurityAlertsEnabled:    securityAlertsEnabled,
-			},
-		},
-		OsLogging: &voc.OSLogging{
-			Logging: &voc.Logging{
-				Enabled:         osLoggingEnabled,
-				RetentionPeriod: 0,
-				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
-				Auditing: &voc.Auditing{
-					SecurityFeature: &voc.SecurityFeature{},
-				},
-				MonitoringLogDataEnabled: monitoringLogDataEnabled,
-				SecurityAlertsEnabled:    monitoringLogDataEnabled,
-			},
-		},
-		ActivityLogging: &voc.ActivityLogging{
-			Logging: &voc.Logging{
-				Enabled:         true, // is always enabled
-				RetentionPeriod: RetentionPeriod90Days,
-				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
-			},
-		},
-		AutomaticUpdates: autoUpdates,
-	}
-
-	// Reference to networkInterfaces
-	if vm.Properties.NetworkProfile != nil {
-		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
-		}
-	}
-
-	// Reference to blockstorage
-	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
-	}
-
-	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
-		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
-		}
-	}
-
-	return r, nil
-}
-
 // automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
 func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
 	automaticUpdates = &voc.AutomaticUpdates{}
@@ -579,84 +566,6 @@ func bootLogOutput(vm *armcompute.VirtualMachine) string {
 		return ""
 	}
 	return ""
-}
-
-func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize block storages client
-	if err := d.initBlockStoragesClient(); err != nil {
-		return nil, err
-	}
-
-	// List all disks
-	err := listPager(d,
-		d.clients.blockStorageClient.NewListPager,
-		d.clients.blockStorageClient.NewListByResourceGroupPager,
-		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
-			return res.Value
-		},
-		func(res armcompute.DisksClientListByResourceGroupResponse) []*armcompute.Disk {
-			return res.Value
-		},
-		func(disk *armcompute.Disk) error {
-			blockStorage, err := d.handleBlockStorage(disk)
-			if err != nil {
-				return fmt.Errorf("could not handle block storage: %w", err)
-			}
-
-			log.Infof("Adding block storage '%s'", blockStorage.GetName())
-
-			list = append(list, blockStorage)
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
-	var (
-		rawKeyUrl *armcompute.DiskEncryptionSet
-		backups   []*voc.Backup
-	)
-
-	// If a mandatory field is empty, the whole disk is empty
-	if disk == nil || disk.ID == nil {
-		return nil, fmt.Errorf("disk is nil")
-	}
-
-	enc, rawKeyUrl, err := d.blockStorageAtRestEncryption(disk)
-	if err != nil {
-		return nil, fmt.Errorf("could not get block storage properties for the atRestEncryption: %w", err)
-	}
-
-	// Get voc.Backup
-	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)] != nil {
-		backups = d.backupMap[DataSourceTypeDisc].backup[util.Deref(disk.ID)]
-	}
-	backups = backupsEmptyCheck(backups)
-
-	return &voc.BlockStorage{
-		Storage: &voc.Storage{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(disk.ID)),
-				util.Deref(disk.Name),
-				disk.Properties.TimeCreated,
-				voc.GeoLocation{
-					Region: util.Deref(disk.Location),
-				},
-				labels(disk.Tags),
-				resourceGroupID(disk.ID),
-				voc.BlockStorageType,
-				disk, rawKeyUrl,
-			),
-			AtRestEncryption: enc,
-			Backups:          backups,
-		},
-	}, nil
 }
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
@@ -721,4 +630,13 @@ func (d *azureDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute
 	}
 
 	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
+}
+
+// diskEncryptionSetName return the disk encryption set ID's name
+func diskEncryptionSetName(diskEncryptionSetID string) string {
+	if diskEncryptionSetID == "" {
+		return ""
+	}
+	splitName := strings.Split(diskEncryptionSetID, "/")
+	return splitName[8]
 }

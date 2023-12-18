@@ -636,15 +636,6 @@ func (d *azureDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *arms
 	return false, nil
 }
 
-// diskEncryptionSetName return the disk encryption set ID's name
-func diskEncryptionSetName(diskEncryptionSetID string) string {
-	if diskEncryptionSetID == "" {
-		return ""
-	}
-	splitName := strings.Split(diskEncryptionSetID, "/")
-	return splitName[8]
-}
-
 // accountName return the ID's account name
 func accountName(id string) string {
 	if id == "" {

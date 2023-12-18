@@ -51,10 +51,6 @@ func newMockStorageSender() *mockStorageSender {
 	return m
 }
 
-type responseStorageAccount struct {
-	Value armstorage.Account `json:"value,omitempty"`
-}
-
 func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
 		return createResponse(req, map[string]interface{}{

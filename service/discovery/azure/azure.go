@@ -96,6 +96,14 @@ var (
 // NewAzureStorageDiscovery
 // NewAzureNetworkDiscovery
 
+func (*azureDiscovery) Name() string {
+	return "Azure"
+}
+
+func (*azureDiscovery) Description() string {
+	return "Discovery Azure."
+}
+
 type DiscoveryOption func(a *azureDiscovery)
 
 func WithSender(sender policy.Transporter) DiscoveryOption {

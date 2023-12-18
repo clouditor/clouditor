@@ -559,6 +559,13 @@ func Test_initClient(t *testing.T) {
 	}
 }
 
+// WithDefenderProperties is a [DiscoveryOption] that scopes the discovery to a specific resource group.
+func WithDefenderProperties(dp map[string]*defenderProperties) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.defenderProperties = dp
+	}
+}
+
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
 	sub := &armsubscription.Subscription{
 		SubscriptionID: util.Ref(testdata.MockSubscriptionID),
