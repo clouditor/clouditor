@@ -36,67 +36,6 @@ import (
 	"clouditor.io/clouditor/voc"
 )
 
-// type azureDiscovery struct {
-// 	*azureDiscovery
-// }
-
-// func NewazureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-// 	d := &azureDiscovery{
-// 		&azureDiscovery{
-// 			discovererComponent: NetworkComponent,
-// 			csID:                discovery.DefaultCloudServiceID,
-// 			backupMap:           make(map[string]*backup),
-// 		},
-// 	}
-
-// 	// Apply options
-// 	for _, opt := range opts {
-// 		opt(d)
-// 	}
-
-// 	return d
-// }
-
-// func (*azureDiscovery) Name() string {
-// 	return "Azure Network"
-// }
-
-// func (*azureDiscovery) Description() string {
-// 	return "Discovery Azure network resources."
-// }
-
-// // List network resources
-// func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
-// 	// if err = d.authorize(); err != nil {
-// 	// 	return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-// 	// }
-
-// 	log.Info("Discover Azure network resources")
-
-// 	// Discover network interfaces
-// 	networkInterfaces, err := d.discoverNetworkInterfaces()
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-// 	}
-// 	list = append(list, networkInterfaces...)
-
-// 	// Discover Load Balancer
-// 	loadBalancer, err := d.discoverLoadBalancer()
-// 	if err != nil {
-// 		return list, fmt.Errorf("could not discover load balancer: %w", err)
-// 	}
-// 	list = append(list, loadBalancer...)
-
-// 	// Discover Application Gateway
-// 	ag, err := d.discoverApplicationGateway()
-// 	if err != nil {
-// 		return list, fmt.Errorf("could not discover application gateways: %w", err)
-// 	}
-// 	list = append(list, ag...)
-
-// 	return
-// }
-
 // discoverNetworkInterfaces discovers network interfaces
 func (d *azureDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
@@ -221,7 +160,7 @@ func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsN
 				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
-			Ports: LoadBalancerPorts(lb),
+			Ports: loadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: []*voc.HttpEndpoint{},
@@ -304,8 +243,8 @@ func (d *azureDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
 	return false
 }
 
-func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
-
+// loadBalancerPorts returns the external endpoint ports
+func loadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
 	for _, item := range lb.Properties.LoadBalancingRules {
 		loadBalancerPorts = append(loadBalancerPorts, uint16(util.Deref(item.Properties.FrontendPort)))
 	}
