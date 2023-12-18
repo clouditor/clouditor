@@ -585,6 +585,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 	return d
 }
 
+// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	type fields struct {
 		azureDiscovery            *azureDiscovery
@@ -712,6 +713,7 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 	type fields struct {
 		azureDiscovery       *azureDiscovery
@@ -856,6 +858,7 @@ func Test_retentionDuration(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -925,6 +928,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 	type fields struct {
 		azureDiscovery       *azureDiscovery
@@ -1015,6 +1019,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update test
 func Test_azureDiscovery_handleInstances(t *testing.T) {
 	type fields struct {
 		isAuthorized        bool
@@ -1146,6 +1151,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 	}
 }
 
+// TODO(anatheka): Update test
 func Test_backupsEmptyCheck(t *testing.T) {
 	type args struct {
 		backups []*voc.Backup
