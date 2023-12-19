@@ -29,7 +29,6 @@ import (
 	"net/http"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -108,7 +107,7 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 			args: args{
 				s: &armsubscription.Subscription{
 					SubscriptionID: util.Ref(testdata.MockSubscriptionID),
-					DisplayName:    util.Ref(discovery.DefaultCloudServiceID),
+					DisplayName:    util.Ref("Wonderful Subscription"),
 					ID:             util.Ref(testdata.MockSubscriptionResourceID),
 				},
 			},
@@ -116,7 +115,7 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 				Resource: &voc.Resource{
 					ID:        voc.ResourceID(testdata.MockSubscriptionResourceID),
 					ServiceID: testdata.MockCloudServiceID1,
-					Name:      discovery.DefaultCloudServiceID,
+					Name:      "Wonderful Subscription",
 					Type:      voc.AccountType,
 				},
 			},
@@ -213,7 +212,12 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender(),
+					WithSubscription(&armsubscription.Subscription{
+						DisplayName:    util.Ref("displayName"),
+						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+					})),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.Account{
@@ -262,7 +266,13 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 		{
 			name: "Happy path: with given resource group",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender(), WithResourceGroup("res1")),
+				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender(),
+					WithResourceGroup("res1"),
+					WithSubscription(&armsubscription.Subscription{
+						DisplayName:    util.Ref("displayName"),
+						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+					})),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.Account{
