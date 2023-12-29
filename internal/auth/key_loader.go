@@ -27,7 +27,7 @@ package auth
 
 import (
 	"fmt"
-	"os/user"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -47,25 +47,27 @@ const (
 	DefaultConfigDirectory = "~/.clouditor"
 )
 
+// userHomeDirFunc points to a function that returns the user home directory. This can be changed for mock tests.
+var userHomeDirFunc = os.UserHomeDir
+
 // ExpandPath expands a path that possible contains a tilde (~) character into the home directory
 // of the user
 func ExpandPath(path string) (out string, err error) {
 	var (
-		u *user.User
+		home  string
+		found bool
 	)
 
 	// Fetch the current user home directory
-	u, err = user.Current()
+	home, err = userHomeDirFunc()
 	if err != nil {
-		return path, fmt.Errorf("could not find retrieve current user: %w", err)
+		return "", fmt.Errorf("could not find retrieve current user: %w", err)
 	}
 
-	if path == "~" {
-		return u.HomeDir, nil
-	} else if strings.HasPrefix(path, "~") {
-		// We only allow ~ at the beginning of the path
-		return filepath.Join(u.HomeDir, path[2:]), nil
+	out, found = strings.CutPrefix(path, "~")
+	if found {
+		out = filepath.Join(home, out)
 	}
 
-	return path, nil
+	return
 }
