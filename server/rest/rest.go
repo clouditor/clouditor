@@ -42,7 +42,7 @@ import (
 	"clouditor.io/clouditor/api/evaluation"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/auth"
+	"clouditor.io/clouditor/internal/util"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	oauth2 "github.com/oxisto/oauth2go"
@@ -176,7 +176,7 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 		opts = append(opts,
 			oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
 				// Expand path, because this could contain ~
-				path, err := auth.ExpandPath(keyPath)
+				path, err := util.ExpandPath(keyPath)
 				if err != nil {
 					// Just use the current working dir if it fails
 					path = "."

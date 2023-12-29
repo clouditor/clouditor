@@ -25,13 +25,6 @@
 
 package auth
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-)
-
 const (
 	// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
 	// we only want a temporary key.
@@ -46,28 +39,3 @@ const (
 	// DefaultConfigDirectory is the default path for the clouditor configuration, such as keys
 	DefaultConfigDirectory = "~/.clouditor"
 )
-
-// userHomeDirFunc points to a function that returns the user home directory. This can be changed for mock tests.
-var userHomeDirFunc = os.UserHomeDir
-
-// ExpandPath expands a path that possible contains a tilde (~) character into the home directory
-// of the user
-func ExpandPath(path string) (out string, err error) {
-	var (
-		home  string
-		found bool
-	)
-
-	// Fetch the current user home directory
-	home, err = userHomeDirFunc()
-	if err != nil {
-		return "", fmt.Errorf("could not find retrieve current user: %w", err)
-	}
-
-	out, found = strings.CutPrefix(path, "~")
-	if found {
-		out = filepath.Join(home, out)
-	}
-
-	return
-}

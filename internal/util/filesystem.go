@@ -28,6 +28,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -49,4 +50,29 @@ func GetJSONFilenames(folder string) ([]string, error) {
 	}
 
 	return list, nil
+}
+
+// userHomeDirFunc points to a function that returns the user home directory. This can be changed for mock tests.
+var userHomeDirFunc = os.UserHomeDir
+
+// ExpandPath expands a path that possible contains a tilde (~) character into the home directory
+// of the user
+func ExpandPath(path string) (out string, err error) {
+	var (
+		home  string
+		found bool
+	)
+
+	// Fetch the current user home directory
+	home, err = userHomeDirFunc()
+	if err != nil {
+		return "", fmt.Errorf("could not find retrieve current user: %w", err)
+	}
+
+	out, found = strings.CutPrefix(path, "~")
+	if found {
+		out = filepath.Join(home, out)
+	}
+
+	return
 }
