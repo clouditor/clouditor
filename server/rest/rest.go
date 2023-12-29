@@ -46,6 +46,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/oxisto/oauth2go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -174,7 +175,14 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 		// Configure the options for the embedded auth server
 		opts = append(opts,
 			oauth2.WithSigningKeysFunc(func() map[int]*ecdsa.PrivateKey {
-				return auth.LoadSigningKeys(keyPath, keyPassword, saveOnCreate)
+				// Expand path, because this could contain ~
+				path, err := auth.ExpandPath(keyPath)
+				if err != nil {
+					// Just use the current working dir if it fails
+					path = "."
+				}
+
+				return storage.LoadSigningKeys(path, keyPassword, saveOnCreate)
 			}),
 			oauth2.WithPublicURL(publicURL),
 		)
