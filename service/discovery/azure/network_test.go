@@ -26,7 +26,6 @@
 package azure
 
 import (
-	"net/http"
 	"reflect"
 	"testing"
 
@@ -36,198 +35,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockNetworkSender struct {
-	mockSender
-}
-
-func newMockNetworkSender() *mockNetworkSender {
-	m := &mockNetworkSender{}
-	return m
-}
-
-func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-					"name":     "iface1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"networkSecurityGroup": map[string]interface{}{
-							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-							"location": "eastus",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-					"name":     "iface1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"networkSecurityGroup": map[string]interface{}{
-							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-							"location": "eastus",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
-		return createResponse(req, map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-			"name":     "nsg1",
-			"location": "eastus",
-			"properties": map[string]interface{}{
-				"securityRules": []map[string]interface{}{
-					{
-						"properties": map[string]interface{}{
-							"access":          "Deny",
-							"sourcePortRange": "*",
-						},
-					},
-					{
-						"properties": map[string]interface{}{
-							"access":          "Deny",
-							"sourcePortRange": "*",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-					"name":     "lb1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": map[string]interface{}{
-										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
-										"properties": map[string]interface{}{
-											"ipAddress": "111.222.333.444",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-					"name":     "lb2",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": nil,
-								},
-							},
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-					"name":     "lb3",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": map[string]interface{}{
-										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"ipAddress": "111.222.333.444",
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"ipAddress": nil,
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-					"name":     "appgw1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"webApplicationFirewallConfiguration": map[string]interface{}{
-							"enabled": true,
-						},
-					},
-				},
-			},
-		}, 200)
-	}
-
-	return m.mockSender.Do(req)
-}
 
 func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	type fields struct {
@@ -254,7 +61,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		{
 			name: "Happy path: with resource group",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender(), WithResourceGroup("res1")),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender(), WithResourceGroup("res1")),
 			},
 			want: []voc.IsCloudResource{
 				&voc.NetworkInterface{
@@ -282,7 +89,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.NetworkInterface{
@@ -346,7 +153,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.LoadBalancer{
@@ -590,7 +397,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.LoadBalancer{
@@ -647,14 +454,14 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		{
 			name: "Empty input",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{},
 			want: false,
 		}, {
 			name: "Error getting nsg",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ni: &armnetwork.Interface{
@@ -670,7 +477,7 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ni: &armnetwork.Interface{
@@ -742,7 +549,7 @@ func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				NewMockAzureDiscovery(newMockNetworkSender()),
+				NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				lb: &armnetwork.LoadBalancer{
@@ -810,7 +617,7 @@ func Test_azureDiscovery_handleApplicationGateway(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ag: &armnetwork.ApplicationGateway{
@@ -920,7 +727,7 @@ func Test_azureDiscovery_handleNetworkInterfaces(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ni: &armnetwork.Interface{

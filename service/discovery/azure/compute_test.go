@@ -27,7 +27,6 @@ package azure
 
 import (
 	"fmt"
-	"net/http"
 	"reflect"
 	"testing"
 	"time"
@@ -40,378 +39,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockComputeSender struct {
-	mockSender
-}
-
-func newMockComputeSender() *mockComputeSender {
-	m := &mockComputeSender{}
-	return m
-}
-
-func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
-					"name":     "vm1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"storageProfile": map[string]interface{}{
-							"osDisk": map[string]interface{}{
-								"managedDisk": map[string]interface{}{
-									"id": "os_test_disk",
-								},
-							},
-							"dataDisks": &[]map[string]interface{}{
-								{
-									"managedDisk": map[string]interface{}{
-										"id": "data_disk_1",
-									},
-								},
-								{
-									"managedDisk": map[string]interface{}{
-										"id": "data_disk_2",
-									},
-								},
-							},
-						},
-						"osProfile": map[string]interface{}{
-							"linuxConfiguration": map[string]interface{}{
-								"patchSettings": map[string]interface{}{
-									"patchMode": "AutomaticByPlatform",
-								},
-							},
-						},
-						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{
-								"enabled":    true,
-								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
-							},
-						},
-						"networkProfile": map[string]interface{}{
-							"networkInterfaces": &[]map[string]interface{}{
-								{
-									"id": "123",
-								},
-								{
-									"id": "234",
-								},
-							},
-						},
-					},
-					"resources": &[]map[string]interface{}{
-						{
-							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent",
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
-					"name":     "vm2",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"storageProfile": map[string]interface{}{
-							"osDisk": map[string]interface{}{
-								"managedDisk": map[string]interface{}{
-									"id": "os_test_disk",
-								},
-							},
-							"dataDisks": &[]map[string]interface{}{
-								{
-									"managedDisk": map[string]interface{}{
-										"id": "data_disk_2",
-									},
-								},
-								{
-									"managedDisk": map[string]interface{}{
-										"id": "data_disk_3",
-									},
-								},
-							},
-						},
-						"osProfile": map[string]interface{}{
-							"windowsConfiguration": map[string]interface{}{
-								"patchSettings": map[string]interface{}{
-									"patchMode": "AutomaticByOS",
-								},
-								"enableAutomaticUpdates": true,
-							},
-						},
-						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{
-								"enabled":    true,
-								"storageUri": nil,
-							},
-						},
-						"networkProfile": map[string]interface{}{
-							"networkInterfaces": &[]map[string]interface{}{
-								{
-									"id": "987",
-								},
-								{
-									"id": "654",
-								},
-							},
-						},
-					},
-					"resources": &[]map[string]interface{}{
-						{
-							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux",
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
-					"name":     "vm3",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"diagnosticsProfile": map[string]interface{}{
-							"bootDiagnostics": map[string]interface{}{},
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-					"name":     "disk1",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "",
-							"type":                "EncryptionAtRestWithPlatformKey",
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
-					"name":     "disk2",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
-							"type":                "EncryptionAtRestWithCustomerKey",
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
-					"name":     "disk3",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "",
-							"type":                "EncryptionAtRestWithPlatformKey",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
-					"name":     "disk3",
-					"type":     "Microsoft.Compute/disks",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
-						"encryption": map[string]interface{}{
-							"diskEncryptionSetId": "",
-							"type":                "EncryptionAtRestWithPlatformKey",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
-					"name":     "function1",
-					"location": "West Europe",
-					"kind":     "functionapp,linux",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							"linuxFxVersion": "PYTHON|3.8",
-						},
-						"publicNetworkAccess": "Enabled",
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
-					"name":     "function2",
-					"location": "West Europe",
-					"kind":     "functionapp",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{
-						"siteConfig":          map[string]interface{}{},
-						"resourceGroup":       "res1",
-						"publicNetworkAccess": "Disabled",
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1",
-					"name":     "WebApp1",
-					"location": "West Europe",
-					"kind":     "app",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							"minTlsVersion":     "1.1",
-							"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
-						},
-						"httpsOnly":              true,
-						"resourceGroup":          "res1",
-						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1",
-						"publicNetworkAccess":    "Enabled",
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2",
-					"name":     "WebApp2",
-					"location": "West Europe",
-					"kind":     "app,linux",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							"minTlsVersion":     nil,
-							"minTlsCipherSuite": "",
-						},
-						"httpsOnly":              false,
-						"resourceGroup":          "res1",
-						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2",
-						"publicNetworkAccess":    "Disabled",
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"javaVersion": "1.8",
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
-		return createResponse(req, map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
-			"type":     "Microsoft.Compute/diskEncryptionSets",
-			"name":     "encryptionkeyvault1",
-			"location": "germanywestcentral",
-			"properties": map[string]interface{}{
-				"activeKey": map[string]interface{}{
-					"sourceVault": map[string]interface{}{
-						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
-					},
-					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
-		return createResponse(req, map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
-			"type":     "Microsoft.Compute/diskEncryptionSets",
-			"name":     "encryptionkeyvault2",
-			"location": "germanywestcentral",
-			"properties": map[string]interface{}{
-				"activeKey": map[string]interface{}{
-					"sourceVault": map[string]interface{}{
-						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault2",
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
-					"name":     "backupAccount1",
-					"location": "westeurope",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
-					"name": "disk1-disk1-22222222-2222-2222-2222-222222222222",
-					"properties": map[string]interface{}{
-						"dataSourceInfo": map[string]interface{}{
-							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
-							"datasourceType": "Microsoft.Compute/disks",
-						},
-						"policyInfo": map[string]interface{}{
-							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"objectType": "BackupPolicy",
-				"policyRules": []map[string]interface{}{
-					{
-						"objectType": "AzureRetentionRule",
-						"lifecycles": []map[string]interface{}{
-							{
-								"deleteAfter": map[string]interface{}{
-									"duration":   "P30D",
-									"objectType": "AbsoluteDeleteOption",
-								},
-								"sourceDataStore": map[string]interface{}{
-									"objectType":    "OperationalStore",
-									"DataStoreType": "DataStoreInfoBase",
-								},
-							},
-						},
-					},
-				},
-			},
-		}, 200)
-	}
-
-	return m.mockSender.Do(req)
-}
 
 func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 	type fields struct {
@@ -438,7 +65,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 
 			want: []voc.IsCloudResource{
@@ -612,7 +239,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 		{
 			name: "Happy path: Linux function",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				function: &armappservice.Site{
@@ -669,7 +296,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 		{
 			name: "Happy path: Windows function",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 				clientWebApps:  true,
 			},
 			args: args{
@@ -768,7 +395,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.VirtualMachine{
@@ -969,7 +596,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender(), WithDefenderProperties(map[string]*defenderProperties{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender(), WithDefenderProperties(map[string]*defenderProperties{
 					DefenderVirtualMachineType: {
 						monitoringLogDataEnabled: true,
 						securityAlertsEnabled:    true,
@@ -1289,7 +916,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.BlockStorage{
@@ -1435,7 +1062,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 		{
 			name: "Empty diskID",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				disk: &armcompute.Disk{
@@ -1486,7 +1113,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 				},
 			},
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: &voc.BlockStorage{
 				Storage: &voc.Storage{
@@ -1570,7 +1197,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 		{
 			name: "Error getting atRestEncryptionProperties",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				disk: &armcompute.Disk{
@@ -1591,7 +1218,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				disk: &armcompute.Disk{
@@ -1669,7 +1296,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 		{
 			name: "Empty keyURL",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				diskEncryptionSetID: encSetID2,
@@ -1685,7 +1312,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 				diskEncryptionSetID: encSetID,
 			},
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want:    "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
 			wantErr: assert.NoError,
@@ -1892,7 +1519,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 		{
 			name: "Happy path: WebApp Windows",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 				clientWebApps:  true,
 			},
 			args: args{
@@ -1947,7 +1574,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 		{
 			name: "Happy path: WebApp Linux",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 				clientWebApps:  true,
 			},
 			args: args{

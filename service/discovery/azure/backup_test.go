@@ -40,7 +40,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
+func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
 	}
@@ -66,9 +66,9 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path",
+			name: "Happy path: storage account",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureDiscovery)
@@ -89,43 +89,14 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 				},
 				}
 
-				got := d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"]
-
-				return assert.Equal(t, want, got)
-
+				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
 			},
 			wantErr: assert.NoError,
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := tt.fields.azureDiscovery
-
-			err := d.discoverBackupVaults()
-
-			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, d)
-			}
-		})
-	}
-}
-
-func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
-	type fields struct {
-		azureDiscovery *azureDiscovery
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
-	}{
 		{
-			name: "Happy path",
+			name: "Happy path: compute disk",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				d, ok := i1.(*azureDiscovery)
@@ -193,7 +164,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 		{
 			name: "defenderClient not set",
 			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery:       NewMockAzureDiscovery(nil),
 				clientBackupInstance: true,
 			},
 			args: args{
@@ -208,7 +179,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery:       NewMockAzureDiscovery(newMockSender()),
 				clientBackupInstance: true,
 			},
 			args: args{
@@ -227,6 +198,19 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 						},
 						PolicyInfo: &armdataprotection.PolicyInfo{
 							PolicyID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer"),
+						},
+					},
+				},
+				{
+					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Name: util.Ref("disk1-disk1-22222222-2222-2222-2222-222222222222"),
+					Properties: &armdataprotection.BackupInstance{
+						DataSourceInfo: &armdataprotection.Datasource{
+							ResourceID:     util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"),
+							DatasourceType: util.Ref("Microsoft.Compute/disks"),
+						},
+						PolicyInfo: &armdataprotection.PolicyInfo{
+							PolicyID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk"),
 						},
 					},
 				},

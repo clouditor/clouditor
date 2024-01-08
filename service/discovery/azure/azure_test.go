@@ -44,6 +44,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
@@ -52,14 +53,887 @@ import (
 type mockSender struct {
 }
 
+func newMockSender() *mockSender {
+	m := &mockSender{}
+	return m
+}
+
 func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
-		res, err = createResponse(req, map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
 					"subscriptionId": "00000000-0000-0000-0000-000000000000",
 					"name":           "sub1",
+					"displayName":    "displayName",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					"name": "res1",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"location": "westus",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
+					"name": "res2",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"location": "eastus",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",
+					"name": "VirtualMachines",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/StorageAccounts",
+					"name": "StorageAccounts",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+					"name":     "account1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"primaryEndpoints": map[string]interface{}{
+							"blob": "https://account1.blob.core.windows.net/",
+							"file": "https://account1.file.core.windows.net/",
+						},
+						"encryption": map[string]interface{}{
+							"services": map[string]interface{}{
+								"file": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+								"blob": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+							},
+							"keySource": armstorage.KeySourceMicrosoftStorage,
+						},
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
+						"supportsHttpsTrafficOnly": true,
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+					"name":     "account2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"primaryEndpoints": map[string]interface{}{
+							"blob": "https://account1.blob.core.windows.net/",
+							"file": "https://account1.file.core.windows.net/",
+						},
+						"encryption": map[string]interface{}{
+							"services": map[string]interface{}{
+								"file": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+								"blob": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+							},
+							"keySource": armstorage.KeySourceMicrosoftKeyvault,
+							"keyvaultproperties": map[string]interface{}{
+								"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
+							},
+						},
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
+						"supportsHttpsTrafficOnly": true,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
+		return createResponse(req, map[string]interface{}{
+			"value": &map[string]interface{}{
+				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
+				"name":     "account3",
+				"location": "westus",
+				"properties": map[string]interface{}{
+					"creationTime": "2017-05-24T13:28:53.4540398Z",
+					"primaryEndpoints": map[string]interface{}{
+						"blob": "https://account3.blob.core.windows.net/",
+						"file": "https://account3.file.core.windows.net/",
+					},
+					"encryption": map[string]interface{}{
+						"services": map[string]interface{}{
+							"file": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+							"blob": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+						},
+						"keySource": armstorage.KeySourceMicrosoftStorage,
+					},
+					"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+					"allowBlobPublicAccess":    false,
+					"supportsHttpsTrafficOnly": true,
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+					"name": "container1",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+					"name": "container2",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+					"name": "container3",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+					"name": "container4",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+					"name": "fileshare1",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+					"name": "fileshare2",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+					"name": "account1-account1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
+						},
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"name": "disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							"datasourceType": "Microsoft.Compute/disks",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P7D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+					"name":     "SQLServer1",
+					"location": "eastus",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+					"name":     "SqlDatabase1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"isInfraEncryptionEnabled": true,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
+					"name":     "Default",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"state": "Enabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
+					"name":     "Default",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"state": "Disabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DocumentDB/databaseAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
+					"name": "CosmosDB1",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"keyVaultKeyUri": "https://testvault.vault.azure.net/keys/testkey/123456",
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
+					"name": "CosmosDB2",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+					"name":     "vm1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_1",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
+								},
+							},
+						},
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "123",
+								},
+								{
+									"id": "234",
+								},
+							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+					"name":     "vm2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_3",
+									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"windowsConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByOS",
+								},
+								"enableAutomaticUpdates": true,
+							},
+						},
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": nil,
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "987",
+								},
+								{
+									"id": "654",
+								},
+							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+					"name":     "vm3",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+					"name":     "disk1",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+					"name":     "disk2",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+							"type":                "EncryptionAtRestWithCustomerKey",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+					"name":     "function1",
+					"location": "West Europe",
+					"kind":     "functionapp,linux",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"linuxFxVersion": "PYTHON|3.8",
+						},
+						"publicNetworkAccess": "Enabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+					"name":     "function2",
+					"location": "West Europe",
+					"kind":     "functionapp",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":          map[string]interface{}{},
+						"resourceGroup":       "res1",
+						"publicNetworkAccess": "Disabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1",
+					"name":     "WebApp1",
+					"location": "West Europe",
+					"kind":     "app",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"minTlsVersion":     "1.1",
+							"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
+						},
+						"httpsOnly":              true,
+						"resourceGroup":          "res1",
+						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1",
+						"publicNetworkAccess":    "Enabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2",
+					"name":     "WebApp2",
+					"location": "West Europe",
+					"kind":     "app,linux",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"minTlsVersion":     nil,
+							"minTlsCipherSuite": "",
+						},
+						"httpsOnly":              false,
+						"resourceGroup":          "res1",
+						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2",
+						"publicNetworkAccess":    "Disabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"javaVersion": "1.8",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault1",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
+					},
+					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault2",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault2",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P30D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					"name":     "iface1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"networkSecurityGroup": map[string]interface{}{
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"location": "eastus",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					"name":     "iface1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"networkSecurityGroup": map[string]interface{}{
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"location": "eastus",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+			"name":     "nsg1",
+			"location": "eastus",
+			"properties": map[string]interface{}{
+				"securityRules": []map[string]interface{}{
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+					"name":     "lb1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+										"properties": map[string]interface{}{
+											"ipAddress": "111.222.333.444",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+					"name":     "lb2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": nil,
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+					"name":     "lb3",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": "111.222.333.444",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": nil,
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+					"name":     "appgw1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"webApplicationFirewallConfiguration": map[string]interface{}{
+							"enabled": true,
+						},
+					},
 				},
 			},
 		}, 200)
@@ -176,50 +1050,51 @@ func TestNewAzureDiscovery(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Write test
 func Test_azureDiscovery_List(t *testing.T) {
 	type fields struct {
-		isAuthorized        bool
-		sub                 *armsubscription.Subscription
-		cred                azcore.TokenCredential
-		rg                  *string
-		clientOptions       arm.ClientOptions
-		discovererComponent string
-		clients             clients
-		csID                string
-		backupMap           map[string]*backup
-		defenderProperties  map[string]*defenderProperties
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		wantList []voc.IsCloudResource
-		wantErr  bool
+		name    string
+		fields  fields
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Authorize error",
+			fields: fields{
+				&azureDiscovery{},
+			},
+			want: assert.Empty,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				NewMockAzureDiscovery(newMockSender()),
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				got, ok := i1.([]voc.IsCloudResource)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Greater(t, len(got), 31)
+			},
+
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureDiscovery{
-				isAuthorized:        tt.fields.isAuthorized,
-				sub:                 tt.fields.sub,
-				cred:                tt.fields.cred,
-				rg:                  tt.fields.rg,
-				clientOptions:       tt.fields.clientOptions,
-				discovererComponent: tt.fields.discovererComponent,
-				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
-				backupMap:           tt.fields.backupMap,
-				defenderProperties:  tt.fields.defenderProperties,
-			}
+			d := tt.fields.azureDiscovery
 			gotList, err := d.List()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("azureDiscovery.List() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotList, tt.wantList) {
-				t.Errorf("azureDiscovery.List() = %v, want %v", gotList, tt.wantList)
-			}
+
+			tt.wantErr(t, err)
+
+			tt.want(t, gotList)
 		})
 	}
 }
@@ -491,7 +1366,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -511,7 +1386,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -535,7 +1410,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -637,7 +1512,6 @@ func Test_retentionDuration(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -651,7 +1525,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				got, ok := i1.(map[string]*defenderProperties)

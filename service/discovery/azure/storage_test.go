@@ -27,7 +27,6 @@ package azure
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
@@ -36,351 +35,10 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockStorageSender struct {
-	mockSender
-}
-
-func newMockStorageSender() *mockStorageSender {
-	m := &mockStorageSender{}
-	return m
-}
-
-func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
-					"name":     "account1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
-						"primaryEndpoints": map[string]interface{}{
-							"blob": "https://account1.blob.core.windows.net/",
-							"file": "https://account1.file.core.windows.net/",
-						},
-						"encryption": map[string]interface{}{
-							"services": map[string]interface{}{
-								"file": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-								"blob": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-							},
-							"keySource": armstorage.KeySourceMicrosoftStorage,
-						},
-						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
-						"allowBlobPublicAccess":    false,
-						"supportsHttpsTrafficOnly": true,
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
-					"name":     "account2",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
-						"primaryEndpoints": map[string]interface{}{
-							"blob": "https://account1.blob.core.windows.net/",
-							"file": "https://account1.file.core.windows.net/",
-						},
-						"encryption": map[string]interface{}{
-							"services": map[string]interface{}{
-								"file": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-								"blob": map[string]interface{}{
-									"keyType":         "Account",
-									"enabled":         true,
-									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-								},
-							},
-							"keySource": armstorage.KeySourceMicrosoftKeyvault,
-							"keyvaultproperties": map[string]interface{}{
-								"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
-							},
-						},
-						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
-						"allowBlobPublicAccess":    false,
-						"supportsHttpsTrafficOnly": true,
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
-		return createResponse(req, map[string]interface{}{
-			"value": &map[string]interface{}{
-				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
-				"name":     "account3",
-				"location": "westus",
-				"properties": map[string]interface{}{
-					"creationTime": "2017-05-24T13:28:53.4540398Z",
-					"primaryEndpoints": map[string]interface{}{
-						"blob": "https://account3.blob.core.windows.net/",
-						"file": "https://account3.file.core.windows.net/",
-					},
-					"encryption": map[string]interface{}{
-						"services": map[string]interface{}{
-							"file": map[string]interface{}{
-								"keyType":         "Account",
-								"enabled":         true,
-								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-							},
-							"blob": map[string]interface{}{
-								"keyType":         "Account",
-								"enabled":         true,
-								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
-							},
-						},
-						"keySource": armstorage.KeySourceMicrosoftStorage,
-					},
-					"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
-					"allowBlobPublicAccess":    false,
-					"supportsHttpsTrafficOnly": true,
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-					"name": "container1",
-					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-					"properties": map[string]interface{}{
-						"hasImmutabilityPolicy": false,
-						"publicAccess":          armstorage.PublicAccessContainer,
-					},
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-					"name": "container2",
-					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-					"properties": map[string]interface{}{
-						"hasImmutabilityPolicy": false,
-						"publicAccess":          armstorage.PublicAccessContainer,
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-					"name": "container3",
-					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-					"properties": map[string]interface{}{
-						"hasImmutabilityPolicy": false,
-						"publicAccess":          armstorage.PublicAccessNone,
-					},
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
-					"name": "container4",
-					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-					"properties": map[string]interface{}{
-						"hasImmutabilityPolicy": false,
-						"publicAccess":          armstorage.PublicAccessNone,
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-					"name": "fileshare1",
-					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-					"name": "fileshare2",
-					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
-					"name":     "backupAccount1",
-					"location": "westeurope",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
-					"name": "account1-account1-22222222-2222-2222-2222-222222222222",
-					"properties": map[string]interface{}{
-						"dataSourceInfo": map[string]interface{}{
-							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
-							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
-						},
-						"policyInfo": map[string]interface{}{
-							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"objectType": "BackupPolicy",
-				"policyRules": []map[string]interface{}{
-					{
-						"objectType": "AzureRetentionRule",
-						"lifecycles": []map[string]interface{}{
-							{
-								"deleteAfter": map[string]interface{}{
-									"duration":   "P7D",
-									"objectType": "AbsoluteDeleteOption",
-								},
-								"sourceDataStore": map[string]interface{}{
-									"objectType":    "OperationalStore",
-									"DataStoreType": "DataStoreInfoBase",
-								},
-							},
-						},
-					},
-				},
-			},
-			// },
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",
-					"name": "VirtualMachines",
-					"type": "Microsoft.Security/pricings",
-					"properties": map[string]interface{}{
-						"pricingTier": armsecurity.PricingTierStandard,
-					},
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/StorageAccounts",
-					"name": "StorageAccounts",
-					"type": "Microsoft.Security/pricings",
-					"properties": map[string]interface{}{
-						"pricingTier": armsecurity.PricingTierStandard,
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
-					"name":     "SQLServer1",
-					"location": "eastus",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
-					"name":     "SqlDatabase1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"isInfraEncryptionEnabled": true,
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
-					"name":     "Default",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"state": "Enabled",
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
-					"name":     "Default",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"state": "Disabled",
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DocumentDB/databaseAccounts" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
-					"name": "CosmosDB1",
-					"kind": "MongoDB",
-					"type": "Microsoft.DocumentDB/databaseAccounts",
-					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
-					},
-					"location": "eastus",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{
-						"keyVaultKeyUri": "https://testvault.vault.azure.net/keys/testkey/123456",
-					},
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
-					"name": "CosmosDB2",
-					"kind": "MongoDB",
-					"type": "Microsoft.DocumentDB/databaseAccounts",
-					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
-					},
-					"location": "eastus",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"properties": map[string]interface{}{},
-				},
-			},
-		}, 200)
-	}
-
-	return m.mockSender.Do(req)
-}
 
 func Test_accountName(t *testing.T) {
 	type args struct {
@@ -438,7 +96,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 
 			want:    nil,
@@ -587,7 +245,7 @@ func Test_handleFileStorage(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -713,7 +371,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -846,7 +504,7 @@ func Test_handleObjectStorage(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -962,7 +620,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -1096,7 +754,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armstorage.Account{
@@ -1233,7 +891,7 @@ func Test_azureDiscovery_discoverSqlServers(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
@@ -1333,7 +991,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				server: &armsql.Server{
@@ -1451,7 +1109,7 @@ func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
 		{
 			name: "Happy path: anomaly detection disabled",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				server: &armsql.Server{
@@ -1474,7 +1132,7 @@ func Test_azureStorageDiscovery_anomalyDetectionEnabled(t *testing.T) {
 		{
 			name: "Happy path: anomaly detection enabled",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				server: &armsql.Server{
@@ -1532,7 +1190,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseStorage{
@@ -1621,7 +1279,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		{
 			name: "Happy path: ManagedKeyEncryption",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armcosmos.DatabaseAccountGetResults{
@@ -1669,7 +1327,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		{
 			name: "Happy path: CustomerKeyEncryption",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				account: &armcosmos.DatabaseAccountGetResults{
