@@ -972,6 +972,12 @@ func createResponse(req *http.Request, object map[string]interface{}, statusCode
 	}, nil
 }
 
+func Test_azureDiscovery_Name(t *testing.T) {
+	d := NewAzureDiscovery()
+
+	assert.Equal(t, "Azure", d.Name())
+}
+
 func TestNewAzureDiscovery(t *testing.T) {
 	type args struct {
 		opts []DiscoveryOption
@@ -991,7 +997,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path: with sender",
+			name: "Happy path: with cloud service id",
 			args: args{
 				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
 			},
@@ -1061,12 +1067,14 @@ func Test_azureDiscovery_List(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Authorize error",
+			name: "Authorize error: no credentials configured",
 			fields: fields{
 				&azureDiscovery{},
 			},
 			want: assert.Empty,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, ErrNoCredentialsConfigured.Error())
+
 				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
 			},
 		},
