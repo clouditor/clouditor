@@ -85,10 +85,6 @@ var (
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
 )
 
-// TODO (anatheka): Merge discoverers:
-// - fix backupStorage
-// - fix tests
-
 func (*azureDiscovery) Name() string {
 	return "Azure"
 }

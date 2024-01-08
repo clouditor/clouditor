@@ -40,7 +40,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -113,7 +112,6 @@ func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -168,7 +166,6 @@ func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Update test
 func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 	type fields struct {
 		azureDiscovery       *azureDiscovery
@@ -255,7 +252,6 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Update test
 func Test_azureDiscovery_handleInstances(t *testing.T) {
 	type fields struct {
 		isAuthorized        bool
@@ -387,7 +383,6 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 	}
 }
 
-// TODO(anatheka): Update test
 func Test_backupsEmptyCheck(t *testing.T) {
 	type args struct {
 		backups []*voc.Backup
