@@ -348,7 +348,7 @@ func (d *azureDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error
 		return nil, err
 	}
 
-	// Add backuped storage account objects
+	// Add backup storage account objects
 	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backupStorages != nil {
 		storageResourcesList = append(storageResourcesList, d.backupMap[DataSourceTypeStorageAccountObject].backupStorages...)
 	}
