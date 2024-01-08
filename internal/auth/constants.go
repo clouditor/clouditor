@@ -1,4 +1,4 @@
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2016-2020 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,56 +23,19 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package auth
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
+const (
+	// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
+	// we only want a temporary key.
+	DefaultApiKeySaveOnCreate = true
+
+	// DefaultApiKeyPassword is the default password to protect the API key
+	DefaultApiKeyPassword = "changeme"
+
+	// DefaultApiKeyPath is the default path for the API private key
+	DefaultApiKeyPath = DefaultConfigDirectory + "/api.key"
+
+	// DefaultConfigDirectory is the default path for the clouditor configuration, such as keys
+	DefaultConfigDirectory = "~/.clouditor"
 )
-
-// GetJSONFilenames returns all json files in the given folder
-func GetJSONFilenames(folder string) ([]string, error) {
-	var (
-		list []string
-	)
-
-	files, err := os.ReadDir(folder)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range files {
-		if strings.HasSuffix(files[i].Name(), ".json") {
-			list = append(list, fmt.Sprintf("%s/%s", folder, files[i].Name()))
-		}
-	}
-
-	return list, nil
-}
-
-// userHomeDirFunc points to a function that returns the user home directory. This can be changed for mock tests.
-var userHomeDirFunc = os.UserHomeDir
-
-// ExpandPath expands a path that possible contains a tilde (~) character into the home directory
-// of the user
-func ExpandPath(path string) (out string, err error) {
-	var (
-		home  string
-		found bool
-	)
-
-	// Fetch the current user home directory
-	home, err = userHomeDirFunc()
-	if err != nil {
-		return "", fmt.Errorf("could not find retrieve current user: %w", err)
-	}
-
-	out, found = strings.CutPrefix(path, "~")
-	if found {
-		out = filepath.Join(home, out)
-	}
-
-	return
-}
