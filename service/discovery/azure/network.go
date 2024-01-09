@@ -27,7 +27,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -37,69 +36,8 @@ import (
 	"clouditor.io/clouditor/voc"
 )
 
-type azureNetworkDiscovery struct {
-	*azureDiscovery
-}
-
-func NewAzureNetworkDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureNetworkDiscovery{
-		&azureDiscovery{
-			discovererComponent: NetworkComponent,
-			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*backup),
-		},
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt(d.azureDiscovery)
-	}
-
-	return d
-}
-
-func (*azureNetworkDiscovery) Name() string {
-	return "Azure Network"
-}
-
-func (*azureNetworkDiscovery) Description() string {
-	return "Discovery Azure network resources."
-}
-
-// List network resources
-func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
-
-	log.Info("Discover Azure network resources")
-
-	// Discover network interfaces
-	networkInterfaces, err := d.discoverNetworkInterfaces()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
-	}
-	list = append(list, networkInterfaces...)
-
-	// Discover Load Balancer
-	loadBalancer, err := d.discoverLoadBalancer()
-	if err != nil {
-		return list, fmt.Errorf("could not discover load balancer: %w", err)
-	}
-	list = append(list, loadBalancer...)
-
-	// Discover Application Gateway
-	ag, err := d.discoverApplicationGateway()
-	if err != nil {
-		return list, fmt.Errorf("could not discover application gateways: %w", err)
-	}
-	list = append(list, ag...)
-
-	return
-}
-
-// Discover network interfaces
-func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
+// discoverNetworkInterfaces discovers network interfaces
+func (d *azureDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize network interfaces client
@@ -108,7 +46,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 	}
 
 	// List all network interfaces
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.networkInterfacesClient.NewListAllPager,
 		d.clients.networkInterfacesClient.NewListPager,
 		func(res armnetwork.InterfacesClientListAllResponse) []*armnetwork.Interface {
@@ -134,7 +72,7 @@ func (d *azureNetworkDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResour
 }
 
 // discoverApplicationGateway discovers application gateways
-func (d *azureNetworkDiscovery) discoverApplicationGateway() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverApplicationGateway() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize application gateway client
@@ -143,7 +81,7 @@ func (d *azureNetworkDiscovery) discoverApplicationGateway() ([]voc.IsCloudResou
 	}
 
 	// List all application gateways
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.applicationGatewayClient.NewListAllPager,
 		d.clients.applicationGatewayClient.NewListPager,
 		func(res armnetwork.ApplicationGatewaysClientListAllResponse) []*armnetwork.ApplicationGateway {
@@ -169,7 +107,7 @@ func (d *azureNetworkDiscovery) discoverApplicationGateway() ([]voc.IsCloudResou
 }
 
 // discoverLoadBalancer discovers load balancer
-func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize load balancers client
@@ -178,7 +116,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	}
 
 	// List all load balancers
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.loadBalancerClient.NewListAllPager,
 		d.clients.loadBalancerClient.NewListPager,
 		func(res armnetwork.LoadBalancersClientListAllResponse) []*armnetwork.LoadBalancer {
@@ -203,7 +141,7 @@ func (d *azureNetworkDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, e
 	return list, nil
 }
 
-func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
+func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -222,7 +160,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 				),
 			},
 			Ips:   publicIPAddressFromLoadBalancer(lb),
-			Ports: LoadBalancerPorts(lb),
+			Ports: loadBalancerPorts(lb),
 		},
 		// TODO(all): do we need the httpEndpoint for load balancers?
 		HttpEndpoints: []*voc.HttpEndpoint{},
@@ -231,7 +169,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 
 // handleApplicationGateway returns the application gateway with its properties
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
-func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
+func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) voc.IsNetwork {
 	return &voc.LoadBalancer{
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
@@ -254,7 +192,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 	}
 }
 
-func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
+func (d *azureDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) voc.IsNetwork {
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
@@ -280,7 +218,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 }
 
 // nsgFirewallEnabled checks if network security group (NSG) rules are configured. A NSG is a firewall that operates at OSI layers 3 and 4 to filter ingress and egress traffic. (https://learn.microsoft.com/en-us/azure/firewall/firewall-faq#what-is-the-difference-between-network-security-groups--nsgs--and-azure-firewall, Last access: 05/02/2023)
-func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
+func (d *azureDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
 	// initialize network interfaces client
 	if err := d.initNetworkSecurityGroupClient(); err != nil {
 		log.Error(err)
@@ -305,8 +243,8 @@ func (d *azureNetworkDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) boo
 	return false
 }
 
-func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
-
+// loadBalancerPorts returns the external endpoint ports
+func loadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
 	for _, item := range lb.Properties.LoadBalancingRules {
 		loadBalancerPorts = append(loadBalancerPorts, uint16(util.Deref(item.Properties.FrontendPort)))
 	}
@@ -315,7 +253,7 @@ func LoadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16)
 }
 
 // // Returns all restricted ports for the network interface
-// func (d *azureNetworkDiscovery) getRestrictedPorts(ni *network.Interface) string {
+// func (d *azureDiscovery) getRestrictedPorts(ni *network.Interface) string {
 //
 //     var restrictedPorts []string
 //
@@ -396,28 +334,4 @@ func getName(id string) string {
 		return ""
 	}
 	return strings.Split(id, "/")[8]
-}
-
-// initNetworkInterfacesClient creates the client if not already exists
-func (d *azureNetworkDiscovery) initNetworkInterfacesClient() (err error) {
-	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d.azureDiscovery, armnetwork.NewInterfacesClient)
-	return
-}
-
-// initLoadBalancersClient creates the client if not already exists
-func (d *azureNetworkDiscovery) initLoadBalancersClient() (err error) {
-	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d.azureDiscovery, armnetwork.NewLoadBalancersClient)
-	return
-}
-
-// initApplicationGatewayClient creates the client if not already exists
-func (d *azureNetworkDiscovery) initApplicationGatewayClient() (err error) {
-	d.clients.applicationGatewayClient, err = initClient(d.clients.applicationGatewayClient, d.azureDiscovery, armnetwork.NewApplicationGatewaysClient)
-	return
-}
-
-// initNetworkSecurityGroupClient creates the client if not already exists
-func (d *azureNetworkDiscovery) initNetworkSecurityGroupClient() (err error) {
-	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d.azureDiscovery, armnetwork.NewSecurityGroupsClient)
-	return
 }

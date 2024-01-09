@@ -263,11 +263,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
 
-			discoverer = append(discoverer,
-				azure.NewAzureResourceGroupDiscovery(opts...),
-				azure.NewAzureComputeDiscovery(opts...),
-				azure.NewAzureStorageDiscovery(opts...),
-				azure.NewAzureNetworkDiscovery(opts...))
+			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
