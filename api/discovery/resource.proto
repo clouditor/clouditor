@@ -1,0 +1,107 @@
+/*
+ * Copyright 2024 Fraunhofer AISEC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *           $$\                           $$\ $$\   $$\
+ *           $$ |                          $$ |\__|  $$ |
+ *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+ * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+ * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+ * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+ * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+ *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+ *
+ * This file is part of Clouditor Community Edition.
+ */
+syntax = "proto3";
+
+package clouditor.discovery.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "tagger/tagger.proto";
+import "validate/validate.proto";
+
+option go_package = "api/discovery";
+
+// ImprovedResource is the description of a resource and contains the semantic
+// information according to our ontology.
+message ImprovedResource {
+  // Id contains a unique ID for each resource. This is specific for the cloud
+  // provider this resource was gathered for and can for example be a resource
+  // URL.
+  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  // CloudServiceId is the UUID for the cloud service to which this resource
+  // belongs to.
+  string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
+
+  // ResourceTypes contains a list of resource types according to our ontology.
+  repeated string resource_types = 3;
+
+  // Properties contains a protobuf struct that describe the resource in the
+  // terms of our Clouditor ontology.
+  oneof properties {
+    VirtualMachine virtual_machine = 10;
+    Container container = 11;
+  }
+}
+
+message ResourceProperties { GeoLocation geo_location = 1; }
+
+message Compute { ResourceProperties resource = 1; }
+
+message VirtualMachine { Compute compute = 1; }
+
+message Container { Compute compute = 1; }
+
+message Networking { ResourceProperties resource = 1; }
+
+message NetworkInterface {
+  Networking networking = 1;
+  AccessRestriction access_restriction = 2;
+}
+
+/// Security Features
+
+message GeoLocation { string region = 2; }
+
+message SecurityFeature {
+  oneof feature { Availabilty availability = 1; }
+}
+
+message Availabilty {
+  oneof feature { GeoLocation geo_location = 1; }
+}
+
+message Authorization {
+  oneof feature { AccessRestriction access_restriction = 1; }
+}
+
+message RBAC {}
+message ABAC {}
+message AccessRestriction {
+  oneof feature { Firewall firewall = 1; }
+}
+
+message Firewall {
+  oneof class {
+    L3Firewall l3_firewall = 1;
+  }
+}
+
+message L3Firewall {
+  bool enabled = 1;
+  bool inbound = 2;
+  repeated string restricted_ports = 3;
+}
