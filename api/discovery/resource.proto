@@ -35,69 +35,92 @@ import "validate/validate.proto";
 
 option go_package = "api/discovery";
 
-// ImprovedResource is the description of a resource and contains the semantic
+// Resource is the description of a resource and contains the semantic
 // information according to our ontology.
-message ImprovedResource {
+message Resource {
   // Id contains a unique ID for each resource. This is specific for the cloud
   // provider this resource was gathered for and can for example be a resource
   // URL.
   string id = 1 [ (validate.rules).string.min_len = 1 ];
+
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
   string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
 
-  // ResourceTypes contains a list of resource types according to our ontology.
-  repeated string resource_types = 3;
+  oneof type {
+    CloudResource cloud_resource = 10;
+    Document document = 11;
+  }
+
+  // ResourceType contains a comma seperated string of resource types according
+  // to our ontology. LEGACY PROPERTY just to make it compile
+  string resource_type = 200 [ (validate.rules).string.min_len = 1 ];
 
   // Properties contains a protobuf struct that describe the resource in the
-  // terms of our Clouditor ontology.
-  oneof properties {
+  // terms of our Clouditor ontology. LEGACY PROPERTY just to make it compile
+  google.protobuf.Value properties = 201 [
+    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
+    (validate.rules).message.required = true
+  ];
+}
+
+message CloudResource {
+  GeoLocation geo_location = 1;
+  oneof type {
+    Compute compute = 10;
+    Networking networking = 11;
+  }
+}
+
+message Document { string filename = 1; }
+
+message Compute {
+  oneof type {
     VirtualMachine virtual_machine = 10;
     Container container = 11;
   }
 }
 
-message ResourceProperties { GeoLocation geo_location = 1; }
+message VirtualMachine {}
 
-message Compute { ResourceProperties resource = 1; }
+message Container {}
 
-message VirtualMachine { Compute compute = 1; }
-
-message Container { Compute compute = 1; }
-
-message Networking { ResourceProperties resource = 1; }
-
-message NetworkInterface {
-  Networking networking = 1;
-  AccessRestriction access_restriction = 2;
+message Networking {
+  oneof type { NetworkInterface network_interface = 10; }
 }
+
+message NetworkInterface { AccessRestriction access_restriction = 2; }
 
 /// Security Features
 
 message GeoLocation { string region = 2; }
 
 message SecurityFeature {
-  oneof feature { Availabilty availability = 1; }
+  oneof type { Availabilty availability = 1; }
 }
 
 message Availabilty {
-  oneof feature { GeoLocation geo_location = 1; }
+  oneof type { GeoLocation geo_location = 1; }
 }
 
 message Authorization {
-  oneof feature { AccessRestriction access_restriction = 1; }
+  oneof type {
+    ABAC abac = 10;
+    AccessRestriction access_restriction = 11;
+    RBAC rbac = 12;
+  }
+}
+
+message ABAC {}
+
+message AccessRestriction {
+  oneof type { Firewall firewall = 1; }
 }
 
 message RBAC {}
-message ABAC {}
-message AccessRestriction {
-  oneof feature { Firewall firewall = 1; }
-}
 
 message Firewall {
-  oneof class {
-    L3Firewall l3_firewall = 1;
-  }
+  oneof type { L3Firewall l3_firewall = 1; }
 }
 
 message L3Firewall {

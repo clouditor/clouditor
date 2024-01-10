@@ -38,22 +38,22 @@ var (
 // define the regex for a UUID once up-front
 var _resource_uuidPattern = regexp.MustCompile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
-// Validate checks the field values on ImprovedResource with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *ImprovedResource) Validate() error {
+// Validate checks the field values on Resource with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Resource) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ImprovedResource with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ImprovedResourceMultiError, or nil if none found.
-func (m *ImprovedResource) ValidateAll() error {
+// ValidateAll checks the field values on Resource with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ResourceMultiError, or nil
+// if none found.
+func (m *Resource) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ImprovedResource) validate(all bool) error {
+func (m *Resource) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -61,7 +61,7 @@ func (m *ImprovedResource) validate(all bool) error {
 	var errors []error
 
 	if utf8.RuneCountInString(m.GetId()) < 1 {
-		err := ImprovedResourceValidationError{
+		err := ResourceValidationError{
 			field:  "Id",
 			reason: "value length must be at least 1 runes",
 		}
@@ -72,7 +72,7 @@ func (m *ImprovedResource) validate(all bool) error {
 	}
 
 	if err := m._validateUuid(m.GetCloudServiceId()); err != nil {
-		err = ImprovedResourceValidationError{
+		err = ResourceValidationError{
 			field:  "CloudServiceId",
 			reason: "value must be a valid UUID",
 			cause:  err,
@@ -83,11 +83,62 @@ func (m *ImprovedResource) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	switch v := m.Properties.(type) {
-	case *ImprovedResource_VirtualMachine:
-		if v == nil {
-			err := ImprovedResourceValidationError{
+	if utf8.RuneCountInString(m.GetResourceType()) < 1 {
+		err := ResourceValidationError{
+			field:  "ResourceType",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetProperties() == nil {
+		err := ResourceValidationError{
+			field:  "Properties",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetProperties()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ResourceValidationError{
+					field:  "Properties",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ResourceValidationError{
+					field:  "Properties",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProperties()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ResourceValidationError{
 				field:  "Properties",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	switch v := m.Type.(type) {
+	case *Resource_CloudResource:
+		if v == nil {
+			err := ResourceValidationError{
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -97,38 +148,38 @@ func (m *ImprovedResource) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetVirtualMachine()).(type) {
+			switch v := interface{}(m.GetCloudResource()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ImprovedResourceValidationError{
-						field:  "VirtualMachine",
+					errors = append(errors, ResourceValidationError{
+						field:  "CloudResource",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, ImprovedResourceValidationError{
-						field:  "VirtualMachine",
+					errors = append(errors, ResourceValidationError{
+						field:  "CloudResource",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetVirtualMachine()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetCloudResource()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return ImprovedResourceValidationError{
-					field:  "VirtualMachine",
+				return ResourceValidationError{
+					field:  "CloudResource",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
 			}
 		}
 
-	case *ImprovedResource_Container:
+	case *Resource_Document:
 		if v == nil {
-			err := ImprovedResourceValidationError{
-				field:  "Properties",
+			err := ResourceValidationError{
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -138,28 +189,28 @@ func (m *ImprovedResource) validate(all bool) error {
 		}
 
 		if all {
-			switch v := interface{}(m.GetContainer()).(type) {
+			switch v := interface{}(m.GetDocument()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ImprovedResourceValidationError{
-						field:  "Container",
+					errors = append(errors, ResourceValidationError{
+						field:  "Document",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, ImprovedResourceValidationError{
-						field:  "Container",
+					errors = append(errors, ResourceValidationError{
+						field:  "Document",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetContainer()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetDocument()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return ImprovedResourceValidationError{
-					field:  "Container",
+				return ResourceValidationError{
+					field:  "Document",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -171,13 +222,13 @@ func (m *ImprovedResource) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ImprovedResourceMultiError(errors)
+		return ResourceMultiError(errors)
 	}
 
 	return nil
 }
 
-func (m *ImprovedResource) _validateUuid(uuid string) error {
+func (m *Resource) _validateUuid(uuid string) error {
 	if matched := _resource_uuidPattern.MatchString(uuid); !matched {
 		return errors.New("invalid uuid format")
 	}
@@ -185,13 +236,12 @@ func (m *ImprovedResource) _validateUuid(uuid string) error {
 	return nil
 }
 
-// ImprovedResourceMultiError is an error wrapping multiple validation errors
-// returned by ImprovedResource.ValidateAll() if the designated constraints
-// aren't met.
-type ImprovedResourceMultiError []error
+// ResourceMultiError is an error wrapping multiple validation errors returned
+// by Resource.ValidateAll() if the designated constraints aren't met.
+type ResourceMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ImprovedResourceMultiError) Error() string {
+func (m ResourceMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -200,11 +250,11 @@ func (m ImprovedResourceMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ImprovedResourceMultiError) AllErrors() []error { return m }
+func (m ResourceMultiError) AllErrors() []error { return m }
 
-// ImprovedResourceValidationError is the validation error returned by
-// ImprovedResource.Validate if the designated constraints aren't met.
-type ImprovedResourceValidationError struct {
+// ResourceValidationError is the validation error returned by
+// Resource.Validate if the designated constraints aren't met.
+type ResourceValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -212,22 +262,22 @@ type ImprovedResourceValidationError struct {
 }
 
 // Field function returns field value.
-func (e ImprovedResourceValidationError) Field() string { return e.field }
+func (e ResourceValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ImprovedResourceValidationError) Reason() string { return e.reason }
+func (e ResourceValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ImprovedResourceValidationError) Cause() error { return e.cause }
+func (e ResourceValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ImprovedResourceValidationError) Key() bool { return e.key }
+func (e ResourceValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ImprovedResourceValidationError) ErrorName() string { return "ImprovedResourceValidationError" }
+func (e ResourceValidationError) ErrorName() string { return "ResourceValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ImprovedResourceValidationError) Error() string {
+func (e ResourceValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -239,14 +289,14 @@ func (e ImprovedResourceValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sImprovedResource.%s: %s%s",
+		"invalid %sResource.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ImprovedResourceValidationError{}
+var _ error = ResourceValidationError{}
 
 var _ interface {
 	Field() string
@@ -254,24 +304,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ImprovedResourceValidationError{}
+} = ResourceValidationError{}
 
-// Validate checks the field values on ResourceProperties with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ResourceProperties) Validate() error {
+// Validate checks the field values on CloudResource with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *CloudResource) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ResourceProperties with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ResourcePropertiesMultiError, or nil if none found.
-func (m *ResourceProperties) ValidateAll() error {
+// ValidateAll checks the field values on CloudResource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in CloudResourceMultiError, or
+// nil if none found.
+func (m *CloudResource) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ResourceProperties) validate(all bool) error {
+func (m *CloudResource) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -282,7 +332,7 @@ func (m *ResourceProperties) validate(all bool) error {
 		switch v := interface{}(m.GetGeoLocation()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ResourcePropertiesValidationError{
+				errors = append(errors, CloudResourceValidationError{
 					field:  "GeoLocation",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -290,7 +340,7 @@ func (m *ResourceProperties) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ResourcePropertiesValidationError{
+				errors = append(errors, CloudResourceValidationError{
 					field:  "GeoLocation",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -299,7 +349,7 @@ func (m *ResourceProperties) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetGeoLocation()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return ResourcePropertiesValidationError{
+			return CloudResourceValidationError{
 				field:  "GeoLocation",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -307,20 +357,107 @@ func (m *ResourceProperties) validate(all bool) error {
 		}
 	}
 
+	switch v := m.Type.(type) {
+	case *CloudResource_Compute:
+		if v == nil {
+			err := CloudResourceValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCompute()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CloudResourceValidationError{
+						field:  "Compute",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CloudResourceValidationError{
+						field:  "Compute",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCompute()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CloudResourceValidationError{
+					field:  "Compute",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *CloudResource_Networking:
+		if v == nil {
+			err := CloudResourceValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetNetworking()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CloudResourceValidationError{
+						field:  "Networking",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CloudResourceValidationError{
+						field:  "Networking",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetNetworking()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CloudResourceValidationError{
+					field:  "Networking",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
+
 	if len(errors) > 0 {
-		return ResourcePropertiesMultiError(errors)
+		return CloudResourceMultiError(errors)
 	}
 
 	return nil
 }
 
-// ResourcePropertiesMultiError is an error wrapping multiple validation errors
-// returned by ResourceProperties.ValidateAll() if the designated constraints
+// CloudResourceMultiError is an error wrapping multiple validation errors
+// returned by CloudResource.ValidateAll() if the designated constraints
 // aren't met.
-type ResourcePropertiesMultiError []error
+type CloudResourceMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ResourcePropertiesMultiError) Error() string {
+func (m CloudResourceMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -329,11 +466,11 @@ func (m ResourcePropertiesMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ResourcePropertiesMultiError) AllErrors() []error { return m }
+func (m CloudResourceMultiError) AllErrors() []error { return m }
 
-// ResourcePropertiesValidationError is the validation error returned by
-// ResourceProperties.Validate if the designated constraints aren't met.
-type ResourcePropertiesValidationError struct {
+// CloudResourceValidationError is the validation error returned by
+// CloudResource.Validate if the designated constraints aren't met.
+type CloudResourceValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -341,24 +478,22 @@ type ResourcePropertiesValidationError struct {
 }
 
 // Field function returns field value.
-func (e ResourcePropertiesValidationError) Field() string { return e.field }
+func (e CloudResourceValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ResourcePropertiesValidationError) Reason() string { return e.reason }
+func (e CloudResourceValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ResourcePropertiesValidationError) Cause() error { return e.cause }
+func (e CloudResourceValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ResourcePropertiesValidationError) Key() bool { return e.key }
+func (e CloudResourceValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ResourcePropertiesValidationError) ErrorName() string {
-	return "ResourcePropertiesValidationError"
-}
+func (e CloudResourceValidationError) ErrorName() string { return "CloudResourceValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ResourcePropertiesValidationError) Error() string {
+func (e CloudResourceValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -370,14 +505,14 @@ func (e ResourcePropertiesValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sResourceProperties.%s: %s%s",
+		"invalid %sCloudResource.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ResourcePropertiesValidationError{}
+var _ error = CloudResourceValidationError{}
 
 var _ interface {
 	Field() string
@@ -385,7 +520,108 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ResourcePropertiesValidationError{}
+} = CloudResourceValidationError{}
+
+// Validate checks the field values on Document with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Document) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Document with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DocumentMultiError, or nil
+// if none found.
+func (m *Document) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Document) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Filename
+
+	if len(errors) > 0 {
+		return DocumentMultiError(errors)
+	}
+
+	return nil
+}
+
+// DocumentMultiError is an error wrapping multiple validation errors returned
+// by Document.ValidateAll() if the designated constraints aren't met.
+type DocumentMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DocumentMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DocumentMultiError) AllErrors() []error { return m }
+
+// DocumentValidationError is the validation error returned by
+// Document.Validate if the designated constraints aren't met.
+type DocumentValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DocumentValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DocumentValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DocumentValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DocumentValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DocumentValidationError) ErrorName() string { return "DocumentValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DocumentValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDocument.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DocumentValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DocumentValidationError{}
 
 // Validate checks the field values on Compute with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -408,33 +644,91 @@ func (m *Compute) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetResource()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ComputeValidationError{
-					field:  "Resource",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	switch v := m.Type.(type) {
+	case *Compute_VirtualMachine:
+		if v == nil {
+			err := ComputeValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
 			}
-		case interface{ Validate() error }:
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetVirtualMachine()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ComputeValidationError{
+						field:  "VirtualMachine",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ComputeValidationError{
+						field:  "VirtualMachine",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetVirtualMachine()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ComputeValidationError{
-					field:  "Resource",
+				return ComputeValidationError{
+					field:  "VirtualMachine",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetResource()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ComputeValidationError{
-				field:  "Resource",
-				reason: "embedded message failed validation",
-				cause:  err,
+
+	case *Compute_Container:
+		if v == nil {
+			err := ComputeValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetContainer()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ComputeValidationError{
+						field:  "Container",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ComputeValidationError{
+						field:  "Container",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetContainer()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ComputeValidationError{
+					field:  "Container",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
 			}
 		}
+
+	default:
+		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {
@@ -536,35 +830,6 @@ func (m *VirtualMachine) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetCompute()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, VirtualMachineValidationError{
-					field:  "Compute",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, VirtualMachineValidationError{
-					field:  "Compute",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCompute()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return VirtualMachineValidationError{
-				field:  "Compute",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
 	if len(errors) > 0 {
 		return VirtualMachineMultiError(errors)
 	}
@@ -665,35 +930,6 @@ func (m *Container) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetCompute()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ContainerValidationError{
-					field:  "Compute",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ContainerValidationError{
-					field:  "Compute",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCompute()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ContainerValidationError{
-				field:  "Compute",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
 	if len(errors) > 0 {
 		return ContainerMultiError(errors)
 	}
@@ -793,33 +1029,50 @@ func (m *Networking) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetResource()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, NetworkingValidationError{
-					field:  "Resource",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	switch v := m.Type.(type) {
+	case *Networking_NetworkInterface:
+		if v == nil {
+			err := NetworkingValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
 			}
-		case interface{ Validate() error }:
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetNetworkInterface()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, NetworkingValidationError{
+						field:  "NetworkInterface",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, NetworkingValidationError{
+						field:  "NetworkInterface",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetNetworkInterface()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, NetworkingValidationError{
-					field:  "Resource",
+				return NetworkingValidationError{
+					field:  "NetworkInterface",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetResource()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return NetworkingValidationError{
-				field:  "Resource",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
+	default:
+		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {
@@ -920,35 +1173,6 @@ func (m *NetworkInterface) validate(all bool) error {
 	}
 
 	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetNetworking()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, NetworkInterfaceValidationError{
-					field:  "Networking",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, NetworkInterfaceValidationError{
-					field:  "Networking",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNetworking()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return NetworkInterfaceValidationError{
-				field:  "Networking",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	if all {
 		switch v := interface{}(m.GetAccessRestriction()).(type) {
@@ -1180,11 +1404,11 @@ func (m *SecurityFeature) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Feature.(type) {
+	switch v := m.Type.(type) {
 	case *SecurityFeature_Availability:
 		if v == nil {
 			err := SecurityFeatureValidationError{
-				field:  "Feature",
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -1326,11 +1550,11 @@ func (m *Availabilty) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Feature.(type) {
+	switch v := m.Type.(type) {
 	case *Availabilty_GeoLocation:
 		if v == nil {
 			err := AvailabiltyValidationError{
-				field:  "Feature",
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -1471,11 +1695,52 @@ func (m *Authorization) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Feature.(type) {
+	switch v := m.Type.(type) {
+	case *Authorization_Abac:
+		if v == nil {
+			err := AuthorizationValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetAbac()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthorizationValidationError{
+						field:  "Abac",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthorizationValidationError{
+						field:  "Abac",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetAbac()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthorizationValidationError{
+					field:  "Abac",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	case *Authorization_AccessRestriction:
 		if v == nil {
 			err := AuthorizationValidationError{
-				field:  "Feature",
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -1507,6 +1772,47 @@ func (m *Authorization) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return AuthorizationValidationError{
 					field:  "AccessRestriction",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *Authorization_Rbac:
+		if v == nil {
+			err := AuthorizationValidationError{
+				field:  "Type",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetRbac()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthorizationValidationError{
+						field:  "Rbac",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthorizationValidationError{
+						field:  "Rbac",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRbac()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthorizationValidationError{
+					field:  "Rbac",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -1594,104 +1900,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthorizationValidationError{}
-
-// Validate checks the field values on RBAC with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *RBAC) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on RBAC with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in RBACMultiError, or nil if none found.
-func (m *RBAC) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *RBAC) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return RBACMultiError(errors)
-	}
-
-	return nil
-}
-
-// RBACMultiError is an error wrapping multiple validation errors returned by
-// RBAC.ValidateAll() if the designated constraints aren't met.
-type RBACMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m RBACMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m RBACMultiError) AllErrors() []error { return m }
-
-// RBACValidationError is the validation error returned by RBAC.Validate if the
-// designated constraints aren't met.
-type RBACValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e RBACValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e RBACValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e RBACValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e RBACValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e RBACValidationError) ErrorName() string { return "RBACValidationError" }
-
-// Error satisfies the builtin error interface
-func (e RBACValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sRBAC.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = RBACValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = RBACValidationError{}
 
 // Validate checks the field values on ABAC with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
@@ -1813,11 +2021,11 @@ func (m *AccessRestriction) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Feature.(type) {
+	switch v := m.Type.(type) {
 	case *AccessRestriction_Firewall:
 		if v == nil {
 			err := AccessRestrictionValidationError{
-				field:  "Feature",
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
@@ -1939,6 +2147,104 @@ var _ interface {
 	ErrorName() string
 } = AccessRestrictionValidationError{}
 
+// Validate checks the field values on RBAC with the rules defined in the proto
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
+func (m *RBAC) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RBAC with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in RBACMultiError, or nil if none found.
+func (m *RBAC) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RBAC) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return RBACMultiError(errors)
+	}
+
+	return nil
+}
+
+// RBACMultiError is an error wrapping multiple validation errors returned by
+// RBAC.ValidateAll() if the designated constraints aren't met.
+type RBACMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RBACMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RBACMultiError) AllErrors() []error { return m }
+
+// RBACValidationError is the validation error returned by RBAC.Validate if the
+// designated constraints aren't met.
+type RBACValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RBACValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RBACValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RBACValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RBACValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RBACValidationError) ErrorName() string { return "RBACValidationError" }
+
+// Error satisfies the builtin error interface
+func (e RBACValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRBAC.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RBACValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RBACValidationError{}
+
 // Validate checks the field values on Firewall with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -1961,11 +2267,11 @@ func (m *Firewall) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Class.(type) {
+	switch v := m.Type.(type) {
 	case *Firewall_L3Firewall:
 		if v == nil {
 			err := FirewallValidationError{
-				field:  "Class",
+				field:  "Type",
 				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {

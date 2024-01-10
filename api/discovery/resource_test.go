@@ -10,20 +10,30 @@ import (
 )
 
 func Test(t *testing.T) {
-	infc := NetworkInterface{
-		Networking: &Networking{
-			Resource: &ResourceProperties{
+	infc := Resource{
+		Id: "0123123",
+		Type: &Resource_CloudResource{
+			&CloudResource{
 				GeoLocation: &GeoLocation{
-					Region: "KOBOLD",
+					Region: "useast",
 				},
-			},
-		},
-		AccessRestriction: &AccessRestriction{Feature: &AccessRestriction_Firewall{
-			Firewall: &Firewall{Class: &Firewall_L3Firewall{
-				&L3Firewall{
-					Enabled: true, Inbound: false, RestrictedPorts: []string{"80"},
-				}},
-			}}},
+				Type: &CloudResource_Networking{
+					&Networking{
+						Type: &Networking_NetworkInterface{
+							&NetworkInterface{
+								AccessRestriction: &AccessRestriction{
+									Type: &AccessRestriction_Firewall{
+										&Firewall{
+											Type: &Firewall_L3Firewall{
+												&L3Firewall{
+													Enabled:         true,
+													RestrictedPorts: []string{"80"},
+												}},
+										}},
+								},
+							}},
+					}},
+			}},
 	}
 
 	infc2 := voc.NetworkInterface{

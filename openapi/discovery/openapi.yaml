@@ -155,6 +155,45 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AccessRestriction:
+            type: object
+            properties:
+                firewall:
+                    $ref: '#/components/schemas/Firewall'
+        CloudResource:
+            type: object
+            properties:
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                compute:
+                    $ref: '#/components/schemas/Compute'
+                networking:
+                    $ref: '#/components/schemas/Networking'
+        Compute:
+            type: object
+            properties:
+                virtualMachine:
+                    $ref: '#/components/schemas/VirtualMachine'
+                container:
+                    $ref: '#/components/schemas/Container'
+        Container:
+            type: object
+            properties: {}
+        Document:
+            type: object
+            properties:
+                filename:
+                    type: string
+        Firewall:
+            type: object
+            properties:
+                l3Firewall:
+                    $ref: '#/components/schemas/L3Firewall'
+        GeoLocation:
+            type: object
+            properties:
+                region:
+                    type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -174,6 +213,17 @@ components:
                     type: string
                 target:
                     type: string
+        L3Firewall:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                inbound:
+                    type: boolean
+                restrictedPorts:
+                    type: array
+                    items:
+                        type: string
         ListGraphEdgesResponse:
             type: object
             properties:
@@ -192,6 +242,16 @@ components:
                         $ref: '#/components/schemas/Resource'
                 nextPageToken:
                     type: string
+        NetworkInterface:
+            type: object
+            properties:
+                accessRestriction:
+                    $ref: '#/components/schemas/AccessRestriction'
+        Networking:
+            type: object
+            properties:
+                networkInterface:
+                    $ref: '#/components/schemas/NetworkInterface'
         Resource:
             type: object
             properties:
@@ -201,12 +261,16 @@ components:
                 cloudServiceId:
                     type: string
                     description: CloudServiceId is the UUID for the cloud service to which this resource belongs to.
+                cloudResource:
+                    $ref: '#/components/schemas/CloudResource'
+                document:
+                    $ref: '#/components/schemas/Document'
                 resourceType:
                     type: string
-                    description: ResourceType contains a comma seperated string of resource types according to our ontology.
+                    description: ResourceType contains a comma seperated string of resource types according to our ontology. LEGACY PROPERTY just to make it compile
                 properties:
                     $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons.
+            description: Resource is the description of a resource and contains the semantic information according to our ontology.
         StartDiscoveryRequest:
             type: object
             properties:
@@ -238,6 +302,9 @@ components:
             properties:
                 resource:
                     $ref: '#/components/schemas/Resource'
+        VirtualMachine:
+            type: object
+            properties: {}
 tags:
     - name: Discovery
       description: |-

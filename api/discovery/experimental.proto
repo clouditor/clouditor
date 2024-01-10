@@ -28,6 +28,7 @@ syntax = "proto3";
 
 package clouditor.discovery.v1experimental;
 
+import "api/discovery/resource.proto";
 import "api/discovery/discovery.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";

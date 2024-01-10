@@ -38,7 +38,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/structpb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -50,9 +50,9 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ImprovedResource is the description of a resource and contains the semantic
+// Resource is the description of a resource and contains the semantic
 // information according to our ontology.
-type ImprovedResource struct {
+type Resource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -64,20 +64,21 @@ type ImprovedResource struct {
 	// CloudServiceId is the UUID for the cloud service to which this resource
 	// belongs to.
 	CloudServiceId string `protobuf:"bytes,2,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty"`
-	// ResourceTypes contains a list of resource types according to our ontology.
-	ResourceTypes []string `protobuf:"bytes,3,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty"`
+	// Types that are assignable to Type:
+	//
+	//	*Resource_CloudResource
+	//	*Resource_Document
+	Type isResource_Type `protobuf_oneof:"type"`
+	// ResourceType contains a comma seperated string of resource types according
+	// to our ontology. LEGACY PROPERTY just to make it compile
+	ResourceType string `protobuf:"bytes,200,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
 	// Properties contains a protobuf struct that describe the resource in the
-	// terms of our Clouditor ontology.
-	//
-	// Types that are assignable to Properties:
-	//
-	//	*ImprovedResource_VirtualMachine
-	//	*ImprovedResource_Container
-	Properties isImprovedResource_Properties `protobuf_oneof:"properties"`
+	// terms of our Clouditor ontology. LEGACY PROPERTY just to make it compile
+	Properties *structpb.Value `protobuf:"bytes,201,opt,name=properties,proto3" json:"properties,omitempty" gorm:"serializer:valuepb;type:json"`
 }
 
-func (x *ImprovedResource) Reset() {
-	*x = ImprovedResource{}
+func (x *Resource) Reset() {
+	*x = Resource{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_api_discovery_resource_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -85,13 +86,13 @@ func (x *ImprovedResource) Reset() {
 	}
 }
 
-func (x *ImprovedResource) String() string {
+func (x *Resource) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ImprovedResource) ProtoMessage() {}
+func (*Resource) ProtoMessage() {}
 
-func (x *ImprovedResource) ProtoReflect() protoreflect.Message {
+func (x *Resource) ProtoReflect() protoreflect.Message {
 	mi := &file_api_discovery_resource_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -103,79 +104,91 @@ func (x *ImprovedResource) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ImprovedResource.ProtoReflect.Descriptor instead.
-func (*ImprovedResource) Descriptor() ([]byte, []int) {
+// Deprecated: Use Resource.ProtoReflect.Descriptor instead.
+func (*Resource) Descriptor() ([]byte, []int) {
 	return file_api_discovery_resource_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ImprovedResource) GetId() string {
+func (x *Resource) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *ImprovedResource) GetCloudServiceId() string {
+func (x *Resource) GetCloudServiceId() string {
 	if x != nil {
 		return x.CloudServiceId
 	}
 	return ""
 }
 
-func (x *ImprovedResource) GetResourceTypes() []string {
-	if x != nil {
-		return x.ResourceTypes
-	}
-	return nil
-}
-
-func (m *ImprovedResource) GetProperties() isImprovedResource_Properties {
+func (m *Resource) GetType() isResource_Type {
 	if m != nil {
-		return m.Properties
+		return m.Type
 	}
 	return nil
 }
 
-func (x *ImprovedResource) GetVirtualMachine() *VirtualMachine {
-	if x, ok := x.GetProperties().(*ImprovedResource_VirtualMachine); ok {
-		return x.VirtualMachine
+func (x *Resource) GetCloudResource() *CloudResource {
+	if x, ok := x.GetType().(*Resource_CloudResource); ok {
+		return x.CloudResource
 	}
 	return nil
 }
 
-func (x *ImprovedResource) GetContainer() *Container {
-	if x, ok := x.GetProperties().(*ImprovedResource_Container); ok {
-		return x.Container
+func (x *Resource) GetDocument() *Document {
+	if x, ok := x.GetType().(*Resource_Document); ok {
+		return x.Document
 	}
 	return nil
 }
 
-type isImprovedResource_Properties interface {
-	isImprovedResource_Properties()
+func (x *Resource) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
 }
 
-type ImprovedResource_VirtualMachine struct {
-	VirtualMachine *VirtualMachine `protobuf:"bytes,10,opt,name=virtual_machine,json=virtualMachine,proto3,oneof"`
+func (x *Resource) GetProperties() *structpb.Value {
+	if x != nil {
+		return x.Properties
+	}
+	return nil
 }
 
-type ImprovedResource_Container struct {
-	Container *Container `protobuf:"bytes,11,opt,name=container,proto3,oneof"`
+type isResource_Type interface {
+	isResource_Type()
 }
 
-func (*ImprovedResource_VirtualMachine) isImprovedResource_Properties() {}
+type Resource_CloudResource struct {
+	CloudResource *CloudResource `protobuf:"bytes,10,opt,name=cloud_resource,json=cloudResource,proto3,oneof"`
+}
 
-func (*ImprovedResource_Container) isImprovedResource_Properties() {}
+type Resource_Document struct {
+	Document *Document `protobuf:"bytes,11,opt,name=document,proto3,oneof"`
+}
 
-type ResourceProperties struct {
+func (*Resource_CloudResource) isResource_Type() {}
+
+func (*Resource_Document) isResource_Type() {}
+
+type CloudResource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	GeoLocation *GeoLocation `protobuf:"bytes,1,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
+	// Types that are assignable to Type:
+	//
+	//	*CloudResource_Compute
+	//	*CloudResource_Networking
+	Type isCloudResource_Type `protobuf_oneof:"type"`
 }
 
-func (x *ResourceProperties) Reset() {
-	*x = ResourceProperties{}
+func (x *CloudResource) Reset() {
+	*x = CloudResource{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_api_discovery_resource_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -183,13 +196,13 @@ func (x *ResourceProperties) Reset() {
 	}
 }
 
-func (x *ResourceProperties) String() string {
+func (x *CloudResource) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ResourceProperties) ProtoMessage() {}
+func (*CloudResource) ProtoMessage() {}
 
-func (x *ResourceProperties) ProtoReflect() protoreflect.Message {
+func (x *CloudResource) ProtoReflect() protoreflect.Message {
 	mi := &file_api_discovery_resource_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -201,16 +214,100 @@ func (x *ResourceProperties) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ResourceProperties.ProtoReflect.Descriptor instead.
-func (*ResourceProperties) Descriptor() ([]byte, []int) {
+// Deprecated: Use CloudResource.ProtoReflect.Descriptor instead.
+func (*CloudResource) Descriptor() ([]byte, []int) {
 	return file_api_discovery_resource_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ResourceProperties) GetGeoLocation() *GeoLocation {
+func (x *CloudResource) GetGeoLocation() *GeoLocation {
 	if x != nil {
 		return x.GeoLocation
 	}
 	return nil
+}
+
+func (m *CloudResource) GetType() isCloudResource_Type {
+	if m != nil {
+		return m.Type
+	}
+	return nil
+}
+
+func (x *CloudResource) GetCompute() *Compute {
+	if x, ok := x.GetType().(*CloudResource_Compute); ok {
+		return x.Compute
+	}
+	return nil
+}
+
+func (x *CloudResource) GetNetworking() *Networking {
+	if x, ok := x.GetType().(*CloudResource_Networking); ok {
+		return x.Networking
+	}
+	return nil
+}
+
+type isCloudResource_Type interface {
+	isCloudResource_Type()
+}
+
+type CloudResource_Compute struct {
+	Compute *Compute `protobuf:"bytes,10,opt,name=compute,proto3,oneof"`
+}
+
+type CloudResource_Networking struct {
+	Networking *Networking `protobuf:"bytes,11,opt,name=networking,proto3,oneof"`
+}
+
+func (*CloudResource_Compute) isCloudResource_Type() {}
+
+func (*CloudResource_Networking) isCloudResource_Type() {}
+
+type Document struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Filename string `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+}
+
+func (x *Document) Reset() {
+	*x = Document{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_discovery_resource_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Document) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Document) ProtoMessage() {}
+
+func (x *Document) ProtoReflect() protoreflect.Message {
+	mi := &file_api_discovery_resource_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Document.ProtoReflect.Descriptor instead.
+func (*Document) Descriptor() ([]byte, []int) {
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Document) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
 }
 
 type Compute struct {
@@ -218,13 +315,17 @@ type Compute struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Resource *ResourceProperties `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	// Types that are assignable to Type:
+	//
+	//	*Compute_VirtualMachine
+	//	*Compute_Container
+	Type isCompute_Type `protobuf_oneof:"type"`
 }
 
 func (x *Compute) Reset() {
 	*x = Compute{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[2]
+		mi := &file_api_discovery_resource_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -237,7 +338,7 @@ func (x *Compute) String() string {
 func (*Compute) ProtoMessage() {}
 
 func (x *Compute) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[2]
+	mi := &file_api_discovery_resource_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -250,28 +351,56 @@ func (x *Compute) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Compute.ProtoReflect.Descriptor instead.
 func (*Compute) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{2}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Compute) GetResource() *ResourceProperties {
-	if x != nil {
-		return x.Resource
+func (m *Compute) GetType() isCompute_Type {
+	if m != nil {
+		return m.Type
 	}
 	return nil
 }
+
+func (x *Compute) GetVirtualMachine() *VirtualMachine {
+	if x, ok := x.GetType().(*Compute_VirtualMachine); ok {
+		return x.VirtualMachine
+	}
+	return nil
+}
+
+func (x *Compute) GetContainer() *Container {
+	if x, ok := x.GetType().(*Compute_Container); ok {
+		return x.Container
+	}
+	return nil
+}
+
+type isCompute_Type interface {
+	isCompute_Type()
+}
+
+type Compute_VirtualMachine struct {
+	VirtualMachine *VirtualMachine `protobuf:"bytes,10,opt,name=virtual_machine,json=virtualMachine,proto3,oneof"`
+}
+
+type Compute_Container struct {
+	Container *Container `protobuf:"bytes,11,opt,name=container,proto3,oneof"`
+}
+
+func (*Compute_VirtualMachine) isCompute_Type() {}
+
+func (*Compute_Container) isCompute_Type() {}
 
 type VirtualMachine struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Compute *Compute `protobuf:"bytes,1,opt,name=compute,proto3" json:"compute,omitempty"`
 }
 
 func (x *VirtualMachine) Reset() {
 	*x = VirtualMachine{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[3]
+		mi := &file_api_discovery_resource_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -284,7 +413,7 @@ func (x *VirtualMachine) String() string {
 func (*VirtualMachine) ProtoMessage() {}
 
 func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[3]
+	mi := &file_api_discovery_resource_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -297,28 +426,19 @@ func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualMachine.ProtoReflect.Descriptor instead.
 func (*VirtualMachine) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *VirtualMachine) GetCompute() *Compute {
-	if x != nil {
-		return x.Compute
-	}
-	return nil
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{4}
 }
 
 type Container struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Compute *Compute `protobuf:"bytes,1,opt,name=compute,proto3" json:"compute,omitempty"`
 }
 
 func (x *Container) Reset() {
 	*x = Container{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[4]
+		mi := &file_api_discovery_resource_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -331,7 +451,7 @@ func (x *Container) String() string {
 func (*Container) ProtoMessage() {}
 
 func (x *Container) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[4]
+	mi := &file_api_discovery_resource_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -344,14 +464,7 @@ func (x *Container) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Container.ProtoReflect.Descriptor instead.
 func (*Container) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *Container) GetCompute() *Compute {
-	if x != nil {
-		return x.Compute
-	}
-	return nil
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{5}
 }
 
 type Networking struct {
@@ -359,13 +472,16 @@ type Networking struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Resource *ResourceProperties `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	// Types that are assignable to Type:
+	//
+	//	*Networking_NetworkInterface
+	Type isNetworking_Type `protobuf_oneof:"type"`
 }
 
 func (x *Networking) Reset() {
 	*x = Networking{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[5]
+		mi := &file_api_discovery_resource_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -378,7 +494,7 @@ func (x *Networking) String() string {
 func (*Networking) ProtoMessage() {}
 
 func (x *Networking) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[5]
+	mi := &file_api_discovery_resource_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -391,29 +507,45 @@ func (x *Networking) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Networking.ProtoReflect.Descriptor instead.
 func (*Networking) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{5}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *Networking) GetResource() *ResourceProperties {
-	if x != nil {
-		return x.Resource
+func (m *Networking) GetType() isNetworking_Type {
+	if m != nil {
+		return m.Type
 	}
 	return nil
 }
+
+func (x *Networking) GetNetworkInterface() *NetworkInterface {
+	if x, ok := x.GetType().(*Networking_NetworkInterface); ok {
+		return x.NetworkInterface
+	}
+	return nil
+}
+
+type isNetworking_Type interface {
+	isNetworking_Type()
+}
+
+type Networking_NetworkInterface struct {
+	NetworkInterface *NetworkInterface `protobuf:"bytes,10,opt,name=network_interface,json=networkInterface,proto3,oneof"`
+}
+
+func (*Networking_NetworkInterface) isNetworking_Type() {}
 
 type NetworkInterface struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Networking        *Networking        `protobuf:"bytes,1,opt,name=networking,proto3" json:"networking,omitempty"`
 	AccessRestriction *AccessRestriction `protobuf:"bytes,2,opt,name=access_restriction,json=accessRestriction,proto3" json:"access_restriction,omitempty"`
 }
 
 func (x *NetworkInterface) Reset() {
 	*x = NetworkInterface{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[6]
+		mi := &file_api_discovery_resource_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -426,7 +558,7 @@ func (x *NetworkInterface) String() string {
 func (*NetworkInterface) ProtoMessage() {}
 
 func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[6]
+	mi := &file_api_discovery_resource_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -439,14 +571,7 @@ func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInterface.ProtoReflect.Descriptor instead.
 func (*NetworkInterface) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *NetworkInterface) GetNetworking() *Networking {
-	if x != nil {
-		return x.Networking
-	}
-	return nil
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *NetworkInterface) GetAccessRestriction() *AccessRestriction {
@@ -467,7 +592,7 @@ type GeoLocation struct {
 func (x *GeoLocation) Reset() {
 	*x = GeoLocation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[7]
+		mi := &file_api_discovery_resource_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -480,7 +605,7 @@ func (x *GeoLocation) String() string {
 func (*GeoLocation) ProtoMessage() {}
 
 func (x *GeoLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[7]
+	mi := &file_api_discovery_resource_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +618,7 @@ func (x *GeoLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GeoLocation.ProtoReflect.Descriptor instead.
 func (*GeoLocation) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{7}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GeoLocation) GetRegion() string {
@@ -508,16 +633,16 @@ type SecurityFeature struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Feature:
+	// Types that are assignable to Type:
 	//
 	//	*SecurityFeature_Availability
-	Feature isSecurityFeature_Feature `protobuf_oneof:"feature"`
+	Type isSecurityFeature_Type `protobuf_oneof:"type"`
 }
 
 func (x *SecurityFeature) Reset() {
 	*x = SecurityFeature{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[8]
+		mi := &file_api_discovery_resource_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -530,7 +655,7 @@ func (x *SecurityFeature) String() string {
 func (*SecurityFeature) ProtoMessage() {}
 
 func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[8]
+	mi := &file_api_discovery_resource_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -543,48 +668,48 @@ func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityFeature.ProtoReflect.Descriptor instead.
 func (*SecurityFeature) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{8}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{9}
 }
 
-func (m *SecurityFeature) GetFeature() isSecurityFeature_Feature {
+func (m *SecurityFeature) GetType() isSecurityFeature_Type {
 	if m != nil {
-		return m.Feature
+		return m.Type
 	}
 	return nil
 }
 
 func (x *SecurityFeature) GetAvailability() *Availabilty {
-	if x, ok := x.GetFeature().(*SecurityFeature_Availability); ok {
+	if x, ok := x.GetType().(*SecurityFeature_Availability); ok {
 		return x.Availability
 	}
 	return nil
 }
 
-type isSecurityFeature_Feature interface {
-	isSecurityFeature_Feature()
+type isSecurityFeature_Type interface {
+	isSecurityFeature_Type()
 }
 
 type SecurityFeature_Availability struct {
 	Availability *Availabilty `protobuf:"bytes,1,opt,name=availability,proto3,oneof"`
 }
 
-func (*SecurityFeature_Availability) isSecurityFeature_Feature() {}
+func (*SecurityFeature_Availability) isSecurityFeature_Type() {}
 
 type Availabilty struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Feature:
+	// Types that are assignable to Type:
 	//
 	//	*Availabilty_GeoLocation
-	Feature isAvailabilty_Feature `protobuf_oneof:"feature"`
+	Type isAvailabilty_Type `protobuf_oneof:"type"`
 }
 
 func (x *Availabilty) Reset() {
 	*x = Availabilty{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[9]
+		mi := &file_api_discovery_resource_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -597,7 +722,7 @@ func (x *Availabilty) String() string {
 func (*Availabilty) ProtoMessage() {}
 
 func (x *Availabilty) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[9]
+	mi := &file_api_discovery_resource_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -610,48 +735,50 @@ func (x *Availabilty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Availabilty.ProtoReflect.Descriptor instead.
 func (*Availabilty) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{9}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{10}
 }
 
-func (m *Availabilty) GetFeature() isAvailabilty_Feature {
+func (m *Availabilty) GetType() isAvailabilty_Type {
 	if m != nil {
-		return m.Feature
+		return m.Type
 	}
 	return nil
 }
 
 func (x *Availabilty) GetGeoLocation() *GeoLocation {
-	if x, ok := x.GetFeature().(*Availabilty_GeoLocation); ok {
+	if x, ok := x.GetType().(*Availabilty_GeoLocation); ok {
 		return x.GeoLocation
 	}
 	return nil
 }
 
-type isAvailabilty_Feature interface {
-	isAvailabilty_Feature()
+type isAvailabilty_Type interface {
+	isAvailabilty_Type()
 }
 
 type Availabilty_GeoLocation struct {
 	GeoLocation *GeoLocation `protobuf:"bytes,1,opt,name=geo_location,json=geoLocation,proto3,oneof"`
 }
 
-func (*Availabilty_GeoLocation) isAvailabilty_Feature() {}
+func (*Availabilty_GeoLocation) isAvailabilty_Type() {}
 
 type Authorization struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Feature:
+	// Types that are assignable to Type:
 	//
+	//	*Authorization_Abac
 	//	*Authorization_AccessRestriction
-	Feature isAuthorization_Feature `protobuf_oneof:"feature"`
+	//	*Authorization_Rbac
+	Type isAuthorization_Type `protobuf_oneof:"type"`
 }
 
 func (x *Authorization) Reset() {
 	*x = Authorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[10]
+		mi := &file_api_discovery_resource_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -664,7 +791,7 @@ func (x *Authorization) String() string {
 func (*Authorization) ProtoMessage() {}
 
 func (x *Authorization) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[10]
+	mi := &file_api_discovery_resource_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,70 +804,58 @@ func (x *Authorization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Authorization.ProtoReflect.Descriptor instead.
 func (*Authorization) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{10}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{11}
 }
 
-func (m *Authorization) GetFeature() isAuthorization_Feature {
+func (m *Authorization) GetType() isAuthorization_Type {
 	if m != nil {
-		return m.Feature
+		return m.Type
+	}
+	return nil
+}
+
+func (x *Authorization) GetAbac() *ABAC {
+	if x, ok := x.GetType().(*Authorization_Abac); ok {
+		return x.Abac
 	}
 	return nil
 }
 
 func (x *Authorization) GetAccessRestriction() *AccessRestriction {
-	if x, ok := x.GetFeature().(*Authorization_AccessRestriction); ok {
+	if x, ok := x.GetType().(*Authorization_AccessRestriction); ok {
 		return x.AccessRestriction
 	}
 	return nil
 }
 
-type isAuthorization_Feature interface {
-	isAuthorization_Feature()
+func (x *Authorization) GetRbac() *RBAC {
+	if x, ok := x.GetType().(*Authorization_Rbac); ok {
+		return x.Rbac
+	}
+	return nil
+}
+
+type isAuthorization_Type interface {
+	isAuthorization_Type()
+}
+
+type Authorization_Abac struct {
+	Abac *ABAC `protobuf:"bytes,10,opt,name=abac,proto3,oneof"`
 }
 
 type Authorization_AccessRestriction struct {
-	AccessRestriction *AccessRestriction `protobuf:"bytes,1,opt,name=access_restriction,json=accessRestriction,proto3,oneof"`
+	AccessRestriction *AccessRestriction `protobuf:"bytes,11,opt,name=access_restriction,json=accessRestriction,proto3,oneof"`
 }
 
-func (*Authorization_AccessRestriction) isAuthorization_Feature() {}
-
-type RBAC struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
+type Authorization_Rbac struct {
+	Rbac *RBAC `protobuf:"bytes,12,opt,name=rbac,proto3,oneof"`
 }
 
-func (x *RBAC) Reset() {
-	*x = RBAC{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
+func (*Authorization_Abac) isAuthorization_Type() {}
 
-func (x *RBAC) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
+func (*Authorization_AccessRestriction) isAuthorization_Type() {}
 
-func (*RBAC) ProtoMessage() {}
-
-func (x *RBAC) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RBAC.ProtoReflect.Descriptor instead.
-func (*RBAC) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{11}
-}
+func (*Authorization_Rbac) isAuthorization_Type() {}
 
 type ABAC struct {
 	state         protoimpl.MessageState
@@ -785,10 +900,10 @@ type AccessRestriction struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Feature:
+	// Types that are assignable to Type:
 	//
 	//	*AccessRestriction_Firewall
-	Feature isAccessRestriction_Feature `protobuf_oneof:"feature"`
+	Type isAccessRestriction_Type `protobuf_oneof:"type"`
 }
 
 func (x *AccessRestriction) Reset() {
@@ -823,45 +938,83 @@ func (*AccessRestriction) Descriptor() ([]byte, []int) {
 	return file_api_discovery_resource_proto_rawDescGZIP(), []int{13}
 }
 
-func (m *AccessRestriction) GetFeature() isAccessRestriction_Feature {
+func (m *AccessRestriction) GetType() isAccessRestriction_Type {
 	if m != nil {
-		return m.Feature
+		return m.Type
 	}
 	return nil
 }
 
 func (x *AccessRestriction) GetFirewall() *Firewall {
-	if x, ok := x.GetFeature().(*AccessRestriction_Firewall); ok {
+	if x, ok := x.GetType().(*AccessRestriction_Firewall); ok {
 		return x.Firewall
 	}
 	return nil
 }
 
-type isAccessRestriction_Feature interface {
-	isAccessRestriction_Feature()
+type isAccessRestriction_Type interface {
+	isAccessRestriction_Type()
 }
 
 type AccessRestriction_Firewall struct {
 	Firewall *Firewall `protobuf:"bytes,1,opt,name=firewall,proto3,oneof"`
 }
 
-func (*AccessRestriction_Firewall) isAccessRestriction_Feature() {}
+func (*AccessRestriction_Firewall) isAccessRestriction_Type() {}
+
+type RBAC struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *RBAC) Reset() {
+	*x = RBAC{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_discovery_resource_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RBAC) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RBAC) ProtoMessage() {}
+
+func (x *RBAC) ProtoReflect() protoreflect.Message {
+	mi := &file_api_discovery_resource_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RBAC.ProtoReflect.Descriptor instead.
+func (*RBAC) Descriptor() ([]byte, []int) {
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{14}
+}
 
 type Firewall struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Class:
+	// Types that are assignable to Type:
 	//
 	//	*Firewall_L3Firewall
-	Class isFirewall_Class `protobuf_oneof:"class"`
+	Type isFirewall_Type `protobuf_oneof:"type"`
 }
 
 func (x *Firewall) Reset() {
 	*x = Firewall{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[14]
+		mi := &file_api_discovery_resource_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -874,7 +1027,7 @@ func (x *Firewall) String() string {
 func (*Firewall) ProtoMessage() {}
 
 func (x *Firewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[14]
+	mi := &file_api_discovery_resource_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -887,32 +1040,32 @@ func (x *Firewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Firewall.ProtoReflect.Descriptor instead.
 func (*Firewall) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{14}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{15}
 }
 
-func (m *Firewall) GetClass() isFirewall_Class {
+func (m *Firewall) GetType() isFirewall_Type {
 	if m != nil {
-		return m.Class
+		return m.Type
 	}
 	return nil
 }
 
 func (x *Firewall) GetL3Firewall() *L3Firewall {
-	if x, ok := x.GetClass().(*Firewall_L3Firewall); ok {
+	if x, ok := x.GetType().(*Firewall_L3Firewall); ok {
 		return x.L3Firewall
 	}
 	return nil
 }
 
-type isFirewall_Class interface {
-	isFirewall_Class()
+type isFirewall_Type interface {
+	isFirewall_Type()
 }
 
 type Firewall_L3Firewall struct {
 	L3Firewall *L3Firewall `protobuf:"bytes,1,opt,name=l3_firewall,json=l3Firewall,proto3,oneof"`
 }
 
-func (*Firewall_L3Firewall) isFirewall_Class() {}
+func (*Firewall_L3Firewall) isFirewall_Type() {}
 
 type L3Firewall struct {
 	state         protoimpl.MessageState
@@ -927,7 +1080,7 @@ type L3Firewall struct {
 func (x *L3Firewall) Reset() {
 	*x = L3Firewall{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_discovery_resource_proto_msgTypes[15]
+		mi := &file_api_discovery_resource_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -940,7 +1093,7 @@ func (x *L3Firewall) String() string {
 func (*L3Firewall) ProtoMessage() {}
 
 func (x *L3Firewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_discovery_resource_proto_msgTypes[15]
+	mi := &file_api_discovery_resource_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -953,7 +1106,7 @@ func (x *L3Firewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use L3Firewall.ProtoReflect.Descriptor instead.
 func (*L3Firewall) Descriptor() ([]byte, []int) {
-	return file_api_discovery_resource_proto_rawDescGZIP(), []int{15}
+	return file_api_discovery_resource_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *L3Firewall) GetEnabled() bool {
@@ -990,106 +1143,124 @@ var file_api_discovery_resource_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x1a, 0x13, 0x74, 0x61, 0x67, 0x67, 0x65, 0x72, 0x2f, 0x74, 0x61, 0x67, 0x67, 0x65,
 	0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74,
 	0x65, 0x2f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0xaa, 0x02, 0x0a, 0x10, 0x49, 0x6d, 0x70, 0x72, 0x6f, 0x76, 0x65, 0x64, 0x52, 0x65, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x17, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x32,
-	0x0a, 0x10, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f,
-	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x08, 0xfa, 0x42, 0x05, 0x72, 0x03, 0xb0,
-	0x01, 0x01, 0x52, 0x0e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x0d, 0x72, 0x65, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x54, 0x79, 0x70, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x0f, 0x76, 0x69, 0x72,
-	0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x18, 0x0a, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64,
-	0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74,
-	0x75, 0x61, 0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69,
-	0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x12, 0x41, 0x0a, 0x09,
-	0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x21, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63,
-	0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
-	0x65, 0x72, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x42,
-	0x0c, 0x0a, 0x0a, 0x70, 0x72, 0x6f, 0x70, 0x65, 0x72, 0x74, 0x69, 0x65, 0x73, 0x22, 0x5c, 0x0a,
-	0x12, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x70, 0x65, 0x72, 0x74,
-	0x69, 0x65, 0x73, 0x12, 0x46, 0x0a, 0x0c, 0x67, 0x65, 0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b,
-	0x67, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x51, 0x0a, 0x07, 0x43,
-	0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x12, 0x46, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76,
-	0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x70, 0x65, 0x72,
-	0x74, 0x69, 0x65, 0x73, 0x52, 0x08, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0x4b,
-	0x0a, 0x0e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65,
-	0x12, 0x39, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69,
-	0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6d, 0x70, 0x75,
-	0x74, 0x65, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x22, 0x46, 0x0a, 0x09, 0x43,
-	0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x12, 0x39, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x70,
-	0x75, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x70,
-	0x75, 0x74, 0x65, 0x22, 0x54, 0x0a, 0x0a, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
-	0x67, 0x12, 0x46, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
-	0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x70, 0x65, 0x72, 0x74, 0x69, 0x65, 0x73, 0x52,
-	0x08, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x22, 0xb0, 0x01, 0x0a, 0x10, 0x4e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x42,
-	0x0a, 0x0a, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64,
-	0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x52, 0x0a, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
-	0x6e, 0x67, 0x12, 0x58, 0x0a, 0x12, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x72, 0x65, 0x73,
-	0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29,
-	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f,
-	0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65,
-	0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x11, 0x61, 0x63, 0x63, 0x65, 0x73,
-	0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x25, 0x0a, 0x0b,
-	0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x72,
-	0x65, 0x67, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x67,
-	0x69, 0x6f, 0x6e, 0x22, 0x67, 0x0a, 0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x46,
-	0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x49, 0x0a, 0x0c, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61,
-	0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63,
+	0x22, 0x89, 0x03, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x17, 0x0a,
+	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02,
+	0x10, 0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x32, 0x0a, 0x10, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x08, 0xfa, 0x42, 0x05, 0x72, 0x03, 0xb0, 0x01, 0x01, 0x52, 0x0e, 0x63, 0x6c, 0x6f, 0x75,
+	0x64, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x12, 0x4e, 0x0a, 0x0e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x5f, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x0a, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64,
+	0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6c, 0x6f, 0x75,
+	0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x63, 0x6c, 0x6f,
+	0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x3e, 0x0a, 0x08, 0x64, 0x6f,
+	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x63,
 	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65,
-	0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x69, 0x6c, 0x74,
-	0x79, 0x48, 0x00, 0x52, 0x0c, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74,
-	0x79, 0x42, 0x09, 0x0a, 0x07, 0x66, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0x62, 0x0a, 0x0b,
+	0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x48, 0x00,
+	0x52, 0x08, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x2d, 0x0a, 0x0d, 0x72, 0x65,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0xc8, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x07, 0xfa, 0x42, 0x04, 0x72, 0x02, 0x10, 0x01, 0x52, 0x0c, 0x72, 0x65, 0x73,
+	0x6f, 0x75, 0x72, 0x63, 0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x69, 0x0a, 0x0a, 0x70, 0x72, 0x6f,
+	0x70, 0x65, 0x72, 0x74, 0x69, 0x65, 0x73, 0x18, 0xc9, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x30, 0xfa, 0x42, 0x05, 0x8a, 0x01, 0x02, 0x10, 0x01,
+	0x9a, 0x84, 0x9e, 0x03, 0x23, 0x67, 0x6f, 0x72, 0x6d, 0x3a, 0x22, 0x73, 0x65, 0x72, 0x69, 0x61,
+	0x6c, 0x69, 0x7a, 0x65, 0x72, 0x3a, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x70, 0x62, 0x3b, 0x74, 0x79,
+	0x70, 0x65, 0x3a, 0x6a, 0x73, 0x6f, 0x6e, 0x22, 0x52, 0x0a, 0x70, 0x72, 0x6f, 0x70, 0x65, 0x72,
+	0x74, 0x69, 0x65, 0x73, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xe2, 0x01, 0x0a,
+	0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x46,
+	0x0a, 0x0c, 0x67, 0x65, 0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72,
+	0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65,
+	0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x67, 0x65, 0x6f, 0x4c, 0x6f,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x3b, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74,
+	0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x43, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x48, 0x00, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x70,
+	0x75, 0x74, 0x65, 0x12, 0x44, 0x0a, 0x0a, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e,
+	0x67, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x48, 0x00, 0x52, 0x0a, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70,
+	0x65, 0x22, 0x26, 0x0a, 0x08, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x1a, 0x0a,
+	0x08, 0x66, 0x69, 0x6c, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x08, 0x66, 0x69, 0x6c, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0xa7, 0x01, 0x0a, 0x07, 0x43, 0x6f,
+	0x6d, 0x70, 0x75, 0x74, 0x65, 0x12, 0x51, 0x0a, 0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c,
+	0x5f, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26,
+	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f,
+	0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d,
+	0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61,
+	0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x12, 0x41, 0x0a, 0x09, 0x63, 0x6f, 0x6e, 0x74,
+	0x61, 0x69, 0x6e, 0x65, 0x72, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72,
+	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x48, 0x00,
+	0x52, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x42, 0x06, 0x0a, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x22, 0x10, 0x0a, 0x0e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61,
+	0x63, 0x68, 0x69, 0x6e, 0x65, 0x22, 0x0b, 0x0a, 0x09, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
+	0x65, 0x72, 0x22, 0x6d, 0x0a, 0x0a, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67,
+	0x12, 0x57, 0x0a, 0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x6e, 0x74, 0x65,
+	0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72,
+	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65,
+	0x72, 0x66, 0x61, 0x63, 0x65, 0x48, 0x00, 0x52, 0x10, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70,
+	0x65, 0x22, 0x6c, 0x0a, 0x10, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65,
+	0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x58, 0x0a, 0x12, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f,
+	0x72, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x29, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69,
+	0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x11, 0x61, 0x63,
+	0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x22,
+	0x25, 0x0a, 0x0b, 0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16,
+	0x0a, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e, 0x22, 0x64, 0x0a, 0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69,
+	0x74, 0x79, 0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x49, 0x0a, 0x0c, 0x61, 0x76, 0x61,
+	0x69, 0x6c, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63,
+	0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62,
+	0x69, 0x6c, 0x74, 0x79, 0x48, 0x00, 0x52, 0x0c, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x69,
+	0x6c, 0x69, 0x74, 0x79, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x5f, 0x0a, 0x0b,
 	0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x69, 0x6c, 0x74, 0x79, 0x12, 0x48, 0x0a, 0x0c, 0x67,
 	0x65, 0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69,
 	0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6f, 0x4c, 0x6f,
 	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x0b, 0x67, 0x65, 0x6f, 0x4c, 0x6f, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x09, 0x0a, 0x07, 0x66, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65,
-	0x22, 0x76, 0x0a, 0x0d, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x5a, 0x0a, 0x12, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x72, 0x65, 0x73, 0x74,
-	0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xdb, 0x01,
+	0x0a, 0x0d, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x32, 0x0a, 0x04, 0x61, 0x62, 0x61, 0x63, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76,
-	0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73,
-	0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x11, 0x61, 0x63, 0x63, 0x65,
-	0x73, 0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x09, 0x0a,
-	0x07, 0x66, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0x06, 0x0a, 0x04, 0x52, 0x42, 0x41, 0x43,
-	0x22, 0x06, 0x0a, 0x04, 0x41, 0x42, 0x41, 0x43, 0x22, 0x5e, 0x0a, 0x11, 0x41, 0x63, 0x63, 0x65,
-	0x73, 0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x3e, 0x0a,
-	0x08, 0x66, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x20, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63,
-	0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c,
-	0x6c, 0x48, 0x00, 0x52, 0x08, 0x66, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x42, 0x09, 0x0a,
-	0x07, 0x66, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0x5a, 0x0a, 0x08, 0x46, 0x69, 0x72, 0x65,
+	0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x42, 0x41, 0x43, 0x48, 0x00, 0x52, 0x04, 0x61,
+	0x62, 0x61, 0x63, 0x12, 0x5a, 0x0a, 0x12, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x5f, 0x72, 0x65,
+	0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x29, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63,
+	0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52,
+	0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x11, 0x61, 0x63,
+	0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x32, 0x0a, 0x04, 0x72, 0x62, 0x61, 0x63, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76,
+	0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x42, 0x41, 0x43, 0x48, 0x00, 0x52, 0x04, 0x72,
+	0x62, 0x61, 0x63, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x06, 0x0a, 0x04, 0x41,
+	0x42, 0x41, 0x43, 0x22, 0x5b, 0x0a, 0x11, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73,
+	0x74, 0x72, 0x69, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x3e, 0x0a, 0x08, 0x66, 0x69, 0x72, 0x65,
+	0x77, 0x61, 0x6c, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x63, 0x6c, 0x6f,
+	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79,
+	0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x48, 0x00, 0x52, 0x08,
+	0x66, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65,
+	0x22, 0x06, 0x0a, 0x04, 0x52, 0x42, 0x41, 0x43, 0x22, 0x59, 0x0a, 0x08, 0x46, 0x69, 0x72, 0x65,
 	0x77, 0x61, 0x6c, 0x6c, 0x12, 0x45, 0x0a, 0x0b, 0x6c, 0x33, 0x5f, 0x66, 0x69, 0x72, 0x65, 0x77,
 	0x61, 0x6c, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
 	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72, 0x79, 0x2e,
 	0x76, 0x31, 0x2e, 0x4c, 0x33, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x48, 0x00, 0x52,
-	0x0a, 0x6c, 0x33, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x42, 0x07, 0x0a, 0x05, 0x63,
-	0x6c, 0x61, 0x73, 0x73, 0x22, 0x6b, 0x0a, 0x0a, 0x4c, 0x33, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61,
-	0x6c, 0x6c, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07,
-	0x69, 0x6e, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x69,
-	0x6e, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x72, 0x65, 0x73, 0x74, 0x72, 0x69,
-	0x63, 0x74, 0x65, 0x64, 0x5f, 0x70, 0x6f, 0x72, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09,
-	0x52, 0x0f, 0x72, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x65, 0x64, 0x50, 0x6f, 0x72, 0x74,
-	0x73, 0x42, 0x0f, 0x5a, 0x0d, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65,
-	0x72, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0a, 0x6c, 0x33, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c, 0x6c, 0x42, 0x06, 0x0a, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x22, 0x6b, 0x0a, 0x0a, 0x4c, 0x33, 0x46, 0x69, 0x72, 0x65, 0x77, 0x61, 0x6c,
+	0x6c, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x69,
+	0x6e, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x69, 0x6e,
+	0x62, 0x6f, 0x75, 0x6e, 0x64, 0x12, 0x29, 0x0a, 0x10, 0x72, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63,
+	0x74, 0x65, 0x64, 0x5f, 0x70, 0x6f, 0x72, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x0f, 0x72, 0x65, 0x73, 0x74, 0x72, 0x69, 0x63, 0x74, 0x65, 0x64, 0x50, 0x6f, 0x72, 0x74, 0x73,
+	0x42, 0x0f, 0x5a, 0x0d, 0x61, 0x70, 0x69, 0x2f, 0x64, 0x69, 0x73, 0x63, 0x6f, 0x76, 0x65, 0x72,
+	0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1104,45 +1275,50 @@ func file_api_discovery_resource_proto_rawDescGZIP() []byte {
 	return file_api_discovery_resource_proto_rawDescData
 }
 
-var file_api_discovery_resource_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_api_discovery_resource_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_api_discovery_resource_proto_goTypes = []interface{}{
-	(*ImprovedResource)(nil),   // 0: clouditor.discovery.v1.ImprovedResource
-	(*ResourceProperties)(nil), // 1: clouditor.discovery.v1.ResourceProperties
-	(*Compute)(nil),            // 2: clouditor.discovery.v1.Compute
-	(*VirtualMachine)(nil),     // 3: clouditor.discovery.v1.VirtualMachine
-	(*Container)(nil),          // 4: clouditor.discovery.v1.Container
-	(*Networking)(nil),         // 5: clouditor.discovery.v1.Networking
-	(*NetworkInterface)(nil),   // 6: clouditor.discovery.v1.NetworkInterface
-	(*GeoLocation)(nil),        // 7: clouditor.discovery.v1.GeoLocation
-	(*SecurityFeature)(nil),    // 8: clouditor.discovery.v1.SecurityFeature
-	(*Availabilty)(nil),        // 9: clouditor.discovery.v1.Availabilty
-	(*Authorization)(nil),      // 10: clouditor.discovery.v1.Authorization
-	(*RBAC)(nil),               // 11: clouditor.discovery.v1.RBAC
-	(*ABAC)(nil),               // 12: clouditor.discovery.v1.ABAC
-	(*AccessRestriction)(nil),  // 13: clouditor.discovery.v1.AccessRestriction
-	(*Firewall)(nil),           // 14: clouditor.discovery.v1.Firewall
-	(*L3Firewall)(nil),         // 15: clouditor.discovery.v1.L3Firewall
+	(*Resource)(nil),          // 0: clouditor.discovery.v1.Resource
+	(*CloudResource)(nil),     // 1: clouditor.discovery.v1.CloudResource
+	(*Document)(nil),          // 2: clouditor.discovery.v1.Document
+	(*Compute)(nil),           // 3: clouditor.discovery.v1.Compute
+	(*VirtualMachine)(nil),    // 4: clouditor.discovery.v1.VirtualMachine
+	(*Container)(nil),         // 5: clouditor.discovery.v1.Container
+	(*Networking)(nil),        // 6: clouditor.discovery.v1.Networking
+	(*NetworkInterface)(nil),  // 7: clouditor.discovery.v1.NetworkInterface
+	(*GeoLocation)(nil),       // 8: clouditor.discovery.v1.GeoLocation
+	(*SecurityFeature)(nil),   // 9: clouditor.discovery.v1.SecurityFeature
+	(*Availabilty)(nil),       // 10: clouditor.discovery.v1.Availabilty
+	(*Authorization)(nil),     // 11: clouditor.discovery.v1.Authorization
+	(*ABAC)(nil),              // 12: clouditor.discovery.v1.ABAC
+	(*AccessRestriction)(nil), // 13: clouditor.discovery.v1.AccessRestriction
+	(*RBAC)(nil),              // 14: clouditor.discovery.v1.RBAC
+	(*Firewall)(nil),          // 15: clouditor.discovery.v1.Firewall
+	(*L3Firewall)(nil),        // 16: clouditor.discovery.v1.L3Firewall
+	(*structpb.Value)(nil),    // 17: google.protobuf.Value
 }
 var file_api_discovery_resource_proto_depIdxs = []int32{
-	3,  // 0: clouditor.discovery.v1.ImprovedResource.virtual_machine:type_name -> clouditor.discovery.v1.VirtualMachine
-	4,  // 1: clouditor.discovery.v1.ImprovedResource.container:type_name -> clouditor.discovery.v1.Container
-	7,  // 2: clouditor.discovery.v1.ResourceProperties.geo_location:type_name -> clouditor.discovery.v1.GeoLocation
-	1,  // 3: clouditor.discovery.v1.Compute.resource:type_name -> clouditor.discovery.v1.ResourceProperties
-	2,  // 4: clouditor.discovery.v1.VirtualMachine.compute:type_name -> clouditor.discovery.v1.Compute
-	2,  // 5: clouditor.discovery.v1.Container.compute:type_name -> clouditor.discovery.v1.Compute
-	1,  // 6: clouditor.discovery.v1.Networking.resource:type_name -> clouditor.discovery.v1.ResourceProperties
-	5,  // 7: clouditor.discovery.v1.NetworkInterface.networking:type_name -> clouditor.discovery.v1.Networking
-	13, // 8: clouditor.discovery.v1.NetworkInterface.access_restriction:type_name -> clouditor.discovery.v1.AccessRestriction
-	9,  // 9: clouditor.discovery.v1.SecurityFeature.availability:type_name -> clouditor.discovery.v1.Availabilty
-	7,  // 10: clouditor.discovery.v1.Availabilty.geo_location:type_name -> clouditor.discovery.v1.GeoLocation
-	13, // 11: clouditor.discovery.v1.Authorization.access_restriction:type_name -> clouditor.discovery.v1.AccessRestriction
-	14, // 12: clouditor.discovery.v1.AccessRestriction.firewall:type_name -> clouditor.discovery.v1.Firewall
-	15, // 13: clouditor.discovery.v1.Firewall.l3_firewall:type_name -> clouditor.discovery.v1.L3Firewall
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	1,  // 0: clouditor.discovery.v1.Resource.cloud_resource:type_name -> clouditor.discovery.v1.CloudResource
+	2,  // 1: clouditor.discovery.v1.Resource.document:type_name -> clouditor.discovery.v1.Document
+	17, // 2: clouditor.discovery.v1.Resource.properties:type_name -> google.protobuf.Value
+	8,  // 3: clouditor.discovery.v1.CloudResource.geo_location:type_name -> clouditor.discovery.v1.GeoLocation
+	3,  // 4: clouditor.discovery.v1.CloudResource.compute:type_name -> clouditor.discovery.v1.Compute
+	6,  // 5: clouditor.discovery.v1.CloudResource.networking:type_name -> clouditor.discovery.v1.Networking
+	4,  // 6: clouditor.discovery.v1.Compute.virtual_machine:type_name -> clouditor.discovery.v1.VirtualMachine
+	5,  // 7: clouditor.discovery.v1.Compute.container:type_name -> clouditor.discovery.v1.Container
+	7,  // 8: clouditor.discovery.v1.Networking.network_interface:type_name -> clouditor.discovery.v1.NetworkInterface
+	13, // 9: clouditor.discovery.v1.NetworkInterface.access_restriction:type_name -> clouditor.discovery.v1.AccessRestriction
+	10, // 10: clouditor.discovery.v1.SecurityFeature.availability:type_name -> clouditor.discovery.v1.Availabilty
+	8,  // 11: clouditor.discovery.v1.Availabilty.geo_location:type_name -> clouditor.discovery.v1.GeoLocation
+	12, // 12: clouditor.discovery.v1.Authorization.abac:type_name -> clouditor.discovery.v1.ABAC
+	13, // 13: clouditor.discovery.v1.Authorization.access_restriction:type_name -> clouditor.discovery.v1.AccessRestriction
+	14, // 14: clouditor.discovery.v1.Authorization.rbac:type_name -> clouditor.discovery.v1.RBAC
+	15, // 15: clouditor.discovery.v1.AccessRestriction.firewall:type_name -> clouditor.discovery.v1.Firewall
+	16, // 16: clouditor.discovery.v1.Firewall.l3_firewall:type_name -> clouditor.discovery.v1.L3Firewall
+	17, // [17:17] is the sub-list for method output_type
+	17, // [17:17] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_api_discovery_resource_proto_init() }
@@ -1152,7 +1328,7 @@ func file_api_discovery_resource_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_api_discovery_resource_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ImprovedResource); i {
+			switch v := v.(*Resource); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1164,7 +1340,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceProperties); i {
+			switch v := v.(*CloudResource); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1176,7 +1352,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Compute); i {
+			switch v := v.(*Document); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1188,7 +1364,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VirtualMachine); i {
+			switch v := v.(*Compute); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1200,7 +1376,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Container); i {
+			switch v := v.(*VirtualMachine); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1212,7 +1388,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Networking); i {
+			switch v := v.(*Container); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1224,7 +1400,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkInterface); i {
+			switch v := v.(*Networking); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1236,7 +1412,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GeoLocation); i {
+			switch v := v.(*NetworkInterface); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1248,7 +1424,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SecurityFeature); i {
+			switch v := v.(*GeoLocation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1260,7 +1436,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Availabilty); i {
+			switch v := v.(*SecurityFeature); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1272,7 +1448,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Authorization); i {
+			switch v := v.(*Availabilty); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1284,7 +1460,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RBAC); i {
+			switch v := v.(*Authorization); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1320,7 +1496,7 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Firewall); i {
+			switch v := v.(*RBAC); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1332,6 +1508,18 @@ func file_api_discovery_resource_proto_init() {
 			}
 		}
 		file_api_discovery_resource_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Firewall); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_discovery_resource_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*L3Firewall); i {
 			case 0:
 				return &v.state
@@ -1345,22 +1533,35 @@ func file_api_discovery_resource_proto_init() {
 		}
 	}
 	file_api_discovery_resource_proto_msgTypes[0].OneofWrappers = []interface{}{
-		(*ImprovedResource_VirtualMachine)(nil),
-		(*ImprovedResource_Container)(nil),
+		(*Resource_CloudResource)(nil),
+		(*Resource_Document)(nil),
 	}
-	file_api_discovery_resource_proto_msgTypes[8].OneofWrappers = []interface{}{
-		(*SecurityFeature_Availability)(nil),
+	file_api_discovery_resource_proto_msgTypes[1].OneofWrappers = []interface{}{
+		(*CloudResource_Compute)(nil),
+		(*CloudResource_Networking)(nil),
+	}
+	file_api_discovery_resource_proto_msgTypes[3].OneofWrappers = []interface{}{
+		(*Compute_VirtualMachine)(nil),
+		(*Compute_Container)(nil),
+	}
+	file_api_discovery_resource_proto_msgTypes[6].OneofWrappers = []interface{}{
+		(*Networking_NetworkInterface)(nil),
 	}
 	file_api_discovery_resource_proto_msgTypes[9].OneofWrappers = []interface{}{
-		(*Availabilty_GeoLocation)(nil),
+		(*SecurityFeature_Availability)(nil),
 	}
 	file_api_discovery_resource_proto_msgTypes[10].OneofWrappers = []interface{}{
+		(*Availabilty_GeoLocation)(nil),
+	}
+	file_api_discovery_resource_proto_msgTypes[11].OneofWrappers = []interface{}{
+		(*Authorization_Abac)(nil),
 		(*Authorization_AccessRestriction)(nil),
+		(*Authorization_Rbac)(nil),
 	}
 	file_api_discovery_resource_proto_msgTypes[13].OneofWrappers = []interface{}{
 		(*AccessRestriction_Firewall)(nil),
 	}
-	file_api_discovery_resource_proto_msgTypes[14].OneofWrappers = []interface{}{
+	file_api_discovery_resource_proto_msgTypes[15].OneofWrappers = []interface{}{
 		(*Firewall_L3Firewall)(nil),
 	}
 	type x struct{}
@@ -1369,7 +1570,7 @@ func file_api_discovery_resource_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_discovery_resource_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
