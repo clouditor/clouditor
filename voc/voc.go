@@ -208,6 +208,13 @@ type IsAccessRestriction interface {
 
 func (*AccessRestriction) accessRestriction() {}
 
+type IsAnomalyDetection interface {
+	IsSecurityFeature
+	anomalyDetection()
+}
+
+func (*AnomalyDetection) anomalyDetection() {}
+
 type HasHttpEndpoint interface {
 	GetHttpEndpoint() *HttpEndpoint
 }
