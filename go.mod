@@ -20,7 +20,6 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.1
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/oauth2 v0.16.0
 	golang.org/x/sync v0.6.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917
@@ -49,7 +48,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.26.1
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.142.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.144.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.49.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.5
@@ -164,6 +163,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
+	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.12.0 // indirect
