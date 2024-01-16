@@ -36,42 +36,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 )
 
-type azureResourceGroupDiscovery struct {
-	*azureDiscovery
-}
-
-func NewAzureResourceGroupDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureResourceGroupDiscovery{
-		&azureDiscovery{
-			discovererComponent: ComputeComponent,
-			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*backup),
-		},
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt(d.azureDiscovery)
-	}
-
-	return d
-}
-
-func (*azureResourceGroupDiscovery) Name() string {
-	return "Azure Resource Group"
-}
-
-func (*azureResourceGroupDiscovery) Description() string {
-	return "Discovery of Azure resource groups."
-}
-
-// List resource groups and cloud account
-func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err error) {
-	// make sure we are authorized
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
-
+// discoverResourceGroups discovers resource groups and cloud account
+func (d *azureDiscovery) discoverResourceGroups() (list []voc.IsCloudResource, err error) {
 	// initialize client
 	if err := d.initResourceGroupsClient(); err != nil {
 		return nil, err
@@ -92,7 +58,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 
 		for _, rg := range page.Value {
 			// If we are scoped to one resource group, we can skip the rest of the groups
-			if d.azureDiscovery.rg != nil && util.Deref(rg.Name) != util.Deref(d.azureDiscovery.rg) {
+			if d.rg != nil && util.Deref(rg.Name) != util.Deref(d.rg) {
 				continue
 			}
 
@@ -108,7 +74,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 }
 
 // handleResourceGroup returns a [voc.Account] out of an existing [armsubscription.Subscription].
-func (d *azureResourceGroupDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) voc.IsCloudResource {
+func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) voc.IsCloudResource {
 	return &voc.ResourceGroup{
 		Resource: discovery.NewResource(
 			d,
@@ -126,7 +92,7 @@ func (d *azureResourceGroupDiscovery) handleResourceGroup(rg *armresources.Resou
 }
 
 // handleSubscription returns a [voc.Account] out of an existing [armsubscription.Subscription].
-func (d *azureResourceGroupDiscovery) handleSubscription(s *armsubscription.Subscription) *voc.Account {
+func (d *azureDiscovery) handleSubscription(s *armsubscription.Subscription) *voc.Account {
 	return &voc.Account{
 		Resource: discovery.NewResource(
 			d,
@@ -143,10 +109,4 @@ func (d *azureResourceGroupDiscovery) handleSubscription(s *armsubscription.Subs
 			voc.AccountType,
 		),
 	}
-}
-
-// azureResourceGroupDiscovery creates the client if not already exists
-func (d *azureResourceGroupDiscovery) initResourceGroupsClient() (err error) {
-	d.clients.rgClient, err = initClient(d.clients.rgClient, d.azureDiscovery, armresources.NewResourceGroupsClient)
-	return
 }

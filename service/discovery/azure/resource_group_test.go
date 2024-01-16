@@ -26,10 +26,8 @@
 package azure
 
 import (
-	"net/http"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -37,55 +35,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockResourceGroupSender struct {
-	mockSender
-}
-
-func newMockResourceGroupSender() *mockResourceGroupSender {
-	m := &mockResourceGroupSender{}
-	return m
-}
-
-func (m mockResourceGroupSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
-					"subscriptionId": "00000000-0000-0000-0000-000000000000",
-					"name":           "sub1",
-					"displayName":    "displayName",
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-					"name": "res1",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"location": "westus",
-				},
-				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
-					"name": "res2",
-					"tags": map[string]interface{}{
-						"testKey1": "testTag1",
-						"testKey2": "testTag2",
-					},
-					"location": "eastus",
-				},
-			},
-		}, 200)
-	}
-
-	return m.mockSender.Do(req)
-}
 
 func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 	type fields struct {
@@ -103,12 +52,12 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				s: &armsubscription.Subscription{
 					SubscriptionID: util.Ref(testdata.MockSubscriptionID),
-					DisplayName:    util.Ref(discovery.DefaultCloudServiceID),
+					DisplayName:    util.Ref("Wonderful Subscription"),
 					ID:             util.Ref(testdata.MockSubscriptionResourceID),
 				},
 			},
@@ -116,7 +65,7 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 				Resource: &voc.Resource{
 					ID:        voc.ResourceID(testdata.MockSubscriptionResourceID),
 					ServiceID: testdata.MockCloudServiceID1,
-					Name:      discovery.DefaultCloudServiceID,
+					Name:      "Wonderful Subscription",
 					Type:      voc.AccountType,
 				},
 			},
@@ -124,9 +73,8 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got := d.handleSubscription(tt.args.s)
 			assert.Equal(t, tt.want, got)
 		})
@@ -149,7 +97,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				rg: &armresources.ResourceGroup{
@@ -182,16 +130,15 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got := d.handleResourceGroup(tt.args.rg)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func Test_azureResourceGroupDiscovery_List(t *testing.T) {
+func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
 	}
@@ -202,22 +149,10 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Authorize error",
-			fields: fields{
-				azureDiscovery: &azureDiscovery{
-					cred: nil,
-				},
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-			},
-		},
-		{
 			name: "Discovery error",
 			fields: fields{
 				// Intentionally use wrong sender
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(nil),
 			},
 			wantList: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -227,7 +162,12 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender(),
+					WithSubscription(&armsubscription.Subscription{
+						DisplayName:    util.Ref("displayName"),
+						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+					})),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.Account{
@@ -276,7 +216,13 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 		{
 			name: "Happy path: with given resource group",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockResourceGroupSender(), WithResourceGroup("res1")),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender(),
+					WithResourceGroup("res1"),
+					WithSubscription(&armsubscription.Subscription{
+						DisplayName:    util.Ref("displayName"),
+						ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
+					})),
 			},
 			wantList: []voc.IsCloudResource{
 				&voc.Account{
@@ -309,10 +255,9 @@ func Test_azureResourceGroupDiscovery_List(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureResourceGroupDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-			gotList, err := d.List()
+			d := tt.fields.azureDiscovery
+
+			gotList, err := d.discoverResourceGroups()
 
 			assert.Equal(t, tt.wantList, gotList)
 			tt.wantErr(t, err)

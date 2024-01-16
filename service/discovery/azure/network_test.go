@@ -26,436 +26,15 @@
 package azure
 
 import (
-	"net/http"
+	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockNetworkSender struct {
-	mockSender
-}
-
-func newMockNetworkSender() *mockNetworkSender {
-	m := &mockNetworkSender{}
-	return m
-}
-
-func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error) {
-	if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-					"name":     "iface1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"networkSecurityGroup": map[string]interface{}{
-							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-							"location": "eastus",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
-		return createResponse(req, map[string]interface{}{
-			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
-			"name":     "nsg1",
-			"location": "eastus",
-			"properties": map[string]interface{}{
-				"securityRules": []map[string]interface{}{
-					{
-						"properties": map[string]interface{}{
-							"access":          "Deny",
-							"sourcePortRange": "*",
-						},
-					},
-					{
-						"properties": map[string]interface{}{
-							"access":          "Deny",
-							"sourcePortRange": "*",
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-					"name":     "lb1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": map[string]interface{}{
-										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
-										"properties": map[string]interface{}{
-											"ipAddress": "111.222.333.444",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-					"name":     "lb2",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": nil,
-								},
-							},
-						},
-					},
-				},
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-					"name":     "lb3",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"loadBalancingRules": []map[string]interface{}{
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 1234,
-								},
-							},
-							{
-								"properties": map[string]interface{}{
-									"frontendPort": 5678,
-								},
-							},
-						},
-						"frontendIPConfigurations": []map[string]interface{}{
-							{
-								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
-								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
-								"properties": map[string]interface{}{
-									"publicIPAddress": map[string]interface{}{
-										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"ipAddress": "111.222.333.444",
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
-		return createResponse(req, map[string]interface{}{
-			"properties": map[string]interface{}{
-				"ipAddress": nil,
-			},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{
-				{
-					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-					"name":     "appgw1",
-					"location": "eastus",
-					"properties": map[string]interface{}{
-						"webApplicationFirewallConfiguration": map[string]interface{}{
-							"enabled": true,
-						},
-					},
-				},
-			},
-		}, 200)
-	}
-	// return createResponse(req, map[string]interface{}{
-	// 	"value": &[]map[string]interface{}{
-
-	return m.mockSender.Do(req)
-}
-
-func TestAzureNetworkAuthorizer(t *testing.T) {
-
-	d := NewAzureNetworkDiscovery()
-	list, err := d.List()
-
-	assert.Error(t, err)
-	assert.Nil(t, list)
-	assert.ErrorIs(t, err, ErrNoCredentialsConfigured)
-}
-
-func Test_azureNetworkDiscovery_List(t *testing.T) {
-	type fields struct {
-		azureDiscovery *azureDiscovery
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		wantList []voc.IsCloudResource
-		wantErr  assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Authorize error",
-			fields: fields{
-				azureDiscovery: &azureDiscovery{
-					cred: nil,
-				},
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
-			},
-		},
-		{
-			name: "Discovery error",
-			fields: fields{
-				// Intentionally use wrong sender
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-			},
-			wantList: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover network interfaces:")
-			},
-		},
-		{
-			name: "Without errors",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
-			},
-			wantList: []voc.IsCloudResource{
-				&voc.NetworkInterface{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Name:      "iface1",
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Type:   voc.NetworkInterfaceType,
-							Labels: map[string]string{},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
-						},
-					},
-					AccessRestriction: &voc.L3Firewall{
-						Enabled: true,
-					},
-				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								ServiceID: testdata.MockCloudServiceID1,
-								Name:      "lb1",
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Type:   voc.LoadBalancerType,
-								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-							},
-						},
-						Ips:   []string{"111.222.333.444"},
-						Ports: []uint16{1234, 5678},
-					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
-				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								ServiceID: testdata.MockCloudServiceID1,
-								Name:      "lb2",
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Type:   voc.LoadBalancerType,
-								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-							},
-						},
-						Ports: []uint16{1234, 5678},
-						Ips:   []string{},
-					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
-				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								ServiceID: testdata.MockCloudServiceID1,
-								Name:      "lb3",
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Type:   voc.LoadBalancerType,
-								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-							},
-						},
-						Ports: []uint16{1234, 5678},
-						Ips:   []string{},
-					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
-				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-								ServiceID: testdata.MockCloudServiceID1,
-								Name:      "appgw1",
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Type:   voc.LoadBalancerType,
-								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
-							},
-						},
-					},
-					AccessRestriction: voc.WebApplicationFirewall{
-						Enabled: true,
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-			gotList, err := d.List()
-
-			assert.Equal(t, len(tt.wantList), len(gotList))
-			if !tt.wantErr(t, err) {
-				return
-			}
-
-			for i := 0; i < len(tt.wantList); i++ {
-				assert.Equal(t, tt.wantList[i], gotList[i])
-			}
-		})
-	}
-}
-
-func TestNewAzureNetworkDiscovery(t *testing.T) {
-	type args struct {
-		opts []DiscoveryOption
-	}
-	tests := []struct {
-		name string
-		args args
-		want discovery.Discoverer
-	}{
-		{
-			name: "Empty input",
-			args: args{
-				opts: nil,
-			},
-			want: &azureNetworkDiscovery{
-				&azureDiscovery{
-					discovererComponent: NetworkComponent,
-					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*backup),
-				},
-			},
-		},
-		{
-			name: "With sender",
-			args: args{
-				opts: []DiscoveryOption{WithSender(mockNetworkSender{})},
-			},
-			want: &azureNetworkDiscovery{
-				&azureDiscovery{
-					clientOptions: arm.ClientOptions{
-						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
-						},
-					},
-					discovererComponent: NetworkComponent,
-					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*backup),
-				},
-			},
-		},
-		{
-			name: "With authorizer",
-			args: args{
-				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
-			},
-			want: &azureNetworkDiscovery{
-				&azureDiscovery{
-					cred:                &mockAuthorizer{},
-					discovererComponent: NetworkComponent,
-					csID:                discovery.DefaultCloudServiceID,
-					backupMap:           make(map[string]*backup),
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := NewAzureNetworkDiscovery(tt.args.opts...)
-			assert.Equal(t, tt.want, d)
-			assert.Equal(t, "Azure Network", d.Name())
-		})
-
-	}
-}
 
 func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	type fields struct {
@@ -479,12 +58,67 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
+		{
+			name: "Happy path: with resource group",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender(), WithResourceGroup("res1")),
+			},
+			want: []voc.IsCloudResource{
+				&voc.NetworkInterface{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+							Name:      "iface1",
+							ServiceID: testdata.MockCloudServiceID1,
+							Type:      voc.NetworkInterfaceType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+						},
+					},
+					AccessRestriction: &voc.L3Firewall{
+						Enabled: true,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.NetworkInterface{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+							Name:      "iface1",
+							ServiceID: testdata.MockCloudServiceID1,
+							Type:      voc.NetworkInterfaceType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+						},
+					},
+					AccessRestriction: &voc.L3Firewall{
+						Enabled: true,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got, err := d.discoverNetworkInterfaces()
 			if !tt.wantErr(t, err) {
 				return
@@ -516,12 +150,83 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+								Name:      "lb1",
+								ServiceID: testdata.MockCloudServiceID1,
+								Type:      voc.LoadBalancerType,
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Labels: map[string]string{},
+								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							},
+						},
+						Ips:   []string{"111.222.333.444"},
+						Ports: []uint16{1234, 5678},
+					},
+					HttpEndpoints: []*voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+								Name:      "lb2",
+								ServiceID: testdata.MockCloudServiceID1,
+								Type:      voc.LoadBalancerType,
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Labels: map[string]string{},
+								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							},
+						},
+						Ips:   []string{},
+						Ports: []uint16{1234, 5678},
+					},
+					HttpEndpoints: []*voc.HttpEndpoint{},
+				},
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+								Name:      "lb3",
+								ServiceID: testdata.MockCloudServiceID1,
+								Type:      voc.LoadBalancerType,
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Labels: map[string]string{},
+								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							},
+						},
+						Ips:   []string{},
+						Ports: []uint16{1234, 5678},
+					},
+					HttpEndpoints: []*voc.HttpEndpoint{},
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got, err := d.discoverLoadBalancer()
 			if !tt.wantErr(t, err) {
 				return
@@ -534,82 +239,6 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 	id := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3"
 	name := "lb3"
-	location := "eastus"
-	publicIPID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c"
-	publicIPName := "mockPublicName"
-	publicIPAddress := "111.222.333.444"
-	emptyString := ""
-
-	lbComplete := &armnetwork.LoadBalancer{
-		ID:       &id,
-		Name:     &name,
-		Location: &location,
-		Properties: &armnetwork.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
-				{
-					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
-						PublicIPAddress: &armnetwork.PublicIPAddress{
-							ID:   &publicIPID,
-							Name: &publicIPName,
-							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-								IPAddress: &publicIPAddress,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	lbWithoutIPAddress := &armnetwork.LoadBalancer{
-		ID:       &id,
-		Name:     &name,
-		Location: &location,
-		Properties: &armnetwork.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
-				{
-					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
-						PublicIPAddress: &armnetwork.PublicIPAddress{
-							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-								IPAddress: nil,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	lbWithEmptyIPAddress := &armnetwork.LoadBalancer{
-		ID:       &id,
-		Name:     &name,
-		Location: &location,
-		Properties: &armnetwork.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
-				{
-					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
-						PublicIPAddress: &armnetwork.PublicIPAddress{
-							Properties: &armnetwork.PublicIPAddressPropertiesFormat{
-								IPAddress: &emptyString,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	lbWithoutPublicIPAddress := &armnetwork.LoadBalancer{
-		ID:       &id,
-		Name:     &name,
-		Location: &location,
-		Properties: &armnetwork.LoadBalancerPropertiesFormat{
-			FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
-				{
-					Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
-						PublicIPAddress: nil,
-					},
-				},
-			},
-		},
-	}
 
 	type args struct {
 		lb *armnetwork.LoadBalancer
@@ -633,7 +262,7 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 				lb: &armnetwork.LoadBalancer{
 					ID:       &id,
 					Name:     &name,
-					Location: &location,
+					Location: util.Ref("eastus"),
 					Properties: &armnetwork.LoadBalancerPropertiesFormat{
 						FrontendIPConfigurations: nil,
 					},
@@ -642,32 +271,98 @@ func Test_publicIPAddressFromLoadBalancer(t *testing.T) {
 			want: []string{},
 		},
 		{
-			name: "Empty PublicIPAddress",
+			name: "Missing PublicIPAddress",
 			args: args{
-				lb: lbWithoutPublicIPAddress,
+				lb: &armnetwork.LoadBalancer{
+					ID:       &id,
+					Name:     &name,
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+							{
+								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+									PublicIPAddress: nil,
+								},
+							},
+						},
+					},
+				},
 			},
 			want: []string{},
 		},
 		{
 			name: "Empty IPAddress (== nil)",
 			args: args{
-				lb: lbWithoutIPAddress,
+				lb: &armnetwork.LoadBalancer{
+					ID:       &id,
+					Name:     &name,
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+							{
+								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+									PublicIPAddress: &armnetwork.PublicIPAddress{
+										Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+											IPAddress: nil,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			want: []string{},
 		},
 		{
-			name: "Empty IPAddress string",
+			name: "Empty IPAddress",
 			args: args{
-				lb: lbWithEmptyIPAddress,
+				lb: &armnetwork.LoadBalancer{
+					ID:       &id,
+					Name:     &name,
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+							{
+								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+									PublicIPAddress: &armnetwork.PublicIPAddress{
+										Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+											IPAddress: util.Ref(""),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			want: []string{},
 		},
 		{
 			name: "Correct IP",
 			args: args{
-				lb: lbComplete,
+				lb: &armnetwork.LoadBalancer{
+					ID:       &id,
+					Name:     &name,
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						FrontendIPConfigurations: []*armnetwork.FrontendIPConfiguration{
+							{
+								Properties: &armnetwork.FrontendIPConfigurationPropertiesFormat{
+									PublicIPAddress: &armnetwork.PublicIPAddress{
+										ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c"),
+										Name: util.Ref("publicName"),
+										Properties: &armnetwork.PublicIPAddressPropertiesFormat{
+											IPAddress: util.Ref("111.222.333.444"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
-			want: []string{publicIPAddress},
+			want: []string{"111.222.333.444"},
 		},
 	}
 	for _, tt := range tests {
@@ -699,12 +394,41 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 			},
 		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.LoadBalancer{
+					NetworkService: &voc.NetworkService{
+						Networking: &voc.Networking{
+							Resource: &voc.Resource{
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+								Name:      "appgw1",
+								ServiceID: testdata.MockCloudServiceID1,
+								Type:      voc.LoadBalancerType,
+								GeoLocation: voc.GeoLocation{
+									Region: "eastus",
+								},
+								Labels: map[string]string{},
+								Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
+								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+							},
+						},
+					},
+					AccessRestriction: voc.WebApplicationFirewall{
+						Enabled: true,
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureNetworkDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
+			d := tt.fields.azureDiscovery
+
 			got, err := d.discoverApplicationGateway()
 			if !tt.wantErr(t, err) {
 				return
@@ -730,14 +454,14 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		{
 			name: "Empty input",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{},
 			want: false,
 		}, {
 			name: "Error getting nsg",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ni: &armnetwork.Interface{
@@ -753,7 +477,7 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockNetworkSender()),
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			args: args{
 				ni: &armnetwork.Interface{
@@ -768,9 +492,8 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		d := &azureNetworkDiscovery{
-			azureDiscovery: tt.fields.azureDiscovery,
-		}
+		d := tt.fields.azureDiscovery
+
 		t.Run(tt.name, func(t *testing.T) {
 			if got := d.nsgFirewallEnabled(tt.args.ni); got != tt.want {
 				t.Errorf("nsgFirewallEnabled() = %v, want %v", got, tt.want)
@@ -779,7 +502,7 @@ func Test_nsgFirewallEnabled(t *testing.T) {
 	}
 }
 
-func Test_getIDName(t *testing.T) {
+func Test_getName(t *testing.T) {
 	type args struct {
 		id string
 	}
@@ -806,6 +529,246 @@ func Test_getIDName(t *testing.T) {
 			if got := getName(tt.args.id); got != tt.want {
 				t.Errorf("getIDName() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		lb *armnetwork.LoadBalancer
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   voc.IsNetwork
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				lb: &armnetwork.LoadBalancer{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1"),
+					Name:     util.Ref("lb1"),
+					Location: util.Ref("eastus"),
+					Tags: map[string]*string{
+						"tag1": util.Ref("value1"),
+						"tag2": util.Ref("value2"),
+					},
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						LoadBalancingRules: []*armnetwork.LoadBalancingRule{},
+					},
+				},
+			},
+			want: &voc.LoadBalancer{
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+							Name:      "lb1",
+							ServiceID: testdata.MockCloudServiceID1,
+							Type:      voc.LoadBalancerType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{
+								"tag1": "value1",
+								"tag2": "value2",
+							},
+							Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"loadBalancingRules\":[]},\"tags\":{\"tag1\":\"value1\",\"tag2\":\"value2\"}}]}",
+							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+						},
+					},
+					Ips:   []string{},
+					Ports: nil,
+				},
+				HttpEndpoints: []*voc.HttpEndpoint{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+			got := d.handleLoadBalancer(tt.args.lb)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureDiscovery_handleApplicationGateway(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		ag *armnetwork.ApplicationGateway
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   voc.IsNetwork
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				ag: &armnetwork.ApplicationGateway{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1"),
+					Name:     util.Ref("appgw1"),
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.ApplicationGatewayPropertiesFormat{
+						WebApplicationFirewallConfiguration: &armnetwork.ApplicationGatewayWebApplicationFirewallConfiguration{
+							Enabled: util.Ref(true),
+						},
+					},
+				},
+			},
+			want: &voc.LoadBalancer{
+				NetworkService: &voc.NetworkService{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+							Name:      "appgw1",
+							ServiceID: testdata.MockCloudServiceID1,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Type:   voc.LoadBalancerType,
+							Labels: map[string]string{},
+							Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
+							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+						},
+					},
+				},
+				AccessRestriction: voc.WebApplicationFirewall{
+					Enabled: true,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+			got := d.handleApplicationGateway(tt.args.ag)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_loadBalancerPorts(t *testing.T) {
+	type args struct {
+		lb *armnetwork.LoadBalancer
+	}
+	tests := []struct {
+		name                  string
+		args                  args
+		wantLoadBalancerPorts []uint16
+	}{
+		{
+			name: "Happy path: empty input",
+			args: args{
+				lb: &armnetwork.LoadBalancer{
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						LoadBalancingRules: []*armnetwork.LoadBalancingRule{},
+					},
+				},
+			},
+			wantLoadBalancerPorts: nil,
+		},
+		{
+			name: "Happy path",
+			args: args{
+				lb: &armnetwork.LoadBalancer{
+					Properties: &armnetwork.LoadBalancerPropertiesFormat{
+						LoadBalancingRules: []*armnetwork.LoadBalancingRule{
+							{
+								Properties: &armnetwork.LoadBalancingRulePropertiesFormat{
+									FrontendPort: util.Ref(int32(99)),
+								},
+							},
+						},
+					},
+				},
+			},
+			wantLoadBalancerPorts: []uint16{99},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotLoadBalancerPorts := loadBalancerPorts(tt.args.lb); !reflect.DeepEqual(gotLoadBalancerPorts, tt.wantLoadBalancerPorts) {
+				t.Errorf("LoadBalancerPorts() = %v, want %v", gotLoadBalancerPorts, tt.wantLoadBalancerPorts)
+			}
+		})
+	}
+}
+
+func Test_azureDiscovery_handleNetworkInterfaces(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		ni *armnetwork.Interface
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   voc.IsNetwork
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				ni: &armnetwork.Interface{
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1"),
+					Name:     util.Ref("iface1"),
+					Location: util.Ref("eastus"),
+					Properties: &armnetwork.InterfacePropertiesFormat{
+						NetworkSecurityGroup: &armnetwork.SecurityGroup{
+							ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1"),
+							Location: util.Ref("eastus"),
+						},
+					},
+				},
+			},
+			want: &voc.NetworkInterface{
+				Networking: &voc.Networking{
+					Resource: &voc.Resource{
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+						Name:      "iface1",
+						ServiceID: testdata.MockCloudServiceID1,
+						Type:      voc.NetworkInterfaceType,
+						GeoLocation: voc.GeoLocation{
+							Region: "eastus",
+						},
+						Labels: map[string]string{},
+						Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+						Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					},
+				},
+				AccessRestriction: &voc.L3Firewall{
+					Enabled: true,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+			got := d.handleNetworkInterfaces(tt.args.ni)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

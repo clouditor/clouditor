@@ -33,10 +33,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 )
@@ -45,277 +43,8 @@ var (
 	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
 )
 
-type azureComputeDiscovery struct {
-	*azureDiscovery
-	defenderProperties map[string]*defenderProperties
-}
-
-func NewAzureComputeDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
-	d := &azureComputeDiscovery{
-		&azureDiscovery{
-			discovererComponent: ComputeComponent,
-			csID:                discovery.DefaultCloudServiceID,
-			backupMap:           make(map[string]*backup),
-		},
-		make(map[string]*defenderProperties),
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt(d.azureDiscovery)
-	}
-
-	return d
-}
-
-func (*azureComputeDiscovery) Name() string {
-	return "Azure Compute"
-}
-
-func (*azureComputeDiscovery) Description() string {
-	return "Discovery Azure compute."
-}
-
-// List compute resources
-func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
-	}
-
-	// initialize backup policies client
-	if err := d.initBackupPoliciesClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize backup vaults client
-	if err := d.initBackupVaultsClient(); err != nil {
-		return nil, err
-	}
-
-	// initialize backup instances client
-	if err := d.initBackupInstancesClient(); err != nil {
-		return nil, err
-	}
-
-	// Discover backup vaults
-	err = d.azureDiscovery.discoverBackupVaults()
-	if err != nil {
-		log.Errorf("could not discover backup vaults: %v", err)
-	}
-
-	log.Info("Discover Azure block storage")
-	// Discover block storage
-	storage, err := d.discoverBlockStorages()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover block storage: %w", err)
-	}
-	list = append(list, storage...)
-
-	// Add backup block storages
-	if d.backupMap[DataSourceTypeDisc] != nil && d.backupMap[DataSourceTypeDisc].backupStorages != nil {
-		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
-	}
-
-	log.Info("Discover Azure compute resources")
-	// Discover virtual machines
-	virtualMachines, err := d.discoverVirtualMachines()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
-	}
-	list = append(list, virtualMachines...)
-
-	// Discover functions and web apps
-	resources, err := d.discoverFunctionsWebApps()
-	if err != nil {
-		return nil, fmt.Errorf("could not discover functions: %w", err)
-	}
-	// if resources != nil {
-	list = append(list, resources...)
-	// }
-
-	return
-}
-
-// Discover functions and web apps
-func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize functions client
-	if err := d.initWebAppsClient(); err != nil {
-		return nil, err
-	}
-
-	// List functions
-	err := listPager(d.azureDiscovery,
-		d.clients.webAppsClient.NewListPager,
-		d.clients.webAppsClient.NewListByResourceGroupPager,
-		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
-			return res.Value
-		},
-		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
-			return res.Value
-		},
-		func(site *armappservice.Site) error {
-			var r voc.IsCompute
-
-			// Get configuration for detailed properties
-			config, err := d.clients.webAppsClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
-			if err != nil {
-				log.Errorf("error getting site config: %v", err)
-			}
-
-			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
-			switch *site.Kind {
-			case "app": // Windows Web App
-				r = d.handleWebApp(site, config)
-			case "app,linux": // Linux Web app
-				r = d.handleWebApp(site, config)
-			case "app,linux,container": // Linux Container Web App
-				// TODO(all): TBD
-				log.Debug("Linux Container Web App Web App currently not implemented.")
-			case "hyperV": // Windows Container Web App
-				// TODO(all): TBD
-				log.Debug("Windows Container Web App currently not implemented.")
-			case "app,container,windows": // Windows Container Web App
-				// TODO(all): TBD
-				log.Debug("Windows Web App currently not implemented.")
-			case "app,linux,kubernetes": // Linux Web App on ARC
-				// TODO(all): TBD
-				log.Debug("Linux Web App on ARC currently not implemented.")
-			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
-				// TODO(all): TBD
-				log.Debug("Linux Container Web App on ARC currently not implemented.")
-			case "functionapp": // Function Code App
-				r = d.handleFunction(site, config)
-			case "functionapp,linux": // Linux Consumption Function app
-				r = d.handleFunction(site, config)
-			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
-				// TODO(all): TBD
-				log.Debug("Function Container App on ARC currently not implemented.")
-			case "functionapp,linux,kubernetes": // Function Code App on ARC
-				// TODO(all): TBD
-				log.Debug("Function Code App on ARC currently not implemented.")
-			default:
-				log.Debugf("%s currently not supported.", *site.Kind)
-			}
-
-			if r != nil {
-				log.Infof("Adding function %+v", r)
-				list = append(list, r)
-			}
-
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
-	var (
-		runtimeLanguage string
-		runtimeVersion  string
-	)
-
-	// If a mandatory field is empty, the whole function is empty
-	if function == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
-		log.Error("input parameter empty")
-		return nil
-	}
-
-	if *function.Kind == "functionapp,linux" { // Linux function
-		runtimeLanguage, runtimeVersion = runtimeInfo(util.Deref(function.Properties.SiteConfig.LinuxFxVersion))
-	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
-		// Check all runtime versions to get the used runtime language and runtime version
-		if util.Deref(config.Properties.JavaVersion) != "" {
-			runtimeLanguage = "Java"
-			runtimeVersion = *config.Properties.JavaVersion
-		} else if util.Deref(config.Properties.NodeVersion) != "" {
-			runtimeLanguage = "Node.js"
-			runtimeVersion = *config.Properties.NodeVersion
-		} else if util.Deref(config.Properties.PowerShellVersion) != "" {
-			runtimeLanguage = "PowerShell"
-			runtimeVersion = *config.Properties.PowerShellVersion
-		} else if util.Deref(config.Properties.PhpVersion) != "" {
-			runtimeLanguage = "PHP"
-			runtimeVersion = *config.Properties.PhpVersion
-		} else if util.Deref(config.Properties.PythonVersion) != "" {
-			runtimeLanguage = "Python"
-			runtimeVersion = *config.Properties.PythonVersion
-		} else if util.Deref(config.Properties.JavaContainer) != "" {
-			runtimeLanguage = "JavaContainer"
-			runtimeVersion = *config.Properties.JavaContainer
-		} else if util.Deref(config.Properties.NetFrameworkVersion) != "" {
-			runtimeLanguage = ".NET"
-			runtimeVersion = *config.Properties.NetFrameworkVersion
-		}
-	}
-
-	return &voc.Function{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(function.ID)),
-				util.Deref(function.Name),
-				// No creation time available
-				nil,
-				voc.GeoLocation{
-					Region: util.Deref(function.Location),
-				},
-				labels(function.Tags),
-				resourceGroupID(function.ID),
-				voc.FunctionType,
-				function,
-				config,
-			),
-			NetworkInterfaces: getVirtualNetworkSubnetId(function), // Add the Virtual Network Subnet ID
-			ResourceLogging:   d.getResourceLoggingWebApps(function),
-		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(function.Properties, config),
-		},
-		RuntimeLanguage: runtimeLanguage,
-		RuntimeVersion:  runtimeVersion,
-		PublicAccess:    getPublicAccessStatus(function),
-		Redundancy:      getRedundancy(function),
-	}
-}
-
-func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
-	if webApp == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
-		log.Error("input parameter empty")
-		return nil
-	}
-
-	return &voc.WebApp{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.ID)),
-				util.Deref(webApp.Name),
-				nil, // Only the last modified time is available.
-				voc.GeoLocation{
-					Region: util.Deref(webApp.Location),
-				},
-				labels(webApp.Tags),
-				resourceGroupID(webApp.ID),
-				voc.WebAppType,
-				webApp,
-				config,
-			),
-			NetworkInterfaces: getVirtualNetworkSubnetId(webApp), // Add the Virtual Network Subnet ID
-			ResourceLogging:   d.getResourceLoggingWebApps(webApp),
-		},
-		HttpEndpoint: &voc.HttpEndpoint{
-			TransportEncryption: getTransportEncryption(webApp.Properties, config),
-		},
-		PublicAccess: getPublicAccessStatus(webApp),
-		Redundancy:   getRedundancy(webApp),
-	}
-}
-
 // Discover virtual machines
-func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize virtual machines client
@@ -324,7 +53,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	}
 
 	// List all VMs
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.virtualMachinesClient.NewListAllPager,
 		d.clients.virtualMachinesClient.NewListPager,
 		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
@@ -352,7 +81,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
 		bootLogging              = []voc.ResourceID{}
 		osLoggingEnabled         bool
@@ -462,7 +191,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	return r, nil
 }
 
-func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// initialize block storages client
@@ -471,7 +200,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	}
 
 	// List all disks
-	err := listPager(d.azureDiscovery,
+	err := listPager(d,
 		d.clients.blockStorageClient.NewListPager,
 		d.clients.blockStorageClient.NewListByResourceGroupPager,
 		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
@@ -498,7 +227,7 @@ func (d *azureComputeDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, 
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
 	var (
 		rawKeyUrl *armcompute.DiskEncryptionSet
 		backups   []*voc.Backup
@@ -540,286 +269,183 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	}, nil
 }
 
-// blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
-// ontology object.
-func (d *azureComputeDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
+// Discover functions and web apps
+func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize functions client
+	if err := d.initWebAppsClient(); err != nil {
+		return nil, err
+	}
+
+	// List functions
+	err := listPager(d,
+		d.clients.webAppsClient.NewListPager,
+		d.clients.webAppsClient.NewListByResourceGroupPager,
+		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
+			return res.Value
+		},
+		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
+			return res.Value
+		},
+		func(site *armappservice.Site) error {
+			var r voc.IsCompute
+
+			// Get configuration for detailed properties
+			config, err := d.clients.webAppsClient.GetConfiguration(context.Background(),
+				util.Deref(site.Properties.ResourceGroup),
+				util.Deref(site.Name),
+				&armappservice.WebAppsClientGetConfigurationOptions{})
+			if err != nil {
+				log.Errorf("error getting site config: %v", err)
+			}
+
+			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
+			switch *site.Kind {
+			case "app": // Windows Web App
+				r = d.handleWebApp(site, config)
+			case "app,linux": // Linux Web app
+				r = d.handleWebApp(site, config)
+			case "app,linux,container": // Linux Container Web App
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App Web App currently not implemented.")
+			case "hyperV": // Windows Container Web App
+				// TODO(all): TBD
+				log.Debug("Windows Container Web App currently not implemented.")
+			case "app,container,windows": // Windows Container Web App
+				// TODO(all): TBD
+				log.Debug("Windows Web App currently not implemented.")
+			case "app,linux,kubernetes": // Linux Web App on ARC
+				// TODO(all): TBD
+				log.Debug("Linux Web App on ARC currently not implemented.")
+			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
+				// TODO(all): TBD
+				log.Debug("Linux Container Web App on ARC currently not implemented.")
+			case "functionapp": // Function Code App
+				r = d.handleFunction(site, config)
+			case "functionapp,linux": // Linux Consumption Function app
+				r = d.handleFunction(site, config)
+			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
+				// TODO(all): TBD
+				log.Debug("Function Container App on ARC currently not implemented.")
+			case "functionapp,linux,kubernetes": // Function Code App on ARC
+				// TODO(all): TBD
+				log.Debug("Function Code App on ARC currently not implemented.")
+			default:
+				log.Debugf("%s currently not supported.", *site.Kind)
+			}
+
+			if r != nil {
+				log.Infof("Adding function %+v", r)
+				list = append(list, r)
+			}
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+func (d *azureDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
-		diskEncryptionSetID string
-		keyUrl              string
+		runtimeLanguage string
+		runtimeVersion  string
 	)
 
-	if disk == nil {
-		return enc, nil, errors.New("disk is empty")
+	// If a mandatory field is empty, the whole function is empty
+	if function == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
+		log.Error("input parameter empty")
+		return nil
 	}
 
-	if disk.Properties.Encryption.Type == nil {
-		return enc, nil, errors.New("error getting atRestEncryption properties of blockStorage")
-	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
-		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256",
-			Enabled:   true,
-		}}
-	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
-		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
-
-		keyUrl, rawKeyUrl, err = d.keyURL(diskEncryptionSetID)
-		if err != nil {
-			return nil, nil, fmt.Errorf("could not get keyVaultID: %w", err)
-		}
-
-		enc = &voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(all): TBD
-				Enabled:   true,
-			},
-			KeyUrl: keyUrl,
-		}
-	}
-
-	return enc, rawKeyUrl, nil
-}
-
-func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *armcompute.DiskEncryptionSet, error) {
-	if diskEncryptionSetID == "" {
-		return "", nil, ErrMissingDiskEncryptionSetID
-	}
-
-	if err := d.initDiskEncryptonSetClient(); err != nil {
-		return "", nil, err
-	}
-
-	// Get disk encryption set
-	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
-	if err != nil {
-		err = fmt.Errorf("could not get key vault: %w", err)
-		return "", nil, err
-	}
-
-	keyURL := kv.DiskEncryptionSet.Properties.ActiveKey.KeyURL
-
-	if keyURL == nil {
-		return "", nil, fmt.Errorf("could not get keyURL")
-	}
-
-	return util.Deref(keyURL), &kv.DiskEncryptionSet, nil
-}
-
-// getVirtualNetworkSubnetId returns the virtual network subnet ID for webApp und function
-func getVirtualNetworkSubnetId(site *armappservice.Site) []voc.ResourceID {
-	var ni = []voc.ResourceID{}
-
-	// Check if a mandatory field is empty
-	if site == nil {
-		return ni
-	}
-
-	// Get virtual network subnet ID
-	if site.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(util.Deref(site.Properties.VirtualNetworkSubnetID))}
-	}
-
-	return ni
-}
-
-// getPublicAccessStatus returns the public access status for webApp and function
-func getPublicAccessStatus(site *armappservice.Site) bool {
-	// Check if a mandatory field is empty
-	if site == nil {
-		return false
-	}
-
-	// Check if resource is public available
-	if util.Deref(site.Properties.PublicNetworkAccess) == "Enabled" {
-		return true
-	}
-
-	return false
-}
-
-// getResourceLoggingWebApps determines if logging is activated for given web app or function by checking the respective app setting
-func (d *azureComputeDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl *voc.ResourceLogging) {
-	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
-
-	if site == nil {
-		log.Error("given parameter is empty")
-		return
-	}
-
-	appSettings, err := d.clients.webAppsClient.ListApplicationSettings(context.Background(),
-		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
-	if err != nil {
-		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
-		return
-	}
-	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
-		rl.Enabled = true
-		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
-
-	}
-	return
-
-}
-
-// getRedundancy returns the redundancy status
-func getRedundancy(app *armappservice.Site) *voc.Redundancy {
-	r := &voc.Redundancy{}
-	switch util.Deref(app.Properties.RedundancyMode) {
-	case armappservice.RedundancyModeNone:
-		break
-	case armappservice.RedundancyModeActiveActive:
-		r.Zone = true
-	case armappservice.RedundancyModeFailover, armappservice.RedundancyModeGeoRedundant:
-		r.Zone = true
-		r.Geo = true
-	}
-	return r
-}
-
-// We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
-func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *voc.TransportEncryption) {
-	var (
-		tlsVersion string
-	)
-
-	// Check TLS version
-	switch util.Deref(config.Properties.MinTLSVersion) {
-	case armappservice.SupportedTLSVersionsOne2:
-		tlsVersion = constants.TLS1_2
-	case armappservice.SupportedTLSVersionsOne1:
-		tlsVersion = constants.TLS1_1
-	case armappservice.SupportedTLSVersionsOne0:
-		tlsVersion = constants.TLS1_0
-	}
-
-	// Create transportEncryption voc object
-	if tlsVersion != "" {
-		enc = &voc.TransportEncryption{
-			Enforced:   util.Deref(siteProperties.HTTPSOnly),
-			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)), // MinTLSCipherSuite is a new property and currently not filled from Azure side
-			Enabled:    true,
-		}
-	} else {
-		enc = &voc.TransportEncryption{
-			Enforced:  util.Deref(siteProperties.HTTPSOnly),
-			Enabled:   false,
-			Algorithm: string(util.Deref(config.Properties.MinTLSCipherSuite)),
+	if *function.Kind == "functionapp,linux" { // Linux function
+		runtimeLanguage, runtimeVersion = runtimeInfo(util.Deref(function.Properties.SiteConfig.LinuxFxVersion))
+	} else if *function.Kind == "functionapp" { // Windows function, we need to get also the config information
+		// Check all runtime versions to get the used runtime language and runtime version
+		if util.Deref(config.Properties.JavaVersion) != "" {
+			runtimeLanguage = "Java"
+			runtimeVersion = *config.Properties.JavaVersion
+		} else if util.Deref(config.Properties.NodeVersion) != "" {
+			runtimeLanguage = "Node.js"
+			runtimeVersion = *config.Properties.NodeVersion
+		} else if util.Deref(config.Properties.PowerShellVersion) != "" {
+			runtimeLanguage = "PowerShell"
+			runtimeVersion = *config.Properties.PowerShellVersion
+		} else if util.Deref(config.Properties.PhpVersion) != "" {
+			runtimeLanguage = "PHP"
+			runtimeVersion = *config.Properties.PhpVersion
+		} else if util.Deref(config.Properties.PythonVersion) != "" {
+			runtimeLanguage = "Python"
+			runtimeVersion = *config.Properties.PythonVersion
+		} else if util.Deref(config.Properties.JavaContainer) != "" {
+			runtimeLanguage = "JavaContainer"
+			runtimeVersion = *config.Properties.JavaContainer
+		} else if util.Deref(config.Properties.NetFrameworkVersion) != "" {
+			runtimeLanguage = ".NET"
+			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
 
-	return
-}
-
-// runtimeInfo returns the runtime language and version
-func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string) {
-	if runtime == "" || !strings.Contains(runtime, "|") {
-		return "", ""
-	}
-	split := strings.Split(runtime, "|")
-	runtimeLanguage = split[0]
-	runtimeVersion = split[1]
-
-	return
-}
-
-// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
-func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
-	automaticUpdates = &voc.AutomaticUpdates{}
-
-	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
-		return
-	}
-
-	// Check if Linux configuration is available
-	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
-		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-		}
-	}
-
-	// Check if Windows configuration is available
-	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
-		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
-	}
-
-	return
-}
-
-func isBootDiagnosticEnabled(vm *armcompute.VirtualMachine) bool {
-	if vm == nil || vm.Properties == nil || vm.Properties.DiagnosticsProfile == nil || vm.Properties.DiagnosticsProfile.BootDiagnostics == nil {
-		return false
-	} else {
-		return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.Enabled)
+	return &voc.Function{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(function.ID)),
+				util.Deref(function.Name),
+				// No creation time available
+				nil,
+				voc.GeoLocation{
+					Region: util.Deref(function.Location),
+				},
+				labels(function.Tags),
+				resourceGroupID(function.ID),
+				voc.FunctionType,
+				function,
+				config,
+			),
+			NetworkInterfaces: getVirtualNetworkSubnetId(function), // Add the Virtual Network Subnet ID
+			ResourceLogging:   d.getResourceLoggingWebApps(function),
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: getTransportEncryption(function.Properties, config),
+		},
+		RuntimeLanguage: runtimeLanguage,
+		RuntimeVersion:  runtimeVersion,
+		PublicAccess:    getPublicAccessStatus(function),
+		Redundancy:      getRedundancy(function),
 	}
 }
 
-func bootLogOutput(vm *armcompute.VirtualMachine) string {
-	if isBootDiagnosticEnabled(vm) {
-		// If storageUri is not specified while enabling boot diagnostics, managed storage will be used.
-		// TODO(oxisto): The issue here, is that this is an URL but not an ID of the object storage!
-		// if vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI != nil {
-		// 	return util.Deref(vm.Properties.DiagnosticsProfile.BootDiagnostics.StorageURI)
-		// }
-
-		return ""
+func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
+	if webApp == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
+		log.Error("input parameter empty")
+		return nil
 	}
-	return ""
-}
 
-// initWebAppsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
-	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d.azureDiscovery, armappservice.NewWebAppsClient)
-	return
-}
-
-// initVirtualMachinesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
-	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
-	return
-}
-
-// initBlockStoragesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
-	d.clients.blockStorageClient, err = initClient(d.clients.blockStorageClient, d.azureDiscovery, armcompute.NewDisksClient)
-	return
-}
-
-// initBlockStoragesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
-	return
-}
-
-// initBackupPoliciesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupPoliciesClient() (err error) {
-	d.clients.backupPoliciesClient, err = initClient(d.clients.backupPoliciesClient, d.azureDiscovery, armdataprotection.NewBackupPoliciesClient)
-
-	return
-}
-
-// initBackupVaultsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupVaultsClient() (err error) {
-	d.clients.backupVaultClient, err = initClient(d.clients.backupVaultClient, d.azureDiscovery, armdataprotection.NewBackupVaultsClient)
-
-	return
-}
-
-// initBackupInstancesClient creates the client if not already exists
-func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
-	d.clients.backupInstancesClient, err = initClient(d.clients.backupInstancesClient, d.azureDiscovery, armdataprotection.NewBackupInstancesClient)
-
-	return
+	return &voc.WebApp{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(util.Deref(webApp.ID)),
+				util.Deref(webApp.Name),
+				nil, // Only the last modified time is available.
+				voc.GeoLocation{
+					Region: util.Deref(webApp.Location),
+				},
+				labels(webApp.Tags),
+				resourceGroupID(webApp.ID),
+				voc.WebAppType,
+				webApp,
+				config,
+			),
+			NetworkInterfaces: getVirtualNetworkSubnetId(webApp), // Add the Virtual Network Subnet ID
+			ResourceLogging:   d.getResourceLoggingWebApps(webApp),
+		},
+		HttpEndpoint: &voc.HttpEndpoint{
+			TransportEncryption: getTransportEncryption(webApp.Properties, config),
+		},
+		PublicAccess: getPublicAccessStatus(webApp),
+		Redundancy:   getRedundancy(webApp),
+	}
 }
