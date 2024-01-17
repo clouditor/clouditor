@@ -1,4 +1,4 @@
-// Copyright 2021 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,60 +26,15 @@
 package azure
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 )
-
-var (
-	ErrEmptyVirtualMachine = errors.New("virtual machine is empty")
-)
-
-// Discover virtual machines
-func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize virtual machines client
-	if err := d.initVirtualMachinesClient(); err != nil {
-		return nil, err
-	}
-
-	// List all VMs
-	err := listPager(d,
-		d.clients.virtualMachinesClient.NewListAllPager,
-		d.clients.virtualMachinesClient.NewListPager,
-		func(res armcompute.VirtualMachinesClientListAllResponse) []*armcompute.VirtualMachine {
-			return res.Value
-		},
-		func(res armcompute.VirtualMachinesClientListResponse) []*armcompute.VirtualMachine {
-			return res.Value
-		},
-		func(vm *armcompute.VirtualMachine) error {
-			r, err := d.handleVirtualMachines(vm)
-			if err != nil {
-				return fmt.Errorf("could not handle virtual machine: %w", err)
-			}
-
-			log.Infof("Adding virtual machine '%s'", r.GetName())
-
-			list = append(list, r)
-
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
 
 func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
 	var (
@@ -191,42 +146,6 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (v
 	return r, nil
 }
 
-func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize block storages client
-	if err := d.initBlockStoragesClient(); err != nil {
-		return nil, err
-	}
-
-	// List all disks
-	err := listPager(d,
-		d.clients.blockStorageClient.NewListPager,
-		d.clients.blockStorageClient.NewListByResourceGroupPager,
-		func(res armcompute.DisksClientListResponse) []*armcompute.Disk {
-			return res.Value
-		},
-		func(res armcompute.DisksClientListByResourceGroupResponse) []*armcompute.Disk {
-			return res.Value
-		},
-		func(disk *armcompute.Disk) error {
-			blockStorage, err := d.handleBlockStorage(disk)
-			if err != nil {
-				return fmt.Errorf("could not handle block storage: %w", err)
-			}
-
-			log.Infof("Adding block storage '%s'", blockStorage.GetName())
-
-			list = append(list, blockStorage)
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
 func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
 	var (
 		rawKeyUrl *armcompute.DiskEncryptionSet
@@ -267,86 +186,6 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockSt
 			Backups:          backups,
 		},
 	}, nil
-}
-
-// Discover functions and web apps
-func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
-
-	// initialize functions client
-	if err := d.initWebAppsClient(); err != nil {
-		return nil, err
-	}
-
-	// List functions
-	err := listPager(d,
-		d.clients.webAppsClient.NewListPager,
-		d.clients.webAppsClient.NewListByResourceGroupPager,
-		func(res armappservice.WebAppsClientListResponse) []*armappservice.Site {
-			return res.Value
-		},
-		func(res armappservice.WebAppsClientListByResourceGroupResponse) []*armappservice.Site {
-			return res.Value
-		},
-		func(site *armappservice.Site) error {
-			var r voc.IsCompute
-
-			// Get configuration for detailed properties
-			config, err := d.clients.webAppsClient.GetConfiguration(context.Background(),
-				util.Deref(site.Properties.ResourceGroup),
-				util.Deref(site.Name),
-				&armappservice.WebAppsClientGetConfigurationOptions{})
-			if err != nil {
-				log.Errorf("error getting site config: %v", err)
-			}
-
-			// Check kind of site (see https://github.com/Azure/app-service-linux-docs/blob/master/Things_You_Should_Know/kind_property.md)
-			switch *site.Kind {
-			case "app": // Windows Web App
-				r = d.handleWebApp(site, config)
-			case "app,linux": // Linux Web app
-				r = d.handleWebApp(site, config)
-			case "app,linux,container": // Linux Container Web App
-				// TODO(all): TBD
-				log.Debug("Linux Container Web App Web App currently not implemented.")
-			case "hyperV": // Windows Container Web App
-				// TODO(all): TBD
-				log.Debug("Windows Container Web App currently not implemented.")
-			case "app,container,windows": // Windows Container Web App
-				// TODO(all): TBD
-				log.Debug("Windows Web App currently not implemented.")
-			case "app,linux,kubernetes": // Linux Web App on ARC
-				// TODO(all): TBD
-				log.Debug("Linux Web App on ARC currently not implemented.")
-			case "app,linux,container,kubernetes": // Linux Container Web App on ARC
-				// TODO(all): TBD
-				log.Debug("Linux Container Web App on ARC currently not implemented.")
-			case "functionapp": // Function Code App
-				r = d.handleFunction(site, config)
-			case "functionapp,linux": // Linux Consumption Function app
-				r = d.handleFunction(site, config)
-			case "functionapp,linux,container,kubernetes": // Function Container App on ARC
-				// TODO(all): TBD
-				log.Debug("Function Container App on ARC currently not implemented.")
-			case "functionapp,linux,kubernetes": // Function Code App on ARC
-				// TODO(all): TBD
-				log.Debug("Function Code App on ARC currently not implemented.")
-			default:
-				log.Debugf("%s currently not supported.", *site.Kind)
-			}
-
-			if r != nil {
-				log.Infof("Adding function %+v", r)
-				list = append(list, r)
-			}
-
-			return nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
 }
 
 func (d *azureDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {

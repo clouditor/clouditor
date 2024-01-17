@@ -1566,7 +1566,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 	}
 }
 
-func Test_azureStorageDiscovery_getMongoDBs(t *testing.T) {
+func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 	type fields struct {
 		azureDiscovery         *azureDiscovery
 		defenderProperties     map[string]*defenderProperties
@@ -1666,7 +1666,7 @@ func Test_azureStorageDiscovery_getMongoDBs(t *testing.T) {
 				_ = d.initMongoDResourcesBClient()
 			}
 
-			got := d.getMongoDBs(tt.args.account, tt.args.atRestEnc)
+			got := d.discoverMongoDBDatabases(tt.args.account, tt.args.atRestEnc)
 
 			assert.Equal(t, tt.want, got)
 		})
