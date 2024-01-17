@@ -1,8 +1,6 @@
 module clouditor.io/clouditor
 
-go 1.21.5
-
-toolchain go1.21.6
+go 1.21.6
 
 // runtime dependencies (core)
 require (
@@ -69,7 +67,6 @@ require (
 	github.com/google/addlicense v1.1.0
 	github.com/google/gnostic v0.7.0
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
-	github.com/oxisto/owl2protobuf/cmd/owl2protobuf v0.0.1
 )
 
 // indirect dependencies
@@ -191,6 +188,11 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
+)
+
+require (
+	github.com/lmittmann/tint v1.0.3 // indirect
+	github.com/oxisto/owl2protobuf v0.0.1
 )
 
 retract v1.4.7
