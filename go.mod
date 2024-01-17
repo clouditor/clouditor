@@ -192,6 +192,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require github.com/oxisto/owl2protobuf v0.0.0-20240115101553-d8ab805481d1 // indirect
-
 retract v1.4.7
