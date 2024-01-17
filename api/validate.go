@@ -35,6 +35,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// validator contains our single Validator that we re-use for each validation.
+var validator *protovalidate.Validator
+
+func init() {
+	validator, _ = protovalidate.New()
+}
+
 // Validate validates an incoming request according to different criteria:
 //   - If the request is nil, [api.ErrEmptyRequest] is returned
 //   - The request is validated according to the generated validation method
@@ -51,15 +58,8 @@ func Validate(req IncomingRequest) (err error) {
 	if util.IsNil(req) {
 		return status.Errorf(codes.InvalidArgument, "%s", ErrEmptyRequest)
 	}
-
-	// TODO(oxisto): Re-use validator?
-	v, err := protovalidate.New()
-	if err != nil {
-		return status.Errorf(codes.Internal, "failed to initialize validator: %s", err)
-	}
-
 	// Validate request
-	err = v.Validate(req)
+	err = validator.Validate(req)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "%v: %v", ErrInvalidRequest, err)
 	}
