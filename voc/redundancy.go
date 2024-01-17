@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,14 +25,9 @@
 
 package voc
 
-// AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices). Scope contains the resource ID of the protected resource.
-type AnomalyDetection struct {
-	*Auditing
-	Scope              ResourceID          `json:"scope"`
-	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
-	Enabled            bool                `json:"enabled"`
-}
-
-func (*AnomalyDetection) Type() string {
-	return "AnomalyDetection"
+type Redundancy struct {
+	*Availability
+	Local bool // True when local redundancy is enabled
+	Zone  bool // True when zone redundancy is enabled
+	Geo   bool // True when geo redundancy is enabled
 }

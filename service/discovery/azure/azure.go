@@ -29,8 +29,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -162,6 +160,7 @@ type clients struct {
 	sqlServersClient       *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 	cosmosDBClient         *armcosmos.DatabaseAccountsClient
+	mongoDBResourcesClient *armcosmos.MongoDBResourcesClient
 
 	// Network
 	networkInterfacesClient     *armnetwork.InterfacesClient
@@ -170,7 +169,7 @@ type clients struct {
 	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
-	sitesClient *armappservice.WebAppsClient
+	webAppsClient *armappservice.WebAppsClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
@@ -412,70 +411,6 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 	}
 
 	return pricings, nil
-}
-
-// resourceGroupName returns the resource group name of a given Azure ID
-func resourceGroupName(id string) string {
-	return strings.Split(id, "/")[4]
-}
-
-func resourceGroupID(ID *string) voc.ResourceID {
-	// split according to "/"
-	s := strings.Split(util.Deref(ID), "/")
-
-	// We cannot really return an error here, so we just return an empty string
-	if len(s) < 5 {
-		return ""
-	}
-
-	id := strings.Join(s[:5], "/")
-
-	return voc.ResourceID(id)
-}
-
-// retentionDuration returns the retention string as time.Duration
-func retentionDuration(retention string) time.Duration {
-	if retention == "" {
-		return time.Duration(0)
-	}
-
-	// Delete first and last character
-	r := retention[1 : len(retention)-1]
-
-	// string to int
-	d, err := strconv.Atoi(r)
-	if err != nil {
-		log.Errorf("could not convert string to int")
-		return time.Duration(0)
-	}
-
-	// Create duration in hours
-	duration := time.Duration(time.Duration(d) * time.Hour * 24)
-
-	return duration
-}
-
-// backupPolicyName returns the backup policy name of a given Azure ID
-func backupPolicyName(id string) string {
-	// split according to "/"
-	s := strings.Split(id, "/")
-
-	// We cannot really return an error here, so we just return an empty string
-	if len(s) < 10 {
-		return ""
-	}
-	return s[10]
-}
-
-// labels converts the resource tags to the vocabulary label
-func labels(tags map[string]*string) map[string]string {
-	l := make(map[string]string)
-
-	for tag, i := range tags {
-		l[tag] = util.Deref(i)
-	}
-
-	return l
 }
 
 // listPager loops all values from a [runtime.Pager] object from the Azure SDK and issues a callback for each item. It

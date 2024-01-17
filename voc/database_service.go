@@ -32,6 +32,6 @@ var DatabaseServiceType = []string{"DatabaseService", "StorageService", "Network
 // DatabaseService is an entity in our Cloud ontology. This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
 type DatabaseService struct {
 	*StorageService
-	AnomalyDetection *AnomalyDetection `json:"anomalyDetection"`
-	HttpEndpoint     *HttpEndpoint     `json:"httpEndpoint"`
+	AnomalyDetection []IsAnomalyDetection `json:"anomalyDetection"`
+	HttpEndpoint     *HttpEndpoint        `json:"httpEndpoint"`
 }

@@ -118,6 +118,13 @@ func (d *azureDiscovery) initCosmosDBClient() (err error) {
 	return
 }
 
+// initMongoDResourcesBClient creates the client if not already exists
+func (d *azureDiscovery) initMongoDResourcesBClient() (err error) {
+	d.clients.mongoDBResourcesClient, err = initClient(d.clients.mongoDBResourcesClient, d, armcosmos.NewMongoDBResourcesClient)
+
+	return
+}
+
 // initDatabasesClient creates the client if not already exists
 func (d *azureDiscovery) initDatabasesClient() (err error) {
 	d.clients.databasesClient, err = initClient(d.clients.databasesClient, d, armsql.NewDatabasesClient)
@@ -190,6 +197,6 @@ func (d *azureDiscovery) initVirtualMachinesClient() (err error) {
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureDiscovery) initWebAppsClient() (err error) {
-	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d, armappservice.NewWebAppsClient)
+	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d, armappservice.NewWebAppsClient)
 	return
 }

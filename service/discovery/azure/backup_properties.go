@@ -1,6 +1,4 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,16 +23,37 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package azure
 
-// AnomalyDetection is an entity in our Cloud ontology. analyzes the activity of a NetworkService (which includes DatabaseServices). Scope contains the resource ID of the protected resource.
-type AnomalyDetection struct {
-	*Auditing
-	Scope              ResourceID          `json:"scope"`
-	ApplicationLogging *ApplicationLogging `json:"applicationLogging"`
-	Enabled            bool                `json:"enabled"`
+import (
+	"strings"
+
+	"clouditor.io/clouditor/voc"
+)
+
+// backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
+func backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
+	if len(backups) == 0 {
+		return []*voc.Backup{
+			{
+				Enabled:         false,
+				RetentionPeriod: -1,
+				Interval:        -1,
+			},
+		}
+	}
+
+	return backups
 }
 
-func (*AnomalyDetection) Type() string {
-	return "AnomalyDetection"
+// backupPolicyName returns the backup policy name of a given Azure ID
+func backupPolicyName(id string) string {
+	// split according to "/"
+	s := strings.Split(id, "/")
+
+	// We cannot really return an error here, so we just return an empty string
+	if len(s) < 10 {
+		return ""
+	}
+	return s[10]
 }

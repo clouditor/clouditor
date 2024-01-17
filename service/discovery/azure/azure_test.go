@@ -352,6 +352,9 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
 					"name":     "SQLServer1",
 					"location": "eastus",
+					"properties": map[string]interface{}{
+						"minimalTlsVersion": "1.2",
+					},
 				},
 			},
 		}, 200)
@@ -398,8 +401,8 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
-					"name": "CosmosDB1",
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+					"name": "DBAccount1",
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
@@ -415,13 +418,75 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					},
 				},
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
-					"name": "CosmosDB2",
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
+					"name": "DBAccount2",
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
 						"createdAt": "2017-05-24T13:28:53.4540398Z",
 					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+					"name": "DBAccount1",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"keyVaultKeyUri": "https://testvault.vault.azure.net/keys/testkey/123456",
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
+					"name": "DBAccount2",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1",
+					"name":     "mongoDB1",
+					"location": "West Europe",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2",
+					"name":     "mongoDB2",
 					"location": "eastus",
 					"tags": map[string]interface{}{
 						"testKey1": "testTag1",
@@ -642,6 +707,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 						"siteConfig": map[string]interface{}{
 							"linuxFxVersion": "PYTHON|3.8",
 						},
+						"resourceGroup":       "res1",
 						"publicNetworkAccess": "Enabled",
 					},
 				},
@@ -670,10 +736,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							"minTlsVersion":     "1.1",
-							"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
-						},
+						"siteConfig":             map[string]interface{}{},
 						"httpsOnly":              true,
 						"resourceGroup":          "res1",
 						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1",
@@ -690,10 +753,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
-						"siteConfig": map[string]interface{}{
-							"minTlsVersion":     nil,
-							"minTlsCipherSuite": "",
-						},
+						"siteConfig":             map[string]interface{}{},
 						"httpsOnly":              false,
 						"resourceGroup":          "res1",
 						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2",
@@ -702,12 +762,49 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"type": "Microsoft.Web/sites/config",
+			"name": "function1",
+			"properties": map[string]interface{}{
+				"minTlsVersion":     "1.1",
+				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
 		return createResponse(req, map[string]interface{}{
+			"name": "function2",
+			"type": "Microsoft.Web/sites/config",
 			"properties": map[string]interface{}{
 				"javaVersion": "1.8",
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"name": "WebApp1",
+			"type": "Microsoft.Web/sites/config",
+			"properties": map[string]interface{}{
+				"minTlsVersion":     "1.1",
+				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"name":       "WebApp2",
+			"type":       "Microsoft.Web/sites/config",
+			"properties": map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"APPLICATIONINSIGHTS_CONNECTION_STRING": "test_connection_string",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{},
+		}, 200)
+
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
 		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
