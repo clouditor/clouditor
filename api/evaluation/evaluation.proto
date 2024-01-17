@@ -33,7 +33,6 @@ import "google/api/annotations.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
-import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/evaluation";
 
@@ -68,21 +67,12 @@ service Evaluation {
 }
 
 message StartEvaluationRequest {
-  string cloud_service_id = 1 [
-    (validate.rules).string.uuid = true,
-    (buf.validate.field).string.uuid = true
-  ];
-  string catalog_id = 2 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 
   // The interval time in minutes the evaluation executes periodically. The
   // default interval is set to 5 minutes.
-  optional int32 interval = 3 [
-    (validate.rules).int32.gt = 0,
-    (buf.validate.field).int32.gt = 0
-  ];
+  optional int32 interval = 3 [(buf.validate.field).int32.gt = 0];
 }
 
 message StartEvaluationResponse {
@@ -90,22 +80,13 @@ message StartEvaluationResponse {
 }
 
 message CreateEvaluationResultRequest {
-  EvaluationResult result = 1 [
-    (validate.rules).message.required = true,
-    (buf.validate.field).required = true
-  ];
+  EvaluationResult result = 1 [(buf.validate.field).required = true];
 }
 
 message StopEvaluationRequest {
-  string cloud_service_id = 1 [
-    (validate.rules).string.uuid = true,
-    (buf.validate.field).string.uuid = true
-  ];
+  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
 
-  string catalog_id = 2 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message StopEvaluationResponse {}
@@ -113,30 +94,18 @@ message StopEvaluationResponse {}
 message ListEvaluationResultsRequest {
   message Filter {
     // Optional. Lists only evaluation results for a specific cloud service.
-    optional string cloud_service_id = 1 [
-      (validate.rules).string.uuid = true,
-      (buf.validate.field).string.uuid = true
-    ];
+    optional string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
-    optional string catalog_id = 2 [
-      (validate.rules).string.min_len = 1,
-      (buf.validate.field).string.min_len = 1
-    ];
+    optional string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 
     // Optional. Lists only evaluation results for a specific control id.
-    optional string control_id = 3 [
-      (validate.rules).string.min_len = 1,
-      (buf.validate.field).string.min_len = 1
-    ];
+    optional string control_id = 3 [(buf.validate.field).string.min_len = 1];
 
     // Optional. Lists all evaluation results for the given initial control id
     // substring, e.g., if the substring 'CMK-01.' is given it returns the
     // controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
-    optional string sub_controls = 4 [
-      (validate.rules).string.min_len = 1,
-      (buf.validate.field).string.min_len = 1
-    ];
+    optional string sub_controls = 4 [(buf.validate.field).string.min_len = 1];
 
     // Optional. Lists only results for parent controls
     optional bool parents_only = 5;
@@ -167,50 +136,30 @@ message ListEvaluationResultsResponse {
 message EvaluationResult {
   // Evaluation result id
   string id = 1 [
-    (validate.rules).string = {
-      ignore_empty: true,
-      uuid: true
-    },
     (buf.validate.field).string = {uuid: true},
     (buf.validate.field).ignore_empty = true
   ];
 
   // The Cloud Service ID the evaluation belongs to
   string cloud_service_id = 2 [
-    (validate.rules).string = {
-      ignore_empty: true,
-      uuid: true
-    },
     (buf.validate.field).string = {uuid: true},
     (buf.validate.field).ignore_empty = true
   ];
 
   // The control id the evaluation was based on
-  string control_id = 3 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string control_id = 3 [(buf.validate.field).string.min_len = 1];
 
   // The category the evaluated control belongs to
-  string control_category_name = 4 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string control_category_name = 4 [(buf.validate.field).string.min_len = 1];
 
   // The catalog the evaluated control belongs to
-  string control_catalog_id = 5 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string control_catalog_id = 5 [(buf.validate.field).string.min_len = 1];
 
   // Optionally, specifies the parent control ID, if this is a sub-control
   optional string parent_control_id = 6;
 
   // Evaluation status
-  EvaluationStatus status = 7 [
-    (validate.rules).enum.defined_only = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  EvaluationStatus status = 7 [(buf.validate.field).enum.defined_only = true];
 
   // Time of evaluation
   google.protobuf.Timestamp timestamp = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
@@ -219,7 +168,6 @@ message EvaluationResult {
   // 'compliant'
   repeated string failing_assessment_result_ids = 9 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated.items.string.min_len = 1,
     (buf.validate.field).repeated.items.string.min_len = 1
   ];
 

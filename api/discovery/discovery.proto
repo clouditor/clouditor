@@ -32,7 +32,6 @@ import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "tagger/tagger.proto";
-import "validate/validate.proto";
 
 option go_package = "api/discovery";
 
@@ -87,28 +86,18 @@ message Resource {
   // Id contains a unique ID for each resource. This is specific for the cloud
   // provider this resource was gathered for and can for example be a resource
   // URL.
-  string id = 1 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
-  string cloud_service_id = 2 [
-    (validate.rules).string.uuid = true,
-    (buf.validate.field).string.uuid = true
-  ];
+  string cloud_service_id = 2 [(buf.validate.field).string.uuid = true];
   // ResourceType contains a comma seperated string of resource types according
   // to our ontology.
-  string resource_type = 3 [
-    (validate.rules).string.min_len = 1,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string resource_type = 3 [(buf.validate.field).string.min_len = 1];
 
   // Properties contains a protobuf struct that describe the resource in the
   // terms of our Clouditor ontology.
   google.protobuf.Value properties = 10 [
     (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
-    (validate.rules).message.required = true,
     (buf.validate.field).required = true
   ];
 }
