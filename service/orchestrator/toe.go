@@ -44,7 +44,7 @@ import (
 
 func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 // GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
 func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 	var conds = []any{gorm.WithoutPreload()}
 
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 // UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
 func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 // RemoveTargetOfEvaluation implements method for removing a TargetOfEvaluation
 func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

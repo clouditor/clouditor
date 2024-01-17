@@ -46,7 +46,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 	)
 
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 
 func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.Resource, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

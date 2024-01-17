@@ -8,6 +8,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 // TestNewStorage is a simple test for NewStorage. If we implement in-memory our own, add more (table) tests
@@ -24,6 +25,6 @@ func TestNewStorage(t *testing.T) {
 	userOutput := &orchestrator.CloudService{}
 	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName1)
 	assert.NoError(t, err)
-	assert.NoError(t, api.ValidateRequest(userOutput))
-	assert.Equal(t, userInput, userOutput)
+	assert.NoError(t, api.Validate(userOutput))
+	assert.True(t, proto.Equal(userInput, userOutput), "Want: %v\nGot : %v", userInput, userOutput)
 }

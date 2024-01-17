@@ -53,7 +53,7 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 	)
 
 	// Validate request
-	if err = api.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return
 	}
 
@@ -85,7 +85,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	var all bool
 
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 // StoreAssessmentResult is a method implementation of the orchestrator interface: It receives an assessment result and stores it
 func (svc *Service) StoreAssessmentResult(ctx context.Context, req *orchestrator.StoreAssessmentResultRequest) (res *orchestrator.StoreAssessmentResultResponse, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

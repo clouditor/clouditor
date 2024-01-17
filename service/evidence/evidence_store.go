@@ -102,7 +102,7 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		args    []any
 	)
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	)
 
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

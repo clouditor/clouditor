@@ -36,14 +36,13 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/internal/util"
-
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
@@ -156,7 +155,7 @@ func TestService_StoreEvidence(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "Evidence.ToolId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
 			wantResp: nil,
 		},
@@ -246,7 +245,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &evidence.StoreEvidencesResponse{
 				Status:        false,
-				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid StoreEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.CloudServiceId: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "evidence.cloud_service_id: value must be a valid UUID",
 			},
 		},
 		{
@@ -291,7 +290,7 @@ func TestService_StoreEvidences(t *testing.T) {
 				assert.Equal(t, tt.wantRespMessage.Status, responseFromServer.Status)
 				// We have to check both ways, as it fails if one StatusMessage is empty.
 				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
-				assert.Contains(t, tt.wantRespMessage.StatusMessage, responseFromServer.StatusMessage)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
@@ -888,7 +887,7 @@ func TestService_GetEvidence(t *testing.T) {
 			wantErr: assert.NoError,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				res := i1.(*evidence.Evidence)
-				return assert.NoError(t, api.ValidateRequest(res))
+				return assert.NoError(t, api.Validate(res))
 			},
 		},
 		{
@@ -904,7 +903,7 @@ func TestService_GetEvidence(t *testing.T) {
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "EvidenceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "evidence_id: value must be a valid UUID")
 			},
 			want: assert.Nil,
 		},

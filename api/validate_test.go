@@ -38,7 +38,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestValidateRequest(t *testing.T) {
+func TestValidate(t *testing.T) {
 	var nilReq *orchestrator.CreateTargetOfEvaluationRequest = nil
 
 	type args struct {
@@ -91,7 +91,7 @@ func TestValidateRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateRequest(tt.args.req)
+			err := Validate(tt.args.req)
 			tt.wantErr(t, err)
 		})
 	}
@@ -120,7 +120,7 @@ func TestValidateWithResource(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "Resource: value is required")
+				return assert.ErrorContains(t, err, "resource: value is required ")
 			},
 		},
 		{
@@ -222,7 +222,7 @@ func TestValidateWithResource(t *testing.T) {
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "ToolId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "tool_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -241,7 +241,7 @@ func TestValidateWithResource(t *testing.T) {
 				}},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "Timestamp: value is required")
+				return assert.ErrorContains(t, err, "timestamp: value is required")
 			},
 		},
 		{

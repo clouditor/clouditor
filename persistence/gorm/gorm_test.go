@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"clouditor.io/clouditor/api"
@@ -98,16 +99,20 @@ func TestStorageOptions(t *testing.T) {
 
 			// Test to create a new cloud service and get it again with
 			// respective 'Create' and 'Get' Create record via DB call
-			serviceInput := &orchestrator.CloudService{Name: "SomeName"}
+			serviceInput := &orchestrator.CloudService{
+				Name:      "SomeName",
+				CreatedAt: timestamppb.Now(),
+				UpdatedAt: timestamppb.Now(),
+			}
+			assert.NoError(t, api.Validate(serviceInput))
 			err = s.Create(serviceInput)
 			assert.NoError(t, err)
 
 			// Get record via DB call
 			serviceOutput := &orchestrator.CloudService{}
-			err = s.Get(serviceOutput, "name = ?", "SomeName")
+			err = s.Get(&serviceOutput, "name = ?", "SomeName")
 			assert.NoError(t, err)
-			assert.NoError(t, api.ValidateRequest(serviceOutput))
-			assert.Equal(t, serviceInput, serviceOutput)
+			assert.True(t, proto.Equal(serviceInput, serviceOutput), "Want: %v\nGot : %v", serviceInput, serviceOutput)
 		})
 	}
 }
@@ -146,6 +151,7 @@ func Test_storage_Get(t *testing.T) {
 	)
 
 	service = orchestratortest.NewCloudService()
+	assert.NoError(t, api.Validate(service))
 
 	// Create storage
 	s, err = NewStorage()
@@ -161,23 +167,22 @@ func Test_storage_Get(t *testing.T) {
 
 	// Get service via passing entire record
 	gotService := &orchestrator.CloudService{}
-	err = s.Get(gotService)
+	err = s.Get(&gotService)
 	assert.NoError(t, err)
-	assert.NoError(t, api.ValidateRequest(gotService))
-	assert.Equal(t, service, gotService)
+	assert.True(t, proto.Equal(service, gotService), "Want: %v\nGot : %v", service, gotService)
 
 	// Get service via name
 	gotService2 := &orchestrator.CloudService{}
-	err = s.Get(gotService2, "name = ?", service.Name)
+	err = s.Get(&gotService2, "name = ?", service.Name)
 	assert.NoError(t, err)
-	assert.Equal(t, service, gotService2)
+	assert.True(t, proto.Equal(service, gotService2), "Want: %v\nGot : %v", service, gotService2)
 
 	// Get service via description
 	gotService3 := &orchestrator.CloudService{}
-	err = s.Get(gotService3, "description = ?", service.Description)
+	err = s.Get(&gotService3, "description = ?", service.Description)
 	assert.NoError(t, err)
-	assert.NoError(t, api.ValidateRequest(gotService3))
-	assert.Equal(t, service, gotService3)
+	assert.NoError(t, api.Validate(gotService3))
+	assert.True(t, proto.Equal(service, gotService3), "Want: %v\nGot : %v", service, gotService3)
 
 	var metric = &assessment.Metric{
 		Id:    testdata.MockMetricID1,
@@ -249,7 +254,7 @@ func Test_storage_List(t *testing.T) {
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, 2, len(services))
 	// We only check one service and assume the others are also correct
-	assert.NoError(t, api.ValidateRequest(services[0]))
+	assert.NoError(t, api.Validate(services[0]))
 
 	// Test with certificates (associations included via states)
 	var (
@@ -280,7 +285,7 @@ func Test_storage_List(t *testing.T) {
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
 	// We only check one certificate and assume the others are also correct
-	assert.NoError(t, api.ValidateRequest(certificates[0]))
+	assert.NoError(t, api.Validate(certificates[0]))
 
 	fmt.Println(certificates)
 
@@ -378,7 +383,7 @@ func Test_storage_Save(t *testing.T) {
 	gotService = &orchestrator.CloudService{}
 	err = s.Get(gotService, "name = ?", service.Name)
 	assert.NoError(t, err)
-	assert.NoError(t, api.ValidateRequest(gotService))
+	assert.NoError(t, api.Validate(gotService))
 
 	// Name should be the same
 	assert.Equal(t, service.Name, gotService.Name)
@@ -417,7 +422,7 @@ func Test_storage_Update(t *testing.T) {
 		},
 	}
 	// Check if cloud service has all necessary fields
-	assert.NoError(t, api.ValidateRequest(cloudService))
+	assert.NoError(t, api.Validate(cloudService))
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
 
@@ -428,9 +433,9 @@ func Test_storage_Update(t *testing.T) {
 	assert.NoError(t, err)
 
 	gotCloudService := &orchestrator.CloudService{}
-	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
+	err = s.Get(&gotCloudService, "Id = ?", cloudService.Id)
 	assert.NoError(t, err)
-	assert.NoError(t, api.ValidateRequest(gotCloudService))
+	assert.NoError(t, api.Validate(gotCloudService))
 
 	// Name should be changed
 	assert.Equal(t, "SomeNewName", gotCloudService.Name)

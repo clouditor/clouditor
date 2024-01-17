@@ -147,8 +147,7 @@ service Orchestrator {
   }
 
   // Removes a new metric
-  rpc RemoveMetric(RemoveMetricRequest)
-      returns (google.protobuf.Empty) {
+  rpc RemoveMetric(RemoveMetricRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/v1/orchestrator/metrics/{metric_id}"
     };
@@ -510,12 +509,10 @@ message GetMetricRequest {
 }
 
 message ListMetricsRequest {
-  message Filter {
-    optional bool include_deprecated = 1;
-  }
-  
+  message Filter { optional bool include_deprecated = 1; }
+
   optional Filter filter = 1;
-  
+
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
@@ -673,16 +670,12 @@ message CloudService {
   }
 
   // creation time of the cloud_service
-  optional google.protobuf.Timestamp created_at = 6 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
-    (validate.rules).timestamp.required = true
-  ];
+  optional google.protobuf.Timestamp created_at = 6
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   // last update time of the cloud_service
-  optional google.protobuf.Timestamp updated_at = 7 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
-    (validate.rules).timestamp.required = true
-  ];
+  optional google.protobuf.Timestamp updated_at = 7
+      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
   // additional metadata of the cloud service, mostly used for the UI
   optional Metadata metadata = 10

@@ -205,7 +205,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	resp = &assessment.AssessEvidenceResponse{}
 
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

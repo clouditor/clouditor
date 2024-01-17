@@ -26,7 +26,7 @@ import (
 func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCatalogRequest) (
 	*orchestrator.Catalog, error) {
 	// Validate request
-	err := api.ValidateRequest(req)
+	err := api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (svc *Service) CreateCatalog(_ context.Context, req *orchestrator.CreateCat
 // controls.
 func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRequest) (response *orchestrator.Catalog, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (svc *Service) GetCatalog(_ context.Context, req *orchestrator.GetCatalogRe
 // categories but no additional sub-resources.
 func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalogsRequest) (res *orchestrator.ListCatalogsResponse, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (svc *Service) ListCatalogs(_ context.Context, req *orchestrator.ListCatalo
 // UpdateCatalog implements a method for updating an existing catalog
 func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCatalogRequest) (res *orchestrator.Catalog, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (svc *Service) UpdateCatalog(_ context.Context, req *orchestrator.UpdateCat
 // RemoveCatalog implements a method for removing a catalog
 func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCatalogRequest) (response *emptypb.Empty, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (svc *Service) RemoveCatalog(_ context.Context, req *orchestrator.RemoveCat
 // first level of controls within each category.
 func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategoryRequest) (res *orchestrator.Category, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (srv *Service) GetCategory(_ context.Context, req *orchestrator.GetCategory
 // present, it also includes a list of sub-controls and any metrics associated to the control.
 func (srv *Service) GetControl(_ context.Context, req *orchestrator.GetControlRequest) (res *orchestrator.Control, err error) {
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (srv *Service) ListControls(_ context.Context, req *orchestrator.ListContro
 		query []string
 	)
 	// Validate request
-	err = api.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

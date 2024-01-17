@@ -30,19 +30,20 @@ import (
 	"clouditor.io/clouditor/internal/util"
 
 	"github.com/bufbuild/protovalidate-go"
+	"github.com/bufbuild/protovalidate-go/legacy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 )
 
-// ValidateRequest validates an incoming request according to different criteria:
+// Validate validates an incoming request according to different criteria:
 //   - If the request is nil, [api.ErrEmptyRequest] is returned
 //   - The request is validated according to the generated validation method
 //   - Lastly, if the request is a [api.PaginatedRequest], an additional check is performed to ensure only valid columns are listed
 //
 // Note: This function already returns a gRPC error, so the error can be returned directly without any wrapping in a
 // request function.
-func ValidateRequest(req IncomingRequest) (err error) {
+func Validate(req IncomingRequest) (err error) {
 	// Check, if request is nil. We need to check whether the interface itself is nil (untyped nil); this happens if
 	// someone is directly setting nil to a variable of the interface IncomingRequest. Furthermore, we need to check,
 	// whether the *value* of the interface is nil. This can happen if nil is first assigned to a variable of a struct
@@ -52,7 +53,10 @@ func ValidateRequest(req IncomingRequest) (err error) {
 		return status.Errorf(codes.InvalidArgument, "%s", ErrEmptyRequest)
 	}
 
-	v, err := protovalidate.New()
+	// TODO(oxisto): Re-use validator?
+	v, err := protovalidate.New(
+		legacy.WithLegacySupport(legacy.ModeMerge),
+	)
 	if err != nil {
 		return status.Errorf(codes.Internal, "failed to initialize validator: %s", err)
 	}
@@ -69,7 +73,7 @@ func ValidateRequest(req IncomingRequest) (err error) {
 // ValidateWithResource validates the evidence according to its resource
 // TODO(oxisto): Replace with CEL?
 func ValidateWithResource(ev *evidence.Evidence) (resourceId string, err error) {
-	err = ValidateRequest(ev)
+	err = Validate(ev)
 	if err != nil {
 		return "", err
 	}

@@ -69,7 +69,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 			req:  &orchestrator.RegisterCloudServiceRequest{},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid RegisterCloudServiceRequest.CloudService: value is required") &&
+				return assert.ErrorContains(t, err, "cloud_service: value is required") &&
 					assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
 		},
@@ -78,7 +78,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 			req:  &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{}},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid RegisterCloudServiceRequest.CloudService: embedded message failed validation | caused by: invalid CloudService.Name: value length must be at least 1 runes") &&
+				return assert.ErrorContains(t, err, "cloud_service.name: value length must be at least 1 characters") &&
 					assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
 		},
@@ -128,13 +128,11 @@ func TestService_RegisterCloudService(t *testing.T) {
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
-	assert.NoError(t, api.ValidateRequest(cloudService))
+	assert.NoError(t, api.Validate(cloudService))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := orchestratorService.RegisterCloudService(context.Background(), tt.req)
-
-			assert.NoError(t, api.ValidateRequest(res))
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
@@ -143,6 +141,8 @@ func TestService_RegisterCloudService(t *testing.T) {
 
 			// reset the IDs because we cannot compare them, since they are randomly generated
 			if res != nil {
+				assert.NoError(t, api.Validate(res))
+
 				res.Id = ""
 				// check creation/update time and reset
 				assert.NotEmpty(t, res.CreatedAt)
@@ -240,11 +240,10 @@ func TestService_GetCloudService(t *testing.T) {
 			assert.NoError(t, err)
 
 			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
-			assert.NoError(t, api.ValidateRequest(res))
-
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
+				assert.NoError(t, api.Validate(res))
 				assert.NotEmpty(t, res.Id)
 				// Check if timestamps are set and then delete for further checking
 				assert.NotEmpty(t, res.CreatedAt)
@@ -304,7 +303,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
-	assert.NoError(t, api.ValidateRequest(cloudService))
+	assert.NoError(t, api.Validate(cloudService))
 	assert.Equal(t, "NewName", cloudService.Name)
 	// Description should be overwritten with empty string
 	assert.Equal(t, "", cloudService.Description)
@@ -373,7 +372,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	}, cloudServiceResponse)
 
 	// Check if CloudService is valid
-	assert.NoError(t, api.ValidateRequest(cloudServiceResponse))
+	assert.NoError(t, api.Validate(cloudServiceResponse))
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
@@ -515,7 +514,7 @@ func TestService_ListCloudServices(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
-			assert.NoError(t, api.ValidateRequest(gotRes))
+			assert.NoError(t, api.Validate(gotRes))
 
 			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err, tt.args)
