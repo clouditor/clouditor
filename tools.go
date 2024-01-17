@@ -33,5 +33,6 @@ import (
 	_ "github.com/google/addlicense"
 	_ "github.com/google/gnostic/cmd/protoc-gen-openapi"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
+	_ "github.com/oxisto/owl2protobuf/cmd/owl2protobuf"
 	_ "github.com/srikrsna/protoc-gen-gotag"
 )
