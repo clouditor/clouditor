@@ -328,7 +328,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evidence.ErrResourceIdIsEmpty.Error())
+				return assert.ErrorContains(t, err, api.ErrResourceIdIsEmpty.Error())
 			},
 		},
 		{

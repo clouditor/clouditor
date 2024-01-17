@@ -35,6 +35,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -586,7 +587,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			if tt.wantRes == nil {
 				assert.Nil(t, gotRes)
 			} else {
-				assert.NoError(t, gotRes.Validate())
+				assert.NoError(t, api.ValidateRequest(gotRes))
 				assert.Equal(t, tt.wantRes, gotRes)
 			}
 		})

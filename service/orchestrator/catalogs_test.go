@@ -31,6 +31,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -138,7 +139,7 @@ func TestService_CreateCatalog(t *testing.T) {
 				t.Errorf("Service.CreateCatalog() = %v, want %v", gotResponse, tt.wantResponse)
 
 				// Check catalog structure with validation method
-				assert.NoError(t, gotResponse.Validate())
+				assert.NoError(t, api.ValidateRequest(gotResponse))
 			}
 		})
 	}
@@ -642,7 +643,7 @@ func TestService_loadCatalogs(t *testing.T) {
 				err := svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "DemoCatalog")
 				assert.NoError(t, err)
 
-				err = catalog.Validate()
+				err = api.ValidateRequest(catalog)
 				return assert.NoError(t, err)
 			},
 			wantErr: assert.NoError,

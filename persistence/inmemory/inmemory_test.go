@@ -3,6 +3,7 @@ package inmemory
 import (
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
@@ -23,6 +24,6 @@ func TestNewStorage(t *testing.T) {
 	userOutput := &orchestrator.CloudService{}
 	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName1)
 	assert.NoError(t, err)
-	assert.NoError(t, userOutput.Validate())
+	assert.NoError(t, api.ValidateRequest(userOutput))
 	assert.Equal(t, userInput, userOutput)
 }

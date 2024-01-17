@@ -128,13 +128,13 @@ func TestService_RegisterCloudService(t *testing.T) {
 	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
-	assert.NoError(t, cloudService.Validate())
+	assert.NoError(t, api.ValidateRequest(cloudService))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := orchestratorService.RegisterCloudService(context.Background(), tt.req)
 
-			assert.NoError(t, res.Validate())
+			assert.NoError(t, api.ValidateRequest(res))
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
@@ -240,7 +240,7 @@ func TestService_GetCloudService(t *testing.T) {
 			assert.NoError(t, err)
 
 			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
-			assert.NoError(t, res.Validate())
+			assert.NoError(t, api.ValidateRequest(res))
 
 			tt.wantErr(t, err)
 
@@ -304,7 +304,7 @@ func TestService_UpdateCloudService(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, cloudService)
-	assert.NoError(t, cloudService.Validate())
+	assert.NoError(t, api.ValidateRequest(cloudService))
 	assert.Equal(t, "NewName", cloudService.Name)
 	// Description should be overwritten with empty string
 	assert.Equal(t, "", cloudService.Description)
@@ -373,7 +373,7 @@ func TestService_CreateDefaultTargetCloudService(t *testing.T) {
 	}, cloudServiceResponse)
 
 	// Check if CloudService is valid
-	assert.NoError(t, cloudServiceResponse.Validate())
+	assert.NoError(t, api.ValidateRequest(cloudServiceResponse))
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
 	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
@@ -515,7 +515,7 @@ func TestService_ListCloudServices(t *testing.T) {
 			}
 
 			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
-			assert.NoError(t, gotRes.Validate())
+			assert.NoError(t, api.ValidateRequest(gotRes))
 
 			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err, tt.args)

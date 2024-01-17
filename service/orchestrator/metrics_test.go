@@ -786,7 +786,7 @@ func TestService_ListMetrics(t *testing.T) {
 			}
 			gotRes, err := svc.ListMetrics(tt.args.in0, tt.args.req)
 
-			assert.NoError(t, gotRes.Validate())
+			assert.NoError(t, api.ValidateRequest(gotRes))
 
 			tt.wantErr(t, err)
 
@@ -1268,7 +1268,7 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
 
 			// Check if response validation succeds
-			assert.NoError(t, gotResponse.Validate())
+			assert.NoError(t, api.ValidateRequest(gotResponse))
 
 			tt.wantErr(t, err)
 

@@ -143,7 +143,7 @@ func Test_CreateCertificate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := tt.fields.svc
 			gotResponse, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotResponse.Validate())
+			assert.NoError(t, api.ValidateRequest(gotResponse))
 
 			tt.wantErr(t, err)
 
@@ -253,7 +253,7 @@ func Test_GetCertificate(t *testing.T) {
 			res, err := tt.fields.svc.GetCertificate(context.Background(), tt.req)
 
 			// Run validation on response
-			assert.NoError(t, res.Validate())
+			assert.NoError(t, api.ValidateRequest(res))
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
 			// Assert response
@@ -471,7 +471,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 				authz:                           tt.fields.authz,
 			}
 			gotRes, err := svc.ListPublicCertificates(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotRes.Validate())
+			assert.NoError(t, api.ValidateRequest(gotRes))
 
 			tt.wantErr(t, err)
 

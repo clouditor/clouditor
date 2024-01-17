@@ -34,6 +34,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -105,7 +106,7 @@ func TestStorageOptions(t *testing.T) {
 			serviceOutput := &orchestrator.CloudService{}
 			err = s.Get(serviceOutput, "name = ?", "SomeName")
 			assert.NoError(t, err)
-			assert.NoError(t, serviceOutput.Validate())
+			assert.NoError(t, api.ValidateRequest(serviceOutput))
 			assert.Equal(t, serviceInput, serviceOutput)
 		})
 	}
@@ -162,7 +163,7 @@ func Test_storage_Get(t *testing.T) {
 	gotService := &orchestrator.CloudService{}
 	err = s.Get(gotService)
 	assert.NoError(t, err)
-	assert.NoError(t, gotService.Validate())
+	assert.NoError(t, api.ValidateRequest(gotService))
 	assert.Equal(t, service, gotService)
 
 	// Get service via name
@@ -175,7 +176,7 @@ func Test_storage_Get(t *testing.T) {
 	gotService3 := &orchestrator.CloudService{}
 	err = s.Get(gotService3, "description = ?", service.Description)
 	assert.NoError(t, err)
-	assert.NoError(t, gotService3.Validate())
+	assert.NoError(t, api.ValidateRequest(gotService3))
 	assert.Equal(t, service, gotService3)
 
 	var metric = &assessment.Metric{
@@ -223,7 +224,7 @@ func Test_storage_List(t *testing.T) {
 		s        persistence.Storage
 		service1 *orchestrator.CloudService
 		service2 *orchestrator.CloudService
-		services []orchestrator.CloudService
+		services []*orchestrator.CloudService
 	)
 
 	// Create storage
@@ -248,7 +249,7 @@ func Test_storage_List(t *testing.T) {
 	assert.ErrorIs(t, err, nil)
 	assert.Equal(t, 2, len(services))
 	// We only check one service and assume the others are also correct
-	assert.NoError(t, services[0].Validate())
+	assert.NoError(t, api.ValidateRequest(services[0]))
 
 	// Test with certificates (associations included via states)
 	var (
@@ -279,7 +280,7 @@ func Test_storage_List(t *testing.T) {
 	// Check ordering
 	assert.Equal(t, certificate2.Id, certificates[0].Id)
 	// We only check one certificate and assume the others are also correct
-	assert.NoError(t, certificates[0].Validate())
+	assert.NoError(t, api.ValidateRequest(certificates[0]))
 
 	fmt.Println(certificates)
 
@@ -377,7 +378,7 @@ func Test_storage_Save(t *testing.T) {
 	gotService = &orchestrator.CloudService{}
 	err = s.Get(gotService, "name = ?", service.Name)
 	assert.NoError(t, err)
-	assert.NoError(t, gotService.Validate())
+	assert.NoError(t, api.ValidateRequest(gotService))
 
 	// Name should be the same
 	assert.Equal(t, service.Name, gotService.Name)
@@ -403,7 +404,7 @@ func Test_storage_Update(t *testing.T) {
 
 	// Testing cloud service
 	// Create cloud service
-	cloudService := orchestrator.CloudService{
+	cloudService := &orchestrator.CloudService{
 		Id:          testdata.MockCloudServiceID1,
 		Name:        testdata.MockCloudServiceName1,
 		Description: testdata.MockCloudServiceDescription1,
@@ -416,7 +417,7 @@ func Test_storage_Update(t *testing.T) {
 		},
 	}
 	// Check if cloud service has all necessary fields
-	assert.NoError(t, cloudService.Validate())
+	assert.NoError(t, api.ValidateRequest(cloudService))
 	err = s.Create(&cloudService)
 	assert.NoError(t, err)
 
@@ -429,7 +430,7 @@ func Test_storage_Update(t *testing.T) {
 	gotCloudService := &orchestrator.CloudService{}
 	err = s.Get(gotCloudService, "Id = ?", cloudService.Id)
 	assert.NoError(t, err)
-	assert.NoError(t, gotCloudService.Validate())
+	assert.NoError(t, api.ValidateRequest(gotCloudService))
 
 	// Name should be changed
 	assert.Equal(t, "SomeNewName", gotCloudService.Name)

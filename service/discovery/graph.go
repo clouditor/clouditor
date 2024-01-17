@@ -28,6 +28,7 @@ package discovery
 import (
 	"context"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
@@ -45,7 +46,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 
 func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.Resource, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}

@@ -192,4 +192,13 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+require github.com/bufbuild/protovalidate-go v0.4.3
+
+require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.31.0-20231115204500-e097f827e652.2 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
+	github.com/google/cel-go v0.18.2 // indirect
+	github.com/stoewer/go-strcase v1.3.0 // indirect
+)
+
 retract v1.4.7

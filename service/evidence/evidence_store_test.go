@@ -888,7 +888,7 @@ func TestService_GetEvidence(t *testing.T) {
 			wantErr: assert.NoError,
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				res := i1.(*evidence.Evidence)
-				return assert.NoError(t, res.Validate())
+				return assert.NoError(t, api.ValidateRequest(res))
 			},
 		},
 		{
