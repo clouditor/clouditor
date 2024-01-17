@@ -41,23 +41,25 @@ service Discovery {
   // Starts discovering the cloud resources, exposed as REST.
   rpc Start(StartDiscoveryRequest) returns (StartDiscoveryResponse) {
     option (google.api.http) = {
-      post : "/v1/discovery/start"
-      body : "*"
-      response_body : "*"
+      post: "/v1/discovery/start"
+      body: "*"
+      response_body: "*"
     };
-  };
+  }
 
   // Lists all evidences collected in the last run, exposed as REST.
   rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
-    option (google.api.http) = {
-      get : "/v1/discovery/resources"
-    };
+    option (google.api.http) = {get: "/v1/discovery/resources"};
   }
 }
 
-message StartDiscoveryRequest { optional string resource_group = 1; }
+message StartDiscoveryRequest {
+  optional string resource_group = 1;
+}
 
-message StartDiscoveryResponse { bool successful = 1; }
+message StartDiscoveryResponse {
+  bool successful = 1;
+}
 
 message ListResourcesRequest {
   message Filter {
@@ -84,13 +86,13 @@ message Resource {
   // Id contains a unique ID for each resource. This is specific for the cloud
   // provider this resource was gathered for and can for example be a resource
   // URL.
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  string id = 1 [(validate.rules).string.min_len = 1];
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
-  string cloud_service_id = 2 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 2 [(validate.rules).string.uuid = true];
   // ResourceType contains a comma seperated string of resource types according
   // to our ontology.
-  string resource_type = 3 [ (validate.rules).string.min_len = 1 ];
+  string resource_type = 3 [(validate.rules).string.min_len = 1];
 
   // Properties contains a protobuf struct that describe the resource in the
   // terms of our Clouditor ontology.

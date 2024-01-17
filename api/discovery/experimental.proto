@@ -39,17 +39,15 @@ option go_package = "api/discovery";
 // Discovers cloud resources and maps these properties to the format of the
 // ontology
 service ExperimentalDiscovery {
-
   // UpdateResource updates a resource (or creates it, if it does not exist).
   // This is used to give third-party tools the possibility to add something to
   // the resource graph.
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
-  rpc UpdateResource(UpdateResourceRequest)
-      returns (clouditor.discovery.v1.Resource) {
+  rpc UpdateResource(UpdateResourceRequest) returns (clouditor.discovery.v1.Resource) {
     option (google.api.http) = {
-      post : "/v1experimental/discovery/resources/{resource.id}"
-      body : "*"
+      post: "/v1experimental/discovery/resources/{resource.id}"
+      body: "*"
     };
   }
 
@@ -58,13 +56,13 @@ service ExperimentalDiscovery {
   //
   // Note: THIS API IS EXPERIMENTAL AND SUBJECT TO CHANGE
   rpc ListGraphEdges(ListGraphEdgesRequest) returns (ListGraphEdgesResponse) {
-    option (google.api.http) = {
-      get : "/v1experimental/discovery/graph/edges"
-    };
+    option (google.api.http) = {get: "/v1experimental/discovery/graph/edges"};
   }
 }
 
-message UpdateResourceRequest { clouditor.discovery.v1.Resource resource = 1; }
+message UpdateResourceRequest {
+  clouditor.discovery.v1.Resource resource = 1;
+}
 
 message ListGraphEdgesRequest {
   int32 page_size = 10;

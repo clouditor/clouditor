@@ -40,40 +40,35 @@ service EvidenceStore {
   // exposed as REST.
   rpc StoreEvidence(StoreEvidenceRequest) returns (StoreEvidenceResponse) {
     option (google.api.http) = {
-      post : "/v1/evidence_store/evidence"
-      body : "evidence"
+      post: "/v1/evidence_store/evidence"
+      body: "evidence"
     };
   }
 
   // Stores a stream of evidences to the evidence storage and returns a response
   // stream. Part of the public API, not exposed as REST.
-  rpc StoreEvidences(stream StoreEvidenceRequest)
-      returns (stream StoreEvidencesResponse) {};
+  rpc StoreEvidences(stream StoreEvidenceRequest) returns (stream StoreEvidencesResponse) {}
 
   // Returns all stored evidences. Part of the public API, also exposed as REST.
   rpc ListEvidences(ListEvidencesRequest) returns (ListEvidencesResponse) {
-    option (google.api.http) = {
-      get : "/v1/evidence_store/evidences"
-    };
+    option (google.api.http) = {get: "/v1/evidence_store/evidences"};
   }
 
   // Returns a particular stored evidence. Part of the public API, also exposed
   // as REST.
   rpc GetEvidence(GetEvidenceRequest) returns (Evidence) {
-    option (google.api.http) = {
-      get : "/v1/evidence_store/evidences/{evidence_id}"
-    };
+    option (google.api.http) = {get: "/v1/evidence_store/evidences/{evidence_id}"};
   }
 }
 
 message StoreEvidenceRequest {
-  Evidence evidence = 1 [ (validate.rules).message.required = true ];
+  Evidence evidence = 1 [(validate.rules).message.required = true];
 }
 
 // StoreEvidenceResponse belongs to StoreEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
 message StoreEvidenceResponse {}
 
-// StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling. 
+// StoreEvidencesResponse belongs to StoreEvidences, which uses a custom bidirectional streaming RPC and therefore requires a response message according to the style convention. The bidirectional streaming needs the status and its message in the response for error handling.
 message StoreEvidencesResponse {
   bool status = 1;
   string status_message = 2;
@@ -91,8 +86,8 @@ message ListEvidencesRequest {
 
 // Allows specifying Filters for ListEvidencesRequest
 message Filter {
-  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];;
-  optional string tool_id = 2 [ (validate.rules).string.uuid = true ];;
+  optional string cloud_service_id = 1 [(validate.rules).string.uuid = true];
+  optional string tool_id = 2 [(validate.rules).string.uuid = true];
 }
 
 message ListEvidencesResponse {
@@ -101,5 +96,5 @@ message ListEvidencesResponse {
 }
 
 message GetEvidenceRequest {
-  string evidence_id = 1 [ (validate.rules).string.uuid = true ];
+  string evidence_id = 1 [(validate.rules).string.uuid = true];
 }

@@ -28,11 +28,11 @@ syntax = "proto3";
 
 package clouditor.assessment.v1;
 
+import "api/assessment/metric.proto";
+import "api/evidence/evidence.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
-import "api/evidence/evidence.proto";
-import "api/assessment/metric.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -41,35 +41,33 @@ option go_package = "clouditor.io/clouditor/api/assessment";
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
 service Assessment {
-
   // Triggers the compliance calculation. Part of the private API. Not exposed
   // as REST.
-  rpc CalculateCompliance(CalculateComplianceRequest)
-      returns (google.protobuf.Empty) {}
+  rpc CalculateCompliance(CalculateComplianceRequest) returns (google.protobuf.Empty) {}
 
   // Assesses the evidence sent by the discovery. Part of the public API, also
   // exposed as REST.
   rpc AssessEvidence(AssessEvidenceRequest) returns (AssessEvidenceResponse) {
     option (google.api.http) = {
-      post : "/v1/assessment/evidences"
-      body : "evidence"
+      post: "/v1/assessment/evidences"
+      body: "evidence"
     };
   }
 
   // Assesses stream of evidences sent by the discovery and returns a response
   // stream. Part of the public API. Not exposed as REST.
-  rpc AssessEvidences(stream AssessEvidenceRequest)
-      returns (stream AssessEvidencesResponse) {};
-};
+  rpc AssessEvidences(stream AssessEvidenceRequest) returns (stream AssessEvidencesResponse) {}
+}
 
 message ConfigureAssessmentRequest {}
 message ConfigureAssessmentResponse {}
 
-message CalculateComplianceRequest { string control_id = 1; }
+message CalculateComplianceRequest {
+  string control_id = 1;
+}
 
 message AssessEvidenceRequest {
-  clouditor.evidence.v1.Evidence evidence = 1
-      [ (validate.rules).message.required = true ];
+  clouditor.evidence.v1.Evidence evidence = 1 [(validate.rules).message.required = true];
 }
 
 // AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
@@ -97,7 +95,7 @@ message AssessEvidencesResponse {
 // with id resource_id.
 message AssessmentResult {
   // Assessment result id
-  string id = 1 [ (validate.rules).string.uuid = true ];
+  string id = 1 [(validate.rules).string.uuid = true];
 
   // Time of assessment
   google.protobuf.Timestamp timestamp = 2 [
@@ -106,7 +104,7 @@ message AssessmentResult {
   ];
 
   // Reference to the metric the assessment was based on
-  string metric_id = 3 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 3 [(validate.rules).string.min_len = 1];
 
   // Data corresponding to the metric by the given metric id
   MetricConfiguration metric_configuration = 4 [
@@ -118,47 +116,47 @@ message AssessmentResult {
   bool compliant = 5;
 
   // Reference to the assessed evidence
-  string evidence_id = 6 [ (validate.rules).string.uuid = true ];
+  string evidence_id = 6 [(validate.rules).string.uuid = true];
 
   // Reference to the resource of the assessed evidence
-  string resource_id = 7 [ (validate.rules).string.min_len = 1 ];
+  string resource_id = 7 [(validate.rules).string.min_len = 1];
 
   // Resource types
   repeated string resource_types = 8 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated .min_items = 1
+    (validate.rules).repeated.min_items = 1
   ];
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
 
   // The cloud service which this assessment result belongs to
-  string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 10 [(validate.rules).string.uuid = true];
 
   // Reference to the tool which provided the assessment result
-  optional string tool_id = 11 [ (validate.rules).string.min_len = 1 ];
+  optional string tool_id = 11 [(validate.rules).string.min_len = 1];
 }
 
 /*
-prepared for future use
-message ComplianceResult {
-  string id = 1;
+   prepared for future use
+   message ComplianceResult {
+     string id = 1;
 
-  enum Status {
-    STATUS_UNSPECIFIED = 0;
-    COMPLIANT = 1;
-    NOT_COMPLIANT = 2;
-    PENDING = 3;
-  }
+     enum Status {
+       STATUS_UNSPECIFIED = 0;
+       COMPLIANT = 1;
+       NOT_COMPLIANT = 2;
+       PENDING = 3;
+     }
 
-  Status status = 2;
+     Status status = 2;
 
-  google.protobuf.Timestamp timestamp = 3
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
+     google.protobuf.Timestamp timestamp = 3
+         [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
 
-  string control_id = 4;
+     string control_id = 4;
 
-  string cloud_service_id = 5;
+     string cloud_service_id = 5;
 
-  repeated AssessmentResult results = 6;
-}*/
+     repeated AssessmentResult results = 6;
+   }*/

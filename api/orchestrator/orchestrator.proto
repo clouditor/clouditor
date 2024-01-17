@@ -28,12 +28,12 @@ syntax = "proto3";
 
 package clouditor.orchestrator.v1;
 
+import "api/assessment/assessment.proto";
+import "api/assessment/metric.proto";
+import "api/runtime/runtime.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
-import "api/assessment/metric.proto";
-import "api/assessment/assessment.proto";
-import "api/runtime/runtime.proto";
 import "tagger/tagger.proto";
 import "validate/validate.proto";
 
@@ -42,301 +42,241 @@ option go_package = "clouditor.io/clouditor/api/orchestrator";
 // Manages the orchestration of components within the Clouditor architecture
 service Orchestrator {
   // Registers the passed assessment tool
-  rpc RegisterAssessmentTool(RegisterAssessmentToolRequest)
-      returns (AssessmentTool) {
+  rpc RegisterAssessmentTool(RegisterAssessmentToolRequest) returns (AssessmentTool) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/assessment_tools"
-      body : "tool"
+      post: "/v1/orchestrator/assessment_tools"
+      body: "tool"
     };
   }
 
   // Lists all assessment tools assessing evidences for the metric given by the
   // passed metric id
-  rpc ListAssessmentTools(ListAssessmentToolsRequest)
-      returns (ListAssessmentToolsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/assessment_tools"
-    };
+  rpc ListAssessmentTools(ListAssessmentToolsRequest) returns (ListAssessmentToolsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/assessment_tools"};
   }
 
   // Returns assessment tool given by the passed tool id
   rpc GetAssessmentTool(GetAssessmentToolRequest) returns (AssessmentTool) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/assessment_tools/{tool_id}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/assessment_tools/{tool_id}"};
   }
 
   // Updates the assessment tool given by the passed id
-  rpc UpdateAssessmentTool(UpdateAssessmentToolRequest)
-      returns (AssessmentTool) {
+  rpc UpdateAssessmentTool(UpdateAssessmentToolRequest) returns (AssessmentTool) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/assessment_tools/{tool.id}"
-      body : "tool"
+      put: "/v1/orchestrator/assessment_tools/{tool.id}"
+      body: "tool"
     };
   }
 
   // Remove assessment tool with passed id from the list of active assessment
   // tools
-  rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/assessment_tools/{tool_id}"
-    };
+  rpc DeregisterAssessmentTool(DeregisterAssessmentToolRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/assessment_tools/{tool_id}"};
   }
 
   // Stores the assessment result provided by an assessment tool
-  rpc StoreAssessmentResult(StoreAssessmentResultRequest)
-      returns (StoreAssessmentResultResponse) {
+  rpc StoreAssessmentResult(StoreAssessmentResultRequest) returns (StoreAssessmentResultResponse) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/assessment_results"
-      body : "result"
+      post: "/v1/orchestrator/assessment_results"
+      body: "result"
     };
   }
 
   // Stores stream of assessment results provided by an assessment tool and
   // returns a response stream. Part of the public API, not exposed as REST.
-  rpc StoreAssessmentResults(stream StoreAssessmentResultRequest)
-      returns (stream StoreAssessmentResultsResponse);
+  rpc StoreAssessmentResults(stream StoreAssessmentResultRequest) returns (stream StoreAssessmentResultsResponse);
 
   // Get an assessment result by ID
-  rpc GetAssessmentResult(GetAssessmentResultRequest)
-      returns (clouditor.assessment.v1.AssessmentResult) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/assessment_results/{id}"
-    };
+  rpc GetAssessmentResult(GetAssessmentResultRequest) returns (clouditor.assessment.v1.AssessmentResult) {
+    option (google.api.http) = {get: "/v1/orchestrator/assessment_results/{id}"};
   }
 
   // List all assessment results. Part of the public API, also exposed as REST.
-  rpc ListAssessmentResults(ListAssessmentResultsRequest)
-      returns (ListAssessmentResultsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/assessment_results"
-    };
+  rpc ListAssessmentResults(ListAssessmentResultsRequest) returns (ListAssessmentResultsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/assessment_results"};
   }
 
   // Creates a new metric
-  rpc CreateMetric(CreateMetricRequest)
-      returns (clouditor.assessment.v1.Metric) {
+  rpc CreateMetric(CreateMetricRequest) returns (clouditor.assessment.v1.Metric) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/metrics"
-      body : "metric"
+      post: "/v1/orchestrator/metrics"
+      body: "metric"
     };
   }
 
   // Updates an existing metric
-  rpc UpdateMetric(UpdateMetricRequest)
-      returns (clouditor.assessment.v1.Metric) {
+  rpc UpdateMetric(UpdateMetricRequest) returns (clouditor.assessment.v1.Metric) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/metrics/{metric.id}"
-      body : "metric"
+      put: "/v1/orchestrator/metrics/{metric.id}"
+      body: "metric"
     };
   }
 
   // Returns the metric with the passed metric id
   rpc GetMetric(GetMetricRequest) returns (clouditor.assessment.v1.Metric) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/metrics/{metric_id}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
   // List all metrics provided by the metric catalog
   rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/metrics"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/metrics"};
   }
 
   // Removes a new metric
   rpc RemoveMetric(RemoveMetricRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/metrics/{metric_id}"
-    };
+    option (google.api.http) = {delete: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
   // Registers a new target cloud service
   rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/cloud_services"
-      body : "cloud_service"
+      post: "/v1/orchestrator/cloud_services"
+      body: "cloud_service"
     };
   }
 
   // Registers a new target cloud service
   rpc UpdateCloudService(UpdateCloudServiceRequest) returns (CloudService) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service.id}"
-      body : "cloud_service"
+      put: "/v1/orchestrator/cloud_services/{cloud_service.id}"
+      body: "cloud_service"
     };
   }
 
   // Retrieves a target cloud service
   rpc GetCloudService(GetCloudServiceRequest) returns (CloudService) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/cloud_services/{cloud_service_id}"};
   }
 
   // Lists all target cloud services
-  rpc ListCloudServices(ListCloudServicesRequest)
-      returns (ListCloudServicesResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services"
-    };
+  rpc ListCloudServices(ListCloudServicesRequest) returns (ListCloudServicesResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/cloud_services"};
   }
 
   // Removes a target cloud service
-  rpc RemoveCloudService(RemoveCloudServiceRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}"
-    };
+  rpc RemoveCloudService(RemoveCloudServiceRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/cloud_services/{cloud_service_id}"};
   }
 
   // Retrieves target cloud service statistics
-  rpc GetCloudServiceStatistics(GetCloudServiceStatisticsRequest)
-      returns (GetCloudServiceStatisticsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/statistics"
-    };
+  rpc GetCloudServiceStatistics(GetCloudServiceStatisticsRequest) returns (GetCloudServiceStatisticsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/cloud_services/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
   // service and metric ID
-  rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest)
-      returns (clouditor.assessment.v1.MetricConfiguration) {
+  rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
-            "metric_configurations/"
-            "{metric_id}"
-      body : "configuration"
+      put:
+        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "metric_configurations/"
+        "{metric_id}"
+      body: "configuration"
     };
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
   // service and metric ID.
-  rpc GetMetricConfiguration(GetMetricConfigurationRequest)
-      returns (clouditor.assessment.v1.MetricConfiguration) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
-            "metric_configurations/"
-            "{metric_id}"
-    };
+  rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
+    option (google.api.http) = {get:
+        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "metric_configurations/"
+        "{metric_id}"
+};
   }
 
   // Lists all a metric configurations (target value and operator) for a
   // specific service ID
-  rpc ListMetricConfigurations(ListMetricConfigurationRequest)
-      returns (ListMetricConfigurationResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/"
-            "metric_configurations"
-    };
+  rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
+    option (google.api.http) = {get:
+        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "metric_configurations"
+};
   }
 
   // Updates an existing metric implementation
-  rpc UpdateMetricImplementation(UpdateMetricImplementationRequest)
-      returns (clouditor.assessment.v1.MetricImplementation) {
+  rpc UpdateMetricImplementation(UpdateMetricImplementationRequest) returns (clouditor.assessment.v1.MetricImplementation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/metrics/{implementation.metric_id}/"
-            "implementation"
-      body : "implementation"
+      put:
+        "/v1/orchestrator/metrics/{implementation.metric_id}/"
+        "implementation"
+      body: "implementation"
     };
   }
 
   // Returns the metric implementation of the passed metric id
-  rpc GetMetricImplementation(GetMetricImplementationRequest)
-      returns (clouditor.assessment.v1.MetricImplementation) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/metrics/{metric_id}/implementation"
-    };
+  rpc GetMetricImplementation(GetMetricImplementationRequest) returns (clouditor.assessment.v1.MetricImplementation) {
+    option (google.api.http) = {get: "/v1/orchestrator/metrics/{metric_id}/implementation"};
   }
 
-  rpc SubscribeMetricChangeEvents(SubscribeMetricChangeEventRequest)
-      returns (stream MetricChangeEvent) {}
+  rpc SubscribeMetricChangeEvents(SubscribeMetricChangeEventRequest) returns (stream MetricChangeEvent) {}
 
   // Creates a new certificate
   rpc CreateCertificate(CreateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/certificates"
-      body : "certificate"
+      post: "/v1/orchestrator/certificates"
+      body: "certificate"
     };
   }
 
   // Retrieves a certificate
   rpc GetCertificate(GetCertificateRequest) returns (Certificate) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/certificates/{certificate_id}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/certificates/{certificate_id}"};
   }
 
   // Lists all target certificates
-  rpc ListCertificates(ListCertificatesRequest)
-      returns (ListCertificatesResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/certificates"
-    };
+  rpc ListCertificates(ListCertificatesRequest) returns (ListCertificatesResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/certificates"};
   }
 
   // Lists all target certificates without state history
-  rpc ListPublicCertificates(ListPublicCertificatesRequest)
-      returns (ListPublicCertificatesResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/public/certificates"
-    };
+  rpc ListPublicCertificates(ListPublicCertificatesRequest) returns (ListPublicCertificatesResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/public/certificates"};
   }
 
   // Updates an existing certificate
   rpc UpdateCertificate(UpdateCertificateRequest) returns (Certificate) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/certificates/{certificate.id}"
-      body : "certificate"
+      put: "/v1/orchestrator/certificates/{certificate.id}"
+      body: "certificate"
     };
   }
 
   // Removes a certificate
-  rpc RemoveCertificate(RemoveCertificateRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/certificates/{certificate_id}"
-    };
+  rpc RemoveCertificate(RemoveCertificateRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/certificates/{certificate_id}"};
   }
 
   // Creates a new security controls catalog
   rpc CreateCatalog(CreateCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/catalogs"
-      body : "catalog"
+      post: "/v1/orchestrator/catalogs"
+      body: "catalog"
     };
   }
 
   // Lists all security controls catalogs. Each catalog includes a list of its
   // categories but no additional sub-resources.
   rpc ListCatalogs(ListCatalogsRequest) returns (ListCatalogsResponse) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/catalogs"};
   }
 
   // Retrieves a specific catalog by it's ID. The catalog includes a list of all
   // of it categories as well as the first level of controls in each category.
   rpc GetCatalog(GetCatalogRequest) returns (Catalog) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/catalogs/{catalog_id}"};
   }
 
   // Removes a catalog
   rpc RemoveCatalog(RemoveCatalogRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/catalogs/{catalog_id}"
-    };
+    option (google.api.http) = {delete: "/v1/orchestrator/catalogs/{catalog_id}"};
   }
 
   // Updates an existing certificate
   rpc UpdateCatalog(UpdateCatalogRequest) returns (Catalog) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/catalogs/{catalog.id}"
-      body : "catalog"
+      put: "/v1/orchestrator/catalogs/{catalog.id}"
+      body: "catalog"
     };
   }
 
@@ -344,9 +284,7 @@ service Orchestrator {
   // category name. It includes the first level of controls within each
   // category.
   rpc GetCategory(GetCategoryRequest) returns (Category) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/catalogs/{catalog_id}/category/{category_name}"};
   }
 
   // If no additional parameters are specified, this lists all controls. If a
@@ -354,11 +292,11 @@ service Orchestrator {
   // in this category are returned.
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/controls"
-      additional_bindings {
-        get : "/v1/orchestrator/catalogs/{catalog_id}/categories/"
-              "{category_name}/controls"
-      }
+      get: "/v1/orchestrator/controls"
+      additional_bindings {get:
+          "/v1/orchestrator/catalogs/{catalog_id}/categories/"
+          "{category_name}/controls"
+}
     };
   }
 
@@ -367,73 +305,64 @@ service Orchestrator {
   // sub-controls if present or a list of metrics if no sub-controls but metrics
   // are present.
   rpc GetControl(GetControlRequest) returns (Control) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
-            "controls/{control_id}"
-    };
+    option (google.api.http) = {get:
+        "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/"
+        "controls/{control_id}"
+};
   }
 
   // Creates a new Target of Evaluation
-  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest)
-      returns (TargetOfEvaluation) {
+  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      post : "/v1/orchestrator/toes"
-      body : "target_of_evaluation"
+      post: "/v1/orchestrator/toes"
+      body: "target_of_evaluation"
     };
   }
 
   // Retrieves a Target of Evaluation
-  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest)
-      returns (TargetOfEvaluation) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-            "{catalog_id}"
-    };
+  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+    option (google.api.http) = {get:
+        "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+        "{catalog_id}"
+};
   }
 
   // Lists all Targets of Evaluation
-  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest)
-      returns (ListTargetsOfEvaluationResponse) {
+  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {
-      get : "/v1/orchestrator/toes"
-      additional_bindings {
-        get : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"
-      }
-      additional_bindings {get : "/v1/orchestrator/catalogs/{catalog_id}/toes"}
+      get: "/v1/orchestrator/toes"
+      additional_bindings {get: "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"}
+      additional_bindings {get: "/v1/orchestrator/catalogs/{catalog_id}/toes"}
     };
   }
 
   // Updates an existing Target of Evaluation
-  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest)
-      returns (TargetOfEvaluation) {
+  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
-      put : "/v1/orchestrator/cloud_services/"
-            "{target_of_evaluation.cloud_service_id}/toes/"
-            "{target_of_evaluation.catalog_id}"
-      body : "target_of_evaluation"
+      put:
+        "/v1/orchestrator/cloud_services/"
+        "{target_of_evaluation.cloud_service_id}/toes/"
+        "{target_of_evaluation.catalog_id}"
+      body: "target_of_evaluation"
     };
   }
 
   // Removes a Target of Evaluation
-  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
-               "{catalog_id}"
-    };
+  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete:
+        "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+        "{catalog_id}"
+};
   }
 
   // Get Runtime Information
-  rpc GetRuntimeInfo(clouditor.runtime.v1.GetRuntimeInfoRequest)
-      returns (clouditor.runtime.v1.Runtime) {
-    option (google.api.http) = {
-      get : "/v1/orchestrator/runtime_info"
-    };
+  rpc GetRuntimeInfo(clouditor.runtime.v1.GetRuntimeInfoRequest) returns (clouditor.runtime.v1.Runtime) {
+    option (google.api.http) = {get: "/v1/orchestrator/runtime_info"};
   }
 }
 
 message RegisterAssessmentToolRequest {
-  AssessmentTool tool = 1 [ (validate.rules).message.required = true ];
+  AssessmentTool tool = 1 [(validate.rules).message.required = true];
 }
 
 message ListAssessmentToolsRequest {
@@ -447,15 +376,14 @@ message ListAssessmentToolsRequest {
 
 message Filter {
   // Optional. List only assessment results of a specific cloud service.
-  optional string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  optional string cloud_service_id = 1 [(validate.rules).string.uuid = true];
   // Optional. List only compliant assessment results.
   optional bool compliant = 2;
   // Optional. List only assessment results of a specific metric id.
-  repeated string metric_ids = 3
-      [ (validate.rules).repeated .items.string.min_len = 1 ];
-  optional string metric_id = 4 [ (validate.rules).string.min_len = 1 ];
+  repeated string metric_ids = 3 [(validate.rules).repeated.items.string.min_len = 1];
+  optional string metric_id = 4 [(validate.rules).string.min_len = 1];
   // Optional. List only assessment result from a specific assessment tool.
-  optional string tool_id = 5 [ (validate.rules).string.min_len = 1 ];
+  optional string tool_id = 5 [(validate.rules).string.min_len = 1];
 }
 
 message ListAssessmentToolsResponse {
@@ -464,20 +392,19 @@ message ListAssessmentToolsResponse {
 }
 
 message GetAssessmentToolRequest {
-  string tool_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string tool_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message UpdateAssessmentToolRequest {
-  AssessmentTool tool = 2 [ (validate.rules).message.required = true ];
+  AssessmentTool tool = 2 [(validate.rules).message.required = true];
 }
 
 message DeregisterAssessmentToolRequest {
-  string tool_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string tool_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message StoreAssessmentResultRequest {
-  clouditor.assessment.v1.AssessmentResult result = 1
-      [ (validate.rules).message.required = true ];
+  clouditor.assessment.v1.AssessmentResult result = 1 [(validate.rules).message.required = true];
 }
 
 // StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a
@@ -495,21 +422,21 @@ message StoreAssessmentResultsResponse {
 }
 
 message CreateMetricRequest {
-  clouditor.assessment.v1.Metric metric = 1
-      [ (validate.rules).message.required = true ];
+  clouditor.assessment.v1.Metric metric = 1 [(validate.rules).message.required = true];
 }
 
 message UpdateMetricRequest {
-  clouditor.assessment.v1.Metric metric = 1
-      [ (validate.rules).message.required = true ];
+  clouditor.assessment.v1.Metric metric = 1 [(validate.rules).message.required = true];
 }
 
 message GetMetricRequest {
-  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListMetricsRequest {
-  message Filter { optional bool include_deprecated = 1; }
+  message Filter {
+    optional bool include_deprecated = 1;
+  }
 
   optional Filter filter = 1;
 
@@ -520,7 +447,7 @@ message ListMetricsRequest {
 }
 
 message RemoveMetricRequest {
-  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListMetricsResponse {
@@ -529,19 +456,19 @@ message ListMetricsResponse {
 }
 
 message GetCloudServiceRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
 }
 
 message RegisterCloudServiceRequest {
-  CloudService cloud_service = 1 [ (validate.rules).message.required = true ];
+  CloudService cloud_service = 1 [(validate.rules).message.required = true];
 }
 
 message UpdateCloudServiceRequest {
-  CloudService cloud_service = 1 [ (validate.rules).message.required = true ];
+  CloudService cloud_service = 1 [(validate.rules).message.required = true];
 }
 
 message RemoveCloudServiceRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
 }
 
 message ListCloudServicesRequest {
@@ -556,7 +483,7 @@ message ListCloudServicesResponse {
 }
 
 message GetCloudServiceStatisticsRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
 }
 
 message GetCloudServiceStatisticsResponse {
@@ -574,22 +501,21 @@ message GetCloudServiceStatisticsResponse {
 }
 
 message UpdateMetricConfigurationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
 
-  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 2 [(validate.rules).string.min_len = 1];
 
-  clouditor.assessment.v1.MetricConfiguration configuration = 3
-      [ (validate.rules).message.required = true ];
+  clouditor.assessment.v1.MetricConfiguration configuration = 3 [(validate.rules).message.required = true];
 }
 
 message GetMetricConfigurationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
 
-  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 2 [(validate.rules).string.min_len = 1];
 }
 
 message ListMetricConfigurationRequest {
-  string cloud_service_id = 10 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 10 [(validate.rules).string.uuid = true];
 }
 
 message ListMetricConfigurationResponse {
@@ -598,12 +524,11 @@ message ListMetricConfigurationResponse {
 }
 
 message UpdateMetricImplementationRequest {
-  clouditor.assessment.v1.MetricImplementation implementation = 1
-      [ (validate.rules).message.required = true ];
+  clouditor.assessment.v1.MetricImplementation implementation = 1 [(validate.rules).message.required = true];
 }
 
 message GetMetricImplementationRequest {
-  string metric_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message SubscribeMetricChangeEventRequest {}
@@ -618,47 +543,50 @@ message MetricChangeEvent {
     TYPE_METADATA_CHANGED = 3;
   }
 
-  Type type = 1 [ (validate.rules).enum.defined_only = true ];
+  Type type = 1 [(validate.rules).enum.defined_only = true];
 
   // The metric that is changing.
-  string metric_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string metric_id = 2 [(validate.rules).string.min_len = 1];
 
   // The cloud service id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
+  string cloud_service_id = 3 [(validate.rules).string.uuid = true];
 }
 
 // Represents an external tool or service that offers assessments according to
 // certain metrics.
 message AssessmentTool {
-  string id = 1
-      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
+  string id = 1 [(validate.rules).string = {
+    ignore_empty: true,
+    uuid: true
+  }];
 
-  string name = 2 [ (validate.rules).string.min_len = 1 ];
+  string name = 2 [(validate.rules).string.min_len = 1];
 
   string description = 3;
 
   // a list of metrics that this tool can assess, referred by their ids
-  repeated string available_metrics = 4
-      [ (validate.rules).repeated .items.string.min_len = 1 ];
+  repeated string available_metrics = 4 [(validate.rules).repeated.items.string.min_len = 1];
 }
 
 message CloudService {
-  string id = 1
-      [ (validate.rules).string = {ignore_empty : true, uuid : true} ];
+  string id = 1 [(validate.rules).string = {
+    ignore_empty: true,
+    uuid: true
+  }];
 
-  string name = 2 [ (validate.rules).string.min_len = 1 ];
+  string name = 2 [(validate.rules).string.min_len = 1];
 
   string description = 3;
 
   repeated Catalog catalogs_in_scope = 4 [
     (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   message Metadata {
@@ -670,28 +598,25 @@ message CloudService {
   }
 
   // creation time of the cloud_service
-  optional google.protobuf.Timestamp created_at = 6
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
+  optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
 
   // last update time of the cloud_service
-  optional google.protobuf.Timestamp updated_at = 7
-      [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
+  optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
 
   // additional metadata of the cloud service, mostly used for the UI
-  optional Metadata metadata = 10
-      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+  optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 }
 
 message Catalog {
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
+  string id = 1 [(validate.rules).string.min_len = 1];
 
-  string name = 2 [ (validate.rules).string.min_len = 1 ];
+  string name = 2 [(validate.rules).string.min_len = 1];
 
   string description = 3;
 
   repeated Category categories = 4 [
     (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // Certain security catalogs do not allow to select the scope of the controls,
@@ -701,8 +626,7 @@ message Catalog {
 
   // A list of the assurance levels, e.g., basic, substantial and high for the
   // EUCS catalog.
-  repeated string assurance_levels = 7
-      [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+  repeated string assurance_levels = 7 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // Catalogs short name, e.g. EUCS
   string short_name = 9;
@@ -713,7 +637,7 @@ message Catalog {
   }
 
   // metadata of the catalog
-  optional Metadata metadata = 6 [ (tagger.tags) = "gorm:\"serializer:json\"" ];
+  optional Metadata metadata = 6 [(tagger.tags) = "gorm:\"serializer:json\""];
 }
 
 message Category {
@@ -732,9 +656,10 @@ message Category {
 
   repeated Control controls = 4 [
     (tagger.tags) =
-        "gorm:\"foreignKey:category_name,category_"
-        "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+      "gorm:\"foreignKey:category_name,category_"
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
+,
+    (validate.rules).repeated.items.message.required = true
   ];
 }
 
@@ -759,7 +684,7 @@ message Control {
   ];
 
   // Human-readable name of the control
-  string name = 4 [ (validate.rules).string.min_len = 1 ];
+  string name = 4 [(validate.rules).string.min_len = 1];
 
   // Description of the control
   string description = 5;
@@ -767,33 +692,30 @@ message Control {
   // List of sub - controls -
   //     this is in accordance with the OSCAL model.
   repeated Control controls = 6 [
-    (tagger.tags) = "gorm:\"foreignKey:parent_control_id,parent_control_"
-                    "category_name,parent_control_category_catalog_id;"
-                    "references=id,category_name;category_catalog_id\"",
-    (validate.rules).repeated .items.message.required = true
+    (tagger.tags) =
+      "gorm:\"foreignKey:parent_control_id,parent_control_"
+      "category_name,parent_control_category_catalog_id;"
+      "references=id,category_name;category_catalog_id\""
+,
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // metrics contains either a list of reference to metrics - in this case only
   // the id field of the metric is populated - or a list of populated metric
   // meta-data, most likely returned by the database.
   repeated clouditor.assessment.v1.Metric metrics = 7 [
-    (tagger.tags) =
-        "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
-    (validate.rules).repeated .items.message.required = true
+    (tagger.tags) = "gorm:\"many2many:control_metrics;constraint:OnDelete:CASCADE\"",
+    (validate.rules).repeated.items.message.required = true
   ];
 
   // Reference to the parent category this control belongs to.
-  optional string parent_control_id = 8 [ (validate.rules).string.min_len = 1 ];
-  optional string parent_control_category_name = 9
-      [ (validate.rules).string.min_len = 1 ];
-  optional string parent_control_category_catalog_id = 10
-      [ (validate.rules).string.min_len = 1 ];
+  optional string parent_control_id = 8 [(validate.rules).string.min_len = 1];
+  optional string parent_control_category_name = 9 [(validate.rules).string.min_len = 1];
+  optional string parent_control_category_catalog_id = 10 [(validate.rules).string.min_len = 1];
 
   // An assurance level is not offered by every catalog, therefore it is
   // optional.
-  optional string assurance_level = 11
-      [ (validate.rules).string.pattern =
-            "^(|basic|substantial|high|low|medium)$" ];
+  optional string assurance_level = 11 [(validate.rules).string.pattern = "^(|basic|substantial|high|low|medium)$"];
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -810,13 +732,11 @@ message TargetOfEvaluation {
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  optional string assurance_level = 3
-      [ (validate.rules).string.pattern =
-            "^(|basic|substantial|high|low|medium)$" ];
+  optional string assurance_level = 3 [(validate.rules).string.pattern = "^(|basic|substantial|high|low|medium)$"];
 }
 
 message GetAssessmentResultRequest {
-  string id = 1 [ (validate.rules).string.uuid = true ];
+  string id = 1 [(validate.rules).string.uuid = true];
 }
 
 message ListAssessmentResultsRequest {
@@ -836,18 +756,17 @@ message ListAssessmentResultsResponse {
 }
 
 message CreateTargetOfEvaluationRequest {
-  TargetOfEvaluation target_of_evaluation = 1
-      [ (validate.rules).message.required = true ];
+  TargetOfEvaluation target_of_evaluation = 1 [(validate.rules).message.required = true];
 }
 
 message RemoveTargetOfEvaluationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
-  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
+  string catalog_id = 2 [(validate.rules).string.min_len = 1];
 }
 
 message GetTargetOfEvaluationRequest {
-  string cloud_service_id = 1 [ (validate.rules).string.uuid = true ];
-  string catalog_id = 2 [ (validate.rules).string.min_len = 1 ];
+  string cloud_service_id = 1 [(validate.rules).string.uuid = true];
+  string catalog_id = 2 [(validate.rules).string.min_len = 1];
 }
 
 message ListTargetsOfEvaluationRequest {
@@ -872,12 +791,11 @@ message ListTargetsOfEvaluationResponse {
 }
 
 message UpdateTargetOfEvaluationRequest {
-  TargetOfEvaluation target_of_evaluation = 3
-      [ (validate.rules).message.required = true ];
+  TargetOfEvaluation target_of_evaluation = 3 [(validate.rules).message.required = true];
 }
 
 message GetCertificateRequest {
-  string certificate_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string certificate_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListCertificatesRequest {
@@ -905,19 +823,19 @@ message ListPublicCertificatesResponse {
 }
 
 message UpdateCertificateRequest {
-  Certificate certificate = 1 [ (validate.rules).message.required = true ];
+  Certificate certificate = 1 [(validate.rules).message.required = true];
 }
 
 message CreateCatalogRequest {
-  Catalog catalog = 1 [ (validate.rules).message.required = true ];
+  Catalog catalog = 1 [(validate.rules).message.required = true];
 }
 
 message RemoveCatalogRequest {
-  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message GetCatalogRequest {
-  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListCatalogsRequest {
@@ -933,18 +851,18 @@ message ListCatalogsResponse {
 }
 
 message UpdateCatalogRequest {
-  Catalog catalog = 1 [ (validate.rules).message.required = true ];
+  Catalog catalog = 1 [(validate.rules).message.required = true];
 }
 
 message GetCategoryRequest {
-  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
-  string category_name = 2 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [(validate.rules).string.min_len = 1];
+  string category_name = 2 [(validate.rules).string.min_len = 1];
 }
 
 message GetControlRequest {
-  string catalog_id = 1 [ (validate.rules).string.min_len = 1 ];
-  string category_name = 2 [ (validate.rules).string.min_len = 1 ];
-  string control_id = 3 [ (validate.rules).string.min_len = 1 ];
+  string catalog_id = 1 [(validate.rules).string.min_len = 1];
+  string category_name = 2 [(validate.rules).string.min_len = 1];
+  string control_id = 3 [(validate.rules).string.min_len = 1];
 }
 
 message ListControlsRequest {
@@ -954,8 +872,7 @@ message ListControlsRequest {
 
   message Filter {
     // Optional. Lists only controls with the specified assurance levels.
-    repeated string assurance_levels = 1
-        [ (validate.rules).repeated .items.string.min_len = 1 ];
+    repeated string assurance_levels = 1 [(validate.rules).repeated.items.string.min_len = 1];
   }
 
   optional Filter filter = 3;
@@ -972,18 +889,18 @@ message ListControlsResponse {
 }
 
 message CreateCertificateRequest {
-  Certificate certificate = 1 [ (validate.rules).message.required = true ];
+  Certificate certificate = 1 [(validate.rules).message.required = true];
 }
 
 message RemoveCertificateRequest {
-  string certificate_id = 1 [ (validate.rules).string.min_len = 1 ];
+  string certificate_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 // An ISO17021-based certificate
 message Certificate {
-  string id = 1 [ (validate.rules).string.min_len = 1 ];
-  string name = 2 [ (validate.rules).string.min_len = 1 ];
-  string cloud_service_id = 3 [ (validate.rules).string.uuid = true ];
+  string id = 1 [(validate.rules).string.min_len = 1];
+  string name = 2 [(validate.rules).string.min_len = 1];
+  string cloud_service_id = 3 [(validate.rules).string.uuid = true];
   string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;
@@ -991,8 +908,7 @@ message Certificate {
   string cab = 8;
   string description = 9;
   // A list of states at specific times
-  repeated State states = 10
-      [ (tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\"" ];
+  repeated State states = 10 [(tagger.tags) = "gorm:\"constraint:OnDelete:CASCADE\""];
 }
 
 // A state of a certificate at a given time
@@ -1020,10 +936,9 @@ message TargetOfEvaluationChangeEvent {
     TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
   }
 
-  Type type = 1 [ (validate.rules).enum.defined_only = true ];
+  Type type = 1 [(validate.rules).enum.defined_only = true];
 
   // Optional. If the type is a TARGET_OF_EVALUATION_* the target_of_evaluation
   // field must be set
-  optional TargetOfEvaluation target_of_evaluation = 2
-      [ (validate.rules).message.required = true ];
+  optional TargetOfEvaluation target_of_evaluation = 2 [(validate.rules).message.required = true];
 }
