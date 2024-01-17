@@ -28,6 +28,7 @@ syntax = "proto3";
 
 package clouditor.assessment.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -38,10 +39,16 @@ option go_package = "clouditor.io/clouditor/api/assessment";
 // A metric resource
 message Metric {
   // Required. The unique identifier of the metric.
-  string id = 1 [(validate.rules).string.min_len = 1];
+  string id = 1 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 
   // Required. The human readable name of the metric.
-  string name = 2 [(validate.rules).string.min_len = 1];
+  string name = 2 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 
   // The description of the metric
   string description = 3;
@@ -50,10 +57,16 @@ message Metric {
   string category = 4;
 
   // The scale of this metric, e.g. categories, ranked data or metric values.
-  Scale scale = 5 [(validate.rules).enum.defined_only = true];
+  Scale scale = 5 [
+    (validate.rules).enum.defined_only = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 
   // The range of this metric. Depending on the scale.
-  Range range = 6 [(validate.rules).message.required = true];
+  Range range = 6 [
+    (validate.rules).message.required = true,
+    (buf.validate.field).required = true
+  ];
 
   // The values a Scale accepts
   enum Scale {
@@ -115,12 +128,16 @@ message Order {
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1 [(validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$"];
+  string operator = 1 [
+    (validate.rules).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$",
+    (buf.validate.field).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$"
+  ];
 
   // The target value
   google.protobuf.Value target_value = 2 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).message.required = true
+    (validate.rules).message.required = true,
+    (buf.validate.field).required = true
   ];
 
   // Whether this configuration is a default configuration
@@ -132,13 +149,15 @@ message MetricConfiguration {
   // The metric this configuration belongs to
   string metric_id = 5 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.min_len = 1
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
   ];
 
   // The service this configuration belongs to
   string cloud_service_id = 6 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (validate.rules).string.uuid = true
+    (validate.rules).string.uuid = true,
+    (buf.validate.field).string.uuid = true
   ];
 }
 
@@ -147,6 +166,7 @@ message MetricImplementation {
   // The metric which is implemented
   string metric_id = 1 [
     (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1,
     (tagger.tags) = "gorm:\"primaryKey\""
   ];
 
@@ -156,10 +176,16 @@ message MetricImplementation {
   }
 
   // The language this metric is implemented in
-  Language lang = 2 [(validate.rules).enum.defined_only = true];
+  Language lang = 2 [
+    (validate.rules).enum.defined_only = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 
   // The actual implementation
-  string code = 3 [(validate.rules).string.min_len = 1];
+  string code = 3 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 
   // The last time of update
   google.protobuf.Timestamp updated_at = 4 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];

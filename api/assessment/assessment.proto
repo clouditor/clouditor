@@ -30,6 +30,7 @@ package clouditor.assessment.v1;
 
 import "api/assessment/metric.proto";
 import "api/evidence/evidence.proto";
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -67,7 +68,10 @@ message CalculateComplianceRequest {
 }
 
 message AssessEvidenceRequest {
-  clouditor.evidence.v1.Evidence evidence = 1 [(validate.rules).message.required = true];
+  clouditor.evidence.v1.Evidence evidence = 1 [
+    (validate.rules).message.required = true,
+    (buf.validate.field).required = true
+  ];
 }
 
 // AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
@@ -95,46 +99,67 @@ message AssessEvidencesResponse {
 // with id resource_id.
 message AssessmentResult {
   // Assessment result id
-  string id = 1 [(validate.rules).string.uuid = true];
+  string id = 1 [
+    (validate.rules).string.uuid = true,
+    (buf.validate.field).string.uuid = true
+  ];
 
   // Time of assessment
   google.protobuf.Timestamp timestamp = 2 [
     (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
-    (validate.rules).timestamp.required = true
+    (validate.rules).timestamp.required = true,
+    (buf.validate.field).required = true
   ];
 
   // Reference to the metric the assessment was based on
-  string metric_id = 3 [(validate.rules).string.min_len = 1];
+  string metric_id = 3 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 
   // Data corresponding to the metric by the given metric id
   MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).message.required = true
+    (validate.rules).message.required = true,
+    (buf.validate.field).required = true
   ];
 
   // Compliant case: true or false
   bool compliant = 5;
 
   // Reference to the assessed evidence
-  string evidence_id = 6 [(validate.rules).string.uuid = true];
+  string evidence_id = 6 [
+    (validate.rules).string.uuid = true,
+    (buf.validate.field).string.uuid = true
+  ];
 
   // Reference to the resource of the assessed evidence
-  string resource_id = 7 [(validate.rules).string.min_len = 1];
+  string resource_id = 7 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 
   // Resource types
   repeated string resource_types = 8 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (validate.rules).repeated.min_items = 1
+    (validate.rules).repeated.min_items = 1,
+    (buf.validate.field).repeated.min_items = 1
   ];
 
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
 
   // The cloud service which this assessment result belongs to
-  string cloud_service_id = 10 [(validate.rules).string.uuid = true];
+  string cloud_service_id = 10 [
+    (validate.rules).string.uuid = true,
+    (buf.validate.field).string.uuid = true
+  ];
 
   // Reference to the tool which provided the assessment result
-  optional string tool_id = 11 [(validate.rules).string.min_len = 1];
+  optional string tool_id = 11 [
+    (validate.rules).string.min_len = 1,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 
 /*

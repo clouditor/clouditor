@@ -30,7 +30,6 @@ import (
 	"clouditor.io/clouditor/internal/util"
 
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/bufbuild/protovalidate-go/legacy"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -54,9 +53,7 @@ func Validate(req IncomingRequest) (err error) {
 	}
 
 	// TODO(oxisto): Re-use validator?
-	v, err := protovalidate.New(
-		legacy.WithLegacySupport(legacy.ModeMerge),
-	)
+	v, err := protovalidate.New()
 	if err != nil {
 		return status.Errorf(codes.Internal, "failed to initialize validator: %s", err)
 	}
