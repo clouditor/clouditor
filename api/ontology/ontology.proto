@@ -1,3 +1,5 @@
+// Auto-generated code by owl2proto (https://github.com/oxisto/owl2proto)
+
 // Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,216 +37,44 @@ import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/ontology";
 
-message ResourceID {
-  repeated string resource_id = 1;
-}
-
-message Container {}
-
-message Document {
-  string filename = 1;
-  repeated SecurityFeature security_feature = 2;
-}
-
-message FileStorage {
-  bool public_access = 1;
-}
-
-message Functionality {
-  oneof type {
-    HttpEndpoint http_endpoint = 101;
-    HttpRequestHandler http_request_handler = 102;
-    Operation operation = 103;
-  }
-}
-
-// NetworkService is an entity in our Cloud ontology
-// A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
-message NetworkService {
-  repeated string ips = 1;
-  repeated uint32 ports = 2;
-
-  oneof type {
-    LoadBalancer load_balancer = 101;
-    LoggingService logging_service = 102;
-    StorageService storage_service = 103;
-  }
-}
-
-message AtRestEncryption {
-  string algorithm = 1;
-  bool enabled = 2;
-  string key_url = 3;
-
-  oneof type {
-    CustomerKeyEncryption customer_key_encryption = 101;
-    ManagedKeyEncryption managed_key_encryption = 102;
-  }
-}
-
-// MalwareProtection is an entity in our Cloud ontology
-// analyzes the activity within a Compute resource
-message MalwareProtection {
-  int32 number_of_threats_found = 1;
-  bool enabled = 2;
-  int64 days_since_active = 3;
-}
-
-message NetworkSecurityGroup {}
-
-message ObjectStorage {
-  bool public_access = 1;
-}
-
-message VirtualNetwork {}
-
-message DeviceProvisioningService {}
-
-message Logger {}
-
-message RelationalDatabaseService {}
-
-// AnomalyDetection is an entity in our Cloud ontology
-// Analyzes the activity of a NetworkService (which includes DatabaseServices).
-// AnomalyDetection is an entity in our Cloud ontology
-// Scope contains the resource ID of the protected resource.
-message AnomalyDetection {
-  bool enabled = 1;
-}
-
-message CipherSuite {
-  // for example: RSA, ECDSA
-  string authentication_mechanism = 1;
-  string key_exchange_algorithm = 2;
-  // naming schema: SHA-256
-  string mac_algorithm = 3;
-  // naming schema: AES-128-GCM
-  string session_cipher = 4;
-}
-
-message Identity {
-  bool disable_password_policy = 1;
-  bool enforce_m_f_a = 2;
-  bool login_defender_enabled = 3;
-  bool privileged = 4;
-  google.protobuf.Timestamp last_activity = 5;
-  repeated Authenticity authenticity = 6;
-}
-
-message ObjectStorageRequest {
-  string type = 1;
-  string source = 2;
-}
-
-message ContainerImage {}
-
-// ObjectStorageService is an entity in our Cloud ontology
-// An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
-message ObjectStorageService {}
-
-message ActivityLogging {}
-
-message Framework {
-  oneof type {
-    CloudSDK cloud_s_d_k = 101;
-    HttpClientLibrary http_client_library = 102;
-    HttpServer http_server = 103;
-    Logger logger = 104;
-  }
-}
-
-message Logging {
-  bool monitoring_enabled = 1;
-  bool security_alerts_enabled = 2;
-  bool enabled = 3;
-  int64 retention_period = 4;
-
-  oneof type {
-    ActivityLogging activity_logging = 101;
-    ApplicationLogging application_logging = 102;
-    BootLogging boot_logging = 103;
-    OSLogging o_s_logging = 104;
-    ResourceLogging resource_logging = 105;
-  }
-}
-
-// LoggingService is an entity in our Cloud ontology
-// A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
-message LoggingService {
-  repeated ResourceID storage = 1;
-}
-
 // Account is an entity in our Cloud ontology
 // This represents the cloud account as a whole, e.g., an Azure subscription.
 message Account {}
 
-message Compute {
-  repeated ResourceID network_interface = 1;
+// LoadBalancer is an entity in our Cloud ontology
+// A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
+message LoadBalancer {
+  string url = 1;
+  repeated HttpEndpoint http_endpoint = 2;
+  repeated string network_service_id = 3;
+}
+
+message RoleAssignment {}
+
+// FileStorageService is an entity in our Cloud ontology
+// An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
+message FileStorageService {}
+
+message NoAuthentication {}
+
+// StorageService is an entity in our Cloud ontology
+// This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
+message StorageService {
+  repeated string storage_id = 1;
 
   oneof type {
-    Container container = 101;
-    Function function = 102;
-    VirtualMachine virtual_machine = 103;
-    WebApp web_app = 104;
+    DatabaseService database_service = 101;
+    FileStorageService file_storage_service = 102;
+    ObjectStorageService object_storage_service = 103;
   }
 }
-
-message Networking {
-  oneof type {
-    NetworkInterface network_interface = 101;
-    NetworkSecurityGroup network_security_group = 102;
-    NetworkService network_service = 103;
-    VirtualNetwork virtual_network = 104;
-    VirtualSubNetwork virtual_sub_network = 105;
-  }
-}
-
-message Workflow {}
-
-message Function {
-  string runtime_language = 1;
-  string runtime_version = 2;
-}
-
-message Job {}
-
-message Auditing {
-  oneof type {
-    AnomalyDetection anomaly_detection = 101;
-    Logging logging = 102;
-    MalwareProtection malware_protection = 103;
-  }
-}
-
-message BootLogging {}
-
-message DatabaseQuery {
-  bool modify = 1;
-}
-
-message Immutability {
-  bool enabled = 1;
-}
-
-// DatabaseStorage is an entity in our Cloud ontology
-// describes the actual database or a table in a database
-message DatabaseStorage {}
-
-message HttpRequestHandler {
-  string path = 1;
-  repeated HttpEndpoint http_endpoint = 3;
-}
-
-message VMImage {}
-
-message WebApp {}
 
 message CloudResource {
   map<string, string> labels = 1;
 
   oneof type {
     Account account = 101;
-    CICDService c_i_c_d_service = 102;
+    CICDService cicd_service = 102;
     Compute compute = 103;
     ContainerOrchestration container_orchestration = 104;
     ContainerRegistry container_registry = 105;
@@ -260,118 +90,28 @@ message CloudResource {
   }
 }
 
-message DDoSProtection {}
-
-// FileStorageService is an entity in our Cloud ontology
-// An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
-message FileStorageService {}
-
-message PasswordPolicy {}
-
-message ResourceLogging {}
-
-message Operation {
-  oneof type {
-    DatabaseOperation database_operation = 101;
-    HttpRequest http_request = 102;
-    LogOperation log_operation = 103;
-    ObjectStorageRequest object_storage_request = 104;
-  }
-}
-
-message Resource {
-  string name = 1;
-
-  oneof type {
-    Application application = 101;
-    CloudResource cloud_resource = 102;
-    Document document = 103;
-  }
-}
-
-message ContainerRegistry {}
-
-message HttpRequest {
-  string req_body = 1;
-  string call = 2;
-}
-
-message DocumentDatabaseService {}
-
-// Application is an entity in our Cloud ontology
-// This encapsulates the whole (source) code of an application.
-message Application {
-  string programming_language = 1;
-  repeated string translation_units = 2;
-  repeated Functionality functionality = 3;
-}
-
-message IoT {
-  oneof type {
-    DeviceProvisioningService device_provisioning_service = 101;
-    MessagingHub messaging_hub = 102;
-  }
-}
-
-message PasswordBasedAuthentication {
-  bool activated = 1;
-}
-
-message MessagingHub {}
-
-message Redundancy {
-  bool geo = 1;
-  bool local = 2;
-  bool zone = 3;
-}
-
-message CloudSDK {}
-
-message ManagedKeyEncryption {}
-
-message L3Firewall {
+message TokenBasedAuthentication {
   bool enabled = 1;
-  bool inbound = 2;
-  string restricted_ports = 3;
+  bool enforced = 2;
 }
 
-// ProxiedEndpoint is an entity in our Cloud ontology
-// An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
-message ProxiedEndpoint {}
+message VirtualNetwork {}
 
-message ResourceGroup {}
-
-message ApplicationLogging {}
-
-message Key {
-  int64 expiration_date = 1;
-  bool is_managed = 2;
-  int32 length = 3;
-  int32 number_of_usages = 4;
-  bool enabled = 5;
-}
-
-message RBAC {
-  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float broad_assignments = 1;
-  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float mixed_duties = 2;
-}
-
-message CertificateBasedAuthentication {
+// Backup is an entity in our Cloud ontology
+// RetentionPeriod in hours
+message Backup {
   bool enabled = 1;
+  // The interval refers to the update interval in days.
+  int64 interval = 2;
+  int64 retention_period = 3;
 }
 
-message Firewall {
-  oneof type {
-    L3Firewall l3_firewall = 101;
-    WebApplicationFirewall web_application_firewall = 102;
-  }
+message ContainerImage {}
+
+message HttpRequestHandler {
+  string path = 1;
+  repeated HttpEndpoint http_endpoint = 3;
 }
-
-message BlockStorage {}
-
-message HttpClientLibrary {}
 
 message Identifiable {
   bool activated = 1;
@@ -382,29 +122,88 @@ message Identifiable {
   }
 }
 
+message Key {
+  int64 expiration_date = 1;
+  bool is_managed = 2;
+  int32 length = 3;
+  int32 number_of_usages = 4;
+  bool enabled = 5;
+}
+
 message SingleSignOn {
   bool enabled = 1;
 }
 
-message VirtualMachine {
-  repeated ResourceID block_storage = 1;
-}
+message ActivityLogging {}
 
-message AccessRestriction {
+message Integrity {
   oneof type {
-    Firewall firewall = 101;
+    AutomaticSecurityUpdates automatic_security_updates = 101;
+    Immutability immutability = 102;
   }
 }
 
-message CustomerKeyEncryption {
-  string key_url = 1;
+message AtRestEncryption {
+  string algorithm = 1;
+  bool enabled = 2;
+  string key_url = 3;
+
+  oneof type {
+    CustomerKeyEncryption customer_key_encryption = 101;
+    ManagedKeyEncryption managed_key_encryption = 102;
+  }
 }
 
-message Image {
+message FileStorage {
+  bool public_access = 1;
+}
+
+message Function {
+  string runtime_language = 1;
+  string runtime_version = 2;
+}
+
+message MessagingHub {}
+
+message Networking {
   oneof type {
-    ContainerImage container_image = 101;
-    VMImage v_m_image = 102;
+    NetworkInterface network_interface = 101;
+    NetworkSecurityGroup network_security_group = 102;
+    NetworkService network_service = 103;
+    VirtualNetwork virtual_network = 104;
+    VirtualSubNetwork virtual_sub_network = 105;
   }
+}
+
+message DDoSProtection {}
+
+message KeyValueDatabaseService {}
+
+message Logging {
+  bool monitoring_enabled = 1;
+  bool security_alerts_enabled = 2;
+  bool enabled = 3;
+  int64 retention_period = 4;
+
+  oneof type {
+    ActivityLogging activity_logging = 101;
+    ApplicationLogging application_logging = 102;
+    BootLogging boot_logging = 103;
+    OSLogging os_logging = 104;
+    ResourceLogging resource_logging = 105;
+  }
+}
+
+message PasswordBasedAuthentication {
+  bool activated = 1;
+}
+
+message ResourceGroup {}
+
+message ContainerRegistry {}
+
+message GeoLocation {
+  string region = 1;
 }
 
 // LogOperation is an entity in our Cloud ontology
@@ -413,6 +212,124 @@ message LogOperation {
   string call = 1;
   string value = 2;
 }
+
+message RelationalDatabaseService {}
+
+message DatabaseOperation {
+  repeated string calls = 1;
+
+  oneof type {
+    DatabaseConnect database_connect = 101;
+    DatabaseQuery database_query = 102;
+  }
+}
+
+message HttpClientLibrary {}
+
+message ABAC {}
+
+message ContainerOrchestration {
+  string management_url = 1;
+  repeated string container_id = 3;
+}
+
+message HttpServer {}
+
+message BootLogging {}
+
+message CipherSuite {
+  // for example: RSA, ECDSA
+  string authentication_mechanism = 1;
+  string key_exchange_algorithm = 2;
+  // naming schema: SHA-256
+  string mac_algorithm = 3;
+  // naming schema: AES-128-GCM
+  string session_cipher = 4;
+}
+
+message Identity {
+  bool disable_password_policy = 1;
+  bool enforce_mfa = 2;
+  bool login_defender_enabled = 3;
+  bool privileged = 4;
+  google.protobuf.Timestamp last_activity = 5;
+  repeated Authenticity authenticity = 6;
+}
+
+message NetworkSecurityGroup {}
+
+message ObjectStorageRequest {
+  string type = 1;
+  string source = 2;
+}
+
+message HttpRequest {
+  string req_body = 1;
+  string call = 2;
+}
+
+// MalwareProtection is an entity in our Cloud ontology
+// analyzes the activity within a Compute resource
+message MalwareProtection {
+  int32 number_of_threats_found = 1;
+  bool enabled = 2;
+  int64 days_since_active = 3;
+}
+
+message RBAC {
+  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+  float broad_assignments = 1;
+  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+  float mixed_duties = 2;
+}
+
+message Image {
+  oneof type {
+    ContainerImage container_image = 101;
+    VMImage vm_image = 102;
+  }
+}
+
+message AccessRestriction {
+  oneof type {
+    Firewall firewall = 101;
+  }
+}
+
+message Authorization {
+  oneof type {
+    ABAC abac = 101;
+    AccessRestriction access_restriction = 102;
+    RBAC rbac = 103;
+  }
+}
+
+// DatabaseStorage is an entity in our Cloud ontology
+// describes the actual database or a table in a database
+message DatabaseStorage {}
+
+// AnomalyDetection is an entity in our Cloud ontology
+// Analyzes the activity of a NetworkService (which includes DatabaseServices).
+// AnomalyDetection is an entity in our Cloud ontology
+// Scope contains the resource ID of the protected resource.
+message AnomalyDetection {
+  bool enabled = 1;
+}
+
+// NetworkService is an entity in our Cloud ontology
+// A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
+message NetworkService {
+  repeated string ips = 1;
+  repeated uint32 ports = 2;
+
+  oneof type {
+    LoadBalancer load_balancer = 101;
+    LoggingService logging_service = 102;
+    StorageService storage_service = 103;
+  }
+}
+
+message WebApp {}
 
 message SecurityFeature {
   oneof type {
@@ -425,18 +342,184 @@ message SecurityFeature {
   }
 }
 
-message ContainerOrchestration {
-  string management_url = 1;
-  repeated ResourceID container = 3;
+message Container {}
+
+message DatabaseQuery {
+  bool modify = 1;
 }
 
-// LoadBalancer is an entity in our Cloud ontology
-// A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
-message LoadBalancer {
-  string url = 1;
-  repeated HttpEndpoint http_endpoint = 2;
-  repeated ResourceID network_service = 3;
+message ObjectStorage {
+  bool public_access = 1;
 }
+
+message CloudSDK {}
+
+message BlockStorage {}
+
+message Immutability {
+  bool enabled = 1;
+}
+
+message ResourceLogging {}
+
+message Storage {
+  repeated Backup backup = 1;
+
+  oneof type {
+    BlockStorage block_storage = 101;
+    DatabaseStorage database_storage = 102;
+    FileStorage file_storage = 103;
+    ObjectStorage object_storage = 104;
+  }
+}
+
+// DatabaseService is an entity in our Cloud ontology
+// This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
+message DatabaseService {
+  oneof type {
+    DocumentDatabaseService document_database_service = 101;
+    KeyValueDatabaseService key_value_database_service = 102;
+    RelationalDatabaseService relational_database_service = 103;
+  }
+}
+
+// ObjectStorageService is an entity in our Cloud ontology
+// An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
+message ObjectStorageService {}
+
+message VirtualMachine {
+  repeated string block_storage_id = 1;
+}
+
+message Availability {
+  oneof type {
+    Backup backup = 101;
+    DDoSProtection d_do_s_protection = 102;
+    GeoLocation geo_location = 103;
+    Redundancy redundancy = 104;
+  }
+}
+
+message CICDService {
+  oneof type {
+    Job job = 101;
+    Workflow workflow = 102;
+  }
+}
+
+message IoT {
+  oneof type {
+    DeviceProvisioningService device_provisioning_service = 101;
+    MessagingHub messaging_hub = 102;
+  }
+}
+
+// TransportEncryption is an entity in our Cloud ontology
+// enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+message TransportEncryption {
+  string protocol = 1;
+  float protocol_version = 2;
+  bool enabled = 3;
+  bool enforced = 4;
+  repeated CipherSuite cipher_suite = 5;
+}
+
+message DocumentDatabaseService {}
+
+message Job {}
+
+// ProxiedEndpoint is an entity in our Cloud ontology
+// An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
+message ProxiedEndpoint {}
+
+// Application is an entity in our Cloud ontology
+// This encapsulates the whole (source) code of an application.
+message Application {
+  string programming_language = 1;
+  repeated string translation_units = 2;
+  repeated Functionality functionality = 3;
+}
+
+message ManagedKeyEncryption {}
+
+message Workflow {}
+
+message Confidentiality {
+  oneof type {
+    AtRestEncryption at_rest_encryption = 101;
+    CipherSuite cipher_suite = 102;
+    EncryptionInUse encryption_in_use = 103;
+    TransportEncryption transport_encryption = 104;
+  }
+}
+
+message Logger {}
+
+message VirtualSubNetwork {}
+
+message DatabaseConnect {}
+
+message Document {
+  string filename = 1;
+  repeated SecurityFeature security_feature = 2;
+}
+
+// LoggingService is an entity in our Cloud ontology
+// A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+message LoggingService {
+  repeated string storage_id = 1;
+}
+
+// AutomaticSecurityUpdates is an entity in our Cloud ontology
+// This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+message AutomaticSecurityUpdates {
+  bool security_only = 1;
+  bool enabled = 2;
+  // The interval refers to the update interval in days.
+  int64 interval = 3;
+}
+
+message CertificateBasedAuthentication {
+  bool enabled = 1;
+}
+
+message Compute {
+  repeated string network_interface_id = 1;
+
+  oneof type {
+    Container container = 101;
+    Function function = 102;
+    VirtualMachine virtual_machine = 103;
+    WebApp web_app = 104;
+  }
+}
+
+message OTPBasedAuthentication {
+  bool activated = 1;
+}
+
+message VMImage {}
+
+// WebApplicationFirewall is an entity in our Cloud ontology
+// A WAF is a L7 firewall that includes L3 capabilities
+message WebApplicationFirewall {
+  bool enabled = 1;
+}
+
+message Authenticity {
+  bool context_is_checked = 1;
+
+  oneof type {
+    CertificateBasedAuthentication certificate_based_authentication = 101;
+    TokenBasedAuthentication token_based_authentication = 102;
+    NoAuthentication no_authentication = 103;
+    OTPBasedAuthentication otp_based_authentication = 104;
+    PasswordBasedAuthentication password_based_authentication = 105;
+    SingleSignOn single_sign_on = 106;
+  }
+}
+
+message DeviceProvisioningService {}
 
 // HttpEndpoint is an entity in our Cloud ontology
 // Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
@@ -451,170 +534,85 @@ message HttpEndpoint {
   }
 }
 
-message Authenticity {
-  bool context_is_checked = 1;
+message NetworkInterface {}
 
+message Framework {
   oneof type {
-    CertificateBasedAuthentication certificate_based_authentication = 101;
-    TokenBasedAuthentication token_based_authentication = 102;
-    NoAuthentication no_authentication = 103;
-    OTPBasedAuthentication o_t_p_based_authentication = 104;
-    PasswordBasedAuthentication password_based_authentication = 105;
-    SingleSignOn single_sign_on = 106;
+    CloudSDK cloud_sdk = 101;
+    HttpClientLibrary http_client_library = 102;
+    HttpServer http_server = 103;
+    Logger logger = 104;
   }
 }
 
-// AutomaticSecurityUpdates is an entity in our Cloud ontology
-// This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
-message AutomaticSecurityUpdates {
-  bool security_only = 1;
-  bool enabled = 2;
-  // The interval refers to the update interval in days.
-  int64 interval = 3;
-}
-
-// Backup is an entity in our Cloud ontology
-// RetentionPeriod in hours
-message Backup {
+message L3Firewall {
   bool enabled = 1;
-  // The interval refers to the update interval in days.
-  int64 interval = 2;
-  int64 retention_period = 3;
+  bool inbound = 2;
+  string restricted_ports = 3;
 }
 
-message DatabaseOperation {
-  repeated string calls = 1;
-
+message Operation {
   oneof type {
-    DatabaseConnect database_connect = 101;
-    DatabaseQuery database_query = 102;
+    DatabaseOperation database_operation = 101;
+    HttpRequest http_request = 102;
+    LogOperation log_operation = 103;
+    ObjectStorageRequest object_storage_request = 104;
   }
 }
-
-// DatabaseService is an entity in our Cloud ontology
-// This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
-message DatabaseService {
-  oneof type {
-    DocumentDatabaseService document_database_service = 101;
-    KeyValueDatabaseService key_value_database_service = 102;
-    RelationalDatabaseService relational_database_service = 103;
-  }
-}
-
-message KeyValueDatabaseService {}
-
-message CICDService {
-  oneof type {
-    Job job = 101;
-    Workflow workflow = 102;
-  }
-}
-
-message DatabaseConnect {}
-
-message Integrity {
-  oneof type {
-    AutomaticSecurityUpdates automatic_security_updates = 101;
-    Immutability immutability = 102;
-  }
-}
-
-message Confidentiality {
-  oneof type {
-    AtRestEncryption at_rest_encryption = 101;
-    CipherSuite cipher_suite = 102;
-    EncryptionInUse encryption_in_use = 103;
-    TransportEncryption transport_encryption = 104;
-  }
-}
-
-message Storage {
-  repeated Backup backup = 1;
-
-  oneof type {
-    BlockStorage block_storage = 101;
-    DatabaseStorage database_storage = 102;
-    FileStorage file_storage = 103;
-    ObjectStorage object_storage = 104;
-  }
-}
-
-message VirtualSubNetwork {}
-
-// WebApplicationFirewall is an entity in our Cloud ontology
-// A WAF is a L7 firewall that includes L3 capabilities
-message WebApplicationFirewall {
-  bool enabled = 1;
-}
-
-message RoleAssignment {}
-
-// StorageService is an entity in our Cloud ontology
-// This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
-message StorageService {
-  repeated ResourceID storage = 1;
-
-  oneof type {
-    DatabaseService database_service = 101;
-    FileStorageService file_storage_service = 102;
-    ObjectStorageService object_storage_service = 103;
-  }
-}
-
-message HttpServer {}
 
 message KeyVault {
   bool is_active = 1;
 }
 
-message OSLogging {}
-
-// TransportEncryption is an entity in our Cloud ontology
-// enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
-message TransportEncryption {
-  string protocol = 1;
-  float protocol_version = 2;
-  bool enabled = 3;
-  bool enforced = 4;
-  repeated CipherSuite cipher_suite = 5;
+message CustomerKeyEncryption {
+  string key_url = 1;
 }
 
-message Availability {
+message Firewall {
   oneof type {
-    Backup backup = 101;
-    DDoSProtection d_do_s_protection = 102;
-    GeoLocation geo_location = 103;
-    Redundancy redundancy = 104;
+    L3Firewall l3_firewall = 101;
+    WebApplicationFirewall web_application_firewall = 102;
   }
 }
 
-message GeoLocation {
-  string region = 1;
-}
-
-message TokenBasedAuthentication {
-  bool enabled = 1;
-  bool enforced = 2;
-}
-
-message NoAuthentication {}
-
-message ABAC {}
-
-message Authorization {
+message Functionality {
   oneof type {
-    ABAC a_b_a_c = 101;
-    AccessRestriction access_restriction = 102;
-    RBAC r_b_a_c = 103;
+    HttpEndpoint http_endpoint = 101;
+    HttpRequestHandler http_request_handler = 102;
+    Operation operation = 103;
+  }
+}
+
+message OSLogging {}
+
+message PasswordPolicy {}
+
+message Auditing {
+  oneof type {
+    AnomalyDetection anomaly_detection = 101;
+    Logging logging = 102;
+    MalwareProtection malware_protection = 103;
+  }
+}
+
+message Redundancy {
+  bool geo = 1;
+  bool local = 2;
+  bool zone = 3;
+}
+
+message ApplicationLogging {}
+
+message Resource {
+  string name = 1;
+
+  oneof type {
+    Application application = 101;
+    CloudResource cloud_resource = 102;
+    Document document = 103;
   }
 }
 
 message EncryptionInUse {
   bool enabled = 1;
-}
-
-message NetworkInterface {}
-
-message OTPBasedAuthentication {
-  bool activated = 1;
 }
