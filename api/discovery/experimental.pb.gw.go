@@ -147,12 +147,13 @@ func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtim
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ExperimentalDiscovery_UpdateResource_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_ExperimentalDiscovery_UpdateResource_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -170,12 +171,13 @@ func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtim
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
+		var err error
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ExperimentalDiscovery_ListGraphEdges_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_ExperimentalDiscovery_ListGraphEdges_0(ctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -217,7 +219,7 @@ func RegisterExperimentalDiscoveryHandlerFromEndpoint(ctx context.Context, mux *
 
 // RegisterExperimentalDiscoveryHandler registers the http handlers for service ExperimentalDiscovery to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterExperimentalDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn grpc.ClientConnInterface) error {
+func RegisterExperimentalDiscoveryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
 	return RegisterExperimentalDiscoveryHandlerClient(ctx, mux, NewExperimentalDiscoveryClient(conn))
 }
 
@@ -232,12 +234,13 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/UpdateResource", runtime.WithHTTPPathPattern("/v1experimental/discovery/resources/{resource.id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ExperimentalDiscovery_UpdateResource_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_ExperimentalDiscovery_UpdateResource_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -252,12 +255,13 @@ func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtim
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
+		var err error
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.discovery.v1experimental.ExperimentalDiscovery/ListGraphEdges", runtime.WithHTTPPathPattern("/v1experimental/discovery/graph/edges"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ExperimentalDiscovery_ListGraphEdges_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_ExperimentalDiscovery_ListGraphEdges_0(ctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
