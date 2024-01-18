@@ -27,12 +27,12 @@
 
 package clouditor
 
-// Run owl2protobuf to generate ontology proto file. The tools needs as arguments the following:
+// Run owl2proto to generate the ontology proto file. The tools needs as arguments the following:
 // - owl file in the owx format
 // - header file
 // - root resource name from the owl file
 // - output path for the proto file (optional, default is "api/ontology.proto")
-//go:generate owl2protobuf internal/input/urn_webprotege_ontology_e4316a28-d966-4499-bd93-6be721055117.owx internal/input/clouditor_header.txt http://graph.clouditor.io/classes/CloudResource api/ontology/ontology.proto
+//go:generate owl2proto internal/input/urn_webprotege_ontology_e4316a28-d966-4499-bd93-6be721055117.owx internal/input/clouditor_header.txt http://graph.clouditor.io/classes/CloudResource api/ontology/ontology.proto
 //go:generate buf format
 //go:generate buf generate
 //go:generate buf generate --template buf.gotag.gen.yaml

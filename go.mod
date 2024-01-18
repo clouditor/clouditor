@@ -65,6 +65,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/google/addlicense v1.1.0
 	github.com/google/gnostic v0.7.0
+	github.com/oxisto/owl2proto v0.0.1
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
 )
 
@@ -123,6 +124,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/lyft/protoc-gen-star/v2 v2.0.3 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -188,11 +190,6 @@ require (
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
-)
-
-require (
-	github.com/lmittmann/tint v1.0.3 // indirect
-	github.com/oxisto/owl2protobuf v0.0.1
 )
 
 retract v1.4.7
