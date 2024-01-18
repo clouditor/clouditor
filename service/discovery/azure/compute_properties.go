@@ -293,11 +293,11 @@ func (d *azureDiscovery) getResourceId(uri string, rg string) string {
 	}
 
 	// Get storage account name from URI
-	// Example of the given URI: "https://democlouditordiagnostics.blob.core.windows.net/"
+	// Example of the given URI: "https://YYYY.blob.core.windows.net/"
 	tmp := strings.Split(uri, ".")
 	accountName := strings.Split(tmp[0], "/")[2]
 
 	// return the resource ID
-	// Example resource ID:/subscriptions/196946e1-7029-4d97-8f65-ba6c6138c93f/resourceGroups/DemoClouditorHappy/providers/Microsoft.Storage/storageAccounts/democlouditordiagnostics
+	// Example resource ID:/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/XXXX/providers/Microsoft.Storage/storageAccounts/YYYY
 	return "/subscriptions/" + util.Deref(d.sub.SubscriptionID) + "/resourceGroups/" + rg + "/providers/Microsoft.Storage/storageAccounts/" + accountName
 }
