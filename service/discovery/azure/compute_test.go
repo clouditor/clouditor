@@ -464,9 +464,8 @@ func Test_azureDiscovery_discoverVirtualMachines(t *testing.T) {
 					BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 					BootLogging: &voc.BootLogging{
 						Logging: &voc.Logging{
-							Enabled: true,
-							//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-							LoggingService: []voc.ResourceID{},
+							Enabled:        true,
+							LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/logstoragevm1"},
 							Auditing: &voc.Auditing{
 								SecurityFeature: &voc.SecurityFeature{},
 							},
@@ -714,9 +713,8 @@ func Test_azureDiscovery_handleVirtualMachines(t *testing.T) {
 				BlockStorage: []voc.ResourceID{"os_test_disk", "data_disk_1", "data_disk_2"},
 				BootLogging: &voc.BootLogging{
 					Logging: &voc.Logging{
-						Enabled: true,
-						//LoggingService: []voc.ResourceID{"https://logstoragevm1.blob.core.windows.net/"},
-						LoggingService: []voc.ResourceID{},
+						Enabled:        true,
+						LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/logstoragevm1"},
 						Auditing: &voc.Auditing{
 							SecurityFeature: &voc.SecurityFeature{},
 						},
