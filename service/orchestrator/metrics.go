@@ -33,6 +33,7 @@ import (
 	"io"
 	"os"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
@@ -180,7 +181,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 	var count int64
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +225,7 @@ func (svc *Service) CreateMetric(_ context.Context, req *orchestrator.CreateMetr
 // UpdateMetric updates an existing metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetric(_ context.Context, req *orchestrator.UpdateMetricRequest) (metric *assessment.Metric, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -272,7 +273,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +312,7 @@ func (svc *Service) UpdateMetricImplementation(_ context.Context, req *orchestra
 // ListMetrics lists all available metrics.
 func (svc *Service) ListMetrics(_ context.Context, req *orchestrator.ListMetricsRequest) (res *orchestrator.ListMetricsResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +342,7 @@ func (svc *Service) RemoveMetric(ctx context.Context, req *orchestrator.RemoveMe
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -373,7 +374,7 @@ func (svc *Service) RemoveMetric(ctx context.Context, req *orchestrator.RemoveMe
 // GetMetric retrieves a metric specified by req.MetricId.
 func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequest) (metric *assessment.Metric, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +391,7 @@ func (svc *Service) GetMetric(_ context.Context, req *orchestrator.GetMetricRequ
 
 func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrator.GetMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +431,7 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 // UpdateMetricConfiguration updates the configuration for a metric, specified by the identifier in req.MetricId.
 func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestrator.UpdateMetricConfigurationRequest) (res *assessment.MetricConfiguration, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +477,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 // inserted into the list.
 func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestrator.ListMetricConfigurationRequest) (response *orchestrator.ListMetricConfigurationResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -510,7 +511,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 // GetMetricImplementation retrieves a metric implementation specified by req.MetricId.
 func (svc *Service) GetMetricImplementation(_ context.Context, req *orchestrator.GetMetricImplementationRequest) (res *assessment.MetricImplementation, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

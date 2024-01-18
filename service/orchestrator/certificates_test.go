@@ -64,7 +64,7 @@ func Test_CreateCertificate(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "Certificate: value is required")
+				return assert.ErrorContains(t, err, "certificate: value is required")
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func Test_CreateCertificate(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "Id: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "certificate.id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -139,11 +139,14 @@ func Test_CreateCertificate(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := tt.fields.svc
 			gotResponse, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotResponse.Validate())
+			if tt.wantRes != nil {
+				assert.NoError(t, api.Validate(gotResponse))
+			}
 
 			tt.wantErr(t, err)
 
@@ -182,7 +185,7 @@ func Test_GetCertificate(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "invalid request: invalid GetCertificateRequest.CertificateId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "certificate_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -252,12 +255,12 @@ func Test_GetCertificate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := tt.fields.svc.GetCertificate(context.Background(), tt.req)
 
-			// Run validation on response
-			assert.NoError(t, res.Validate())
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
+
 			// Assert response
 			if tt.wantRes != nil {
+				assert.NoError(t, api.Validate(res))
 				assert.NotEmpty(t, res.Id)
 				assert.True(t, proto.Equal(tt.wantRes, res), "Want: %v\nGot : %v", tt.wantRes, res)
 			}
@@ -471,14 +474,14 @@ func TestService_ListPublicCertificates(t *testing.T) {
 				authz:                           tt.fields.authz,
 			}
 			gotRes, err := svc.ListPublicCertificates(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotRes.Validate())
 
 			tt.wantErr(t, err)
 
 			if tt.wantRes != nil {
-				if !reflect.DeepEqual(gotRes, tt.wantRes) {
-					t.Errorf("Service.ListPublicCertificates() = %v, want %v", gotRes, tt.wantRes)
-				}
+				assert.NoError(t, api.Validate(gotRes))
+			}
+			if !proto.Equal(gotRes, tt.wantRes) {
+				t.Errorf("Service.ListPublicCertificates() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
 	}

@@ -32,6 +32,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -82,7 +83,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "invalid CreateTargetOfEvaluationRequest.TargetOfEvaluation: value is required")
+				return assert.ErrorContains(t, err, "target_of_evaluation: value is required")
 			},
 			want: assert.Empty,
 		},
@@ -198,11 +199,6 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 			tt.want(t, gotRes, svc)
-
-			if tt.want != nil {
-				assert.NoError(t, gotRes.Validate())
-
-			}
 		})
 	}
 }
@@ -247,7 +243,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -299,7 +295,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				want := orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)
 
 				return assert.True(t, ok) &&
-					assert.NoError(t, res.Validate()) &&
+					assert.NoError(t, api.Validate(res)) &&
 					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
 					assert.Equal(t, want.CatalogId, res.CatalogId)
 			},
@@ -349,7 +345,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
 	assert.NotEmpty(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
-	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
+	assert.NoError(t, api.Validate(listTargetsOfEvaluationResponse.TargetOfEvaluation[0]))
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 }
 
@@ -375,7 +371,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+	assert.ErrorContains(t, err, "target_of_evaluation.cloud_service_id: value must be a valid UUID")
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
@@ -397,7 +393,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, toe)
-	assert.NoError(t, toe.Validate())
+	assert.NoError(t, api.Validate(toe))
 	assert.Equal(t, &testdata.AssuranceLevelBasic, toe.AssuranceLevel)
 }
 
@@ -436,7 +432,7 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 	listTargetsOfEvaluationResponse, err = orchestratorService.ListTargetsOfEvaluation(context.Background(), &orchestrator.ListTargetsOfEvaluationRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listTargetsOfEvaluationResponse.TargetOfEvaluation)
-	assert.NoError(t, listTargetsOfEvaluationResponse.TargetOfEvaluation[0].Validate())
+	assert.NoError(t, api.Validate(listTargetsOfEvaluationResponse.TargetOfEvaluation[0]))
 	assert.Equal(t, 1, len(listTargetsOfEvaluationResponse.TargetOfEvaluation))
 
 	// Remove record
@@ -479,17 +475,17 @@ func TestToeHook(t *testing.T) {
 		wg.Done()
 	}
 
-	service := NewService()
-	service.RegisterToeHook(firstHookFunction)
-	service.RegisterToeHook(secondHookFunction)
+	svc := NewService()
+	svc.RegisterToeHook(firstHookFunction)
+	svc.RegisterToeHook(secondHookFunction)
 
 	// Check if first hook is registered
-	funcName1 := runtime.FuncForPC(reflect.ValueOf(service.toeHooks[0]).Pointer()).Name()
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(svc.toeHooks[0]).Pointer()).Name()
 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
 	// Check if second hook is registered
-	funcName1 = runtime.FuncForPC(reflect.ValueOf(service.toeHooks[1]).Pointer()).Name()
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(svc.toeHooks[1]).Pointer()).Name()
 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
 	assert.Equal(t, funcName1, funcName2)
 
@@ -528,7 +524,7 @@ func TestToeHook(t *testing.T) {
 			hookCallCounter = 0
 
 			// Create service
-			s := service
+			s := svc
 			err := s.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
 			assert.NoError(t, err)
 
@@ -545,7 +541,7 @@ func TestToeHook(t *testing.T) {
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
-			assert.NoError(t, gotResp.Validate())
+			assert.NoError(t, api.Validate(gotResp))
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)

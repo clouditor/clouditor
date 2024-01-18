@@ -1713,7 +1713,7 @@ func Test_checkTlsVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := checkTlsVersion(tt.args.version); got != tt.want {
+			if got := tlsVersion(tt.args.version); got != tt.want {
 				t.Errorf("checkTlsVersion() = %v, want %v", got, tt.want)
 			}
 		})

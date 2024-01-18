@@ -579,7 +579,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid StopEvaluationRequest.CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -692,7 +692,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid StartEvaluationRequest.CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{

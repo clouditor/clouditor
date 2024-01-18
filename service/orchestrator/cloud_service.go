@@ -30,6 +30,7 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
@@ -54,7 +55,7 @@ const (
 
 func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (res *orchestrator.CloudService, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,7 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 	var all bool
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +126,7 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 // GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
 func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +151,7 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 // UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
 func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (res *orchestrator.CloudService, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +190,7 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 // RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
 func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +217,7 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 // GetCloudServiceStatistics implements method for OrchestratorServer interface for retrieving cloud service statistics
 func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrator.GetCloudServiceStatisticsRequest) (response *orchestrator.GetCloudServiceStatisticsResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

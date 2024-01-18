@@ -205,13 +205,13 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	resp = &assessment.AssessEvidenceResponse{}
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate evidence
-	resourceId, err := req.Evidence.ValidateWithResource()
+	resourceId, err := api.ValidateWithResource(req.Evidence)
 	if err != nil {
 		err = fmt.Errorf("invalid evidence: %w", err)
 		log.Error(err)

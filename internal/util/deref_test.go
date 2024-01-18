@@ -28,9 +28,12 @@ package util
 import (
 	"testing"
 
-	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
 )
+
+type myStruct struct {
+	Test string
+}
 
 func TestDeref(t *testing.T) {
 	var testValue string
@@ -54,8 +57,8 @@ func TestDeref(t *testing.T) {
 	var testBool = true
 	assert.Equal(t, testBool, Deref(&testBool))
 
-	testStruct := voc.GeoLocation{
-		Region: "testlocation",
+	testStruct := myStruct{
+		Test: "test",
 	}
 	assert.Equal(t, testStruct, Deref(&testStruct))
 
@@ -85,8 +88,8 @@ func TestRef(t *testing.T) {
 	var testBool = true
 	assert.Equal(t, &testBool, Ref(testBool))
 
-	testStruct := voc.GeoLocation{
-		Region: "testlocation",
+	testStruct := myStruct{
+		Test: "test",
 	}
 	assert.Equal(t, &testStruct, Ref(testStruct))
 

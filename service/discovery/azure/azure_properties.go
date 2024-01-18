@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 )
@@ -25,6 +26,24 @@ func accountName(id string) string {
 
 	splitName := strings.Split(id, "/")
 	return splitName[8]
+}
+
+// tlsVersion returns Clouditor's TLS version constants for the given TLS version
+func tlsVersion(version string) string {
+	// Check TLS version
+	switch version {
+	case constants.TLS1_0, constants.TLS1_1, constants.TLS1_2:
+		return version
+	case "1.0", "1_0":
+		return constants.TLS1_0
+	case "1.1", "1_1":
+		return constants.TLS1_1
+	case "1.2", "1_2":
+		return constants.TLS1_2
+	default:
+		log.Warningf("'%s' is no implemented TLS version.", version)
+		return ""
+	}
 }
 
 // generalizeURL generalizes the URL, because the URL depends on the storage type

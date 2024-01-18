@@ -4,10 +4,6 @@ plugins:
     out: .
     opt:
       - paths=source_relative
-  - plugin: buf.build/bufbuild/validate-go
-    out: .
-    opt:
-      - paths=source_relative
   - plugin: buf.build/grpc/go:v1.2.0
     out: .
     opt:
