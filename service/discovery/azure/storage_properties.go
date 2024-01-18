@@ -30,30 +30,11 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
-
-// checkTlsVersion returns Clouditor's TLS version constants for the given TLS version
-func checkTlsVersion(version string) string {
-	// Check TLS version
-	switch version {
-	case constants.TLS1_0, constants.TLS1_1, constants.TLS1_2:
-		return version
-	case "1.0", "1_0":
-		return constants.TLS1_0
-	case "1.1", "1_1":
-		return constants.TLS1_1
-	case "1.2", "1_2":
-		return constants.TLS1_2
-	default:
-		log.Warningf("'%s' is no implemented TLS version.", version)
-		return ""
-	}
-}
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective ontology object.
 func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncryption, err error) {
