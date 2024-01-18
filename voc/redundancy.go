@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,8 +25,9 @@
 
 package voc
 
-var ResourceGroupType = []string{"ResourceGroup", "Resource"}
-
-type ResourceGroup struct {
-	*Resource
+type Redundancy struct {
+	*Availability
+	Local bool // True when local redundancy is enabled
+	Zone  bool // True when zone redundancy is enabled
+	Geo   bool // True when geo redundancy is enabled
 }

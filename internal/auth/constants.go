@@ -1,6 +1,4 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2016-2020 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,10 +23,19 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package auth
 
-var ResourceGroupType = []string{"ResourceGroup", "Resource"}
+const (
+	// DefaultApiKeySaveOnCreate specifies whether a created API key will be saved. This is useful to turn of in unit tests, where
+	// we only want a temporary key.
+	DefaultApiKeySaveOnCreate = true
 
-type ResourceGroup struct {
-	*Resource
-}
+	// DefaultApiKeyPassword is the default password to protect the API key
+	DefaultApiKeyPassword = "changeme"
+
+	// DefaultApiKeyPath is the default path for the API private key
+	DefaultApiKeyPath = DefaultConfigDirectory + "/api.key"
+
+	// DefaultConfigDirectory is the default path for the clouditor configuration, such as keys
+	DefaultConfigDirectory = "~/.clouditor"
+)

@@ -37,14 +37,14 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
@@ -53,14 +53,984 @@ import (
 type mockSender struct {
 }
 
+func newMockSender() *mockSender {
+	m := &mockSender{}
+	return m
+}
+
 func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 	if req.URL.Path == "/subscriptions" {
-		res, err = createResponse(req, map[string]interface{}{
+		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
 					"id":             "/subscriptions/00000000-0000-0000-0000-000000000000",
 					"subscriptionId": "00000000-0000-0000-0000-000000000000",
 					"name":           "sub1",
+					"displayName":    "displayName",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					"name": "res1",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"location": "westus",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
+					"name": "res2",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"location": "eastus",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/VirtualMachines",
+					"name": "VirtualMachines",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/pricings/StorageAccounts",
+					"name": "StorageAccounts",
+					"type": "Microsoft.Security/pricings",
+					"properties": map[string]interface{}{
+						"pricingTier": armsecurity.PricingTierStandard,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+					"name":     "account1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"primaryEndpoints": map[string]interface{}{
+							"blob": "https://account1.blob.core.windows.net/",
+							"file": "https://account1.file.core.windows.net/",
+						},
+						"encryption": map[string]interface{}{
+							"services": map[string]interface{}{
+								"file": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+								"blob": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+							},
+							"keySource": armstorage.KeySourceMicrosoftStorage,
+						},
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
+						"supportsHttpsTrafficOnly": true,
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+					"name":     "account2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"primaryEndpoints": map[string]interface{}{
+							"blob": "https://account1.blob.core.windows.net/",
+							"file": "https://account1.file.core.windows.net/",
+						},
+						"encryption": map[string]interface{}{
+							"services": map[string]interface{}{
+								"file": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+								"blob": map[string]interface{}{
+									"keyType":         "Account",
+									"enabled":         true,
+									"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+								},
+							},
+							"keySource": armstorage.KeySourceMicrosoftKeyvault,
+							"keyvaultproperties": map[string]interface{}{
+								"keyvaulturi": "https://testvault.vault.azure.net/keys/testkey/123456",
+							},
+						},
+						"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+						"allowBlobPublicAccess":    false,
+						"supportsHttpsTrafficOnly": true,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Storage/storageAccounts/account3" {
+		return createResponse(req, map[string]interface{}{
+			"value": &map[string]interface{}{
+				"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
+				"name":     "account3",
+				"location": "westus",
+				"properties": map[string]interface{}{
+					"creationTime": "2017-05-24T13:28:53.4540398Z",
+					"primaryEndpoints": map[string]interface{}{
+						"blob": "https://account3.blob.core.windows.net/",
+						"file": "https://account3.file.core.windows.net/",
+					},
+					"encryption": map[string]interface{}{
+						"services": map[string]interface{}{
+							"file": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+							"blob": map[string]interface{}{
+								"keyType":         "Account",
+								"enabled":         true,
+								"lastEnabledTime": "2019-12-11T20:49:31.7036140Z",
+							},
+						},
+						"keySource": armstorage.KeySourceMicrosoftStorage,
+					},
+					"minimumTlsVersion":        armstorage.MinimumTLSVersionTLS12,
+					"allowBlobPublicAccess":    false,
+					"supportsHttpsTrafficOnly": true,
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+					"name": "container1",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+					"name": "container2",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessContainer,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+					"name": "container3",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+					"name": "container4",
+					"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+					"properties": map[string]interface{}{
+						"hasImmutabilityPolicy": false,
+						"publicAccess":          armstorage.PublicAccessNone,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+					"name": "fileshare1",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+					"name": "fileshare2",
+					"type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/fileServices/default/shares" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1",
+					"name":     "backupAccount1",
+					"location": "westeurope",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+					"name": "account1-account1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+							"datasourceType": "Microsoft.Storage/storageAccounts/blobServices",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer",
+						},
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"name": "disk1-disk1-22222222-2222-2222-2222-222222222222",
+					"properties": map[string]interface{}{
+						"dataSourceInfo": map[string]interface{}{
+							"resourceID":     "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+							"datasourceType": "Microsoft.Compute/disks",
+						},
+						"policyInfo": map[string]interface{}{
+							"policyId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P7D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+			// },
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Sql/servers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+					"name":     "SQLServer1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"minimalTlsVersion": "1.2",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+					"name":     "SqlDatabase1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"isInfraEncryptionEnabled": true,
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
+					"name":     "Default",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"state": "Enabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer2/databases/SqlDatabase1/advancedThreatProtectionSettings/Default",
+					"name":     "Default",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"state": "Disabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DocumentDB/databaseAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+					"name": "DBAccount1",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"keyVaultKeyUri": "https://testvault.vault.azure.net/keys/testkey/123456",
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
+					"name": "DBAccount2",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
+					"name": "DBAccount1",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"keyVaultKeyUri": "https://testvault.vault.azure.net/keys/testkey/123456",
+					},
+				},
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
+					"name": "DBAccount2",
+					"kind": "MongoDB",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"systemData": map[string]interface{}{
+						"createdAt": "2017-05-24T13:28:53.4540398Z",
+					},
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1",
+					"name":     "mongoDB1",
+					"location": "West Europe",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2",
+					"name":     "mongoDB2",
+					"location": "eastus",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
+					"name":     "vm1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_1",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
+								},
+							},
+						},
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": "https://logstoragevm1.blob.core.windows.net/",
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "123",
+								},
+								{
+									"id": "234",
+								},
+							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1/extensions/MicrosoftMonitoringAgent",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2",
+					"name":     "vm2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"storageProfile": map[string]interface{}{
+							"osDisk": map[string]interface{}{
+								"managedDisk": map[string]interface{}{
+									"id": "os_test_disk",
+								},
+							},
+							"dataDisks": &[]map[string]interface{}{
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_2",
+									},
+								},
+								{
+									"managedDisk": map[string]interface{}{
+										"id": "data_disk_3",
+									},
+								},
+							},
+						},
+						"osProfile": map[string]interface{}{
+							"windowsConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByOS",
+								},
+								"enableAutomaticUpdates": true,
+							},
+						},
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{
+								"enabled":    true,
+								"storageUri": nil,
+							},
+						},
+						"networkProfile": map[string]interface{}{
+							"networkInterfaces": &[]map[string]interface{}{
+								{
+									"id": "987",
+								},
+								{
+									"id": "654",
+								},
+							},
+						},
+					},
+					"resources": &[]map[string]interface{}{
+						{
+							"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm2/extensions/OmsAgentForLinux",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm3",
+					"name":     "vm3",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"diagnosticsProfile": map[string]interface{}{
+							"bootDiagnostics": map[string]interface{}{},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/disks" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1",
+					"name":     "disk1",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
+					"name":     "disk2",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
+							"type":                "EncryptionAtRestWithCustomerKey",
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
+					"name":     "disk3",
+					"type":     "Microsoft.Compute/disks",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"encryption": map[string]interface{}{
+							"diskEncryptionSetId": "",
+							"type":                "EncryptionAtRestWithPlatformKey",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Web/sites" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1",
+					"name":     "function1",
+					"location": "West Europe",
+					"kind":     "functionapp,linux",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig": map[string]interface{}{
+							"linuxFxVersion": "PYTHON|3.8",
+						},
+						"resourceGroup":       "res1",
+						"publicNetworkAccess": "Enabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2",
+					"name":     "function2",
+					"location": "West Europe",
+					"kind":     "functionapp",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":          map[string]interface{}{},
+						"resourceGroup":       "res1",
+						"publicNetworkAccess": "Disabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1",
+					"name":     "WebApp1",
+					"location": "West Europe",
+					"kind":     "app",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":             map[string]interface{}{},
+						"httpsOnly":              true,
+						"resourceGroup":          "res1",
+						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1",
+						"publicNetworkAccess":    "Enabled",
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2",
+					"name":     "WebApp2",
+					"location": "West Europe",
+					"kind":     "app,linux",
+					"tags": map[string]interface{}{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					"properties": map[string]interface{}{
+						"siteConfig":             map[string]interface{}{},
+						"httpsOnly":              false,
+						"resourceGroup":          "res1",
+						"virtualNetworkSubnetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2",
+						"publicNetworkAccess":    "Disabled",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"type": "Microsoft.Web/sites/config",
+			"name": "function1",
+			"properties": map[string]interface{}{
+				"minTlsVersion":     "1.1",
+				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"name": "function2",
+			"type": "Microsoft.Web/sites/config",
+			"properties": map[string]interface{}{
+				"javaVersion": "1.8",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"name": "WebApp1",
+			"type": "Microsoft.Web/sites/config",
+			"properties": map[string]interface{}{
+				"minTlsVersion":     "1.1",
+				"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"name":       "WebApp2",
+			"type":       "Microsoft.Web/sites/config",
+			"properties": map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"APPLICATIONINSIGHTS_CONNECTION_STRING": "test_connection_string",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{},
+		}, 200)
+
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault1",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault1",
+					},
+					"keyUrl": "https://keyvault1.vault.azure.net/keys/customer-key/6273gdb374jz789hjm17819283748382",
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault2",
+			"type":     "Microsoft.Compute/diskEncryptionSets",
+			"name":     "encryptionkeyvault2",
+			"location": "germanywestcentral",
+			"properties": map[string]interface{}{
+				"activeKey": map[string]interface{}{
+					"sourceVault": map[string]interface{}{
+						"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.KeyVault/vaults/keyvault2",
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"objectType": "BackupPolicy",
+				"policyRules": []map[string]interface{}{
+					{
+						"objectType": "AzureRetentionRule",
+						"lifecycles": []map[string]interface{}{
+							{
+								"deleteAfter": map[string]interface{}{
+									"duration":   "P30D",
+									"objectType": "AbsoluteDeleteOption",
+								},
+								"sourceDataStore": map[string]interface{}{
+									"objectType":    "OperationalStore",
+									"DataStoreType": "DataStoreInfoBase",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkInterfaces" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					"name":     "iface1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"networkSecurityGroup": map[string]interface{}{
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"location": "eastus",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					"name":     "iface1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"networkSecurityGroup": map[string]interface{}{
+							"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+							"location": "eastus",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1" {
+		return createResponse(req, map[string]interface{}{
+			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+			"name":     "nsg1",
+			"location": "eastus",
+			"properties": map[string]interface{}{
+				"securityRules": []map[string]interface{}{
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+					{
+						"properties": map[string]interface{}{
+							"access":          "Deny",
+							"sourcePortRange": "*",
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/loadBalancers" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+					"name":     "lb1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c",
+										"properties": map[string]interface{}{
+											"ipAddress": "111.222.333.444",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+					"name":     "lb2",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": nil,
+								},
+							},
+						},
+					},
+				},
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+					"name":     "lb3",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"loadBalancingRules": []map[string]interface{}{
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 1234,
+								},
+							},
+							{
+								"properties": map[string]interface{}{
+									"frontendPort": 5678,
+								},
+							},
+						},
+						"frontendIPConfigurations": []map[string]interface{}{
+							{
+								"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c",
+								"name": "b9cb3645-25d0-4288-910a-020563f63b1c",
+								"properties": map[string]interface{}{
+									"publicIPAddress": map[string]interface{}{
+										"id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": "111.222.333.444",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"ipAddress": nil,
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/applicationGateways" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+					"name":     "appgw1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"webApplicationFirewallConfiguration": map[string]interface{}{
+							"enabled": true,
+						},
+					},
 				},
 			},
 		}, 200)
@@ -99,58 +1069,184 @@ func createResponse(req *http.Request, object map[string]interface{}, statusCode
 	}, nil
 }
 
-func TestGetResourceGroupName(t *testing.T) {
-	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
-	result := resourceGroupName(accountId)
+func Test_azureDiscovery_Name(t *testing.T) {
+	d := NewAzureDiscovery()
 
-	assert.Equal(t, "res1", result)
+	assert.Equal(t, "Azure", d.Name())
 }
 
-func Test_labels(t *testing.T) {
-
-	testValue1 := "testValue1"
-	testValue2 := "testValue2"
-	testValue3 := "testValue3"
-
+func TestNewAzureDiscovery(t *testing.T) {
 	type args struct {
-		tags map[string]*string
+		opts []DiscoveryOption
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[string]string
+		want discovery.Discoverer
 	}{
 		{
-			name: "Empty map of tags",
-			args: args{
-				tags: map[string]*string{},
-			},
-			want: map[string]string{},
-		},
-		{
-			name: "Tags are nil",
+			name: "Happy path",
 			args: args{},
-			want: map[string]string{},
+			want: &azureDiscovery{
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
 		},
 		{
-			name: "Valid tags",
+			name: "Happy path: with cloud service id",
 			args: args{
-				tags: map[string]*string{
-					"testTag1": &testValue1,
-					"testTag2": &testValue2,
-					"testTag3": &testValue3,
-				},
+				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
 			},
-			want: map[string]string{
-				"testTag1": testValue1,
-				"testTag2": testValue2,
-				"testTag3": testValue3,
+			want: &azureDiscovery{
+				csID:               testdata.MockCloudServiceID1,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with resource group",
+			args: args{
+				opts: []DiscoveryOption{WithResourceGroup(testdata.MockResourceGroup)},
+			},
+			want: &azureDiscovery{
+				rg:                 util.Ref(testdata.MockResourceGroup),
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with sender",
+			args: args{
+				opts: []DiscoveryOption{WithSender(mockSender{})},
+			},
+			want: &azureDiscovery{
+				clientOptions: arm.ClientOptions{
+					ClientOptions: policy.ClientOptions{
+						Transport: mockSender{},
+					},
+				},
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
+			},
+		},
+		{
+			name: "Happy path: with authorizer",
+			args: args{
+				opts: []DiscoveryOption{WithAuthorizer(&mockAuthorizer{})},
+			},
+			want: &azureDiscovery{
+				cred:               &mockAuthorizer{},
+				csID:               discovery.DefaultCloudServiceID,
+				backupMap:          make(map[string]*backup),
+				defenderProperties: make(map[string]*defenderProperties),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+			got := NewAzureDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureDiscovery_List(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Authorize error: no credentials configured",
+			fields: fields{
+				&azureDiscovery{},
+			},
+			want: assert.Empty,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, ErrNoCredentialsConfigured.Error())
+
+				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				NewMockAzureDiscovery(newMockSender()),
+			},
+			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+				got, ok := i1.([]voc.IsCloudResource)
+				if !assert.True(tt, ok) {
+					return false
+				}
+
+				return assert.Greater(t, len(got), 31)
+			},
+
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+			gotList, err := d.List()
+
+			tt.wantErr(t, err)
+
+			tt.want(t, gotList)
+		})
+	}
+}
+
+func Test_azureDiscovery_CloudServiceID(t *testing.T) {
+	type fields struct {
+		isAuthorized        bool
+		sub                 *armsubscription.Subscription
+		cred                azcore.TokenCredential
+		rg                  *string
+		clientOptions       arm.ClientOptions
+		discovererComponent string
+		clients             clients
+		csID                string
+		backupMap           map[string]*backup
+		defenderProperties  map[string]*defenderProperties
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				csID: testdata.MockCloudServiceID1,
+			},
+			want: testdata.MockCloudServiceID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &azureDiscovery{
+				isAuthorized:        tt.fields.isAuthorized,
+				sub:                 tt.fields.sub,
+				cred:                tt.fields.cred,
+				rg:                  tt.fields.rg,
+				clientOptions:       tt.fields.clientOptions,
+				discovererComponent: tt.fields.discovererComponent,
+				clients:             tt.fields.clients,
+				csID:                tt.fields.csID,
+				backupMap:           tt.fields.backupMap,
+				defenderProperties:  tt.fields.defenderProperties,
+			}
+			if got := a.CloudServiceID(); got != tt.want {
+				t.Errorf("azureDiscovery.CloudServiceID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -224,6 +1320,128 @@ func Test_azureDiscovery_authorize(t *testing.T) {
 	}
 }
 
+func TestGetResourceGroupName(t *testing.T) {
+	accountId := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3"
+	result := resourceGroupName(accountId)
+
+	assert.Equal(t, "res1", result)
+}
+
+func Test_resourceGroupID(t *testing.T) {
+	type args struct {
+		ID *string
+	}
+	tests := []struct {
+		name string
+		args args
+		want voc.ResourceID
+	}{
+		{
+			name: "invalid",
+			args: args{
+				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
+			},
+			want: "",
+		},
+		{
+			name: "happy path",
+			args: args{
+				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_backupPolicyName(t *testing.T) {
+	type args struct {
+		id string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "invalid",
+			args: args{
+				id: "this is not a resource ID but it should not crash the Clouditor",
+			},
+			want: "",
+		},
+		{
+			name: "Happy path",
+			args: args{
+				id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyDisk",
+			},
+			want: "backupPolicyDisk",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := backupPolicyName(tt.args.id); got != tt.want {
+				t.Errorf("backupPolicyName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_labels(t *testing.T) {
+
+	testValue1 := "testValue1"
+	testValue2 := "testValue2"
+	testValue3 := "testValue3"
+
+	type args struct {
+		tags map[string]*string
+	}
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "Empty map of tags",
+			args: args{
+				tags: map[string]*string{},
+			},
+			want: map[string]string{},
+		},
+		{
+			name: "Tags are nil",
+			args: args{},
+			want: map[string]string{},
+		},
+		{
+			name: "Valid tags",
+			args: args{
+				tags: map[string]*string{
+					"testTag1": &testValue1,
+					"testTag2": &testValue2,
+					"testTag3": &testValue3,
+				},
+			},
+			want: map[string]string{
+				"testTag1": testValue1,
+				"testTag2": testValue2,
+				"testTag3": testValue3,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+		})
+	}
+}
+
 func Test_initClient(t *testing.T) {
 	var (
 		subID      = "00000000-0000-0000-0000-000000000000"
@@ -253,7 +1471,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -273,7 +1491,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -297,7 +1515,7 @@ func Test_initClient(t *testing.T) {
 					},
 					clientOptions: arm.ClientOptions{
 						ClientOptions: policy.ClientOptions{
-							Transport: mockNetworkSender{},
+							Transport: mockSender{},
 						},
 					},
 				},
@@ -319,10 +1537,24 @@ func Test_initClient(t *testing.T) {
 	}
 }
 
+// WithDefenderProperties is a [DiscoveryOption] that adds the defender properties for our tests.
+func WithDefenderProperties(dp map[string]*defenderProperties) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.defenderProperties = dp
+	}
+}
+
+// WithSubscription is a [DiscoveryOption] that adds the subscription to the discoverer for our tests.
+func WithSubscription(sub *armsubscription.Subscription) DiscoveryOption {
+	return func(a *azureDiscovery) {
+		a.sub = sub
+	}
+}
+
 func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption) *azureDiscovery {
-	var subID = "00000000-0000-0000-0000-000000000000"
 	sub := &armsubscription.Subscription{
-		SubscriptionID: &subID,
+		SubscriptionID: util.Ref(testdata.MockSubscriptionID),
+		ID:             util.Ref(testdata.MockSubscriptionResourceID),
 	}
 
 	d := &azureDiscovery{
@@ -343,235 +1575,6 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 	}
 
 	return d
-}
-
-func Test_azureDiscovery_discoverBackupVaults_Storage(t *testing.T) {
-	type fields struct {
-		azureDiscovery            *azureDiscovery
-		clientBackupVault         bool
-		clientBackupInstance      bool
-		emptyClientBackupInstance bool
-		clientBackupPolicy        bool
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "all clients missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    false,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "backup instance client missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "backup instance client empty",
-			fields: fields{
-				azureDiscovery:            NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:         true,
-				emptyClientBackupInstance: true,
-				clientBackupPolicy:        false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not discover backup instances:")
-			},
-		},
-
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: true,
-				clientBackupPolicy:   true,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureStorageDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*voc.Backup{{
-					RetentionPeriod: Duration7Days,
-					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: constants.TLS1_2,
-						Algorithm:  constants.TLS,
-					},
-				},
-				}
-
-				got := d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"]
-
-				return assert.Equal(t, want, got)
-
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			// Set clients if needed
-			if tt.fields.clientBackupVault {
-				// initialize backup vaults client
-				_ = d.initBackupVaultsClient()
-			}
-			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
-			}
-			if tt.fields.clientBackupPolicy {
-				// initialize backup policies client
-				_ = d.initBackupPoliciesClient()
-			}
-
-			// Set empty client if needed
-			if tt.fields.emptyClientBackupInstance {
-				// empty backup instances client
-				d.clients.backupInstancesClient = &armdataprotection.BackupInstancesClient{}
-			}
-
-			err := d.discoverBackupVaults()
-
-			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, d)
-			}
-		})
-	}
-}
-
-func Test_azureDiscovery_discoverBackupVaults_Compute(t *testing.T) {
-	type fields struct {
-		azureDiscovery       *azureDiscovery
-		clientBackupVault    bool
-		clientBackupInstance bool
-		clientBackupPolicy   bool
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "both clients missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    false,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "backup instance client missing",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: false,
-				clientBackupPolicy:   false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "backupVaultClient and/or backupInstancesClient missing")
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockComputeSender()),
-				clientBackupVault:    true,
-				clientBackupInstance: true,
-				clientBackupPolicy:   true,
-			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureComputeDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*voc.Backup{{
-					RetentionPeriod: Duration30Days,
-					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: constants.TLS1_2,
-						Algorithm:  constants.TLS,
-					},
-				},
-				}
-
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureComputeDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			// Set clients if needed
-			if tt.fields.clientBackupVault {
-				// initialize backup vaults client
-				_ = d.initBackupVaultsClient()
-			}
-			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
-			}
-
-			if tt.fields.clientBackupPolicy {
-				// initialize backup policies client
-				_ = d.initBackupPoliciesClient()
-			}
-
-			err := d.discoverBackupVaults()
-
-			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, d)
-			}
-		})
-	}
 }
 
 func Test_retentionDuration(t *testing.T) {
@@ -617,7 +1620,6 @@ func Test_retentionDuration(t *testing.T) {
 func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
-		clientDefender bool
 	}
 	tests := []struct {
 		name    string
@@ -626,21 +1628,9 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "defenderClient not set",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-				clientDefender: false,
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "defenderClient not set")
-			},
-		},
-		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-				clientDefender: true,
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
 				got, ok := i1.(map[string]*defenderProperties)
@@ -660,15 +1650,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			// Set client if needed
-			if tt.fields.clientDefender {
-				// initialize backup vaults client
-				_ = d.initDefenderClient()
-			}
+			d := tt.fields.azureDiscovery
 
 			got, err := d.discoverDefender()
 
@@ -676,307 +1658,6 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want(t, got)
-			}
-		})
-	}
-}
-
-func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
-	type fields struct {
-		azureDiscovery       *azureDiscovery
-		clientBackupInstance bool
-	}
-	type args struct {
-		resourceGroup string
-		vaultName     string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []*armdataprotection.BackupInstanceResource
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Input empty",
-			args: args{},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "missing resource group and/or vault name")
-			},
-		},
-		{
-			name: "defenderClient not set",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockNetworkSender()),
-				clientBackupInstance: true,
-			},
-			args: args{
-				resourceGroup: "res1",
-				vaultName:     "backupAccount1",
-			},
-			want: nil,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "error getting next page: GET")
-			},
-		},
-		{
-			name: "Happy path",
-			fields: fields{
-				azureDiscovery:       NewMockAzureDiscovery(newMockStorageSender()),
-				clientBackupInstance: true,
-			},
-			args: args{
-				resourceGroup: "res1",
-				vaultName:     "backupAccount1",
-			},
-			wantErr: assert.NoError,
-			want: []*armdataprotection.BackupInstanceResource{
-				{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
-					Properties: &armdataprotection.BackupInstance{
-						DataSourceInfo: &armdataprotection.Datasource{
-							ResourceID:     util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							DatasourceType: util.Ref("Microsoft.Storage/storageAccounts/blobServices"),
-						},
-						PolicyInfo: &armdataprotection.PolicyInfo{
-							PolicyID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer"),
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureStorageDiscovery{
-				azureDiscovery: tt.fields.azureDiscovery,
-			}
-
-			if tt.fields.clientBackupInstance {
-				// initialize backup instances client
-				_ = d.initBackupInstancesClient()
-			}
-			got, err := d.discoverBackupInstances(tt.args.resourceGroup, tt.args.vaultName)
-
-			tt.wantErr(t, err)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("azureDiscovery.discoverBackupInstances() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_azureDiscovery_handleInstances(t *testing.T) {
-	type fields struct {
-		isAuthorized        bool
-		sub                 *armsubscription.Subscription
-		cred                azcore.TokenCredential
-		rg                  *string
-		clientOptions       arm.ClientOptions
-		discovererComponent string
-		clients             clients
-		csID                string
-		backupMap           map[string]*backup
-	}
-	type args struct {
-		vault    *armdataprotection.BackupVaultResource
-		instance *armdataprotection.BackupInstanceResource
-	}
-	tests := []struct {
-		name         string
-		fields       fields
-		args         args
-		wantResource voc.IsCloudResource
-		wantErr      assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Empty input",
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrVaultInstanceIsEmpty.Error())
-			},
-		},
-		{
-			name: "Happy path: ObjectStorage",
-			fields: fields{
-				csID: testdata.MockCloudServiceID1,
-			},
-			args: args{
-				vault: &armdataprotection.BackupVaultResource{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
-					Name:     util.Ref("backupAccount1"),
-					Location: util.Ref("westeurope"),
-				},
-				instance: &armdataprotection.BackupInstanceResource{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					Name: util.Ref("account1-account1-22222222-2222-2222-2222-222222222222"),
-					Properties: &armdataprotection.BackupInstance{
-						DataSourceInfo: &armdataprotection.Datasource{
-							DatasourceType: util.Ref("Microsoft.Storage/storageAccounts/blobServices"),
-						},
-					},
-				},
-			},
-			wantResource: &voc.ObjectStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "account1-account1-22222222-2222-2222-2222-222222222222",
-						GeoLocation: voc.GeoLocation{
-							Region: "westeurope",
-						},
-						CreationTime: 0,
-						Type:         voc.ObjectStorageType,
-						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name: "Happy path: BlockStorage",
-			fields: fields{
-				csID: testdata.MockCloudServiceID1,
-			},
-			args: args{
-				vault: &armdataprotection.BackupVaultResource{
-					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
-					Name:     util.Ref("backupAccount1"),
-					Location: util.Ref("westeurope"),
-				},
-				instance: &armdataprotection.BackupInstanceResource{
-					ID:   util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					Name: util.Ref("disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					Properties: &armdataprotection.BackupInstance{
-						DataSourceInfo: &armdataprotection.Datasource{
-							DatasourceType: util.Ref("Microsoft.Compute/disks"),
-						},
-					},
-				},
-			},
-			wantResource: &voc.BlockStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "disk1-disk1-22222222-2222-2222-2222-222222222222",
-						GeoLocation: voc.GeoLocation{
-							Region: "westeurope",
-						},
-						CreationTime: 0,
-						Type:         voc.BlockStorageType,
-						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &azureDiscovery{
-				isAuthorized:        tt.fields.isAuthorized,
-				sub:                 tt.fields.sub,
-				cred:                tt.fields.cred,
-				rg:                  tt.fields.rg,
-				clientOptions:       tt.fields.clientOptions,
-				discovererComponent: tt.fields.discovererComponent,
-				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
-				backupMap:           tt.fields.backupMap,
-			}
-			gotResource, err := d.handleInstances(tt.args.vault, tt.args.instance)
-			tt.wantErr(t, err)
-
-			assert.Equal(t, tt.wantResource, gotResource)
-		})
-	}
-}
-
-func Test_backupsEmptyCheck(t *testing.T) {
-	type args struct {
-		backups []*voc.Backup
-	}
-	tests := []struct {
-		name string
-		args args
-		want []*voc.Backup
-	}{
-		{
-			name: "Happy path",
-			args: args{
-				backups: []*voc.Backup{
-					{
-						Enabled:         true,
-						Interval:        90,
-						RetentionPeriod: 100,
-					},
-				},
-			},
-			want: []*voc.Backup{
-				{
-					Enabled:         true,
-					Interval:        90,
-					RetentionPeriod: 100,
-				},
-			},
-		},
-		{
-			name: "Happy path: empty input",
-			args: args{},
-			want: []*voc.Backup{
-				{
-					Enabled:         false,
-					RetentionPeriod: -1,
-					Interval:        -1,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_resourceGroupID(t *testing.T) {
-	type args struct {
-		ID *string
-	}
-	tests := []struct {
-		name string
-		args args
-		want voc.ResourceID
-	}{
-		{
-			name: "invalid",
-			args: args{
-				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
-			},
-			want: "",
-		},
-		{
-			name: "happy path",
-			args: args{
-				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-			},
-			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

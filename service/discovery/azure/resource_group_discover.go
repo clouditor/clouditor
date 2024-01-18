@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +23,50 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package voc
+package azure
 
-var ResourceGroupType = []string{"ResourceGroup", "Resource"}
+import (
+	"context"
+	"fmt"
 
-type ResourceGroup struct {
-	*Resource
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+)
+
+// discoverResourceGroups discovers resource groups and cloud account
+func (d *azureDiscovery) discoverResourceGroups() (list []voc.IsCloudResource, err error) {
+	// initialize client
+	if err := d.initResourceGroupsClient(); err != nil {
+		return nil, err
+	}
+
+	// Build an account as the most top-level item. Our subscription will serve as the account
+	acc := d.handleSubscription(d.sub)
+
+	list = append(list, acc)
+
+	listPager := d.clients.rgClient.NewListPager(&armresources.ResourceGroupsClientListOptions{})
+	for listPager.More() {
+		page, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, rg := range page.Value {
+			// If we are scoped to one resource group, we can skip the rest of the groups
+			if d.rg != nil && util.Deref(rg.Name) != util.Deref(d.rg) {
+				continue
+			}
+
+			r := d.handleResourceGroup(rg)
+
+			log.Infof("Adding resource group '%s'", r.GetName())
+
+			list = append(list, r)
+		}
+	}
+
+	return
 }
