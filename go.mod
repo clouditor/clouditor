@@ -69,7 +69,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/google/addlicense v1.1.0
 	github.com/google/gnostic v0.7.0
-	github.com/oxisto/owl2proto v0.0.2
+	github.com/oxisto/owl2proto v0.0.4
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
 )
 
