@@ -33,7 +33,7 @@ package clouditor
 // - root resource name from the owl file
 // - output path for the proto file (optional, default is "api/ontology.proto")
 //go:generate owl2proto internal/input/urn_webprotege_ontology_e4316a28-d966-4499-bd93-6be721055117.owx internal/input/clouditor_header.txt http://graph.clouditor.io/classes/CloudResource api/ontology/ontology.proto
-//go:generate buf format
+//go:generate buf format -w
 //go:generate buf generate
 //go:generate buf generate --template buf.gotag.gen.yaml
 //go:generate buf generate --template buf.openapi.gen.yaml --path api/assessment -o openapi/assessment
