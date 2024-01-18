@@ -266,7 +266,7 @@ func TestService_UpdateResource(t *testing.T) {
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid Resource.Id: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "resource.id: value length must be at least 1 characters")
 			},
 		},
 		{

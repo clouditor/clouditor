@@ -33,6 +33,7 @@ import (
 	"slices"
 	"sync"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
@@ -101,7 +102,7 @@ func init() {
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +190,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 		args    []any
 	)
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +242,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

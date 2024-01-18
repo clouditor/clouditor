@@ -228,7 +228,7 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var opts = []azure.DiscoveryOption{}
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +393,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

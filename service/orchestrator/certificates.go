@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/persistence"
@@ -24,7 +25,7 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 	res *orchestrator.Certificate, err error) {
 
 	// Validate request
-	if err = service.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return
 	}
 
@@ -53,7 +54,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	res *orchestrator.Certificate, err error) {
 
 	// Validate request
-	if err = service.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return
 	}
 
@@ -80,7 +81,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 	res *orchestrator.ListCertificatesResponse, err error) {
 
 	// Validate request
-	if err = service.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return nil, err
 	}
 
@@ -110,7 +111,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 // ListPublicCertificates implements method for getting all certificates without the state history, e.g. to show its state in the UI
 func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.ListPublicCertificatesRequest) (res *orchestrator.ListPublicCertificatesResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (svc *Service) ListPublicCertificates(_ context.Context, req *orchestrator.
 // UpdateCertificate implements method for updating an existing certificate
 func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.UpdateCertificateRequest) (response *orchestrator.Certificate, err error) {
 	// Validate request
-	if err = service.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return nil, err
 	}
 
@@ -168,7 +169,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 // RemoveCertificate implements method for removing a certificate. The response does not indicate whether there are no certificates available or the access is denied.
 func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.RemoveCertificateRequest) (response *emptypb.Empty, err error) {
 	// Validate request
-	if err = service.ValidateRequest(req); err != nil {
+	if err = api.Validate(req); err != nil {
 		return nil, err
 	}
 

@@ -36,8 +36,6 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
-
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
@@ -46,6 +44,7 @@ import (
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
 	"clouditor.io/clouditor/voc"
@@ -199,7 +198,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: value is required")
+				return assert.ErrorContains(t, err, "evidence: value is required")
 			},
 		},
 		{
@@ -210,7 +209,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format")
+				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
 			},
 		},
 		{
@@ -229,7 +228,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format")
+				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
 			},
 		},
 		{
@@ -249,7 +248,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -269,7 +268,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Timestamp: value is required")
+				return assert.ErrorContains(t, err, "evidence.timestamp: value is required")
 			},
 		},
 		{
@@ -328,7 +327,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, evidence.ErrResourceIdIsEmpty.Error())
+				return assert.ErrorContains(t, err, api.ErrResourceIdIsEmpty.Error())
 			},
 		},
 		{
@@ -461,7 +460,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidencesResponse{
 				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.ToolId: value length must be at least 1 runes",
+				StatusMessage: "evidence.tool_id: value length must be at least 1 characters",
 			},
 		},
 		{
@@ -477,7 +476,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidencesResponse{
 				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "rpc error: code = InvalidArgument desc = invalid request: invalid AssessEvidenceRequest.Evidence: embedded message failed validation | caused by: invalid Evidence.Id: value must be a valid UUID | caused by: invalid uuid format",
+				StatusMessage: "evidence.id: value must be a valid UUID",
 			},
 		},
 		{
