@@ -50,8 +50,8 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (v
 		return nil, ErrEmptyVirtualMachine
 	}
 
-	if bootLogOutput(vm) != "" {
-		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+	if d.bootLogOutput(vm) != "" {
+		bootLogging = []voc.ResourceID{voc.ResourceID(d.bootLogOutput(vm))}
 	}
 
 	autoUpdates = automaticUpdates(vm)
