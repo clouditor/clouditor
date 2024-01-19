@@ -213,7 +213,7 @@ func TestService_StartDiscovery(t *testing.T) {
 				// Retrieve the last one
 				eWant := want[len(want)-1]
 				eGot := got[len(got)-1]
-				err := eGot.Validate()
+				err := api.Validate(eGot)
 				assert.NotNil(t, eGot)
 				assert.NoError(t, err)
 

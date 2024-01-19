@@ -35,6 +35,7 @@ import (
 	"sync"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -50,6 +51,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -586,8 +588,8 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			if tt.wantRes == nil {
 				assert.Nil(t, gotRes)
 			} else {
-				assert.NoError(t, gotRes.Validate())
-				assert.Equal(t, tt.wantRes, gotRes)
+				assert.NoError(t, api.Validate(gotRes))
+				assert.True(t, proto.Equal(tt.wantRes, gotRes), "Want: %v\nGot : %v", tt.wantRes, gotRes)
 			}
 		})
 	}
@@ -762,7 +764,7 @@ func TestStoreAssessmentResult(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "caused by: invalid AssessmentResult.MetricId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "result.metric_id: value length must be at least 1 characters")
 			},
 			wantResp: nil,
 		},
@@ -840,7 +842,7 @@ func TestStoreAssessmentResults(t *testing.T) {
 			wantRespMessage: []orchestrator.StoreAssessmentResultsResponse{
 				{
 					Status:        false,
-					StatusMessage: "MetricId: value length must be at least 1 runes",
+					StatusMessage: "result.metric_id: value length must be at least 1 characters",
 				},
 			},
 		},

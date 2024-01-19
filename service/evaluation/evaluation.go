@@ -163,7 +163,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 // TargetOfEvaluation.
 func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	)
 
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +394,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 // CreateEvaluationResult is a method implementation of the assessment interface
 func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.CreateEvaluationResultRequest) (res *evaluation.EvaluationResult, err error) {
 	// Validate request
-	err = service.ValidateRequest(req)
+	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}

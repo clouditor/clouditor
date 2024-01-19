@@ -31,7 +31,6 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -184,19 +183,8 @@ func getRedundancy(app *armappservice.Site) *voc.Redundancy {
 
 // We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
 func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *voc.TransportEncryption) {
-	var (
-		tlsVersion string
-	)
-
-	// Check TLS version
-	switch util.Deref(config.Properties.MinTLSVersion) {
-	case armappservice.SupportedTLSVersionsOne2:
-		tlsVersion = constants.TLS1_2
-	case armappservice.SupportedTLSVersionsOne1:
-		tlsVersion = constants.TLS1_1
-	case armappservice.SupportedTLSVersionsOne0:
-		tlsVersion = constants.TLS1_0
-	}
+	// Get the corresponding Clouditor TLS version
+	tlsVersion := tlsVersion((string(util.Deref(config.Properties.MinTLSVersion))))
 
 	// Create transportEncryption voc object
 	if tlsVersion != "" {

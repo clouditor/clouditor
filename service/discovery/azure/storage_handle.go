@@ -143,7 +143,7 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]voc.IsCloudRe
 				TransportEncryption: &voc.TransportEncryption{
 					Enabled:    true,
 					Enforced:   true,
-					TlsVersion: checkTlsVersion(*server.Properties.MinimalTLSVersion),
+					TlsVersion: tlsVersion(util.Deref(server.Properties.MinimalTLSVersion)),
 				},
 			},
 		},
@@ -178,7 +178,7 @@ func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, stora
 	te := &voc.TransportEncryption{
 		Enforced:   util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:    true, // cannot be disabled
-		TlsVersion: checkTlsVersion((string(util.Deref(account.Properties.MinimumTLSVersion)))),
+		TlsVersion: tlsVersion((string(util.Deref(account.Properties.MinimumTLSVersion)))),
 		Algorithm:  constants.TLS,
 	}
 

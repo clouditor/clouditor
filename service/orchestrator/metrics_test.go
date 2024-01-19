@@ -295,7 +295,7 @@ func TestService_CreateMetric(t *testing.T) {
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid Metric.Id: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "metric.id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -527,7 +527,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			},
 			wantMetric: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "Name: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "metric.name: value length must be at least 1 characters")
 			},
 		},
 	}
@@ -785,12 +785,13 @@ func TestService_ListMetrics(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 			gotRes, err := svc.ListMetrics(tt.args.in0, tt.args.req)
-
-			assert.NoError(t, gotRes.Validate())
-
 			tt.wantErr(t, err)
 
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
+			if tt.wantRes != nil {
+				assert.NoError(t, api.Validate(gotRes))
+			}
+
+			if !proto.Equal(gotRes, tt.wantRes) {
 				t.Errorf("Service.ListMetrics() = %v, want %v", gotRes, tt.wantRes)
 			}
 		})
@@ -1266,13 +1267,14 @@ func TestService_ListMetricConfigurations(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := svc.ListMetricConfigurations(tt.args.ctx, tt.args.req)
-
-			// Check if response validation succeds
-			assert.NoError(t, gotResponse.Validate())
-
 			tt.wantErr(t, err)
 
-			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
+			if tt.wantResponse != nil {
+				// Check if response validation succeds
+				assert.NoError(t, api.Validate(gotResponse))
+			}
+
+			if !proto.Equal(gotResponse, tt.wantResponse) {
 				t.Errorf("Service.ListMetricConfigurations() = %v, want %v", gotResponse, tt.wantResponse)
 			}
 		})
@@ -1406,7 +1408,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1429,7 +1431,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1446,7 +1448,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "Configuration: value is required")
+				return assert.ErrorContains(t, err, "configuration: value is required")
 			},
 		},
 		{
@@ -1490,7 +1492,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1513,7 +1515,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Empty,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "MetricConfiguration.CloudServiceId: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{

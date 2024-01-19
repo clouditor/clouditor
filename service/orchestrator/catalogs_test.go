@@ -31,6 +31,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
@@ -86,7 +87,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			wantResponse: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, "Catalog: value is required")
+				assert.ErrorContains(t, err, "catalog: value is required")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -100,7 +101,7 @@ func TestService_CreateCatalog(t *testing.T) {
 			},
 			wantResponse: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, "Catalog.Id: value length must be at least 1 runes")
+				assert.ErrorContains(t, err, "catalog.id: value length must be at least 1 characters")
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
 		},
@@ -138,7 +139,7 @@ func TestService_CreateCatalog(t *testing.T) {
 				t.Errorf("Service.CreateCatalog() = %v, want %v", gotResponse, tt.wantResponse)
 
 				// Check catalog structure with validation method
-				assert.NoError(t, gotResponse.Validate())
+				assert.NoError(t, api.Validate(gotResponse))
 			}
 		})
 	}
@@ -177,7 +178,7 @@ func TestService_GetCatalog(t *testing.T) {
 			wantResponse: assert.Nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "CatalogId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "catalog_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -642,7 +643,7 @@ func TestService_loadCatalogs(t *testing.T) {
 				err := svc.storage.Get(catalog, gorm.WithPreload("Categories.Controls", "parent_control_id IS NULL"), "Id = ?", "DemoCatalog")
 				assert.NoError(t, err)
 
-				err = catalog.Validate()
+				err = api.Validate(catalog)
 				return assert.NoError(t, err)
 			},
 			wantErr: assert.NoError,
