@@ -169,17 +169,22 @@ func (d *azureKeyVaultDiscovery) initMetricsClient() (err error) {
 
 // TODO(lebogg): Test
 func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
+	var createdAt *time.Time
 	// Find out if key vault is actively used
 	isActive, err := d.isActive(kv)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle key vault: %v", err)
 	}
 
+	if kv.SystemData != nil {
+		createdAt = kv.SystemData.CreatedAt
+	}
+
 	return &voc.KeyVault{
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(util.Deref(kv.ID)),
 			util.Deref(kv.Name),
-			kv.SystemData.CreatedAt,
+			createdAt,
 			voc.GeoLocation{
 				Region: util.Deref(kv.Location),
 			},
@@ -194,7 +199,11 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 }
 
 func getPublicAccess(kv *armkeyvault.Vault) bool {
-	return util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled"
+	if kv.Properties != nil {
+		return util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled"
+	}
+
+	return false
 }
 
 // getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of

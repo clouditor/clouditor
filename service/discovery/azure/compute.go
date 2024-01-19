@@ -830,17 +830,19 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 // getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
 func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
 	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
 		return
 	}
+
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
 		rl.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 
 	}
-	return
 
+	return
 }
