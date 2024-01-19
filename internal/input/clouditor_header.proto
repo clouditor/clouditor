@@ -28,10 +28,10 @@ syntax = "proto3";
 
 package clouditor.ontology.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
-import "validate/validate.proto";
 
 option go_package = "clouditor.io/clouditor/api/ontology";
