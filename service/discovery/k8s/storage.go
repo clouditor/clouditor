@@ -86,15 +86,12 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) *ontology.Resour
 		Name:         pv.Name,
 		CreationTime: util.SafeTimestamp(&pv.CreationTimestamp.Time),
 		Typ:          []string{"type1", "type2"},
-		GeoLocation: &ontology.GeoLocation{
-			Region: "",
-		},
-		Labels:   pv.Labels,
-		Raw:      "raw data",
-		ParentId: "",
+		Labels:       pv.Labels,
+		Raw:          "raw data",
 		Type: &ontology.Resource_CloudResource{
 			CloudResource: &ontology.CloudResource{
 				Labels: pv.Labels,
+				// TODO(anatheka): Add GeoLocation
 				Type: &ontology.CloudResource_Storage{
 					Storage: &ontology.Storage{
 						Type: &ontology.Storage_ObjectStorage{

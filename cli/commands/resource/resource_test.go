@@ -22,6 +22,7 @@
 //  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
 //
 // This file is part of Clouditor Community Edition.
+//go:build exclude
 
 package resource
 

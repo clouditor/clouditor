@@ -127,15 +127,9 @@ components:
                     description: Reference to the tool which provided the evidence
                 raw:
                     type: string
-                    description: |-
-                        Optional. Contains the evidence in its original form without following a
-                         defined schema, e.g. the raw JSON
+                    description: Optional. Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
                 resource:
-                    allOf:
-                        - $ref: '#/components/schemas/GoogleProtobufValue'
-                    description: |-
-                        Semantic representation of the Cloud resource according to our defined
-                         ontology
+                    $ref: '#/components/schemas/GoogleProtobufValue'
             description: An evidence resource
         GoogleProtobufAny:
             type: object

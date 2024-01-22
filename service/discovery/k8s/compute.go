@@ -144,10 +144,14 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []*ontology.Resource 
 			ServiceId: d.csID,
 			Name:      vol.Name,
 			Typ:       []string{"testType1"},
+			Labels:    map[string]string{}, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned.
 			Type: &ontology.Resource_CloudResource{
 				CloudResource: &ontology.CloudResource{
 					Type: &ontology.CloudResource_Storage{
 						Storage: v,
+					},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "",
 					},
 					SecurityFeature: []*ontology.SecurityFeature{
 						{

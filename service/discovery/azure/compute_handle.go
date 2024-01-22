@@ -23,6 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
+//go:build exclude
 package azure
 
 import (
