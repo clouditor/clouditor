@@ -39,10 +39,10 @@
                 "--dashboard-url=http://localhost:5173",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
-                "--discovery-provider=azure",
+                "--discovery-provider=k8s",
             ],
             "env": {},
-            "preLaunchTask": "go: generate"
+            // "preLaunchTask": "go: generate"
         },
         {
             "name": "Launch engine (database, dashboard development redirect with Azure discovery)",

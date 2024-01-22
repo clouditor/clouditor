@@ -32,6 +32,7 @@ import (
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/sirupsen/logrus"
@@ -53,7 +54,7 @@ const (
 // vocabulary objects.
 type Discoverer interface {
 	Name() string
-	List() ([]voc.IsCloudResource, error)
+	List() ([]*ontology.Resource, error)
 	CloudServiceID() string
 }
 

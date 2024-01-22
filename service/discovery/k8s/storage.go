@@ -30,6 +30,8 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,8 +52,8 @@ func (*k8sStorageDiscovery) Description() string {
 	return "Discover Kubernetes storage resources."
 }
 
-func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sStorageDiscovery) List() ([]*ontology.Resource, error) {
+	var list []*ontology.Resource
 
 	// Get persistent volumes
 	// Note: Volumes exist in the context of a pod and cannot be created on its own, PersistentVolumes are first class objects with its own lifecycle.
@@ -76,25 +78,53 @@ func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 // handlePVC returns all PersistentVolumes
-func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-	s := &voc.Storage{
-		Resource: discovery.NewResource(d,
-			voc.ResourceID(pv.UID),
-			pv.Name,
-			&pv.CreationTimestamp.Time,
-			// TODO(all) Add region
-			voc.GeoLocation{},
-			pv.Labels,
-			"",
-			voc.BlockStorageType,
-			pv,
-		),
-		AtRestEncryption: &voc.AtRestEncryption{},
+func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) *ontology.Resource {
+
+	s := &ontology.Resource{
+		Id:           string(pv.UID),
+		ServiceId:    d.CloudServiceID(),
+		Name:         pv.Name,
+		CreationTime: util.SafeTimestamp(&pv.CreationTimestamp.Time),
+		Typ:          []string{"type1", "type2"},
+		GeoLocation: &ontology.GeoLocation{
+			Region: "",
+		},
+		Labels:   pv.Labels,
+		Raw:      "raw data",
+		ParentId: "",
+		Type: &ontology.Resource_CloudResource{
+			CloudResource: &ontology.CloudResource{
+				Labels: pv.Labels,
+				Type: &ontology.CloudResource_Storage{
+					Storage: &ontology.Storage{
+						Type: &ontology.Storage_ObjectStorage{
+							ObjectStorage: &ontology.ObjectStorage{
+								PublicAccess: false,
+							},
+						},
+					},
+				},
+			},
+		},
 	}
+	// s := &voc.Storage{
+	// 	Resource: discovery.NewResource(d,
+	// 		voc.ResourceID(pv.UID),
+	// 		pv.Name,
+	// 		&pv.CreationTimestamp.Time,
+	// 		// TODO(all) Add region
+	// 		voc.GeoLocation{},
+	// 		pv.Labels,
+	// 		"",
+	// 		voc.BlockStorageType,
+	// 		pv,
+	// 	),
+	// 	AtRestEncryption: &voc.AtRestEncryption{},
+	// }
 
-	v := addPersistentVolumeSource(s, pv.Spec.PersistentVolumeSource)
+	// v := addPersistentVolumeSource(s, pv.Spec.PersistentVolumeSource)
 
-	return v
+	return s
 }
 
 // TODO(all): Is it possible to use generics for the PersistentVolumeSource and VolumeSource and thus delete duplicated code?
@@ -137,8 +167,8 @@ func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc
 	}
 }
 
-// addVolumeSource adds a given volumeSource to the specific ontology storage type
-func addVolumeSource(s *voc.Storage, vs v1.VolumeSource) voc.IsCloudResource {
+// getVolumeSource adds a given volumeSource to the specific ontology storage type
+func getVolumeSource(vs v1.VolumeSource) *ontology.Storage {
 
 	// TODO(all): Define all volume types
 	// PersistentVolumeClaimVolumeSource
@@ -160,15 +190,25 @@ func addVolumeSource(s *voc.Storage, vs v1.VolumeSource) voc.IsCloudResource {
 	// quobyte - Quobyte volume (deprecated in v1.22)
 	// storageos - StorageOS volume (deprecated in v1.22)
 	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
-		v := &voc.BlockStorage{
-			Storage: s,
+		v := &ontology.Storage{
+			Type: &ontology.Storage_BlockStorage{
+				BlockStorage: &ontology.BlockStorage{},
+			},
 		}
+
+		// v := &voc.BlockStorage{
+		// 	Storage: s,
+		// }
 
 		return v
 	} else if vs.AzureFile != nil || vs.EmptyDir != nil || vs.NFS != nil || vs.HostPath != nil || vs.Secret != nil {
-		v := &voc.FileStorage{
-			Storage: s,
+		v := &ontology.Storage{
+			Type: &ontology.Storage_FileStorage{},
 		}
+
+		// v := &voc.FileStorage{
+		// 	Storage: s,
+		// }
 
 		return v
 	} else {

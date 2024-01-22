@@ -23,6 +23,8 @@
 //
 // This file is part of Clouditor Community Edition.
 
+//go:build exclude
+
 package k8s
 
 import (

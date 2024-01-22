@@ -71,6 +71,8 @@ message StorageService {
 
 message CloudResource {
   map<string, string> labels = 1;
+  repeated SecurityFeature security_feature = 2;
+
 
   oneof type {
     Account account = 101;
@@ -604,8 +606,16 @@ message Redundancy {
 message ApplicationLogging {}
 
 message Resource {
-  string name = 1;
-
+  string id = 1;
+  string service_id = 2;
+  string name = 3;
+  int64 string creation_time =4; 
+  repeated string type = 5;
+  GeoLocation geo_location = 6; 
+  map<string,string> labels = 7;
+  string raw = 8;
+  string parent_id = 9;
+  
   oneof type {
     Application application = 101;
     CloudResource cloud_resource = 102;
