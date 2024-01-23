@@ -119,6 +119,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) *ontology.Resour
 	// 	AtRestEncryption: &voc.AtRestEncryption{},
 	// }
 
+	// TODO(all): addPersistenceVolumeSource
 	// v := addPersistentVolumeSource(s, pv.Spec.PersistentVolumeSource)
 
 	return s

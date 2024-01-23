@@ -23,8 +23,6 @@
 //
 // This file is part of Clouditor Community Edition.
 
-//go:build exclude
-
 package k8s
 
 import (
@@ -32,6 +30,8 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/networking/v1"
@@ -53,8 +53,8 @@ func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sNetworkDiscovery) List() ([]*ontology.Resource, error) {
+	var list []*ontology.Resource
 
 	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -86,85 +86,139 @@ func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
 	return list, nil
 }
 
-func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) *ontology.Resource {
 	var (
-		ports []uint16
+		ports []uint32
 	)
 
 	for _, v := range service.Spec.Ports {
-		ports = append(ports, uint16(v.Port))
+		ports = append(ports, uint32(v.Port))
 	}
 
-	return &voc.NetworkService{
-		Networking: &voc.Networking{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(getNetworkServiceResourceID(service)),
-				service.Name,
-				&service.CreationTimestamp.Time,
-				// TODO(all): Add region
-				voc.GeoLocation{},
-				service.Labels,
-				"",
-				voc.NetworkServiceType,
-				service,
-			),
-		},
+	return &ontology.Resource{
+		Id:           getNetworkServiceResourceID(service),
+		Name:         service.Name,
+		CreationTime: util.SafeTimestamp(&service.CreationTimestamp.Time),
+		Labels:       service.Labels,
+		Typ:          voc.NetworkServiceType, // TODO(all): Update to new type
+		Raw:          service.String(),
+		ServiceId:    d.CloudServiceID(),
+		Type: &ontology.Resource_CloudResource{
+			CloudResource: &ontology.CloudResource{
+				GeoLocation: &ontology.GeoLocation{Region: ""},
+				Type: &ontology.CloudResource_Networking{
+					Networking: &ontology.Networking{
+						Type: &ontology.Networking_NetworkService{
+							NetworkService: &ontology.NetworkService{
+								Ips:   service.Spec.ClusterIPs,
+								Ports: ports,
+							},
+						},
+					},
+				},
+			},
+		}}
+	// return &voc.NetworkService{
+	// 	Networking: &voc.Networking{
+	// 		Resource: discovery.NewResource(d,
+	// 			voc.ResourceID(getNetworkServiceResourceID(service)),
+	// 			service.Name,
+	// 			&service.CreationTimestamp.Time,
+	// 			// TODO(all): Add region
+	// 			voc.GeoLocation{},
+	// 			service.Labels,
+	// 			"",
+	// 			voc.NetworkServiceType,
+	// 			service,
+	// 		),
+	// 	},
 
-		Ips:   service.Spec.ClusterIPs,
-		Ports: ports,
-	}
+	// 	Ips:   service.Spec.ClusterIPs,
+	// 	Ports: ports,
+	// }
 }
 
 func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
-	lb := &voc.LoadBalancer{
-		NetworkService: &voc.NetworkService{
-			Networking: &voc.Networking{
-				Resource: discovery.NewResource(d,
-					voc.ResourceID(getLoadBalancerResourceID(ingress)),
-					ingress.Name,
-					&ingress.CreationTimestamp.Time,
-					// TODO(all): Add region
-					voc.GeoLocation{},
-					ingress.Labels,
-					"",
-					voc.LoadBalancerType,
-					ingress,
-				),
+func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) *ontology.Resource {
+	lb := &ontology.Resource{
+		Id:           getLoadBalancerResourceID(ingress),
+		Name:         ingress.Name,
+		CreationTime: util.SafeTimestamp(&ingress.CreationTimestamp.Time),
+		Labels:       ingress.Labels,
+		Typ:          voc.LoadBalancerType, // TODO(all): Update to new type
+		Raw:          ingress.String(),
+		ServiceId:    d.CloudServiceID(),
+		Type: &ontology.Resource_CloudResource{
+			CloudResource: &ontology.CloudResource{
+				GeoLocation: &ontology.GeoLocation{Region: ""},
+				Labels:      ingress.Labels,
+				Type: &ontology.CloudResource_Networking{
+					Networking: &ontology.Networking{
+						Type: &ontology.Networking_NetworkService{
+							NetworkService: &ontology.NetworkService{
+								Ips:   nil, // TODO (oxisto): fill out IPs
+								Ports: []uint32{80, 443},
+								Type: &ontology.NetworkService_LoadBalancer{
+									LoadBalancer: &ontology.LoadBalancer{
+										HttpEndpoint: []*ontology.HttpEndpoint{},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
-			Ips:   nil, // TODO (oxisto): fill out IPs
-			Ports: []uint16{80, 443},
-		},
-		HttpEndpoints: []*voc.HttpEndpoint{},
-	}
+		}}
+
+	// lb := &voc.LoadBalancer{
+	// 	NetworkService: &voc.NetworkService{
+	// 		Networking: &voc.Networking{
+	// 			Resource: discovery.NewResource(d,
+	// 				voc.ResourceID(getLoadBalancerResourceID(ingress)),
+	// 				ingress.Name,
+	// 				&ingress.CreationTimestamp.Time,
+	// 				// TODO(all): Add region
+	// 				voc.GeoLocation{},
+	// 				ingress.Labels,
+	// 				"",
+	// 				voc.LoadBalancerType,
+	// 				ingress,
+	// 			),
+	// 		},
+	// 		Ips:   nil, // TODO (oxisto): fill out IPs
+	// 		Ports: []uint16{80, 443},
+	// 	},
+	// 	HttpEndpoints: []*voc.HttpEndpoint{},
+	// }
 
 	for _, rule := range ingress.Spec.Rules {
-		lb.Ips = append(lb.Ips, rule.Host)
+		lb.GetCloudResource().GetNetworking().GetNetworkService().Ips = append(lb.GetCloudResource().GetNetworking().GetNetworkService().Ips, rule.Host)
+		// lb.Ips = append(lb.Ips, rule.Host)
 
 		for _, path := range rule.HTTP.Paths {
 			var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
-			var te *voc.TransportEncryption
+			var te *ontology.TransportEncryption
 
 			if ingress.Spec.TLS == nil {
 				url = fmt.Sprintf("http://%s", url)
 			} else {
 				url = fmt.Sprintf("https://%s", url)
 
-				te = &voc.TransportEncryption{
+				te = &ontology.TransportEncryption{
 					Enforced: true,
 					Enabled:  true,
 				}
 			}
 
-			http := &voc.HttpEndpoint{
+			http := &ontology.HttpEndpoint{
 				Url:                 url,
 				TransportEncryption: te,
 			}
 
-			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
+			lb.GetCloudResource().GetNetworking().GetNetworkService().GetLoadBalancer().HttpEndpoint = append(lb.GetCloudResource().GetNetworking().GetNetworkService().GetLoadBalancer().HttpEndpoint, http)
 		}
 	}
 
