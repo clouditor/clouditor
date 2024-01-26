@@ -50,6 +50,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -369,14 +370,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			ToolId:         discovery.EvidenceCollectorToolId,
 			Resource:       v,
 		}
-		// e := &evidence.Evidence{
-		// 	Id:             uuid.New().String(),
-		// 	CloudServiceId: resource.GetServiceID(),
-		// 	Timestamp:      timestamppb.Now(),
-		// 	Raw:            util.Ref(resource.GetRaw()),
-		// 	ToolId:         discovery.EvidenceCollectorToolId,
-		// 	Resource:       v,
-		// }
 
 		// Get Evidence Store stream
 		channel, err := svc.assessmentStreams.GetStream(svc.assessment.Target, "Assessment", svc.initAssessmentStream, svc.assessment.Opts...)
@@ -453,10 +446,10 @@ func (svc *Service) GetCloudServiceId() string {
 // toDiscoveryResource converts a [voc.IsCloudResource] into a resource that can be persisted in our database
 // ([discovery.Resource]). In the future we want to merge those two structs
 func toDiscoveryResource(resource *ontology.Resource) (r *discovery.Resource, v *structpb.Value, err error) {
-	// v, err = voc.ToStruct(resource)
-	// if err != nil {
-	// 	return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
-	// }
+	v, err = ToStruct(resource)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
+	}
 
 	// Build a resource struct. This will hold the latest sync state of the
 	// resource for our storage layer.
@@ -466,12 +459,26 @@ func toDiscoveryResource(resource *ontology.Resource) (r *discovery.Resource, v 
 		CloudServiceId: resource.GetServiceId(),
 		Properties:     v,
 	}
-	// r = &discovery.Resource{
-	// 	Id:             string(resource.GetID()),
-	// 	ResourceType:   strings.Join(resource.GetType(), ","),
-	// 	CloudServiceId: resource.GetServiceID(),
-	// 	Properties:     v,
-	// }
+
+	return
+}
+
+func ToStruct(r *ontology.Resource) (s *structpb.Value, err error) {
+	var b []byte
+
+	s = new(structpb.Value)
+
+	// this is probably not the fastest approach, but this
+	// way, no extra libraries are needed and no extra struct tags
+	// except `json` are required. there is also no significant
+	// speed increase in marshaling the whole resource list, because
+	// we first need to build it out of the map anyway
+	if b, err = protojson.Marshal(r); err != nil {
+		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+	}
+	if err = protojson.Unmarshal(b, s); err != nil {
+		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
+	}
 
 	return
 }
