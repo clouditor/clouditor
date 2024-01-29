@@ -97,13 +97,13 @@ func ValidateWithResource(ev *evidence.Evidence) (resourceId string, err error) 
 		return "", ErrResourceIdNotString
 	}
 
-	_, ok = m["typ"]
+	_, ok = m["resourceType"]
 	if !ok {
 		return "", ErrResourceTypeFieldMissing
 	}
 
 	// Check if resource is a slice
-	fieldType, ok := m["typ"].([]interface{})
+	fieldType, ok := m["resourceType"].([]interface{})
 	if !ok {
 		// Resource is not a slice
 		return "", ErrResourceTypeNotArrayOfStrings

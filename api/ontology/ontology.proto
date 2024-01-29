@@ -31,11 +31,124 @@ package clouditor.ontology.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/descriptor.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
 option go_package = "clouditor.io/clouditor/api/ontology";
+
+extend google.protobuf.EnumValueOptions {
+  optional string resource_type_name = 123456789;
+}
+
+enum ResourceType {
+  RESOURCE_TYPE_UNSPECIFIED = 0;
+  RESOURCE_ABAC_AUTHORIZATION_SECURITYFEATURE = 2 [(resource_type_name) = "ABAC,Authorization,SecurityFeature"];
+  RESOURCE_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 3 [(resource_type_name) = "AccessRestriction,Authorization,SecurityFeature"];
+  RESOURCE_ACCOUNT_CLOUDRESOURCE_RESOURCE = 4 [(resource_type_name) = "Account,CloudResource,Resource"];
+  RESOURCE_ACTIVITYLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 5 [(resource_type_name) = "ActivityLogging,Logging,Auditing,SecurityFeature"];
+  RESOURCE_ANOMALYDETECTION_AUDITING_SECURITYFEATURE = 6 [(resource_type_name) = "AnomalyDetection,Auditing,SecurityFeature"];
+  RESOURCE_APPLICATION_RESOURCE = 7 [(resource_type_name) = "Application,Resource"];
+  RESOURCE_APPLICATIONLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 8 [(resource_type_name) = "ApplicationLogging,Logging,Auditing,SecurityFeature"];
+  RESOURCE_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 9 [(resource_type_name) = "AtRestEncryption,Confidentiality,SecurityFeature"];
+  RESOURCE_AUDITING_SECURITYFEATURE = 10 [(resource_type_name) = "Auditing,SecurityFeature"];
+  RESOURCE_AUTHENTICITY_SECURITYFEATURE = 11 [(resource_type_name) = "Authenticity,SecurityFeature"];
+  RESOURCE_AUTHORIZATION_SECURITYFEATURE = 12 [(resource_type_name) = "Authorization,SecurityFeature"];
+  RESOURCE_AUTOMATICSECURITYUPDATES_INTEGRITY_SECURITYFEATURE = 13 [(resource_type_name) = "AutomaticSecurityUpdates,Integrity,SecurityFeature"];
+  RESOURCE_AVAILABILITY_SECURITYFEATURE = 14 [(resource_type_name) = "Availability,SecurityFeature"];
+  RESOURCE_BACKUP_AVAILABILITY_SECURITYFEATURE = 15 [(resource_type_name) = "Backup,Availability,SecurityFeature"];
+  RESOURCE_RESOURCE = 16 [(resource_type_name) = "Resource"];
+  RESOURCE_BLOCKSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 17 [(resource_type_name) = "BlockStorage,Storage,CloudResource,Resource"];
+  RESOURCE_BOOTLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 18 [(resource_type_name) = "BootLogging,Logging,Auditing,SecurityFeature"];
+  RESOURCE_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 19 [(resource_type_name) = "CICDService,CloudResource,Resource"];
+  RESOURCE_CERTIFICATEBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 20 [(resource_type_name) = "CertificateBasedAuthentication,Authenticity,SecurityFeature"];
+  RESOURCE_CIPHERSUITE_CONFIDENTIALITY_SECURITYFEATURE = 21 [(resource_type_name) = "CipherSuite,Confidentiality,SecurityFeature"];
+  RESOURCE_CLOUDRESOURCE_RESOURCE = 22 [(resource_type_name) = "CloudResource,Resource"];
+  RESOURCE_CLOUDSDK_FRAMEWORK = 23 [(resource_type_name) = "CloudSDK,Framework"];
+  RESOURCE_COMPUTE_CLOUDRESOURCE_RESOURCE = 24 [(resource_type_name) = "Compute,CloudResource,Resource"];
+  RESOURCE_CONFIDENTIALITY_SECURITYFEATURE = 25 [(resource_type_name) = "Confidentiality,SecurityFeature"];
+  RESOURCE_CONTAINER_COMPUTE_CLOUDRESOURCE_RESOURCE = 26 [(resource_type_name) = "Container,Compute,CloudResource,Resource"];
+  RESOURCE_CONTAINERIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 27 [(resource_type_name) = "ContainerImage,Image,CloudResource,Resource"];
+  RESOURCE_CONTAINERORCHESTRATION_CLOUDRESOURCE_RESOURCE = 28 [(resource_type_name) = "ContainerOrchestration,CloudResource,Resource"];
+  RESOURCE_CONTAINERREGISTRY_CLOUDRESOURCE_RESOURCE = 29 [(resource_type_name) = "ContainerRegistry,CloudResource,Resource"];
+  RESOURCE_CUSTOMERKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 30 [(resource_type_name) = "CustomerKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
+  RESOURCE_DDOSPROTECTION_AVAILABILITY_SECURITYFEATURE = 31 [(resource_type_name) = "DDoSProtection,Availability,SecurityFeature"];
+  RESOURCE_DATABASECONNECT_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 32 [(resource_type_name) = "DatabaseConnect,DatabaseOperation,Operation,Functionality"];
+  RESOURCE_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 33 [(resource_type_name) = "DatabaseOperation,Operation,Functionality"];
+  RESOURCE_DATABASEQUERY_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 34 [(resource_type_name) = "DatabaseQuery,DatabaseOperation,Operation,Functionality"];
+  RESOURCE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 35 [(resource_type_name) = "DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_DATABASESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 36 [(resource_type_name) = "DatabaseStorage,Storage,CloudResource,Resource"];
+  RESOURCE_DEVICEPROVISIONINGSERVICE_IOT_CLOUDRESOURCE_RESOURCE = 37 [(resource_type_name) = "DeviceProvisioningService,IoT,CloudResource,Resource"];
+  RESOURCE_DOCUMENT_RESOURCE = 38 [(resource_type_name) = "Document,Resource"];
+  RESOURCE_DOCUMENTDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 39 [(resource_type_name) = "DocumentDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_ENCRYPTIONINUSE_CONFIDENTIALITY_SECURITYFEATURE = 40 [(resource_type_name) = "EncryptionInUse,Confidentiality,SecurityFeature"];
+  RESOURCE_FILESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 41 [(resource_type_name) = "FileStorage,Storage,CloudResource,Resource"];
+  RESOURCE_FILESTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 42 [(resource_type_name) = "FileStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 43 [(resource_type_name) = "Firewall,AccessRestriction,Authorization,SecurityFeature"];
+  RESOURCE_FRAMEWORK = 44 [(resource_type_name) = "Framework"];
+  RESOURCE_FUNCTION_COMPUTE_CLOUDRESOURCE_RESOURCE = 45 [(resource_type_name) = "Function,Compute,CloudResource,Resource"];
+  RESOURCE_FUNCTIONALITY = 46 [(resource_type_name) = "Functionality"];
+  RESOURCE_GEOLOCATION_AVAILABILITY_SECURITYFEATURE = 47 [(resource_type_name) = "GeoLocation,Availability,SecurityFeature"];
+  RESOURCE_HTTPCLIENTLIBRARY_FRAMEWORK = 48 [(resource_type_name) = "HttpClientLibrary,Framework"];
+  RESOURCE_HTTPENDPOINT_FUNCTIONALITY = 49 [(resource_type_name) = "HttpEndpoint,Functionality"];
+  RESOURCE_HTTPREQUEST_OPERATION_FUNCTIONALITY = 50 [(resource_type_name) = "HttpRequest,Operation,Functionality"];
+  RESOURCE_HTTPREQUESTHANDLER_FUNCTIONALITY = 51 [(resource_type_name) = "HttpRequestHandler,Functionality"];
+  RESOURCE_HTTPSERVER_FRAMEWORK = 52 [(resource_type_name) = "HttpServer,Framework"];
+  RESOURCE_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 53 [(resource_type_name) = "Identifiable,CloudResource,Resource"];
+  RESOURCE_IDENTITY_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 54 [(resource_type_name) = "Identity,Identifiable,CloudResource,Resource"];
+  RESOURCE_IMAGE_CLOUDRESOURCE_RESOURCE = 55 [(resource_type_name) = "Image,CloudResource,Resource"];
+  RESOURCE_IMMUTABILITY_INTEGRITY_SECURITYFEATURE = 56 [(resource_type_name) = "Immutability,Integrity,SecurityFeature"];
+  RESOURCE_INTEGRITY_SECURITYFEATURE = 57 [(resource_type_name) = "Integrity,SecurityFeature"];
+  RESOURCE_IOT_CLOUDRESOURCE_RESOURCE = 58 [(resource_type_name) = "IoT,CloudResource,Resource"];
+  RESOURCE_JOB_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 59 [(resource_type_name) = "Job,CICDService,CloudResource,Resource"];
+  RESOURCE_TOKENBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 60 [(resource_type_name) = "TokenBasedAuthentication,Authenticity,SecurityFeature"];
+  RESOURCE_KEY_CLOUDRESOURCE_RESOURCE = 61 [(resource_type_name) = "Key,CloudResource,Resource"];
+  RESOURCE_KEYVALUEDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 62 [(resource_type_name) = "KeyValueDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_KEYVAULT_CLOUDRESOURCE_RESOURCE = 63 [(resource_type_name) = "KeyVault,CloudResource,Resource"];
+  RESOURCE_L3FIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 64 [(resource_type_name) = "L3Firewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
+  RESOURCE_LOADBALANCER_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 65 [(resource_type_name) = "LoadBalancer,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_LOGOPERATION_OPERATION_FUNCTIONALITY = 66 [(resource_type_name) = "LogOperation,Operation,Functionality"];
+  RESOURCE_LOGGER_FRAMEWORK = 67 [(resource_type_name) = "Logger,Framework"];
+  RESOURCE_LOGGING_AUDITING_SECURITYFEATURE = 68 [(resource_type_name) = "Logging,Auditing,SecurityFeature"];
+  RESOURCE_LOGGINGSERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 69 [(resource_type_name) = "LoggingService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_MALWAREPROTECTION_AUDITING_SECURITYFEATURE = 70 [(resource_type_name) = "MalwareProtection,Auditing,SecurityFeature"];
+  RESOURCE_MANAGEDKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 71 [(resource_type_name) = "ManagedKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
+  RESOURCE_MESSAGINGHUB_IOT_CLOUDRESOURCE_RESOURCE = 72 [(resource_type_name) = "MessagingHub,IoT,CloudResource,Resource"];
+  RESOURCE_NETWORKINTERFACE_NETWORKING_CLOUDRESOURCE_RESOURCE = 73 [(resource_type_name) = "NetworkInterface,Networking,CloudResource,Resource"];
+  RESOURCE_NETWORKSECURITYGROUP_NETWORKING_CLOUDRESOURCE_RESOURCE = 74 [(resource_type_name) = "NetworkSecurityGroup,Networking,CloudResource,Resource"];
+  RESOURCE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 75 [(resource_type_name) = "NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_NETWORKING_CLOUDRESOURCE_RESOURCE = 76 [(resource_type_name) = "Networking,CloudResource,Resource"];
+  RESOURCE_NOAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 77 [(resource_type_name) = "NoAuthentication,Authenticity,SecurityFeature"];
+  RESOURCE_OSLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 78 [(resource_type_name) = "OSLogging,Logging,Auditing,SecurityFeature"];
+  RESOURCE_OTPBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 79 [(resource_type_name) = "OTPBasedAuthentication,Authenticity,SecurityFeature"];
+  RESOURCE_OBJECTSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 80 [(resource_type_name) = "ObjectStorage,Storage,CloudResource,Resource"];
+  RESOURCE_OBJECTSTORAGEREQUEST_OPERATION_FUNCTIONALITY = 81 [(resource_type_name) = "ObjectStorageRequest,Operation,Functionality"];
+  RESOURCE_OBJECTSTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 82 [(resource_type_name) = "ObjectStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_OPERATION_FUNCTIONALITY = 83 [(resource_type_name) = "Operation,Functionality"];
+  RESOURCE_PASSWORDBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 84 [(resource_type_name) = "PasswordBasedAuthentication,Authenticity,SecurityFeature"];
+  RESOURCE_PASSWORDPOLICY_CLOUDRESOURCE_RESOURCE = 85 [(resource_type_name) = "PasswordPolicy,CloudResource,Resource"];
+  RESOURCE_PROXIEDENDPOINT_HTTPENDPOINT_FUNCTIONALITY = 86 [(resource_type_name) = "ProxiedEndpoint,HttpEndpoint,Functionality"];
+  RESOURCE_RBAC_AUTHORIZATION_SECURITYFEATURE = 87 [(resource_type_name) = "RBAC,Authorization,SecurityFeature"];
+  RESOURCE_REDUNDANCY_AVAILABILITY_SECURITYFEATURE = 88 [(resource_type_name) = "Redundancy,Availability,SecurityFeature"];
+  RESOURCE_RELATIONALDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 89 [(resource_type_name) = "RelationalDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_RESOURCEGROUP_CLOUDRESOURCE_RESOURCE = 90 [(resource_type_name) = "ResourceGroup,CloudResource,Resource"];
+  RESOURCE_RESOURCELOGGING_LOGGING_AUDITING_SECURITYFEATURE = 91 [(resource_type_name) = "ResourceLogging,Logging,Auditing,SecurityFeature"];
+  RESOURCE_ROLEASSIGNMENT_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 92 [(resource_type_name) = "RoleAssignment,Identifiable,CloudResource,Resource"];
+  RESOURCE_SECURITYFEATURE = 93 [(resource_type_name) = "SecurityFeature"];
+  RESOURCE_SINGLESIGNON_AUTHENTICITY_SECURITYFEATURE = 94 [(resource_type_name) = "SingleSignOn,Authenticity,SecurityFeature"];
+  RESOURCE_STORAGE_CLOUDRESOURCE_RESOURCE = 95 [(resource_type_name) = "Storage,CloudResource,Resource"];
+  RESOURCE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 96 [(resource_type_name) = "StorageService,NetworkService,Networking,CloudResource,Resource"];
+  RESOURCE_TRANSPORTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 97 [(resource_type_name) = "TransportEncryption,Confidentiality,SecurityFeature"];
+  RESOURCE_VMIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 98 [(resource_type_name) = "VMImage,Image,CloudResource,Resource"];
+  RESOURCE_VIRTUALMACHINE_COMPUTE_CLOUDRESOURCE_RESOURCE = 99 [(resource_type_name) = "VirtualMachine,Compute,CloudResource,Resource"];
+  RESOURCE_VIRTUALNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 100 [(resource_type_name) = "VirtualNetwork,Networking,CloudResource,Resource"];
+  RESOURCE_VIRTUALSUBNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 101 [(resource_type_name) = "VirtualSubNetwork,Networking,CloudResource,Resource"];
+  RESOURCE_WEBAPP_COMPUTE_CLOUDRESOURCE_RESOURCE = 102 [(resource_type_name) = "WebApp,Compute,CloudResource,Resource"];
+  RESOURCE_WEBAPPLICATIONFIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 103 [(resource_type_name) = "WebApplicationFirewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
+  RESOURCE_WORKFLOW_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 104 [(resource_type_name) = "Workflow,CICDService,CloudResource,Resource"];
+}
+
 message ABAC {}
 
 message AccessRestriction {
@@ -145,10 +258,10 @@ message Resource {
   string name = 4;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
-  // ServiceID contains the ID of the cloud service to which this resource belongs.
-  string service_id = 6;
   // The resource type. It is an array, because a type can be derived from another
-  repeated string typ = 7;
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
 
   oneof type {
     Application application = 101;
@@ -544,9 +657,7 @@ message ObjectStorage {
 
 message ObjectStorageRequest {
   string source = 1;
-  // The resource type. It is an array, because a type can be derived from another
-  string typ = 2;
-  string object_storage_id = 3;
+  string object_storage_id = 2;
 }
 
 // ObjectStorageService is an entity in our Cloud ontology

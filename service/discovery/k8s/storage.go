@@ -32,7 +32,6 @@ import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -79,55 +78,35 @@ func (d *k8sStorageDiscovery) List() ([]*ontology.Resource, error) {
 
 // handlePVC returns all PersistentVolumes
 func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) *ontology.Resource {
+	v := addPersistentVolumeSource(pv.Spec.PersistentVolumeSource)
 
 	s := &ontology.Resource{
 		Id:           string(pv.UID),
 		ServiceId:    d.CloudServiceID(),
 		Name:         pv.Name,
 		CreationTime: util.SafeTimestamp(&pv.CreationTimestamp.Time),
-		Typ:          []string{"type1", "type2"},
+		ResourceType: discovery.GetResourceType(ontology.ResourceType_RESOURCE_BLOCKSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE),
 		Labels:       pv.Labels,
 		Raw:          "raw data",
 		Type: &ontology.Resource_CloudResource{
 			CloudResource: &ontology.CloudResource{
 				Labels: pv.Labels,
-				// TODO(anatheka): Add GeoLocation
+				GeoLocation: &ontology.GeoLocation{
+					Region: "", // TODO(all): Add Region
+				},
 				Type: &ontology.CloudResource_Storage{
-					Storage: &ontology.Storage{
-						Type: &ontology.Storage_ObjectStorage{
-							ObjectStorage: &ontology.ObjectStorage{
-								PublicAccess: false,
-							},
-						},
-					},
+					Storage: v,
 				},
 			},
 		},
 	}
-	// s := &voc.Storage{
-	// 	Resource: discovery.NewResource(d,
-	// 		voc.ResourceID(pv.UID),
-	// 		pv.Name,
-	// 		&pv.CreationTimestamp.Time,
-	// 		// TODO(all) Add region
-	// 		voc.GeoLocation{},
-	// 		pv.Labels,
-	// 		"",
-	// 		voc.BlockStorageType,
-	// 		pv,
-	// 	),
-	// 	AtRestEncryption: &voc.AtRestEncryption{},
-	// }
-
-	// TODO(all): addPersistenceVolumeSource
-	// v := addPersistentVolumeSource(s, pv.Spec.PersistentVolumeSource)
 
 	return s
 }
 
 // TODO(all): Is it possible to use generics for the PersistentVolumeSource and VolumeSource and thus delete duplicated code?
 // addPersistentVolumeSource adds a given volumeSource to the specific ontology storage type
-func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc.IsCloudResource {
+func addPersistentVolumeSource(vs v1.PersistentVolumeSource) *ontology.Storage {
 
 	// TODO(all): Define all volume types
 	// LocalVolumeSource
@@ -149,14 +128,18 @@ func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc
 	// quobyte - Quobyte volume (deprecated in v1.22)
 	// storageos - StorageOS volume (deprecated in v1.22)
 	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
-		v := &voc.BlockStorage{
-			Storage: s,
+		v := &ontology.Storage{
+			Type: &ontology.Storage_BlockStorage{
+				BlockStorage: &ontology.BlockStorage{},
+			},
 		}
 
 		return v
 	} else if vs.AzureFile != nil || vs.NFS != nil || vs.HostPath != nil {
-		v := &voc.FileStorage{
-			Storage: s,
+		v := &ontology.Storage{
+			Type: &ontology.Storage_FileStorage{
+				FileStorage: &ontology.FileStorage{},
+			},
 		}
 
 		return v
@@ -194,19 +177,11 @@ func getVolumeSource(vs v1.VolumeSource) *ontology.Storage {
 			},
 		}
 
-		// v := &voc.BlockStorage{
-		// 	Storage: s,
-		// }
-
 		return v
 	} else if vs.AzureFile != nil || vs.EmptyDir != nil || vs.NFS != nil || vs.HostPath != nil || vs.Secret != nil {
 		v := &ontology.Storage{
 			Type: &ontology.Storage_FileStorage{},
 		}
-
-		// v := &voc.FileStorage{
-		// 	Storage: s,
-		// }
 
 		return v
 	} else {

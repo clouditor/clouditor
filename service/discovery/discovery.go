@@ -455,7 +455,7 @@ func toDiscoveryResource(resource *ontology.Resource) (r *discovery.Resource, v 
 	// resource for our storage layer.
 	r = &discovery.Resource{
 		Id:             string(resource.GetId()),
-		ResourceType:   strings.Join(resource.GetTyp(), ","),
+		ResourceType:   strings.Join(resource.GetResourceType(), ","),
 		CloudServiceId: resource.GetServiceId(),
 		Properties:     v,
 	}

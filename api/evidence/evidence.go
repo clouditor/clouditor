@@ -49,7 +49,7 @@ func (evidence *Evidence) ResourceTypes() (types []string, err error) {
 
 	m = value.GetStructValue().AsMap()
 
-	if rawTypes, ok := m["typ"].([]interface{}); ok {
+	if rawTypes, ok := m["resourceType"].([]interface{}); ok {
 		if len(rawTypes) != 0 {
 			types = make([]string, len(rawTypes))
 		} else {
@@ -58,7 +58,7 @@ func (evidence *Evidence) ResourceTypes() (types []string, err error) {
 	} else {
 		return nil, fmt.Errorf("got type '%T' but wanted '[]interface {}'. Check if resource types are specified ", rawTypes)
 	}
-	for i, v := range m["typ"].([]interface{}) {
+	for i, v := range m["resourceType"].([]interface{}) {
 		if t, ok := v.(string); !ok {
 			return nil, fmt.Errorf("got type '%T' but wanted 'string'", t)
 		} else {

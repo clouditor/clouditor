@@ -489,6 +489,9 @@
         <DataProperty IRI="http://graph.clouditor.io/classes/reqBody"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/resourceType"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/retentionPeriod"/>
     </Declaration>
     <Declaration>
@@ -607,9 +610,6 @@
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="prop:translationUnits"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty abbreviatedIRI="prop:type"/>
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="prop:url"/>
@@ -1013,15 +1013,15 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
         <DataSomeValuesFrom>
-            <DataProperty IRI="http://graph.clouditor.io/classes/serviceID"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
+            <DataProperty IRI="http://graph.clouditor.io/classes/resourceType"/>
+            <Datatype abbreviatedIRI="xsd:listString"/>
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
         <DataSomeValuesFrom>
-            <DataProperty abbreviatedIRI="prop:type"/>
-            <Datatype abbreviatedIRI="xsd:listString"/>
+            <DataProperty IRI="http://graph.clouditor.io/classes/serviceID"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -1955,13 +1955,6 @@
             <ObjectProperty abbreviatedIRI="prop:to"/>
             <Class IRI="http://graph.clouditor.io/classes/ObjectStorage"/>
         </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/ObjectStorageRequest"/>
-        <DataSomeValuesFrom>
-            <DataProperty abbreviatedIRI="prop:type"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ObjectStorageRequest"/>
@@ -3519,6 +3512,16 @@ name = metadata.name</Literal>
         <Literal>resourceId</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/resourceType</IRI>
+        <Literal>The resource type. It is an array, because a type can be derived from another</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/resourceType</IRI>
+        <Literal>resourceType</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/retentionPeriod</IRI>
         <Literal>retentionPeriod</Literal>
@@ -4062,16 +4065,6 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>prop:translationUnits</AbbreviatedIRI>
         <Literal xml:lang="english">translationUnits</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <AbbreviatedIRI>prop:type</AbbreviatedIRI>
-        <Literal>The resource type. It is an array, because a type can be derived from another</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>prop:type</AbbreviatedIRI>
-        <Literal xml:lang="english">typ</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

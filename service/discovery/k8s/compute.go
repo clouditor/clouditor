@@ -66,7 +66,7 @@ func (d *k8sComputeDiscovery) List() ([]*ontology.Resource, error) {
 		log.Infof("Adding container %+v", c)
 		list = append(list, c)
 
-		// Get all volumes conntected to the specific pod
+		// Get all volumes connected to the specific pod
 		v := d.handlePodVolume(&pods.Items[i])
 
 		if len(v) != 0 {
@@ -87,7 +87,7 @@ func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *ontology.Resource {
 		CreationTime: util.SafeTimestamp(&pod.CreationTimestamp.Time),
 		Labels:       pod.Labels,
 		Raw:          "",
-		Typ:          []string{"testType1", "testType2"},
+		ResourceType: discovery.GetResourceType(ontology.ResourceType_RESOURCE_CONTAINER_COMPUTE_CLOUDRESOURCE_RESOURCE),
 		Type: &ontology.Resource_CloudResource{
 			CloudResource: &ontology.CloudResource{
 				Labels: pod.Labels,
@@ -102,24 +102,6 @@ func (d *k8sComputeDiscovery) handlePod(pod *v1.Pod) *ontology.Resource {
 			},
 		},
 	}
-
-	// r := &voc.Container{
-	// 	Compute: &voc.Compute{
-	// 		Resource: discovery.NewResource(d,
-	// 			voc.ResourceID(getContainerResourceID(pod)),
-	// 			pod.Name,
-	// 			&pod.CreationTimestamp.Time,
-	// 			// TODO(all): Add region to k8s container
-	// 			voc.GeoLocation{},
-	// 			pod.Labels,
-	// 			"",
-	// 			voc.ContainerType,
-	// 			pod,
-	// 		),
-	// 	},
-	// }
-
-	// r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(pod.Namespace))
 
 	return r
 }
@@ -140,11 +122,11 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []*ontology.Resource 
 		v := getVolumeSource(vol.VolumeSource)
 
 		s := &ontology.Resource{
-			Id:        vol.Name,
-			ServiceId: d.csID,
-			Name:      vol.Name,
-			Typ:       []string{"testType1"},
-			Labels:    map[string]string{}, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned.
+			Id:           vol.Name,
+			ServiceId:    d.csID,
+			Name:         vol.Name,
+			ResourceType: discovery.GetResourceType(ontology.ResourceType_RESOURCE_BLOCKSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE),
+			Labels:       map[string]string{}, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned.
 			Type: &ontology.Resource_CloudResource{
 				CloudResource: &ontology.CloudResource{
 					Type: &ontology.CloudResource_Storage{
@@ -158,7 +140,7 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []*ontology.Resource 
 							Type: &ontology.SecurityFeature_Confidentiality{
 								Confidentiality: &ontology.Confidentiality{
 									Type: &ontology.Confidentiality_AtRestEncryption{
-										AtRestEncryption: &ontology.AtRestEncryption{},
+										AtRestEncryption: &ontology.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
 									},
 								},
 							},
@@ -169,25 +151,6 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []*ontology.Resource 
 		}
 
 		volumes = append(volumes, s)
-
-		// s := &voc.Storage{
-		// 	Resource: discovery.NewResource(d,
-		// 		voc.ResourceID(vol.Name), // The ID we have to get directly from the related storage
-		// 		vol.Name,
-		// 		nil, // The CreationTime we have to get directly from the related storage
-		// 		voc.GeoLocation{},
-		// 		nil, // anatheka: As I understand it, there are no labels for the volume here, we have to get that from the related storage directly. But we could take the pod labels to which the volume is assigned. I think that makes more sense.
-		// 		"",
-		// 		voc.BlockStorageType,
-		// 		pod, &vol,
-		// 	),
-		// 	AtRestEncryption: &voc.AtRestEncryption{}, // Not able to get the AtRestEncryption information, that must be retrieved directly from the storage
-		// }
-
-		// v := getVolumeSource(s, vol.VolumeSource)
-		// if v != nil {
-		// 	volumes = append(volumes, v)
-		// }
 	}
 
 	return volumes

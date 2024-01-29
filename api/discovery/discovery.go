@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -139,4 +140,20 @@ func (r *Resource) ToVocResource() (voc.IsCloudResource, error) {
 // the cloud service ID of the inner object.
 func (req *UpdateResourceRequest) GetCloudServiceId() string {
 	return req.Resource.GetCloudServiceId()
+}
+
+// GetResourceType returns a string slice of all given resource types
+func GetResourceType(rt ontology.ResourceType) []string {
+	enumNumber := rt.Enum().Number()
+	enumValueDesc := rt.Descriptor().Values()
+	valueDesc := enumValueDesc.ByNumber(enumNumber)
+	resourceTypes := proto.GetExtension(valueDesc.Options(), ontology.E_ResourceTypeName)
+
+	types, ok := resourceTypes.(string)
+	if !ok {
+		log.Error("ontology resource types not of type string")
+		return []string{}
+	}
+
+	return strings.Split(types, ",")
 }
