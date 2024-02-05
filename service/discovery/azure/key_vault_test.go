@@ -25,4 +25,30 @@
 
 package azure
 
+import (
+	"context"
+	"testing"
+
+	"clouditor.io/clouditor/internal/util"
+
+	"github.com/stretchr/testify/assert"
+)
+
 // TODO(lebogg): Add tests for all KeyVault parts here. Try to use mocks provided by Azure
+
+func Test_azureDiscovery_initKeyVaultsClient(t *testing.T) {
+	// Init Key Vault Mock and prepare discovery for calling it (TODO(lebogg): Maybe merge these functions)
+	initKeyVaultTests()
+	d := setDiscoveryForKeyVault()
+
+	err := d.initKeyVaultsClient()
+
+	// Assert if no error was produced and if client is non-empty
+	assert.NoError(t, err)
+	assert.NotNil(t, d.clients.keyVaultClient)
+
+	// Assert if the Client behaves as expected: Returning exemplary key vault
+	get, err := d.clients.keyVaultClient.Get(context.TODO(), "fake-resource-group", "Fake-KeyVault-Name", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "Fake-KeyVault-Name", util.Deref(get.Name))
+}

@@ -27,6 +27,7 @@ package azure
 
 import (
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 
 	"clouditor.io/clouditor/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -202,3 +203,8 @@ func (d *azureDiscovery) initWebAppsClient() (err error) {
 }
 
 // TODO(lebogg): Add key vault client [+ potential other clients for keys, secrets and certificates]
+// initKeyVaultsClient creates a Key Vault client if it not exist already
+func (d *azureDiscovery) initKeyVaultsClient() (err error) {
+	d.clients.keyVaultClient, err = initClient(d.clients.keyVaultClient, d, armkeyvault.NewVaultsClient)
+	return
+}
