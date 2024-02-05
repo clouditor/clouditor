@@ -40,6 +40,7 @@ option go_package = "clouditor.io/clouditor/api/ontology";
 message CloudResource {
   oneof type {
     Compute compute = 1;
+    Networking networking = 2;
   }
 }
 
@@ -65,6 +66,20 @@ message VirtualMachine {
   BootLogging boot_logging = 4;
 }
 
+message Networking {
+  oneof type {
+    NetworkInterface network_interface = 1;
+  }
+}
+
+message NetworkInterface {
+  // Properties from CloudResource
+  string name = 1;
+
+  // Properties from NetworkInterface
+  AccessRestriction access_restriction = 2;
+}
+
 // Container is a container entity. It is a leaf node and does contain properties.
 message Container {
   // Properties from Compute
@@ -88,4 +103,22 @@ message ResourceLogging {
   // Properties from Logging
   bool enabled = 1;
   string to_id = 2;
+}
+
+message AccessRestriction {
+  oneof type {
+    Firewall firewall = 1;
+  }
+}
+
+message Firewall {
+  oneof type {
+    L3Firewall l3_firewall = 1;
+  }
+}
+
+message L3Firewall {
+  // TODO: properties
+  bool enabled = 1;
+  string features = 2;
 }
