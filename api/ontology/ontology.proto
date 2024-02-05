@@ -54,12 +54,15 @@ message Compute {
 
 // VirtualMachine is a virtual machine entity. It is a leaf node and does contain properties.
 message VirtualMachine {
+  // Properties from CloudResource
+  string name = 1;
+
   // Properties from Compute
-  repeated string network_interface_ids = 1;
-  ResourceLogging resource_logging = 2;
+  repeated string network_interface_ids = 2;
+  ResourceLogging resource_logging = 3;
 
   // Properties from VirtualMachine
-  BootLogging boot_logging = 3;
+  BootLogging boot_logging = 4;
 }
 
 // Container is a container entity. It is a leaf node and does contain properties.
