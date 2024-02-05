@@ -200,3 +200,5 @@ func (d *azureDiscovery) initWebAppsClient() (err error) {
 	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d, armappservice.NewWebAppsClient)
 	return
 }
+
+// TODO(lebogg): Add key vault client [+ potential other clients for keys, secrets and certificates]
