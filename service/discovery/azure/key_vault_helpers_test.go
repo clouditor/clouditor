@@ -26,12 +26,10 @@
 package azure
 
 import (
-	"context"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
+	"context"
+	"errors"
 
 	azfake "github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
@@ -65,14 +63,73 @@ func initKeyVaultTests() {
 			return
 		}
 	}
+	// TODO(lebogg): FakeVaultsServer.NewListPager
+	FakeVaultsServer.NewListPager = func(options *armkeyvault.VaultsClientListOptions) (resp azfake.PagerResponder[armkeyvault.VaultsClientListResponse]) {
+		resp.AddPage(200, armkeyvault.VaultsClientListResponse{
+			ResourceListResult: armkeyvault.ResourceListResult{
+				Value: []*armkeyvault.Resource{
+					{
+						ID:   util.Ref(string(mockKeyVault1.ID)),
+						Name: util.Ref(mockKeyVault1.Name),
+					},
+					{
+						ID:   util.Ref(string(mockKeyVault2.ID)),
+						Name: util.Ref(mockKeyVault2.Name),
+					},
+				},
+			}}, nil)
+		return
+	}
+	// TODO(lebogg): NewListByResourceGroupPager
+	FakeVaultsServer.NewListByResourceGroupPager = func(rg string, options *armkeyvault.VaultsClientListByResourceGroupOptions) (resp azfake.PagerResponder[armkeyvault.VaultsClientListByResourceGroupResponse]) {
+		if rg == string(mockKeyVault1.Parent) {
+			resp.AddPage(200, armkeyvault.VaultsClientListByResourceGroupResponse{
+				VaultListResult: armkeyvault.VaultListResult{
+					Value: []*armkeyvault.Vault{
+						{
+							ID:   util.Ref(string(mockKeyVault1.ID)),
+							Name: util.Ref(mockKeyVault1.Name),
+						},
+					},
+				}}, nil)
+			return
+		} else { // assume wrong RG
+			// TODO(lebogg): Check error. Maybe it is thrown on the "wrong" level (of pagers)
+			resp.AddError(errors.New("invalid resource group"))
+			return
+		}
+	}
 }
 
-func setDiscoveryForKeyVault() *azureDiscovery {
-	return &azureDiscovery{
-		clientOptions: arm.ClientOptions{ClientOptions: azcore.ClientOptions{Transport: fake.NewVaultsServerTransport(&FakeVaultsServer)}},
-		sub: &armsubscription.Subscription{
-			ID:             util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
-			SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
-		},
-	}
+var mockKeyVault1 = &voc.KeyVault{
+	Resource: &voc.Resource{
+		ID:           "",
+		ServiceID:    "11111111-1111-1111-1111-111111111111",
+		Name:         "mockKeyVault1",
+		CreationTime: 0,
+		Type:         []string{"KeyVault", "Resource"},
+		GeoLocation:  voc.GeoLocation{},
+		Labels:       nil,
+		Raw:          "",
+		Parent:       "resource-group-1",
+	},
+	IsActive:     false,
+	Keys:         nil,
+	PublicAccess: false,
+}
+var mockKeyVault2 = &voc.KeyVault{
+	Resource: &voc.Resource{
+		ID:           "",
+		ServiceID:    "",
+		Name:         "mockKeyVault2",
+		CreationTime: 0,
+		Type:         nil,
+		GeoLocation:  voc.GeoLocation{},
+		Labels:       nil,
+		Raw:          "",
+		Parent:       "resource-group-2",
+	},
+	IsActive:     false,
+	Keys:         nil,
+	PublicAccess: false,
 }

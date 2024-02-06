@@ -23,20 +23,13 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package azure
+package voc
 
-import (
-	"clouditor.io/clouditor/internal/util"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
-)
+var KeyVaultType = []string{"KeyVault", "Resource"}
 
-// TODO(lebogg): Add property functions used by the discover and handle parts here, e.g. `getKeys`
-
-// TODO(lebogg): Test it
-func getPublicAccess(kv *armkeyvault.Vault) bool {
-	if kv.Properties != nil {
-		return util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled"
-	}
-
-	return false
+type KeyVault struct {
+	*Resource
+	IsActive     bool         `json:"isActive"`
+	Keys         []ResourceID `json:"keys"`
+	PublicAccess bool         `json:"publicAccess"`
 }

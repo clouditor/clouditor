@@ -26,7 +26,10 @@
 package azure
 
 import (
+	"clouditor.io/clouditor/voc"
 	"context"
+	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault/fake"
 	"testing"
 
 	"clouditor.io/clouditor/internal/util"
@@ -37,9 +40,11 @@ import (
 // TODO(lebogg): Add tests for all KeyVault parts here. Try to use mocks provided by Azure
 
 func Test_azureDiscovery_initKeyVaultsClient(t *testing.T) {
-	// Init Key Vault Mock and prepare discovery for calling it (TODO(lebogg): Maybe merge these functions)
+	// TODO(lebogg): Do it better (e.g. insert it before every test function (init) or pass as option)
 	initKeyVaultTests()
-	d := setDiscoveryForKeyVault()
+	d := NewMockAzureDiscovery(
+		fake.NewVaultsServerTransport(&FakeVaultsServer),
+		WithResourceGroup("Non-Existent-Resource-Group"))
 
 	err := d.initKeyVaultsClient()
 
@@ -51,4 +56,68 @@ func Test_azureDiscovery_initKeyVaultsClient(t *testing.T) {
 	get, err := d.clients.keyVaultClient.Get(context.TODO(), "fake-resource-group", "Fake-KeyVault-Name", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "Fake-KeyVault-Name", util.Deref(get.Name))
+}
+
+func Test_azureDiscovery_discoverKeyVaults(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList assert.ValueAssertionFunc
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "happy path - get two key vaults",
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(
+				fake.NewVaultsServerTransport(&FakeVaultsServer))},
+			wantList: func(t assert.TestingT, i1 interface{}, i ...interface{}) bool {
+				gotKeyVaults, ok := i1.([]voc.IsCloudResource)
+				assert.True(t, ok)
+				assert.Len(t, gotKeyVaults, 2)
+				assert.Equal(t, mockKeyVault1.Name, gotKeyVaults[0].GetName())
+				assert.Equal(t, mockKeyVault2.Name, gotKeyVaults[1].GetName())
+				return true
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "happy path - get one key vault of one resource group",
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(
+				fake.NewVaultsServerTransport(&FakeVaultsServer),
+				WithResourceGroup(string(mockKeyVault1.Parent)))},
+			wantList: func(t assert.TestingT, i1 interface{}, i ...interface{}) bool {
+				gotKeyVaults, ok := i1.([]voc.IsCloudResource)
+				assert.True(t, ok)
+				assert.Len(t, gotKeyVaults, 1)
+				assert.Equal(t, mockKeyVault1.Name, gotKeyVaults[0].GetName())
+				return true
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "error - wrong resource group",
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(
+				fake.NewVaultsServerTransport(&FakeVaultsServer),
+				WithResourceGroup("Non-Existent-Resource-Group"))},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "invalid resource group")
+				return false
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// TODO(lebogg): Do it better (e.g. insert it before every test function (init) or pass as option)
+			initKeyVaultTests()
+			d := tt.fields.azureDiscovery
+			gotList, err := d.discoverKeyVaults()
+			if !tt.wantErr(t, err, fmt.Sprintf("discoverKeyVaults()")) {
+				return
+			}
+			tt.wantList(t, gotList)
+		})
+	}
 }

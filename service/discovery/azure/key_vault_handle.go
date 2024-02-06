@@ -25,4 +25,40 @@
 
 package azure
 
+import (
+	"time"
+
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+)
+
 // TODO(lebogg): Add handle functions used by the discover part here, e.g. `handleKeyVault`
+
+// TODO(lebogg): Test handleKeyVault
+func (d *azureDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
+	var createdAt *time.Time
+
+	if kv.SystemData != nil {
+		createdAt = kv.SystemData.CreatedAt
+	}
+
+	return &voc.KeyVault{
+		Resource: discovery.NewResource(d,
+			voc.ResourceID(util.Deref(kv.ID)),
+			util.Deref(kv.Name),
+			createdAt,
+			voc.GeoLocation{
+				Region: util.Deref(kv.Location),
+			},
+			labels(kv.Tags),
+			resourceGroupID(kv.ID),
+			voc.KeyVaultType,
+			kv),
+		IsActive:     false,              // TODO(lebogg): Add `isActive`
+		Keys:         []voc.ResourceID{}, // Will be added later when we retrieve the single keys
+		PublicAccess: getPublicAccess(kv),
+	}, nil
+}

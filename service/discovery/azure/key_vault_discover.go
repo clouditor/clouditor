@@ -25,4 +25,60 @@
 
 package azure
 
+import (
+	"clouditor.io/clouditor/voc"
+	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+)
+
 // TODO(lebogg): Add main discover part here, e.g. `discoverKeyVaults` or `discoverKeys`
+
+// TODO(lebogg): Add keys, secrets and certificates
+// discoverKeyVaults discovers all key vaults including their associated keys, secrets and certificates
+func (d *azureDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
+	// TODO(lebogg): Implement
+	// Initialize key vault client
+	if err = d.initKeyVaultsClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize key vault client: %v", err)
+	}
+
+	// Initialize keys and other clients
+	// TODO
+
+	err = listPager(d,
+		d.clients.keyVaultClient.NewListPager,
+		d.clients.keyVaultClient.NewListByResourceGroupPager,
+		func(res armkeyvault.VaultsClientListResponse) (vaults []*armkeyvault.Vault) {
+			// Here, the `res.Value` list's type Resource instead of Vault -> Convert it
+			vaults = make([]*armkeyvault.Vault, len(res.Value))
+			for i, r := range res.Value {
+				vaults[i] = &armkeyvault.Vault{
+					Location: r.Location,
+					Tags:     r.Tags,
+					ID:       r.ID,
+					Name:     r.Name,
+					Type:     r.Type,
+				}
+			}
+			return
+		},
+		func(res armkeyvault.VaultsClientListByResourceGroupResponse) []*armkeyvault.Vault {
+			return res.Value
+		},
+		func(kv *armkeyvault.Vault) error {
+			keyVault, err := d.handleKeyVault(kv)
+			if err != nil {
+				return fmt.Errorf("could not handle key vault: %w", err)
+			}
+
+			log.Infof("Adding key vault '%s'", keyVault.GetID())
+			list = append(list, keyVault)
+
+			return nil
+		})
+	if err != nil {
+		list = nil
+		return
+	}
+	return
+}
