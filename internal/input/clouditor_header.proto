@@ -23,7 +23,6 @@
 //
 // This file is part of Clouditor Community Edition.
 
-
 syntax = "proto3";
 
 package clouditor.ontology.v1;

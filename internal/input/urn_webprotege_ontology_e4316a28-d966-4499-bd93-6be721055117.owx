@@ -399,6 +399,9 @@
         <DataProperty IRI="http://graph.clouditor.io/classes/contextIsChecked"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/creation_time"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/daysSinceActive"/>
     </Declaration>
     <Declaration>
@@ -415,6 +418,9 @@
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/geo"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/id"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/interval"/>
@@ -477,7 +483,13 @@
         <DataProperty IRI="http://graph.clouditor.io/classes/publicAccess"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/raw"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/reqBody"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/resourceType"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/retentionPeriod"/>
@@ -493,6 +505,9 @@
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/securityOnly"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/serviceID"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/sessionCipher"/>
@@ -595,9 +610,6 @@
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="prop:translationUnits"/>
-    </Declaration>
-    <Declaration>
-        <DataProperty abbreviatedIRI="prop:type"/>
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="prop:url"/>
@@ -762,10 +774,10 @@
         <NamedIndividual abbreviatedIRI="library:SpringBootRequestMapping"/>
     </Declaration>
     <Declaration>
-        <AnnotationProperty abbreviatedIRI="rdfs:type"/>
+        <Datatype abbreviatedIRI="xsd:de.fraunhofer.aisec.cpg.graph.Node"/>
     </Declaration>
     <Declaration>
-        <Datatype abbreviatedIRI="xsd:de.fraunhofer.aisec.cpg.graph.Node"/>
+        <Datatype abbreviatedIRI="xsd:listString"/>
     </Declaration>
     <Declaration>
         <AnnotationProperty IRI="http://purl.org/dc/elements/1.1/description"/>
@@ -973,9 +985,51 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
         <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/creation_time"/>
+            <Datatype abbreviatedIRI="xsd:dateTime"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/id"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataSomeValuesFrom>
             <DataProperty IRI="http://graph.clouditor.io/classes/name"/>
             <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/raw"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/resourceType"/>
+            <Datatype abbreviatedIRI="xsd:listString"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/serviceID"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
+        <DataHasValue>
+            <DataProperty abbreviatedIRI="prop:labels"/>
+            <Literal>xsd:java.util.Map&lt;String, String&gt;</Literal>
+        </DataHasValue>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/BlockStorage"/>
@@ -1039,16 +1093,16 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:offers"/>
-            <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/SecurityFeature"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
-        <DataHasValue>
-            <DataProperty abbreviatedIRI="prop:labels"/>
-            <Literal>xsd:java.util.Map&lt;String, String&gt;</Literal>
-        </DataHasValue>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CloudSDK"/>
@@ -1085,7 +1139,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Container"/>
-        <Class IRI="http://graph.clouditor.io/classes/Compute"/>
+        <Class IRI="http://graph.clouditor.io/classes/PasswordPolicy"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Container"/>
@@ -1894,13 +1948,6 @@
             <ObjectProperty abbreviatedIRI="prop:to"/>
             <Class IRI="http://graph.clouditor.io/classes/ObjectStorage"/>
         </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/ObjectStorageRequest"/>
-        <DataSomeValuesFrom>
-            <DataProperty abbreviatedIRI="prop:type"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ObjectStorageRequest"/>
@@ -3259,6 +3306,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/creation_time</IRI>
+        <Literal>creationTime</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/daysSinceActive</IRI>
         <Literal>daysSinceActive</Literal>
     </AnnotationAssertion>
@@ -3286,6 +3338,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/geo</IRI>
         <Literal>geo</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/id</IRI>
+        <Literal>id</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -3428,6 +3485,16 @@ name = metadata.name</Literal>
         <Literal>publicAccess</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/raw</IRI>
+        <Literal>The raw field contains the raw information that is used to fill in the fields of the ontology.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/raw</IRI>
+        <Literal>raw</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/reqBody</IRI>
         <Literal>reqBody</Literal>
@@ -3436,6 +3503,16 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/resourceId</IRI>
         <Literal>resourceId</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/resourceType</IRI>
+        <Literal>The resource type. It is an array, because a type can be derived from another.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/resourceType</IRI>
+        <Literal>resourceType</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3466,6 +3543,16 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/securityOnly</IRI>
         <Literal>securityOnly</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/serviceID</IRI>
+        <Literal>ServiceID contains the ID of the cloud service to which this resource belongs.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/serviceID</IRI>
+        <Literal>serviceID</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -3593,11 +3680,6 @@ name = metadata.name</Literal>
         <Literal xml:lang="english">AWS S3 Bucket</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:type"/>
-        <AbbreviatedIRI>aws:S3Bucket</AbbreviatedIRI>
-        <Literal>AWS::S3::Bucket</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>aws:Volume</AbbreviatedIRI>
         <Literal>Volume</Literal>
@@ -3656,11 +3738,6 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>azure:StorageAccount</AbbreviatedIRI>
         <Literal xml:lang="english">Azure StorageAccount</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:type"/>
-        <AbbreviatedIRI>azure:StorageAccount</AbbreviatedIRI>
-        <Literal>Microsoft.Storage/storageAccounts</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3984,11 +4061,6 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>prop:type</AbbreviatedIRI>
-        <Literal xml:lang="english">type</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>prop:url</AbbreviatedIRI>
         <Literal xml:lang="english">url</Literal>
     </AnnotationAssertion>
@@ -3999,13 +4071,13 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>rdfs:type</AbbreviatedIRI>
-        <Literal xml:lang="english">rdfs:type</Literal>
+        <AbbreviatedIRI>xsd:de.fraunhofer.aisec.cpg.graph.Node</AbbreviatedIRI>
+        <Literal xml:lang="english">xsd:de.fraunhofer.aisec.cpg.graph.Node</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <AbbreviatedIRI>xsd:de.fraunhofer.aisec.cpg.graph.Node</AbbreviatedIRI>
-        <Literal xml:lang="english">xsd:de.fraunhofer.aisec.cpg.graph.Node</Literal>
+        <AbbreviatedIRI>xsd:listString</AbbreviatedIRI>
+        <Literal>listString</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
