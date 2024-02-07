@@ -36,6 +36,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
@@ -190,6 +191,9 @@ type clients struct {
 
 	// Key Vault
 	keyVaultClient *armkeyvault.VaultsClient
+
+	// Azure Monitor Query (execute read-only queries against Azure Monitor)
+	metricsClient *azquery.MetricsClient
 }
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {

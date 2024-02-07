@@ -37,9 +37,9 @@ import (
 // discoverKeyVaults discovers all key vaults including their associated keys, secrets and certificates
 func (d *azureDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// TODO(lebogg): Implement
-	// Initialize key vault client
-	if err = d.initKeyVaultsClient(); err != nil {
-		return nil, fmt.Errorf("could not initialize key vault client: %v", err)
+	// Initialize key vault clients
+	if err = d.initKeyVaultClients(); err != nil {
+		return nil, fmt.Errorf("could not initialize clients needed for key vault discovery: %v", err)
 	}
 
 	// Initialize keys and other clients

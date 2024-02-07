@@ -26,14 +26,14 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/voc"
 	"context"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault/fake"
 	"testing"
 
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/voc"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault/fake"
 	"github.com/stretchr/testify/assert"
 )
 

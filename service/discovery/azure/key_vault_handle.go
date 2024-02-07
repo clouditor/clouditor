@@ -58,7 +58,7 @@ func (d *azureDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, e
 			voc.KeyVaultType,
 			kv),
 		IsActive:     false,              // TODO(lebogg): Add `isActive`
-		Keys:         []voc.ResourceID{}, // Will be added later when we retrieve the single keys
-		PublicAccess: getPublicAccess(kv),
+		Keys:         []voc.ResourceID{}, // Will be added later when we retrieve the single keys TODO(lebogg)
+		PublicAccess: hasPublicAccess(kv),
 	}, nil
 }

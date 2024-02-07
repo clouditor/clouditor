@@ -27,6 +27,7 @@ package azure
 
 import (
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 
 	"clouditor.io/clouditor/internal/util"
@@ -202,9 +203,42 @@ func (d *azureDiscovery) initWebAppsClient() (err error) {
 	return
 }
 
+// initKeyVaultClients initializes all clients needed for discovering a Key Vault
+func (d *azureDiscovery) initKeyVaultClients() (err error) {
+	// Initialize key vault client
+	if err = d.initKeyVaultsClient(); err != nil {
+		err = fmt.Errorf("could not initialize key vault client: %v", err)
+		return
+	}
+	// Get/Init Metrics Client to be able to query Azure Monitor
+	if err = d.initMetricsClient(); err != nil {
+		err = fmt.Errorf("could not initialize metrics client: %v", err)
+		return
+	}
+	return
+}
+
 // TODO(lebogg): Add key vault client [+ potential other clients for keys, secrets and certificates]
-// initKeyVaultsClient creates a Key Vault client if it not exist already
+// initKeyVaultsClient creates a Key Vault client if it doesn't already exist
 func (d *azureDiscovery) initKeyVaultsClient() (err error) {
 	d.clients.keyVaultClient, err = initClient(d.clients.keyVaultClient, d, armkeyvault.NewVaultsClient)
+	return
+}
+
+// initMetricsClient creates a Metrics client if it doesn't already exist
+func (d *azureDiscovery) initMetricsClient() (err error) {
+	// Remark(lebogg): I couldn't use the generic initClient function and also didn't find a way to include this one
+	d.clients.metricsClient, err = azquery.NewMetricsClient(d.cred, &azquery.MetricsClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			APIVersion:       d.clientOptions.APIVersion,
+			Cloud:            d.clientOptions.Cloud,
+			Logging:          d.clientOptions.Logging,
+			Retry:            d.clientOptions.Retry,
+			Telemetry:        d.clientOptions.Telemetry,
+			TracingProvider:  d.clientOptions.TracingProvider,
+			Transport:        d.clientOptions.Transport,
+			PerCallPolicies:  d.clientOptions.PerCallPolicies,
+			PerRetryPolicies: d.clientOptions.PerRetryPolicies,
+		}})
 	return
 }
