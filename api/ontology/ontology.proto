@@ -25,6 +25,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
+
 syntax = "proto3";
 
 package clouditor.ontology.v1;
@@ -39,745 +40,1066 @@ import "tagger/tagger.proto";
 option go_package = "clouditor.io/clouditor/api/ontology";
 
 extend google.protobuf.EnumValueOptions {
-  optional string resource_type_name = 123456789;
+	optional string resource_type_name = 123456789;
 }
 
 enum ResourceType {
-  RESOURCE_TYPE_UNSPECIFIED = 0;
-  RESOURCE_ABAC_AUTHORIZATION_SECURITYFEATURE = 2 [(resource_type_name) = "ABAC,Authorization,SecurityFeature"];
-  RESOURCE_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 3 [(resource_type_name) = "AccessRestriction,Authorization,SecurityFeature"];
-  RESOURCE_ACCOUNT_CLOUDRESOURCE_RESOURCE = 4 [(resource_type_name) = "Account,CloudResource,Resource"];
-  RESOURCE_ACTIVITYLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 5 [(resource_type_name) = "ActivityLogging,Logging,Auditing,SecurityFeature"];
-  RESOURCE_ANOMALYDETECTION_AUDITING_SECURITYFEATURE = 6 [(resource_type_name) = "AnomalyDetection,Auditing,SecurityFeature"];
-  RESOURCE_APPLICATION_RESOURCE = 7 [(resource_type_name) = "Application,Resource"];
-  RESOURCE_APPLICATIONLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 8 [(resource_type_name) = "ApplicationLogging,Logging,Auditing,SecurityFeature"];
-  RESOURCE_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 9 [(resource_type_name) = "AtRestEncryption,Confidentiality,SecurityFeature"];
-  RESOURCE_AUDITING_SECURITYFEATURE = 10 [(resource_type_name) = "Auditing,SecurityFeature"];
-  RESOURCE_AUTHENTICITY_SECURITYFEATURE = 11 [(resource_type_name) = "Authenticity,SecurityFeature"];
-  RESOURCE_AUTHORIZATION_SECURITYFEATURE = 12 [(resource_type_name) = "Authorization,SecurityFeature"];
-  RESOURCE_AUTOMATICSECURITYUPDATES_INTEGRITY_SECURITYFEATURE = 13 [(resource_type_name) = "AutomaticSecurityUpdates,Integrity,SecurityFeature"];
-  RESOURCE_AVAILABILITY_SECURITYFEATURE = 14 [(resource_type_name) = "Availability,SecurityFeature"];
-  RESOURCE_BACKUP_AVAILABILITY_SECURITYFEATURE = 15 [(resource_type_name) = "Backup,Availability,SecurityFeature"];
-  RESOURCE_RESOURCE = 16 [(resource_type_name) = "Resource"];
-  RESOURCE_BLOCKSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 17 [(resource_type_name) = "BlockStorage,Storage,CloudResource,Resource"];
-  RESOURCE_BOOTLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 18 [(resource_type_name) = "BootLogging,Logging,Auditing,SecurityFeature"];
-  RESOURCE_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 19 [(resource_type_name) = "CICDService,CloudResource,Resource"];
-  RESOURCE_CERTIFICATEBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 20 [(resource_type_name) = "CertificateBasedAuthentication,Authenticity,SecurityFeature"];
-  RESOURCE_CIPHERSUITE_CONFIDENTIALITY_SECURITYFEATURE = 21 [(resource_type_name) = "CipherSuite,Confidentiality,SecurityFeature"];
-  RESOURCE_CLOUDRESOURCE_RESOURCE = 22 [(resource_type_name) = "CloudResource,Resource"];
-  RESOURCE_CLOUDSDK_FRAMEWORK = 23 [(resource_type_name) = "CloudSDK,Framework"];
-  RESOURCE_COMPUTE_CLOUDRESOURCE_RESOURCE = 24 [(resource_type_name) = "Compute,CloudResource,Resource"];
-  RESOURCE_CONFIDENTIALITY_SECURITYFEATURE = 25 [(resource_type_name) = "Confidentiality,SecurityFeature"];
-  RESOURCE_CONTAINER_COMPUTE_CLOUDRESOURCE_RESOURCE = 26 [(resource_type_name) = "Container,Compute,CloudResource,Resource"];
-  RESOURCE_CONTAINERIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 27 [(resource_type_name) = "ContainerImage,Image,CloudResource,Resource"];
-  RESOURCE_CONTAINERORCHESTRATION_CLOUDRESOURCE_RESOURCE = 28 [(resource_type_name) = "ContainerOrchestration,CloudResource,Resource"];
-  RESOURCE_CONTAINERREGISTRY_CLOUDRESOURCE_RESOURCE = 29 [(resource_type_name) = "ContainerRegistry,CloudResource,Resource"];
-  RESOURCE_CUSTOMERKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 30 [(resource_type_name) = "CustomerKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
-  RESOURCE_DDOSPROTECTION_AVAILABILITY_SECURITYFEATURE = 31 [(resource_type_name) = "DDoSProtection,Availability,SecurityFeature"];
-  RESOURCE_DATABASECONNECT_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 32 [(resource_type_name) = "DatabaseConnect,DatabaseOperation,Operation,Functionality"];
-  RESOURCE_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 33 [(resource_type_name) = "DatabaseOperation,Operation,Functionality"];
-  RESOURCE_DATABASEQUERY_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 34 [(resource_type_name) = "DatabaseQuery,DatabaseOperation,Operation,Functionality"];
-  RESOURCE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 35 [(resource_type_name) = "DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_DATABASESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 36 [(resource_type_name) = "DatabaseStorage,Storage,CloudResource,Resource"];
-  RESOURCE_DEVICEPROVISIONINGSERVICE_IOT_CLOUDRESOURCE_RESOURCE = 37 [(resource_type_name) = "DeviceProvisioningService,IoT,CloudResource,Resource"];
-  RESOURCE_DOCUMENT_RESOURCE = 38 [(resource_type_name) = "Document,Resource"];
-  RESOURCE_DOCUMENTDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 39 [(resource_type_name) = "DocumentDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_ENCRYPTIONINUSE_CONFIDENTIALITY_SECURITYFEATURE = 40 [(resource_type_name) = "EncryptionInUse,Confidentiality,SecurityFeature"];
-  RESOURCE_FILESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 41 [(resource_type_name) = "FileStorage,Storage,CloudResource,Resource"];
-  RESOURCE_FILESTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 42 [(resource_type_name) = "FileStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 43 [(resource_type_name) = "Firewall,AccessRestriction,Authorization,SecurityFeature"];
-  RESOURCE_FRAMEWORK = 44 [(resource_type_name) = "Framework"];
-  RESOURCE_FUNCTION_COMPUTE_CLOUDRESOURCE_RESOURCE = 45 [(resource_type_name) = "Function,Compute,CloudResource,Resource"];
-  RESOURCE_FUNCTIONALITY = 46 [(resource_type_name) = "Functionality"];
-  RESOURCE_GEOLOCATION_AVAILABILITY_SECURITYFEATURE = 47 [(resource_type_name) = "GeoLocation,Availability,SecurityFeature"];
-  RESOURCE_HTTPCLIENTLIBRARY_FRAMEWORK = 48 [(resource_type_name) = "HttpClientLibrary,Framework"];
-  RESOURCE_HTTPENDPOINT_FUNCTIONALITY = 49 [(resource_type_name) = "HttpEndpoint,Functionality"];
-  RESOURCE_HTTPREQUEST_OPERATION_FUNCTIONALITY = 50 [(resource_type_name) = "HttpRequest,Operation,Functionality"];
-  RESOURCE_HTTPREQUESTHANDLER_FUNCTIONALITY = 51 [(resource_type_name) = "HttpRequestHandler,Functionality"];
-  RESOURCE_HTTPSERVER_FRAMEWORK = 52 [(resource_type_name) = "HttpServer,Framework"];
-  RESOURCE_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 53 [(resource_type_name) = "Identifiable,CloudResource,Resource"];
-  RESOURCE_IDENTITY_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 54 [(resource_type_name) = "Identity,Identifiable,CloudResource,Resource"];
-  RESOURCE_IMAGE_CLOUDRESOURCE_RESOURCE = 55 [(resource_type_name) = "Image,CloudResource,Resource"];
-  RESOURCE_IMMUTABILITY_INTEGRITY_SECURITYFEATURE = 56 [(resource_type_name) = "Immutability,Integrity,SecurityFeature"];
-  RESOURCE_INTEGRITY_SECURITYFEATURE = 57 [(resource_type_name) = "Integrity,SecurityFeature"];
-  RESOURCE_IOT_CLOUDRESOURCE_RESOURCE = 58 [(resource_type_name) = "IoT,CloudResource,Resource"];
-  RESOURCE_JOB_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 59 [(resource_type_name) = "Job,CICDService,CloudResource,Resource"];
-  RESOURCE_TOKENBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 60 [(resource_type_name) = "TokenBasedAuthentication,Authenticity,SecurityFeature"];
-  RESOURCE_KEY_CLOUDRESOURCE_RESOURCE = 61 [(resource_type_name) = "Key,CloudResource,Resource"];
-  RESOURCE_KEYVALUEDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 62 [(resource_type_name) = "KeyValueDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_KEYVAULT_CLOUDRESOURCE_RESOURCE = 63 [(resource_type_name) = "KeyVault,CloudResource,Resource"];
-  RESOURCE_L3FIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 64 [(resource_type_name) = "L3Firewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
-  RESOURCE_LOADBALANCER_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 65 [(resource_type_name) = "LoadBalancer,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_LOGOPERATION_OPERATION_FUNCTIONALITY = 66 [(resource_type_name) = "LogOperation,Operation,Functionality"];
-  RESOURCE_LOGGER_FRAMEWORK = 67 [(resource_type_name) = "Logger,Framework"];
-  RESOURCE_LOGGING_AUDITING_SECURITYFEATURE = 68 [(resource_type_name) = "Logging,Auditing,SecurityFeature"];
-  RESOURCE_LOGGINGSERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 69 [(resource_type_name) = "LoggingService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_MALWAREPROTECTION_AUDITING_SECURITYFEATURE = 70 [(resource_type_name) = "MalwareProtection,Auditing,SecurityFeature"];
-  RESOURCE_MANAGEDKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 71 [(resource_type_name) = "ManagedKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
-  RESOURCE_MESSAGINGHUB_IOT_CLOUDRESOURCE_RESOURCE = 72 [(resource_type_name) = "MessagingHub,IoT,CloudResource,Resource"];
-  RESOURCE_NETWORKINTERFACE_NETWORKING_CLOUDRESOURCE_RESOURCE = 73 [(resource_type_name) = "NetworkInterface,Networking,CloudResource,Resource"];
-  RESOURCE_NETWORKSECURITYGROUP_NETWORKING_CLOUDRESOURCE_RESOURCE = 74 [(resource_type_name) = "NetworkSecurityGroup,Networking,CloudResource,Resource"];
-  RESOURCE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 75 [(resource_type_name) = "NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_NETWORKING_CLOUDRESOURCE_RESOURCE = 76 [(resource_type_name) = "Networking,CloudResource,Resource"];
-  RESOURCE_NOAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 77 [(resource_type_name) = "NoAuthentication,Authenticity,SecurityFeature"];
-  RESOURCE_OSLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 78 [(resource_type_name) = "OSLogging,Logging,Auditing,SecurityFeature"];
-  RESOURCE_OTPBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 79 [(resource_type_name) = "OTPBasedAuthentication,Authenticity,SecurityFeature"];
-  RESOURCE_OBJECTSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 80 [(resource_type_name) = "ObjectStorage,Storage,CloudResource,Resource"];
-  RESOURCE_OBJECTSTORAGEREQUEST_OPERATION_FUNCTIONALITY = 81 [(resource_type_name) = "ObjectStorageRequest,Operation,Functionality"];
-  RESOURCE_OBJECTSTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 82 [(resource_type_name) = "ObjectStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_OPERATION_FUNCTIONALITY = 83 [(resource_type_name) = "Operation,Functionality"];
-  RESOURCE_PASSWORDBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 84 [(resource_type_name) = "PasswordBasedAuthentication,Authenticity,SecurityFeature"];
-  RESOURCE_PASSWORDPOLICY_CLOUDRESOURCE_RESOURCE = 85 [(resource_type_name) = "PasswordPolicy,CloudResource,Resource"];
-  RESOURCE_PROXIEDENDPOINT_HTTPENDPOINT_FUNCTIONALITY = 86 [(resource_type_name) = "ProxiedEndpoint,HttpEndpoint,Functionality"];
-  RESOURCE_RBAC_AUTHORIZATION_SECURITYFEATURE = 87 [(resource_type_name) = "RBAC,Authorization,SecurityFeature"];
-  RESOURCE_REDUNDANCY_AVAILABILITY_SECURITYFEATURE = 88 [(resource_type_name) = "Redundancy,Availability,SecurityFeature"];
-  RESOURCE_RELATIONALDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 89 [(resource_type_name) = "RelationalDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_RESOURCEGROUP_CLOUDRESOURCE_RESOURCE = 90 [(resource_type_name) = "ResourceGroup,CloudResource,Resource"];
-  RESOURCE_RESOURCELOGGING_LOGGING_AUDITING_SECURITYFEATURE = 91 [(resource_type_name) = "ResourceLogging,Logging,Auditing,SecurityFeature"];
-  RESOURCE_ROLEASSIGNMENT_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 92 [(resource_type_name) = "RoleAssignment,Identifiable,CloudResource,Resource"];
-  RESOURCE_SECURITYFEATURE = 93 [(resource_type_name) = "SecurityFeature"];
-  RESOURCE_SINGLESIGNON_AUTHENTICITY_SECURITYFEATURE = 94 [(resource_type_name) = "SingleSignOn,Authenticity,SecurityFeature"];
-  RESOURCE_STORAGE_CLOUDRESOURCE_RESOURCE = 95 [(resource_type_name) = "Storage,CloudResource,Resource"];
-  RESOURCE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 96 [(resource_type_name) = "StorageService,NetworkService,Networking,CloudResource,Resource"];
-  RESOURCE_TRANSPORTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 97 [(resource_type_name) = "TransportEncryption,Confidentiality,SecurityFeature"];
-  RESOURCE_VMIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 98 [(resource_type_name) = "VMImage,Image,CloudResource,Resource"];
-  RESOURCE_VIRTUALMACHINE_COMPUTE_CLOUDRESOURCE_RESOURCE = 99 [(resource_type_name) = "VirtualMachine,Compute,CloudResource,Resource"];
-  RESOURCE_VIRTUALNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 100 [(resource_type_name) = "VirtualNetwork,Networking,CloudResource,Resource"];
-  RESOURCE_VIRTUALSUBNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 101 [(resource_type_name) = "VirtualSubNetwork,Networking,CloudResource,Resource"];
-  RESOURCE_WEBAPP_COMPUTE_CLOUDRESOURCE_RESOURCE = 102 [(resource_type_name) = "WebApp,Compute,CloudResource,Resource"];
-  RESOURCE_WEBAPPLICATIONFIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 103 [(resource_type_name) = "WebApplicationFirewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
-  RESOURCE_WORKFLOW_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 104 [(resource_type_name) = "Workflow,CICDService,CloudResource,Resource"];
+	RESOURCE_TYPE_UNSPECIFIED = 0;
+	RESOURCE_ABAC_AUTHORIZATION_SECURITYFEATURE = 2 [(resource_type_name) = "ABAC,Authorization,SecurityFeature"];
+	RESOURCE_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 3 [(resource_type_name) = "AccessRestriction,Authorization,SecurityFeature"];
+	RESOURCE_ACCOUNT_CLOUDRESOURCE_RESOURCE = 4 [(resource_type_name) = "Account,CloudResource,Resource"];
+	RESOURCE_ACTIVITYLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 5 [(resource_type_name) = "ActivityLogging,Logging,Auditing,SecurityFeature"];
+	RESOURCE_ANOMALYDETECTION_AUDITING_SECURITYFEATURE = 6 [(resource_type_name) = "AnomalyDetection,Auditing,SecurityFeature"];
+	RESOURCE_APPLICATION_RESOURCE = 7 [(resource_type_name) = "Application,Resource"];
+	RESOURCE_APPLICATIONLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 8 [(resource_type_name) = "ApplicationLogging,Logging,Auditing,SecurityFeature"];
+	RESOURCE_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 9 [(resource_type_name) = "AtRestEncryption,Confidentiality,SecurityFeature"];
+	RESOURCE_AUDITING_SECURITYFEATURE = 10 [(resource_type_name) = "Auditing,SecurityFeature"];
+	RESOURCE_AUTHENTICITY_SECURITYFEATURE = 11 [(resource_type_name) = "Authenticity,SecurityFeature"];
+	RESOURCE_AUTHORIZATION_SECURITYFEATURE = 12 [(resource_type_name) = "Authorization,SecurityFeature"];
+	RESOURCE_AUTOMATICSECURITYUPDATES_INTEGRITY_SECURITYFEATURE = 13 [(resource_type_name) = "AutomaticSecurityUpdates,Integrity,SecurityFeature"];
+	RESOURCE_AVAILABILITY_SECURITYFEATURE = 14 [(resource_type_name) = "Availability,SecurityFeature"];
+	RESOURCE_BACKUP_AVAILABILITY_SECURITYFEATURE = 15 [(resource_type_name) = "Backup,Availability,SecurityFeature"];
+	RESOURCE_RESOURCE = 16 [(resource_type_name) = "Resource"];
+	RESOURCE_BLOCKSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 17 [(resource_type_name) = "BlockStorage,Storage,CloudResource,Resource"];
+	RESOURCE_BOOTLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 18 [(resource_type_name) = "BootLogging,Logging,Auditing,SecurityFeature"];
+	RESOURCE_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 19 [(resource_type_name) = "CICDService,CloudResource,Resource"];
+	RESOURCE_CERTIFICATEBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 20 [(resource_type_name) = "CertificateBasedAuthentication,Authenticity,SecurityFeature"];
+	RESOURCE_CIPHERSUITE_CONFIDENTIALITY_SECURITYFEATURE = 21 [(resource_type_name) = "CipherSuite,Confidentiality,SecurityFeature"];
+	RESOURCE_CLOUDRESOURCE_RESOURCE = 22 [(resource_type_name) = "CloudResource,Resource"];
+	RESOURCE_CLOUDSDK_FRAMEWORK = 23 [(resource_type_name) = "CloudSDK,Framework"];
+	RESOURCE_COMPUTE_CLOUDRESOURCE_RESOURCE = 24 [(resource_type_name) = "Compute,CloudResource,Resource"];
+	RESOURCE_CONFIDENTIALITY_SECURITYFEATURE = 25 [(resource_type_name) = "Confidentiality,SecurityFeature"];
+	RESOURCE_CONTAINER_COMPUTE_CLOUDRESOURCE_RESOURCE = 26 [(resource_type_name) = "Container,Compute,CloudResource,Resource"];
+	RESOURCE_CONTAINERIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 27 [(resource_type_name) = "ContainerImage,Image,CloudResource,Resource"];
+	RESOURCE_CONTAINERORCHESTRATION_CLOUDRESOURCE_RESOURCE = 28 [(resource_type_name) = "ContainerOrchestration,CloudResource,Resource"];
+	RESOURCE_CONTAINERREGISTRY_CLOUDRESOURCE_RESOURCE = 29 [(resource_type_name) = "ContainerRegistry,CloudResource,Resource"];
+	RESOURCE_CUSTOMERKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 30 [(resource_type_name) = "CustomerKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
+	RESOURCE_DDOSPROTECTION_AVAILABILITY_SECURITYFEATURE = 31 [(resource_type_name) = "DDoSProtection,Availability,SecurityFeature"];
+	RESOURCE_DATABASECONNECT_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 32 [(resource_type_name) = "DatabaseConnect,DatabaseOperation,Operation,Functionality"];
+	RESOURCE_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 33 [(resource_type_name) = "DatabaseOperation,Operation,Functionality"];
+	RESOURCE_DATABASEQUERY_DATABASEOPERATION_OPERATION_FUNCTIONALITY = 34 [(resource_type_name) = "DatabaseQuery,DatabaseOperation,Operation,Functionality"];
+	RESOURCE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 35 [(resource_type_name) = "DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_DATABASESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 36 [(resource_type_name) = "DatabaseStorage,Storage,CloudResource,Resource"];
+	RESOURCE_DEVICEPROVISIONINGSERVICE_IOT_CLOUDRESOURCE_RESOURCE = 37 [(resource_type_name) = "DeviceProvisioningService,IoT,CloudResource,Resource"];
+	RESOURCE_DOCUMENT_RESOURCE = 38 [(resource_type_name) = "Document,Resource"];
+	RESOURCE_DOCUMENTDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 39 [(resource_type_name) = "DocumentDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_ENCRYPTIONINUSE_CONFIDENTIALITY_SECURITYFEATURE = 40 [(resource_type_name) = "EncryptionInUse,Confidentiality,SecurityFeature"];
+	RESOURCE_FILESTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 41 [(resource_type_name) = "FileStorage,Storage,CloudResource,Resource"];
+	RESOURCE_FILESTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 42 [(resource_type_name) = "FileStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 43 [(resource_type_name) = "Firewall,AccessRestriction,Authorization,SecurityFeature"];
+	RESOURCE_FRAMEWORK = 44 [(resource_type_name) = "Framework"];
+	RESOURCE_FUNCTION_COMPUTE_CLOUDRESOURCE_RESOURCE = 45 [(resource_type_name) = "Function,Compute,CloudResource,Resource"];
+	RESOURCE_FUNCTIONALITY = 46 [(resource_type_name) = "Functionality"];
+	RESOURCE_GEOLOCATION_AVAILABILITY_SECURITYFEATURE = 47 [(resource_type_name) = "GeoLocation,Availability,SecurityFeature"];
+	RESOURCE_HTTPCLIENTLIBRARY_FRAMEWORK = 48 [(resource_type_name) = "HttpClientLibrary,Framework"];
+	RESOURCE_HTTPENDPOINT_FUNCTIONALITY = 49 [(resource_type_name) = "HttpEndpoint,Functionality"];
+	RESOURCE_HTTPREQUEST_OPERATION_FUNCTIONALITY = 50 [(resource_type_name) = "HttpRequest,Operation,Functionality"];
+	RESOURCE_HTTPREQUESTHANDLER_FUNCTIONALITY = 51 [(resource_type_name) = "HttpRequestHandler,Functionality"];
+	RESOURCE_HTTPSERVER_FRAMEWORK = 52 [(resource_type_name) = "HttpServer,Framework"];
+	RESOURCE_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 53 [(resource_type_name) = "Identifiable,CloudResource,Resource"];
+	RESOURCE_IDENTITY_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 54 [(resource_type_name) = "Identity,Identifiable,CloudResource,Resource"];
+	RESOURCE_IMAGE_CLOUDRESOURCE_RESOURCE = 55 [(resource_type_name) = "Image,CloudResource,Resource"];
+	RESOURCE_IMMUTABILITY_INTEGRITY_SECURITYFEATURE = 56 [(resource_type_name) = "Immutability,Integrity,SecurityFeature"];
+	RESOURCE_INTEGRITY_SECURITYFEATURE = 57 [(resource_type_name) = "Integrity,SecurityFeature"];
+	RESOURCE_IOT_CLOUDRESOURCE_RESOURCE = 58 [(resource_type_name) = "IoT,CloudResource,Resource"];
+	RESOURCE_JOB_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 59 [(resource_type_name) = "Job,CICDService,CloudResource,Resource"];
+	RESOURCE_TOKENBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 60 [(resource_type_name) = "TokenBasedAuthentication,Authenticity,SecurityFeature"];
+	RESOURCE_KEY_CLOUDRESOURCE_RESOURCE = 61 [(resource_type_name) = "Key,CloudResource,Resource"];
+	RESOURCE_KEYVALUEDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 62 [(resource_type_name) = "KeyValueDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_KEYVAULT_CLOUDRESOURCE_RESOURCE = 63 [(resource_type_name) = "KeyVault,CloudResource,Resource"];
+	RESOURCE_L3FIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 64 [(resource_type_name) = "L3Firewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
+	RESOURCE_LOADBALANCER_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 65 [(resource_type_name) = "LoadBalancer,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_LOGOPERATION_OPERATION_FUNCTIONALITY = 66 [(resource_type_name) = "LogOperation,Operation,Functionality"];
+	RESOURCE_LOGGER_FRAMEWORK = 67 [(resource_type_name) = "Logger,Framework"];
+	RESOURCE_LOGGING_AUDITING_SECURITYFEATURE = 68 [(resource_type_name) = "Logging,Auditing,SecurityFeature"];
+	RESOURCE_LOGGINGSERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 69 [(resource_type_name) = "LoggingService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_MALWAREPROTECTION_AUDITING_SECURITYFEATURE = 70 [(resource_type_name) = "MalwareProtection,Auditing,SecurityFeature"];
+	RESOURCE_MANAGEDKEYENCRYPTION_ATRESTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 71 [(resource_type_name) = "ManagedKeyEncryption,AtRestEncryption,Confidentiality,SecurityFeature"];
+	RESOURCE_MESSAGINGHUB_IOT_CLOUDRESOURCE_RESOURCE = 72 [(resource_type_name) = "MessagingHub,IoT,CloudResource,Resource"];
+	RESOURCE_NETWORKINTERFACE_NETWORKING_CLOUDRESOURCE_RESOURCE = 73 [(resource_type_name) = "NetworkInterface,Networking,CloudResource,Resource"];
+	RESOURCE_NETWORKSECURITYGROUP_NETWORKING_CLOUDRESOURCE_RESOURCE = 74 [(resource_type_name) = "NetworkSecurityGroup,Networking,CloudResource,Resource"];
+	RESOURCE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 75 [(resource_type_name) = "NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_NETWORKING_CLOUDRESOURCE_RESOURCE = 76 [(resource_type_name) = "Networking,CloudResource,Resource"];
+	RESOURCE_NOAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 77 [(resource_type_name) = "NoAuthentication,Authenticity,SecurityFeature"];
+	RESOURCE_OSLOGGING_LOGGING_AUDITING_SECURITYFEATURE = 78 [(resource_type_name) = "OSLogging,Logging,Auditing,SecurityFeature"];
+	RESOURCE_OTPBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 79 [(resource_type_name) = "OTPBasedAuthentication,Authenticity,SecurityFeature"];
+	RESOURCE_OBJECTSTORAGE_STORAGE_CLOUDRESOURCE_RESOURCE = 80 [(resource_type_name) = "ObjectStorage,Storage,CloudResource,Resource"];
+	RESOURCE_OBJECTSTORAGEREQUEST_OPERATION_FUNCTIONALITY = 81 [(resource_type_name) = "ObjectStorageRequest,Operation,Functionality"];
+	RESOURCE_OBJECTSTORAGESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 82 [(resource_type_name) = "ObjectStorageService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_OPERATION_FUNCTIONALITY = 83 [(resource_type_name) = "Operation,Functionality"];
+	RESOURCE_PASSWORDBASEDAUTHENTICATION_AUTHENTICITY_SECURITYFEATURE = 84 [(resource_type_name) = "PasswordBasedAuthentication,Authenticity,SecurityFeature"];
+	RESOURCE_PASSWORDPOLICY_CLOUDRESOURCE_RESOURCE = 85 [(resource_type_name) = "PasswordPolicy,CloudResource,Resource"];
+	RESOURCE_PROXIEDENDPOINT_HTTPENDPOINT_FUNCTIONALITY = 86 [(resource_type_name) = "ProxiedEndpoint,HttpEndpoint,Functionality"];
+	RESOURCE_RBAC_AUTHORIZATION_SECURITYFEATURE = 87 [(resource_type_name) = "RBAC,Authorization,SecurityFeature"];
+	RESOURCE_REDUNDANCY_AVAILABILITY_SECURITYFEATURE = 88 [(resource_type_name) = "Redundancy,Availability,SecurityFeature"];
+	RESOURCE_RELATIONALDATABASESERVICE_DATABASESERVICE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 89 [(resource_type_name) = "RelationalDatabaseService,DatabaseService,StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_RESOURCEGROUP_CLOUDRESOURCE_RESOURCE = 90 [(resource_type_name) = "ResourceGroup,CloudResource,Resource"];
+	RESOURCE_RESOURCELOGGING_LOGGING_AUDITING_SECURITYFEATURE = 91 [(resource_type_name) = "ResourceLogging,Logging,Auditing,SecurityFeature"];
+	RESOURCE_ROLEASSIGNMENT_IDENTIFIABLE_CLOUDRESOURCE_RESOURCE = 92 [(resource_type_name) = "RoleAssignment,Identifiable,CloudResource,Resource"];
+	RESOURCE_SECURITYFEATURE = 93 [(resource_type_name) = "SecurityFeature"];
+	RESOURCE_SINGLESIGNON_AUTHENTICITY_SECURITYFEATURE = 94 [(resource_type_name) = "SingleSignOn,Authenticity,SecurityFeature"];
+	RESOURCE_STORAGE_CLOUDRESOURCE_RESOURCE = 95 [(resource_type_name) = "Storage,CloudResource,Resource"];
+	RESOURCE_STORAGESERVICE_NETWORKSERVICE_NETWORKING_CLOUDRESOURCE_RESOURCE = 96 [(resource_type_name) = "StorageService,NetworkService,Networking,CloudResource,Resource"];
+	RESOURCE_TRANSPORTENCRYPTION_CONFIDENTIALITY_SECURITYFEATURE = 97 [(resource_type_name) = "TransportEncryption,Confidentiality,SecurityFeature"];
+	RESOURCE_VMIMAGE_IMAGE_CLOUDRESOURCE_RESOURCE = 98 [(resource_type_name) = "VMImage,Image,CloudResource,Resource"];
+	RESOURCE_VIRTUALMACHINE_COMPUTE_CLOUDRESOURCE_RESOURCE = 99 [(resource_type_name) = "VirtualMachine,Compute,CloudResource,Resource"];
+	RESOURCE_VIRTUALNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 100 [(resource_type_name) = "VirtualNetwork,Networking,CloudResource,Resource"];
+	RESOURCE_VIRTUALSUBNETWORK_NETWORKING_CLOUDRESOURCE_RESOURCE = 101 [(resource_type_name) = "VirtualSubNetwork,Networking,CloudResource,Resource"];
+	RESOURCE_WEBAPP_COMPUTE_CLOUDRESOURCE_RESOURCE = 102 [(resource_type_name) = "WebApp,Compute,CloudResource,Resource"];
+	RESOURCE_WEBAPPLICATIONFIREWALL_FIREWALL_ACCESSRESTRICTION_AUTHORIZATION_SECURITYFEATURE = 103 [(resource_type_name) = "WebApplicationFirewall,Firewall,AccessRestriction,Authorization,SecurityFeature"];
+	RESOURCE_WORKFLOW_CICDSERVICE_CLOUDRESOURCE_RESOURCE = 104 [(resource_type_name) = "Workflow,CICDService,CloudResource,Resource"];}
+
+// ABAC is an entity class in our ontology.
+message ABAC {
 }
 
-message ABAC {}
-
+// AccessRestriction is an entity class in our ontology.
 message AccessRestriction {
-  oneof type {
-    Firewall firewall = 101;
-  }
+	oneof type {
+		Firewall firewall = 101;
+	}
 }
 
-// Account is an entity in our Cloud ontology
+// Account is an entity class in our ontology.
 // This represents the cloud account as a whole, e.g., an Azure subscription.
-message Account {}
+message Account {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-message ActivityLogging {}
+// ActivityLogging is an entity class in our ontology.
+message ActivityLogging {
+	bool enabled = 1;
+	bool monitoring_enabled = 2;
+	int64 retention_period = 3;
+	bool security_alerts_enabled = 4;
+	string logging_service_id = 5;
+}
 
-// AnomalyDetection is an entity in our Cloud ontology
+// AnomalyDetection is an entity class in our ontology.
 // Analyzes the activity of a NetworkService (which includes DatabaseServices).
-// AnomalyDetection is an entity in our Cloud ontology
 // Scope contains the resource ID of the protected resource.
 message AnomalyDetection {
-  bool enabled = 1;
-  ApplicationLogging application_logging = 2;
+	bool enabled = 1;
+	string scope = 2;
+	ApplicationLogging application_logging = 3;
 }
 
-// Application is an entity in our Cloud ontology
+// Application is an entity class in our ontology.
 // This encapsulates the whole (source) code of an application.
 message Application {
-  string programming_language = 1;
-  repeated string translation_units = 2;
-  repeated Functionality functionality = 3;
-  string compute_id = 4;
+	int64 creation_time = 1;
+	string id = 2;
+	map<string, string> labels = 3;
+	string name = 4;
+	string programming_language = 5;
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	string raw = 6;
+	// The resource type. It is an array, because a type can be derived from another
+	repeated string resource_type = 7;
+	// ServiceID contains the ID of the cloud service to which this resource belongs.
+	string service_id = 8;
+	repeated string translation_units = 9;
+	string compute_id = 10;
+	repeated Functionality functionality  = 11;
+	string parent_resource_id = 12;
 }
 
-message ApplicationLogging {}
+// ApplicationLogging is an entity class in our ontology.
+message ApplicationLogging {
+	bool enabled = 1;
+	bool monitoring_enabled = 2;
+	int64 retention_period = 3;
+	bool security_alerts_enabled = 4;
+	string logging_service_id = 5;
+}
 
+// AtRestEncryption is an entity class in our ontology.
 message AtRestEncryption {
-  string algorithm = 1;
-  bool enabled = 2;
-  string key_url = 3;
-
-  oneof type {
-    CustomerKeyEncryption customer_key_encryption = 101;
-    ManagedKeyEncryption managed_key_encryption = 102;
-  }
+	oneof type {
+		CustomerKeyEncryption customer_key_encryption = 101;
+		ManagedKeyEncryption managed_key_encryption = 102;
+	}
 }
 
+// Auditing is an entity class in our ontology.
 message Auditing {
-  oneof type {
-    AnomalyDetection anomaly_detection = 101;
-    Logging logging = 102;
-    MalwareProtection malware_protection = 103;
-  }
+	oneof type {
+		AnomalyDetection anomaly_detection = 101;
+		Logging logging = 102;
+		MalwareProtection malware_protection = 103;
+	}
 }
 
+// Authenticity is an entity class in our ontology.
 message Authenticity {
-  bool context_is_checked = 1;
-
-  oneof type {
-    CertificateBasedAuthentication certificate_based_authentication = 101;
-    NoAuthentication no_authentication = 102;
-    OTPBasedAuthentication otp_based_authentication = 103;
-    PasswordBasedAuthentication password_based_authentication = 104;
-    SingleSignOn single_sign_on = 105;
-    TokenBasedAuthentication token_based_authentication = 106;
-  }
+	oneof type {
+		CertificateBasedAuthentication certificate_based_authentication = 101;
+		NoAuthentication no_authentication = 102;
+		OTPBasedAuthentication otpbased_authentication = 103;
+		PasswordBasedAuthentication password_based_authentication = 104;
+		SingleSignOn single_sign_on = 105;
+		TokenBasedAuthentication token_based_authentication = 106;
+	}
 }
 
+// Authorization is an entity class in our ontology.
 message Authorization {
-  oneof type {
-    ABAC abac = 101;
-    AccessRestriction access_restriction = 102;
-    RBAC rbac = 103;
-  }
+	oneof type {
+		ABAC abac = 101;
+		AccessRestriction access_restriction = 102;
+		RBAC rbac = 103;
+	}
 }
 
-// AutomaticSecurityUpdates is an entity in our Cloud ontology
+// AutomaticSecurityUpdates is an entity class in our ontology.
 // This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
 message AutomaticSecurityUpdates {
-  bool enabled = 1;
-  // The interval refers to the update interval in days.
-  int64 interval = 2;
-  bool security_only = 3;
+	bool enabled = 1;
+	// The interval refers to the update interval in days.
+	int64 interval = 2;
+	bool security_only = 3;
 }
 
+// Availability is an entity class in our ontology.
 message Availability {
-  oneof type {
-    Backup backup = 101;
-    DDoSProtection d_do_s_protection = 102;
-    GeoLocation geo_location = 103;
-    Redundancy redundancy = 104;
-  }
+	oneof type {
+		Backup backup = 101;
+		DDoSProtection ddo_sprotection = 102;
+		GeoLocation geo_location = 103;
+		Redundancy redundancy = 104;
+	}
 }
 
-// Backup is an entity in our Cloud ontology
+// Backup is an entity class in our ontology.
 // RetentionPeriod in hours
 message Backup {
-  bool enabled = 1;
-  // The interval refers to the update interval in days.
-  int64 interval = 2;
-  int64 retention_period = 3;
-  string storage_id = 4;
+	bool enabled = 1;
+	// The interval refers to the update interval in days.
+	int64 interval = 2;
+	int64 retention_period = 3;
+	string storage_id = 4;
+	TransportEncryption transport_encryption = 5;
 }
 
+// Resource is an entity class in our ontology.
 message Resource {
-  int64 creation_time = 1;
-  string id = 2;
-  map<string, string> labels = 3;
-  string name = 4;
-  // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 5;
-  // The resource type. It is an array, because a type can be derived from another
-  repeated string resource_type = 6;
-  // ServiceID contains the ID of the cloud service to which this resource belongs.
-  string service_id = 7;
-
-  oneof type {
-    Application application = 101;
-    CloudResource cloud_resource = 102;
-    Document document = 103;
-  }
+	oneof type {
+		Application application = 101;
+		CloudResource cloud_resource = 102;
+		Document document = 103;
+	}
 }
 
-message BlockStorage {}
+// BlockStorage is an entity class in our ontology.
+message BlockStorage {
+	map<string, string> labels = 1;
+	AtRestEncryption at_rest_encryption = 2;
+	repeated Backup backup  = 3;
+	GeoLocation geo_location = 4;
+	Immutability immutability = 5;
+	Redundancy redundancy = 6;
+	ResourceLogging resource_logging = 7;
+	repeated SecurityFeature security_feature  = 8;
+}
 
-message BootLogging {}
+// BootLogging is an entity class in our ontology.
+message BootLogging {
+	bool enabled = 1;
+	bool monitoring_enabled = 2;
+	int64 retention_period = 3;
+	bool security_alerts_enabled = 4;
+	string logging_service_id = 5;
+}
 
+// CICDService is an entity class in our ontology.
 message CICDService {
-  oneof type {
-    Job job = 101;
-    Workflow workflow = 102;
-  }
+	oneof type {
+		Job job = 101;
+		Workflow workflow = 102;
+	}
 }
 
+// CertificateBasedAuthentication is an entity class in our ontology.
 message CertificateBasedAuthentication {
-  bool enabled = 1;
+	bool context_is_checked = 1;
+	bool enabled = 2;
 }
 
+// CipherSuite is an entity class in our ontology.
 message CipherSuite {
-  // for example: RSA, ECDSA
-  string authentication_mechanism = 1;
-  string key_exchange_algorithm = 2;
-  // naming schema: SHA-256
-  string mac_algorithm = 3;
-  // naming schema: AES-128-GCM
-  string session_cipher = 4;
+	// for example: RSA, ECDSA
+	string authentication_mechanism = 1;
+	string key_exchange_algorithm = 2;
+	// naming schema: SHA-256
+	string mac_algorithm = 3;
+	// naming schema: AES-128-GCM
+	string session_cipher = 4;
 }
 
+// CloudResource is an entity class in our ontology.
 message CloudResource {
-  map<string, string> labels = 1;
-  repeated SecurityFeature security_feature = 2;
-  GeoLocation geo_location = 3;
-
-  oneof type {
-    Account account = 101;
-    CICDService cicd_service = 102;
-    Compute compute = 103;
-    ContainerOrchestration container_orchestration = 104;
-    ContainerRegistry container_registry = 105;
-    Identifiable identifiable = 106;
-    Image image = 107;
-    IoT io_t = 108;
-    Key key = 109;
-    KeyVault key_vault = 110;
-    Networking networking = 111;
-    PasswordPolicy password_policy = 112;
-    ResourceGroup resource_group = 113;
-    Storage storage = 114;
-  }
+	oneof type {
+		Account account = 101;
+		CICDService cicdservice = 102;
+		Compute compute = 103;
+		ContainerOrchestration container_orchestration = 104;
+		ContainerRegistry container_registry = 105;
+		Identifiable identifiable = 106;
+		Image image = 107;
+		IoT io_t = 108;
+		Key key = 109;
+		KeyVault key_vault = 110;
+		Networking networking = 111;
+		PasswordPolicy password_policy = 112;
+		ResourceGroup resource_group = 113;
+		Storage storage = 114;
+	}
 }
 
-message CloudSDK {}
+// CloudSDK is an entity class in our ontology.
+message CloudSDK {
+}
 
+// Compute is an entity class in our ontology.
 message Compute {
-  ResourceLogging resource_logging = 1;
-  repeated string network_interface_id = 2;
-  EncryptionInUse encryption_in_use = 3;
-
-  oneof type {
-    Container container = 101;
-    Function function = 102;
-    VirtualMachine virtual_machine = 103;
-    WebApp web_app = 104;
-  }
+	oneof type {
+		Container container = 101;
+		Function function = 102;
+		VirtualMachine virtual_machine = 103;
+		WebApp web_app = 104;
+	}
 }
 
+// Confidentiality is an entity class in our ontology.
 message Confidentiality {
-  oneof type {
-    AtRestEncryption at_rest_encryption = 101;
-    CipherSuite cipher_suite = 102;
-    EncryptionInUse encryption_in_use = 103;
-    TransportEncryption transport_encryption = 104;
-  }
+	oneof type {
+		AtRestEncryption at_rest_encryption = 101;
+		CipherSuite cipher_suite = 102;
+		EncryptionInUse encryption_in_use = 103;
+		TransportEncryption transport_encryption = 104;
+	}
 }
 
+// Container is an entity class in our ontology.
 message Container {
-  string image_id = 1;
+	map<string, string> labels = 1;
+	EncryptionInUse encryption_in_use = 2;
+	GeoLocation geo_location = 3;
+	string image_id = 4;
+	repeated string network_interface_id  = 5;
+	ResourceLogging resource_logging = 6;
+	repeated SecurityFeature security_feature  = 7;
 }
 
-message ContainerImage {}
+// ContainerImage is an entity class in our ontology.
+message ContainerImage {
+	map<string, string> labels = 1;
+	Application application = 2;
+	GeoLocation geo_location = 3;
+	repeated SecurityFeature security_feature  = 4;
+}
 
+// ContainerOrchestration is an entity class in our ontology.
 message ContainerOrchestration {
-  string management_url = 1;
-  ResourceLogging resource_logging = 2;
-  repeated string container_id = 3;
+	map<string, string> labels = 1;
+	string management_url = 2;
+	repeated string container_id  = 3;
+	GeoLocation geo_location = 4;
+	ResourceLogging resource_logging = 5;
+	repeated SecurityFeature security_feature  = 6;
 }
 
-message ContainerRegistry {}
+// ContainerRegistry is an entity class in our ontology.
+message ContainerRegistry {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
+// CustomerKeyEncryption is an entity class in our ontology.
 message CustomerKeyEncryption {
-  string key_url = 1;
+	string algorithm = 1;
+	bool enabled = 2;
+	string key_url = 3;
+	string key_url = 4;
 }
 
-message DDoSProtection {}
+// DDoSProtection is an entity class in our ontology.
+message DDoSProtection {
+}
 
-message DatabaseConnect {}
+// DatabaseConnect is an entity class in our ontology.
+message DatabaseConnect {
+	repeated string calls = 1;
+	string database_service_id = 2;
+	string database_storage_id = 3;
+}
 
+// DatabaseOperation is an entity class in our ontology.
 message DatabaseOperation {
-  repeated string calls = 1;
-  string database_storage_id = 2;
-  string database_service_id = 3;
-
-  oneof type {
-    DatabaseConnect database_connect = 101;
-    DatabaseQuery database_query = 102;
-  }
+	oneof type {
+		DatabaseConnect database_connect = 101;
+		DatabaseQuery database_query = 102;
+	}
 }
 
+// DatabaseQuery is an entity class in our ontology.
 message DatabaseQuery {
-  bool modify = 1;
+	repeated string calls = 1;
+	bool modify = 2;
+	string database_service_id = 3;
+	string database_storage_id = 4;
 }
 
-// DatabaseService is an entity in our Cloud ontology
+// DatabaseService is an entity class in our ontology.
 // This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
 message DatabaseService {
-  MalwareProtection malware_protection = 1;
-  HttpEndpoint http_endpoint = 2;
-
-  oneof type {
-    DocumentDatabaseService document_database_service = 101;
-    KeyValueDatabaseService key_value_database_service = 102;
-    RelationalDatabaseService relational_database_service = 103;
-  }
+	oneof type {
+		DocumentDatabaseService document_database_service = 101;
+		KeyValueDatabaseService key_value_database_service = 102;
+		RelationalDatabaseService relational_database_service = 103;
+	}
 }
 
-// DatabaseStorage is an entity in our Cloud ontology
+// DatabaseStorage is an entity class in our ontology.
 // describes the actual database or a table in a database
-message DatabaseStorage {}
+message DatabaseStorage {
+	map<string, string> labels = 1;
+	AtRestEncryption at_rest_encryption = 2;
+	repeated Backup backup  = 3;
+	GeoLocation geo_location = 4;
+	Immutability immutability = 5;
+	Redundancy redundancy = 6;
+	ResourceLogging resource_logging = 7;
+	repeated SecurityFeature security_feature  = 8;
+	string parent_storage_id = 9;
+}
 
-message DeviceProvisioningService {}
+// DeviceProvisioningService is an entity class in our ontology.
+message DeviceProvisioningService {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
+// Document is an entity class in our ontology.
 message Document {
-  string filename = 1;
-  repeated SecurityFeature security_feature = 2;
+	int64 creation_time = 1;
+	string filename = 2;
+	string id = 3;
+	map<string, string> labels = 4;
+	string name = 5;
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	string raw = 6;
+	// The resource type. It is an array, because a type can be derived from another
+	repeated string resource_type = 7;
+	// ServiceID contains the ID of the cloud service to which this resource belongs.
+	string service_id = 8;
+	string parent_resource_id = 9;
+	repeated SecurityFeature security_feature  = 10;
 }
 
-message DocumentDatabaseService {}
+// DocumentDatabaseService is an entity class in our ontology.
+message DocumentDatabaseService {
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	AnomalyDetection anomaly_detection = 4;
+	Authenticity authenticity = 5;
+	string compute_id = 6;
+	GeoLocation geo_location = 7;
+	HttpEndpoint http_endpoint = 8;
+	MalwareProtection malware_protection = 9;
+	repeated SecurityFeature security_feature  = 10;
+	repeated string storage_id  = 11;
+	TransportEncryption transport_encryption = 12;
+}
 
+// EncryptionInUse is an entity class in our ontology.
 message EncryptionInUse {
-  bool enabled = 1;
+	bool enabled = 1;
 }
 
+// FileStorage is an entity class in our ontology.
 message FileStorage {
-  bool public_access = 1;
+	map<string, string> labels = 1;
+	bool public_access = 2;
+	AtRestEncryption at_rest_encryption = 3;
+	repeated Backup backup  = 4;
+	GeoLocation geo_location = 5;
+	Immutability immutability = 6;
+	Redundancy redundancy = 7;
+	ResourceLogging resource_logging = 8;
+	repeated SecurityFeature security_feature  = 9;
 }
 
-// FileStorageService is an entity in our Cloud ontology
+// FileStorageService is an entity class in our ontology.
 // An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
 message FileStorageService {
-  HttpEndpoint http_endpoint = 1;
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	Authenticity authenticity = 4;
+	string compute_id = 5;
+	GeoLocation geo_location = 6;
+	HttpEndpoint http_endpoint = 7;
+	repeated SecurityFeature security_feature  = 8;
+	repeated string storage_id  = 9;
+	TransportEncryption transport_encryption = 10;
 }
 
+// Firewall is an entity class in our ontology.
 message Firewall {
-  oneof type {
-    L3Firewall l3_firewall = 101;
-    WebApplicationFirewall web_application_firewall = 102;
-  }
+	oneof type {
+		L3Firewall l3_firewall = 101;
+		WebApplicationFirewall web_application_firewall = 102;
+	}
 }
 
+// Framework is an entity class in our ontology.
 message Framework {
-  oneof type {
-    CloudSDK cloud_sdk = 101;
-    HttpClientLibrary http_client_library = 102;
-    HttpServer http_server = 103;
-    Logger logger = 104;
-  }
+	oneof type {
+		CloudSDK cloud_sdk = 101;
+		HttpClientLibrary http_client_library = 102;
+		HttpServer http_server = 103;
+		Logger logger = 104;
+	}
 }
 
+// Function is an entity class in our ontology.
 message Function {
-  string runtime_language = 1;
-  string runtime_version = 2;
+	map<string, string> labels = 1;
+	string runtime_language = 2;
+	string runtime_version = 3;
+	EncryptionInUse encryption_in_use = 4;
+	GeoLocation geo_location = 5;
+	repeated string network_interface_id  = 6;
+	ResourceLogging resource_logging = 7;
+	repeated SecurityFeature security_feature  = 8;
 }
 
+// Functionality is an entity class in our ontology.
 message Functionality {
-  oneof type {
-    HttpEndpoint http_endpoint = 101;
-    HttpRequestHandler http_request_handler = 102;
-    Operation operation = 103;
-  }
+	oneof type {
+		HttpEndpoint http_endpoint = 101;
+		HttpRequestHandler http_request_handler = 102;
+		Operation operation = 103;
+	}
 }
 
+// GeoLocation is an entity class in our ontology.
 message GeoLocation {
-  string region = 1;
+	string region = 1;
 }
 
-message HttpClientLibrary {}
+// HttpClientLibrary is an entity class in our ontology.
+message HttpClientLibrary {
+}
 
-// HttpEndpoint is an entity in our Cloud ontology
+// HttpEndpoint is an entity class in our ontology.
 // Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
 message HttpEndpoint {
-  string handler = 1;
-  string method = 2;
-  string path = 3;
-  string url = 4;
-  TransportEncryption transport_encryption = 5;
-  Authenticity authenticity = 6;
-
-  oneof type {
-    ProxiedEndpoint proxied_endpoint = 101;
-  }
+	oneof type {
+		ProxiedEndpoint proxied_endpoint = 101;
+	}
 }
 
+// HttpRequest is an entity class in our ontology.
 message HttpRequest {
-  string call = 1;
-  string req_body = 2;
-  HttpEndpoint http_endpoint = 3;
+	string call = 1;
+	string req_body = 2;
+	HttpEndpoint http_endpoint = 3;
 }
 
+// HttpRequestHandler is an entity class in our ontology.
 message HttpRequestHandler {
-  string path = 1;
-  repeated HttpEndpoint http_endpoint = 2;
-  Application application = 3;
+	string path = 1;
+	Application application = 2;
+	repeated HttpEndpoint http_endpoint  = 3;
 }
 
+// HttpServer is an entity class in our ontology.
 message HttpServer {
-  HttpRequestHandler http_request_handler = 1;
+	HttpRequestHandler http_request_handler = 1;
 }
 
+// Identifiable is an entity class in our ontology.
 message Identifiable {
-  bool activated = 1;
-  Authorization authorization = 2;
-  Authenticity authenticity = 3;
-
-  oneof type {
-    Identity identity = 101;
-    RoleAssignment role_assignment = 102;
-  }
+	oneof type {
+		Identity identity = 101;
+		RoleAssignment role_assignment = 102;
+	}
 }
 
+// Identity is an entity class in our ontology.
 message Identity {
-  bool disable_password_policy = 1;
-  bool enforce_mfa = 2;
-  google.protobuf.Timestamp last_activity = 3;
-  bool login_defender_enabled = 4;
-  bool privileged = 5;
-  repeated Authenticity authenticity = 6;
+	bool activated = 1;
+	bool disable_password_policy = 2;
+	bool enforce_mfa = 3;
+	map<string, string> labels = 4;
+	google.protobuf.Timestamp last_activity = 5;
+	bool login_defender_enabled = 6;
+	bool privileged = 7;
+	repeated Authenticity authenticity  = 8;
+	Authenticity authenticity = 9;
+	Authorization authorization = 10;
+	GeoLocation geo_location = 11;
+	repeated SecurityFeature security_feature  = 12;
 }
 
+// Image is an entity class in our ontology.
 message Image {
-  Application application = 1;
-
-  oneof type {
-    ContainerImage container_image = 101;
-    VMImage vm_image = 102;
-  }
+	oneof type {
+		ContainerImage container_image = 101;
+		VMImage vmimage = 102;
+	}
 }
 
+// Immutability is an entity class in our ontology.
 message Immutability {
-  bool enabled = 1;
+	bool enabled = 1;
 }
 
+// Integrity is an entity class in our ontology.
 message Integrity {
-  oneof type {
-    AutomaticSecurityUpdates automatic_security_updates = 101;
-    Immutability immutability = 102;
-  }
+	oneof type {
+		AutomaticSecurityUpdates automatic_security_updates = 101;
+		Immutability immutability = 102;
+	}
 }
 
+// IoT is an entity class in our ontology.
 message IoT {
-  oneof type {
-    DeviceProvisioningService device_provisioning_service = 101;
-    MessagingHub messaging_hub = 102;
-  }
+	oneof type {
+		DeviceProvisioningService device_provisioning_service = 101;
+		MessagingHub messaging_hub = 102;
+	}
 }
 
-message Job {}
+// Job is an entity class in our ontology.
+message Job {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
+// TokenBasedAuthentication is an entity class in our ontology.
 message TokenBasedAuthentication {
-  bool enabled = 1;
-  bool enforced = 2;
+	bool context_is_checked = 1;
+	bool enabled = 2;
+	bool enforced = 3;
 }
 
+// Key is an entity class in our ontology.
 message Key {
-  bool enabled = 1;
-  int64 expiration_date = 2;
-  bool is_managed = 3;
-  int32 length = 4;
-  int32 number_of_usages = 5;
+	bool enabled = 1;
+	int64 expiration_date = 2;
+	bool is_managed = 3;
+	map<string, string> labels = 4;
+	int32 length = 5;
+	int32 number_of_usages = 6;
+	GeoLocation geo_location = 7;
+	repeated SecurityFeature security_feature  = 8;
 }
 
-message KeyValueDatabaseService {}
+// KeyValueDatabaseService is an entity class in our ontology.
+message KeyValueDatabaseService {
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	AnomalyDetection anomaly_detection = 4;
+	Authenticity authenticity = 5;
+	string compute_id = 6;
+	GeoLocation geo_location = 7;
+	HttpEndpoint http_endpoint = 8;
+	MalwareProtection malware_protection = 9;
+	repeated SecurityFeature security_feature  = 10;
+	repeated string storage_id  = 11;
+	TransportEncryption transport_encryption = 12;
+}
 
+// KeyVault is an entity class in our ontology.
 message KeyVault {
-  bool is_active = 1;
+	bool is_active = 1;
+	map<string, string> labels = 2;
+	GeoLocation geo_location = 3;
+	string key_id = 4;
+	repeated SecurityFeature security_feature  = 5;
 }
 
+// L3Firewall is an entity class in our ontology.
 message L3Firewall {
-  bool enabled = 1;
-  bool inbound = 2;
-  string restricted_ports = 3;
+	bool enabled = 1;
+	bool inbound = 2;
+	string restricted_ports = 3;
 }
 
-// LoadBalancer is an entity in our Cloud ontology
+// LoadBalancer is an entity class in our ontology.
 // A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
 message LoadBalancer {
-  string url = 1;
-  repeated string network_service_id = 2;
-  repeated HttpEndpoint http_endpoint = 3;
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	string url = 4;
+	AccessRestriction access_restriction = 5;
+	Authenticity authenticity = 6;
+	string compute_id = 7;
+	GeoLocation geo_location = 8;
+	repeated HttpEndpoint http_endpoint  = 9;
+	repeated string network_service_id  = 10;
+	repeated SecurityFeature security_feature  = 11;
+	TransportEncryption transport_encryption = 12;
 }
 
-// LogOperation is an entity in our Cloud ontology
+// LogOperation is an entity class in our ontology.
 // A LogOperation is used by an application
 message LogOperation {
-  string call = 1;
-  string value = 2;
-  Logging logging = 3;
+	string call = 1;
+	string value = 2;
+	Logging logging = 3;
 }
 
-message Logger {}
+// Logger is an entity class in our ontology.
+message Logger {
+}
 
+// Logging is an entity class in our ontology.
 message Logging {
-  bool enabled = 1;
-  bool monitoring_enabled = 2;
-  int64 retention_period = 3;
-  bool security_alerts_enabled = 4;
-  string logging_service_id = 5;
-
-  oneof type {
-    ActivityLogging activity_logging = 101;
-    ApplicationLogging application_logging = 102;
-    BootLogging boot_logging = 103;
-    OSLogging os_logging = 104;
-    ResourceLogging resource_logging = 105;
-  }
+	oneof type {
+		ActivityLogging activity_logging = 101;
+		ApplicationLogging application_logging = 102;
+		BootLogging boot_logging = 103;
+		OSLogging oslogging = 104;
+		ResourceLogging resource_logging = 105;
+	}
 }
 
-// LoggingService is an entity in our Cloud ontology
+// LoggingService is an entity class in our ontology.
 // A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
 message LoggingService {
-  repeated string storage_id = 1;
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	Authenticity authenticity = 4;
+	string compute_id = 5;
+	GeoLocation geo_location = 6;
+	repeated SecurityFeature security_feature  = 7;
+	repeated string storage_id  = 8;
+	TransportEncryption transport_encryption = 9;
 }
 
-// MalwareProtection is an entity in our Cloud ontology
+// MalwareProtection is an entity class in our ontology.
 // analyzes the activity within a Compute resource
 message MalwareProtection {
-  int64 days_since_active = 1;
-  bool enabled = 2;
-  int32 number_of_threats_found = 3;
-  ApplicationLogging application_logging = 4;
+	int64 days_since_active = 1;
+	bool enabled = 2;
+	int32 number_of_threats_found = 3;
+	ApplicationLogging application_logging = 4;
 }
 
-message ManagedKeyEncryption {}
+// ManagedKeyEncryption is an entity class in our ontology.
+message ManagedKeyEncryption {
+	string algorithm = 1;
+	bool enabled = 2;
+	string key_url = 3;
+}
 
-message MessagingHub {}
+// MessagingHub is an entity class in our ontology.
+message MessagingHub {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
+// NetworkInterface is an entity class in our ontology.
 message NetworkInterface {
-  string network_service_id = 1;
+	map<string, string> labels = 1;
+	AccessRestriction access_restriction = 2;
+	GeoLocation geo_location = 3;
+	string network_service_id = 4;
+	repeated SecurityFeature security_feature  = 5;
 }
 
-message NetworkSecurityGroup {}
+// NetworkSecurityGroup is an entity class in our ontology.
+message NetworkSecurityGroup {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-// NetworkService is an entity in our Cloud ontology
+// NetworkService is an entity class in our ontology.
 // A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 message NetworkService {
-  repeated string ips = 1;
-  repeated uint32 ports = 2;
-  TransportEncryption transport_encryption = 3;
-  string compute_id = 4;
-
-  oneof type {
-    LoadBalancer load_balancer = 101;
-    LoggingService logging_service = 102;
-    StorageService storage_service = 103;
-  }
+	oneof type {
+		LoadBalancer load_balancer = 101;
+		LoggingService logging_service = 102;
+		StorageService storage_service = 103;
+	}
 }
 
+// Networking is an entity class in our ontology.
 message Networking {
-  oneof type {
-    NetworkInterface network_interface = 101;
-    NetworkSecurityGroup network_security_group = 102;
-    NetworkService network_service = 103;
-    VirtualNetwork virtual_network = 104;
-    VirtualSubNetwork virtual_sub_network = 105;
-  }
+	oneof type {
+		NetworkInterface network_interface = 101;
+		NetworkSecurityGroup network_security_group = 102;
+		NetworkService network_service = 103;
+		VirtualNetwork virtual_network = 104;
+		VirtualSubNetwork virtual_sub_network = 105;
+	}
 }
 
-message NoAuthentication {}
+// NoAuthentication is an entity class in our ontology.
+message NoAuthentication {
+	bool context_is_checked = 1;
+}
 
-message OSLogging {}
+// OSLogging is an entity class in our ontology.
+message OSLogging {
+	bool enabled = 1;
+	bool monitoring_enabled = 2;
+	int64 retention_period = 3;
+	bool security_alerts_enabled = 4;
+	string logging_service_id = 5;
+}
 
+// OTPBasedAuthentication is an entity class in our ontology.
 message OTPBasedAuthentication {
-  bool activated = 1;
+	bool activated = 1;
+	bool context_is_checked = 2;
 }
 
+// ObjectStorage is an entity class in our ontology.
 message ObjectStorage {
-  bool public_access = 1;
+	map<string, string> labels = 1;
+	bool public_access = 2;
+	AtRestEncryption at_rest_encryption = 3;
+	repeated Backup backup  = 4;
+	GeoLocation geo_location = 5;
+	Immutability immutability = 6;
+	Redundancy redundancy = 7;
+	ResourceLogging resource_logging = 8;
+	repeated SecurityFeature security_feature  = 9;
 }
 
+// ObjectStorageRequest is an entity class in our ontology.
 message ObjectStorageRequest {
-  string source = 1;
-  string object_storage_id = 2;
+	string source = 1;
+	string object_storage_id = 2;
 }
 
-// ObjectStorageService is an entity in our Cloud ontology
+// ObjectStorageService is an entity class in our ontology.
 // An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
 message ObjectStorageService {
-  HttpEndpoint http_endpoint = 1;
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	Authenticity authenticity = 4;
+	string compute_id = 5;
+	GeoLocation geo_location = 6;
+	HttpEndpoint http_endpoint = 7;
+	repeated SecurityFeature security_feature  = 8;
+	repeated string storage_id  = 9;
+	TransportEncryption transport_encryption = 10;
 }
 
+// Operation is an entity class in our ontology.
 message Operation {
-  oneof type {
-    DatabaseOperation database_operation = 101;
-    HttpRequest http_request = 102;
-    LogOperation log_operation = 103;
-    ObjectStorageRequest object_storage_request = 104;
-  }
+	oneof type {
+		DatabaseOperation database_operation = 101;
+		HttpRequest http_request = 102;
+		LogOperation log_operation = 103;
+		ObjectStorageRequest object_storage_request = 104;
+	}
 }
 
+// PasswordBasedAuthentication is an entity class in our ontology.
 message PasswordBasedAuthentication {
-  bool activated = 1;
+	bool activated = 1;
+	bool context_is_checked = 2;
 }
 
-message PasswordPolicy {}
+// PasswordPolicy is an entity class in our ontology.
+message PasswordPolicy {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-// ProxiedEndpoint is an entity in our Cloud ontology
+// ProxiedEndpoint is an entity class in our ontology.
 // An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
-message ProxiedEndpoint {}
+message ProxiedEndpoint {
+	string handler = 1;
+	string method = 2;
+	string path = 3;
+	string url = 4;
+	Authenticity authenticity = 5;
+	TransportEncryption transport_encryption = 6;
+}
 
+// RBAC is an entity class in our ontology.
 message RBAC {
-  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float broad_assignments = 1;
-  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float mixed_duties = 2;
+	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+	float broad_assignments = 1;
+	// see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+	float mixed_duties = 2;
 }
 
+// Redundancy is an entity class in our ontology.
 message Redundancy {
-  bool geo = 1;
-  bool local = 2;
-  bool zone = 3;
+	bool geo = 1;
+	bool local = 2;
+	bool zone = 3;
 }
 
-message RelationalDatabaseService {}
+// RelationalDatabaseService is an entity class in our ontology.
+message RelationalDatabaseService {
+	repeated string ips = 1;
+	map<string, string> labels = 2;
+	repeated uint32 ports = 3;
+	AnomalyDetection anomaly_detection = 4;
+	Authenticity authenticity = 5;
+	string compute_id = 6;
+	GeoLocation geo_location = 7;
+	HttpEndpoint http_endpoint = 8;
+	MalwareProtection malware_protection = 9;
+	repeated SecurityFeature security_feature  = 10;
+	repeated string storage_id  = 11;
+	TransportEncryption transport_encryption = 12;
+}
 
-message ResourceGroup {}
+// ResourceGroup is an entity class in our ontology.
+message ResourceGroup {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-message ResourceLogging {}
+// ResourceLogging is an entity class in our ontology.
+message ResourceLogging {
+	bool enabled = 1;
+	bool monitoring_enabled = 2;
+	int64 retention_period = 3;
+	bool security_alerts_enabled = 4;
+	string logging_service_id = 5;
+}
 
-message RoleAssignment {}
+// RoleAssignment is an entity class in our ontology.
+message RoleAssignment {
+	bool activated = 1;
+	map<string, string> labels = 2;
+	Authenticity authenticity = 3;
+	Authorization authorization = 4;
+	GeoLocation geo_location = 5;
+	repeated SecurityFeature security_feature  = 6;
+}
 
+// SecurityFeature is an entity class in our ontology.
 message SecurityFeature {
-  oneof type {
-    Auditing auditing = 101;
-    Authenticity authenticity = 102;
-    Authorization authorization = 103;
-    Availability availability = 104;
-    Confidentiality confidentiality = 105;
-    Integrity integrity = 106;
-  }
+	oneof type {
+		Auditing auditing = 101;
+		Authenticity authenticity = 102;
+		Authorization authorization = 103;
+		Availability availability = 104;
+		Confidentiality confidentiality = 105;
+		Integrity integrity = 106;
+	}
 }
 
+// SingleSignOn is an entity class in our ontology.
 message SingleSignOn {
-  bool enabled = 1;
+	bool context_is_checked = 1;
+	bool enabled = 2;
 }
 
+// Storage is an entity class in our ontology.
 message Storage {
-  ResourceLogging resource_logging = 1;
-  Redundancy redundancy = 2;
-  Immutability immutability = 3;
-  repeated Backup backup = 4;
-
-  oneof type {
-    BlockStorage block_storage = 101;
-    DatabaseStorage database_storage = 102;
-    FileStorage file_storage = 103;
-    ObjectStorage object_storage = 104;
-  }
+	oneof type {
+		BlockStorage block_storage = 101;
+		DatabaseStorage database_storage = 102;
+		FileStorage file_storage = 103;
+		ObjectStorage object_storage = 104;
+	}
 }
 
-// StorageService is an entity in our Cloud ontology
+// StorageService is an entity class in our ontology.
 // This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
 message StorageService {
-  repeated string storage_id = 1;
-
-  oneof type {
-    DatabaseService database_service = 101;
-    FileStorageService file_storage_service = 102;
-    ObjectStorageService object_storage_service = 103;
-  }
+	oneof type {
+		DatabaseService database_service = 101;
+		FileStorageService file_storage_service = 102;
+		ObjectStorageService object_storage_service = 103;
+	}
 }
 
-// TransportEncryption is an entity in our Cloud ontology
+// TransportEncryption is an entity class in our ontology.
 // enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
 message TransportEncryption {
-  bool enabled = 1;
-  bool enforced = 2;
-  string protocol = 3;
-  float protocol_version = 4;
-  repeated CipherSuite cipher_suite = 5;
+	bool enabled = 1;
+	bool enforced = 2;
+	string protocol = 3;
+	float protocol_version = 4;
+	repeated CipherSuite cipher_suite  = 5;
 }
 
-message VMImage {}
+// VMImage is an entity class in our ontology.
+message VMImage {
+	map<string, string> labels = 1;
+	Application application = 2;
+	GeoLocation geo_location = 3;
+	repeated SecurityFeature security_feature  = 4;
+}
 
+// VirtualMachine is an entity class in our ontology.
 message VirtualMachine {
-  OSLogging os_logging = 1;
-  MalwareProtection malware_protection = 2;
-  BootLogging boot_logging = 3;
-  repeated string block_storage_id = 4;
-  AutomaticSecurityUpdates automatic_security_updates = 5;
-  ActivityLogging activity_logging = 6;
+	map<string, string> labels = 1;
+	ActivityLogging activity_logging = 2;
+	AutomaticSecurityUpdates automatic_security_updates = 3;
+	repeated string block_storage_id  = 4;
+	BootLogging boot_logging = 5;
+	EncryptionInUse encryption_in_use = 6;
+	GeoLocation geo_location = 7;
+	MalwareProtection malware_protection = 8;
+	repeated string network_interface_id  = 9;
+	OSLogging oslogging = 10;
+	ResourceLogging resource_logging = 11;
+	repeated SecurityFeature security_feature  = 12;
 }
 
-message VirtualNetwork {}
+// VirtualNetwork is an entity class in our ontology.
+message VirtualNetwork {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-message VirtualSubNetwork {}
+// VirtualSubNetwork is an entity class in our ontology.
+message VirtualSubNetwork {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
 
-message WebApp {}
+// WebApp is an entity class in our ontology.
+message WebApp {
+	map<string, string> labels = 1;
+	EncryptionInUse encryption_in_use = 2;
+	GeoLocation geo_location = 3;
+	repeated string network_interface_id  = 4;
+	ResourceLogging resource_logging = 5;
+	repeated SecurityFeature security_feature  = 6;
+}
 
-// WebApplicationFirewall is an entity in our Cloud ontology
+// WebApplicationFirewall is an entity class in our ontology.
 // A WAF is a L7 firewall that includes L3 capabilities
 message WebApplicationFirewall {
-  bool enabled = 1;
+	bool enabled = 1;
 }
 
-message Workflow {}
+// Workflow is an entity class in our ontology.
+message Workflow {
+	map<string, string> labels = 1;
+	GeoLocation geo_location = 2;
+	repeated SecurityFeature security_feature  = 3;
+}
