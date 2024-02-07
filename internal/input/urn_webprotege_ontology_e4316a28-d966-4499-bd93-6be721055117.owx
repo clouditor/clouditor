@@ -231,6 +231,9 @@
         <Class IRI="http://graph.clouditor.io/classes/MessagingHub"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/MultiFactorAuthentiation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
     </Declaration>
     <Declaration>
@@ -1186,13 +1189,6 @@
         <Class IRI="http://graph.clouditor.io/classes/AtRestEncryption"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/CustomerKeyEncryption"/>
-        <DataSomeValuesFrom>
-            <DataProperty abbreviatedIRI="prop:keyUrl"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/DDosProtection"/>
         <Class IRI="http://graph.clouditor.io/classes/Availability"/>
     </SubClassOf>
@@ -1511,13 +1507,6 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Identity"/>
         <Class IRI="http://graph.clouditor.io/classes/Identifiable"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/Identity"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
-            <Class IRI="http://graph.clouditor.io/classes/Authenticity"/>
-        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Identity"/>
@@ -1842,6 +1831,17 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/MessagingHub"/>
         <Class IRI="http://graph.clouditor.io/classes/IoT"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/MultiFactorAuthentiation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Authenticity"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/MultiFactorAuthentiation"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/Authenticity"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
@@ -3078,6 +3078,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/MessagingHub</IRI>
         <Literal xml:lang="english">MessagingHub</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/MultiFactorAuthentiation</IRI>
+        <Literal>MultiFactorAuthentiation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

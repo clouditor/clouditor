@@ -197,29 +197,16 @@ components:
             properties:
                 id:
                     type: string
-                    description: |-
-                        Id contains a unique ID for each resource. This is specific for the cloud
-                         provider this resource was gathered for and can for example be a resource
-                         URL.
+                    description: Id contains a unique ID for each resource. This is specific for the cloud provider this resource was gathered for and can for example be a resource URL.
                 cloudServiceId:
                     type: string
-                    description: |-
-                        CloudServiceId is the UUID for the cloud service to which this resource
-                         belongs to.
+                    description: CloudServiceId is the UUID for the cloud service to which this resource belongs to.
                 resourceType:
                     type: string
-                    description: |-
-                        ResourceType contains a comma seperated string of resource types according
-                         to our ontology.
+                    description: ResourceType contains a comma seperated string of resource types according to our ontology.
                 properties:
-                    allOf:
-                        - $ref: '#/components/schemas/GoogleProtobufValue'
-                    description: |-
-                        Properties contains a protobuf struct that describe the resource in the
-                         terms of our Clouditor ontology.
-            description: |-
-                Resource is a wrapper around google.protobuf.Value that is needed for
-                 persistence reasons.
+                    $ref: '#/components/schemas/GoogleProtobufValue'
+            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons.
         StartDiscoveryRequest:
             type: object
             properties:
