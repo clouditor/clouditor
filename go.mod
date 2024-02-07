@@ -1,8 +1,6 @@
 module clouditor.io/clouditor
 
-go 1.21
-
-toolchain go1.21.0
+go 1.21.6
 
 // runtime dependencies (core)
 require (
@@ -71,6 +69,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.4
 	github.com/google/addlicense v1.1.0
 	github.com/google/gnostic v0.7.0
+	github.com/oxisto/owl2proto v0.0.8
 	github.com/srikrsna/protoc-gen-gotag v0.6.2
 )
 
@@ -130,6 +129,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/lyft/protoc-gen-star/v2 v2.0.3 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect

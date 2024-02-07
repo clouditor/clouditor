@@ -11,7 +11,6 @@
 >
 > If you are looking for a stable version using only the Java code, please use the [1.2.0](https://github.com/clouditor/clouditor/releases/tag/v1.2.0) release.
 
-
 ## Introduction
 
 Clouditor is a tool which supports continuous cloud assurance. Its main goal is to continuously evaluate if a cloud-based application (built using, e.g., Amazon Web Services (AWS) or Microsoft Azure) is configured in a secure way and thus complies with security requirements defined by, e.g., Cloud Computing Compliance Controls Catalogue (C5) issued by the German Office for Information Security (BSI) or the Cloud Control Matrix (CCM) published by the Cloud Security Alliance (CSA).
@@ -22,11 +21,11 @@ Clouditor currently supports over 60 checks for Amazon Web Services (AWS), Micro
 
 Key features are:
 
-* automated compliance rules for AWS and MS Azure
-* granular report of detected non-compliant configurations
-* quick and adaptive integration with existing service through automated service discovery
-* descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
-* integration of custom security requirements and mapping to rules
+- automated compliance rules for AWS and MS Azure
+- granular report of detected non-compliant configurations
+- quick and adaptive integration with existing service through automated service discovery
+- descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
+- integration of custom security requirements and mapping to rules
 
 ## Build
 
@@ -36,7 +35,8 @@ Install necessary protobuf tools.
 go install google.golang.org/protobuf/cmd/protoc-gen-go \
 google.golang.org/grpc/cmd/protoc-gen-go-grpc \
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-github.com/google/gnostic/cmd/protoc-gen-openapi
+github.com/google/gnostic/cmd/protoc-gen-openapi \
+github.com/oxisto/owl2proto/cmd/owl2proto
 ```
 
 Also make sure that `$HOME/go/bin` is on your `$PATH` and build:
@@ -57,7 +57,7 @@ To test, start the engine with an in-memory DB
 Alternatively, be sure to start a postgre DB:
 
 ```
-docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres 
+docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres
 ```
 
 ## Clouditor CLI

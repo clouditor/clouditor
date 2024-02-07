@@ -1,0 +1,1316 @@
+// Auto-generated code by owl2proto (https://github.com/oxisto/owl2proto)
+
+// Copyright 2024 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
+syntax = "proto3";
+
+package clouditor.ontology.v1;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "clouditor.io/clouditor/api/ontology";
+
+// ABAC is an entity class in our ontology.
+message ABAC {}
+
+// AccessRestriction is an entity class in our ontology.
+message AccessRestriction {
+  oneof type {
+    Firewall firewall = 101;
+  }
+}
+
+// Account is an entity class in our ontology.
+// This represents the cloud account as a whole, e.g., an Azure subscription.
+message Account {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// ActivityLogging is an entity class in our ontology.
+message ActivityLogging {
+  bool enabled = 1;
+  bool monitoring_enabled = 2;
+  int64 retention_period = 3;
+  bool security_alerts_enabled = 4;
+  string logging_service_id = 5;
+}
+
+// AnomalyDetection is an entity class in our ontology.
+// Analyzes the activity of a NetworkService (which includes DatabaseServices).
+// Scope contains the resource ID of the protected resource.
+message AnomalyDetection {
+  bool enabled = 1;
+  string scope = 2;
+  ApplicationLogging application_logging = 3;
+}
+
+// Application is an entity class in our ontology.
+// This encapsulates the whole (source) code of an application.
+message Application {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  string programming_language = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  repeated string translation_units = 9;
+  string compute_id = 10;
+  repeated Functionality functionality = 11;
+  string parent_resource_id = 12;
+}
+
+// ApplicationLogging is an entity class in our ontology.
+message ApplicationLogging {
+  bool enabled = 1;
+  bool monitoring_enabled = 2;
+  int64 retention_period = 3;
+  bool security_alerts_enabled = 4;
+  string logging_service_id = 5;
+}
+
+// AtRestEncryption is an entity class in our ontology.
+message AtRestEncryption {
+  oneof type {
+    CustomerKeyEncryption customer_key_encryption = 101;
+    ManagedKeyEncryption managed_key_encryption = 102;
+  }
+}
+
+// Auditing is an entity class in our ontology.
+message Auditing {
+  oneof type {
+    AnomalyDetection anomaly_detection = 101;
+    Logging logging = 102;
+    MalwareProtection malware_protection = 103;
+  }
+}
+
+// Authenticity is an entity class in our ontology.
+message Authenticity {
+  oneof type {
+    CertificateBasedAuthentication certificate_based_authentication = 101;
+    MultiFactorAuthentiation multi_factor_authentiation = 102;
+    NoAuthentication no_authentication = 103;
+    OTPBasedAuthentication otpbased_authentication = 104;
+    PasswordBasedAuthentication password_based_authentication = 105;
+    SingleSignOn single_sign_on = 106;
+    TokenBasedAuthentication token_based_authentication = 107;
+  }
+}
+
+// Authorization is an entity class in our ontology.
+message Authorization {
+  oneof type {
+    ABAC abac = 101;
+    AccessRestriction access_restriction = 102;
+    RBAC rbac = 103;
+  }
+}
+
+// AutomaticSecurityUpdates is an entity class in our ontology.
+// This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+message AutomaticSecurityUpdates {
+  bool enabled = 1;
+  // The interval refers to the update interval in days.
+  int64 interval = 2;
+  bool security_only = 3;
+}
+
+// Availability is an entity class in our ontology.
+message Availability {
+  oneof type {
+    Backup backup = 101;
+    DDoSProtection ddo_sprotection = 102;
+    GeoLocation geo_location = 103;
+    Redundancy redundancy = 104;
+  }
+}
+
+// Backup is an entity class in our ontology.
+// RetentionPeriod in hours
+message Backup {
+  bool enabled = 1;
+  // The interval refers to the update interval in days.
+  int64 interval = 2;
+  int64 retention_period = 3;
+  string storage_id = 4;
+  TransportEncryption transport_encryption = 5;
+}
+
+// Resource is an entity class in our ontology.
+message Resource {
+  oneof type {
+    Application application = 101;
+    CloudResource cloud_resource = 102;
+    Document document = 103;
+  }
+}
+
+// BlockStorage is an entity class in our ontology.
+message BlockStorage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  AtRestEncryption at_rest_encryption = 8;
+  repeated Backup backup = 9;
+  GeoLocation geo_location = 10;
+  Immutability immutability = 11;
+  Redundancy redundancy = 12;
+  string parent_resource_id = 13;
+  ResourceLogging resource_logging = 14;
+  repeated SecurityFeature security_feature = 15;
+}
+
+// BootLogging is an entity class in our ontology.
+message BootLogging {
+  bool enabled = 1;
+  bool monitoring_enabled = 2;
+  int64 retention_period = 3;
+  bool security_alerts_enabled = 4;
+  string logging_service_id = 5;
+}
+
+// CICDService is an entity class in our ontology.
+message CICDService {
+  oneof type {
+    Job job = 101;
+    Workflow workflow = 102;
+  }
+}
+
+// CertificateBasedAuthentication is an entity class in our ontology.
+message CertificateBasedAuthentication {
+  bool context_is_checked = 1;
+  bool enabled = 2;
+}
+
+// CipherSuite is an entity class in our ontology.
+message CipherSuite {
+  // for example: RSA, ECDSA
+  string authentication_mechanism = 1;
+  string key_exchange_algorithm = 2;
+  // naming schema: SHA-256
+  string mac_algorithm = 3;
+  // naming schema: AES-128-GCM
+  string session_cipher = 4;
+}
+
+// CloudResource is an entity class in our ontology.
+message CloudResource {
+  oneof type {
+    Account account = 101;
+    CICDService cicdservice = 102;
+    Compute compute = 103;
+    ContainerOrchestration container_orchestration = 104;
+    ContainerRegistry container_registry = 105;
+    Identifiable identifiable = 106;
+    Image image = 107;
+    IoT io_t = 108;
+    Key key = 109;
+    KeyVault key_vault = 110;
+    Networking networking = 111;
+    PasswordPolicy password_policy = 112;
+    ResourceGroup resource_group = 113;
+    Storage storage = 114;
+  }
+}
+
+// CloudSDK is an entity class in our ontology.
+message CloudSDK {}
+
+// Compute is an entity class in our ontology.
+message Compute {
+  oneof type {
+    Function function = 101;
+    VirtualMachine virtual_machine = 102;
+    WebApp web_app = 103;
+  }
+}
+
+// Confidentiality is an entity class in our ontology.
+message Confidentiality {
+  oneof type {
+    AtRestEncryption at_rest_encryption = 101;
+    CipherSuite cipher_suite = 102;
+    EncryptionInUse encryption_in_use = 103;
+    TransportEncryption transport_encryption = 104;
+  }
+}
+
+// Container is an entity class in our ontology.
+message Container {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string image_id = 9;
+  string parent_resource_id = 10;
+  repeated SecurityFeature security_feature = 11;
+}
+
+// ContainerImage is an entity class in our ontology.
+message ContainerImage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  string application_id = 8;
+  GeoLocation geo_location = 9;
+  string parent_resource_id = 10;
+  repeated SecurityFeature security_feature = 11;
+}
+
+// ContainerOrchestration is an entity class in our ontology.
+message ContainerOrchestration {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string management_url = 4;
+  string name = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  repeated string container_id = 9;
+  GeoLocation geo_location = 10;
+  string parent_resource_id = 11;
+  ResourceLogging resource_logging = 12;
+  repeated SecurityFeature security_feature = 13;
+}
+
+// ContainerRegistry is an entity class in our ontology.
+message ContainerRegistry {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// CustomerKeyEncryption is an entity class in our ontology.
+message CustomerKeyEncryption {
+  string algorithm = 1;
+  bool enabled = 2;
+  string key_url = 3;
+}
+
+// DDoSProtection is an entity class in our ontology.
+message DDoSProtection {}
+
+// DatabaseConnect is an entity class in our ontology.
+message DatabaseConnect {
+  repeated string calls = 1;
+  string database_service_id = 2;
+  string database_storage_id = 3;
+}
+
+// DatabaseOperation is an entity class in our ontology.
+message DatabaseOperation {
+  oneof type {
+    DatabaseConnect database_connect = 101;
+    DatabaseQuery database_query = 102;
+  }
+}
+
+// DatabaseQuery is an entity class in our ontology.
+message DatabaseQuery {
+  repeated string calls = 1;
+  bool modify = 2;
+  string database_service_id = 3;
+  string database_storage_id = 4;
+}
+
+// DatabaseService is an entity class in our ontology.
+// This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
+message DatabaseService {
+  oneof type {
+    DocumentDatabaseService document_database_service = 101;
+    KeyValueDatabaseService key_value_database_service = 102;
+    RelationalDatabaseService relational_database_service = 103;
+  }
+}
+
+// DatabaseStorage is an entity class in our ontology.
+// describes the actual database or a table in a database
+message DatabaseStorage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  AtRestEncryption at_rest_encryption = 8;
+  repeated Backup backup = 9;
+  GeoLocation geo_location = 10;
+  Immutability immutability = 11;
+  Redundancy redundancy = 12;
+  string parent_resource_id = 13;
+  ResourceLogging resource_logging = 14;
+  repeated SecurityFeature security_feature = 15;
+  string parent_storage_id = 16;
+}
+
+// DeviceProvisioningService is an entity class in our ontology.
+message DeviceProvisioningService {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// Document is an entity class in our ontology.
+message Document {
+  int64 creation_time = 1;
+  string filename = 2;
+  string id = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// DocumentDatabaseService is an entity class in our ontology.
+message DocumentDatabaseService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  AnomalyDetection anomaly_detection = 10;
+  Authenticity authenticity = 11;
+  string compute_id = 12;
+  GeoLocation geo_location = 13;
+  HttpEndpoint http_endpoint = 14;
+  MalwareProtection malware_protection = 15;
+  string parent_resource_id = 16;
+  repeated SecurityFeature security_feature = 17;
+  repeated string storage_id = 18;
+  TransportEncryption transport_encryption = 19;
+}
+
+// EncryptionInUse is an entity class in our ontology.
+message EncryptionInUse {
+  bool enabled = 1;
+}
+
+// FileStorage is an entity class in our ontology.
+message FileStorage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  bool public_access = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  AtRestEncryption at_rest_encryption = 9;
+  repeated Backup backup = 10;
+  GeoLocation geo_location = 11;
+  Immutability immutability = 12;
+  Redundancy redundancy = 13;
+  string parent_resource_id = 14;
+  ResourceLogging resource_logging = 15;
+  repeated SecurityFeature security_feature = 16;
+}
+
+// FileStorageService is an entity class in our ontology.
+// An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
+message FileStorageService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  Authenticity authenticity = 10;
+  string compute_id = 11;
+  GeoLocation geo_location = 12;
+  HttpEndpoint http_endpoint = 13;
+  string parent_resource_id = 14;
+  repeated SecurityFeature security_feature = 15;
+  repeated string storage_id = 16;
+  TransportEncryption transport_encryption = 17;
+}
+
+// Firewall is an entity class in our ontology.
+message Firewall {
+  oneof type {
+    L3Firewall l3_firewall = 101;
+    WebApplicationFirewall web_application_firewall = 102;
+  }
+}
+
+// Framework is an entity class in our ontology.
+message Framework {
+  oneof type {
+    CloudSDK cloud_sdk = 101;
+    HttpClientLibrary http_client_library = 102;
+    HttpServer http_server = 103;
+    Logger logger = 104;
+  }
+}
+
+// Function is an entity class in our ontology.
+message Function {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  string runtime_language = 7;
+  string runtime_version = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  EncryptionInUse encryption_in_use = 10;
+  GeoLocation geo_location = 11;
+  repeated string network_interface_id = 12;
+  string parent_resource_id = 13;
+  ResourceLogging resource_logging = 14;
+  repeated SecurityFeature security_feature = 15;
+}
+
+// Functionality is an entity class in our ontology.
+message Functionality {
+  oneof type {
+    HttpEndpoint http_endpoint = 101;
+    HttpRequestHandler http_request_handler = 102;
+    Operation operation = 103;
+  }
+}
+
+// GeoLocation is an entity class in our ontology.
+message GeoLocation {
+  string region = 1;
+}
+
+// HttpClientLibrary is an entity class in our ontology.
+message HttpClientLibrary {}
+
+// HttpEndpoint is an entity class in our ontology.
+// Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
+message HttpEndpoint {
+  oneof type {
+    ProxiedEndpoint proxied_endpoint = 101;
+  }
+}
+
+// HttpRequest is an entity class in our ontology.
+message HttpRequest {
+  string call = 1;
+  string req_body = 2;
+  HttpEndpoint http_endpoint = 3;
+}
+
+// HttpRequestHandler is an entity class in our ontology.
+message HttpRequestHandler {
+  string path = 1;
+  string application_id = 2;
+  repeated HttpEndpoint http_endpoint = 3;
+}
+
+// HttpServer is an entity class in our ontology.
+message HttpServer {
+  HttpRequestHandler http_request_handler = 1;
+}
+
+// Identifiable is an entity class in our ontology.
+message Identifiable {
+  oneof type {
+    Identity identity = 101;
+    RoleAssignment role_assignment = 102;
+  }
+}
+
+// Identity is an entity class in our ontology.
+message Identity {
+  bool activated = 1;
+  int64 creation_time = 2;
+  bool disable_password_policy = 3;
+  bool enforce_mfa = 4;
+  string id = 5;
+  map<string, string> labels = 6;
+  google.protobuf.Timestamp last_activity = 7;
+  bool login_defender_enabled = 8;
+  string name = 9;
+  bool privileged = 10;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 11;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 12;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 13;
+  Authenticity authenticity = 14;
+  Authorization authorization = 15;
+  GeoLocation geo_location = 16;
+  string parent_resource_id = 17;
+  repeated SecurityFeature security_feature = 18;
+}
+
+// Image is an entity class in our ontology.
+message Image {
+  oneof type {
+    ContainerImage container_image = 101;
+    VMImage vmimage = 102;
+  }
+}
+
+// Immutability is an entity class in our ontology.
+message Immutability {
+  bool enabled = 1;
+}
+
+// Integrity is an entity class in our ontology.
+message Integrity {
+  oneof type {
+    AutomaticSecurityUpdates automatic_security_updates = 101;
+    Immutability immutability = 102;
+  }
+}
+
+// IoT is an entity class in our ontology.
+message IoT {
+  oneof type {
+    DeviceProvisioningService device_provisioning_service = 101;
+    MessagingHub messaging_hub = 102;
+  }
+}
+
+// Job is an entity class in our ontology.
+message Job {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// TokenBasedAuthentication is an entity class in our ontology.
+message TokenBasedAuthentication {
+  bool context_is_checked = 1;
+  bool enabled = 2;
+  bool enforced = 3;
+}
+
+// Key is an entity class in our ontology.
+message Key {
+  int64 creation_time = 1;
+  bool enabled = 2;
+  int64 expiration_date = 3;
+  string id = 4;
+  bool is_managed = 5;
+  map<string, string> labels = 6;
+  int32 length = 7;
+  string name = 8;
+  int32 number_of_usages = 9;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 10;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 11;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 12;
+  GeoLocation geo_location = 13;
+  string parent_resource_id = 14;
+  repeated SecurityFeature security_feature = 15;
+}
+
+// KeyValueDatabaseService is an entity class in our ontology.
+message KeyValueDatabaseService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  AnomalyDetection anomaly_detection = 10;
+  Authenticity authenticity = 11;
+  string compute_id = 12;
+  GeoLocation geo_location = 13;
+  HttpEndpoint http_endpoint = 14;
+  MalwareProtection malware_protection = 15;
+  string parent_resource_id = 16;
+  repeated SecurityFeature security_feature = 17;
+  repeated string storage_id = 18;
+  TransportEncryption transport_encryption = 19;
+}
+
+// KeyVault is an entity class in our ontology.
+message KeyVault {
+  int64 creation_time = 1;
+  string id = 2;
+  bool is_active = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  GeoLocation geo_location = 9;
+  string key_id = 10;
+  string parent_resource_id = 11;
+  repeated SecurityFeature security_feature = 12;
+}
+
+// L3Firewall is an entity class in our ontology.
+message L3Firewall {
+  bool enabled = 1;
+  bool inbound = 2;
+  string restricted_ports = 3;
+}
+
+// LoadBalancer is an entity class in our ontology.
+// A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
+message LoadBalancer {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  string url = 10;
+  AccessRestriction access_restriction = 11;
+  Authenticity authenticity = 12;
+  string compute_id = 13;
+  GeoLocation geo_location = 14;
+  repeated HttpEndpoint http_endpoint = 15;
+  repeated string network_service_id = 16;
+  string parent_resource_id = 17;
+  repeated SecurityFeature security_feature = 18;
+  TransportEncryption transport_encryption = 19;
+}
+
+// LogOperation is an entity class in our ontology.
+// A LogOperation is used by an application
+message LogOperation {
+  string call = 1;
+  string value = 2;
+  Logging logging = 3;
+}
+
+// Logger is an entity class in our ontology.
+message Logger {}
+
+// Logging is an entity class in our ontology.
+message Logging {
+  oneof type {
+    ActivityLogging activity_logging = 101;
+    ApplicationLogging application_logging = 102;
+    BootLogging boot_logging = 103;
+    OSLogging oslogging = 104;
+    ResourceLogging resource_logging = 105;
+  }
+}
+
+// LoggingService is an entity class in our ontology.
+// A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+message LoggingService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  Authenticity authenticity = 10;
+  string compute_id = 11;
+  GeoLocation geo_location = 12;
+  string parent_resource_id = 13;
+  repeated SecurityFeature security_feature = 14;
+  repeated string storage_id = 15;
+  TransportEncryption transport_encryption = 16;
+}
+
+// MalwareProtection is an entity class in our ontology.
+// analyzes the activity within a Compute resource
+message MalwareProtection {
+  int64 days_since_active = 1;
+  bool enabled = 2;
+  int32 number_of_threats_found = 3;
+  ApplicationLogging application_logging = 4;
+}
+
+// ManagedKeyEncryption is an entity class in our ontology.
+message ManagedKeyEncryption {
+  string algorithm = 1;
+  bool enabled = 2;
+  string key_url = 3;
+}
+
+// MessagingHub is an entity class in our ontology.
+message MessagingHub {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// MultiFactorAuthentiation is an entity class in our ontology.
+message MultiFactorAuthentiation {
+  bool context_is_checked = 1;
+  repeated Authenticity authenticity = 2;
+}
+
+// NetworkInterface is an entity class in our ontology.
+message NetworkInterface {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  AccessRestriction access_restriction = 8;
+  GeoLocation geo_location = 9;
+  string network_service_id = 10;
+  string parent_resource_id = 11;
+  repeated SecurityFeature security_feature = 12;
+}
+
+// NetworkSecurityGroup is an entity class in our ontology.
+message NetworkSecurityGroup {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// NetworkService is an entity class in our ontology.
+// A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
+message NetworkService {
+  oneof type {
+    LoadBalancer load_balancer = 101;
+    LoggingService logging_service = 102;
+    StorageService storage_service = 103;
+  }
+}
+
+// Networking is an entity class in our ontology.
+message Networking {
+  oneof type {
+    NetworkInterface network_interface = 101;
+    NetworkSecurityGroup network_security_group = 102;
+    NetworkService network_service = 103;
+    VirtualNetwork virtual_network = 104;
+    VirtualSubNetwork virtual_sub_network = 105;
+  }
+}
+
+// NoAuthentication is an entity class in our ontology.
+message NoAuthentication {
+  bool context_is_checked = 1;
+}
+
+// OSLogging is an entity class in our ontology.
+message OSLogging {
+  bool enabled = 1;
+  bool monitoring_enabled = 2;
+  int64 retention_period = 3;
+  bool security_alerts_enabled = 4;
+  string logging_service_id = 5;
+}
+
+// OTPBasedAuthentication is an entity class in our ontology.
+message OTPBasedAuthentication {
+  bool activated = 1;
+  bool context_is_checked = 2;
+}
+
+// ObjectStorage is an entity class in our ontology.
+message ObjectStorage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  bool public_access = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  AtRestEncryption at_rest_encryption = 9;
+  repeated Backup backup = 10;
+  GeoLocation geo_location = 11;
+  Immutability immutability = 12;
+  Redundancy redundancy = 13;
+  string parent_resource_id = 14;
+  ResourceLogging resource_logging = 15;
+  repeated SecurityFeature security_feature = 16;
+}
+
+// ObjectStorageRequest is an entity class in our ontology.
+message ObjectStorageRequest {
+  string source = 1;
+  string object_storage_id = 2;
+}
+
+// ObjectStorageService is an entity class in our ontology.
+// An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
+message ObjectStorageService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  Authenticity authenticity = 10;
+  string compute_id = 11;
+  GeoLocation geo_location = 12;
+  HttpEndpoint http_endpoint = 13;
+  string parent_resource_id = 14;
+  repeated SecurityFeature security_feature = 15;
+  repeated string storage_id = 16;
+  TransportEncryption transport_encryption = 17;
+}
+
+// Operation is an entity class in our ontology.
+message Operation {
+  oneof type {
+    DatabaseOperation database_operation = 101;
+    HttpRequest http_request = 102;
+    LogOperation log_operation = 103;
+    ObjectStorageRequest object_storage_request = 104;
+  }
+}
+
+// PasswordBasedAuthentication is an entity class in our ontology.
+message PasswordBasedAuthentication {
+  bool activated = 1;
+  bool context_is_checked = 2;
+}
+
+// PasswordPolicy is an entity class in our ontology.
+message PasswordPolicy {
+  oneof type {
+    Container container = 101;
+  }
+}
+
+// ProxiedEndpoint is an entity class in our ontology.
+// An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.
+message ProxiedEndpoint {
+  string handler = 1;
+  string method = 2;
+  string path = 3;
+  string url = 4;
+  Authenticity authenticity = 5;
+  TransportEncryption transport_encryption = 6;
+}
+
+// RBAC is an entity class in our ontology.
+message RBAC {
+  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+  float broad_assignments = 1;
+  // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
+  float mixed_duties = 2;
+}
+
+// Redundancy is an entity class in our ontology.
+message Redundancy {
+  bool geo = 1;
+  bool local = 2;
+  bool zone = 3;
+}
+
+// RelationalDatabaseService is an entity class in our ontology.
+message RelationalDatabaseService {
+  int64 creation_time = 1;
+  string id = 2;
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 8;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 9;
+  AnomalyDetection anomaly_detection = 10;
+  Authenticity authenticity = 11;
+  string compute_id = 12;
+  GeoLocation geo_location = 13;
+  HttpEndpoint http_endpoint = 14;
+  MalwareProtection malware_protection = 15;
+  string parent_resource_id = 16;
+  repeated SecurityFeature security_feature = 17;
+  repeated string storage_id = 18;
+  TransportEncryption transport_encryption = 19;
+}
+
+// ResourceGroup is an entity class in our ontology.
+message ResourceGroup {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// ResourceLogging is an entity class in our ontology.
+message ResourceLogging {
+  bool enabled = 1;
+  bool monitoring_enabled = 2;
+  int64 retention_period = 3;
+  bool security_alerts_enabled = 4;
+  string logging_service_id = 5;
+}
+
+// RoleAssignment is an entity class in our ontology.
+message RoleAssignment {
+  bool activated = 1;
+  int64 creation_time = 2;
+  string id = 3;
+  map<string, string> labels = 4;
+  string name = 5;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 7;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 8;
+  Authenticity authenticity = 9;
+  Authorization authorization = 10;
+  GeoLocation geo_location = 11;
+  string parent_resource_id = 12;
+  repeated SecurityFeature security_feature = 13;
+}
+
+// SecurityFeature is an entity class in our ontology.
+message SecurityFeature {
+  oneof type {
+    Auditing auditing = 101;
+    Authenticity authenticity = 102;
+    Authorization authorization = 103;
+    Availability availability = 104;
+    Confidentiality confidentiality = 105;
+    Integrity integrity = 106;
+  }
+}
+
+// SingleSignOn is an entity class in our ontology.
+message SingleSignOn {
+  bool context_is_checked = 1;
+  bool enabled = 2;
+}
+
+// Storage is an entity class in our ontology.
+message Storage {
+  oneof type {
+    BlockStorage block_storage = 101;
+    DatabaseStorage database_storage = 102;
+    FileStorage file_storage = 103;
+    ObjectStorage object_storage = 104;
+  }
+}
+
+// StorageService is an entity class in our ontology.
+// This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
+message StorageService {
+  oneof type {
+    DatabaseService database_service = 101;
+    FileStorageService file_storage_service = 102;
+    ObjectStorageService object_storage_service = 103;
+  }
+}
+
+// TransportEncryption is an entity class in our ontology.
+// enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+message TransportEncryption {
+  bool enabled = 1;
+  bool enforced = 2;
+  string protocol = 3;
+  float protocol_version = 4;
+  repeated CipherSuite cipher_suite = 5;
+}
+
+// VMImage is an entity class in our ontology.
+message VMImage {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  string application_id = 8;
+  GeoLocation geo_location = 9;
+  string parent_resource_id = 10;
+  repeated SecurityFeature security_feature = 11;
+}
+
+// VirtualMachine is an entity class in our ontology.
+message VirtualMachine {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  ActivityLogging activity_logging = 8;
+  AutomaticSecurityUpdates automatic_security_updates = 9;
+  repeated string block_storage_id = 10;
+  BootLogging boot_logging = 11;
+  EncryptionInUse encryption_in_use = 12;
+  GeoLocation geo_location = 13;
+  MalwareProtection malware_protection = 14;
+  repeated string network_interface_id = 15;
+  OSLogging oslogging = 16;
+  string parent_resource_id = 17;
+  ResourceLogging resource_logging = 18;
+  repeated SecurityFeature security_feature = 19;
+}
+
+// VirtualNetwork is an entity class in our ontology.
+message VirtualNetwork {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// VirtualSubNetwork is an entity class in our ontology.
+message VirtualSubNetwork {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}
+
+// WebApp is an entity class in our ontology.
+message WebApp {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  EncryptionInUse encryption_in_use = 8;
+  GeoLocation geo_location = 9;
+  repeated string network_interface_id = 10;
+  string parent_resource_id = 11;
+  ResourceLogging resource_logging = 12;
+  repeated SecurityFeature security_feature = 13;
+}
+
+// WebApplicationFirewall is an entity class in our ontology.
+// A WAF is a L7 firewall that includes L3 capabilities
+message WebApplicationFirewall {
+  bool enabled = 1;
+}
+
+// Workflow is an entity class in our ontology.
+message Workflow {
+  int64 creation_time = 1;
+  string id = 2;
+  map<string, string> labels = 3;
+  string name = 4;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 5;
+  // The resource type. It is an array, because a type can be derived from another.
+  repeated string resource_type = 6;
+  // ServiceID contains the ID of the cloud service to which this resource belongs.
+  string service_id = 7;
+  GeoLocation geo_location = 8;
+  string parent_resource_id = 9;
+  repeated SecurityFeature security_feature = 10;
+}

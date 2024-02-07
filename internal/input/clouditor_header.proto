@@ -1,7 +1,4 @@
-//go:build tools
-// +build tools
-
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,13 +23,11 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package tools
+syntax = "proto3";
 
-import (
-	_ "github.com/envoyproxy/protoc-gen-validate"
-	_ "github.com/google/addlicense"
-	_ "github.com/google/gnostic/cmd/protoc-gen-openapi"
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
-	_ "github.com/oxisto/owl2proto/cmd/owl2proto"
-	_ "github.com/srikrsna/protoc-gen-gotag"
-)
+package clouditor.ontology.v1;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "clouditor.io/clouditor/api/ontology";

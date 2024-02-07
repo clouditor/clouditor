@@ -34,7 +34,8 @@ jobs:
           go install \
           github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
           github.com/google/gnostic/cmd/protoc-gen-openapi \
-          github.com/srikrsna/protoc-gen-gotag
+          github.com/srikrsna/protoc-gen-gotag \
+          github.com/oxisto/owl2proto/cmd/owl2proto
           go generate ./...
       - name: Build
         run: |
