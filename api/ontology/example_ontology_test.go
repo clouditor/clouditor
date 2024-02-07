@@ -27,7 +27,8 @@ func ExampleMarshal() {
 		panic(err)
 	}
 
-	// We need to use regular JSON marshalling on the output to get a consistent result for tests
+	// We need to use regular JSON marshalling on the output to get a consistent result for tests. See
+	// https://github.com/golang/protobuf/issues/1373#issuecomment-946205483
 	var m map[string]any
 	err = json.Unmarshal(b, &m)
 	if err != nil {
