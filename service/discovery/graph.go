@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 	"google.golang.org/grpc/codes"
@@ -72,16 +73,17 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 
 	// Loop through all resources and find edges to others
 	for _, resource := range results {
-		r, _ := resource.ToVocResource()
+		r, _ := resource.ToOntologyResource()
 		if r == nil {
 			continue
 		}
 
-		for _, related := range r.Related() {
+		for _, rel := range ontology.Related(r) {
 			edge := &discovery.GraphEdge{
-				Id:     resource.Id + "-" + related,
+				Id:     resource.Id + "-" + rel.Value,
 				Source: resource.Id,
-				Target: related,
+				Target: rel.Value,
+				Type:   rel.Property,
 			}
 
 			res.Edges = append(res.Edges, edge)

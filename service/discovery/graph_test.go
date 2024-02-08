@@ -32,15 +32,17 @@ import (
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/go-co-op/gocron"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestService_ListGraphEdges(t *testing.T) {
@@ -79,47 +81,24 @@ func TestService_ListGraphEdges(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(
-						panicToDiscoveryResource(t, &voc.ObjectStorage{
-							Storage: &voc.Storage{
-								Resource: discovery.NewResource(&mockDiscoverer{csID: testdata.MockCloudServiceID2},
-									"some-id",
-									"some-name",
-									nil,
-									voc.GeoLocation{},
-									nil,
-									"some-storage-account-id",
-									[]string{"ObjectStorage", "Storage", "Resource"},
-									map[string][]interface{}{"raw": {"raw"}},
-								),
-							},
-						})))
+						panicToDiscoveryResource(t, &ontology.ObjectStorage{
+							Id:       "some-id",
+							Name:     "some-name",
+							ParentId: "some-storage-account-id",
+						}, testdata.MockCloudServiceID2)))
 					assert.NoError(t, s.Create(
-						panicToDiscoveryResource(t, &voc.ObjectStorageService{
-							StorageService: &voc.StorageService{
-								Storage: []voc.ResourceID{"some-id"},
-								NetworkService: &voc.NetworkService{
-									Networking: &voc.Networking{
-										Resource: discovery.NewResource(&mockDiscoverer{csID: testdata.MockCloudServiceID1},
-											"some-storage-account-id",
-											"some-storage-account-name",
-											nil,
-											voc.GeoLocation{},
-											nil,
-											"",
-											[]string{"StorageService", "NetworkService", "Networking", "Resource"},
-											map[string][]interface{}{"raw": {"raw"}},
-										),
-									},
+						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
+							StorageIds: []string{"some-id"},
+							Id:         "some-storage-account-id",
+							Name:       "some-storage-account-name",
+							HttpEndpoint: &ontology.HttpEndpoint{
+								TransportEncryption: &ontology.TransportEncryption{
+									Enforced:        false,
+									Enabled:         true,
+									ProtocolVersion: 1.2,
 								},
 							},
-							HttpEndpoint: &voc.HttpEndpoint{
-								TransportEncryption: &voc.TransportEncryption{
-									Enforced:   false,
-									Enabled:    true,
-									TlsVersion: "TLS1_2",
-								},
-							},
-						})))
+						}, testdata.MockCloudServiceID1)))
 				}),
 			},
 			args: args{
@@ -136,47 +115,24 @@ func TestService_ListGraphEdges(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(
-						panicToDiscoveryResource(t, &voc.ObjectStorage{
-							Storage: &voc.Storage{
-								Resource: discovery.NewResource(&mockDiscoverer{},
-									"some-id",
-									"some-name",
-									nil,
-									voc.GeoLocation{},
-									nil,
-									"some-storage-account-id",
-									[]string{"ObjectStorage", "Storage", "Resource"},
-									map[string][]interface{}{"raw": {"raw"}},
-								),
-							},
-						})))
+						panicToDiscoveryResource(t, &ontology.ObjectStorage{
+							Id:       "some-id",
+							Name:     "some-name",
+							ParentId: "some-storage-account-id",
+						}, testdata.MockCloudServiceID2)))
 					assert.NoError(t, s.Create(
-						panicToDiscoveryResource(t, &voc.ObjectStorageService{
-							StorageService: &voc.StorageService{
-								Storage: []voc.ResourceID{"some-id"},
-								NetworkService: &voc.NetworkService{
-									Networking: &voc.Networking{
-										Resource: discovery.NewResource(&mockDiscoverer{},
-											"some-storage-account-id",
-											"some-storage-account-name",
-											nil,
-											voc.GeoLocation{},
-											nil,
-											"",
-											[]string{"StorageService", "NetworkService", "Networking", "Resource"},
-											map[string][]interface{}{"raw": {"raw"}},
-										),
-									},
+						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
+							StorageIds: []string{"some-id"},
+							Id:         "some-storage-account-id",
+							Name:       "some-storage-account-name",
+							HttpEndpoint: &ontology.HttpEndpoint{
+								TransportEncryption: &ontology.TransportEncryption{
+									Enforced:        false,
+									Enabled:         true,
+									ProtocolVersion: 1.2,
 								},
 							},
-							HttpEndpoint: &voc.HttpEndpoint{
-								TransportEncryption: &voc.TransportEncryption{
-									Enforced:   false,
-									Enabled:    true,
-									TlsVersion: "TLS1_2",
-								},
-							},
-						})))
+						}, testdata.MockCloudServiceID2)))
 				}),
 			},
 			args: args{
@@ -188,6 +144,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 						Id:     "some-id-some-storage-account-id",
 						Source: "some-id",
 						Target: "some-storage-account-id",
+						Type:   "parent",
 					},
 				},
 			},
@@ -208,16 +165,14 @@ func TestService_ListGraphEdges(t *testing.T) {
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListGraphEdges() = %v, want %v", gotRes, tt.wantRes)
-			}
+			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
 			tt.wantErr(t, err)
 		})
 	}
 }
 
-func panicToDiscoveryResource(t *testing.T, resource voc.IsCloudResource) *discovery.Resource {
-	r, _, err := toDiscoveryResource(resource)
+func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, csID string) *discovery.Resource {
+	r, err := discovery.ToDiscoveryResource(resource, csID)
 	assert.NoError(t, err)
 
 	return r
@@ -252,17 +207,9 @@ func TestService_UpdateResource(t *testing.T) {
 			},
 			args: args{
 				req: &discovery.UpdateResourceRequest{
-					Resource: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
-						csID: testdata.MockCloudServiceID1,
-					},
-						"",
-						"some-name",
-						nil,
-						voc.GeoLocation{},
-						nil,
-						"",
-						[]string{"Resource"},
-					)),
+					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
+						Name: "some-name",
+					}, testdata.MockCloudServiceID1),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -276,17 +223,10 @@ func TestService_UpdateResource(t *testing.T) {
 			},
 			args: args{
 				req: &discovery.UpdateResourceRequest{
-					Resource: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
-						csID: testdata.MockCloudServiceID1,
-					},
-						"some-id",
-						"some-name",
-						nil,
-						voc.GeoLocation{},
-						nil,
-						"",
-						[]string{"Resource"},
-					)),
+					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
+						Id:   "my-id",
+						Name: "some-name",
+					}, testdata.MockCloudServiceID1),
 				},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -301,30 +241,16 @@ func TestService_UpdateResource(t *testing.T) {
 			},
 			args: args{
 				req: &discovery.UpdateResourceRequest{
-					Resource: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
-						csID: testdata.MockCloudServiceID1,
-					},
-						"some-id",
-						"some-name",
-						nil,
-						voc.GeoLocation{},
-						nil,
-						"",
-						[]string{"Resource"},
-					)),
+					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
+						Id:   "my-id",
+						Name: "some-name",
+					}, testdata.MockCloudServiceID1),
 				},
 			},
-			wantRes: panicToDiscoveryResource(t, discovery.NewResource(&mockDiscoverer{
-				csID: testdata.MockCloudServiceID1,
-			},
-				"some-id",
-				"some-name",
-				nil,
-				voc.GeoLocation{},
-				nil,
-				"",
-				[]string{"Resource"},
-			)),
+			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
+				Id:   "my-id",
+				Name: "some-name",
+			}, testdata.MockCloudServiceID1),
 			wantErr: assert.NoError,
 		},
 	}
@@ -341,10 +267,7 @@ func TestService_UpdateResource(t *testing.T) {
 				csID:              tt.fields.csID,
 			}
 			gotRes, err := svc.UpdateResource(tt.args.ctx, tt.args.req)
-
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.UpdateResource() = %v, want %v", gotRes, tt.wantRes)
-			}
+			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
 			tt.wantErr(t, err)
 		})
 	}

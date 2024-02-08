@@ -12,13 +12,14 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
-	"clouditor.io/clouditor/voc"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -74,16 +75,15 @@ func createEvidences(n int, m int, b *testing.B) int {
 		go func() {
 			// Create evidences for n resources (1 per resource)
 			for i := 0; i < n; i++ {
-				r, _ := voc.ToStruct(&voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{
-					ID:   voc.ResourceID(fmt.Sprintf("%d", i)),
-					Type: []string{"VirtualMachine", "Compute", "Resource"},
-				}}})
+				a, _ := anypb.New(&ontology.VirtualMachine{
+					Id: fmt.Sprintf("%d", i),
+				})
 
 				e := evidence.Evidence{
 					Id:        uuid.NewString(),
 					Timestamp: timestamppb.Now(),
 					ToolId:    "mytool",
-					Resource:  r,
+					Resource:  a,
 				}
 
 				if i%100 == 0 {

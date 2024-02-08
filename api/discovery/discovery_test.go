@@ -26,26 +26,27 @@
 package discovery
 
 import (
-	"reflect"
+	reflect "reflect"
 	"testing"
 
-	"clouditor.io/clouditor/voc"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
-	structpb "google.golang.org/protobuf/types/known/structpb"
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil/prototest"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func TestResource_ToVocResource(t *testing.T) {
+func TestResource_ToOntologyResource(t *testing.T) {
 	type fields struct {
 		Id             string
 		CloudServiceId string
 		ResourceType   string
-		Properties     *structpb.Value
+		Properties     *anypb.Any
 	}
 	tests := []struct {
 		name    string
 		fields  fields
-		want    voc.IsCloudResource
+		want    ontology.IsResource
 		wantErr bool
 	}{
 		{
@@ -53,17 +54,15 @@ func TestResource_ToVocResource(t *testing.T) {
 			fields: fields{
 				Id:             "vm1",
 				CloudServiceId: "service1",
-				ResourceType:   "VirtualMachine,Compute",
-				Properties: func() *structpb.Value {
-					var s structpb.Struct
-					raw := []byte(`{"blockStorage": ["bs1"]}`)
-					err := protojson.Unmarshal(raw, &s)
-					assert.NoError(t, err)
-					return structpb.NewStructValue(&s)
-				}(),
+				ResourceType:   "VirtualMachine",
+				Properties: prototest.NewAny(t, &ontology.VirtualMachine{
+					Id:              "vm1",
+					BlockStorageIds: []string{"bs1"},
+				}),
 			},
-			want: &voc.VirtualMachine{
-				BlockStorage: []voc.ResourceID{"bs1"},
+			want: &ontology.VirtualMachine{
+				Id:              "vm1",
+				BlockStorageIds: []string{"bs1"},
 			},
 		},
 	}
@@ -76,13 +75,72 @@ func TestResource_ToVocResource(t *testing.T) {
 				ResourceType:   tt.fields.ResourceType,
 				Properties:     tt.fields.Properties,
 			}
-			got, err := r.ToVocResource()
+			got, err := r.ToOntologyResource()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Resource.ToVocResource() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Resource.ToOntologyResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Resource.ToVocResource() = %v, want %v", got, tt.want)
+
+			if !proto.Equal(got, tt.want) {
+				t.Errorf("Resource.ToOntologyResource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToDiscoveryResource(t *testing.T) {
+	type args struct {
+		resource ontology.IsResource
+		csID     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantR   *Resource
+		wantErr bool
+	}{
+		{
+			name: "happy path",
+			args: args{
+				resource: &ontology.BlockStorage{
+					Id:   "my-block-storage",
+					Name: "My Block Storage",
+					Backup: []*ontology.Backup{
+						{
+							Enabled:   true,
+							StorageId: "my-offsite-backup-id",
+						},
+					},
+				},
+				csID: testdata.MockCloudServiceID1,
+			},
+			wantR: &Resource{
+				Id:             "my-block-storage",
+				CloudServiceId: testdata.MockCloudServiceID1,
+				ResourceType:   "BlockStorage,Storage,CloudResource,Resource",
+				Properties: prototest.NewAny(t, &ontology.BlockStorage{
+					Id:   "my-block-storage",
+					Name: "My Block Storage",
+					Backup: []*ontology.Backup{
+						{
+							Enabled:   true,
+							StorageId: "my-offsite-backup-id",
+						},
+					},
+				}),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.csID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToDiscoveryResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotR, tt.wantR) {
+				t.Errorf("ToDiscoveryResource() = %v, want %v", gotR, tt.wantR)
 			}
 		})
 	}

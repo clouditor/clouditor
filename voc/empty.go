@@ -1,6 +1,4 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +23,6 @@
 //
 // This file is part of Clouditor Community Edition.
 
+// Package voc is empty and can be deleted once we migrated all discoverers. Until then, at least the package needs to
+// exist in order to avoid compile errors.
 package voc
-
-type GeoLocation struct {
-	*Availability
-	Region string `json:"region"`
-}

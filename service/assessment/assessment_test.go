@@ -35,19 +35,21 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/policies"
 	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -57,7 +59,9 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -223,7 +227,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidence: &evidence.Evidence{
 					ToolId:    testdata.MockEvidenceToolID1,
 					Timestamp: timestamppb.Now(),
-					Resource:  toStruct(voc.VirtualMachine{}, t),
+					Resource:  prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -243,7 +247,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:             testdata.MockEvidenceID1,
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       toStruct(voc.VirtualMachine{}, t),
+					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -263,7 +267,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:             testdata.MockEvidenceID1,
 					ToolId:         testdata.MockEvidenceToolID1,
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t),
+					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 				},
 			},
 			wantResp: nil,
@@ -281,10 +285,13 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t),
+					Id:        testdata.MockEvidenceID1,
+					ToolId:    testdata.MockEvidenceToolID1,
+					Timestamp: timestamppb.Now(),
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
 					CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			wantResp: &assessment.AssessEvidenceResponse{},
@@ -298,10 +305,13 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t),
+					Id:        testdata.MockEvidenceID1,
+					ToolId:    testdata.MockEvidenceToolID1,
+					Timestamp: timestamppb.Now(),
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
 					CloudServiceId: testdata.MockCloudServiceID1},
 			},
 			wantResp: nil,
@@ -314,6 +324,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			fields: fields{
 				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:         servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -321,13 +332,13 @@ func TestService_AssessEvidence(t *testing.T) {
 					Id:             testdata.MockEvidenceID1,
 					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{Type: []string{"VirtualMachine"}}}}, t),
+					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrResourceIdIsEmpty.Error())
+				return assert.ErrorContains(t, err, "id: value is required")
 			},
 		},
 		{
@@ -344,7 +355,10 @@ func TestService_AssessEvidence(t *testing.T) {
 					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t),
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
 				},
 			},
 			wantResp: nil,
@@ -399,20 +413,20 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	// First assess evidence with a valid VM resource s.t. the cache is created for the combination of resource type and
 	// tool id (="VirtualMachine-{testdata.MockEvidenceToolID}")
 	e := evidencetest.MockEvidence1
-	e.Resource = toStruct(voc.VirtualMachine{
-		Compute: &voc.Compute{
-			Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)
+	e.Resource = prototest.NewAny(t, &ontology.VirtualMachine{
+		Id:   testdata.MockResourceID1,
+		Name: testdata.MockResourceName1,
+	})
 	_, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: e})
 	assert.NoError(t, err)
 
 	// Now assess a new evidence which has not a valid format other than the resource type and tool id is set correctly
-	// Prepare resource
-	r := map[string]any{
-		// Make sure both evidences have the same type (for caching key)
-		"type": e.Resource.GetStructValue().AsMap()["type"],
-		"id":   uuid.NewString(),
-	}
-	v, err := structpb.NewValue(r)
+	// Prepare resource. Make sure both evidences have the same type (for caching key)
+	a := prototest.NewAny(t, &ontology.VirtualMachine{
+		Id:   uuid.NewString(),
+		Name: "Some other name",
+	})
+
 	assert.NoError(t, err)
 	_, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
 		Id:             uuid.NewString(),
@@ -421,7 +435,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 		// Make sure both evidences have the same tool id (for caching key)
 		ToolId:   e.ToolId,
 		Raw:      nil,
-		Resource: v,
+		Resource: a,
 	}})
 	assert.NoError(t, err)
 }
@@ -455,7 +469,9 @@ func TestService_AssessEvidences(t *testing.T) {
 						Id:             testdata.MockEvidenceID1,
 						Timestamp:      timestamppb.Now(),
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					},
+				}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidencesResponse{
@@ -471,7 +487,9 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					},
+				}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidencesResponse{
@@ -493,7 +511,9 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					},
+				}),
 			},
 			wantErr: false,
 			wantRespMessage: &assessment.AssessEvidencesResponse{
@@ -511,7 +531,9 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					},
+				}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
@@ -527,7 +549,9 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}, t)}}),
+						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					},
+				}),
 			},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
@@ -578,7 +602,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
-		hookCounts      = 22
+		hookCounts      = 24
 	)
 
 	wg.Add(hookCounts)
@@ -616,38 +640,29 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 						ToolId:         testdata.MockEvidenceToolID1,
 						Timestamp:      timestamppb.Now(),
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource: toStruct(&voc.VirtualMachine{
-							Compute: &voc.Compute{
-								Resource: &voc.Resource{
-									ID:   testdata.MockResourceID1,
-									Type: []string{"VirtualMachine", "Compute", "Resource"}},
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id:   testdata.MockResourceID1,
+							Name: testdata.MockResourceName1,
+							BootLogging: &ontology.BootLogging{
+								LoggingServiceIds: []string{"SomeResourceId2"},
+								Enabled:           true,
+								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
-							BootLogging: &voc.BootLogging{
-								Logging: &voc.Logging{
-									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
-									Enabled:         true,
-									RetentionPeriod: 36,
-								},
+							Oslogging: &ontology.OSLogging{
+								LoggingServiceIds: []string{"SomeResourceId2"},
+								Enabled:           true,
+								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
-							OsLogging: &voc.OSLogging{
-								Logging: &voc.Logging{
-									LoggingService:  []voc.ResourceID{"SomeResourceId2"},
-									Enabled:         true,
-									RetentionPeriod: 36,
-								},
-							},
-							MalwareProtection: &voc.MalwareProtection{
+							MalwareProtection: &ontology.MalwareProtection{
 								Enabled:              true,
 								NumberOfThreatsFound: 5,
-								DaysSinceActive:      20,
-								ApplicationLogging: &voc.ApplicationLogging{
-									Logging: &voc.Logging{
-										Enabled:        true,
-										LoggingService: []voc.ResourceID{"SomeAnalyticsService?"},
-									},
+								DaysSinceActive:      durationpb.New(time.Hour * 24 * 20),
+								ApplicationLogging: &ontology.ApplicationLogging{
+									Enabled:           true,
+									LoggingServiceIds: []string{"SomeAnalyticsService?"},
 								},
 							},
-						}, t),
+						}),
 					}},
 
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
@@ -689,16 +704,6 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
-}
-
-// toStruct transforms r to a struct and asserts if it was successful
-func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
-	s, err := voc.ToStruct(r)
-	if err != nil {
-		assert.Error(t, err)
-	}
-
-	return
 }
 
 // mockAssessmentServerStream implements Assessment_AssessEvidencesServer which is used to mock incoming evidences as a stream
@@ -837,15 +842,14 @@ func createMockAssessmentServerStreamWithRecvErr(r *assessment.AssessEvidenceReq
 	return m
 }
 
-func TestService_HandleEvidence(t *testing.T) {
+func TestService_handleEvidence(t *testing.T) {
 	type fields struct {
 		authz         service.AuthorizationStrategy
 		evidenceStore *api.RPCConnection[evidence.EvidenceStoreClient]
 		orchestrator  *api.RPCConnection[orchestrator.OrchestratorClient]
 	}
 	type args struct {
-		evidence   *evidence.Evidence
-		resourceId string
+		evidence *evidence.Evidence
 	}
 	tests := []struct {
 		name    string
@@ -865,20 +869,15 @@ func TestService_HandleEvidence(t *testing.T) {
 					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{
-							Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}},
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+						BootLogging: &ontology.BootLogging{
+							LoggingServiceIds: nil,
+							Enabled:           true,
 						},
-						BootLogging: &voc.BootLogging{
-							Logging: &voc.Logging{
-								LoggingService:  nil,
-								Enabled:         true,
-								RetentionPeriod: 0,
-							},
-						},
-					}, t),
+					}),
 				},
-				resourceId: testdata.MockResourceID1,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.NoError(t, err)
@@ -886,7 +885,7 @@ func TestService_HandleEvidence(t *testing.T) {
 			},
 		},
 		{
-			name: "missing type in evidence",
+			name: "broken Any message",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -897,15 +896,30 @@ func TestService_HandleEvidence(t *testing.T) {
 					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{}}}}, t),
+					Resource:       &anypb.Any{TypeUrl: "does-not-exist"},
 				},
-				resourceId: testdata.MockResourceID1,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Error(t, err)
-				// Check if error message contains "empty" (list of types)
-				assert.Contains(t, err.Error(), "empty")
-				return true
+				return assert.Contains(t, err.Error(), "could not unmarshal resource proto message")
+			},
+		},
+		{
+			name: "not an ontology resource",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:             testdata.MockEvidenceID1,
+					ToolId:         testdata.MockEvidenceToolID1,
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: testdata.MockCloudServiceID1,
+					Resource:       prototest.NewAny(t, &emptypb.Empty{}),
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.Contains(t, err.Error(), "resource embedded in evidence is not a valid ontology resource")
 			},
 		},
 		{
@@ -920,19 +934,14 @@ func TestService_HandleEvidence(t *testing.T) {
 					ToolId:         testdata.MockEvidenceToolID1,
 					Timestamp:      timestamppb.Now(),
 					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{
-							Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}},
-						},
-						BootLogging: &voc.BootLogging{
-							Logging: &voc.Logging{
-								LoggingService:  nil,
-								Enabled:         true,
-								RetentionPeriod: 0,
-							},
-						}}, t),
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+						BootLogging: &ontology.BootLogging{
+							LoggingServiceIds: nil,
+							Enabled:           true,
+						}}),
 				},
-				resourceId: testdata.MockResourceID1,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				if !assert.NotEmpty(t, err) {
@@ -956,8 +965,8 @@ func TestService_HandleEvidence(t *testing.T) {
 			}
 
 			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
-			results, err := s.handleEvidence(context.Background(), tt.args.evidence, tt.args.resourceId)
-			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v, %v)", tt.args.evidence, tt.args.resourceId)) {
+			results, err := s.handleEvidence(context.Background(), tt.args.evidence)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v)", tt.args.evidence)) {
 				assert.NotEmpty(t, results)
 				// Check the result by validation
 				for _, result := range results {
@@ -1088,7 +1097,7 @@ type eventRecorder struct {
 	done  bool
 }
 
-func (*eventRecorder) Eval(_ *evidence.Evidence, _ policies.MetricsSource) (data []*policies.Result, err error) {
+func (*eventRecorder) Eval(_ *evidence.Evidence, _ ontology.IsResource, _ policies.MetricsSource) (data []*policies.Result, err error) {
 	return nil, nil
 }
 

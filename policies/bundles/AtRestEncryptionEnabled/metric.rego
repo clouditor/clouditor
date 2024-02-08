@@ -1,6 +1,7 @@
 package clouditor.metrics.at_rest_encryption_enabled
 
 import data.clouditor.compare
+
 import input.atRestEncryption as enc
 
 default applicable = false
@@ -12,5 +13,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, enc.enabled)
+	compare(data.operator, data.target_value, enc[_].enabled)
 }
