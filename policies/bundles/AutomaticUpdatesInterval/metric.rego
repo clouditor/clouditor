@@ -1,7 +1,7 @@
 package clouditor.metrics.automatic_updates_interval
 
 import data.clouditor.compare
-import input.automaticUpdates as am
+import input.automaticSecurityUpdates as am
 
 default applicable = false
 
