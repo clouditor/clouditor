@@ -104,6 +104,9 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, src
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(m)
+
+	types = ontology.ResourceTypes(r)
 
 	key := createKey(evidence, types)
 

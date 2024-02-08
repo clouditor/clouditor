@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,11 +30,11 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
-
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
 )
 
 var (
@@ -44,8 +42,8 @@ var (
 )
 
 // Discover virtual machines
-func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverVirtualMachines() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize virtual machines client
 	if err := d.initVirtualMachinesClient(); err != nil {
@@ -81,8 +79,8 @@ func (d *azureDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error
 	return list, nil
 }
 
-func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverBlockStorages() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize block storages client
 	if err := d.initBlockStoragesClient(); err != nil {
@@ -118,8 +116,8 @@ func (d *azureDiscovery) discoverBlockStorages() ([]voc.IsCloudResource, error) 
 }
 
 // Discover functions and web apps
-func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverFunctionsWebApps() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize functions client
 	if err := d.initWebAppsClient(); err != nil {
@@ -137,7 +135,7 @@ func (d *azureDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, erro
 			return res.Value
 		},
 		func(site *armappservice.Site) error {
-			var r voc.IsCompute
+			var r ontology.IsResource
 
 			// Get configuration for detailed properties
 			config, err := d.clients.webAppsClient.GetConfiguration(context.Background(),

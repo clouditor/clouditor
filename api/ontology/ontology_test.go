@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/internal/util"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"

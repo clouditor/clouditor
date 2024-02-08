@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +30,10 @@ import (
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // getName returns the name of a given Azure ID
@@ -56,20 +55,37 @@ func accountName(id string) string {
 }
 
 // tlsVersion returns Clouditor's TLS version constants for the given TLS version
-func tlsVersion(version string) string {
+func tlsVersion(version string) float32 {
 	// Check TLS version
 	switch version {
-	case constants.TLS1_0, constants.TLS1_1, constants.TLS1_2:
-		return version
 	case "1.0", "1_0":
-		return constants.TLS1_0
+		return 1.0
 	case "1.1", "1_1":
-		return constants.TLS1_1
+		return 1.1
 	case "1.2", "1_2":
-		return constants.TLS1_2
+		return 1.2
+	case "1.3", "1_3":
+		return 1.3
 	default:
-		log.Warningf("'%s' is no implemented TLS version.", version)
-		return ""
+		log.Warningf("'%s' is not an implemented TLS version.", version)
+		return 0
+	}
+}
+
+func tlsCipherSuites(cs string) []*ontology.CipherSuite {
+	// TODO(oxisto): Implement this correctly
+	// hack hack
+	if cs == "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" {
+		return []*ontology.CipherSuite{
+			{
+				AuthenticationMechanism: "RSA",
+				KeyExchangeAlgorithm:    "ECDHE",
+				SessionCipher:           "AES-256-GCM",
+				MacAlgorithm:            "SHA-384",
+			},
+		}
+	} else {
+		return nil
 	}
 }
 
@@ -91,7 +107,7 @@ func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }
 
-func resourceGroupID(ID *string) voc.ResourceID {
+func resourceGroupID(ID *string) string {
 	// split according to "/"
 	s := strings.Split(util.Deref(ID), "/")
 
@@ -102,13 +118,13 @@ func resourceGroupID(ID *string) voc.ResourceID {
 
 	id := strings.Join(s[:5], "/")
 
-	return voc.ResourceID(id)
+	return id
 }
 
 // retentionDuration returns the retention string as time.Duration
-func retentionDuration(retention string) time.Duration {
+func retentionDuration(retention string) *durationpb.Duration {
 	if retention == "" {
-		return time.Duration(0)
+		return durationpb.New(time.Duration(0))
 	}
 
 	// Delete first and last character
@@ -118,13 +134,13 @@ func retentionDuration(retention string) time.Duration {
 	d, err := strconv.Atoi(r)
 	if err != nil {
 		log.Errorf("could not convert string to int")
-		return time.Duration(0)
+		return durationpb.New(time.Duration(0))
 	}
 
 	// Create duration in hours
 	duration := time.Duration(time.Duration(d) * time.Hour * 24)
 
-	return duration
+	return durationpb.New(duration)
 }
 
 // labels converts the resource tags to the vocabulary label
@@ -136,4 +152,22 @@ func labels(tags map[string]*string) map[string]string {
 	}
 
 	return l
+}
+
+func creationTime(t *time.Time) *timestamppb.Timestamp {
+	if t == nil {
+		return nil
+	}
+
+	return timestamppb.New(*t)
+}
+
+func location(region *string) *ontology.GeoLocation {
+	if region == nil {
+		return nil
+	}
+
+	return &ontology.GeoLocation{
+		Region: util.Deref(region),
+	}
 }

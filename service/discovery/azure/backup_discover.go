@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +30,10 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 )
 
@@ -103,21 +102,21 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 				_, ok := d.backupMap[dataSourceType]
 				if !ok {
 					d.backupMap[dataSourceType] = &backup{
-						backup: make(map[string][]*voc.Backup),
+						backup: make(map[string][]*ontology.Backup),
 					}
 				}
 
 				// Store voc.Backup in backupMap
-				d.backupMap[dataSourceType].backup[util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = []*voc.Backup{
+				d.backupMap[dataSourceType].backup[util.Deref(instance.Properties.DataSourceInfo.ResourceID)] = []*ontology.Backup{
 					{
 						Enabled:         true,
 						RetentionPeriod: retentionDuration(util.Deref(retention)),
-						Storage:         voc.ResourceID(util.Deref(instance.ID)),
-						TransportEncryption: &voc.TransportEncryption{
-							Enabled:    true,
-							Enforced:   true,
-							Algorithm:  constants.TLS,
-							TlsVersion: constants.TLS1_2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
+						StorageId:       util.Deref(instance.ID),
+						TransportEncryption: &ontology.TransportEncryption{
+							Enabled:         true,
+							Enforced:        true,
+							Protocol:        constants.TLS,
+							ProtocolVersion: 1.2, // https://learn.microsoft.com/en-us/azure/backup/transport-layer-security#why-enable-tls-12 (Last access: 04/27/2023)
 						},
 					},
 				}

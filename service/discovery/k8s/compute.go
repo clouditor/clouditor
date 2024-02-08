@@ -32,6 +32,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/voc"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,8 +53,8 @@ func (*k8sComputeDiscovery) Description() string {
 	return "Discover Kubernetes compute resources."
 }
 
-func (d *k8sComputeDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sComputeDiscovery) List() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// Get pods
 	pods, err := d.intf.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
@@ -107,9 +108,9 @@ func getContainerResourceID(pod *v1.Pod) string {
 }
 
 // handleVolume returns all volumes connected to a pod
-func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []voc.IsCloudResource {
+func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []ontology.IsResource {
 	var (
-		volumes []voc.IsCloudResource
+		volumes []ontology.IsResource
 	)
 
 	// TODO(all): Do we have to differentiate between between persistend volume claim,persistent volumes and storage classes?

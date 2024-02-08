@@ -31,6 +31,7 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -45,7 +46,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -65,7 +66,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender(), WithResourceGroup("res1")),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.NetworkInterface{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
@@ -93,7 +94,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.NetworkInterface{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
@@ -137,7 +138,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -157,7 +158,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
@@ -381,7 +382,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -401,7 +402,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{

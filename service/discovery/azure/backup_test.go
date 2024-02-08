@@ -31,6 +31,7 @@ import (
 	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
@@ -59,7 +60,7 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 					backupMap: map[string]*backup{
 						"testBackup": {
 							backup:         make(map[string][]*voc.Backup),
-							backupStorages: []voc.IsCloudResource{},
+							backupStorages: []ontology.IsResource{},
 						},
 					},
 				},
@@ -258,7 +259,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		name         string
 		fields       fields
 		args         args
-		wantResource voc.IsCloudResource
+		wantResource ontology.IsResource
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{

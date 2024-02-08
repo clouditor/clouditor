@@ -40,6 +40,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -1183,7 +1184,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 				NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.([]voc.IsCloudResource)
+				got, ok := i1.([]ontology.IsResource)
 				if !assert.True(tt, ok) {
 					return false
 				}

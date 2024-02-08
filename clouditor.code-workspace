@@ -23,6 +23,9 @@
     "cSpell.words": [
       "AISEC",
       "anypb",
+      "armcompute",
+      "armcosmos",
+      "armnetwork",
       "armsubscription",
       "arnify",
       "bufnet",
@@ -63,6 +66,7 @@
       "protoreflect",
       "prototest",
       "Rego",
+      "resourcemanager",
       "servicetest",
       "sirupsen",
       "stretchr",
