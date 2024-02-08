@@ -26,18 +26,21 @@
 package policies
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -50,7 +53,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		pkg     string
 	}
 	type args struct {
-		resource   voc.IsCloudResource
+		resource   ontology.IsResource
 		evidenceID string
 		src        MetricsSource
 	}
@@ -71,20 +74,16 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:     DefaultRegoPackage,
 			},
 			args: args{
-				resource: voc.ObjectStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           mockObjStorage1ResourceID,
-							CreationTime: 1621086669,
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
-							GeoLocation:  voc.GeoLocation{},
-						},
-						AtRestEncryption: &voc.CustomerKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				resource: &ontology.ObjectStorage{
+					Id:           mockObjStorage1ResourceID,
+					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
+								KeyUrl:    "SomeUrl",
 							},
-							KeyUrl: "SomeUrl",
 						},
 					},
 				},
@@ -110,17 +109,15 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:     DefaultRegoPackage,
 			},
 			args: args{
-				resource: voc.ObjectStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           mockObjStorage2ResourceID,
-							CreationTime: 1621086669,
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
-							GeoLocation:  voc.GeoLocation{},
-						},
-						AtRestEncryption: &voc.AtRestEncryption{
-							Algorithm: "NoGoodAlg",
-							Enabled:   false,
+				resource: &ontology.ObjectStorage{
+					Id:           mockObjStorage1ResourceID,
+					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+								Algorithm: "NoGoodAlg",
+								Enabled:   false,
+							},
 						},
 					},
 					PublicAccess: true,
@@ -147,16 +144,12 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:     DefaultRegoPackage,
 			},
 			args: args{
-				resource: voc.ObjectStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           mockObjStorage2ResourceID,
-							CreationTime: 1621086669,
-							Type:         []string{"ObjectStorage", "Storage", "Resource"},
-							GeoLocation:  voc.GeoLocation{},
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				resource: &ontology.ObjectStorage{
+					Id:           mockObjStorage1ResourceID,
+					CreationTime: timestamppb.New(time.Unix(1621086669, 0)),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								// Normally given but for test case purpose only check that no key URL is given
 								Algorithm: "",
 								Enabled:   false,
@@ -188,42 +181,31 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			args: args{
 				src: &mockMetricsSource{t: t},
-				resource: voc.VirtualMachine{
-					AutomaticUpdates: &voc.AutomaticUpdates{
+				resource: &ontology.VirtualMachine{
+					Id: mockVM1ResourceID,
+					AutomaticUpdates: &ontology.AutomaticUpdates{
 						Enabled:      true,
-						Interval:     time.Hour * 24 * 30,
+						Interval:     durationpb.New(time.Hour * 24 * 30),
 						SecurityOnly: true,
 					},
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID:   mockVM1ResourceID,
-							Type: []string{"Virtual Machine", "Compute", "Resource"},
-						}},
-					BlockStorage: nil,
-					BootLogging: &voc.BootLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{"SomeResourceId1", "SomeResourceId2"},
-							Enabled:         true,
-							RetentionPeriod: 36 * time.Hour * 24,
-						},
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: []string{"SomeResourceId1", "SomeResourceId2"},
+						Enabled:           true,
+						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
-					OsLogging: &voc.OSLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{"SomeResourceId2"},
-							Enabled:         true,
-							RetentionPeriod: 36 * time.Hour * 24,
-						},
+					Oslogging: &ontology.OSLogging{
+						LoggingServiceIds: []string{"SomeResourceId2"},
+						Enabled:           true,
+						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
-					MalwareProtection: &voc.MalwareProtection{
+					MalwareProtection: &ontology.MalwareProtection{
 						Enabled:              true,
-						DaysSinceActive:      5,
+						DaysSinceActive:      durationpb.New(time.Hour * 24 * 5),
 						NumberOfThreatsFound: 5,
-						ApplicationLogging: &voc.ApplicationLogging{
-							Logging: &voc.Logging{
-								Enabled:         true,
-								RetentionPeriod: 36,
-								LoggingService:  []voc.ResourceID{"SomeAnalyticsService?"},
-							},
+						ApplicationLogging: &ontology.ApplicationLogging{
+							Enabled:           true,
+							RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
+							LoggingServiceIds: []string{"SomeAnalyticsService?"},
 						},
 					},
 				},
@@ -240,6 +222,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"MalwareProtectionEnabled":     true,
 				"MalwareProtectionOutput":      true,
 				"OSLoggingRetention":           true,
+				"OSLoggingOutput":              true,
 				"OSLoggingEnabled":             true,
 				"ResourceInventory":            true,
 			},
@@ -254,26 +237,18 @@ func Test_regoEval_Eval(t *testing.T) {
 				pkg:     DefaultRegoPackage,
 			},
 			args: args{
-				resource: voc.VirtualMachine{
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID:   mockVM2ResourceID,
-							Type: []string{"Compute", "Virtual Machine", "Resource"},
-						}},
-					BlockStorage: nil,
-					BootLogging: &voc.BootLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{},
-							Enabled:         false,
-							RetentionPeriod: 1 * time.Hour * 24,
-						},
+				resource: &ontology.VirtualMachine{
+					Id: mockVM2ResourceID,
+					BootLogging: &ontology.BootLogging{
+						LoggingServiceIds: nil,
+						Enabled:           false,
+						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
-					OsLogging: &voc.OSLogging{
-						Logging: &voc.Logging{
-							LoggingService:  []voc.ResourceID{"SomeResourceId3"},
-							Enabled:         false,
-							RetentionPeriod: 1 * time.Hour * 24,
-						},
+					// TODO(oxisto): Naming -> OsLogging
+					Oslogging: &ontology.OSLogging{
+						LoggingServiceIds: []string{"SomeResourceId3"},
+						Enabled:           false,
+						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
 				},
 				evidenceID: mockVM2EvidenceID,
@@ -289,6 +264,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"BootLoggingRetention":         false,
 				"MalwareProtectionEnabled":     false,
 				"OSLoggingEnabled":             false,
+				"OSLoggingOutput":              true,
 				"OSLoggingRetention":           false,
 				"ResourceInventory":            true,
 			},
@@ -297,7 +273,7 @@ func Test_regoEval_Eval(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		resource, err := voc.ToStruct(tt.args.resource)
+		resource, err := majorHack(tt.args.resource)
 		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			pe := regoEval{
@@ -308,7 +284,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
 				Resource: resource,
-			}, tt.args.src)
+			}, tt.args.resource, tt.args.src)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
@@ -443,4 +419,14 @@ func Test_regoEval_evalMap(t *testing.T) {
 			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}
+}
+
+// TODO: Needed until IsCloudResource embeds proto.Message
+func majorHack(r ontology.IsResource) (*anypb.Any, error) {
+	m, ok := r.(proto.Message)
+	if !ok {
+		return nil, errors.New("not a proto message")
+	}
+
+	return anypb.New(m)
 }

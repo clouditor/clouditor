@@ -1,3 +1,5 @@
+//go:build exclude
+
 /*
  * Copyright 2021 Fraunhofer AISEC
  *

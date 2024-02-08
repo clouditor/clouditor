@@ -163,8 +163,6 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        GoogleProtobufValue:
-            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         GraphEdge:
             type: object
             properties:
@@ -173,6 +171,8 @@ components:
                 source:
                     type: string
                 target:
+                    type: string
+                type:
                     type: string
         ListGraphEdgesResponse:
             type: object
@@ -197,16 +197,29 @@ components:
             properties:
                 id:
                     type: string
-                    description: Id contains a unique ID for each resource. This is specific for the cloud provider this resource was gathered for and can for example be a resource URL.
+                    description: |-
+                        Id contains a unique ID for each resource. This is specific for the cloud
+                         provider this resource was gathered for and can for example be a resource
+                         URL.
                 cloudServiceId:
                     type: string
-                    description: CloudServiceId is the UUID for the cloud service to which this resource belongs to.
+                    description: |-
+                        CloudServiceId is the UUID for the cloud service to which this resource
+                         belongs to.
                 resourceType:
                     type: string
-                    description: ResourceType contains a comma seperated string of resource types according to our ontology.
+                    description: |-
+                        ResourceType contains a comma separated string of resource types according
+                         to our ontology.
                 properties:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Resource is a wrapper around google.protobuf.Value that is needed for persistence reasons.
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: |-
+                        Properties contains a protobuf message that describe the resource in the
+                         terms of our Clouditor ontology.
+            description: |-
+                Resource is a wrapper around google.protobuf.Value that is needed for
+                 persistence reasons.
         StartDiscoveryRequest:
             type: object
             properties:

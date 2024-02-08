@@ -1,36 +1,35 @@
-/*
- * Copyright 2016-2022 Fraunhofer AISEC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *           $$\                           $$\ $$\   $$\
- *           $$ |                          $$ |\__|  $$ |
- *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
- *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- *
- * This file is part of Clouditor Community Edition.
- */
+// Copyright 2016-2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 syntax = "proto3";
 
 package clouditor.discovery.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
 import "tagger/tagger.proto";
 
 option go_package = "api/discovery";
@@ -90,14 +89,14 @@ message Resource {
   // CloudServiceId is the UUID for the cloud service to which this resource
   // belongs to.
   string cloud_service_id = 2 [(buf.validate.field).string.uuid = true];
-  // ResourceType contains a comma seperated string of resource types according
+  // ResourceType contains a comma separated string of resource types according
   // to our ontology.
   string resource_type = 3 [(buf.validate.field).string.min_len = 1];
 
-  // Properties contains a protobuf struct that describe the resource in the
+  // Properties contains a protobuf message that describe the resource in the
   // terms of our Clouditor ontology.
-  google.protobuf.Value properties = 10 [
-    (tagger.tags) = "gorm:\"serializer:valuepb;type:json\"",
+  google.protobuf.Any properties = 10 [
+    (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
     (buf.validate.field).required = true
   ];
 }

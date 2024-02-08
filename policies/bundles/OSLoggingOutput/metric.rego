@@ -1,7 +1,11 @@
 package clouditor.metrics.os_logging_output
 
 import data.clouditor.compare
-import input.oSLogging as logging
+
+# spelling is incorrect, need to change after we fix it in owl2proto
+import input.oslogging as logging
+
+#import input.osLogging as logging
 
 default applicable = false
 
@@ -14,5 +18,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, count(logging.loggingService))
+	compare(data.operator, data.target_value, count(logging.loggingServiceIds))
 }

@@ -60,7 +60,7 @@ func TestNewUpdateResourceCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewUpdateResourceCommand()
-	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication"}}`})
+	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id": "MyApplication", "name": "MyApplication"}}`})
 	assert.NoError(t, err)
 
 	var response = &discovery.Resource{}

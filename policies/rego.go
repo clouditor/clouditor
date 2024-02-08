@@ -34,6 +34,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/util"
 	"github.com/open-policy-agent/opa/rego"
@@ -88,8 +89,9 @@ func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 }
 
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
-// considered to be applicable.
-func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error) {
+// considered to be applicable. In order to avoid multiple unwrapping, the callee will already supply an unwrapped
+// ontology resource in r.
+func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, src MetricsSource) (data []*Result, err error) {
 	var (
 		baseDir string
 		m       map[string]interface{}
@@ -97,12 +99,14 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, src MetricsSource) (data [
 	)
 
 	baseDir = "."
-	m = evidence.Resource.GetStructValue().AsMap()
 
-	types, err = evidence.ResourceTypes()
+	m, err = ontology.ResourceMap(r)
 	if err != nil {
-		return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
+		return nil, err
 	}
+	fmt.Println(m)
+
+	types = ontology.ResourceTypes(r)
 
 	key := createKey(evidence, types)
 

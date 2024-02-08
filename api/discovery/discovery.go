@@ -27,18 +27,13 @@ package discovery
 
 import (
 	"encoding/json"
-	"errors"
-	"reflect"
+	"fmt"
+	reflect "reflect"
 	"strings"
-	"time"
 
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
-	"github.com/sirupsen/logrus"
-)
-
-var (
-	log *logrus.Entry
+	"clouditor.io/clouditor/api/ontology"
+	"google.golang.org/protobuf/proto"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 )
 
 const (
@@ -53,85 +48,64 @@ const (
 // vocabulary objects.
 type Discoverer interface {
 	Name() string
-	List() ([]voc.IsCloudResource, error)
+	List() ([]ontology.IsResource, error)
 	CloudServiceID() string
 }
 
-// Authorizer authorizes a Cloud service
-type Authorizer interface {
-	Authorize() (err error)
-}
-
-// typeRegistry
-var typeRegistry = make(map[string]reflect.Type)
-
-// TODO(oxisto): auto-generate them as part of the voc?
-func init() {
-	types := []any{
-		voc.Application{},
-		voc.Library{},
-		voc.TranslationUnitDeclaration{},
-		voc.CodeRepository{},
-		voc.Function{},
-		voc.VirtualMachine{},
-		voc.ObjectStorageService{},
-		voc.ObjectStorage{},
-		voc.NetworkInterface{},
-		voc.ResourceGroup{},
-		voc.BlockStorage{},
-		voc.DatabaseService{},
-		voc.DatabaseStorage{},
-		voc.FileStorageService{},
-		voc.FileStorage{},
-		voc.WebApp{},
-	}
-	for _, v := range types {
-		t := reflect.TypeOf(v)
-		typeRegistry[t.String()] = t
-	}
-}
-
-// NewResource creates a new voc resource.
-func NewResource(d Discoverer, ID voc.ResourceID, name string, creationTime *time.Time, location voc.GeoLocation, labels map[string]string, parent voc.ResourceID, typ []string, raw ...interface{}) *voc.Resource {
-	rawString, err := voc.ToStringInterface(raw)
-	if err != nil {
-		log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
-	}
-
-	return &voc.Resource{
-		ID:           ID,
-		ServiceID:    d.CloudServiceID(),
-		CreationTime: util.SafeTimestamp(creationTime),
-		Name:         name,
-		GeoLocation:  location,
-		Type:         typ,
-		Labels:       labels,
-		Parent:       parent,
-		Raw:          rawString,
-	}
-}
-
-func (r *Resource) ToVocResource() (voc.IsCloudResource, error) {
+func (r *Resource) ToOntologyResource() (or ontology.IsResource, err error) {
 	var (
-		b   []byte
-		err error
+		m  proto.Message
+		ok bool
 	)
 
-	typ := strings.Split(r.ResourceType, ",")[0]
-
-	var t, ok = typeRegistry["voc."+typ]
-	if !ok {
-		return nil, errors.New("invalid type")
-	}
-	var v = reflect.New(t).Interface().(voc.IsCloudResource)
-
-	b, err = r.Properties.GetStructValue().MarshalJSON()
+	m, err = r.Properties.UnmarshalNew()
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(b, v)
-	return v, err
+	if or, ok = m.(ontology.IsResource); ok {
+		return or, nil
+	}
+
+	return
+}
+
+func Raw(raws ...any) string {
+	var rawMap = make(map[string][]any)
+
+	for _, raw := range raws {
+		typ := reflect.TypeOf(raw).String()
+
+		rawMap[typ] = append(rawMap[typ], raw)
+	}
+
+	b, _ := json.Marshal(rawMap)
+	return string(b)
+}
+
+// ToDiscoveryResource converts a proto message that complies to the interface [ontology.IsResource] into a resource
+// that can be persisted in our database ([*discovery.Resource]).
+func ToDiscoveryResource(resource ontology.IsResource, csID string) (r *Resource, err error) {
+	var (
+		a *anypb.Any
+	)
+
+	// Convert our ontology resource into an Any proto message
+	a, err = anypb.New(resource)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert protobuf structure: %w", err)
+	}
+
+	// Build a resource struct. This will hold the latest sync state of the
+	// resource for our storage layer.
+	r = &Resource{
+		Id:             string(resource.GetId()),
+		ResourceType:   strings.Join(ontology.ResourceTypes(resource), ","),
+		CloudServiceId: csID,
+		Properties:     a,
+	}
+
+	return
 }
 
 // GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
