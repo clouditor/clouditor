@@ -338,7 +338,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
-					"automaticSecurityUpdates": map[string]interface{}{
+					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
 				},
@@ -372,7 +372,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				metricID:  "AutomaticUpdatesEnabled",
 				baseDir:   ".",
 				m: map[string]interface{}{
-					"automaticSecurityUpdates": map[string]interface{}{
+					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
 					},
 				},
