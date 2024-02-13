@@ -30,6 +30,7 @@ package azure
 import (
 	"testing"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
@@ -94,7 +95,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsCloudResource
+		want   ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -147,7 +148,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 	tests := []struct {
 		name     string
 		fields   fields
-		wantList []voc.IsCloudResource
+		wantList []ontology.IsResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
@@ -171,7 +172,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
-			wantList: []voc.IsCloudResource{
+			wantList: []ontology.IsResource{
 				&voc.Account{
 					Resource: &voc.Resource{
 						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
@@ -226,7 +227,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
-			wantList: []voc.IsCloudResource{
+			wantList: []ontology.IsResource{
 				&voc.Account{
 					Resource: &voc.Resource{
 						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),

@@ -32,6 +32,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/voc"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,8 +53,8 @@ func (*k8sStorageDiscovery) Description() string {
 	return "Discover Kubernetes storage resources."
 }
 
-func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sStorageDiscovery) List() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// Get persistent volumes
 	// Note: Volumes exist in the context of a pod and cannot be created on its own, PersistentVolumes are first class objects with its own lifecycle.
@@ -78,7 +79,7 @@ func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 // handlePVC returns all PersistentVolumes
-func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
+func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) ontology.IsResource {
 	s := &voc.Storage{
 		Resource: discovery.NewResource(d,
 			voc.ResourceID(pv.UID),
@@ -101,7 +102,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResou
 
 // TODO(all): Is it possible to use generics for the PersistentVolumeSource and VolumeSource and thus delete duplicated code?
 // addPersistentVolumeSource adds a given volumeSource to the specific ontology storage type
-func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc.IsCloudResource {
+func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) ontology.IsResource {
 
 	// TODO(all): Define all volume types
 	// LocalVolumeSource
@@ -140,7 +141,7 @@ func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc
 }
 
 // addVolumeSource adds a given volumeSource to the specific ontology storage type
-func addVolumeSource(s *voc.Storage, vs v1.VolumeSource) voc.IsCloudResource {
+func addVolumeSource(s *voc.Storage, vs v1.VolumeSource) ontology.IsResource {
 
 	// TODO(all): Define all volume types
 	// PersistentVolumeClaimVolumeSource

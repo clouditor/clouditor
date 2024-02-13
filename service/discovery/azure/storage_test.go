@@ -32,6 +32,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
@@ -80,7 +81,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -354,7 +355,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 	}
 	type args struct {
 		account      *armstorage.Account
-		storagesList []voc.IsCloudResource
+		storagesList []ontology.IsResource
 	}
 	tests := []struct {
 		name    string
@@ -599,7 +600,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -637,7 +638,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -733,7 +734,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -771,7 +772,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -879,7 +880,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		// {
@@ -916,7 +917,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1098,7 +1099,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1116,7 +1117,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1246,7 +1247,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1271,7 +1272,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1322,7 +1323,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1373,7 +1374,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1424,7 +1425,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1525,7 +1526,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
@@ -1582,7 +1583,7 @@ func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   []voc.IsCloudResource
+		want   []ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -1604,7 +1605,7 @@ func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.DatabaseStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{

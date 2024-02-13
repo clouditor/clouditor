@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +29,7 @@ import (
 	"context"
 
 	"clouditor.io/clouditor/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
@@ -61,9 +60,9 @@ func (d *azureDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
 }
 
 // loadBalancerPorts returns the external endpoint ports
-func loadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint16) {
+func loadBalancerPorts(lb *armnetwork.LoadBalancer) (loadBalancerPorts []uint32) {
 	for _, item := range lb.Properties.LoadBalancingRules {
-		loadBalancerPorts = append(loadBalancerPorts, uint16(util.Deref(item.Properties.FrontendPort)))
+		loadBalancerPorts = append(loadBalancerPorts, uint32(util.Deref(item.Properties.FrontendPort)))
 	}
 
 	return loadBalancerPorts

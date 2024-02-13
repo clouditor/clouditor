@@ -33,6 +33,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
@@ -445,7 +446,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -466,7 +467,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
 
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.Function{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
@@ -646,7 +647,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsCompute
+		want   ontology.IsResource
 	}{
 		{
 			name: "Empty input",
@@ -823,7 +824,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -841,7 +842,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.VirtualMachine{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
@@ -1027,7 +1028,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    voc.IsCompute
+		want    ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1342,7 +1343,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1362,7 +1363,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
+			want: []ontology.IsResource{
 				&voc.BlockStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
@@ -1948,7 +1949,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsCompute
+		want   ontology.IsResource
 	}{
 		{
 			name: "Empty input",

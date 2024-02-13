@@ -33,6 +33,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/voc"
 	"github.com/stretchr/testify/assert"
@@ -137,7 +138,7 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 				NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				cloudResource, ok := i1.([]voc.IsCloudResource)
+				cloudResource, ok := i1.([]ontology.IsResource)
 				if !assert.True(tt, ok) {
 					return false
 				}

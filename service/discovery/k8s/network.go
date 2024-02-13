@@ -32,6 +32,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/voc"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/networking/v1"
@@ -53,8 +54,8 @@ func (*k8sNetworkDiscovery) Description() string {
 	return "Discover Kubernetes network resources."
 }
 
-func (d *k8sNetworkDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sNetworkDiscovery) List() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	services, err := d.intf.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
