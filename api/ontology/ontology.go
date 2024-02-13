@@ -2,6 +2,7 @@ package ontology
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -12,6 +13,7 @@ import (
 type IsResource interface {
 	proto.Message
 	GetId() string
+	GetName() string
 	GetCreationTime() *timestamppb.Timestamp
 	GetRaw() string
 }
@@ -72,6 +74,10 @@ func ResourceTypes(r IsResource) []string {
 	}
 
 	return nil
+}
+
+func HasType(r IsResource, typ string) bool {
+	return slices.Contains(ResourceTypes(r), typ)
 }
 
 // ResourceMap contains the properties of the resource as a map[string]any, based on its JSON representation.
