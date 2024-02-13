@@ -28,10 +28,11 @@ package discovery
 import (
 	"encoding/json"
 	"fmt"
-	reflect "reflect"
+	"reflect"
 	"strings"
 
 	"clouditor.io/clouditor/api/ontology"
+
 	"google.golang.org/protobuf/proto"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 )

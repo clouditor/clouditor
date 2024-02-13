@@ -33,7 +33,6 @@ Install necessary protobuf tools.
 
 ```
 go install google.golang.org/protobuf/cmd/protoc-gen-go \
-google.golang.org/grpc/cmd/protoc-gen-go-grpc \
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 github.com/google/gnostic/cmd/protoc-gen-openapi \
 github.com/oxisto/owl2proto/cmd/owl2proto
