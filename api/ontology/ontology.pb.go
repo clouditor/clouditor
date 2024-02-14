@@ -1400,6 +1400,7 @@ type Resource struct {
 	//	*Resource_KeyVault
 	//	*Resource_NetworkInterface
 	//	*Resource_NetworkSecurityGroup
+	//	*Resource_GenericNetworkService
 	//	*Resource_LoadBalancer
 	//	*Resource_LoggingService
 	//	*Resource_DocumentDatabaseService
@@ -1595,6 +1596,13 @@ func (x *Resource) GetNetworkInterface() *NetworkInterface {
 func (x *Resource) GetNetworkSecurityGroup() *NetworkSecurityGroup {
 	if x, ok := x.GetType().(*Resource_NetworkSecurityGroup); ok {
 		return x.NetworkSecurityGroup
+	}
+	return nil
+}
+
+func (x *Resource) GetGenericNetworkService() *GenericNetworkService {
+	if x, ok := x.GetType().(*Resource_GenericNetworkService); ok {
+		return x.GenericNetworkService
 	}
 	return nil
 }
@@ -1802,72 +1810,76 @@ type Resource_NetworkSecurityGroup struct {
 	NetworkSecurityGroup *NetworkSecurityGroup `protobuf:"bytes,20,opt,name=network_security_group,json=networkSecurityGroup,proto3,oneof"`
 }
 
+type Resource_GenericNetworkService struct {
+	GenericNetworkService *GenericNetworkService `protobuf:"bytes,21,opt,name=generic_network_service,json=genericNetworkService,proto3,oneof"`
+}
+
 type Resource_LoadBalancer struct {
-	LoadBalancer *LoadBalancer `protobuf:"bytes,21,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
+	LoadBalancer *LoadBalancer `protobuf:"bytes,22,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
 }
 
 type Resource_LoggingService struct {
-	LoggingService *LoggingService `protobuf:"bytes,22,opt,name=logging_service,json=loggingService,proto3,oneof"`
+	LoggingService *LoggingService `protobuf:"bytes,23,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
 type Resource_DocumentDatabaseService struct {
-	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,23,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
+	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,24,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
 }
 
 type Resource_KeyValueDatabaseService struct {
-	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,24,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
+	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,25,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
 }
 
 type Resource_MultiModalDatabaseService struct {
-	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,25,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
+	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,26,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
 }
 
 type Resource_RelationalDatabaseService struct {
-	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,26,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
+	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,27,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
 }
 
 type Resource_FileStorageService struct {
-	FileStorageService *FileStorageService `protobuf:"bytes,27,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
+	FileStorageService *FileStorageService `protobuf:"bytes,28,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
 }
 
 type Resource_ObjectStorageService struct {
-	ObjectStorageService *ObjectStorageService `protobuf:"bytes,28,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
+	ObjectStorageService *ObjectStorageService `protobuf:"bytes,29,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
 }
 
 type Resource_VirtualNetwork struct {
-	VirtualNetwork *VirtualNetwork `protobuf:"bytes,29,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
+	VirtualNetwork *VirtualNetwork `protobuf:"bytes,30,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
 }
 
 type Resource_VirtualSubNetwork struct {
-	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,30,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
+	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,31,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
 }
 
 type Resource_PasswordPolicy struct {
-	PasswordPolicy *PasswordPolicy `protobuf:"bytes,31,opt,name=password_policy,json=passwordPolicy,proto3,oneof"`
+	PasswordPolicy *PasswordPolicy `protobuf:"bytes,32,opt,name=password_policy,json=passwordPolicy,proto3,oneof"`
 }
 
 type Resource_ResourceGroup struct {
-	ResourceGroup *ResourceGroup `protobuf:"bytes,32,opt,name=resource_group,json=resourceGroup,proto3,oneof"`
+	ResourceGroup *ResourceGroup `protobuf:"bytes,33,opt,name=resource_group,json=resourceGroup,proto3,oneof"`
 }
 
 type Resource_BlockStorage struct {
-	BlockStorage *BlockStorage `protobuf:"bytes,33,opt,name=block_storage,json=blockStorage,proto3,oneof"`
+	BlockStorage *BlockStorage `protobuf:"bytes,34,opt,name=block_storage,json=blockStorage,proto3,oneof"`
 }
 
 type Resource_DatabaseStorage struct {
-	DatabaseStorage *DatabaseStorage `protobuf:"bytes,34,opt,name=database_storage,json=databaseStorage,proto3,oneof"`
+	DatabaseStorage *DatabaseStorage `protobuf:"bytes,35,opt,name=database_storage,json=databaseStorage,proto3,oneof"`
 }
 
 type Resource_FileStorage struct {
-	FileStorage *FileStorage `protobuf:"bytes,35,opt,name=file_storage,json=fileStorage,proto3,oneof"`
+	FileStorage *FileStorage `protobuf:"bytes,36,opt,name=file_storage,json=fileStorage,proto3,oneof"`
 }
 
 type Resource_ObjectStorage struct {
-	ObjectStorage *ObjectStorage `protobuf:"bytes,36,opt,name=object_storage,json=objectStorage,proto3,oneof"`
+	ObjectStorage *ObjectStorage `protobuf:"bytes,37,opt,name=object_storage,json=objectStorage,proto3,oneof"`
 }
 
 type Resource_Document struct {
-	Document *Document `protobuf:"bytes,37,opt,name=document,proto3,oneof"`
+	Document *Document `protobuf:"bytes,38,opt,name=document,proto3,oneof"`
 }
 
 func (*Resource_Application) isResource_Type() {}
@@ -1909,6 +1921,8 @@ func (*Resource_KeyVault) isResource_Type() {}
 func (*Resource_NetworkInterface) isResource_Type() {}
 
 func (*Resource_NetworkSecurityGroup) isResource_Type() {}
+
+func (*Resource_GenericNetworkService) isResource_Type() {}
 
 func (*Resource_LoadBalancer) isResource_Type() {}
 
@@ -2401,6 +2415,7 @@ type CloudResource struct {
 	//	*CloudResource_KeyVault
 	//	*CloudResource_NetworkInterface
 	//	*CloudResource_NetworkSecurityGroup
+	//	*CloudResource_GenericNetworkService
 	//	*CloudResource_LoadBalancer
 	//	*CloudResource_LoggingService
 	//	*CloudResource_DocumentDatabaseService
@@ -2588,6 +2603,13 @@ func (x *CloudResource) GetNetworkInterface() *NetworkInterface {
 func (x *CloudResource) GetNetworkSecurityGroup() *NetworkSecurityGroup {
 	if x, ok := x.GetType().(*CloudResource_NetworkSecurityGroup); ok {
 		return x.NetworkSecurityGroup
+	}
+	return nil
+}
+
+func (x *CloudResource) GetGenericNetworkService() *GenericNetworkService {
+	if x, ok := x.GetType().(*CloudResource_GenericNetworkService); ok {
+		return x.GenericNetworkService
 	}
 	return nil
 }
@@ -2784,68 +2806,72 @@ type CloudResource_NetworkSecurityGroup struct {
 	NetworkSecurityGroup *NetworkSecurityGroup `protobuf:"bytes,19,opt,name=network_security_group,json=networkSecurityGroup,proto3,oneof"`
 }
 
+type CloudResource_GenericNetworkService struct {
+	GenericNetworkService *GenericNetworkService `protobuf:"bytes,20,opt,name=generic_network_service,json=genericNetworkService,proto3,oneof"`
+}
+
 type CloudResource_LoadBalancer struct {
-	LoadBalancer *LoadBalancer `protobuf:"bytes,20,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
+	LoadBalancer *LoadBalancer `protobuf:"bytes,21,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
 }
 
 type CloudResource_LoggingService struct {
-	LoggingService *LoggingService `protobuf:"bytes,21,opt,name=logging_service,json=loggingService,proto3,oneof"`
+	LoggingService *LoggingService `protobuf:"bytes,22,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
 type CloudResource_DocumentDatabaseService struct {
-	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,22,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
+	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,23,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
 }
 
 type CloudResource_KeyValueDatabaseService struct {
-	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,23,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
+	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,24,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
 }
 
 type CloudResource_MultiModalDatabaseService struct {
-	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,24,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
+	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,25,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
 }
 
 type CloudResource_RelationalDatabaseService struct {
-	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,25,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
+	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,26,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
 }
 
 type CloudResource_FileStorageService struct {
-	FileStorageService *FileStorageService `protobuf:"bytes,26,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
+	FileStorageService *FileStorageService `protobuf:"bytes,27,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
 }
 
 type CloudResource_ObjectStorageService struct {
-	ObjectStorageService *ObjectStorageService `protobuf:"bytes,27,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
+	ObjectStorageService *ObjectStorageService `protobuf:"bytes,28,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
 }
 
 type CloudResource_VirtualNetwork struct {
-	VirtualNetwork *VirtualNetwork `protobuf:"bytes,28,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
+	VirtualNetwork *VirtualNetwork `protobuf:"bytes,29,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
 }
 
 type CloudResource_VirtualSubNetwork struct {
-	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,29,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
+	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,30,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
 }
 
 type CloudResource_PasswordPolicy struct {
-	PasswordPolicy *PasswordPolicy `protobuf:"bytes,30,opt,name=password_policy,json=passwordPolicy,proto3,oneof"`
+	PasswordPolicy *PasswordPolicy `protobuf:"bytes,31,opt,name=password_policy,json=passwordPolicy,proto3,oneof"`
 }
 
 type CloudResource_ResourceGroup struct {
-	ResourceGroup *ResourceGroup `protobuf:"bytes,31,opt,name=resource_group,json=resourceGroup,proto3,oneof"`
+	ResourceGroup *ResourceGroup `protobuf:"bytes,32,opt,name=resource_group,json=resourceGroup,proto3,oneof"`
 }
 
 type CloudResource_BlockStorage struct {
-	BlockStorage *BlockStorage `protobuf:"bytes,32,opt,name=block_storage,json=blockStorage,proto3,oneof"`
+	BlockStorage *BlockStorage `protobuf:"bytes,33,opt,name=block_storage,json=blockStorage,proto3,oneof"`
 }
 
 type CloudResource_DatabaseStorage struct {
-	DatabaseStorage *DatabaseStorage `protobuf:"bytes,33,opt,name=database_storage,json=databaseStorage,proto3,oneof"`
+	DatabaseStorage *DatabaseStorage `protobuf:"bytes,34,opt,name=database_storage,json=databaseStorage,proto3,oneof"`
 }
 
 type CloudResource_FileStorage struct {
-	FileStorage *FileStorage `protobuf:"bytes,34,opt,name=file_storage,json=fileStorage,proto3,oneof"`
+	FileStorage *FileStorage `protobuf:"bytes,35,opt,name=file_storage,json=fileStorage,proto3,oneof"`
 }
 
 type CloudResource_ObjectStorage struct {
-	ObjectStorage *ObjectStorage `protobuf:"bytes,35,opt,name=object_storage,json=objectStorage,proto3,oneof"`
+	ObjectStorage *ObjectStorage `protobuf:"bytes,36,opt,name=object_storage,json=objectStorage,proto3,oneof"`
 }
 
 func (*CloudResource_Account) isCloudResource_Type() {}
@@ -2885,6 +2911,8 @@ func (*CloudResource_KeyVault) isCloudResource_Type() {}
 func (*CloudResource_NetworkInterface) isCloudResource_Type() {}
 
 func (*CloudResource_NetworkSecurityGroup) isCloudResource_Type() {}
+
+func (*CloudResource_GenericNetworkService) isCloudResource_Type() {}
 
 func (*CloudResource_LoadBalancer) isCloudResource_Type() {}
 
@@ -5412,6 +5440,144 @@ func (*Functionality_LogOperation) isFunctionality_Type() {}
 
 func (*Functionality_ObjectStorageRequest) isFunctionality_Type() {}
 
+// GenericNetworkService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// A generic network service.
+type GenericNetworkService struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	CreationTime *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=creation_time,json=creationTime,proto3" json:"creation_time,omitempty"`
+	Id           string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Ips          []string               `protobuf:"bytes,3,rep,name=ips,proto3" json:"ips,omitempty"`
+	Labels       map[string]string      `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Name         string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	Ports        []uint32               `protobuf:"varint,6,rep,packed,name=ports,proto3" json:"ports,omitempty"`
+	// The raw field contains the raw information that is used to fill in the fields of the ontology.
+	Raw                 string               `protobuf:"bytes,7,opt,name=raw,proto3" json:"raw,omitempty"`
+	Authenticity        *Authenticity        `protobuf:"bytes,8,opt,name=authenticity,proto3" json:"authenticity,omitempty"`
+	ComputeId           *string              `protobuf:"bytes,9,opt,name=compute_id,json=computeId,proto3,oneof" json:"compute_id,omitempty"`
+	GeoLocation         *GeoLocation         `protobuf:"bytes,10,opt,name=geo_location,json=geoLocation,proto3" json:"geo_location,omitempty"`
+	ParentId            *string              `protobuf:"bytes,11,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	TransportEncryption *TransportEncryption `protobuf:"bytes,12,opt,name=transport_encryption,json=transportEncryption,proto3" json:"transport_encryption,omitempty"`
+}
+
+func (x *GenericNetworkService) Reset() {
+	*x = GenericNetworkService{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_ontology_ontology_proto_msgTypes[45]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GenericNetworkService) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenericNetworkService) ProtoMessage() {}
+
+func (x *GenericNetworkService) ProtoReflect() protoreflect.Message {
+	mi := &file_api_ontology_ontology_proto_msgTypes[45]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenericNetworkService.ProtoReflect.Descriptor instead.
+func (*GenericNetworkService) Descriptor() ([]byte, []int) {
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *GenericNetworkService) GetCreationTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreationTime
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GenericNetworkService) GetIps() []string {
+	if x != nil {
+		return x.Ips
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GenericNetworkService) GetPorts() []uint32 {
+	if x != nil {
+		return x.Ports
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetRaw() string {
+	if x != nil {
+		return x.Raw
+	}
+	return ""
+}
+
+func (x *GenericNetworkService) GetAuthenticity() *Authenticity {
+	if x != nil {
+		return x.Authenticity
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetComputeId() string {
+	if x != nil && x.ComputeId != nil {
+		return *x.ComputeId
+	}
+	return ""
+}
+
+func (x *GenericNetworkService) GetGeoLocation() *GeoLocation {
+	if x != nil {
+		return x.GeoLocation
+	}
+	return nil
+}
+
+func (x *GenericNetworkService) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+func (x *GenericNetworkService) GetTransportEncryption() *TransportEncryption {
+	if x != nil {
+		return x.TransportEncryption
+	}
+	return nil
+}
+
 // GeoLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 type GeoLocation struct {
 	state         protoimpl.MessageState
@@ -5424,7 +5590,7 @@ type GeoLocation struct {
 func (x *GeoLocation) Reset() {
 	*x = GeoLocation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[45]
+		mi := &file_api_ontology_ontology_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5437,7 +5603,7 @@ func (x *GeoLocation) String() string {
 func (*GeoLocation) ProtoMessage() {}
 
 func (x *GeoLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[45]
+	mi := &file_api_ontology_ontology_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5450,7 +5616,7 @@ func (x *GeoLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GeoLocation.ProtoReflect.Descriptor instead.
 func (*GeoLocation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{45}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GeoLocation) GetRegion() string {
@@ -5470,7 +5636,7 @@ type HttpClientLibrary struct {
 func (x *HttpClientLibrary) Reset() {
 	*x = HttpClientLibrary{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[46]
+		mi := &file_api_ontology_ontology_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5483,7 +5649,7 @@ func (x *HttpClientLibrary) String() string {
 func (*HttpClientLibrary) ProtoMessage() {}
 
 func (x *HttpClientLibrary) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[46]
+	mi := &file_api_ontology_ontology_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5496,7 +5662,7 @@ func (x *HttpClientLibrary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpClientLibrary.ProtoReflect.Descriptor instead.
 func (*HttpClientLibrary) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{46}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{47}
 }
 
 // HttpEndpoint is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -5518,7 +5684,7 @@ type HttpEndpoint struct {
 func (x *HttpEndpoint) Reset() {
 	*x = HttpEndpoint{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[47]
+		mi := &file_api_ontology_ontology_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5531,7 +5697,7 @@ func (x *HttpEndpoint) String() string {
 func (*HttpEndpoint) ProtoMessage() {}
 
 func (x *HttpEndpoint) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[47]
+	mi := &file_api_ontology_ontology_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5544,7 +5710,7 @@ func (x *HttpEndpoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpEndpoint.ProtoReflect.Descriptor instead.
 func (*HttpEndpoint) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{47}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *HttpEndpoint) GetHandler() string {
@@ -5603,7 +5769,7 @@ type HttpRequest struct {
 func (x *HttpRequest) Reset() {
 	*x = HttpRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[48]
+		mi := &file_api_ontology_ontology_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5616,7 +5782,7 @@ func (x *HttpRequest) String() string {
 func (*HttpRequest) ProtoMessage() {}
 
 func (x *HttpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[48]
+	mi := &file_api_ontology_ontology_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5629,7 +5795,7 @@ func (x *HttpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpRequest.ProtoReflect.Descriptor instead.
 func (*HttpRequest) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{48}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *HttpRequest) GetCall() string {
@@ -5667,7 +5833,7 @@ type HttpRequestHandler struct {
 func (x *HttpRequestHandler) Reset() {
 	*x = HttpRequestHandler{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[49]
+		mi := &file_api_ontology_ontology_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5680,7 +5846,7 @@ func (x *HttpRequestHandler) String() string {
 func (*HttpRequestHandler) ProtoMessage() {}
 
 func (x *HttpRequestHandler) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[49]
+	mi := &file_api_ontology_ontology_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5693,7 +5859,7 @@ func (x *HttpRequestHandler) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpRequestHandler.ProtoReflect.Descriptor instead.
 func (*HttpRequestHandler) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{49}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *HttpRequestHandler) GetPath() string {
@@ -5729,7 +5895,7 @@ type HttpServer struct {
 func (x *HttpServer) Reset() {
 	*x = HttpServer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[50]
+		mi := &file_api_ontology_ontology_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5742,7 +5908,7 @@ func (x *HttpServer) String() string {
 func (*HttpServer) ProtoMessage() {}
 
 func (x *HttpServer) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[50]
+	mi := &file_api_ontology_ontology_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5755,7 +5921,7 @@ func (x *HttpServer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HttpServer.ProtoReflect.Descriptor instead.
 func (*HttpServer) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{50}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *HttpServer) GetHttpRequestHandler() *HttpRequestHandler {
@@ -5781,7 +5947,7 @@ type Identifiable struct {
 func (x *Identifiable) Reset() {
 	*x = Identifiable{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[51]
+		mi := &file_api_ontology_ontology_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5794,7 +5960,7 @@ func (x *Identifiable) String() string {
 func (*Identifiable) ProtoMessage() {}
 
 func (x *Identifiable) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[51]
+	mi := &file_api_ontology_ontology_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5807,7 +5973,7 @@ func (x *Identifiable) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Identifiable.ProtoReflect.Descriptor instead.
 func (*Identifiable) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{51}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{52}
 }
 
 func (m *Identifiable) GetType() isIdentifiable_Type {
@@ -5874,7 +6040,7 @@ type Identity struct {
 func (x *Identity) Reset() {
 	*x = Identity{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[52]
+		mi := &file_api_ontology_ontology_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5887,7 +6053,7 @@ func (x *Identity) String() string {
 func (*Identity) ProtoMessage() {}
 
 func (x *Identity) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[52]
+	mi := &file_api_ontology_ontology_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5900,7 +6066,7 @@ func (x *Identity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Identity.ProtoReflect.Descriptor instead.
 func (*Identity) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{52}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *Identity) GetActivated() bool {
@@ -6024,7 +6190,7 @@ type Image struct {
 func (x *Image) Reset() {
 	*x = Image{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[53]
+		mi := &file_api_ontology_ontology_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6037,7 +6203,7 @@ func (x *Image) String() string {
 func (*Image) ProtoMessage() {}
 
 func (x *Image) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[53]
+	mi := &file_api_ontology_ontology_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6050,7 +6216,7 @@ func (x *Image) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Image.ProtoReflect.Descriptor instead.
 func (*Image) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{53}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{54}
 }
 
 func (m *Image) GetType() isImage_Type {
@@ -6102,7 +6268,7 @@ type Immutability struct {
 func (x *Immutability) Reset() {
 	*x = Immutability{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[54]
+		mi := &file_api_ontology_ontology_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6115,7 +6281,7 @@ func (x *Immutability) String() string {
 func (*Immutability) ProtoMessage() {}
 
 func (x *Immutability) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[54]
+	mi := &file_api_ontology_ontology_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6128,7 +6294,7 @@ func (x *Immutability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Immutability.ProtoReflect.Descriptor instead.
 func (*Immutability) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{54}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *Immutability) GetEnabled() bool {
@@ -6154,7 +6320,7 @@ type Integrity struct {
 func (x *Integrity) Reset() {
 	*x = Integrity{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[55]
+		mi := &file_api_ontology_ontology_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6167,7 +6333,7 @@ func (x *Integrity) String() string {
 func (*Integrity) ProtoMessage() {}
 
 func (x *Integrity) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[55]
+	mi := &file_api_ontology_ontology_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6180,7 +6346,7 @@ func (x *Integrity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Integrity.ProtoReflect.Descriptor instead.
 func (*Integrity) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{55}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{56}
 }
 
 func (m *Integrity) GetType() isIntegrity_Type {
@@ -6236,7 +6402,7 @@ type IoT struct {
 func (x *IoT) Reset() {
 	*x = IoT{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[56]
+		mi := &file_api_ontology_ontology_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6249,7 +6415,7 @@ func (x *IoT) String() string {
 func (*IoT) ProtoMessage() {}
 
 func (x *IoT) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[56]
+	mi := &file_api_ontology_ontology_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6262,7 +6428,7 @@ func (x *IoT) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IoT.ProtoReflect.Descriptor instead.
 func (*IoT) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{56}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{57}
 }
 
 func (m *IoT) GetType() isIoT_Type {
@@ -6321,7 +6487,7 @@ type Job struct {
 func (x *Job) Reset() {
 	*x = Job{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[57]
+		mi := &file_api_ontology_ontology_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6334,7 +6500,7 @@ func (x *Job) String() string {
 func (*Job) ProtoMessage() {}
 
 func (x *Job) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[57]
+	mi := &file_api_ontology_ontology_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6347,7 +6513,7 @@ func (x *Job) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Job.ProtoReflect.Descriptor instead.
 func (*Job) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{57}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *Job) GetCreationTime() *timestamppb.Timestamp {
@@ -6413,7 +6579,7 @@ type TokenBasedAuthentication struct {
 func (x *TokenBasedAuthentication) Reset() {
 	*x = TokenBasedAuthentication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[58]
+		mi := &file_api_ontology_ontology_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6426,7 +6592,7 @@ func (x *TokenBasedAuthentication) String() string {
 func (*TokenBasedAuthentication) ProtoMessage() {}
 
 func (x *TokenBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[58]
+	mi := &file_api_ontology_ontology_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6439,7 +6605,7 @@ func (x *TokenBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TokenBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*TokenBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{58}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *TokenBasedAuthentication) GetContextIsChecked() bool {
@@ -6487,7 +6653,7 @@ type Key struct {
 func (x *Key) Reset() {
 	*x = Key{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[59]
+		mi := &file_api_ontology_ontology_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6500,7 +6666,7 @@ func (x *Key) String() string {
 func (*Key) ProtoMessage() {}
 
 func (x *Key) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[59]
+	mi := &file_api_ontology_ontology_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6513,7 +6679,7 @@ func (x *Key) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Key.ProtoReflect.Descriptor instead.
 func (*Key) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{59}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *Key) GetCreationTime() *timestamppb.Timestamp {
@@ -6628,7 +6794,7 @@ type KeyValueDatabaseService struct {
 func (x *KeyValueDatabaseService) Reset() {
 	*x = KeyValueDatabaseService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[60]
+		mi := &file_api_ontology_ontology_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6641,7 +6807,7 @@ func (x *KeyValueDatabaseService) String() string {
 func (*KeyValueDatabaseService) ProtoMessage() {}
 
 func (x *KeyValueDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[60]
+	mi := &file_api_ontology_ontology_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6654,7 +6820,7 @@ func (x *KeyValueDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValueDatabaseService.ProtoReflect.Descriptor instead.
 func (*KeyValueDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{60}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *KeyValueDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -6790,7 +6956,7 @@ type KeyVault struct {
 func (x *KeyVault) Reset() {
 	*x = KeyVault{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[61]
+		mi := &file_api_ontology_ontology_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6803,7 +6969,7 @@ func (x *KeyVault) String() string {
 func (*KeyVault) ProtoMessage() {}
 
 func (x *KeyVault) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[61]
+	mi := &file_api_ontology_ontology_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6816,7 +6982,7 @@ func (x *KeyVault) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyVault.ProtoReflect.Descriptor instead.
 func (*KeyVault) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{61}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *KeyVault) GetCreationTime() *timestamppb.Timestamp {
@@ -6896,7 +7062,7 @@ type L3Firewall struct {
 func (x *L3Firewall) Reset() {
 	*x = L3Firewall{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[62]
+		mi := &file_api_ontology_ontology_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6909,7 +7075,7 @@ func (x *L3Firewall) String() string {
 func (*L3Firewall) ProtoMessage() {}
 
 func (x *L3Firewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[62]
+	mi := &file_api_ontology_ontology_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6922,7 +7088,7 @@ func (x *L3Firewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use L3Firewall.ProtoReflect.Descriptor instead.
 func (*L3Firewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{62}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *L3Firewall) GetEnabled() bool {
@@ -6975,7 +7141,7 @@ type LoadBalancer struct {
 func (x *LoadBalancer) Reset() {
 	*x = LoadBalancer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[63]
+		mi := &file_api_ontology_ontology_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6988,7 +7154,7 @@ func (x *LoadBalancer) String() string {
 func (*LoadBalancer) ProtoMessage() {}
 
 func (x *LoadBalancer) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[63]
+	mi := &file_api_ontology_ontology_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7001,7 +7167,7 @@ func (x *LoadBalancer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoadBalancer.ProtoReflect.Descriptor instead.
 func (*LoadBalancer) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{63}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *LoadBalancer) GetCreationTime() *timestamppb.Timestamp {
@@ -7131,7 +7297,7 @@ type LogOperation struct {
 func (x *LogOperation) Reset() {
 	*x = LogOperation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[64]
+		mi := &file_api_ontology_ontology_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7144,7 +7310,7 @@ func (x *LogOperation) String() string {
 func (*LogOperation) ProtoMessage() {}
 
 func (x *LogOperation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[64]
+	mi := &file_api_ontology_ontology_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7157,7 +7323,7 @@ func (x *LogOperation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogOperation.ProtoReflect.Descriptor instead.
 func (*LogOperation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{64}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *LogOperation) GetCall() string {
@@ -7191,7 +7357,7 @@ type Logger struct {
 func (x *Logger) Reset() {
 	*x = Logger{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[65]
+		mi := &file_api_ontology_ontology_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7204,7 +7370,7 @@ func (x *Logger) String() string {
 func (*Logger) ProtoMessage() {}
 
 func (x *Logger) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[65]
+	mi := &file_api_ontology_ontology_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7217,7 +7383,7 @@ func (x *Logger) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Logger.ProtoReflect.Descriptor instead.
 func (*Logger) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{65}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{66}
 }
 
 // Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -7239,7 +7405,7 @@ type Logging struct {
 func (x *Logging) Reset() {
 	*x = Logging{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[66]
+		mi := &file_api_ontology_ontology_proto_msgTypes[67]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7252,7 +7418,7 @@ func (x *Logging) String() string {
 func (*Logging) ProtoMessage() {}
 
 func (x *Logging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[66]
+	mi := &file_api_ontology_ontology_proto_msgTypes[67]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7265,7 +7431,7 @@ func (x *Logging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Logging.ProtoReflect.Descriptor instead.
 func (*Logging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{66}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{67}
 }
 
 func (m *Logging) GetType() isLogging_Type {
@@ -7370,7 +7536,7 @@ type LoggingService struct {
 func (x *LoggingService) Reset() {
 	*x = LoggingService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[67]
+		mi := &file_api_ontology_ontology_proto_msgTypes[68]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7383,7 +7549,7 @@ func (x *LoggingService) String() string {
 func (*LoggingService) ProtoMessage() {}
 
 func (x *LoggingService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[67]
+	mi := &file_api_ontology_ontology_proto_msgTypes[68]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7396,7 +7562,7 @@ func (x *LoggingService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoggingService.ProtoReflect.Descriptor instead.
 func (*LoggingService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{67}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *LoggingService) GetCreationTime() *timestamppb.Timestamp {
@@ -7506,7 +7672,7 @@ type MalwareProtection struct {
 func (x *MalwareProtection) Reset() {
 	*x = MalwareProtection{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[68]
+		mi := &file_api_ontology_ontology_proto_msgTypes[69]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7519,7 +7685,7 @@ func (x *MalwareProtection) String() string {
 func (*MalwareProtection) ProtoMessage() {}
 
 func (x *MalwareProtection) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[68]
+	mi := &file_api_ontology_ontology_proto_msgTypes[69]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7532,7 +7698,7 @@ func (x *MalwareProtection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MalwareProtection.ProtoReflect.Descriptor instead.
 func (*MalwareProtection) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{68}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *MalwareProtection) GetDaysSinceActive() *durationpb.Duration {
@@ -7577,7 +7743,7 @@ type ManagedKeyEncryption struct {
 func (x *ManagedKeyEncryption) Reset() {
 	*x = ManagedKeyEncryption{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[69]
+		mi := &file_api_ontology_ontology_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7590,7 +7756,7 @@ func (x *ManagedKeyEncryption) String() string {
 func (*ManagedKeyEncryption) ProtoMessage() {}
 
 func (x *ManagedKeyEncryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[69]
+	mi := &file_api_ontology_ontology_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7603,7 +7769,7 @@ func (x *ManagedKeyEncryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ManagedKeyEncryption.ProtoReflect.Descriptor instead.
 func (*ManagedKeyEncryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{69}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *ManagedKeyEncryption) GetAlgorithm() string {
@@ -7646,7 +7812,7 @@ type MessagingHub struct {
 func (x *MessagingHub) Reset() {
 	*x = MessagingHub{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[70]
+		mi := &file_api_ontology_ontology_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7659,7 +7825,7 @@ func (x *MessagingHub) String() string {
 func (*MessagingHub) ProtoMessage() {}
 
 func (x *MessagingHub) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[70]
+	mi := &file_api_ontology_ontology_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7672,7 +7838,7 @@ func (x *MessagingHub) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessagingHub.ProtoReflect.Descriptor instead.
 func (*MessagingHub) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{70}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *MessagingHub) GetCreationTime() *timestamppb.Timestamp {
@@ -7737,7 +7903,7 @@ type MultiFactorAuthentiation struct {
 func (x *MultiFactorAuthentiation) Reset() {
 	*x = MultiFactorAuthentiation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[71]
+		mi := &file_api_ontology_ontology_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7750,7 +7916,7 @@ func (x *MultiFactorAuthentiation) String() string {
 func (*MultiFactorAuthentiation) ProtoMessage() {}
 
 func (x *MultiFactorAuthentiation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[71]
+	mi := &file_api_ontology_ontology_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7763,7 +7929,7 @@ func (x *MultiFactorAuthentiation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MultiFactorAuthentiation.ProtoReflect.Descriptor instead.
 func (*MultiFactorAuthentiation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{71}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *MultiFactorAuthentiation) GetContextIsChecked() bool {
@@ -7809,7 +7975,7 @@ type MultiModalDatabaseService struct {
 func (x *MultiModalDatabaseService) Reset() {
 	*x = MultiModalDatabaseService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[72]
+		mi := &file_api_ontology_ontology_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7822,7 +7988,7 @@ func (x *MultiModalDatabaseService) String() string {
 func (*MultiModalDatabaseService) ProtoMessage() {}
 
 func (x *MultiModalDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[72]
+	mi := &file_api_ontology_ontology_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7835,7 +8001,7 @@ func (x *MultiModalDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MultiModalDatabaseService.ProtoReflect.Descriptor instead.
 func (*MultiModalDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{72}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *MultiModalDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -7971,7 +8137,7 @@ type NetworkInterface struct {
 func (x *NetworkInterface) Reset() {
 	*x = NetworkInterface{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[73]
+		mi := &file_api_ontology_ontology_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7984,7 +8150,7 @@ func (x *NetworkInterface) String() string {
 func (*NetworkInterface) ProtoMessage() {}
 
 func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[73]
+	mi := &file_api_ontology_ontology_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7997,7 +8163,7 @@ func (x *NetworkInterface) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInterface.ProtoReflect.Descriptor instead.
 func (*NetworkInterface) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{73}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *NetworkInterface) GetCreationTime() *timestamppb.Timestamp {
@@ -8082,7 +8248,7 @@ type NetworkSecurityGroup struct {
 func (x *NetworkSecurityGroup) Reset() {
 	*x = NetworkSecurityGroup{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[74]
+		mi := &file_api_ontology_ontology_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8095,7 +8261,7 @@ func (x *NetworkSecurityGroup) String() string {
 func (*NetworkSecurityGroup) ProtoMessage() {}
 
 func (x *NetworkSecurityGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[74]
+	mi := &file_api_ontology_ontology_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8108,7 +8274,7 @@ func (x *NetworkSecurityGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkSecurityGroup.ProtoReflect.Descriptor instead.
 func (*NetworkSecurityGroup) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{74}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *NetworkSecurityGroup) GetCreationTime() *timestamppb.Timestamp {
@@ -8169,6 +8335,7 @@ type NetworkService struct {
 
 	// Types that are assignable to Type:
 	//
+	//	*NetworkService_GenericNetworkService
 	//	*NetworkService_LoadBalancer
 	//	*NetworkService_LoggingService
 	//	*NetworkService_DocumentDatabaseService
@@ -8183,7 +8350,7 @@ type NetworkService struct {
 func (x *NetworkService) Reset() {
 	*x = NetworkService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[75]
+		mi := &file_api_ontology_ontology_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8196,7 +8363,7 @@ func (x *NetworkService) String() string {
 func (*NetworkService) ProtoMessage() {}
 
 func (x *NetworkService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[75]
+	mi := &file_api_ontology_ontology_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8209,12 +8376,19 @@ func (x *NetworkService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkService.ProtoReflect.Descriptor instead.
 func (*NetworkService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{75}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{76}
 }
 
 func (m *NetworkService) GetType() isNetworkService_Type {
 	if m != nil {
 		return m.Type
+	}
+	return nil
+}
+
+func (x *NetworkService) GetGenericNetworkService() *GenericNetworkService {
+	if x, ok := x.GetType().(*NetworkService_GenericNetworkService); ok {
+		return x.GenericNetworkService
 	}
 	return nil
 }
@@ -8279,37 +8453,43 @@ type isNetworkService_Type interface {
 	isNetworkService_Type()
 }
 
+type NetworkService_GenericNetworkService struct {
+	GenericNetworkService *GenericNetworkService `protobuf:"bytes,1,opt,name=generic_network_service,json=genericNetworkService,proto3,oneof"`
+}
+
 type NetworkService_LoadBalancer struct {
-	LoadBalancer *LoadBalancer `protobuf:"bytes,1,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
+	LoadBalancer *LoadBalancer `protobuf:"bytes,2,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
 }
 
 type NetworkService_LoggingService struct {
-	LoggingService *LoggingService `protobuf:"bytes,2,opt,name=logging_service,json=loggingService,proto3,oneof"`
+	LoggingService *LoggingService `protobuf:"bytes,3,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
 type NetworkService_DocumentDatabaseService struct {
-	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,3,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
+	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,4,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
 }
 
 type NetworkService_KeyValueDatabaseService struct {
-	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,4,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
+	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,5,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
 }
 
 type NetworkService_MultiModalDatabaseService struct {
-	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,5,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
+	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,6,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
 }
 
 type NetworkService_RelationalDatabaseService struct {
-	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,6,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
+	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,7,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
 }
 
 type NetworkService_FileStorageService struct {
-	FileStorageService *FileStorageService `protobuf:"bytes,7,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
+	FileStorageService *FileStorageService `protobuf:"bytes,8,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
 }
 
 type NetworkService_ObjectStorageService struct {
-	ObjectStorageService *ObjectStorageService `protobuf:"bytes,8,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
+	ObjectStorageService *ObjectStorageService `protobuf:"bytes,9,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
 }
+
+func (*NetworkService_GenericNetworkService) isNetworkService_Type() {}
 
 func (*NetworkService_LoadBalancer) isNetworkService_Type() {}
 
@@ -8337,6 +8517,7 @@ type Networking struct {
 	//
 	//	*Networking_NetworkInterface
 	//	*Networking_NetworkSecurityGroup
+	//	*Networking_GenericNetworkService
 	//	*Networking_LoadBalancer
 	//	*Networking_LoggingService
 	//	*Networking_DocumentDatabaseService
@@ -8353,7 +8534,7 @@ type Networking struct {
 func (x *Networking) Reset() {
 	*x = Networking{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[76]
+		mi := &file_api_ontology_ontology_proto_msgTypes[77]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8366,7 +8547,7 @@ func (x *Networking) String() string {
 func (*Networking) ProtoMessage() {}
 
 func (x *Networking) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[76]
+	mi := &file_api_ontology_ontology_proto_msgTypes[77]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8379,7 +8560,7 @@ func (x *Networking) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Networking.ProtoReflect.Descriptor instead.
 func (*Networking) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{76}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{77}
 }
 
 func (m *Networking) GetType() isNetworking_Type {
@@ -8399,6 +8580,13 @@ func (x *Networking) GetNetworkInterface() *NetworkInterface {
 func (x *Networking) GetNetworkSecurityGroup() *NetworkSecurityGroup {
 	if x, ok := x.GetType().(*Networking_NetworkSecurityGroup); ok {
 		return x.NetworkSecurityGroup
+	}
+	return nil
+}
+
+func (x *Networking) GetGenericNetworkService() *GenericNetworkService {
+	if x, ok := x.GetType().(*Networking_GenericNetworkService); ok {
+		return x.GenericNetworkService
 	}
 	return nil
 }
@@ -8485,49 +8673,55 @@ type Networking_NetworkSecurityGroup struct {
 	NetworkSecurityGroup *NetworkSecurityGroup `protobuf:"bytes,2,opt,name=network_security_group,json=networkSecurityGroup,proto3,oneof"`
 }
 
+type Networking_GenericNetworkService struct {
+	GenericNetworkService *GenericNetworkService `protobuf:"bytes,3,opt,name=generic_network_service,json=genericNetworkService,proto3,oneof"`
+}
+
 type Networking_LoadBalancer struct {
-	LoadBalancer *LoadBalancer `protobuf:"bytes,3,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
+	LoadBalancer *LoadBalancer `protobuf:"bytes,4,opt,name=load_balancer,json=loadBalancer,proto3,oneof"`
 }
 
 type Networking_LoggingService struct {
-	LoggingService *LoggingService `protobuf:"bytes,4,opt,name=logging_service,json=loggingService,proto3,oneof"`
+	LoggingService *LoggingService `protobuf:"bytes,5,opt,name=logging_service,json=loggingService,proto3,oneof"`
 }
 
 type Networking_DocumentDatabaseService struct {
-	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,5,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
+	DocumentDatabaseService *DocumentDatabaseService `protobuf:"bytes,6,opt,name=document_database_service,json=documentDatabaseService,proto3,oneof"`
 }
 
 type Networking_KeyValueDatabaseService struct {
-	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,6,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
+	KeyValueDatabaseService *KeyValueDatabaseService `protobuf:"bytes,7,opt,name=key_value_database_service,json=keyValueDatabaseService,proto3,oneof"`
 }
 
 type Networking_MultiModalDatabaseService struct {
-	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,7,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
+	MultiModalDatabaseService *MultiModalDatabaseService `protobuf:"bytes,8,opt,name=multi_modal_database_service,json=multiModalDatabaseService,proto3,oneof"`
 }
 
 type Networking_RelationalDatabaseService struct {
-	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,8,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
+	RelationalDatabaseService *RelationalDatabaseService `protobuf:"bytes,9,opt,name=relational_database_service,json=relationalDatabaseService,proto3,oneof"`
 }
 
 type Networking_FileStorageService struct {
-	FileStorageService *FileStorageService `protobuf:"bytes,9,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
+	FileStorageService *FileStorageService `protobuf:"bytes,10,opt,name=file_storage_service,json=fileStorageService,proto3,oneof"`
 }
 
 type Networking_ObjectStorageService struct {
-	ObjectStorageService *ObjectStorageService `protobuf:"bytes,10,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
+	ObjectStorageService *ObjectStorageService `protobuf:"bytes,11,opt,name=object_storage_service,json=objectStorageService,proto3,oneof"`
 }
 
 type Networking_VirtualNetwork struct {
-	VirtualNetwork *VirtualNetwork `protobuf:"bytes,11,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
+	VirtualNetwork *VirtualNetwork `protobuf:"bytes,12,opt,name=virtual_network,json=virtualNetwork,proto3,oneof"`
 }
 
 type Networking_VirtualSubNetwork struct {
-	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,12,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
+	VirtualSubNetwork *VirtualSubNetwork `protobuf:"bytes,13,opt,name=virtual_sub_network,json=virtualSubNetwork,proto3,oneof"`
 }
 
 func (*Networking_NetworkInterface) isNetworking_Type() {}
 
 func (*Networking_NetworkSecurityGroup) isNetworking_Type() {}
+
+func (*Networking_GenericNetworkService) isNetworking_Type() {}
 
 func (*Networking_LoadBalancer) isNetworking_Type() {}
 
@@ -8561,7 +8755,7 @@ type NoAuthentication struct {
 func (x *NoAuthentication) Reset() {
 	*x = NoAuthentication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[77]
+		mi := &file_api_ontology_ontology_proto_msgTypes[78]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8574,7 +8768,7 @@ func (x *NoAuthentication) String() string {
 func (*NoAuthentication) ProtoMessage() {}
 
 func (x *NoAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[77]
+	mi := &file_api_ontology_ontology_proto_msgTypes[78]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8587,7 +8781,7 @@ func (x *NoAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NoAuthentication.ProtoReflect.Descriptor instead.
 func (*NoAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{77}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *NoAuthentication) GetContextIsChecked() bool {
@@ -8613,7 +8807,7 @@ type OSLogging struct {
 func (x *OSLogging) Reset() {
 	*x = OSLogging{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[78]
+		mi := &file_api_ontology_ontology_proto_msgTypes[79]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8626,7 +8820,7 @@ func (x *OSLogging) String() string {
 func (*OSLogging) ProtoMessage() {}
 
 func (x *OSLogging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[78]
+	mi := &file_api_ontology_ontology_proto_msgTypes[79]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8639,7 +8833,7 @@ func (x *OSLogging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OSLogging.ProtoReflect.Descriptor instead.
 func (*OSLogging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{78}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *OSLogging) GetEnabled() bool {
@@ -8690,7 +8884,7 @@ type OTPBasedAuthentication struct {
 func (x *OTPBasedAuthentication) Reset() {
 	*x = OTPBasedAuthentication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[79]
+		mi := &file_api_ontology_ontology_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8703,7 +8897,7 @@ func (x *OTPBasedAuthentication) String() string {
 func (*OTPBasedAuthentication) ProtoMessage() {}
 
 func (x *OTPBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[79]
+	mi := &file_api_ontology_ontology_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8716,7 +8910,7 @@ func (x *OTPBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OTPBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*OTPBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{79}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *OTPBasedAuthentication) GetActivated() bool {
@@ -8758,7 +8952,7 @@ type ObjectStorage struct {
 func (x *ObjectStorage) Reset() {
 	*x = ObjectStorage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[80]
+		mi := &file_api_ontology_ontology_proto_msgTypes[81]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8771,7 +8965,7 @@ func (x *ObjectStorage) String() string {
 func (*ObjectStorage) ProtoMessage() {}
 
 func (x *ObjectStorage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[80]
+	mi := &file_api_ontology_ontology_proto_msgTypes[81]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8784,7 +8978,7 @@ func (x *ObjectStorage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorage.ProtoReflect.Descriptor instead.
 func (*ObjectStorage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{80}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *ObjectStorage) GetCreationTime() *timestamppb.Timestamp {
@@ -8891,7 +9085,7 @@ type ObjectStorageRequest struct {
 func (x *ObjectStorageRequest) Reset() {
 	*x = ObjectStorageRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[81]
+		mi := &file_api_ontology_ontology_proto_msgTypes[82]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8904,7 +9098,7 @@ func (x *ObjectStorageRequest) String() string {
 func (*ObjectStorageRequest) ProtoMessage() {}
 
 func (x *ObjectStorageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[81]
+	mi := &file_api_ontology_ontology_proto_msgTypes[82]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8917,7 +9111,7 @@ func (x *ObjectStorageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorageRequest.ProtoReflect.Descriptor instead.
 func (*ObjectStorageRequest) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{81}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *ObjectStorageRequest) GetSource() string {
@@ -8961,7 +9155,7 @@ type ObjectStorageService struct {
 func (x *ObjectStorageService) Reset() {
 	*x = ObjectStorageService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[82]
+		mi := &file_api_ontology_ontology_proto_msgTypes[83]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8974,7 +9168,7 @@ func (x *ObjectStorageService) String() string {
 func (*ObjectStorageService) ProtoMessage() {}
 
 func (x *ObjectStorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[82]
+	mi := &file_api_ontology_ontology_proto_msgTypes[83]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8987,7 +9181,7 @@ func (x *ObjectStorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ObjectStorageService.ProtoReflect.Descriptor instead.
 func (*ObjectStorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{82}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *ObjectStorageService) GetCreationTime() *timestamppb.Timestamp {
@@ -9107,7 +9301,7 @@ type Operation struct {
 func (x *Operation) Reset() {
 	*x = Operation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[83]
+		mi := &file_api_ontology_ontology_proto_msgTypes[84]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9120,7 +9314,7 @@ func (x *Operation) String() string {
 func (*Operation) ProtoMessage() {}
 
 func (x *Operation) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[83]
+	mi := &file_api_ontology_ontology_proto_msgTypes[84]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9133,7 +9327,7 @@ func (x *Operation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Operation.ProtoReflect.Descriptor instead.
 func (*Operation) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{83}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{84}
 }
 
 func (m *Operation) GetType() isOperation_Type {
@@ -9225,7 +9419,7 @@ type PasswordBasedAuthentication struct {
 func (x *PasswordBasedAuthentication) Reset() {
 	*x = PasswordBasedAuthentication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[84]
+		mi := &file_api_ontology_ontology_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9238,7 +9432,7 @@ func (x *PasswordBasedAuthentication) String() string {
 func (*PasswordBasedAuthentication) ProtoMessage() {}
 
 func (x *PasswordBasedAuthentication) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[84]
+	mi := &file_api_ontology_ontology_proto_msgTypes[85]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9251,7 +9445,7 @@ func (x *PasswordBasedAuthentication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PasswordBasedAuthentication.ProtoReflect.Descriptor instead.
 func (*PasswordBasedAuthentication) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{84}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *PasswordBasedAuthentication) GetActivated() bool {
@@ -9287,7 +9481,7 @@ type PasswordPolicy struct {
 func (x *PasswordPolicy) Reset() {
 	*x = PasswordPolicy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[85]
+		mi := &file_api_ontology_ontology_proto_msgTypes[86]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9300,7 +9494,7 @@ func (x *PasswordPolicy) String() string {
 func (*PasswordPolicy) ProtoMessage() {}
 
 func (x *PasswordPolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[85]
+	mi := &file_api_ontology_ontology_proto_msgTypes[86]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9313,7 +9507,7 @@ func (x *PasswordPolicy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PasswordPolicy.ProtoReflect.Descriptor instead.
 func (*PasswordPolicy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{85}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *PasswordPolicy) GetCreationTime() *timestamppb.Timestamp {
@@ -9380,7 +9574,7 @@ type RBAC struct {
 func (x *RBAC) Reset() {
 	*x = RBAC{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[86]
+		mi := &file_api_ontology_ontology_proto_msgTypes[87]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9393,7 +9587,7 @@ func (x *RBAC) String() string {
 func (*RBAC) ProtoMessage() {}
 
 func (x *RBAC) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[86]
+	mi := &file_api_ontology_ontology_proto_msgTypes[87]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9406,7 +9600,7 @@ func (x *RBAC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RBAC.ProtoReflect.Descriptor instead.
 func (*RBAC) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{86}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *RBAC) GetBroadAssignments() float32 {
@@ -9437,7 +9631,7 @@ type Redundancy struct {
 func (x *Redundancy) Reset() {
 	*x = Redundancy{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[87]
+		mi := &file_api_ontology_ontology_proto_msgTypes[88]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9450,7 +9644,7 @@ func (x *Redundancy) String() string {
 func (*Redundancy) ProtoMessage() {}
 
 func (x *Redundancy) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[87]
+	mi := &file_api_ontology_ontology_proto_msgTypes[88]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9463,7 +9657,7 @@ func (x *Redundancy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Redundancy.ProtoReflect.Descriptor instead.
 func (*Redundancy) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{87}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *Redundancy) GetGeo() bool {
@@ -9515,7 +9709,7 @@ type RelationalDatabaseService struct {
 func (x *RelationalDatabaseService) Reset() {
 	*x = RelationalDatabaseService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[88]
+		mi := &file_api_ontology_ontology_proto_msgTypes[89]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9528,7 +9722,7 @@ func (x *RelationalDatabaseService) String() string {
 func (*RelationalDatabaseService) ProtoMessage() {}
 
 func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[88]
+	mi := &file_api_ontology_ontology_proto_msgTypes[89]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9541,7 +9735,7 @@ func (x *RelationalDatabaseService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RelationalDatabaseService.ProtoReflect.Descriptor instead.
 func (*RelationalDatabaseService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{88}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *RelationalDatabaseService) GetCreationTime() *timestamppb.Timestamp {
@@ -9675,7 +9869,7 @@ type ResourceGroup struct {
 func (x *ResourceGroup) Reset() {
 	*x = ResourceGroup{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[89]
+		mi := &file_api_ontology_ontology_proto_msgTypes[90]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9688,7 +9882,7 @@ func (x *ResourceGroup) String() string {
 func (*ResourceGroup) ProtoMessage() {}
 
 func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[89]
+	mi := &file_api_ontology_ontology_proto_msgTypes[90]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9701,7 +9895,7 @@ func (x *ResourceGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceGroup.ProtoReflect.Descriptor instead.
 func (*ResourceGroup) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{89}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *ResourceGroup) GetCreationTime() *timestamppb.Timestamp {
@@ -9769,7 +9963,7 @@ type ResourceLogging struct {
 func (x *ResourceLogging) Reset() {
 	*x = ResourceLogging{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[90]
+		mi := &file_api_ontology_ontology_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9782,7 +9976,7 @@ func (x *ResourceLogging) String() string {
 func (*ResourceLogging) ProtoMessage() {}
 
 func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[90]
+	mi := &file_api_ontology_ontology_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9795,7 +9989,7 @@ func (x *ResourceLogging) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResourceLogging.ProtoReflect.Descriptor instead.
 func (*ResourceLogging) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{90}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *ResourceLogging) GetEnabled() bool {
@@ -9855,7 +10049,7 @@ type RoleAssignment struct {
 func (x *RoleAssignment) Reset() {
 	*x = RoleAssignment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[91]
+		mi := &file_api_ontology_ontology_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9868,7 +10062,7 @@ func (x *RoleAssignment) String() string {
 func (*RoleAssignment) ProtoMessage() {}
 
 func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[91]
+	mi := &file_api_ontology_ontology_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9881,7 +10075,7 @@ func (x *RoleAssignment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleAssignment.ProtoReflect.Descriptor instead.
 func (*RoleAssignment) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{91}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *RoleAssignment) GetActivated() bool {
@@ -9996,7 +10190,7 @@ type SecurityFeature struct {
 func (x *SecurityFeature) Reset() {
 	*x = SecurityFeature{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[92]
+		mi := &file_api_ontology_ontology_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10009,7 +10203,7 @@ func (x *SecurityFeature) String() string {
 func (*SecurityFeature) ProtoMessage() {}
 
 func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[92]
+	mi := &file_api_ontology_ontology_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10022,7 +10216,7 @@ func (x *SecurityFeature) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SecurityFeature.ProtoReflect.Descriptor instead.
 func (*SecurityFeature) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{92}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{93}
 }
 
 func (m *SecurityFeature) GetType() isSecurityFeature_Type {
@@ -10413,7 +10607,7 @@ type SingleSignOn struct {
 func (x *SingleSignOn) Reset() {
 	*x = SingleSignOn{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[93]
+		mi := &file_api_ontology_ontology_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10426,7 +10620,7 @@ func (x *SingleSignOn) String() string {
 func (*SingleSignOn) ProtoMessage() {}
 
 func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[93]
+	mi := &file_api_ontology_ontology_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10439,7 +10633,7 @@ func (x *SingleSignOn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleSignOn.ProtoReflect.Descriptor instead.
 func (*SingleSignOn) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{93}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *SingleSignOn) GetContextIsChecked() bool {
@@ -10474,7 +10668,7 @@ type Storage struct {
 func (x *Storage) Reset() {
 	*x = Storage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[94]
+		mi := &file_api_ontology_ontology_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10487,7 +10681,7 @@ func (x *Storage) String() string {
 func (*Storage) ProtoMessage() {}
 
 func (x *Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[94]
+	mi := &file_api_ontology_ontology_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10500,7 +10694,7 @@ func (x *Storage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Storage.ProtoReflect.Descriptor instead.
 func (*Storage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{94}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{95}
 }
 
 func (m *Storage) GetType() isStorage_Type {
@@ -10587,7 +10781,7 @@ type StorageService struct {
 func (x *StorageService) Reset() {
 	*x = StorageService{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[95]
+		mi := &file_api_ontology_ontology_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10600,7 +10794,7 @@ func (x *StorageService) String() string {
 func (*StorageService) ProtoMessage() {}
 
 func (x *StorageService) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[95]
+	mi := &file_api_ontology_ontology_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10613,7 +10807,7 @@ func (x *StorageService) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StorageService.ProtoReflect.Descriptor instead.
 func (*StorageService) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{95}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{96}
 }
 
 func (m *StorageService) GetType() isStorageService_Type {
@@ -10722,7 +10916,7 @@ type TransportEncryption struct {
 func (x *TransportEncryption) Reset() {
 	*x = TransportEncryption{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[96]
+		mi := &file_api_ontology_ontology_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10735,7 +10929,7 @@ func (x *TransportEncryption) String() string {
 func (*TransportEncryption) ProtoMessage() {}
 
 func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[96]
+	mi := &file_api_ontology_ontology_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10748,7 +10942,7 @@ func (x *TransportEncryption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransportEncryption.ProtoReflect.Descriptor instead.
 func (*TransportEncryption) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{96}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *TransportEncryption) GetEnabled() bool {
@@ -10806,7 +11000,7 @@ type VMImage struct {
 func (x *VMImage) Reset() {
 	*x = VMImage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[97]
+		mi := &file_api_ontology_ontology_proto_msgTypes[98]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10819,7 +11013,7 @@ func (x *VMImage) String() string {
 func (*VMImage) ProtoMessage() {}
 
 func (x *VMImage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[97]
+	mi := &file_api_ontology_ontology_proto_msgTypes[98]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10832,7 +11026,7 @@ func (x *VMImage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VMImage.ProtoReflect.Descriptor instead.
 func (*VMImage) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{97}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *VMImage) GetCreationTime() *timestamppb.Timestamp {
@@ -10919,7 +11113,7 @@ type VirtualMachine struct {
 func (x *VirtualMachine) Reset() {
 	*x = VirtualMachine{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[98]
+		mi := &file_api_ontology_ontology_proto_msgTypes[99]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10932,7 +11126,7 @@ func (x *VirtualMachine) String() string {
 func (*VirtualMachine) ProtoMessage() {}
 
 func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[98]
+	mi := &file_api_ontology_ontology_proto_msgTypes[99]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10945,7 +11139,7 @@ func (x *VirtualMachine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualMachine.ProtoReflect.Descriptor instead.
 func (*VirtualMachine) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{98}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *VirtualMachine) GetCreationTime() *timestamppb.Timestamp {
@@ -11079,7 +11273,7 @@ type VirtualNetwork struct {
 func (x *VirtualNetwork) Reset() {
 	*x = VirtualNetwork{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[99]
+		mi := &file_api_ontology_ontology_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11092,7 +11286,7 @@ func (x *VirtualNetwork) String() string {
 func (*VirtualNetwork) ProtoMessage() {}
 
 func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[99]
+	mi := &file_api_ontology_ontology_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11105,7 +11299,7 @@ func (x *VirtualNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{99}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *VirtualNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -11176,7 +11370,7 @@ type VirtualSubNetwork struct {
 func (x *VirtualSubNetwork) Reset() {
 	*x = VirtualSubNetwork{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[100]
+		mi := &file_api_ontology_ontology_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11189,7 +11383,7 @@ func (x *VirtualSubNetwork) String() string {
 func (*VirtualSubNetwork) ProtoMessage() {}
 
 func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[100]
+	mi := &file_api_ontology_ontology_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11202,7 +11396,7 @@ func (x *VirtualSubNetwork) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VirtualSubNetwork.ProtoReflect.Descriptor instead.
 func (*VirtualSubNetwork) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{100}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *VirtualSubNetwork) GetCreationTime() *timestamppb.Timestamp {
@@ -11276,7 +11470,7 @@ type WebApp struct {
 func (x *WebApp) Reset() {
 	*x = WebApp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[101]
+		mi := &file_api_ontology_ontology_proto_msgTypes[102]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11289,7 +11483,7 @@ func (x *WebApp) String() string {
 func (*WebApp) ProtoMessage() {}
 
 func (x *WebApp) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[101]
+	mi := &file_api_ontology_ontology_proto_msgTypes[102]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11302,7 +11496,7 @@ func (x *WebApp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WebApp.ProtoReflect.Descriptor instead.
 func (*WebApp) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{101}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *WebApp) GetCreationTime() *timestamppb.Timestamp {
@@ -11388,7 +11582,7 @@ type WebApplicationFirewall struct {
 func (x *WebApplicationFirewall) Reset() {
 	*x = WebApplicationFirewall{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[102]
+		mi := &file_api_ontology_ontology_proto_msgTypes[103]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11401,7 +11595,7 @@ func (x *WebApplicationFirewall) String() string {
 func (*WebApplicationFirewall) ProtoMessage() {}
 
 func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[102]
+	mi := &file_api_ontology_ontology_proto_msgTypes[103]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11414,7 +11608,7 @@ func (x *WebApplicationFirewall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WebApplicationFirewall.ProtoReflect.Descriptor instead.
 func (*WebApplicationFirewall) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{102}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *WebApplicationFirewall) GetEnabled() bool {
@@ -11443,7 +11637,7 @@ type Workflow struct {
 func (x *Workflow) Reset() {
 	*x = Workflow{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_ontology_ontology_proto_msgTypes[103]
+		mi := &file_api_ontology_ontology_proto_msgTypes[104]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -11456,7 +11650,7 @@ func (x *Workflow) String() string {
 func (*Workflow) ProtoMessage() {}
 
 func (x *Workflow) ProtoReflect() protoreflect.Message {
-	mi := &file_api_ontology_ontology_proto_msgTypes[103]
+	mi := &file_api_ontology_ontology_proto_msgTypes[104]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11469,7 +11663,7 @@ func (x *Workflow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Workflow.ProtoReflect.Descriptor instead.
 func (*Workflow) Descriptor() ([]byte, []int) {
-	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{103}
+	return file_api_ontology_ontology_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *Workflow) GetCreationTime() *timestamppb.Timestamp {
@@ -11860,7 +12054,7 @@ var file_api_ontology_ontology_proto_rawDesc = []byte{
 	0x63, 0x6b, 0x75, 0x70, 0x82, 0xb5, 0x18, 0x0c, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x69,
 	0x6c, 0x69, 0x74, 0x79, 0x82, 0xb5, 0x18, 0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79,
 	0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x73, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x22, 0xd2, 0x17, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75,
+	0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x22, 0xba, 0x18, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75,
 	0x72, 0x63, 0x65, 0x12, 0x46, 0x0a, 0x0b, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
@@ -11954,385 +12148,398 @@ var file_api_ontology_ontology_proto_rawDesc = []byte{
 	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53,
 	0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x48, 0x00, 0x52, 0x14,
 	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47,
-	0x72, 0x6f, 0x75, 0x70, 0x12, 0x4a, 0x0a, 0x0d, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c,
-	0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x15, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c,
-	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
-	0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72,
-	0x48, 0x00, 0x52, 0x0c, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72,
-	0x12, 0x50, 0x0a, 0x0f, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
-	0x31, 0x2e, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x48, 0x00, 0x52, 0x0e, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x12, 0x6c, 0x0a, 0x19, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x64,
-	0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
-	0x17, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f,
-	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e,
-	0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x12, 0x6d, 0x0a, 0x1a, 0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x64, 0x61,
-	0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x18,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72,
-	0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x6b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
-	0x73, 0x0a, 0x1c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x6d, 0x6f, 0x64, 0x61, 0x6c, 0x5f, 0x64,
-	0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
-	0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x75,
-	0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
-	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x6d, 0x75, 0x6c, 0x74, 0x69,
-	0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x12, 0x72, 0x0a, 0x1b, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
-	0x31, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61,
-	0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x72,
-	0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
-	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5d, 0x0a, 0x14, 0x66, 0x69, 0x6c, 0x65,
-	0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x18, 0x1b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
-	0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46,
-	0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x48, 0x00, 0x52, 0x12, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x63, 0x0a, 0x16, 0x6f, 0x62, 0x6a, 0x65, 0x63,
-	0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
-	0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x14, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74,
-	0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x50, 0x0a, 0x0f,
-	0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18,
-	0x1d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69,
-	0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52, 0x0e,
-	0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x5a,
-	0x0a, 0x13, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c,
-	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
-	0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52, 0x11, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c,
-	0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x50, 0x0a, 0x0f, 0x70, 0x61,
-	0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x5f, 0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x18, 0x1f, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
-	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x73, 0x73,
-	0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x48, 0x00, 0x52, 0x0e, 0x70, 0x61,
-	0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x4d, 0x0a, 0x0e,
-	0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x20,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72,
-	0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x48, 0x00, 0x52, 0x0d, 0x72, 0x65,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x4a, 0x0a, 0x0d, 0x62,
-	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x21, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
-	0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x53, 0x0a, 0x10, 0x64, 0x61, 0x74, 0x61, 0x62,
-	0x61, 0x73, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x22, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
-	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61,
-	0x73, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0f, 0x64, 0x61, 0x74,
-	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x47, 0x0a, 0x0c,
-	0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x23, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53,
-	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0b, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x74,
-	0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x4d, 0x0a, 0x0e, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f,
-	0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x24, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e,
+	0x72, 0x6f, 0x75, 0x70, 0x12, 0x66, 0x0a, 0x17, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x5f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
+	0x15, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
+	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65,
+	0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x15, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4a, 0x0a, 0x0d,
+	0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x16, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
+	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x61, 0x64,
+	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x48, 0x00, 0x52, 0x0c, 0x6c, 0x6f, 0x61, 0x64,
+	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x12, 0x50, 0x0a, 0x0f, 0x6c, 0x6f, 0x67, 0x67,
+	0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x17, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
+	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e,
+	0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x6c, 0x6f, 0x67, 0x67,
+	0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6c, 0x0a, 0x19, 0x64, 0x6f,
+	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
-	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72,
-	0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f,
-	0x72, 0x61, 0x67, 0x65, 0x12, 0x3d, 0x0a, 0x08, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74,
-	0x18, 0x25, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
-	0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44,
-	0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x48, 0x00, 0x52, 0x08, 0x64, 0x6f, 0x63, 0x75, 0x6d,
-	0x65, 0x6e, 0x74, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xb7, 0x06, 0x0a, 0x0c,
-	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x3f, 0x0a, 0x0d,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52,
-	0x0c, 0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x16, 0x0a,
-	0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x06, 0xba, 0x48, 0x03, 0xc8, 0x01,
-	0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x47, 0x0a, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18,
-	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c,
-	0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x2e, 0x4c, 0x61, 0x62, 0x65, 0x6c,
-	0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x12, 0x1a,
-	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x06, 0xba, 0x48,
-	0x03, 0xc8, 0x01, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x61,
-	0x77, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x72, 0x61, 0x77, 0x12, 0x55, 0x0a, 0x12,
-	0x61, 0x74, 0x5f, 0x72, 0x65, 0x73, 0x74, 0x5f, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69,
-	0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
-	0x2e, 0x41, 0x74, 0x52, 0x65, 0x73, 0x74, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x52, 0x10, 0x61, 0x74, 0x52, 0x65, 0x73, 0x74, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x35, 0x0a, 0x06, 0x62, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x18, 0x07, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
-	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x61, 0x63, 0x6b,
-	0x75, 0x70, 0x52, 0x06, 0x62, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x12, 0x45, 0x0a, 0x0c, 0x67, 0x65,
-	0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x67, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x47, 0x0a, 0x0c, 0x69, 0x6d, 0x6d, 0x75, 0x74, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74,
-	0x79, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
-	0x49, 0x6d, 0x6d, 0x75, 0x74, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x0c, 0x69, 0x6d,
-	0x6d, 0x75, 0x74, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x41, 0x0a, 0x0a, 0x72, 0x65,
-	0x64, 0x75, 0x6e, 0x64, 0x61, 0x6e, 0x63, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61,
+	0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52,
+	0x17, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
+	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6d, 0x0a, 0x1a, 0x6b, 0x65, 0x79, 0x5f,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63,
+	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67,
+	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74,
+	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17,
+	0x6b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
+	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x1c, 0x6d, 0x75, 0x6c, 0x74, 0x69,
+	0x5f, 0x6d, 0x6f, 0x64, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c,
+	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48,
+	0x00, 0x52, 0x19, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74,
+	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x72, 0x0a, 0x1b,
+	0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62,
+	0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1b, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
+	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61,
+	0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
+	0x12, 0x5d, 0x0a, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
+	0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29,
 	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
-	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x64, 0x75, 0x6e, 0x64, 0x61, 0x6e, 0x63,
-	0x79, 0x52, 0x0a, 0x72, 0x65, 0x64, 0x75, 0x6e, 0x64, 0x61, 0x6e, 0x63, 0x79, 0x12, 0x20, 0x0a,
-	0x09, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09,
-	0x48, 0x00, 0x52, 0x08, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x88, 0x01, 0x01, 0x12,
-	0x51, 0x0a, 0x10, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x67,
-	0x69, 0x6e, 0x67, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
-	0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e,
-	0x67, 0x52, 0x0f, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x4c, 0x6f, 0x67, 0x67, 0x69,
-	0x6e, 0x67, 0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72,
-	0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
-	0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x3a, 0x38, 0x82,
-	0xb5, 0x18, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x82,
-	0xb5, 0x18, 0x07, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x82, 0xb5, 0x18, 0x0d, 0x43, 0x6c,
-	0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x82, 0xb5, 0x18, 0x08, 0x52,
-	0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x70, 0x61, 0x72, 0x65,
-	0x6e, 0x74, 0x5f, 0x69, 0x64, 0x22, 0xbf, 0x02, 0x0a, 0x0b, 0x42, 0x6f, 0x6f, 0x74, 0x4c, 0x6f,
-	0x67, 0x67, 0x69, 0x6e, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12,
-	0x2d, 0x0a, 0x12, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x5f, 0x65, 0x6e,
-	0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11, 0x6d, 0x6f, 0x6e,
-	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x44,
-	0x0a, 0x10, 0x72, 0x65, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x69,
-	0x6f, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x0f, 0x72, 0x65, 0x74, 0x65, 0x6e, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x65,
-	0x72, 0x69, 0x6f, 0x64, 0x12, 0x36, 0x0a, 0x17, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79,
-	0x5f, 0x61, 0x6c, 0x65, 0x72, 0x74, 0x73, 0x5f, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18,
-	0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x15, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x41,
-	0x6c, 0x65, 0x72, 0x74, 0x73, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x2e, 0x0a, 0x13,
-	0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f,
-	0x69, 0x64, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x52, 0x11, 0x6c, 0x6f, 0x67, 0x67, 0x69,
-	0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x73, 0x3a, 0x39, 0x82, 0xb5,
-	0x18, 0x0b, 0x42, 0x6f, 0x6f, 0x74, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x82, 0xb5, 0x18,
-	0x07, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x82, 0xb5, 0x18, 0x08, 0x41, 0x75, 0x64, 0x69,
-	0x74, 0x69, 0x6e, 0x67, 0x82, 0xb5, 0x18, 0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79,
-	0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0x84, 0x01, 0x0a, 0x0b, 0x43, 0x49, 0x43, 0x44,
-	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x2e, 0x0a, 0x03, 0x6a, 0x6f, 0x62, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72,
-	0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4a, 0x6f, 0x62,
-	0x48, 0x00, 0x52, 0x03, 0x6a, 0x6f, 0x62, 0x12, 0x3d, 0x0a, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66,
-	0x6c, 0x6f, 0x77, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
-	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
-	0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x48, 0x00, 0x52, 0x08, 0x77, 0x6f,
-	0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xaf,
-	0x01, 0x0a, 0x1e, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x42, 0x61,
-	0x73, 0x65, 0x64, 0x41, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x2c, 0x0a, 0x12, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x5f, 0x69, 0x73, 0x5f,
-	0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x10, 0x63,
-	0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x49, 0x73, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x12,
-	0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x3a, 0x45, 0x82, 0xb5, 0x18, 0x1e, 0x43,
-	0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x42, 0x61, 0x73, 0x65, 0x64, 0x41,
-	0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x82, 0xb5, 0x18,
-	0x0c, 0x41, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x69, 0x74, 0x79, 0x82, 0xb5, 0x18,
-	0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65,
-	0x22, 0xec, 0x01, 0x0a, 0x0b, 0x43, 0x69, 0x70, 0x68, 0x65, 0x72, 0x53, 0x75, 0x69, 0x74, 0x65,
-	0x12, 0x39, 0x0a, 0x18, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x5f, 0x6d, 0x65, 0x63, 0x68, 0x61, 0x6e, 0x69, 0x73, 0x6d, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x17, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x4d, 0x65, 0x63, 0x68, 0x61, 0x6e, 0x69, 0x73, 0x6d, 0x12, 0x34, 0x0a, 0x16, 0x6b,
-	0x65, 0x79, 0x5f, 0x65, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x5f, 0x61, 0x6c, 0x67, 0x6f,
-	0x72, 0x69, 0x74, 0x68, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x14, 0x6b, 0x65, 0x79,
-	0x45, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68,
-	0x6d, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x61, 0x63, 0x5f, 0x61, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74,
-	0x68, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x61, 0x63, 0x41, 0x6c, 0x67,
-	0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d, 0x12, 0x25, 0x0a, 0x0e, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x5f, 0x63, 0x69, 0x70, 0x68, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d,
-	0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x43, 0x69, 0x70, 0x68, 0x65, 0x72, 0x3a, 0x20, 0x82,
-	0xb5, 0x18, 0x0b, 0x43, 0x69, 0x70, 0x68, 0x65, 0x72, 0x53, 0x75, 0x69, 0x74, 0x65, 0x82, 0xb5,
-	0x18, 0x0d, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x22,
-	0xd0, 0x16, 0x0a, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x12, 0x3a, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x48, 0x00, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2e, 0x0a,
-	0x03, 0x6a, 0x6f, 0x62, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63, 0x6c, 0x6f,
+	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61,
+	0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x12, 0x66, 0x69, 0x6c,
+	0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
+	0x63, 0x0a, 0x16, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1d, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
+	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74,
+	0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x14,
+	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x12, 0x50, 0x0a, 0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x5a, 0x0a, 0x13, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61,
+	0x6c, 0x5f, 0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1f, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
+	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74,
+	0x75, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52,
+	0x11, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x12, 0x50, 0x0a, 0x0f, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x5f, 0x70,
+	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x18, 0x20, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
+	0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f, 0x6c, 0x69,
+	0x63, 0x79, 0x48, 0x00, 0x52, 0x0e, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f,
+	0x6c, 0x69, 0x63, 0x79, 0x12, 0x4d, 0x0a, 0x0e, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x21, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63,
+	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67,
+	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72, 0x6f,
+	0x75, 0x70, 0x48, 0x00, 0x52, 0x0d, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72,
+	0x6f, 0x75, 0x70, 0x12, 0x4a, 0x0a, 0x0d, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x73, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x18, 0x22, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x4a, 0x6f, 0x62, 0x48, 0x00, 0x52, 0x03, 0x6a, 0x6f, 0x62, 0x12, 0x3d, 0x0a,
-	0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
-	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77,
-	0x48, 0x00, 0x52, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x12, 0x40, 0x0a, 0x09,
-	0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x20, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
-	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65,
-	0x72, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x12, 0x3d,
-	0x0a, 0x08, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f,
-	0x6e, 0x48, 0x00, 0x52, 0x08, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x50, 0x0a,
-	0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65,
-	0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
-	0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56,
-	0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x48, 0x00, 0x52,
-	0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x12,
-	0x38, 0x0a, 0x07, 0x77, 0x65, 0x62, 0x5f, 0x61, 0x70, 0x70, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1d, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x62, 0x41, 0x70, 0x70, 0x48,
-	0x00, 0x52, 0x06, 0x77, 0x65, 0x62, 0x41, 0x70, 0x70, 0x12, 0x68, 0x0a, 0x17, 0x63, 0x6f, 0x6e,
-	0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x5f, 0x6f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x63, 0x6c, 0x6f,
+	0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48,
+	0x00, 0x52, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12,
+	0x53, 0x0a, 0x10, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72,
+	0x61, 0x67, 0x65, 0x18, 0x23, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
+	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
+	0x31, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x48, 0x00, 0x52, 0x0f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x12, 0x47, 0x0a, 0x0c, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x18, 0x24, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4f, 0x72, 0x63, 0x68,
-	0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x16, 0x63, 0x6f, 0x6e,
-	0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x59, 0x0a, 0x12, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72,
-	0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
-	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65,
-	0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x48, 0x00, 0x52, 0x11, 0x63, 0x6f, 0x6e,
-	0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x3d,
-	0x0a, 0x08, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x48, 0x00, 0x52, 0x08, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x12, 0x50, 0x0a,
-	0x0f, 0x72, 0x6f, 0x6c, 0x65, 0x5f, 0x61, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74,
-	0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
+	0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00,
+	0x52, 0x0b, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x4d, 0x0a,
+	0x0e, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18,
+	0x25, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
+	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62,
+	0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x6f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x3d, 0x0a, 0x08,
+	0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x26, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f,
+	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
+	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x48,
+	0x00, 0x52, 0x08, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x42, 0x06, 0x0a, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x22, 0xb7, 0x06, 0x0a, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x12, 0x3f, 0x0a, 0x0d, 0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f,
+	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69,
+	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0c, 0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x06, 0xba, 0x48, 0x03, 0xc8, 0x01, 0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x47, 0x0a,
+	0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2f, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61,
+	0x67, 0x65, 0x2e, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06,
+	0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x12, 0x1a, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x06, 0xba, 0x48, 0x03, 0xc8, 0x01, 0x01, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x61, 0x77, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x72, 0x61, 0x77, 0x12, 0x55, 0x0a, 0x12, 0x61, 0x74, 0x5f, 0x72, 0x65, 0x73, 0x74, 0x5f,
+	0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
+	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x41, 0x74, 0x52, 0x65, 0x73, 0x74, 0x45,
+	0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x10, 0x61, 0x74, 0x52, 0x65, 0x73,
+	0x74, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x35, 0x0a, 0x06, 0x62,
+	0x61, 0x63, 0x6b, 0x75, 0x70, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
+	0x2e, 0x76, 0x31, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x75, 0x70, 0x52, 0x06, 0x62, 0x61, 0x63, 0x6b,
+	0x75, 0x70, 0x12, 0x45, 0x0a, 0x0c, 0x67, 0x65, 0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x67, 0x65,
+	0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x47, 0x0a, 0x0c, 0x69, 0x6d, 0x6d,
+	0x75, 0x74, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
+	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6d, 0x6d, 0x75, 0x74, 0x61, 0x62, 0x69,
+	0x6c, 0x69, 0x74, 0x79, 0x52, 0x0c, 0x69, 0x6d, 0x6d, 0x75, 0x74, 0x61, 0x62, 0x69, 0x6c, 0x69,
+	0x74, 0x79, 0x12, 0x41, 0x0a, 0x0a, 0x72, 0x65, 0x64, 0x75, 0x6e, 0x64, 0x61, 0x6e, 0x63, 0x79,
+	0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74,
 	0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52,
-	0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x48, 0x00, 0x52,
-	0x0e, 0x72, 0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x12,
-	0x50, 0x0a, 0x0f, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x5f, 0x69, 0x6d, 0x61,
-	0x67, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
-	0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x48,
-	0x00, 0x52, 0x0e, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x49, 0x6d, 0x61, 0x67,
-	0x65, 0x12, 0x3a, 0x0a, 0x07, 0x76, 0x6d, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x0d, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x4d, 0x49, 0x6d, 0x61,
-	0x67, 0x65, 0x48, 0x00, 0x52, 0x07, 0x76, 0x6d, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x72, 0x0a,
-	0x1b, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f,
-	0x6e, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x0e, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63,
-	0x65, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x50, 0x72,
-	0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x12, 0x4a, 0x0a, 0x0d, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x5f, 0x68,
-	0x75, 0x62, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
-	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
-	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x48, 0x75, 0x62, 0x48, 0x00, 0x52,
-	0x0c, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x48, 0x75, 0x62, 0x12, 0x2e, 0x0a,
-	0x03, 0x6b, 0x65, 0x79, 0x18, 0x10, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63, 0x6c, 0x6f,
+	0x65, 0x64, 0x75, 0x6e, 0x64, 0x61, 0x6e, 0x63, 0x79, 0x52, 0x0a, 0x72, 0x65, 0x64, 0x75, 0x6e,
+	0x64, 0x61, 0x6e, 0x63, 0x79, 0x12, 0x20, 0x0a, 0x09, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f,
+	0x69, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x08, 0x70, 0x61, 0x72, 0x65,
+	0x6e, 0x74, 0x49, 0x64, 0x88, 0x01, 0x01, 0x12, 0x51, 0x0a, 0x10, 0x72, 0x65, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x18, 0x0c, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
+	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x52, 0x0f, 0x72, 0x65, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61,
+	0x62, 0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x3a, 0x02, 0x38, 0x01, 0x3a, 0x38, 0x82, 0xb5, 0x18, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x82, 0xb5, 0x18, 0x07, 0x53, 0x74, 0x6f, 0x72, 0x61,
+	0x67, 0x65, 0x82, 0xb5, 0x18, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x82, 0xb5, 0x18, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42,
+	0x0c, 0x0a, 0x0a, 0x5f, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x22, 0xbf, 0x02,
+	0x0a, 0x0b, 0x42, 0x6f, 0x6f, 0x74, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x12, 0x18, 0x0a,
+	0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
+	0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x2d, 0x0a, 0x12, 0x6d, 0x6f, 0x6e, 0x69, 0x74,
+	0x6f, 0x72, 0x69, 0x6e, 0x67, 0x5f, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x11, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x45,
+	0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x44, 0x0a, 0x10, 0x72, 0x65, 0x74, 0x65, 0x6e, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x69, 0x6f, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x19, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0f, 0x72, 0x65, 0x74,
+	0x65, 0x6e, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x65, 0x72, 0x69, 0x6f, 0x64, 0x12, 0x36, 0x0a, 0x17,
+	0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x5f, 0x61, 0x6c, 0x65, 0x72, 0x74, 0x73, 0x5f,
+	0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x15, 0x73,
+	0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x41, 0x6c, 0x65, 0x72, 0x74, 0x73, 0x45, 0x6e, 0x61,
+	0x62, 0x6c, 0x65, 0x64, 0x12, 0x2e, 0x0a, 0x13, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28,
+	0x09, 0x52, 0x11, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x49, 0x64, 0x73, 0x3a, 0x39, 0x82, 0xb5, 0x18, 0x0b, 0x42, 0x6f, 0x6f, 0x74, 0x4c, 0x6f,
+	0x67, 0x67, 0x69, 0x6e, 0x67, 0x82, 0xb5, 0x18, 0x07, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67,
+	0x82, 0xb5, 0x18, 0x08, 0x41, 0x75, 0x64, 0x69, 0x74, 0x69, 0x6e, 0x67, 0x82, 0xb5, 0x18, 0x0f,
+	0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22,
+	0x84, 0x01, 0x0a, 0x0b, 0x43, 0x49, 0x43, 0x44, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
+	0x2e, 0x0a, 0x03, 0x6a, 0x6f, 0x62, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63,
+	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67,
+	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4a, 0x6f, 0x62, 0x48, 0x00, 0x52, 0x03, 0x6a, 0x6f, 0x62, 0x12,
+	0x3d, 0x0a, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
+	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c,
+	0x6f, 0x77, 0x48, 0x00, 0x52, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x42, 0x06,
+	0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xaf, 0x01, 0x0a, 0x1e, 0x43, 0x65, 0x72, 0x74, 0x69,
+	0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x42, 0x61, 0x73, 0x65, 0x64, 0x41, 0x75, 0x74, 0x68, 0x65,
+	0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2c, 0x0a, 0x12, 0x63, 0x6f, 0x6e,
+	0x74, 0x65, 0x78, 0x74, 0x5f, 0x69, 0x73, 0x5f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x10, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x49, 0x73,
+	0x43, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c,
+	0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65,
+	0x64, 0x3a, 0x45, 0x82, 0xb5, 0x18, 0x1e, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61,
+	0x74, 0x65, 0x42, 0x61, 0x73, 0x65, 0x64, 0x41, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x82, 0xb5, 0x18, 0x0c, 0x41, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74,
+	0x69, 0x63, 0x69, 0x74, 0x79, 0x82, 0xb5, 0x18, 0x0f, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74,
+	0x79, 0x46, 0x65, 0x61, 0x74, 0x75, 0x72, 0x65, 0x22, 0xec, 0x01, 0x0a, 0x0b, 0x43, 0x69, 0x70,
+	0x68, 0x65, 0x72, 0x53, 0x75, 0x69, 0x74, 0x65, 0x12, 0x39, 0x0a, 0x18, 0x61, 0x75, 0x74, 0x68,
+	0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x6d, 0x65, 0x63, 0x68, 0x61,
+	0x6e, 0x69, 0x73, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x17, 0x61, 0x75, 0x74, 0x68,
+	0x65, 0x6e, 0x74, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x65, 0x63, 0x68, 0x61, 0x6e,
+	0x69, 0x73, 0x6d, 0x12, 0x34, 0x0a, 0x16, 0x6b, 0x65, 0x79, 0x5f, 0x65, 0x78, 0x63, 0x68, 0x61,
+	0x6e, 0x67, 0x65, 0x5f, 0x61, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x14, 0x6b, 0x65, 0x79, 0x45, 0x78, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65,
+	0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x61, 0x63,
+	0x5f, 0x61, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0c, 0x6d, 0x61, 0x63, 0x41, 0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d, 0x12, 0x25,
+	0x0a, 0x0e, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x69, 0x70, 0x68, 0x65, 0x72,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x43,
+	0x69, 0x70, 0x68, 0x65, 0x72, 0x3a, 0x20, 0x82, 0xb5, 0x18, 0x0b, 0x43, 0x69, 0x70, 0x68, 0x65,
+	0x72, 0x53, 0x75, 0x69, 0x74, 0x65, 0x82, 0xb5, 0x18, 0x0d, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x22, 0xb8, 0x17, 0x0a, 0x0d, 0x43, 0x6c, 0x6f, 0x75,
+	0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x3a, 0x0a, 0x07, 0x61, 0x63, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x48, 0x00, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x3e, 0x0a,
-	0x09, 0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x18, 0x11, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x75, 0x6c,
-	0x74, 0x48, 0x00, 0x52, 0x08, 0x6b, 0x65, 0x79, 0x56, 0x61, 0x75, 0x6c, 0x74, 0x12, 0x56, 0x0a,
-	0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61,
-	0x63, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x76, 0x31, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x48, 0x00, 0x52, 0x07, 0x61, 0x63,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2e, 0x0a, 0x03, 0x6a, 0x6f, 0x62, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
+	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4a, 0x6f, 0x62, 0x48, 0x00,
+	0x52, 0x03, 0x6a, 0x6f, 0x62, 0x12, 0x3d, 0x0a, 0x08, 0x77, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f,
+	0x77, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
+	0x57, 0x6f, 0x72, 0x6b, 0x66, 0x6c, 0x6f, 0x77, 0x48, 0x00, 0x52, 0x08, 0x77, 0x6f, 0x72, 0x6b,
+	0x66, 0x6c, 0x6f, 0x77, 0x12, 0x40, 0x0a, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65,
+	0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
+	0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6e,
+	0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x12, 0x3d, 0x0a, 0x08, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
-	0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63,
-	0x65, 0x48, 0x00, 0x52, 0x10, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65,
-	0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x63, 0x0a, 0x16, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x5f, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18,
-	0x13, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65,
+	0x2e, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x48, 0x00, 0x52, 0x08, 0x66, 0x75, 0x6e,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x50, 0x0a, 0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c,
+	0x5f, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25,
+	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
+	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4d, 0x61,
+	0x63, 0x68, 0x69, 0x6e, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c,
+	0x4d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x12, 0x38, 0x0a, 0x07, 0x77, 0x65, 0x62, 0x5f, 0x61,
+	0x70, 0x70, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x57, 0x65, 0x62, 0x41, 0x70, 0x70, 0x48, 0x00, 0x52, 0x06, 0x77, 0x65, 0x62, 0x41, 0x70,
+	0x70, 0x12, 0x68, 0x0a, 0x17, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x5f, 0x6f,
+	0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
+	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x4f, 0x72, 0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x48, 0x00, 0x52, 0x16, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x4f, 0x72,
+	0x63, 0x68, 0x65, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x59, 0x0a, 0x12, 0x63,
+	0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x79, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
+	0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x79, 0x48, 0x00, 0x52, 0x11, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x3d, 0x0a, 0x08, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69,
+	0x74, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x48, 0x00, 0x52, 0x08, 0x69, 0x64, 0x65,
+	0x6e, 0x74, 0x69, 0x74, 0x79, 0x12, 0x50, 0x0a, 0x0f, 0x72, 0x6f, 0x6c, 0x65, 0x5f, 0x61, 0x73,
+	0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25,
+	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
+	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73, 0x69, 0x67,
+	0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x48, 0x00, 0x52, 0x0e, 0x72, 0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73,
+	0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x50, 0x0a, 0x0f, 0x63, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x5f, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
+	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e,
+	0x65, 0x72, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x63, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x3a, 0x0a, 0x07, 0x76, 0x6d, 0x69,
+	0x6d, 0x61, 0x67, 0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x63, 0x6c, 0x6f,
+	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
+	0x76, 0x31, 0x2e, 0x56, 0x4d, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x07, 0x76, 0x6d,
+	0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x72, 0x0a, 0x1b, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x5f,
+	0x70, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f,
+	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
+	0x76, 0x31, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69,
+	0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19,
+	0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x69,
+	0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4a, 0x0a, 0x0d, 0x6d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x69, 0x6e, 0x67, 0x5f, 0x68, 0x75, 0x62, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
+	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x69,
+	0x6e, 0x67, 0x48, 0x75, 0x62, 0x48, 0x00, 0x52, 0x0c, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x69,
+	0x6e, 0x67, 0x48, 0x75, 0x62, 0x12, 0x2e, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x10, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
+	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x48, 0x00,
+	0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x3e, 0x0a, 0x09, 0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61, 0x75,
+	0x6c, 0x74, 0x18, 0x11, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x75, 0x6c, 0x74, 0x48, 0x00, 0x52, 0x08, 0x6b, 0x65, 0x79,
+	0x56, 0x61, 0x75, 0x6c, 0x74, 0x12, 0x56, 0x0a, 0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
+	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x48, 0x00, 0x52, 0x10, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x63, 0x0a,
+	0x16, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74,
+	0x79, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x13, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63,
+	0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x48, 0x00, 0x52, 0x14, 0x6e, 0x65,
 	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f,
-	0x75, 0x70, 0x48, 0x00, 0x52, 0x14, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63,
-	0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x4a, 0x0a, 0x0d, 0x6c, 0x6f,
-	0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x14, 0x20, 0x01, 0x28,
+	0x75, 0x70, 0x12, 0x66, 0x0a, 0x17, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x5f, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x14, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
+	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6e, 0x65,
+	0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x48, 0x00, 0x52, 0x15, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4a, 0x0a, 0x0d, 0x6c, 0x6f,
+	0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x15, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
 	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x61, 0x64, 0x42, 0x61,
 	0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x48, 0x00, 0x52, 0x0c, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x61,
 	0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x12, 0x50, 0x0a, 0x0f, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e,
-	0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x15, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
 	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e,
 	0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6c, 0x0a, 0x19, 0x64, 0x6f, 0x63, 0x75,
 	0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x16, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x17, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c,
 	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
 	0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61,
 	0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x64,
 	0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6d, 0x0a, 0x1a, 0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61,
 	0x6c, 0x75, 0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x18, 0x17, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f,
+	0x76, 0x69, 0x63, 0x65, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
 	0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62,
 	0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x6b, 0x65,
 	0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x1c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x6d,
 	0x6f, 0x64, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x18, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c,
 	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
 	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61,
 	0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52,
 	0x19, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62,
 	0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x72, 0x0a, 0x1b, 0x72, 0x65,
 	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
-	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x19, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
 	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x48, 0x00, 0x52, 0x19, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44,
 	0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5d,
 	0x0a, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73,
-	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x63,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x63,
 	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67,
 	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
 	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x12, 0x66, 0x69, 0x6c, 0x65, 0x53,
 	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x63, 0x0a,
 	0x16, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
 	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72,
 	0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x14, 0x6f, 0x62,
 	0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69,
 	0x63, 0x65, 0x12, 0x50, 0x0a, 0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c,
 	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
 	0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74, 0x77, 0x6f,
 	0x72, 0x6b, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x12, 0x5a, 0x0a, 0x13, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f,
-	0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1d, 0x20, 0x01, 0x28,
+	0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x1e, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
 	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61,
 	0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52, 0x11, 0x76,
 	0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
 	0x12, 0x50, 0x0a, 0x0f, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x5f, 0x70, 0x6f, 0x6c,
-	0x69, 0x63, 0x79, 0x18, 0x1e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
+	0x69, 0x63, 0x79, 0x18, 0x1f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
 	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
 	0x31, 0x2e, 0x50, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79,
 	0x48, 0x00, 0x52, 0x0e, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x50, 0x6f, 0x6c, 0x69,
 	0x63, 0x79, 0x12, 0x4d, 0x0a, 0x0e, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x67,
-	0x72, 0x6f, 0x75, 0x70, 0x18, 0x1f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6c, 0x6f,
+	0x72, 0x6f, 0x75, 0x70, 0x18, 0x20, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
 	0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70,
 	0x48, 0x00, 0x52, 0x0d, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75,
 	0x70, 0x12, 0x4a, 0x0a, 0x0d, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x18, 0x20, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x67, 0x65, 0x18, 0x21, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
 	0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52,
 	0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x53, 0x0a,
 	0x10, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x18, 0x21, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x65, 0x18, 0x22, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
 	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
 	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48,
 	0x00, 0x52, 0x0f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61,
 	0x67, 0x65, 0x12, 0x47, 0x0a, 0x0c, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61,
-	0x67, 0x65, 0x18, 0x22, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x67, 0x65, 0x18, 0x23, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
 	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
 	0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0b,
 	0x66, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x4d, 0x0a, 0x0e, 0x6f,
-	0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x23, 0x20,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x18, 0x24, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
 	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65,
 	0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x48, 0x00, 0x52, 0x0d, 0x6f, 0x62, 0x6a,
@@ -13037,7 +13244,55 @@ var file_api_ontology_ontology_proto_rawDesc = []byte{
 	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61,
 	0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x14, 0x6f, 0x62, 0x6a,
 	0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x59, 0x0a, 0x0b, 0x47, 0x65, 0x6f,
+	0x74, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0xfd, 0x05, 0x0a, 0x15, 0x47, 0x65,
+	0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x12, 0x3f, 0x0a, 0x0d, 0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
+	0x74, 0x69, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
+	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0c, 0x63, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x54, 0x69, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x06, 0xba, 0x48, 0x03, 0xc8, 0x01, 0x01, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03,
+	0x69, 0x70, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x03, 0x69, 0x70, 0x73, 0x12, 0x50,
+	0x0a, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x38,
+	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
+	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x61, 0x62,
+	0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73,
+	0x12, 0x1a, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x06,
+	0xba, 0x48, 0x03, 0xc8, 0x01, 0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05,
+	0x70, 0x6f, 0x72, 0x74, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0d, 0x52, 0x05, 0x70, 0x6f, 0x72,
+	0x74, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x72, 0x61, 0x77, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x72, 0x61, 0x77, 0x12, 0x47, 0x0a, 0x0c, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69,
+	0x63, 0x69, 0x74, 0x79, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f,
+	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
+	0x76, 0x31, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x69, 0x74, 0x79, 0x52,
+	0x0c, 0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63, 0x69, 0x74, 0x79, 0x12, 0x22, 0x0a,
+	0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28,
+	0x09, 0x48, 0x00, 0x52, 0x09, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x49, 0x64, 0x88, 0x01,
+	0x01, 0x12, 0x45, 0x0a, 0x0c, 0x67, 0x65, 0x6f, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
+	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
+	0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x67, 0x65, 0x6f,
+	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x20, 0x0a, 0x09, 0x70, 0x61, 0x72, 0x65,
+	0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x08, 0x70,
+	0x61, 0x72, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x88, 0x01, 0x01, 0x12, 0x5d, 0x0a, 0x14, 0x74, 0x72,
+	0x61, 0x6e, 0x73, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x70, 0x6f, 0x72, 0x74, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x13, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x70, 0x6f, 0x72, 0x74, 0x45,
+	0x6e, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x39, 0x0a, 0x0b, 0x4c, 0x61, 0x62,
+	0x65, 0x6c, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x3a, 0x02, 0x38, 0x01, 0x3a, 0x56, 0x82, 0xb5, 0x18, 0x15, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x69,
+	0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x82,
+	0xb5, 0x18, 0x0e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x82, 0xb5, 0x18, 0x0a, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x82,
+	0xb5, 0x18, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x82, 0xb5, 0x18, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42, 0x0d, 0x0a, 0x0b,
+	0x5f, 0x63, 0x6f, 0x6d, 0x70, 0x75, 0x74, 0x65, 0x5f, 0x69, 0x64, 0x42, 0x0c, 0x0a, 0x0a, 0x5f,
+	0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x22, 0x59, 0x0a, 0x0b, 0x47, 0x65, 0x6f,
 	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x69,
 	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x67, 0x69, 0x6f, 0x6e,
 	0x3a, 0x32, 0x82, 0xb5, 0x18, 0x0b, 0x47, 0x65, 0x6f, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
@@ -13755,129 +14010,142 @@ var file_api_ontology_ontology_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x75, 0x70, 0x82, 0xb5, 0x18, 0x0a, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69,
 	0x6e, 0x67, 0x82, 0xb5, 0x18, 0x0d, 0x43, 0x6c, 0x6f, 0x75, 0x64, 0x52, 0x65, 0x73, 0x6f, 0x75,
 	0x72, 0x63, 0x65, 0x82, 0xb5, 0x18, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42,
-	0x0c, 0x0a, 0x0a, 0x5f, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x22, 0xc0, 0x06,
+	0x0c, 0x0a, 0x0a, 0x5f, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x22, 0xa8, 0x07,
 	0x0a, 0x0e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x12, 0x4a, 0x0a, 0x0d, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
-	0x4c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x48, 0x00, 0x52, 0x0c,
-	0x6c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x12, 0x50, 0x0a, 0x0f,
-	0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f,
-	0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0e,
-	0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6c,
-	0x0a, 0x19, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62,
-	0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
-	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65,
-	0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x48, 0x00, 0x52, 0x17, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74,
-	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6d, 0x0a, 0x1a,
-	0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61,
-	0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74,
-	0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x48, 0x00, 0x52, 0x17, 0x6b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61,
-	0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x1c, 0x6d,
-	0x75, 0x6c, 0x74, 0x69, 0x5f, 0x6d, 0x6f, 0x64, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62,
-	0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
-	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x4d,
-	0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61,
-	0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x12, 0x72, 0x0a, 0x1b, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x5f, 0x64,
-	0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
-	0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
-	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65,
-	0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
-	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x72, 0x65, 0x6c, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x12, 0x5d, 0x0a, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f,
-	0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x07, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x29, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
-	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53,
-	0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52,
-	0x12, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x12, 0x63, 0x0a, 0x16, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74,
-	0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x08, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
-	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65,
-	0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x48, 0x00, 0x52, 0x14, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65,
-	0x22, 0xa7, 0x09, 0x0a, 0x0a, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x12,
-	0x56, 0x0a, 0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72,
-	0x66, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f,
+	0x12, 0x66, 0x0a, 0x17, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x5f, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x2c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
+	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x69,
+	0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48,
+	0x00, 0x52, 0x15, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4a, 0x0a, 0x0d, 0x6c, 0x6f, 0x61, 0x64,
+	0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
+	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61,
+	0x6e, 0x63, 0x65, 0x72, 0x48, 0x00, 0x52, 0x0c, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x61, 0x6c, 0x61,
+	0x6e, 0x63, 0x65, 0x72, 0x12, 0x50, 0x0a, 0x0f, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x6c, 0x6f, 0x67, 0x67, 0x69, 0x6e, 0x67, 0x53,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6c, 0x0a, 0x19, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65,
+	0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
+	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
+	0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61,
+	0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x64, 0x6f, 0x63,
+	0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x12, 0x6d, 0x0a, 0x1a, 0x6b, 0x65, 0x79, 0x5f, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64,
+	0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31,
+	0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
+	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17, 0x6b, 0x65, 0x79, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x1c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x6d, 0x6f, 0x64,
+	0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75,
+	0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61,
+	0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x6d,
+	0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
+	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x72, 0x0a, 0x1b, 0x72, 0x65, 0x6c, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e,
+	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
+	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c,
+	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48,
+	0x00, 0x52, 0x19, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74,
+	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5d, 0x0a, 0x14,
+	0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x63, 0x6c, 0x6f,
 	0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e,
-	0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66,
-	0x61, 0x63, 0x65, 0x48, 0x00, 0x52, 0x10, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e,
-	0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12, 0x63, 0x0a, 0x16, 0x6e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x5f, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x5f, 0x67, 0x72, 0x6f, 0x75,
-	0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69,
-	0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e,
-	0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47,
-	0x72, 0x6f, 0x75, 0x70, 0x48, 0x00, 0x52, 0x14, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53,
-	0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x4a, 0x0a, 0x0d,
-	0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x03, 0x20,
+	0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x12, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f,
+	0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x63, 0x0a, 0x16, 0x6f,
+	0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x63, 0x6c,
+	0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79,
+	0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x14, 0x6f, 0x62, 0x6a, 0x65,
+	0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
+	0x42, 0x06, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x8f, 0x0a, 0x0a, 0x0a, 0x4e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x69, 0x6e, 0x67, 0x12, 0x56, 0x0a, 0x11, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f,
+	0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x48, 0x00, 0x52, 0x10, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x12,
+	0x63, 0x0a, 0x16, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x63, 0x75, 0x72,
+	0x69, 0x74, 0x79, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
+	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53,
+	0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x48, 0x00, 0x52, 0x14,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x47,
+	0x72, 0x6f, 0x75, 0x70, 0x12, 0x66, 0x0a, 0x17, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x5f,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f,
+	0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65,
+	0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x15, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x69, 0x63, 0x4e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x4a, 0x0a, 0x0d,
+	0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x18, 0x04, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
 	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x61, 0x64,
 	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x48, 0x00, 0x52, 0x0c, 0x6c, 0x6f, 0x61, 0x64,
 	0x42, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x72, 0x12, 0x50, 0x0a, 0x0f, 0x6c, 0x6f, 0x67, 0x67,
-	0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x69, 0x6e, 0x67, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x25, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
 	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x67, 0x67, 0x69, 0x6e,
 	0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x0e, 0x6c, 0x6f, 0x67, 0x67,
 	0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6c, 0x0a, 0x19, 0x64, 0x6f,
 	0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
 	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61,
 	0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52,
 	0x17, 0x64, 0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73,
 	0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x6d, 0x0a, 0x1a, 0x6b, 0x65, 0x79, 0x5f,
 	0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x73,
-	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x63,
 	0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67,
 	0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74,
 	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x17,
 	0x6b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65,
 	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x73, 0x0a, 0x1c, 0x6d, 0x75, 0x6c, 0x74, 0x69,
 	0x5f, 0x6d, 0x6f, 0x64, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x5f,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x30, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
 	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c,
 	0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48,
 	0x00, 0x52, 0x19, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x4d, 0x6f, 0x64, 0x61, 0x6c, 0x44, 0x61, 0x74,
 	0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x72, 0x0a, 0x1b,
 	0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x62,
-	0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28,
+	0x61, 0x73, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x30, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e,
 	0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x6c, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x61, 0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x19, 0x72, 0x65, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x61,
 	0x6c, 0x44, 0x61, 0x74, 0x61, 0x62, 0x61, 0x73, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x12, 0x5d, 0x0a, 0x14, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29,
+	0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29,
 	0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c,
 	0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x53, 0x74, 0x6f, 0x72, 0x61,
 	0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x12, 0x66, 0x69, 0x6c,
 	0x65, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
 	0x63, 0x0a, 0x16, 0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
-	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x2b, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f,
 	0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74,
 	0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x48, 0x00, 0x52, 0x14,
 	0x6f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x53, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x12, 0x50, 0x0a, 0x0f, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x5f,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e,
 	0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e, 0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f,
 	0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52, 0x0e, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61, 0x6c, 0x4e,
 	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x12, 0x5a, 0x0a, 0x13, 0x76, 0x69, 0x72, 0x74, 0x75, 0x61,
-	0x6c, 0x5f, 0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x0c, 0x20,
+	0x6c, 0x5f, 0x73, 0x75, 0x62, 0x5f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x18, 0x0d, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x63, 0x6c, 0x6f, 0x75, 0x64, 0x69, 0x74, 0x6f, 0x72, 0x2e,
 	0x6f, 0x6e, 0x74, 0x6f, 0x6c, 0x6f, 0x67, 0x79, 0x2e, 0x76, 0x31, 0x2e, 0x56, 0x69, 0x72, 0x74,
 	0x75, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x48, 0x00, 0x52,
@@ -14788,7 +15056,7 @@ func file_api_ontology_ontology_proto_rawDescGZIP() []byte {
 	return file_api_ontology_ontology_proto_rawDescData
 }
 
-var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 141)
+var file_api_ontology_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 143)
 var file_api_ontology_ontology_proto_goTypes = []interface{}{
 	(*ABAC)(nil),                           // 0: clouditor.ontology.v1.ABAC
 	(*AccessRestriction)(nil),              // 1: clouditor.ontology.v1.AccessRestriction
@@ -14835,521 +15103,532 @@ var file_api_ontology_ontology_proto_goTypes = []interface{}{
 	(*Framework)(nil),                      // 42: clouditor.ontology.v1.Framework
 	(*Function)(nil),                       // 43: clouditor.ontology.v1.Function
 	(*Functionality)(nil),                  // 44: clouditor.ontology.v1.Functionality
-	(*GeoLocation)(nil),                    // 45: clouditor.ontology.v1.GeoLocation
-	(*HttpClientLibrary)(nil),              // 46: clouditor.ontology.v1.HttpClientLibrary
-	(*HttpEndpoint)(nil),                   // 47: clouditor.ontology.v1.HttpEndpoint
-	(*HttpRequest)(nil),                    // 48: clouditor.ontology.v1.HttpRequest
-	(*HttpRequestHandler)(nil),             // 49: clouditor.ontology.v1.HttpRequestHandler
-	(*HttpServer)(nil),                     // 50: clouditor.ontology.v1.HttpServer
-	(*Identifiable)(nil),                   // 51: clouditor.ontology.v1.Identifiable
-	(*Identity)(nil),                       // 52: clouditor.ontology.v1.Identity
-	(*Image)(nil),                          // 53: clouditor.ontology.v1.Image
-	(*Immutability)(nil),                   // 54: clouditor.ontology.v1.Immutability
-	(*Integrity)(nil),                      // 55: clouditor.ontology.v1.Integrity
-	(*IoT)(nil),                            // 56: clouditor.ontology.v1.IoT
-	(*Job)(nil),                            // 57: clouditor.ontology.v1.Job
-	(*TokenBasedAuthentication)(nil),       // 58: clouditor.ontology.v1.TokenBasedAuthentication
-	(*Key)(nil),                            // 59: clouditor.ontology.v1.Key
-	(*KeyValueDatabaseService)(nil),        // 60: clouditor.ontology.v1.KeyValueDatabaseService
-	(*KeyVault)(nil),                       // 61: clouditor.ontology.v1.KeyVault
-	(*L3Firewall)(nil),                     // 62: clouditor.ontology.v1.L3Firewall
-	(*LoadBalancer)(nil),                   // 63: clouditor.ontology.v1.LoadBalancer
-	(*LogOperation)(nil),                   // 64: clouditor.ontology.v1.LogOperation
-	(*Logger)(nil),                         // 65: clouditor.ontology.v1.Logger
-	(*Logging)(nil),                        // 66: clouditor.ontology.v1.Logging
-	(*LoggingService)(nil),                 // 67: clouditor.ontology.v1.LoggingService
-	(*MalwareProtection)(nil),              // 68: clouditor.ontology.v1.MalwareProtection
-	(*ManagedKeyEncryption)(nil),           // 69: clouditor.ontology.v1.ManagedKeyEncryption
-	(*MessagingHub)(nil),                   // 70: clouditor.ontology.v1.MessagingHub
-	(*MultiFactorAuthentiation)(nil),       // 71: clouditor.ontology.v1.MultiFactorAuthentiation
-	(*MultiModalDatabaseService)(nil),      // 72: clouditor.ontology.v1.MultiModalDatabaseService
-	(*NetworkInterface)(nil),               // 73: clouditor.ontology.v1.NetworkInterface
-	(*NetworkSecurityGroup)(nil),           // 74: clouditor.ontology.v1.NetworkSecurityGroup
-	(*NetworkService)(nil),                 // 75: clouditor.ontology.v1.NetworkService
-	(*Networking)(nil),                     // 76: clouditor.ontology.v1.Networking
-	(*NoAuthentication)(nil),               // 77: clouditor.ontology.v1.NoAuthentication
-	(*OSLogging)(nil),                      // 78: clouditor.ontology.v1.OSLogging
-	(*OTPBasedAuthentication)(nil),         // 79: clouditor.ontology.v1.OTPBasedAuthentication
-	(*ObjectStorage)(nil),                  // 80: clouditor.ontology.v1.ObjectStorage
-	(*ObjectStorageRequest)(nil),           // 81: clouditor.ontology.v1.ObjectStorageRequest
-	(*ObjectStorageService)(nil),           // 82: clouditor.ontology.v1.ObjectStorageService
-	(*Operation)(nil),                      // 83: clouditor.ontology.v1.Operation
-	(*PasswordBasedAuthentication)(nil),    // 84: clouditor.ontology.v1.PasswordBasedAuthentication
-	(*PasswordPolicy)(nil),                 // 85: clouditor.ontology.v1.PasswordPolicy
-	(*RBAC)(nil),                           // 86: clouditor.ontology.v1.RBAC
-	(*Redundancy)(nil),                     // 87: clouditor.ontology.v1.Redundancy
-	(*RelationalDatabaseService)(nil),      // 88: clouditor.ontology.v1.RelationalDatabaseService
-	(*ResourceGroup)(nil),                  // 89: clouditor.ontology.v1.ResourceGroup
-	(*ResourceLogging)(nil),                // 90: clouditor.ontology.v1.ResourceLogging
-	(*RoleAssignment)(nil),                 // 91: clouditor.ontology.v1.RoleAssignment
-	(*SecurityFeature)(nil),                // 92: clouditor.ontology.v1.SecurityFeature
-	(*SingleSignOn)(nil),                   // 93: clouditor.ontology.v1.SingleSignOn
-	(*Storage)(nil),                        // 94: clouditor.ontology.v1.Storage
-	(*StorageService)(nil),                 // 95: clouditor.ontology.v1.StorageService
-	(*TransportEncryption)(nil),            // 96: clouditor.ontology.v1.TransportEncryption
-	(*VMImage)(nil),                        // 97: clouditor.ontology.v1.VMImage
-	(*VirtualMachine)(nil),                 // 98: clouditor.ontology.v1.VirtualMachine
-	(*VirtualNetwork)(nil),                 // 99: clouditor.ontology.v1.VirtualNetwork
-	(*VirtualSubNetwork)(nil),              // 100: clouditor.ontology.v1.VirtualSubNetwork
-	(*WebApp)(nil),                         // 101: clouditor.ontology.v1.WebApp
-	(*WebApplicationFirewall)(nil),         // 102: clouditor.ontology.v1.WebApplicationFirewall
-	(*Workflow)(nil),                       // 103: clouditor.ontology.v1.Workflow
-	nil,                                    // 104: clouditor.ontology.v1.Account.LabelsEntry
-	nil,                                    // 105: clouditor.ontology.v1.Application.LabelsEntry
-	nil,                                    // 106: clouditor.ontology.v1.BlockStorage.LabelsEntry
-	nil,                                    // 107: clouditor.ontology.v1.Container.LabelsEntry
-	nil,                                    // 108: clouditor.ontology.v1.ContainerImage.LabelsEntry
-	nil,                                    // 109: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	nil,                                    // 110: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	nil,                                    // 111: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	nil,                                    // 112: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	nil,                                    // 113: clouditor.ontology.v1.Document.LabelsEntry
-	nil,                                    // 114: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	nil,                                    // 115: clouditor.ontology.v1.FileStorage.LabelsEntry
-	nil,                                    // 116: clouditor.ontology.v1.FileStorageService.LabelsEntry
-	nil,                                    // 117: clouditor.ontology.v1.Function.LabelsEntry
-	nil,                                    // 118: clouditor.ontology.v1.Identity.LabelsEntry
-	nil,                                    // 119: clouditor.ontology.v1.Job.LabelsEntry
-	nil,                                    // 120: clouditor.ontology.v1.Key.LabelsEntry
-	nil,                                    // 121: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	nil,                                    // 122: clouditor.ontology.v1.KeyVault.LabelsEntry
-	nil,                                    // 123: clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	nil,                                    // 124: clouditor.ontology.v1.LoggingService.LabelsEntry
-	nil,                                    // 125: clouditor.ontology.v1.MessagingHub.LabelsEntry
-	nil,                                    // 126: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	nil,                                    // 127: clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	nil,                                    // 128: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	nil,                                    // 129: clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	nil,                                    // 130: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	nil,                                    // 131: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	nil,                                    // 132: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	nil,                                    // 133: clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	nil,                                    // 134: clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	nil,                                    // 135: clouditor.ontology.v1.VMImage.LabelsEntry
-	nil,                                    // 136: clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	nil,                                    // 137: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	nil,                                    // 138: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	nil,                                    // 139: clouditor.ontology.v1.WebApp.LabelsEntry
-	nil,                                    // 140: clouditor.ontology.v1.Workflow.LabelsEntry
-	(*timestamppb.Timestamp)(nil),          // 141: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),            // 142: google.protobuf.Duration
-	(*descriptorpb.MessageOptions)(nil),    // 143: google.protobuf.MessageOptions
+	(*GenericNetworkService)(nil),          // 45: clouditor.ontology.v1.GenericNetworkService
+	(*GeoLocation)(nil),                    // 46: clouditor.ontology.v1.GeoLocation
+	(*HttpClientLibrary)(nil),              // 47: clouditor.ontology.v1.HttpClientLibrary
+	(*HttpEndpoint)(nil),                   // 48: clouditor.ontology.v1.HttpEndpoint
+	(*HttpRequest)(nil),                    // 49: clouditor.ontology.v1.HttpRequest
+	(*HttpRequestHandler)(nil),             // 50: clouditor.ontology.v1.HttpRequestHandler
+	(*HttpServer)(nil),                     // 51: clouditor.ontology.v1.HttpServer
+	(*Identifiable)(nil),                   // 52: clouditor.ontology.v1.Identifiable
+	(*Identity)(nil),                       // 53: clouditor.ontology.v1.Identity
+	(*Image)(nil),                          // 54: clouditor.ontology.v1.Image
+	(*Immutability)(nil),                   // 55: clouditor.ontology.v1.Immutability
+	(*Integrity)(nil),                      // 56: clouditor.ontology.v1.Integrity
+	(*IoT)(nil),                            // 57: clouditor.ontology.v1.IoT
+	(*Job)(nil),                            // 58: clouditor.ontology.v1.Job
+	(*TokenBasedAuthentication)(nil),       // 59: clouditor.ontology.v1.TokenBasedAuthentication
+	(*Key)(nil),                            // 60: clouditor.ontology.v1.Key
+	(*KeyValueDatabaseService)(nil),        // 61: clouditor.ontology.v1.KeyValueDatabaseService
+	(*KeyVault)(nil),                       // 62: clouditor.ontology.v1.KeyVault
+	(*L3Firewall)(nil),                     // 63: clouditor.ontology.v1.L3Firewall
+	(*LoadBalancer)(nil),                   // 64: clouditor.ontology.v1.LoadBalancer
+	(*LogOperation)(nil),                   // 65: clouditor.ontology.v1.LogOperation
+	(*Logger)(nil),                         // 66: clouditor.ontology.v1.Logger
+	(*Logging)(nil),                        // 67: clouditor.ontology.v1.Logging
+	(*LoggingService)(nil),                 // 68: clouditor.ontology.v1.LoggingService
+	(*MalwareProtection)(nil),              // 69: clouditor.ontology.v1.MalwareProtection
+	(*ManagedKeyEncryption)(nil),           // 70: clouditor.ontology.v1.ManagedKeyEncryption
+	(*MessagingHub)(nil),                   // 71: clouditor.ontology.v1.MessagingHub
+	(*MultiFactorAuthentiation)(nil),       // 72: clouditor.ontology.v1.MultiFactorAuthentiation
+	(*MultiModalDatabaseService)(nil),      // 73: clouditor.ontology.v1.MultiModalDatabaseService
+	(*NetworkInterface)(nil),               // 74: clouditor.ontology.v1.NetworkInterface
+	(*NetworkSecurityGroup)(nil),           // 75: clouditor.ontology.v1.NetworkSecurityGroup
+	(*NetworkService)(nil),                 // 76: clouditor.ontology.v1.NetworkService
+	(*Networking)(nil),                     // 77: clouditor.ontology.v1.Networking
+	(*NoAuthentication)(nil),               // 78: clouditor.ontology.v1.NoAuthentication
+	(*OSLogging)(nil),                      // 79: clouditor.ontology.v1.OSLogging
+	(*OTPBasedAuthentication)(nil),         // 80: clouditor.ontology.v1.OTPBasedAuthentication
+	(*ObjectStorage)(nil),                  // 81: clouditor.ontology.v1.ObjectStorage
+	(*ObjectStorageRequest)(nil),           // 82: clouditor.ontology.v1.ObjectStorageRequest
+	(*ObjectStorageService)(nil),           // 83: clouditor.ontology.v1.ObjectStorageService
+	(*Operation)(nil),                      // 84: clouditor.ontology.v1.Operation
+	(*PasswordBasedAuthentication)(nil),    // 85: clouditor.ontology.v1.PasswordBasedAuthentication
+	(*PasswordPolicy)(nil),                 // 86: clouditor.ontology.v1.PasswordPolicy
+	(*RBAC)(nil),                           // 87: clouditor.ontology.v1.RBAC
+	(*Redundancy)(nil),                     // 88: clouditor.ontology.v1.Redundancy
+	(*RelationalDatabaseService)(nil),      // 89: clouditor.ontology.v1.RelationalDatabaseService
+	(*ResourceGroup)(nil),                  // 90: clouditor.ontology.v1.ResourceGroup
+	(*ResourceLogging)(nil),                // 91: clouditor.ontology.v1.ResourceLogging
+	(*RoleAssignment)(nil),                 // 92: clouditor.ontology.v1.RoleAssignment
+	(*SecurityFeature)(nil),                // 93: clouditor.ontology.v1.SecurityFeature
+	(*SingleSignOn)(nil),                   // 94: clouditor.ontology.v1.SingleSignOn
+	(*Storage)(nil),                        // 95: clouditor.ontology.v1.Storage
+	(*StorageService)(nil),                 // 96: clouditor.ontology.v1.StorageService
+	(*TransportEncryption)(nil),            // 97: clouditor.ontology.v1.TransportEncryption
+	(*VMImage)(nil),                        // 98: clouditor.ontology.v1.VMImage
+	(*VirtualMachine)(nil),                 // 99: clouditor.ontology.v1.VirtualMachine
+	(*VirtualNetwork)(nil),                 // 100: clouditor.ontology.v1.VirtualNetwork
+	(*VirtualSubNetwork)(nil),              // 101: clouditor.ontology.v1.VirtualSubNetwork
+	(*WebApp)(nil),                         // 102: clouditor.ontology.v1.WebApp
+	(*WebApplicationFirewall)(nil),         // 103: clouditor.ontology.v1.WebApplicationFirewall
+	(*Workflow)(nil),                       // 104: clouditor.ontology.v1.Workflow
+	nil,                                    // 105: clouditor.ontology.v1.Account.LabelsEntry
+	nil,                                    // 106: clouditor.ontology.v1.Application.LabelsEntry
+	nil,                                    // 107: clouditor.ontology.v1.BlockStorage.LabelsEntry
+	nil,                                    // 108: clouditor.ontology.v1.Container.LabelsEntry
+	nil,                                    // 109: clouditor.ontology.v1.ContainerImage.LabelsEntry
+	nil,                                    // 110: clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	nil,                                    // 111: clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	nil,                                    // 112: clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	nil,                                    // 113: clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	nil,                                    // 114: clouditor.ontology.v1.Document.LabelsEntry
+	nil,                                    // 115: clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	nil,                                    // 116: clouditor.ontology.v1.FileStorage.LabelsEntry
+	nil,                                    // 117: clouditor.ontology.v1.FileStorageService.LabelsEntry
+	nil,                                    // 118: clouditor.ontology.v1.Function.LabelsEntry
+	nil,                                    // 119: clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	nil,                                    // 120: clouditor.ontology.v1.Identity.LabelsEntry
+	nil,                                    // 121: clouditor.ontology.v1.Job.LabelsEntry
+	nil,                                    // 122: clouditor.ontology.v1.Key.LabelsEntry
+	nil,                                    // 123: clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	nil,                                    // 124: clouditor.ontology.v1.KeyVault.LabelsEntry
+	nil,                                    // 125: clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	nil,                                    // 126: clouditor.ontology.v1.LoggingService.LabelsEntry
+	nil,                                    // 127: clouditor.ontology.v1.MessagingHub.LabelsEntry
+	nil,                                    // 128: clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	nil,                                    // 129: clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	nil,                                    // 130: clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	nil,                                    // 131: clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	nil,                                    // 132: clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	nil,                                    // 133: clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	nil,                                    // 134: clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	nil,                                    // 135: clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	nil,                                    // 136: clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	nil,                                    // 137: clouditor.ontology.v1.VMImage.LabelsEntry
+	nil,                                    // 138: clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	nil,                                    // 139: clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	nil,                                    // 140: clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	nil,                                    // 141: clouditor.ontology.v1.WebApp.LabelsEntry
+	nil,                                    // 142: clouditor.ontology.v1.Workflow.LabelsEntry
+	(*timestamppb.Timestamp)(nil),          // 143: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),            // 144: google.protobuf.Duration
+	(*descriptorpb.MessageOptions)(nil),    // 145: google.protobuf.MessageOptions
 }
 var file_api_ontology_ontology_proto_depIdxs = []int32{
-	62,  // 0: clouditor.ontology.v1.AccessRestriction.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	102, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	141, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
-	104, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
-	45,  // 4: clouditor.ontology.v1.Account.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	142, // 5: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
+	63,  // 0: clouditor.ontology.v1.AccessRestriction.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	103, // 1: clouditor.ontology.v1.AccessRestriction.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	143, // 2: clouditor.ontology.v1.Account.creation_time:type_name -> google.protobuf.Timestamp
+	105, // 3: clouditor.ontology.v1.Account.labels:type_name -> clouditor.ontology.v1.Account.LabelsEntry
+	46,  // 4: clouditor.ontology.v1.Account.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	144, // 5: clouditor.ontology.v1.ActivityLogging.retention_period:type_name -> google.protobuf.Duration
 	6,   // 6: clouditor.ontology.v1.AnomalyDetection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	141, // 7: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
-	105, // 8: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
+	143, // 7: clouditor.ontology.v1.Application.creation_time:type_name -> google.protobuf.Timestamp
+	106, // 8: clouditor.ontology.v1.Application.labels:type_name -> clouditor.ontology.v1.Application.LabelsEntry
 	44,  // 9: clouditor.ontology.v1.Application.functionality:type_name -> clouditor.ontology.v1.Functionality
-	142, // 10: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
+	144, // 10: clouditor.ontology.v1.ApplicationLogging.retention_period:type_name -> google.protobuf.Duration
 	28,  // 11: clouditor.ontology.v1.AtRestEncryption.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	69,  // 12: clouditor.ontology.v1.AtRestEncryption.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	70,  // 12: clouditor.ontology.v1.AtRestEncryption.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
 	4,   // 13: clouditor.ontology.v1.Auditing.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
 	3,   // 14: clouditor.ontology.v1.Auditing.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
 	6,   // 15: clouditor.ontology.v1.Auditing.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
 	16,  // 16: clouditor.ontology.v1.Auditing.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	78,  // 17: clouditor.ontology.v1.Auditing.oslogging:type_name -> clouditor.ontology.v1.OSLogging
-	90,  // 18: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	68,  // 19: clouditor.ontology.v1.Auditing.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	79,  // 17: clouditor.ontology.v1.Auditing.oslogging:type_name -> clouditor.ontology.v1.OSLogging
+	91,  // 18: clouditor.ontology.v1.Auditing.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	69,  // 19: clouditor.ontology.v1.Auditing.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
 	18,  // 20: clouditor.ontology.v1.Authenticity.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
-	58,  // 21: clouditor.ontology.v1.Authenticity.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
-	71,  // 22: clouditor.ontology.v1.Authenticity.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
-	77,  // 23: clouditor.ontology.v1.Authenticity.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
-	79,  // 24: clouditor.ontology.v1.Authenticity.otpbased_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
-	84,  // 25: clouditor.ontology.v1.Authenticity.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	93,  // 26: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	59,  // 21: clouditor.ontology.v1.Authenticity.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
+	72,  // 22: clouditor.ontology.v1.Authenticity.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
+	78,  // 23: clouditor.ontology.v1.Authenticity.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
+	80,  // 24: clouditor.ontology.v1.Authenticity.otpbased_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
+	85,  // 25: clouditor.ontology.v1.Authenticity.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
+	94,  // 26: clouditor.ontology.v1.Authenticity.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
 	0,   // 27: clouditor.ontology.v1.Authorization.abac:type_name -> clouditor.ontology.v1.ABAC
-	62,  // 28: clouditor.ontology.v1.Authorization.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	102, // 29: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	86,  // 30: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
-	142, // 31: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
+	63,  // 28: clouditor.ontology.v1.Authorization.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	103, // 29: clouditor.ontology.v1.Authorization.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	87,  // 30: clouditor.ontology.v1.Authorization.rbac:type_name -> clouditor.ontology.v1.RBAC
+	144, // 31: clouditor.ontology.v1.AutomaticUpdates.interval:type_name -> google.protobuf.Duration
 	13,  // 32: clouditor.ontology.v1.Availability.backup:type_name -> clouditor.ontology.v1.Backup
 	29,  // 33: clouditor.ontology.v1.Availability.ddo_sprotection:type_name -> clouditor.ontology.v1.DDoSProtection
-	45,  // 34: clouditor.ontology.v1.Availability.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	87,  // 35: clouditor.ontology.v1.Availability.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	142, // 36: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
-	142, // 37: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
-	96,  // 38: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	46,  // 34: clouditor.ontology.v1.Availability.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	88,  // 35: clouditor.ontology.v1.Availability.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	144, // 36: clouditor.ontology.v1.Backup.interval:type_name -> google.protobuf.Duration
+	144, // 37: clouditor.ontology.v1.Backup.retention_period:type_name -> google.protobuf.Duration
+	97,  // 38: clouditor.ontology.v1.Backup.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
 	5,   // 39: clouditor.ontology.v1.Resource.application:type_name -> clouditor.ontology.v1.Application
 	2,   // 40: clouditor.ontology.v1.Resource.account:type_name -> clouditor.ontology.v1.Account
-	57,  // 41: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
-	103, // 42: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
+	58,  // 41: clouditor.ontology.v1.Resource.job:type_name -> clouditor.ontology.v1.Job
+	104, // 42: clouditor.ontology.v1.Resource.workflow:type_name -> clouditor.ontology.v1.Workflow
 	24,  // 43: clouditor.ontology.v1.Resource.container:type_name -> clouditor.ontology.v1.Container
 	43,  // 44: clouditor.ontology.v1.Resource.function:type_name -> clouditor.ontology.v1.Function
-	98,  // 45: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	101, // 46: clouditor.ontology.v1.Resource.web_app:type_name -> clouditor.ontology.v1.WebApp
+	99,  // 45: clouditor.ontology.v1.Resource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	102, // 46: clouditor.ontology.v1.Resource.web_app:type_name -> clouditor.ontology.v1.WebApp
 	26,  // 47: clouditor.ontology.v1.Resource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
 	27,  // 48: clouditor.ontology.v1.Resource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
-	52,  // 49: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
-	91,  // 50: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	53,  // 49: clouditor.ontology.v1.Resource.identity:type_name -> clouditor.ontology.v1.Identity
+	92,  // 50: clouditor.ontology.v1.Resource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
 	25,  // 51: clouditor.ontology.v1.Resource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	97,  // 52: clouditor.ontology.v1.Resource.vmimage:type_name -> clouditor.ontology.v1.VMImage
+	98,  // 52: clouditor.ontology.v1.Resource.vmimage:type_name -> clouditor.ontology.v1.VMImage
 	35,  // 53: clouditor.ontology.v1.Resource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	70,  // 54: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	59,  // 55: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
-	61,  // 56: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	73,  // 57: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	74,  // 58: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	63,  // 59: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	67,  // 60: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	37,  // 61: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 62: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 63: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 64: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	40,  // 65: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	82,  // 66: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	99,  // 67: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	100, // 68: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	85,  // 69: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	89,  // 70: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	15,  // 71: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	34,  // 72: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	39,  // 73: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	80,  // 74: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	36,  // 75: clouditor.ontology.v1.Resource.document:type_name -> clouditor.ontology.v1.Document
-	141, // 76: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
-	106, // 77: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
-	7,   // 78: clouditor.ontology.v1.BlockStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	13,  // 79: clouditor.ontology.v1.BlockStorage.backup:type_name -> clouditor.ontology.v1.Backup
-	45,  // 80: clouditor.ontology.v1.BlockStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	54,  // 81: clouditor.ontology.v1.BlockStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	87,  // 82: clouditor.ontology.v1.BlockStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	90,  // 83: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	142, // 84: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
-	57,  // 85: clouditor.ontology.v1.CICDService.job:type_name -> clouditor.ontology.v1.Job
-	103, // 86: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
-	2,   // 87: clouditor.ontology.v1.CloudResource.account:type_name -> clouditor.ontology.v1.Account
-	57,  // 88: clouditor.ontology.v1.CloudResource.job:type_name -> clouditor.ontology.v1.Job
-	103, // 89: clouditor.ontology.v1.CloudResource.workflow:type_name -> clouditor.ontology.v1.Workflow
-	24,  // 90: clouditor.ontology.v1.CloudResource.container:type_name -> clouditor.ontology.v1.Container
-	43,  // 91: clouditor.ontology.v1.CloudResource.function:type_name -> clouditor.ontology.v1.Function
-	98,  // 92: clouditor.ontology.v1.CloudResource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	101, // 93: clouditor.ontology.v1.CloudResource.web_app:type_name -> clouditor.ontology.v1.WebApp
-	26,  // 94: clouditor.ontology.v1.CloudResource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
-	27,  // 95: clouditor.ontology.v1.CloudResource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
-	52,  // 96: clouditor.ontology.v1.CloudResource.identity:type_name -> clouditor.ontology.v1.Identity
-	91,  // 97: clouditor.ontology.v1.CloudResource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	25,  // 98: clouditor.ontology.v1.CloudResource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	97,  // 99: clouditor.ontology.v1.CloudResource.vmimage:type_name -> clouditor.ontology.v1.VMImage
-	35,  // 100: clouditor.ontology.v1.CloudResource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	70,  // 101: clouditor.ontology.v1.CloudResource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	59,  // 102: clouditor.ontology.v1.CloudResource.key:type_name -> clouditor.ontology.v1.Key
-	61,  // 103: clouditor.ontology.v1.CloudResource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
-	73,  // 104: clouditor.ontology.v1.CloudResource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	74,  // 105: clouditor.ontology.v1.CloudResource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	63,  // 106: clouditor.ontology.v1.CloudResource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	67,  // 107: clouditor.ontology.v1.CloudResource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	37,  // 108: clouditor.ontology.v1.CloudResource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 109: clouditor.ontology.v1.CloudResource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 110: clouditor.ontology.v1.CloudResource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 111: clouditor.ontology.v1.CloudResource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	40,  // 112: clouditor.ontology.v1.CloudResource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	82,  // 113: clouditor.ontology.v1.CloudResource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	99,  // 114: clouditor.ontology.v1.CloudResource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	100, // 115: clouditor.ontology.v1.CloudResource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	85,  // 116: clouditor.ontology.v1.CloudResource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
-	89,  // 117: clouditor.ontology.v1.CloudResource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
-	15,  // 118: clouditor.ontology.v1.CloudResource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	34,  // 119: clouditor.ontology.v1.CloudResource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	39,  // 120: clouditor.ontology.v1.CloudResource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	80,  // 121: clouditor.ontology.v1.CloudResource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	24,  // 122: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
-	43,  // 123: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
-	98,  // 124: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
-	101, // 125: clouditor.ontology.v1.Compute.web_app:type_name -> clouditor.ontology.v1.WebApp
-	28,  // 126: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	69,  // 127: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	38,  // 128: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	96,  // 129: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	141, // 130: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
-	107, // 131: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
-	38,  // 132: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	45,  // 133: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	90,  // 134: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 135: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
-	108, // 136: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
-	45,  // 137: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 138: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
-	109, // 139: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
-	45,  // 140: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	90,  // 141: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 142: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
-	110, // 143: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
-	45,  // 144: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	30,  // 145: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	32,  // 146: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	37,  // 147: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 148: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 149: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 150: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	141, // 151: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
-	111, // 152: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
-	7,   // 153: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	13,  // 154: clouditor.ontology.v1.DatabaseStorage.backup:type_name -> clouditor.ontology.v1.Backup
-	45,  // 155: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	54,  // 156: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	87,  // 157: clouditor.ontology.v1.DatabaseStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	90,  // 158: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 159: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
-	112, // 160: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
-	45,  // 161: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 162: clouditor.ontology.v1.Document.creation_time:type_name -> google.protobuf.Timestamp
-	113, // 163: clouditor.ontology.v1.Document.labels:type_name -> clouditor.ontology.v1.Document.LabelsEntry
-	92,  // 164: clouditor.ontology.v1.Document.security_feature:type_name -> clouditor.ontology.v1.SecurityFeature
-	141, // 165: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	114, // 166: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
-	4,   // 167: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	9,   // 168: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 169: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 170: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 171: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	96,  // 172: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	141, // 173: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
-	115, // 174: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
-	7,   // 175: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	13,  // 176: clouditor.ontology.v1.FileStorage.backup:type_name -> clouditor.ontology.v1.Backup
-	45,  // 177: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	54,  // 178: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	87,  // 179: clouditor.ontology.v1.FileStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	90,  // 180: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 181: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	116, // 182: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
-	9,   // 183: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 184: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 185: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	96,  // 186: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	62,  // 187: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	102, // 188: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	21,  // 189: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
-	46,  // 190: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
-	50,  // 191: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
-	65,  // 192: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
-	141, // 193: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
-	117, // 194: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
-	38,  // 195: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	45,  // 196: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	90,  // 197: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	19,  // 198: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
-	47,  // 199: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	49,  // 200: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	30,  // 201: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	32,  // 202: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	48,  // 203: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	64,  // 204: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	81,  // 205: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	9,   // 206: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	96,  // 207: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	47,  // 208: clouditor.ontology.v1.HttpRequest.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	47,  // 209: clouditor.ontology.v1.HttpRequestHandler.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	49,  // 210: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
-	52,  // 211: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
-	91,  // 212: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
-	141, // 213: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
-	118, // 214: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
-	141, // 215: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
-	9,   // 216: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	10,  // 217: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
-	45,  // 218: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	25,  // 219: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
-	97,  // 220: clouditor.ontology.v1.Image.vmimage:type_name -> clouditor.ontology.v1.VMImage
-	11,  // 221: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	54,  // 222: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
-	35,  // 223: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
-	70,  // 224: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
-	141, // 225: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
-	119, // 226: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
-	45,  // 227: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 228: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
-	141, // 229: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
-	120, // 230: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
-	45,  // 231: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 232: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	121, // 233: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
-	4,   // 234: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	9,   // 235: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 236: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 237: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 238: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	96,  // 239: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	141, // 240: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
-	122, // 241: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
-	45,  // 242: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 243: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
-	123, // 244: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
-	1,   // 245: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	9,   // 246: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 247: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 248: clouditor.ontology.v1.LoadBalancer.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	96,  // 249: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	66,  // 250: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
-	3,   // 251: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 252: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	16,  // 253: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	78,  // 254: clouditor.ontology.v1.Logging.oslogging:type_name -> clouditor.ontology.v1.OSLogging
-	90,  // 255: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 256: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
-	124, // 257: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
-	9,   // 258: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 259: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	96,  // 260: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	142, // 261: clouditor.ontology.v1.MalwareProtection.days_since_active:type_name -> google.protobuf.Duration
-	6,   // 262: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	141, // 263: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
-	125, // 264: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
-	45,  // 265: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	9,   // 266: clouditor.ontology.v1.MultiFactorAuthentiation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	141, // 267: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	126, // 268: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
-	4,   // 269: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	9,   // 270: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 271: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 272: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 273: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	96,  // 274: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	141, // 275: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
-	127, // 276: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
-	1,   // 277: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
-	45,  // 278: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 279: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
-	128, // 280: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
-	45,  // 281: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	63,  // 282: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	67,  // 283: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	37,  // 284: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 285: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 286: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 287: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	40,  // 288: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	82,  // 289: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	73,  // 290: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
-	74,  // 291: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
-	63,  // 292: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
-	67,  // 293: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
-	37,  // 294: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 295: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 296: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 297: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	40,  // 298: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	82,  // 299: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	99,  // 300: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
-	100, // 301: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
-	142, // 302: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
-	141, // 303: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
-	129, // 304: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
-	7,   // 305: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
-	13,  // 306: clouditor.ontology.v1.ObjectStorage.backup:type_name -> clouditor.ontology.v1.Backup
-	45,  // 307: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	54,  // 308: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
-	87,  // 309: clouditor.ontology.v1.ObjectStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	90,  // 310: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 311: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
-	130, // 312: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
-	9,   // 313: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 314: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 315: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	96,  // 316: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	30,  // 317: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
-	32,  // 318: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
-	48,  // 319: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
-	64,  // 320: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
-	81,  // 321: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
-	141, // 322: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
-	131, // 323: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
-	45,  // 324: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 325: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
-	132, // 326: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
-	4,   // 327: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	9,   // 328: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	45,  // 329: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	47,  // 330: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
-	68,  // 331: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	96,  // 332: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	141, // 333: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
-	133, // 334: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
-	45,  // 335: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	142, // 336: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
-	141, // 337: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
-	134, // 338: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
-	9,   // 339: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
-	10,  // 340: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
-	45,  // 341: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	4,   // 342: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
-	3,   // 343: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	6,   // 344: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
-	16,  // 345: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	78,  // 346: clouditor.ontology.v1.SecurityFeature.oslogging:type_name -> clouditor.ontology.v1.OSLogging
-	90,  // 347: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	68,  // 348: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	18,  // 349: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
-	58,  // 350: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
-	71,  // 351: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
-	77,  // 352: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
-	79,  // 353: clouditor.ontology.v1.SecurityFeature.otpbased_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
-	84,  // 354: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
-	93,  // 355: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
-	0,   // 356: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
-	62,  // 357: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
-	102, // 358: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
-	86,  // 359: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
-	13,  // 360: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
-	29,  // 361: clouditor.ontology.v1.SecurityFeature.ddo_sprotection:type_name -> clouditor.ontology.v1.DDoSProtection
-	45,  // 362: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	87,  // 363: clouditor.ontology.v1.SecurityFeature.redundancy:type_name -> clouditor.ontology.v1.Redundancy
-	28,  // 364: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
-	69,  // 365: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
-	38,  // 366: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	96,  // 367: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
-	11,  // 368: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	54,  // 369: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
-	15,  // 370: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
-	34,  // 371: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
-	39,  // 372: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
-	80,  // 373: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
-	37,  // 374: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
-	60,  // 375: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
-	72,  // 376: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
-	88,  // 377: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
-	40,  // 378: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
-	82,  // 379: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
-	19,  // 380: clouditor.ontology.v1.TransportEncryption.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
-	141, // 381: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
-	135, // 382: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
-	45,  // 383: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 384: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
-	136, // 385: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
-	3,   // 386: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
-	11,  // 387: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
-	16,  // 388: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
-	38,  // 389: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	45,  // 390: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	68,  // 391: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
-	78,  // 392: clouditor.ontology.v1.VirtualMachine.oslogging:type_name -> clouditor.ontology.v1.OSLogging
-	90,  // 393: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 394: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	137, // 395: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
-	45,  // 396: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 397: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
-	138, // 398: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
-	45,  // 399: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	141, // 400: clouditor.ontology.v1.WebApp.creation_time:type_name -> google.protobuf.Timestamp
-	139, // 401: clouditor.ontology.v1.WebApp.labels:type_name -> clouditor.ontology.v1.WebApp.LabelsEntry
-	38,  // 402: clouditor.ontology.v1.WebApp.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
-	45,  // 403: clouditor.ontology.v1.WebApp.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	90,  // 404: clouditor.ontology.v1.WebApp.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
-	141, // 405: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
-	140, // 406: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
-	45,  // 407: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
-	143, // 408: clouditor.ontology.v1.resource_type_name:extendee -> google.protobuf.MessageOptions
-	409, // [409:409] is the sub-list for method output_type
-	409, // [409:409] is the sub-list for method input_type
-	409, // [409:409] is the sub-list for extension type_name
-	408, // [408:409] is the sub-list for extension extendee
-	0,   // [0:408] is the sub-list for field type_name
+	71,  // 54: clouditor.ontology.v1.Resource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	60,  // 55: clouditor.ontology.v1.Resource.key:type_name -> clouditor.ontology.v1.Key
+	62,  // 56: clouditor.ontology.v1.Resource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	74,  // 57: clouditor.ontology.v1.Resource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	75,  // 58: clouditor.ontology.v1.Resource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	45,  // 59: clouditor.ontology.v1.Resource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	64,  // 60: clouditor.ontology.v1.Resource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	68,  // 61: clouditor.ontology.v1.Resource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	37,  // 62: clouditor.ontology.v1.Resource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 63: clouditor.ontology.v1.Resource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 64: clouditor.ontology.v1.Resource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 65: clouditor.ontology.v1.Resource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	40,  // 66: clouditor.ontology.v1.Resource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	83,  // 67: clouditor.ontology.v1.Resource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	100, // 68: clouditor.ontology.v1.Resource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	101, // 69: clouditor.ontology.v1.Resource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	86,  // 70: clouditor.ontology.v1.Resource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	90,  // 71: clouditor.ontology.v1.Resource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	15,  // 72: clouditor.ontology.v1.Resource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	34,  // 73: clouditor.ontology.v1.Resource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	39,  // 74: clouditor.ontology.v1.Resource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	81,  // 75: clouditor.ontology.v1.Resource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	36,  // 76: clouditor.ontology.v1.Resource.document:type_name -> clouditor.ontology.v1.Document
+	143, // 77: clouditor.ontology.v1.BlockStorage.creation_time:type_name -> google.protobuf.Timestamp
+	107, // 78: clouditor.ontology.v1.BlockStorage.labels:type_name -> clouditor.ontology.v1.BlockStorage.LabelsEntry
+	7,   // 79: clouditor.ontology.v1.BlockStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	13,  // 80: clouditor.ontology.v1.BlockStorage.backup:type_name -> clouditor.ontology.v1.Backup
+	46,  // 81: clouditor.ontology.v1.BlockStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	55,  // 82: clouditor.ontology.v1.BlockStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	88,  // 83: clouditor.ontology.v1.BlockStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	91,  // 84: clouditor.ontology.v1.BlockStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	144, // 85: clouditor.ontology.v1.BootLogging.retention_period:type_name -> google.protobuf.Duration
+	58,  // 86: clouditor.ontology.v1.CICDService.job:type_name -> clouditor.ontology.v1.Job
+	104, // 87: clouditor.ontology.v1.CICDService.workflow:type_name -> clouditor.ontology.v1.Workflow
+	2,   // 88: clouditor.ontology.v1.CloudResource.account:type_name -> clouditor.ontology.v1.Account
+	58,  // 89: clouditor.ontology.v1.CloudResource.job:type_name -> clouditor.ontology.v1.Job
+	104, // 90: clouditor.ontology.v1.CloudResource.workflow:type_name -> clouditor.ontology.v1.Workflow
+	24,  // 91: clouditor.ontology.v1.CloudResource.container:type_name -> clouditor.ontology.v1.Container
+	43,  // 92: clouditor.ontology.v1.CloudResource.function:type_name -> clouditor.ontology.v1.Function
+	99,  // 93: clouditor.ontology.v1.CloudResource.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	102, // 94: clouditor.ontology.v1.CloudResource.web_app:type_name -> clouditor.ontology.v1.WebApp
+	26,  // 95: clouditor.ontology.v1.CloudResource.container_orchestration:type_name -> clouditor.ontology.v1.ContainerOrchestration
+	27,  // 96: clouditor.ontology.v1.CloudResource.container_registry:type_name -> clouditor.ontology.v1.ContainerRegistry
+	53,  // 97: clouditor.ontology.v1.CloudResource.identity:type_name -> clouditor.ontology.v1.Identity
+	92,  // 98: clouditor.ontology.v1.CloudResource.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	25,  // 99: clouditor.ontology.v1.CloudResource.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	98,  // 100: clouditor.ontology.v1.CloudResource.vmimage:type_name -> clouditor.ontology.v1.VMImage
+	35,  // 101: clouditor.ontology.v1.CloudResource.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	71,  // 102: clouditor.ontology.v1.CloudResource.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	60,  // 103: clouditor.ontology.v1.CloudResource.key:type_name -> clouditor.ontology.v1.Key
+	62,  // 104: clouditor.ontology.v1.CloudResource.key_vault:type_name -> clouditor.ontology.v1.KeyVault
+	74,  // 105: clouditor.ontology.v1.CloudResource.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	75,  // 106: clouditor.ontology.v1.CloudResource.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	45,  // 107: clouditor.ontology.v1.CloudResource.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	64,  // 108: clouditor.ontology.v1.CloudResource.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	68,  // 109: clouditor.ontology.v1.CloudResource.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	37,  // 110: clouditor.ontology.v1.CloudResource.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 111: clouditor.ontology.v1.CloudResource.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 112: clouditor.ontology.v1.CloudResource.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 113: clouditor.ontology.v1.CloudResource.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	40,  // 114: clouditor.ontology.v1.CloudResource.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	83,  // 115: clouditor.ontology.v1.CloudResource.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	100, // 116: clouditor.ontology.v1.CloudResource.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	101, // 117: clouditor.ontology.v1.CloudResource.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	86,  // 118: clouditor.ontology.v1.CloudResource.password_policy:type_name -> clouditor.ontology.v1.PasswordPolicy
+	90,  // 119: clouditor.ontology.v1.CloudResource.resource_group:type_name -> clouditor.ontology.v1.ResourceGroup
+	15,  // 120: clouditor.ontology.v1.CloudResource.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	34,  // 121: clouditor.ontology.v1.CloudResource.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	39,  // 122: clouditor.ontology.v1.CloudResource.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	81,  // 123: clouditor.ontology.v1.CloudResource.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	24,  // 124: clouditor.ontology.v1.Compute.container:type_name -> clouditor.ontology.v1.Container
+	43,  // 125: clouditor.ontology.v1.Compute.function:type_name -> clouditor.ontology.v1.Function
+	99,  // 126: clouditor.ontology.v1.Compute.virtual_machine:type_name -> clouditor.ontology.v1.VirtualMachine
+	102, // 127: clouditor.ontology.v1.Compute.web_app:type_name -> clouditor.ontology.v1.WebApp
+	28,  // 128: clouditor.ontology.v1.Confidentiality.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	70,  // 129: clouditor.ontology.v1.Confidentiality.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	38,  // 130: clouditor.ontology.v1.Confidentiality.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	97,  // 131: clouditor.ontology.v1.Confidentiality.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	143, // 132: clouditor.ontology.v1.Container.creation_time:type_name -> google.protobuf.Timestamp
+	108, // 133: clouditor.ontology.v1.Container.labels:type_name -> clouditor.ontology.v1.Container.LabelsEntry
+	38,  // 134: clouditor.ontology.v1.Container.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	46,  // 135: clouditor.ontology.v1.Container.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	91,  // 136: clouditor.ontology.v1.Container.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 137: clouditor.ontology.v1.ContainerImage.creation_time:type_name -> google.protobuf.Timestamp
+	109, // 138: clouditor.ontology.v1.ContainerImage.labels:type_name -> clouditor.ontology.v1.ContainerImage.LabelsEntry
+	46,  // 139: clouditor.ontology.v1.ContainerImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 140: clouditor.ontology.v1.ContainerOrchestration.creation_time:type_name -> google.protobuf.Timestamp
+	110, // 141: clouditor.ontology.v1.ContainerOrchestration.labels:type_name -> clouditor.ontology.v1.ContainerOrchestration.LabelsEntry
+	46,  // 142: clouditor.ontology.v1.ContainerOrchestration.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	91,  // 143: clouditor.ontology.v1.ContainerOrchestration.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 144: clouditor.ontology.v1.ContainerRegistry.creation_time:type_name -> google.protobuf.Timestamp
+	111, // 145: clouditor.ontology.v1.ContainerRegistry.labels:type_name -> clouditor.ontology.v1.ContainerRegistry.LabelsEntry
+	46,  // 146: clouditor.ontology.v1.ContainerRegistry.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	30,  // 147: clouditor.ontology.v1.DatabaseOperation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	32,  // 148: clouditor.ontology.v1.DatabaseOperation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	37,  // 149: clouditor.ontology.v1.DatabaseService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 150: clouditor.ontology.v1.DatabaseService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 151: clouditor.ontology.v1.DatabaseService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 152: clouditor.ontology.v1.DatabaseService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	143, // 153: clouditor.ontology.v1.DatabaseStorage.creation_time:type_name -> google.protobuf.Timestamp
+	112, // 154: clouditor.ontology.v1.DatabaseStorage.labels:type_name -> clouditor.ontology.v1.DatabaseStorage.LabelsEntry
+	7,   // 155: clouditor.ontology.v1.DatabaseStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	13,  // 156: clouditor.ontology.v1.DatabaseStorage.backup:type_name -> clouditor.ontology.v1.Backup
+	46,  // 157: clouditor.ontology.v1.DatabaseStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	55,  // 158: clouditor.ontology.v1.DatabaseStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	88,  // 159: clouditor.ontology.v1.DatabaseStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	91,  // 160: clouditor.ontology.v1.DatabaseStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 161: clouditor.ontology.v1.DeviceProvisioningService.creation_time:type_name -> google.protobuf.Timestamp
+	113, // 162: clouditor.ontology.v1.DeviceProvisioningService.labels:type_name -> clouditor.ontology.v1.DeviceProvisioningService.LabelsEntry
+	46,  // 163: clouditor.ontology.v1.DeviceProvisioningService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 164: clouditor.ontology.v1.Document.creation_time:type_name -> google.protobuf.Timestamp
+	114, // 165: clouditor.ontology.v1.Document.labels:type_name -> clouditor.ontology.v1.Document.LabelsEntry
+	93,  // 166: clouditor.ontology.v1.Document.security_feature:type_name -> clouditor.ontology.v1.SecurityFeature
+	143, // 167: clouditor.ontology.v1.DocumentDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	115, // 168: clouditor.ontology.v1.DocumentDatabaseService.labels:type_name -> clouditor.ontology.v1.DocumentDatabaseService.LabelsEntry
+	4,   // 169: clouditor.ontology.v1.DocumentDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	9,   // 170: clouditor.ontology.v1.DocumentDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 171: clouditor.ontology.v1.DocumentDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 172: clouditor.ontology.v1.DocumentDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	69,  // 173: clouditor.ontology.v1.DocumentDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	97,  // 174: clouditor.ontology.v1.DocumentDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	143, // 175: clouditor.ontology.v1.FileStorage.creation_time:type_name -> google.protobuf.Timestamp
+	116, // 176: clouditor.ontology.v1.FileStorage.labels:type_name -> clouditor.ontology.v1.FileStorage.LabelsEntry
+	7,   // 177: clouditor.ontology.v1.FileStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	13,  // 178: clouditor.ontology.v1.FileStorage.backup:type_name -> clouditor.ontology.v1.Backup
+	46,  // 179: clouditor.ontology.v1.FileStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	55,  // 180: clouditor.ontology.v1.FileStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	88,  // 181: clouditor.ontology.v1.FileStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	91,  // 182: clouditor.ontology.v1.FileStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 183: clouditor.ontology.v1.FileStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	117, // 184: clouditor.ontology.v1.FileStorageService.labels:type_name -> clouditor.ontology.v1.FileStorageService.LabelsEntry
+	9,   // 185: clouditor.ontology.v1.FileStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 186: clouditor.ontology.v1.FileStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 187: clouditor.ontology.v1.FileStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	97,  // 188: clouditor.ontology.v1.FileStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	63,  // 189: clouditor.ontology.v1.Firewall.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	103, // 190: clouditor.ontology.v1.Firewall.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	21,  // 191: clouditor.ontology.v1.Framework.cloud_sdk:type_name -> clouditor.ontology.v1.CloudSDK
+	47,  // 192: clouditor.ontology.v1.Framework.http_client_library:type_name -> clouditor.ontology.v1.HttpClientLibrary
+	51,  // 193: clouditor.ontology.v1.Framework.http_server:type_name -> clouditor.ontology.v1.HttpServer
+	66,  // 194: clouditor.ontology.v1.Framework.logger:type_name -> clouditor.ontology.v1.Logger
+	143, // 195: clouditor.ontology.v1.Function.creation_time:type_name -> google.protobuf.Timestamp
+	118, // 196: clouditor.ontology.v1.Function.labels:type_name -> clouditor.ontology.v1.Function.LabelsEntry
+	38,  // 197: clouditor.ontology.v1.Function.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	46,  // 198: clouditor.ontology.v1.Function.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	91,  // 199: clouditor.ontology.v1.Function.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	19,  // 200: clouditor.ontology.v1.Functionality.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
+	48,  // 201: clouditor.ontology.v1.Functionality.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	50,  // 202: clouditor.ontology.v1.Functionality.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	30,  // 203: clouditor.ontology.v1.Functionality.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	32,  // 204: clouditor.ontology.v1.Functionality.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	49,  // 205: clouditor.ontology.v1.Functionality.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	65,  // 206: clouditor.ontology.v1.Functionality.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	82,  // 207: clouditor.ontology.v1.Functionality.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	143, // 208: clouditor.ontology.v1.GenericNetworkService.creation_time:type_name -> google.protobuf.Timestamp
+	119, // 209: clouditor.ontology.v1.GenericNetworkService.labels:type_name -> clouditor.ontology.v1.GenericNetworkService.LabelsEntry
+	9,   // 210: clouditor.ontology.v1.GenericNetworkService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 211: clouditor.ontology.v1.GenericNetworkService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	97,  // 212: clouditor.ontology.v1.GenericNetworkService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	9,   // 213: clouditor.ontology.v1.HttpEndpoint.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	97,  // 214: clouditor.ontology.v1.HttpEndpoint.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	48,  // 215: clouditor.ontology.v1.HttpRequest.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	48,  // 216: clouditor.ontology.v1.HttpRequestHandler.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	50,  // 217: clouditor.ontology.v1.HttpServer.http_request_handler:type_name -> clouditor.ontology.v1.HttpRequestHandler
+	53,  // 218: clouditor.ontology.v1.Identifiable.identity:type_name -> clouditor.ontology.v1.Identity
+	92,  // 219: clouditor.ontology.v1.Identifiable.role_assignment:type_name -> clouditor.ontology.v1.RoleAssignment
+	143, // 220: clouditor.ontology.v1.Identity.creation_time:type_name -> google.protobuf.Timestamp
+	120, // 221: clouditor.ontology.v1.Identity.labels:type_name -> clouditor.ontology.v1.Identity.LabelsEntry
+	143, // 222: clouditor.ontology.v1.Identity.last_activity:type_name -> google.protobuf.Timestamp
+	9,   // 223: clouditor.ontology.v1.Identity.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	10,  // 224: clouditor.ontology.v1.Identity.authorization:type_name -> clouditor.ontology.v1.Authorization
+	46,  // 225: clouditor.ontology.v1.Identity.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	25,  // 226: clouditor.ontology.v1.Image.container_image:type_name -> clouditor.ontology.v1.ContainerImage
+	98,  // 227: clouditor.ontology.v1.Image.vmimage:type_name -> clouditor.ontology.v1.VMImage
+	11,  // 228: clouditor.ontology.v1.Integrity.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	55,  // 229: clouditor.ontology.v1.Integrity.immutability:type_name -> clouditor.ontology.v1.Immutability
+	35,  // 230: clouditor.ontology.v1.IoT.device_provisioning_service:type_name -> clouditor.ontology.v1.DeviceProvisioningService
+	71,  // 231: clouditor.ontology.v1.IoT.messaging_hub:type_name -> clouditor.ontology.v1.MessagingHub
+	143, // 232: clouditor.ontology.v1.Job.creation_time:type_name -> google.protobuf.Timestamp
+	121, // 233: clouditor.ontology.v1.Job.labels:type_name -> clouditor.ontology.v1.Job.LabelsEntry
+	46,  // 234: clouditor.ontology.v1.Job.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 235: clouditor.ontology.v1.Key.creation_time:type_name -> google.protobuf.Timestamp
+	143, // 236: clouditor.ontology.v1.Key.expiration_date:type_name -> google.protobuf.Timestamp
+	122, // 237: clouditor.ontology.v1.Key.labels:type_name -> clouditor.ontology.v1.Key.LabelsEntry
+	46,  // 238: clouditor.ontology.v1.Key.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 239: clouditor.ontology.v1.KeyValueDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	123, // 240: clouditor.ontology.v1.KeyValueDatabaseService.labels:type_name -> clouditor.ontology.v1.KeyValueDatabaseService.LabelsEntry
+	4,   // 241: clouditor.ontology.v1.KeyValueDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	9,   // 242: clouditor.ontology.v1.KeyValueDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 243: clouditor.ontology.v1.KeyValueDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 244: clouditor.ontology.v1.KeyValueDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	69,  // 245: clouditor.ontology.v1.KeyValueDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	97,  // 246: clouditor.ontology.v1.KeyValueDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	143, // 247: clouditor.ontology.v1.KeyVault.creation_time:type_name -> google.protobuf.Timestamp
+	124, // 248: clouditor.ontology.v1.KeyVault.labels:type_name -> clouditor.ontology.v1.KeyVault.LabelsEntry
+	46,  // 249: clouditor.ontology.v1.KeyVault.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 250: clouditor.ontology.v1.LoadBalancer.creation_time:type_name -> google.protobuf.Timestamp
+	125, // 251: clouditor.ontology.v1.LoadBalancer.labels:type_name -> clouditor.ontology.v1.LoadBalancer.LabelsEntry
+	1,   // 252: clouditor.ontology.v1.LoadBalancer.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	9,   // 253: clouditor.ontology.v1.LoadBalancer.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 254: clouditor.ontology.v1.LoadBalancer.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 255: clouditor.ontology.v1.LoadBalancer.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	97,  // 256: clouditor.ontology.v1.LoadBalancer.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	67,  // 257: clouditor.ontology.v1.LogOperation.logging:type_name -> clouditor.ontology.v1.Logging
+	3,   // 258: clouditor.ontology.v1.Logging.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 259: clouditor.ontology.v1.Logging.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	16,  // 260: clouditor.ontology.v1.Logging.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	79,  // 261: clouditor.ontology.v1.Logging.oslogging:type_name -> clouditor.ontology.v1.OSLogging
+	91,  // 262: clouditor.ontology.v1.Logging.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 263: clouditor.ontology.v1.LoggingService.creation_time:type_name -> google.protobuf.Timestamp
+	126, // 264: clouditor.ontology.v1.LoggingService.labels:type_name -> clouditor.ontology.v1.LoggingService.LabelsEntry
+	9,   // 265: clouditor.ontology.v1.LoggingService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 266: clouditor.ontology.v1.LoggingService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	97,  // 267: clouditor.ontology.v1.LoggingService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	144, // 268: clouditor.ontology.v1.MalwareProtection.days_since_active:type_name -> google.protobuf.Duration
+	6,   // 269: clouditor.ontology.v1.MalwareProtection.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	143, // 270: clouditor.ontology.v1.MessagingHub.creation_time:type_name -> google.protobuf.Timestamp
+	127, // 271: clouditor.ontology.v1.MessagingHub.labels:type_name -> clouditor.ontology.v1.MessagingHub.LabelsEntry
+	46,  // 272: clouditor.ontology.v1.MessagingHub.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	9,   // 273: clouditor.ontology.v1.MultiFactorAuthentiation.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	143, // 274: clouditor.ontology.v1.MultiModalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	128, // 275: clouditor.ontology.v1.MultiModalDatabaseService.labels:type_name -> clouditor.ontology.v1.MultiModalDatabaseService.LabelsEntry
+	4,   // 276: clouditor.ontology.v1.MultiModalDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	9,   // 277: clouditor.ontology.v1.MultiModalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 278: clouditor.ontology.v1.MultiModalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 279: clouditor.ontology.v1.MultiModalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	69,  // 280: clouditor.ontology.v1.MultiModalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	97,  // 281: clouditor.ontology.v1.MultiModalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	143, // 282: clouditor.ontology.v1.NetworkInterface.creation_time:type_name -> google.protobuf.Timestamp
+	129, // 283: clouditor.ontology.v1.NetworkInterface.labels:type_name -> clouditor.ontology.v1.NetworkInterface.LabelsEntry
+	1,   // 284: clouditor.ontology.v1.NetworkInterface.access_restriction:type_name -> clouditor.ontology.v1.AccessRestriction
+	46,  // 285: clouditor.ontology.v1.NetworkInterface.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 286: clouditor.ontology.v1.NetworkSecurityGroup.creation_time:type_name -> google.protobuf.Timestamp
+	130, // 287: clouditor.ontology.v1.NetworkSecurityGroup.labels:type_name -> clouditor.ontology.v1.NetworkSecurityGroup.LabelsEntry
+	46,  // 288: clouditor.ontology.v1.NetworkSecurityGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	45,  // 289: clouditor.ontology.v1.NetworkService.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	64,  // 290: clouditor.ontology.v1.NetworkService.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	68,  // 291: clouditor.ontology.v1.NetworkService.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	37,  // 292: clouditor.ontology.v1.NetworkService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 293: clouditor.ontology.v1.NetworkService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 294: clouditor.ontology.v1.NetworkService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 295: clouditor.ontology.v1.NetworkService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	40,  // 296: clouditor.ontology.v1.NetworkService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	83,  // 297: clouditor.ontology.v1.NetworkService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	74,  // 298: clouditor.ontology.v1.Networking.network_interface:type_name -> clouditor.ontology.v1.NetworkInterface
+	75,  // 299: clouditor.ontology.v1.Networking.network_security_group:type_name -> clouditor.ontology.v1.NetworkSecurityGroup
+	45,  // 300: clouditor.ontology.v1.Networking.generic_network_service:type_name -> clouditor.ontology.v1.GenericNetworkService
+	64,  // 301: clouditor.ontology.v1.Networking.load_balancer:type_name -> clouditor.ontology.v1.LoadBalancer
+	68,  // 302: clouditor.ontology.v1.Networking.logging_service:type_name -> clouditor.ontology.v1.LoggingService
+	37,  // 303: clouditor.ontology.v1.Networking.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 304: clouditor.ontology.v1.Networking.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 305: clouditor.ontology.v1.Networking.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 306: clouditor.ontology.v1.Networking.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	40,  // 307: clouditor.ontology.v1.Networking.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	83,  // 308: clouditor.ontology.v1.Networking.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	100, // 309: clouditor.ontology.v1.Networking.virtual_network:type_name -> clouditor.ontology.v1.VirtualNetwork
+	101, // 310: clouditor.ontology.v1.Networking.virtual_sub_network:type_name -> clouditor.ontology.v1.VirtualSubNetwork
+	144, // 311: clouditor.ontology.v1.OSLogging.retention_period:type_name -> google.protobuf.Duration
+	143, // 312: clouditor.ontology.v1.ObjectStorage.creation_time:type_name -> google.protobuf.Timestamp
+	131, // 313: clouditor.ontology.v1.ObjectStorage.labels:type_name -> clouditor.ontology.v1.ObjectStorage.LabelsEntry
+	7,   // 314: clouditor.ontology.v1.ObjectStorage.at_rest_encryption:type_name -> clouditor.ontology.v1.AtRestEncryption
+	13,  // 315: clouditor.ontology.v1.ObjectStorage.backup:type_name -> clouditor.ontology.v1.Backup
+	46,  // 316: clouditor.ontology.v1.ObjectStorage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	55,  // 317: clouditor.ontology.v1.ObjectStorage.immutability:type_name -> clouditor.ontology.v1.Immutability
+	88,  // 318: clouditor.ontology.v1.ObjectStorage.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	91,  // 319: clouditor.ontology.v1.ObjectStorage.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 320: clouditor.ontology.v1.ObjectStorageService.creation_time:type_name -> google.protobuf.Timestamp
+	132, // 321: clouditor.ontology.v1.ObjectStorageService.labels:type_name -> clouditor.ontology.v1.ObjectStorageService.LabelsEntry
+	9,   // 322: clouditor.ontology.v1.ObjectStorageService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 323: clouditor.ontology.v1.ObjectStorageService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 324: clouditor.ontology.v1.ObjectStorageService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	97,  // 325: clouditor.ontology.v1.ObjectStorageService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	30,  // 326: clouditor.ontology.v1.Operation.database_connect:type_name -> clouditor.ontology.v1.DatabaseConnect
+	32,  // 327: clouditor.ontology.v1.Operation.database_query:type_name -> clouditor.ontology.v1.DatabaseQuery
+	49,  // 328: clouditor.ontology.v1.Operation.http_request:type_name -> clouditor.ontology.v1.HttpRequest
+	65,  // 329: clouditor.ontology.v1.Operation.log_operation:type_name -> clouditor.ontology.v1.LogOperation
+	82,  // 330: clouditor.ontology.v1.Operation.object_storage_request:type_name -> clouditor.ontology.v1.ObjectStorageRequest
+	143, // 331: clouditor.ontology.v1.PasswordPolicy.creation_time:type_name -> google.protobuf.Timestamp
+	133, // 332: clouditor.ontology.v1.PasswordPolicy.labels:type_name -> clouditor.ontology.v1.PasswordPolicy.LabelsEntry
+	46,  // 333: clouditor.ontology.v1.PasswordPolicy.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 334: clouditor.ontology.v1.RelationalDatabaseService.creation_time:type_name -> google.protobuf.Timestamp
+	134, // 335: clouditor.ontology.v1.RelationalDatabaseService.labels:type_name -> clouditor.ontology.v1.RelationalDatabaseService.LabelsEntry
+	4,   // 336: clouditor.ontology.v1.RelationalDatabaseService.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	9,   // 337: clouditor.ontology.v1.RelationalDatabaseService.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	46,  // 338: clouditor.ontology.v1.RelationalDatabaseService.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	48,  // 339: clouditor.ontology.v1.RelationalDatabaseService.http_endpoint:type_name -> clouditor.ontology.v1.HttpEndpoint
+	69,  // 340: clouditor.ontology.v1.RelationalDatabaseService.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	97,  // 341: clouditor.ontology.v1.RelationalDatabaseService.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	143, // 342: clouditor.ontology.v1.ResourceGroup.creation_time:type_name -> google.protobuf.Timestamp
+	135, // 343: clouditor.ontology.v1.ResourceGroup.labels:type_name -> clouditor.ontology.v1.ResourceGroup.LabelsEntry
+	46,  // 344: clouditor.ontology.v1.ResourceGroup.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	144, // 345: clouditor.ontology.v1.ResourceLogging.retention_period:type_name -> google.protobuf.Duration
+	143, // 346: clouditor.ontology.v1.RoleAssignment.creation_time:type_name -> google.protobuf.Timestamp
+	136, // 347: clouditor.ontology.v1.RoleAssignment.labels:type_name -> clouditor.ontology.v1.RoleAssignment.LabelsEntry
+	9,   // 348: clouditor.ontology.v1.RoleAssignment.authenticity:type_name -> clouditor.ontology.v1.Authenticity
+	10,  // 349: clouditor.ontology.v1.RoleAssignment.authorization:type_name -> clouditor.ontology.v1.Authorization
+	46,  // 350: clouditor.ontology.v1.RoleAssignment.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	4,   // 351: clouditor.ontology.v1.SecurityFeature.anomaly_detection:type_name -> clouditor.ontology.v1.AnomalyDetection
+	3,   // 352: clouditor.ontology.v1.SecurityFeature.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	6,   // 353: clouditor.ontology.v1.SecurityFeature.application_logging:type_name -> clouditor.ontology.v1.ApplicationLogging
+	16,  // 354: clouditor.ontology.v1.SecurityFeature.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	79,  // 355: clouditor.ontology.v1.SecurityFeature.oslogging:type_name -> clouditor.ontology.v1.OSLogging
+	91,  // 356: clouditor.ontology.v1.SecurityFeature.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	69,  // 357: clouditor.ontology.v1.SecurityFeature.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	18,  // 358: clouditor.ontology.v1.SecurityFeature.certificate_based_authentication:type_name -> clouditor.ontology.v1.CertificateBasedAuthentication
+	59,  // 359: clouditor.ontology.v1.SecurityFeature.token_based_authentication:type_name -> clouditor.ontology.v1.TokenBasedAuthentication
+	72,  // 360: clouditor.ontology.v1.SecurityFeature.multi_factor_authentiation:type_name -> clouditor.ontology.v1.MultiFactorAuthentiation
+	78,  // 361: clouditor.ontology.v1.SecurityFeature.no_authentication:type_name -> clouditor.ontology.v1.NoAuthentication
+	80,  // 362: clouditor.ontology.v1.SecurityFeature.otpbased_authentication:type_name -> clouditor.ontology.v1.OTPBasedAuthentication
+	85,  // 363: clouditor.ontology.v1.SecurityFeature.password_based_authentication:type_name -> clouditor.ontology.v1.PasswordBasedAuthentication
+	94,  // 364: clouditor.ontology.v1.SecurityFeature.single_sign_on:type_name -> clouditor.ontology.v1.SingleSignOn
+	0,   // 365: clouditor.ontology.v1.SecurityFeature.abac:type_name -> clouditor.ontology.v1.ABAC
+	63,  // 366: clouditor.ontology.v1.SecurityFeature.l3_firewall:type_name -> clouditor.ontology.v1.L3Firewall
+	103, // 367: clouditor.ontology.v1.SecurityFeature.web_application_firewall:type_name -> clouditor.ontology.v1.WebApplicationFirewall
+	87,  // 368: clouditor.ontology.v1.SecurityFeature.rbac:type_name -> clouditor.ontology.v1.RBAC
+	13,  // 369: clouditor.ontology.v1.SecurityFeature.backup:type_name -> clouditor.ontology.v1.Backup
+	29,  // 370: clouditor.ontology.v1.SecurityFeature.ddo_sprotection:type_name -> clouditor.ontology.v1.DDoSProtection
+	46,  // 371: clouditor.ontology.v1.SecurityFeature.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	88,  // 372: clouditor.ontology.v1.SecurityFeature.redundancy:type_name -> clouditor.ontology.v1.Redundancy
+	28,  // 373: clouditor.ontology.v1.SecurityFeature.customer_key_encryption:type_name -> clouditor.ontology.v1.CustomerKeyEncryption
+	70,  // 374: clouditor.ontology.v1.SecurityFeature.managed_key_encryption:type_name -> clouditor.ontology.v1.ManagedKeyEncryption
+	38,  // 375: clouditor.ontology.v1.SecurityFeature.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	97,  // 376: clouditor.ontology.v1.SecurityFeature.transport_encryption:type_name -> clouditor.ontology.v1.TransportEncryption
+	11,  // 377: clouditor.ontology.v1.SecurityFeature.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	55,  // 378: clouditor.ontology.v1.SecurityFeature.immutability:type_name -> clouditor.ontology.v1.Immutability
+	15,  // 379: clouditor.ontology.v1.Storage.block_storage:type_name -> clouditor.ontology.v1.BlockStorage
+	34,  // 380: clouditor.ontology.v1.Storage.database_storage:type_name -> clouditor.ontology.v1.DatabaseStorage
+	39,  // 381: clouditor.ontology.v1.Storage.file_storage:type_name -> clouditor.ontology.v1.FileStorage
+	81,  // 382: clouditor.ontology.v1.Storage.object_storage:type_name -> clouditor.ontology.v1.ObjectStorage
+	37,  // 383: clouditor.ontology.v1.StorageService.document_database_service:type_name -> clouditor.ontology.v1.DocumentDatabaseService
+	61,  // 384: clouditor.ontology.v1.StorageService.key_value_database_service:type_name -> clouditor.ontology.v1.KeyValueDatabaseService
+	73,  // 385: clouditor.ontology.v1.StorageService.multi_modal_database_service:type_name -> clouditor.ontology.v1.MultiModalDatabaseService
+	89,  // 386: clouditor.ontology.v1.StorageService.relational_database_service:type_name -> clouditor.ontology.v1.RelationalDatabaseService
+	40,  // 387: clouditor.ontology.v1.StorageService.file_storage_service:type_name -> clouditor.ontology.v1.FileStorageService
+	83,  // 388: clouditor.ontology.v1.StorageService.object_storage_service:type_name -> clouditor.ontology.v1.ObjectStorageService
+	19,  // 389: clouditor.ontology.v1.TransportEncryption.cipher_suite:type_name -> clouditor.ontology.v1.CipherSuite
+	143, // 390: clouditor.ontology.v1.VMImage.creation_time:type_name -> google.protobuf.Timestamp
+	137, // 391: clouditor.ontology.v1.VMImage.labels:type_name -> clouditor.ontology.v1.VMImage.LabelsEntry
+	46,  // 392: clouditor.ontology.v1.VMImage.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 393: clouditor.ontology.v1.VirtualMachine.creation_time:type_name -> google.protobuf.Timestamp
+	138, // 394: clouditor.ontology.v1.VirtualMachine.labels:type_name -> clouditor.ontology.v1.VirtualMachine.LabelsEntry
+	3,   // 395: clouditor.ontology.v1.VirtualMachine.activity_logging:type_name -> clouditor.ontology.v1.ActivityLogging
+	11,  // 396: clouditor.ontology.v1.VirtualMachine.automatic_updates:type_name -> clouditor.ontology.v1.AutomaticUpdates
+	16,  // 397: clouditor.ontology.v1.VirtualMachine.boot_logging:type_name -> clouditor.ontology.v1.BootLogging
+	38,  // 398: clouditor.ontology.v1.VirtualMachine.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	46,  // 399: clouditor.ontology.v1.VirtualMachine.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	69,  // 400: clouditor.ontology.v1.VirtualMachine.malware_protection:type_name -> clouditor.ontology.v1.MalwareProtection
+	79,  // 401: clouditor.ontology.v1.VirtualMachine.oslogging:type_name -> clouditor.ontology.v1.OSLogging
+	91,  // 402: clouditor.ontology.v1.VirtualMachine.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 403: clouditor.ontology.v1.VirtualNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	139, // 404: clouditor.ontology.v1.VirtualNetwork.labels:type_name -> clouditor.ontology.v1.VirtualNetwork.LabelsEntry
+	46,  // 405: clouditor.ontology.v1.VirtualNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 406: clouditor.ontology.v1.VirtualSubNetwork.creation_time:type_name -> google.protobuf.Timestamp
+	140, // 407: clouditor.ontology.v1.VirtualSubNetwork.labels:type_name -> clouditor.ontology.v1.VirtualSubNetwork.LabelsEntry
+	46,  // 408: clouditor.ontology.v1.VirtualSubNetwork.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	143, // 409: clouditor.ontology.v1.WebApp.creation_time:type_name -> google.protobuf.Timestamp
+	141, // 410: clouditor.ontology.v1.WebApp.labels:type_name -> clouditor.ontology.v1.WebApp.LabelsEntry
+	38,  // 411: clouditor.ontology.v1.WebApp.encryption_in_use:type_name -> clouditor.ontology.v1.EncryptionInUse
+	46,  // 412: clouditor.ontology.v1.WebApp.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	91,  // 413: clouditor.ontology.v1.WebApp.resource_logging:type_name -> clouditor.ontology.v1.ResourceLogging
+	143, // 414: clouditor.ontology.v1.Workflow.creation_time:type_name -> google.protobuf.Timestamp
+	142, // 415: clouditor.ontology.v1.Workflow.labels:type_name -> clouditor.ontology.v1.Workflow.LabelsEntry
+	46,  // 416: clouditor.ontology.v1.Workflow.geo_location:type_name -> clouditor.ontology.v1.GeoLocation
+	145, // 417: clouditor.ontology.v1.resource_type_name:extendee -> google.protobuf.MessageOptions
+	418, // [418:418] is the sub-list for method output_type
+	418, // [418:418] is the sub-list for method input_type
+	418, // [418:418] is the sub-list for extension type_name
+	417, // [417:418] is the sub-list for extension extendee
+	0,   // [0:417] is the sub-list for field type_name
 }
 
 func init() { file_api_ontology_ontology_proto_init() }
@@ -15899,7 +16178,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GeoLocation); i {
+			switch v := v.(*GenericNetworkService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15911,7 +16190,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HttpClientLibrary); i {
+			switch v := v.(*GeoLocation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15923,7 +16202,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HttpEndpoint); i {
+			switch v := v.(*HttpClientLibrary); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15935,7 +16214,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HttpRequest); i {
+			switch v := v.(*HttpEndpoint); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15947,7 +16226,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HttpRequestHandler); i {
+			switch v := v.(*HttpRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15959,7 +16238,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HttpServer); i {
+			switch v := v.(*HttpRequestHandler); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15971,7 +16250,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Identifiable); i {
+			switch v := v.(*HttpServer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15983,7 +16262,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Identity); i {
+			switch v := v.(*Identifiable); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15995,7 +16274,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Image); i {
+			switch v := v.(*Identity); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16007,7 +16286,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Immutability); i {
+			switch v := v.(*Image); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16019,7 +16298,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Integrity); i {
+			switch v := v.(*Immutability); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16031,7 +16310,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IoT); i {
+			switch v := v.(*Integrity); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16043,7 +16322,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Job); i {
+			switch v := v.(*IoT); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16055,7 +16334,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TokenBasedAuthentication); i {
+			switch v := v.(*Job); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16067,7 +16346,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Key); i {
+			switch v := v.(*TokenBasedAuthentication); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16079,7 +16358,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeyValueDatabaseService); i {
+			switch v := v.(*Key); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16091,7 +16370,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeyVault); i {
+			switch v := v.(*KeyValueDatabaseService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16103,7 +16382,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*L3Firewall); i {
+			switch v := v.(*KeyVault); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16115,7 +16394,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoadBalancer); i {
+			switch v := v.(*L3Firewall); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16127,7 +16406,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogOperation); i {
+			switch v := v.(*LoadBalancer); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16139,7 +16418,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Logger); i {
+			switch v := v.(*LogOperation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16151,7 +16430,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Logging); i {
+			switch v := v.(*Logger); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16163,7 +16442,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LoggingService); i {
+			switch v := v.(*Logging); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16175,7 +16454,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MalwareProtection); i {
+			switch v := v.(*LoggingService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16187,7 +16466,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ManagedKeyEncryption); i {
+			switch v := v.(*MalwareProtection); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16199,7 +16478,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MessagingHub); i {
+			switch v := v.(*ManagedKeyEncryption); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16211,7 +16490,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiFactorAuthentiation); i {
+			switch v := v.(*MessagingHub); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16223,7 +16502,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MultiModalDatabaseService); i {
+			switch v := v.(*MultiFactorAuthentiation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16235,7 +16514,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkInterface); i {
+			switch v := v.(*MultiModalDatabaseService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16247,7 +16526,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkSecurityGroup); i {
+			switch v := v.(*NetworkInterface); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16259,7 +16538,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NetworkService); i {
+			switch v := v.(*NetworkSecurityGroup); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16271,7 +16550,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Networking); i {
+			switch v := v.(*NetworkService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16283,7 +16562,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NoAuthentication); i {
+			switch v := v.(*Networking); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16295,7 +16574,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OSLogging); i {
+			switch v := v.(*NoAuthentication); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16307,7 +16586,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OTPBasedAuthentication); i {
+			switch v := v.(*OSLogging); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16319,7 +16598,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ObjectStorage); i {
+			switch v := v.(*OTPBasedAuthentication); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16331,7 +16610,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ObjectStorageRequest); i {
+			switch v := v.(*ObjectStorage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16343,7 +16622,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ObjectStorageService); i {
+			switch v := v.(*ObjectStorageRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16355,7 +16634,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Operation); i {
+			switch v := v.(*ObjectStorageService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16367,7 +16646,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PasswordBasedAuthentication); i {
+			switch v := v.(*Operation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16379,7 +16658,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PasswordPolicy); i {
+			switch v := v.(*PasswordBasedAuthentication); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16391,7 +16670,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RBAC); i {
+			switch v := v.(*PasswordPolicy); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16403,7 +16682,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Redundancy); i {
+			switch v := v.(*RBAC); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16415,7 +16694,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RelationalDatabaseService); i {
+			switch v := v.(*Redundancy); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16427,7 +16706,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceGroup); i {
+			switch v := v.(*RelationalDatabaseService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16439,7 +16718,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ResourceLogging); i {
+			switch v := v.(*ResourceGroup); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16451,7 +16730,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RoleAssignment); i {
+			switch v := v.(*ResourceLogging); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16463,7 +16742,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SecurityFeature); i {
+			switch v := v.(*RoleAssignment); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16475,7 +16754,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleSignOn); i {
+			switch v := v.(*SecurityFeature); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16487,7 +16766,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Storage); i {
+			switch v := v.(*SingleSignOn); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16499,7 +16778,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StorageService); i {
+			switch v := v.(*Storage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16511,7 +16790,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TransportEncryption); i {
+			switch v := v.(*StorageService); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16523,7 +16802,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VMImage); i {
+			switch v := v.(*TransportEncryption); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16535,7 +16814,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[98].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VirtualMachine); i {
+			switch v := v.(*VMImage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16547,7 +16826,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[99].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VirtualNetwork); i {
+			switch v := v.(*VirtualMachine); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16559,7 +16838,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VirtualSubNetwork); i {
+			switch v := v.(*VirtualNetwork); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16571,7 +16850,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WebApp); i {
+			switch v := v.(*VirtualSubNetwork); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16583,7 +16862,7 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[102].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WebApplicationFirewall); i {
+			switch v := v.(*WebApp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -16595,6 +16874,18 @@ func file_api_ontology_ontology_proto_init() {
 			}
 		}
 		file_api_ontology_ontology_proto_msgTypes[103].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*WebApplicationFirewall); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_ontology_ontology_proto_msgTypes[104].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Workflow); i {
 			case 0:
 				return &v.state
@@ -16669,6 +16960,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*Resource_KeyVault)(nil),
 		(*Resource_NetworkInterface)(nil),
 		(*Resource_NetworkSecurityGroup)(nil),
+		(*Resource_GenericNetworkService)(nil),
 		(*Resource_LoadBalancer)(nil),
 		(*Resource_LoggingService)(nil),
 		(*Resource_DocumentDatabaseService)(nil),
@@ -16712,6 +17004,7 @@ func file_api_ontology_ontology_proto_init() {
 		(*CloudResource_KeyVault)(nil),
 		(*CloudResource_NetworkInterface)(nil),
 		(*CloudResource_NetworkSecurityGroup)(nil),
+		(*CloudResource_GenericNetworkService)(nil),
 		(*CloudResource_LoadBalancer)(nil),
 		(*CloudResource_LoggingService)(nil),
 		(*CloudResource_DocumentDatabaseService)(nil),
@@ -16784,42 +17077,44 @@ func file_api_ontology_ontology_proto_init() {
 		(*Functionality_LogOperation)(nil),
 		(*Functionality_ObjectStorageRequest)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[49].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[51].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[45].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[50].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[52].OneofWrappers = []interface{}{
 		(*Identifiable_Identity)(nil),
 		(*Identifiable_RoleAssignment)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[52].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[53].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[53].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[54].OneofWrappers = []interface{}{
 		(*Image_ContainerImage)(nil),
 		(*Image_Vmimage)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[55].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[56].OneofWrappers = []interface{}{
 		(*Integrity_AutomaticUpdates)(nil),
 		(*Integrity_Immutability)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[56].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[57].OneofWrappers = []interface{}{
 		(*IoT_DeviceProvisioningService)(nil),
 		(*IoT_MessagingHub)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[57].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[59].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[58].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[60].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[61].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[63].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[66].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[62].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[64].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[67].OneofWrappers = []interface{}{
 		(*Logging_ActivityLogging)(nil),
 		(*Logging_ApplicationLogging)(nil),
 		(*Logging_BootLogging)(nil),
 		(*Logging_Oslogging)(nil),
 		(*Logging_ResourceLogging)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[67].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[70].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[72].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[68].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[71].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[73].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[74].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[75].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[75].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[76].OneofWrappers = []interface{}{
+		(*NetworkService_GenericNetworkService)(nil),
 		(*NetworkService_LoadBalancer)(nil),
 		(*NetworkService_LoggingService)(nil),
 		(*NetworkService_DocumentDatabaseService)(nil),
@@ -16829,9 +17124,10 @@ func file_api_ontology_ontology_proto_init() {
 		(*NetworkService_FileStorageService)(nil),
 		(*NetworkService_ObjectStorageService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[76].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[77].OneofWrappers = []interface{}{
 		(*Networking_NetworkInterface)(nil),
 		(*Networking_NetworkSecurityGroup)(nil),
+		(*Networking_GenericNetworkService)(nil),
 		(*Networking_LoadBalancer)(nil),
 		(*Networking_LoggingService)(nil),
 		(*Networking_DocumentDatabaseService)(nil),
@@ -16843,20 +17139,20 @@ func file_api_ontology_ontology_proto_init() {
 		(*Networking_VirtualNetwork)(nil),
 		(*Networking_VirtualSubNetwork)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[80].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[82].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[83].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[81].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[83].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[84].OneofWrappers = []interface{}{
 		(*Operation_DatabaseConnect)(nil),
 		(*Operation_DatabaseQuery)(nil),
 		(*Operation_HttpRequest)(nil),
 		(*Operation_LogOperation)(nil),
 		(*Operation_ObjectStorageRequest)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[85].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[88].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[86].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[89].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[91].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[92].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[90].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[92].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[93].OneofWrappers = []interface{}{
 		(*SecurityFeature_AnomalyDetection)(nil),
 		(*SecurityFeature_ActivityLogging)(nil),
 		(*SecurityFeature_ApplicationLogging)(nil),
@@ -16886,13 +17182,13 @@ func file_api_ontology_ontology_proto_init() {
 		(*SecurityFeature_AutomaticUpdates)(nil),
 		(*SecurityFeature_Immutability)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[94].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[95].OneofWrappers = []interface{}{
 		(*Storage_BlockStorage)(nil),
 		(*Storage_DatabaseStorage)(nil),
 		(*Storage_FileStorage)(nil),
 		(*Storage_ObjectStorage)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[95].OneofWrappers = []interface{}{
+	file_api_ontology_ontology_proto_msgTypes[96].OneofWrappers = []interface{}{
 		(*StorageService_DocumentDatabaseService)(nil),
 		(*StorageService_KeyValueDatabaseService)(nil),
 		(*StorageService_MultiModalDatabaseService)(nil),
@@ -16900,19 +17196,19 @@ func file_api_ontology_ontology_proto_init() {
 		(*StorageService_FileStorageService)(nil),
 		(*StorageService_ObjectStorageService)(nil),
 	}
-	file_api_ontology_ontology_proto_msgTypes[97].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[98].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[99].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[100].OneofWrappers = []interface{}{}
 	file_api_ontology_ontology_proto_msgTypes[101].OneofWrappers = []interface{}{}
-	file_api_ontology_ontology_proto_msgTypes[103].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[102].OneofWrappers = []interface{}{}
+	file_api_ontology_ontology_proto_msgTypes[104].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_ontology_ontology_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   141,
+			NumMessages:   143,
 			NumExtensions: 1,
 			NumServices:   0,
 		},

@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +31,7 @@ import (
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -87,32 +85,23 @@ func (d *k8sNetworkDiscovery) List() ([]ontology.IsResource, error) {
 	return list, nil
 }
 
-func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) voc.IsNetwork {
+func (d *k8sNetworkDiscovery) handleService(service *corev1.Service) ontology.IsResource {
 	var (
-		ports []uint16
+		ports []uint32
 	)
 
 	for _, v := range service.Spec.Ports {
-		ports = append(ports, uint16(v.Port))
+		ports = append(ports, uint32(v.Port))
 	}
 
-	return &voc.NetworkService{
-		Networking: &voc.Networking{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(getNetworkServiceResourceID(service)),
-				service.Name,
-				&service.CreationTimestamp.Time,
-				// TODO(all): Add region
-				voc.GeoLocation{},
-				service.Labels,
-				"",
-				voc.NetworkServiceType,
-				service,
-			),
-		},
-
-		Ips:   service.Spec.ClusterIPs,
-		Ports: ports,
+	return &ontology.GenericNetworkService{
+		Id:           getNetworkServiceResourceID(service),
+		Name:         service.Name,
+		CreationTime: timestamppb.New(service.CreationTimestamp.Time),
+		Labels:       service.Labels,
+		Raw:          discovery.Raw(service),
+		Ips:          service.Spec.ClusterIPs,
+		Ports:        ports,
 	}
 }
 
@@ -120,26 +109,14 @@ func getNetworkServiceResourceID(service *corev1.Service) string {
 	return fmt.Sprintf("/namespaces/%s/services/%s", service.Namespace, service.Name)
 }
 
-func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
-	lb := &voc.LoadBalancer{
-		NetworkService: &voc.NetworkService{
-			Networking: &voc.Networking{
-				Resource: discovery.NewResource(d,
-					voc.ResourceID(getLoadBalancerResourceID(ingress)),
-					ingress.Name,
-					&ingress.CreationTimestamp.Time,
-					// TODO(all): Add region
-					voc.GeoLocation{},
-					ingress.Labels,
-					"",
-					voc.LoadBalancerType,
-					ingress,
-				),
-			},
-			Ips:   nil, // TODO (oxisto): fill out IPs
-			Ports: []uint16{80, 443},
-		},
-		HttpEndpoints: []*voc.HttpEndpoint{},
+func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) ontology.IsResource {
+	lb := &ontology.LoadBalancer{
+		Id:           getLoadBalancerResourceID(ingress),
+		Name:         ingress.Name,
+		CreationTime: timestamppb.New(ingress.CreationTimestamp.Time),
+		Labels:       ingress.Labels,
+		Raw:          discovery.Raw(ingress),
+		Ports:        []uint32{80, 443},
 	}
 
 	for _, rule := range ingress.Spec.Rules {
@@ -147,25 +124,25 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) voc.IsNetwork {
 
 		for _, path := range rule.HTTP.Paths {
 			var url = fmt.Sprintf("%s/%s", rule.Host, path.Path)
-			var te *voc.TransportEncryption
+			var te *ontology.TransportEncryption
 
 			if ingress.Spec.TLS == nil {
 				url = fmt.Sprintf("http://%s", url)
 			} else {
 				url = fmt.Sprintf("https://%s", url)
 
-				te = &voc.TransportEncryption{
+				te = &ontology.TransportEncryption{
 					Enforced: true,
 					Enabled:  true,
 				}
 			}
 
-			http := &voc.HttpEndpoint{
+			http := &ontology.HttpEndpoint{
 				Url:                 url,
 				TransportEncryption: te,
 			}
 
-			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
+			lb.HttpEndpoint = append(lb.HttpEndpoint, http)
 		}
 	}
 
