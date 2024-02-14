@@ -30,11 +30,28 @@ syntax = "proto3";
 package clouditor.ontology.v1;
 
 import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "clouditor.io/clouditor/api/ontology";
+
+// Provides the Ontology within the Clouditor architecture
+service Ontology {
+  // List Ontology objects
+  rpc ListOntologyObjects(ListOntologyObjectsRequest) returns (ListOntologyObjectsResponse) {
+    option (google.api.http) = {post: "/v1/ontology/ontology_objects"};
+  }
+}
+
+message ListOntologyObjectsRequest {}
+message ListOntologyObjectsResponse {
+  ABAC abac = 1;
+  AccessRestriction access_restriction = 2;
+  Account account = 3;
+  ActivityLogging activity_logging = 4;
+}
 
 extend google.protobuf.MessageOptions {
   repeated string resource_type_name = 50000;

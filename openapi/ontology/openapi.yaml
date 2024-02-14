@@ -3,8 +3,142 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: Ontology API
+    description: Provides the Ontology within the Clouditor architecture
     version: 0.0.1
-paths: {}
+paths:
+    /v1/ontology/ontology_objects:
+        post:
+            tags:
+                - Ontology
+            description: List Ontology objects
+            operationId: Ontology_ListOntologyObjects
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListOntologyObjectsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
-    schemas: {}
+    schemas:
+        ABAC:
+            type: object
+            properties: {}
+            description: ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AccessRestriction:
+            type: object
+            properties:
+                l3Firewall:
+                    $ref: '#/components/schemas/L3Firewall'
+                webApplicationFirewall:
+                    $ref: '#/components/schemas/WebApplicationFirewall'
+            description: AccessRestriction is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        Account:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: |-
+                Account is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 This represents the cloud account as a whole, e.g., an Azure subscription.
+        ActivityLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        GeoLocation:
+            type: object
+            properties:
+                region:
+                    type: string
+            description: GeoLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        L3Firewall:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                inbound:
+                    type: boolean
+                restrictedPorts:
+                    type: string
+            description: L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ListOntologyObjectsResponse:
+            type: object
+            properties:
+                abac:
+                    $ref: '#/components/schemas/ABAC'
+                accessRestriction:
+                    $ref: '#/components/schemas/AccessRestriction'
+                account:
+                    $ref: '#/components/schemas/Account'
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        WebApplicationFirewall:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+            description: |-
+                WebApplicationFirewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 A WAF is a L7 firewall that includes L3 capabilities
+tags:
+    - name: Ontology
