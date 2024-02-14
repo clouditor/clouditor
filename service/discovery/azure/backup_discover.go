@@ -111,7 +111,7 @@ func (d *azureDiscovery) discoverBackupVaults() error {
 					{
 						Enabled:         true,
 						RetentionPeriod: retentionDuration(util.Deref(retention)),
-						StorageId:       util.Deref(instance.ID),
+						StorageId:       instance.ID,
 						TransportEncryption: &ontology.TransportEncryption{
 							Enabled:         true,
 							Enforced:        true,

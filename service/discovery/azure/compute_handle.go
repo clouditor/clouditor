@@ -154,14 +154,12 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 	backups = backupsEmptyCheck(backups)
 
 	return &ontology.BlockStorage{
-		Id:           util.Deref(disk.ID),
-		Name:         util.Deref(disk.Name),
-		CreationTime: creationTime(disk.Properties.TimeCreated),
-		GeoLocation: &ontology.GeoLocation{
-			Region: util.Deref(disk.Location),
-		},
+		Id:               util.Deref(disk.ID),
+		Name:             util.Deref(disk.Name),
+		CreationTime:     creationTime(disk.Properties.TimeCreated),
+		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
-		ParentId:         util.Deref(disk.ID),
+		ParentId:         disk.ID,
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
 		Backup:           backups,

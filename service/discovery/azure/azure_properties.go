@@ -107,18 +107,22 @@ func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }
 
-func resourceGroupID(ID *string) string {
+func resourceGroupID(ID *string) *string {
+	if ID == nil {
+		return nil
+	}
+
 	// split according to "/"
 	s := strings.Split(util.Deref(ID), "/")
 
 	// We cannot really return an error here, so we just return an empty string
 	if len(s) < 5 {
-		return ""
+		return nil
 	}
 
 	id := strings.Join(s[:5], "/")
 
-	return id
+	return &id
 }
 
 // retentionDuration returns the retention string as time.Duration

@@ -28,6 +28,7 @@ package azure
 import (
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 )
 
@@ -38,25 +39,19 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 
 	if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Storage/storageAccounts/blobServices" {
 		resource = &ontology.ObjectStorage{
-			Id:   *instance.ID,
-			Name: *instance.Name,
-			GeoLocation: &ontology.GeoLocation{
-				Region: *vault.Location,
-			},
-			Labels:   nil,
-			ParentId: resourceGroupID(instance.ID),
-			Raw:      discovery.Raw(instance, vault),
+			Id:          util.Deref(instance.ID),
+			Name:        util.Deref(instance.Name),
+			GeoLocation: location(vault.Location),
+			ParentId:    resourceGroupID(instance.ID),
+			Raw:         discovery.Raw(instance, vault),
 		}
 	} else if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Compute/disks" {
 		resource = &ontology.BlockStorage{
-			Id:   *instance.ID,
-			Name: *instance.Name,
-			GeoLocation: &ontology.GeoLocation{
-				Region: *vault.Location,
-			},
-			Labels:   nil,
-			ParentId: resourceGroupID(instance.ID),
-			Raw:      discovery.Raw(instance, vault),
+			Id:          util.Deref(instance.ID),
+			Name:        util.Deref(instance.Name),
+			GeoLocation: location(vault.Location),
+			ParentId:    resourceGroupID(instance.ID),
+			Raw:         discovery.Raw(instance, vault),
 		}
 	}
 

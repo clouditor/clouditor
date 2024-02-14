@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,13 +35,13 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -1337,7 +1335,7 @@ func Test_resourceGroupID(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want voc.ResourceID
+		want string
 	}{
 		{
 			name: "invalid",
@@ -1587,28 +1585,28 @@ func Test_retentionDuration(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want time.Duration
+		want *durationpb.Duration
 	}{
 		{
 			name: "Missing input",
 			args: args{
 				retention: "",
 			},
-			want: time.Duration(0),
+			want: nil,
 		},
 		{
 			name: "Wrong input",
 			args: args{
 				retention: "TEST",
 			},
-			want: time.Duration(0),
+			want: nil,
 		},
 		{
 			name: "Happy path",
 			args: args{
 				retention: "P30D",
 			},
-			want: Duration30Days,
+			want: durationpb.New(Duration30Days),
 		},
 	}
 	for _, tt := range tests {
