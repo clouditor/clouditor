@@ -234,6 +234,9 @@
         <Class IRI="http://graph.clouditor.io/classes/MultiFactorAuthentiation"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/MultiModalDatabaseService"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
     </Declaration>
     <Declaration>
@@ -1042,7 +1045,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CipherSuite"/>
-        <Class IRI="http://graph.clouditor.io/classes/Confidentiality"/>
+        <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CipherSuite"/>
@@ -1818,6 +1821,10 @@
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class IRI="http://graph.clouditor.io/classes/Authenticity"/>
         </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/MultiModalDatabaseService"/>
+        <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
@@ -3055,6 +3062,16 @@ name = metadata.name</Literal>
         <Literal>MultiFactorAuthentiation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/MultiModalDatabaseService</IRI>
+        <Literal>This class represents a database service that identifies itself as &quot;multi-model&quot;, e.g., offers document storage as well as relational features.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/MultiModalDatabaseService</IRI>
+        <Literal>MultiModalDatabaseService</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/NetworkInterface</IRI>
         <Literal xml:lang="english">NetworkInterface</Literal>
@@ -3277,7 +3294,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/daysSinceActive</IRI>
-        <Literal>daysSinceActive</Literal>
+        <Literal>durationSinceActive</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

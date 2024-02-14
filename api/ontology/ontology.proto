@@ -69,7 +69,7 @@ message Account {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -113,9 +113,9 @@ message Application {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
   repeated string translation_units = 7;
-  string compute_id = 8;
+  optional string compute_id = 8;
   repeated Functionality functionality = 9;
-  string parent_id = 10;
+  optional string parent_id = 10;
 }
 
 // ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -210,7 +210,7 @@ message Backup {
   // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 2;
   google.protobuf.Duration retention_period = 3;
-  string storage_id = 4;
+  optional string storage_id = 4;
   TransportEncryption transport_encryption = 5;
 }
 
@@ -241,18 +241,19 @@ message Resource {
     LoggingService logging_service = 22;
     DocumentDatabaseService document_database_service = 23;
     KeyValueDatabaseService key_value_database_service = 24;
-    RelationalDatabaseService relational_database_service = 25;
-    FileStorageService file_storage_service = 26;
-    ObjectStorageService object_storage_service = 27;
-    VirtualNetwork virtual_network = 28;
-    VirtualSubNetwork virtual_sub_network = 29;
-    PasswordPolicy password_policy = 30;
-    ResourceGroup resource_group = 31;
-    BlockStorage block_storage = 32;
-    DatabaseStorage database_storage = 33;
-    FileStorage file_storage = 34;
-    ObjectStorage object_storage = 35;
-    Document document = 36;
+    MultiModalDatabaseService multi_modal_database_service = 25;
+    RelationalDatabaseService relational_database_service = 26;
+    FileStorageService file_storage_service = 27;
+    ObjectStorageService object_storage_service = 28;
+    VirtualNetwork virtual_network = 29;
+    VirtualSubNetwork virtual_sub_network = 30;
+    PasswordPolicy password_policy = 31;
+    ResourceGroup resource_group = 32;
+    BlockStorage block_storage = 33;
+    DatabaseStorage database_storage = 34;
+    FileStorage file_storage = 35;
+    ObjectStorage object_storage = 36;
+    Document document = 37;
   }
 }
 
@@ -274,7 +275,7 @@ message BlockStorage {
   GeoLocation geo_location = 8;
   Immutability immutability = 9;
   Redundancy redundancy = 10;
-  string parent_id = 11;
+  optional string parent_id = 11;
   ResourceLogging resource_logging = 12;
 }
 
@@ -313,8 +314,7 @@ message CertificateBasedAuthentication {
 // CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message CipherSuite {
   option (resource_type_name) = "CipherSuite";
-  option (resource_type_name) = "Confidentiality";
-  option (resource_type_name) = "SecurityFeature";
+  option (resource_type_name) = "Functionality";
 
   // for example: RSA, ECDSA
   string authentication_mechanism = 1;
@@ -351,17 +351,18 @@ message CloudResource {
     LoggingService logging_service = 21;
     DocumentDatabaseService document_database_service = 22;
     KeyValueDatabaseService key_value_database_service = 23;
-    RelationalDatabaseService relational_database_service = 24;
-    FileStorageService file_storage_service = 25;
-    ObjectStorageService object_storage_service = 26;
-    VirtualNetwork virtual_network = 27;
-    VirtualSubNetwork virtual_sub_network = 28;
-    PasswordPolicy password_policy = 29;
-    ResourceGroup resource_group = 30;
-    BlockStorage block_storage = 31;
-    DatabaseStorage database_storage = 32;
-    FileStorage file_storage = 33;
-    ObjectStorage object_storage = 34;
+    MultiModalDatabaseService multi_modal_database_service = 24;
+    RelationalDatabaseService relational_database_service = 25;
+    FileStorageService file_storage_service = 26;
+    ObjectStorageService object_storage_service = 27;
+    VirtualNetwork virtual_network = 28;
+    VirtualSubNetwork virtual_sub_network = 29;
+    PasswordPolicy password_policy = 30;
+    ResourceGroup resource_group = 31;
+    BlockStorage block_storage = 32;
+    DatabaseStorage database_storage = 33;
+    FileStorage file_storage = 34;
+    ObjectStorage object_storage = 35;
   }
 }
 
@@ -386,9 +387,8 @@ message Confidentiality {
   oneof type {
     CustomerKeyEncryption customer_key_encryption = 1;
     ManagedKeyEncryption managed_key_encryption = 2;
-    CipherSuite cipher_suite = 3;
-    EncryptionInUse encryption_in_use = 4;
-    TransportEncryption transport_encryption = 5;
+    EncryptionInUse encryption_in_use = 3;
+    TransportEncryption transport_encryption = 4;
   }
 }
 
@@ -407,9 +407,9 @@ message Container {
   string raw = 5;
   EncryptionInUse encryption_in_use = 6;
   GeoLocation geo_location = 7;
-  string image_id = 8;
+  optional string image_id = 8;
   repeated string network_interface_ids = 9;
-  string parent_id = 10;
+  optional string parent_id = 10;
   ResourceLogging resource_logging = 11;
 }
 
@@ -426,9 +426,9 @@ message ContainerImage {
   string name = 4 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
-  string application_id = 6;
+  optional string application_id = 6;
   GeoLocation geo_location = 7;
-  string parent_id = 8;
+  optional string parent_id = 8;
 }
 
 // ContainerOrchestration is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -446,7 +446,7 @@ message ContainerOrchestration {
   string raw = 6;
   repeated string container_ids = 7;
   GeoLocation geo_location = 8;
-  string parent_id = 9;
+  optional string parent_id = 9;
   ResourceLogging resource_logging = 10;
 }
 
@@ -463,7 +463,7 @@ message ContainerRegistry {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // CustomerKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -494,7 +494,7 @@ message DatabaseConnect {
 
   repeated string calls = 1;
   repeated string database_service_ids = 2;
-  string database_storage_id = 3;
+  optional string database_storage_id = 3;
 }
 
 // DatabaseOperation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -515,7 +515,7 @@ message DatabaseQuery {
   repeated string calls = 1;
   bool modify = 2;
   repeated string database_service_ids = 3;
-  string database_storage_id = 4;
+  optional string database_storage_id = 4;
 }
 
 // DatabaseService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -524,7 +524,8 @@ message DatabaseService {
   oneof type {
     DocumentDatabaseService document_database_service = 1;
     KeyValueDatabaseService key_value_database_service = 2;
-    RelationalDatabaseService relational_database_service = 3;
+    MultiModalDatabaseService multi_modal_database_service = 3;
+    RelationalDatabaseService relational_database_service = 4;
   }
 }
 
@@ -547,7 +548,7 @@ message DatabaseStorage {
   GeoLocation geo_location = 8;
   Immutability immutability = 9;
   Redundancy redundancy = 10;
-  string parent_id = 11;
+  optional string parent_id = 11;
   ResourceLogging resource_logging = 12;
 }
 
@@ -565,7 +566,7 @@ message DeviceProvisioningService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // Document is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -580,7 +581,7 @@ message Document {
   string name = 5 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
   repeated SecurityFeature security_feature = 8;
 }
 
@@ -604,11 +605,11 @@ message DocumentDatabaseService {
   string raw = 7;
   AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
-  string compute_id = 10;
+  optional string compute_id = 10;
   GeoLocation geo_location = 11;
   HttpEndpoint http_endpoint = 12;
   MalwareProtection malware_protection = 13;
-  string parent_id = 14;
+  optional string parent_id = 14;
   repeated string storage_ids = 15;
   TransportEncryption transport_encryption = 16;
 }
@@ -641,7 +642,7 @@ message FileStorage {
   GeoLocation geo_location = 9;
   Immutability immutability = 10;
   Redundancy redundancy = 11;
-  string parent_id = 12;
+  optional string parent_id = 12;
   ResourceLogging resource_logging = 13;
 }
 
@@ -664,10 +665,10 @@ message FileStorageService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
   Authenticity authenticity = 8;
-  string compute_id = 9;
+  optional string compute_id = 9;
   GeoLocation geo_location = 10;
   HttpEndpoint http_endpoint = 11;
-  string parent_id = 12;
+  optional string parent_id = 12;
   repeated string storage_ids = 13;
   TransportEncryption transport_encryption = 14;
 }
@@ -708,20 +709,21 @@ message Function {
   EncryptionInUse encryption_in_use = 8;
   GeoLocation geo_location = 9;
   repeated string network_interface_ids = 10;
-  string parent_id = 11;
+  optional string parent_id = 11;
   ResourceLogging resource_logging = 12;
 }
 
 // Functionality is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Functionality {
   oneof type {
-    HttpEndpoint http_endpoint = 1;
-    HttpRequestHandler http_request_handler = 2;
-    DatabaseConnect database_connect = 3;
-    DatabaseQuery database_query = 4;
-    HttpRequest http_request = 5;
-    LogOperation log_operation = 6;
-    ObjectStorageRequest object_storage_request = 7;
+    CipherSuite cipher_suite = 1;
+    HttpEndpoint http_endpoint = 2;
+    HttpRequestHandler http_request_handler = 3;
+    DatabaseConnect database_connect = 4;
+    DatabaseQuery database_query = 5;
+    HttpRequest http_request = 6;
+    LogOperation log_operation = 7;
+    ObjectStorageRequest object_storage_request = 8;
   }
 }
 
@@ -772,7 +774,7 @@ message HttpRequestHandler {
   option (resource_type_name) = "Functionality";
 
   string path = 1;
-  string application_id = 2;
+  optional string application_id = 2;
   repeated HttpEndpoint http_endpoint = 3;
 }
 
@@ -814,7 +816,7 @@ message Identity {
   Authenticity authenticity = 12;
   Authorization authorization = 13;
   GeoLocation geo_location = 14;
-  string parent_id = 15;
+  optional string parent_id = 15;
 }
 
 // Image is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -864,7 +866,7 @@ message Job {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // TokenBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -896,7 +898,7 @@ message Key {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 10;
   GeoLocation geo_location = 11;
-  string parent_id = 12;
+  optional string parent_id = 12;
 }
 
 // KeyValueDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -919,11 +921,11 @@ message KeyValueDatabaseService {
   string raw = 7;
   AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
-  string compute_id = 10;
+  optional string compute_id = 10;
   GeoLocation geo_location = 11;
   HttpEndpoint http_endpoint = 12;
   MalwareProtection malware_protection = 13;
-  string parent_id = 14;
+  optional string parent_id = 14;
   repeated string storage_ids = 15;
   TransportEncryption transport_encryption = 16;
 }
@@ -942,8 +944,8 @@ message KeyVault {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
   GeoLocation geo_location = 7;
-  string key_id = 8;
-  string parent_id = 9;
+  optional string key_id = 8;
+  optional string parent_id = 9;
 }
 
 // L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -979,11 +981,11 @@ message LoadBalancer {
   string url = 8;
   AccessRestriction access_restriction = 9;
   Authenticity authenticity = 10;
-  string compute_id = 11;
+  optional string compute_id = 11;
   GeoLocation geo_location = 12;
   repeated HttpEndpoint http_endpoint = 13;
   repeated string network_service_ids = 14;
-  string parent_id = 15;
+  optional string parent_id = 15;
   TransportEncryption transport_encryption = 16;
 }
 
@@ -1034,9 +1036,9 @@ message LoggingService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
   Authenticity authenticity = 8;
-  string compute_id = 9;
+  optional string compute_id = 9;
   GeoLocation geo_location = 10;
-  string parent_id = 11;
+  optional string parent_id = 11;
   repeated string storage_ids = 12;
   TransportEncryption transport_encryption = 13;
 }
@@ -1080,7 +1082,7 @@ message MessagingHub {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // MultiFactorAuthentiation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1091,6 +1093,36 @@ message MultiFactorAuthentiation {
 
   bool context_is_checked = 1;
   repeated Authenticity authenticity = 2;
+}
+
+// MultiModalDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// This class represents a database service that identifies itself as "multi-model", e.g., offers document storage as well as relational features.
+message MultiModalDatabaseService {
+  option (resource_type_name) = "MultiModalDatabaseService";
+  option (resource_type_name) = "DatabaseService";
+  option (resource_type_name) = "StorageService";
+  option (resource_type_name) = "NetworkService";
+  option (resource_type_name) = "Networking";
+  option (resource_type_name) = "CloudResource";
+  option (resource_type_name) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 1;
+  string id = 2 [(buf.validate.field).required = true];
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5 [(buf.validate.field).required = true];
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  AnomalyDetection anomaly_detection = 8;
+  Authenticity authenticity = 9;
+  optional string compute_id = 10;
+  GeoLocation geo_location = 11;
+  HttpEndpoint http_endpoint = 12;
+  MalwareProtection malware_protection = 13;
+  optional string parent_id = 14;
+  repeated string storage_ids = 15;
+  TransportEncryption transport_encryption = 16;
 }
 
 // NetworkInterface is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1108,8 +1140,8 @@ message NetworkInterface {
   string raw = 5;
   AccessRestriction access_restriction = 6;
   GeoLocation geo_location = 7;
-  string network_service_id = 8;
-  string parent_id = 9;
+  optional string network_service_id = 8;
+  optional string parent_id = 9;
 }
 
 // NetworkSecurityGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1126,7 +1158,7 @@ message NetworkSecurityGroup {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // NetworkService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1137,9 +1169,10 @@ message NetworkService {
     LoggingService logging_service = 2;
     DocumentDatabaseService document_database_service = 3;
     KeyValueDatabaseService key_value_database_service = 4;
-    RelationalDatabaseService relational_database_service = 5;
-    FileStorageService file_storage_service = 6;
-    ObjectStorageService object_storage_service = 7;
+    MultiModalDatabaseService multi_modal_database_service = 5;
+    RelationalDatabaseService relational_database_service = 6;
+    FileStorageService file_storage_service = 7;
+    ObjectStorageService object_storage_service = 8;
   }
 }
 
@@ -1152,11 +1185,12 @@ message Networking {
     LoggingService logging_service = 4;
     DocumentDatabaseService document_database_service = 5;
     KeyValueDatabaseService key_value_database_service = 6;
-    RelationalDatabaseService relational_database_service = 7;
-    FileStorageService file_storage_service = 8;
-    ObjectStorageService object_storage_service = 9;
-    VirtualNetwork virtual_network = 10;
-    VirtualSubNetwork virtual_sub_network = 11;
+    MultiModalDatabaseService multi_modal_database_service = 7;
+    RelationalDatabaseService relational_database_service = 8;
+    FileStorageService file_storage_service = 9;
+    ObjectStorageService object_storage_service = 10;
+    VirtualNetwork virtual_network = 11;
+    VirtualSubNetwork virtual_sub_network = 12;
   }
 }
 
@@ -1212,7 +1246,7 @@ message ObjectStorage {
   GeoLocation geo_location = 9;
   Immutability immutability = 10;
   Redundancy redundancy = 11;
-  string parent_id = 12;
+  optional string parent_id = 12;
   ResourceLogging resource_logging = 13;
 }
 
@@ -1245,10 +1279,10 @@ message ObjectStorageService {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
   Authenticity authenticity = 8;
-  string compute_id = 9;
+  optional string compute_id = 9;
   GeoLocation geo_location = 10;
   HttpEndpoint http_endpoint = 11;
-  string parent_id = 12;
+  optional string parent_id = 12;
   repeated string storage_ids = 13;
   TransportEncryption transport_encryption = 14;
 }
@@ -1287,7 +1321,7 @@ message PasswordPolicy {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1333,11 +1367,11 @@ message RelationalDatabaseService {
   string raw = 7;
   AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
-  string compute_id = 10;
+  optional string compute_id = 10;
   GeoLocation geo_location = 11;
   HttpEndpoint http_endpoint = 12;
   MalwareProtection malware_protection = 13;
-  string parent_id = 14;
+  optional string parent_id = 14;
   repeated string storage_ids = 15;
   TransportEncryption transport_encryption = 16;
 }
@@ -1355,7 +1389,7 @@ message ResourceGroup {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1389,7 +1423,7 @@ message RoleAssignment {
   Authenticity authenticity = 7;
   Authorization authorization = 8;
   GeoLocation geo_location = 9;
-  string parent_id = 10;
+  optional string parent_id = 10;
 }
 
 // SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1419,11 +1453,10 @@ message SecurityFeature {
     Redundancy redundancy = 22;
     CustomerKeyEncryption customer_key_encryption = 23;
     ManagedKeyEncryption managed_key_encryption = 24;
-    CipherSuite cipher_suite = 25;
-    EncryptionInUse encryption_in_use = 26;
-    TransportEncryption transport_encryption = 27;
-    AutomaticUpdates automatic_updates = 28;
-    Immutability immutability = 29;
+    EncryptionInUse encryption_in_use = 25;
+    TransportEncryption transport_encryption = 26;
+    AutomaticUpdates automatic_updates = 27;
+    Immutability immutability = 28;
   }
 }
 
@@ -1453,9 +1486,10 @@ message StorageService {
   oneof type {
     DocumentDatabaseService document_database_service = 1;
     KeyValueDatabaseService key_value_database_service = 2;
-    RelationalDatabaseService relational_database_service = 3;
-    FileStorageService file_storage_service = 4;
-    ObjectStorageService object_storage_service = 5;
+    MultiModalDatabaseService multi_modal_database_service = 3;
+    RelationalDatabaseService relational_database_service = 4;
+    FileStorageService file_storage_service = 5;
+    ObjectStorageService object_storage_service = 6;
   }
 }
 
@@ -1486,9 +1520,9 @@ message VMImage {
   string name = 4 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
-  string application_id = 6;
+  optional string application_id = 6;
   GeoLocation geo_location = 7;
-  string parent_id = 8;
+  optional string parent_id = 8;
 }
 
 // VirtualMachine is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1513,7 +1547,7 @@ message VirtualMachine {
   MalwareProtection malware_protection = 12;
   repeated string network_interface_ids = 13;
   OSLogging oslogging = 14;
-  string parent_id = 15;
+  optional string parent_id = 15;
   ResourceLogging resource_logging = 16;
 }
 
@@ -1531,7 +1565,7 @@ message VirtualNetwork {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // VirtualSubNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1548,7 +1582,7 @@ message VirtualSubNetwork {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }
 
 // WebApp is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1567,7 +1601,7 @@ message WebApp {
   EncryptionInUse encryption_in_use = 6;
   GeoLocation geo_location = 7;
   repeated string network_interface_ids = 8;
-  string parent_id = 9;
+  optional string parent_id = 9;
   ResourceLogging resource_logging = 10;
 }
 
@@ -1597,5 +1631,5 @@ message Workflow {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 5;
   GeoLocation geo_location = 6;
-  string parent_id = 7;
+  optional string parent_id = 7;
 }

@@ -29,12 +29,13 @@ Key features are:
 
 ## Build
 
-Install necessary protobuf tools.
+Install necessary protobuf tools, including `buf`. Please refer to the [`buf` install guide](https://buf.build/docs/installation).
 
 ```
 go install google.golang.org/protobuf/cmd/protoc-gen-go \
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 github.com/google/gnostic/cmd/protoc-gen-openapi \
+github.com/srikrsna/protoc-gen-gotag \
 github.com/oxisto/owl2proto/cmd/owl2proto
 ```
 

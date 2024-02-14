@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
+	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
@@ -84,7 +85,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 						panicToDiscoveryResource(t, &ontology.ObjectStorage{
 							Id:       "some-id",
 							Name:     "some-name",
-							ParentId: "some-storage-account-id",
+							ParentId: util.Ref("some-storage-account-id"),
 						}, testdata.MockCloudServiceID2)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{
@@ -118,7 +119,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 						panicToDiscoveryResource(t, &ontology.ObjectStorage{
 							Id:       "some-id",
 							Name:     "some-name",
-							ParentId: "some-storage-account-id",
+							ParentId: util.Ref("some-storage-account-id"),
 						}, testdata.MockCloudServiceID2)))
 					assert.NoError(t, s.Create(
 						panicToDiscoveryResource(t, &ontology.ObjectStorageService{

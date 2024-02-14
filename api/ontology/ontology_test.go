@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -51,7 +52,7 @@ func TestRelated(t *testing.T) {
 				r: &ObjectStorage{
 					Id:       "some-id",
 					Name:     "some-name",
-					ParentId: "some-storage-account-id",
+					ParentId: util.Ref("some-storage-account-id"),
 					Raw:      "{}",
 				},
 			},

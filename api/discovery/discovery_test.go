@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/prototest"
+	"clouditor.io/clouditor/internal/util"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -108,7 +109,7 @@ func TestToDiscoveryResource(t *testing.T) {
 					Backup: []*ontology.Backup{
 						{
 							Enabled:   true,
-							StorageId: "my-offsite-backup-id",
+							StorageId: util.Ref("my-offsite-backup-id"),
 						},
 					},
 				},
@@ -124,7 +125,7 @@ func TestToDiscoveryResource(t *testing.T) {
 					Backup: []*ontology.Backup{
 						{
 							Enabled:   true,
-							StorageId: "my-offsite-backup-id",
+							StorageId: util.Ref("my-offsite-backup-id"),
 						},
 					},
 				}),

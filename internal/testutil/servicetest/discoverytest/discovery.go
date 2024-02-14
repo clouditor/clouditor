@@ -5,6 +5,7 @@ import (
 
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/util"
 )
 
 // TestDiscoverer implements Discoverer and mocks the API to cloud resources
@@ -25,7 +26,7 @@ func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
 			&ontology.ObjectStorage{
 				Id:       "some-id",
 				Name:     "some-name",
-				ParentId: "some-storage-account-id",
+				ParentId: util.Ref("some-storage-account-id"),
 				Raw:      "{}",
 			},
 			&ontology.ObjectStorageService{
