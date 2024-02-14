@@ -89,9 +89,7 @@ func ResourceMap(r IsResource) (props map[string]any, err error) {
 	)
 
 	opts = protojson.MarshalOptions{
-		// TODO(oxisto): Do we want to check for the existence of a field or always have it with nil?
-		//EmitDefaultValues: true,
-		EmitUnpopulated: true,
+		EmitDefaultValues: true,
 	}
 
 	b, err = opts.Marshal(r)
