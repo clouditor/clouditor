@@ -75,6 +75,14 @@ func tlsVersion(version string) float32 {
 func tlsCipherSuites(cs string) []*ontology.CipherSuite {
 	// TODO(oxisto): Implement this correctly
 	// hack hack
+	if cs == "TLS_AES_128_GCM_SHA256" {
+		return []*ontology.CipherSuite{
+			{
+				SessionCipher: "AES-128-GCM",
+				MacAlgorithm:  "SHA-256",
+			},
+		}
+	}
 	if cs == "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" {
 		return []*ontology.CipherSuite{
 			{
