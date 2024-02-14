@@ -133,7 +133,7 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]ontology.IsRe
 			Enabled:         true,
 			Enforced:        true,
 			Protocol:        constants.TLS,
-			ProtocolVersion: tlsVersion(util.Deref(server.Properties.MinimalTLSVersion)),
+			ProtocolVersion: tlsVersion((*string)(server.Properties.MinimalTLSVersion)),
 		},
 		AnomalyDetection: anomalyDetectionList,
 	}
@@ -167,12 +167,13 @@ func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, stora
 		Enforced:        util.Deref(account.Properties.EnableHTTPSTrafficOnly),
 		Enabled:         true, // cannot be disabled
 		Protocol:        constants.TLS,
-		ProtocolVersion: tlsVersion((string(util.Deref(account.Properties.MinimumTLSVersion)))),
+		ProtocolVersion: tlsVersion((*string)(account.Properties.MinimumTLSVersion)),
 	}
 
 	storageService := &ontology.ObjectStorageService{
 		Id:                  util.Deref(account.ID),
 		Name:                util.Deref(account.Name),
+		StorageIds:          storageResourceIDs,
 		CreationTime:        creationTime(account.Properties.CreationTime),
 		GeoLocation:         location(account.Location),
 		Labels:              labels(account.Tags),

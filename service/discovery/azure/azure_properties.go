@@ -32,6 +32,8 @@ import (
 
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -55,19 +57,23 @@ func accountName(id string) string {
 }
 
 // tlsVersion returns Clouditor's TLS version constants for the given TLS version
-func tlsVersion(version string) float32 {
+func tlsVersion(version *string) float32 {
+	if version == nil {
+		return 0
+	}
+
 	// Check TLS version
-	switch version {
-	case "1.0", "1_0":
+	switch *version {
+	case "1.0", "1_0", string(armstorage.MinimumTLSVersionTLS10):
 		return 1.0
-	case "1.1", "1_1":
+	case "1.1", "1_1", string(armstorage.MinimumTLSVersionTLS11):
 		return 1.1
-	case "1.2", "1_2":
+	case "1.2", "1_2", string(armstorage.MinimumTLSVersionTLS12):
 		return 1.2
 	case "1.3", "1_3":
 		return 1.3
 	default:
-		log.Warningf("'%s' is not an implemented TLS version.", version)
+		log.Warningf("'%s' is not an implemented TLS version.", *version)
 		return 0
 	}
 }

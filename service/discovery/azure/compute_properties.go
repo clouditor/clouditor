@@ -197,7 +197,7 @@ func getRedundancy(app *armappservice.Site) *ontology.Redundancy {
 // We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
 func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *ontology.TransportEncryption) {
 	// Get the corresponding Clouditor TLS version
-	tlsVersion := tlsVersion((string(util.Deref(config.Properties.MinTLSVersion))))
+	tlsVersion := tlsVersion((*string)(config.Properties.MinTLSVersion))
 
 	// Create transportEncryption voc object
 	if tlsVersion != 0 {

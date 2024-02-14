@@ -1683,7 +1683,7 @@ func Test_getTransportEncryption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotEnc := getTransportEncryption(tt.args.siteProps, tt.args.config)
-			prototest.Equal(t, gotEnc, tt.wantEnc)
+			prototest.Equal(t, tt.wantEnc, gotEnc)
 		})
 	}
 }
