@@ -603,7 +603,7 @@ message DocumentDatabaseService {
   repeated uint32 ports = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
-  AnomalyDetection anomaly_detection = 8;
+  repeated AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
   optional string compute_id = 10;
   GeoLocation geo_location = 11;
@@ -919,7 +919,7 @@ message KeyValueDatabaseService {
   repeated uint32 ports = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
-  AnomalyDetection anomaly_detection = 8;
+  repeated AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
   optional string compute_id = 10;
   GeoLocation geo_location = 11;
@@ -944,7 +944,7 @@ message KeyVault {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
   GeoLocation geo_location = 7;
-  optional string key_id = 8;
+  repeated string key_ids = 8;
   optional string parent_id = 9;
 }
 
@@ -1114,7 +1114,7 @@ message MultiModalDatabaseService {
   repeated uint32 ports = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
-  AnomalyDetection anomaly_detection = 8;
+  repeated AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
   optional string compute_id = 10;
   GeoLocation geo_location = 11;
@@ -1365,7 +1365,7 @@ message RelationalDatabaseService {
   repeated uint32 ports = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 7;
-  AnomalyDetection anomaly_detection = 8;
+  repeated AnomalyDetection anomaly_detection = 8;
   Authenticity authenticity = 9;
   optional string compute_id = 10;
   GeoLocation geo_location = 11;
