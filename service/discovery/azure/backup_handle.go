@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,55 +26,32 @@
 package azure
 
 import (
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 )
 
-func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultResource, instance *armdataprotection.BackupInstanceResource) (resource voc.IsCloudResource, err error) {
+func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultResource, instance *armdataprotection.BackupInstanceResource) (resource ontology.IsResource, err error) {
 	if vault == nil || instance == nil {
 		return nil, ErrVaultInstanceIsEmpty
 	}
 
-	raw, err := voc.ToStringInterface([]interface{}{instance, vault})
-	if err != nil {
-		log.Error(err)
-	}
-
 	if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Storage/storageAccounts/blobServices" {
-		resource = &voc.ObjectStorage{
-			Storage: &voc.Storage{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(*instance.ID),
-					Name:         *instance.Name,
-					CreationTime: 0,
-					GeoLocation: voc.GeoLocation{
-						Region: *vault.Location,
-					},
-					Labels:    nil,
-					ServiceID: d.csID,
-					Type:      voc.ObjectStorageType,
-					Parent:    resourceGroupID(instance.ID),
-					Raw:       raw,
-				},
-			},
+		resource = &ontology.ObjectStorage{
+			Id:          util.Deref(instance.ID),
+			Name:        util.Deref(instance.Name),
+			GeoLocation: location(vault.Location),
+			ParentId:    resourceGroupID(instance.ID),
+			Raw:         discovery.Raw(instance, vault),
 		}
 	} else if *instance.Properties.DataSourceInfo.DatasourceType == "Microsoft.Compute/disks" {
-		resource = &voc.BlockStorage{
-			Storage: &voc.Storage{
-				Resource: &voc.Resource{
-					ID:           voc.ResourceID(*instance.ID),
-					Name:         *instance.Name,
-					ServiceID:    d.csID,
-					CreationTime: 0,
-					Type:         voc.BlockStorageType,
-					GeoLocation: voc.GeoLocation{
-						Region: *vault.Location,
-					},
-					Labels: nil,
-					Parent: resourceGroupID(instance.ID),
-					Raw:    raw,
-				},
-			},
+		resource = &ontology.BlockStorage{
+			Id:          util.Deref(instance.ID),
+			Name:        util.Deref(instance.Name),
+			GeoLocation: location(vault.Location),
+			ParentId:    resourceGroupID(instance.ID),
+			Raw:         discovery.Raw(instance, vault),
 		}
 	}
 

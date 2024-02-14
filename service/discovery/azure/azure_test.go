@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2021 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,9 +38,12 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -124,7 +125,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "account1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"creationTime": "2017-05-24T13:28:53.004540398Z",
 						"primaryEndpoints": map[string]interface{}{
 							"blob": "https://account1.blob.core.windows.net/",
 							"file": "https://account1.file.core.windows.net/",
@@ -154,7 +155,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "account2",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"creationTime": "2017-05-24T13:28:53.004540398Z",
 						"primaryEndpoints": map[string]interface{}{
 							"blob": "https://account1.blob.core.windows.net/",
 							"file": "https://account1.file.core.windows.net/",
@@ -191,7 +192,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				"name":     "account3",
 				"location": "westus",
 				"properties": map[string]interface{}{
-					"creationTime": "2017-05-24T13:28:53.4540398Z",
+					"creationTime": "2017-05-24T13:28:53.004540398Z",
 					"primaryEndpoints": map[string]interface{}{
 						"blob": "https://account3.blob.core.windows.net/",
 						"file": "https://account3.file.core.windows.net/",
@@ -408,7 +409,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -425,7 +426,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -445,7 +446,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -462,7 +463,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -506,7 +507,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "vm1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"storageProfile": map[string]interface{}{
 							"osDisk": map[string]interface{}{
 								"managedDisk": map[string]interface{}{
@@ -632,7 +633,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -645,7 +646,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
@@ -658,7 +659,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -676,7 +677,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -1183,7 +1184,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 				NewMockAzureDiscovery(newMockSender()),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.([]voc.IsCloudResource)
+				got, ok := i1.([]ontology.IsResource)
 				if !assert.True(tt, ok) {
 					return false
 				}
@@ -1336,21 +1337,21 @@ func Test_resourceGroupID(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want voc.ResourceID
+		want *string
 	}{
 		{
 			name: "invalid",
 			args: args{
 				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
 			},
-			want: "",
+			want: nil,
 		},
 		{
 			name: "happy path",
 			args: args{
 				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
 		},
 	}
 	for _, tt := range tests {
@@ -1586,35 +1587,35 @@ func Test_retentionDuration(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want time.Duration
+		want *durationpb.Duration
 	}{
 		{
 			name: "Missing input",
 			args: args{
 				retention: "",
 			},
-			want: time.Duration(0),
+			want: durationpb.New(time.Duration(0)),
 		},
 		{
 			name: "Wrong input",
 			args: args{
 				retention: "TEST",
 			},
-			want: time.Duration(0),
+			want: durationpb.New(time.Duration(0)),
 		},
 		{
 			name: "Happy path",
 			args: args{
 				retention: "P30D",
 			},
-			want: Duration30Days,
+			want: durationpb.New(Duration30Days),
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := retentionDuration(tt.args.retention); got != tt.want {
-				t.Errorf("retentionDuration() = %v, want %v", got, tt.want)
-			}
+			got := retentionDuration(tt.args.retention)
+			prototest.Equal(t, tt.want, got)
 		})
 	}
 }

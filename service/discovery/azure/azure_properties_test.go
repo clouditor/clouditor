@@ -26,32 +26,54 @@
 package azure
 
 import (
-	"strings"
+	"reflect"
+	"testing"
 
 	"clouditor.io/clouditor/api/ontology"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 )
 
-// backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
-func backupsEmptyCheck(backups []*ontology.Backup) []*ontology.Backup {
-	if len(backups) == 0 {
-		return []*ontology.Backup{
-			{
-				Enabled: false,
+func Test_tlsCipherSuites(t *testing.T) {
+	type args struct {
+		cs string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*ontology.CipherSuite
+	}{
+		{
+			name: "TLSCipherSuitesTLSAES128GCMSHA256",
+			args: args{
+				cs: string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 			},
-		}
+			want: []*ontology.CipherSuite{
+				{
+					SessionCipher: "AES-128-GCM",
+					MacAlgorithm:  "SHA-256",
+				},
+			},
+		},
+		{
+			name: "TLSCipherSuitesTLSECDHERSAWITHAES256GCMSHA384",
+			args: args{
+				cs: string(armappservice.TLSCipherSuitesTLSECDHERSAWITHAES256GCMSHA384),
+			},
+			want: []*ontology.CipherSuite{
+				{
+					AuthenticationMechanism: "RSA",
+					KeyExchangeAlgorithm:    "ECDHE",
+					SessionCipher:           "AES-256-GCM",
+					MacAlgorithm:            "SHA-384",
+				},
+			},
+		},
 	}
-
-	return backups
-}
-
-// backupPolicyName returns the backup policy name of a given Azure ID
-func backupPolicyName(id string) string {
-	// split according to "/"
-	s := strings.Split(id, "/")
-
-	// We cannot really return an error here, so we just return an empty string
-	if len(s) < 10 {
-		return ""
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tlsCipherSuites(tt.args.cs); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("tlsCipherSuites() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-	return s[10]
 }

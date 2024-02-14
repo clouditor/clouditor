@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +29,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
