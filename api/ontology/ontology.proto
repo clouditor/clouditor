@@ -47,10 +47,7 @@ service Ontology {
 
 message ListOntologyObjectsRequest {}
 message ListOntologyObjectsResponse {
-  ABAC abac = 1;
-  AccessRestriction access_restriction = 2;
-  Account account = 3;
-  ActivityLogging activity_logging = 4;
+  Resource resource = 1;
 }
 
 extend google.protobuf.MessageOptions {

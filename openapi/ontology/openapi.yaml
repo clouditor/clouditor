@@ -81,6 +81,637 @@ components:
                     items:
                         type: string
             description: ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AnomalyDetection:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                scope:
+                    type: string
+                applicationLogging:
+                    $ref: '#/components/schemas/ApplicationLogging'
+            description: |-
+                AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 Analyzes the activity of a NetworkService (which includes DatabaseServices).
+                 Scope contains the resource ID of the protected resource.
+        Application:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                programmingLanguage:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                translationUnits:
+                    type: array
+                    items:
+                        type: string
+                computeId:
+                    type: string
+                functionality:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Functionality'
+                parentId:
+                    type: string
+            description: |-
+                Application is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 This encapsulates the whole (source) code of an application.
+        ApplicationLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        AtRestEncryption:
+            type: object
+            properties:
+                customerKeyEncryption:
+                    $ref: '#/components/schemas/CustomerKeyEncryption'
+                managedKeyEncryption:
+                    $ref: '#/components/schemas/ManagedKeyEncryption'
+            description: AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        Authenticity:
+            type: object
+            properties:
+                certificateBasedAuthentication:
+                    $ref: '#/components/schemas/CertificateBasedAuthentication'
+                tokenBasedAuthentication:
+                    $ref: '#/components/schemas/TokenBasedAuthentication'
+                multiFactorAuthentiation:
+                    $ref: '#/components/schemas/MultiFactorAuthentiation'
+                noAuthentication:
+                    $ref: '#/components/schemas/NoAuthentication'
+                otpbasedAuthentication:
+                    $ref: '#/components/schemas/OTPBasedAuthentication'
+                passwordBasedAuthentication:
+                    $ref: '#/components/schemas/PasswordBasedAuthentication'
+                singleSignOn:
+                    $ref: '#/components/schemas/SingleSignOn'
+            description: Authenticity is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        Authorization:
+            type: object
+            properties:
+                abac:
+                    $ref: '#/components/schemas/ABAC'
+                l3Firewall:
+                    $ref: '#/components/schemas/L3Firewall'
+                webApplicationFirewall:
+                    $ref: '#/components/schemas/WebApplicationFirewall'
+                rbac:
+                    $ref: '#/components/schemas/RBAC'
+            description: Authorization is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        AutomaticUpdates:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                interval:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: The interval refers to the update interval in days.
+                securityOnly:
+                    type: boolean
+            description: |-
+                AutomaticUpdates is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 This feature is, e.g., available on some VM services to automatically update their software. It ensures that a resource is protected from tampering with its state.
+        Backup:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                interval:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: The interval refers to the update interval in days.
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                storageId:
+                    type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                Backup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 RetentionPeriod in hours
+        BlockStorage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                atRestEncryption:
+                    $ref: '#/components/schemas/AtRestEncryption'
+                backup:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Backup'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                immutability:
+                    $ref: '#/components/schemas/Immutability'
+                redundancy:
+                    $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: BlockStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        BootLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CertificateBasedAuthentication:
+            type: object
+            properties:
+                contextIsChecked:
+                    type: boolean
+                enabled:
+                    type: boolean
+            description: CertificateBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CipherSuite:
+            type: object
+            properties:
+                authenticationMechanism:
+                    type: string
+                    description: 'for example: RSA, ECDSA'
+                keyExchangeAlgorithm:
+                    type: string
+                macAlgorithm:
+                    type: string
+                    description: 'naming schema: SHA-256'
+                sessionCipher:
+                    type: string
+                    description: 'naming schema: AES-128-GCM'
+            description: CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Container:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                imageId:
+                    type: string
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: Container is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ContainerImage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                applicationId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: ContainerImage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ContainerOrchestration:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                managementUrl:
+                    type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                containerIds:
+                    type: array
+                    items:
+                        type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: ContainerOrchestration is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ContainerRegistry:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: ContainerRegistry is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CustomerKeyEncryption:
+            type: object
+            properties:
+                algorithm:
+                    type: string
+                enabled:
+                    type: boolean
+                keyUrl:
+                    type: string
+            description: CustomerKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DDoSProtection:
+            type: object
+            properties: {}
+            description: DDoSProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DatabaseConnect:
+            type: object
+            properties:
+                calls:
+                    type: array
+                    items:
+                        type: string
+                databaseServiceIds:
+                    type: array
+                    items:
+                        type: string
+                databaseStorageId:
+                    type: string
+            description: DatabaseConnect is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DatabaseQuery:
+            type: object
+            properties:
+                calls:
+                    type: array
+                    items:
+                        type: string
+                modify:
+                    type: boolean
+                databaseServiceIds:
+                    type: array
+                    items:
+                        type: string
+                databaseStorageId:
+                    type: string
+            description: DatabaseQuery is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DatabaseStorage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                atRestEncryption:
+                    $ref: '#/components/schemas/AtRestEncryption'
+                backup:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Backup'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                immutability:
+                    $ref: '#/components/schemas/Immutability'
+                redundancy:
+                    $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: |-
+                DatabaseStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 describes the actual database or a table in a database
+        DeviceProvisioningService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: DeviceProvisioningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Document:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                filename:
+                    type: string
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                parentId:
+                    type: string
+                securityFeature:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SecurityFeature'
+            description: Document is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        DocumentDatabaseService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                anomalyDetection:
+                    $ref: '#/components/schemas/AnomalyDetection'
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: DocumentDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        EncryptionInUse:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+            description: EncryptionInUse is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        FileStorage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                publicAccess:
+                    type: boolean
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                atRestEncryption:
+                    $ref: '#/components/schemas/AtRestEncryption'
+                backup:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Backup'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                immutability:
+                    $ref: '#/components/schemas/Immutability'
+                redundancy:
+                    $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: FileStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        FileStorageService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                FileStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 An file storage service represents the network service that is used to access a list of file storage shares. The storage itself is modelled as a FileStorage. The service has an http endpoint.
+        Function:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                runtimeLanguage:
+                    type: string
+                runtimeVersion:
+                    type: string
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: Function is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Functionality:
+            type: object
+            properties:
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                httpRequestHandler:
+                    $ref: '#/components/schemas/HttpRequestHandler'
+                databaseConnect:
+                    $ref: '#/components/schemas/DatabaseConnect'
+                databaseQuery:
+                    $ref: '#/components/schemas/DatabaseQuery'
+                httpRequest:
+                    $ref: '#/components/schemas/HttpRequest'
+                logOperation:
+                    $ref: '#/components/schemas/LogOperation'
+                objectStorageRequest:
+                    $ref: '#/components/schemas/ObjectStorageRequest'
+            description: Functionality is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
         GeoLocation:
             type: object
             properties:
@@ -95,6 +726,224 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        HttpEndpoint:
+            type: object
+            properties:
+                handler:
+                    type: string
+                method:
+                    type: string
+                path:
+                    type: string
+                url:
+                    type: string
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                HttpEndpoint is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 An HTTP endpoint can set the "proxyTarget" property, in case that is routed through a (reverse) proxy, e.g. a load balancer.
+                 Via the Authenticity relationship, the access type can be specified, e.g. public access (no authentication), password-based, etc.
+        HttpRequest:
+            type: object
+            properties:
+                call:
+                    type: string
+                reqBody:
+                    type: string
+                httpEndpoint:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/HttpEndpoint'
+            description: HttpRequest is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        HttpRequestHandler:
+            type: object
+            properties:
+                path:
+                    type: string
+                applicationId:
+                    type: string
+                httpEndpoint:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/HttpEndpoint'
+            description: HttpRequestHandler is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Identity:
+            type: object
+            properties:
+                activated:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                disablePasswordPolicy:
+                    type: boolean
+                enforceMfa:
+                    type: boolean
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                lastActivity:
+                    type: string
+                    format: date-time
+                loginDefenderEnabled:
+                    type: boolean
+                name:
+                    type: string
+                privileged:
+                    type: boolean
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                authorization:
+                    $ref: '#/components/schemas/Authorization'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: Identity is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Immutability:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+            description: Immutability is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Job:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: Job is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Key:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                enabled:
+                    type: boolean
+                expirationDate:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                isManaged:
+                    type: boolean
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                length:
+                    type: integer
+                    format: int32
+                name:
+                    type: string
+                numberOfUsages:
+                    type: integer
+                    format: int32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: Key is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        KeyValueDatabaseService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                anomalyDetection:
+                    $ref: '#/components/schemas/AnomalyDetection'
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: KeyValueDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        KeyVault:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                isActive:
+                    type: boolean
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                keyId:
+                    type: string
+                parentId:
+                    type: string
+            description: KeyVault is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         L3Firewall:
             type: object
             properties:
@@ -108,14 +957,668 @@ components:
         ListOntologyObjectsResponse:
             type: object
             properties:
-                abac:
-                    $ref: '#/components/schemas/ABAC'
+                resource:
+                    $ref: '#/components/schemas/Resource'
+        LoadBalancer:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                url:
+                    type: string
                 accessRestriction:
                     $ref: '#/components/schemas/AccessRestriction'
-                account:
-                    $ref: '#/components/schemas/Account'
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/HttpEndpoint'
+                networkServiceIds:
+                    type: array
+                    items:
+                        type: string
+                parentId:
+                    type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                LoadBalancer is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF
+        LogOperation:
+            type: object
+            properties:
+                call:
+                    type: string
+                value:
+                    type: string
+                logging:
+                    $ref: '#/components/schemas/Logging'
+            description: |-
+                LogOperation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 A LogOperation is used by an application
+        Logging:
+            type: object
+            properties:
                 activityLogging:
                     $ref: '#/components/schemas/ActivityLogging'
+                applicationLogging:
+                    $ref: '#/components/schemas/ApplicationLogging'
+                bootLogging:
+                    $ref: '#/components/schemas/BootLogging'
+                oslogging:
+                    $ref: '#/components/schemas/OSLogging'
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        LoggingService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                LoggingService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 A logging-as-a-service offering, e.g. for analyzing logs; has a Storage resource that stores the logs
+        MalwareProtection:
+            type: object
+            properties:
+                daysSinceActive:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                enabled:
+                    type: boolean
+                numberOfThreatsFound:
+                    type: integer
+                    format: int32
+                applicationLogging:
+                    $ref: '#/components/schemas/ApplicationLogging'
+            description: |-
+                MalwareProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 analyzes the activity within a Compute resource
+        ManagedKeyEncryption:
+            type: object
+            properties:
+                algorithm:
+                    type: string
+                enabled:
+                    type: boolean
+                keyUrl:
+                    type: string
+            description: ManagedKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MessagingHub:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: MessagingHub is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        MultiFactorAuthentiation:
+            type: object
+            properties:
+                contextIsChecked:
+                    type: boolean
+                authenticity:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Authenticity'
+            description: MultiFactorAuthentiation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        NetworkInterface:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                accessRestriction:
+                    $ref: '#/components/schemas/AccessRestriction'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                networkServiceId:
+                    type: string
+                parentId:
+                    type: string
+            description: NetworkInterface is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        NetworkSecurityGroup:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: NetworkSecurityGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        NoAuthentication:
+            type: object
+            properties:
+                contextIsChecked:
+                    type: boolean
+            description: NoAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        OSLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        OTPBasedAuthentication:
+            type: object
+            properties:
+                activated:
+                    type: boolean
+                contextIsChecked:
+                    type: boolean
+            description: OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ObjectStorage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                publicAccess:
+                    type: boolean
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                atRestEncryption:
+                    $ref: '#/components/schemas/AtRestEncryption'
+                backup:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Backup'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                immutability:
+                    $ref: '#/components/schemas/Immutability'
+                redundancy:
+                    $ref: '#/components/schemas/Redundancy'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: ObjectStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ObjectStorageRequest:
+            type: object
+            properties:
+                source:
+                    type: string
+                objectStorageIds:
+                    type: array
+                    items:
+                        type: string
+            description: ObjectStorageRequest is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ObjectStorageService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: |-
+                ObjectStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 An object storage service represents the network service that is used to access a list of object storage containers. The storage itself is modelled as a ObjectStorage. The service has an http endpoint.
+        PasswordBasedAuthentication:
+            type: object
+            properties:
+                activated:
+                    type: boolean
+                contextIsChecked:
+                    type: boolean
+            description: PasswordBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        PasswordPolicy:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RBAC:
+            type: object
+            properties:
+                broadAssignments:
+                    type: number
+                    description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                    format: float
+                mixedDuties:
+                    type: number
+                    description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                    format: float
+            description: RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Redundancy:
+            type: object
+            properties:
+                geo:
+                    type: boolean
+                local:
+                    type: boolean
+                zone:
+                    type: boolean
+            description: Redundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RelationalDatabaseService:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                ips:
+                    type: array
+                    items:
+                        type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                ports:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                anomalyDetection:
+                    $ref: '#/components/schemas/AnomalyDetection'
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                computeId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                httpEndpoint:
+                    $ref: '#/components/schemas/HttpEndpoint'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
+                parentId:
+                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+            description: RelationalDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Resource:
+            type: object
+            properties:
+                application:
+                    $ref: '#/components/schemas/Application'
+                account:
+                    $ref: '#/components/schemas/Account'
+                job:
+                    $ref: '#/components/schemas/Job'
+                workflow:
+                    $ref: '#/components/schemas/Workflow'
+                container:
+                    $ref: '#/components/schemas/Container'
+                function:
+                    $ref: '#/components/schemas/Function'
+                virtualMachine:
+                    $ref: '#/components/schemas/VirtualMachine'
+                webApp:
+                    $ref: '#/components/schemas/WebApp'
+                containerOrchestration:
+                    $ref: '#/components/schemas/ContainerOrchestration'
+                containerRegistry:
+                    $ref: '#/components/schemas/ContainerRegistry'
+                identity:
+                    $ref: '#/components/schemas/Identity'
+                roleAssignment:
+                    $ref: '#/components/schemas/RoleAssignment'
+                containerImage:
+                    $ref: '#/components/schemas/ContainerImage'
+                vmimage:
+                    $ref: '#/components/schemas/VMImage'
+                deviceProvisioningService:
+                    $ref: '#/components/schemas/DeviceProvisioningService'
+                messagingHub:
+                    $ref: '#/components/schemas/MessagingHub'
+                key:
+                    $ref: '#/components/schemas/Key'
+                keyVault:
+                    $ref: '#/components/schemas/KeyVault'
+                networkInterface:
+                    $ref: '#/components/schemas/NetworkInterface'
+                networkSecurityGroup:
+                    $ref: '#/components/schemas/NetworkSecurityGroup'
+                loadBalancer:
+                    $ref: '#/components/schemas/LoadBalancer'
+                loggingService:
+                    $ref: '#/components/schemas/LoggingService'
+                documentDatabaseService:
+                    $ref: '#/components/schemas/DocumentDatabaseService'
+                keyValueDatabaseService:
+                    $ref: '#/components/schemas/KeyValueDatabaseService'
+                relationalDatabaseService:
+                    $ref: '#/components/schemas/RelationalDatabaseService'
+                fileStorageService:
+                    $ref: '#/components/schemas/FileStorageService'
+                objectStorageService:
+                    $ref: '#/components/schemas/ObjectStorageService'
+                virtualNetwork:
+                    $ref: '#/components/schemas/VirtualNetwork'
+                virtualSubNetwork:
+                    $ref: '#/components/schemas/VirtualSubNetwork'
+                passwordPolicy:
+                    $ref: '#/components/schemas/PasswordPolicy'
+                resourceGroup:
+                    $ref: '#/components/schemas/ResourceGroup'
+                blockStorage:
+                    $ref: '#/components/schemas/BlockStorage'
+                databaseStorage:
+                    $ref: '#/components/schemas/DatabaseStorage'
+                fileStorage:
+                    $ref: '#/components/schemas/FileStorage'
+                objectStorage:
+                    $ref: '#/components/schemas/ObjectStorage'
+                document:
+                    $ref: '#/components/schemas/Document'
+            description: Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        ResourceGroup:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: ResourceGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        ResourceLogging:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                monitoringEnabled:
+                    type: boolean
+                retentionPeriod:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                securityAlertsEnabled:
+                    type: boolean
+                loggingServiceIds:
+                    type: array
+                    items:
+                        type: string
+            description: ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        RoleAssignment:
+            type: object
+            properties:
+                activated:
+                    type: boolean
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                authenticity:
+                    $ref: '#/components/schemas/Authenticity'
+                authorization:
+                    $ref: '#/components/schemas/Authorization'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: RoleAssignment is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        SecurityFeature:
+            type: object
+            properties:
+                anomalyDetection:
+                    $ref: '#/components/schemas/AnomalyDetection'
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
+                applicationLogging:
+                    $ref: '#/components/schemas/ApplicationLogging'
+                bootLogging:
+                    $ref: '#/components/schemas/BootLogging'
+                oslogging:
+                    $ref: '#/components/schemas/OSLogging'
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
+                certificateBasedAuthentication:
+                    $ref: '#/components/schemas/CertificateBasedAuthentication'
+                tokenBasedAuthentication:
+                    $ref: '#/components/schemas/TokenBasedAuthentication'
+                multiFactorAuthentiation:
+                    $ref: '#/components/schemas/MultiFactorAuthentiation'
+                noAuthentication:
+                    $ref: '#/components/schemas/NoAuthentication'
+                otpbasedAuthentication:
+                    $ref: '#/components/schemas/OTPBasedAuthentication'
+                passwordBasedAuthentication:
+                    $ref: '#/components/schemas/PasswordBasedAuthentication'
+                singleSignOn:
+                    $ref: '#/components/schemas/SingleSignOn'
+                abac:
+                    $ref: '#/components/schemas/ABAC'
+                l3Firewall:
+                    $ref: '#/components/schemas/L3Firewall'
+                webApplicationFirewall:
+                    $ref: '#/components/schemas/WebApplicationFirewall'
+                rbac:
+                    $ref: '#/components/schemas/RBAC'
+                backup:
+                    $ref: '#/components/schemas/Backup'
+                ddoSprotection:
+                    $ref: '#/components/schemas/DDoSProtection'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                redundancy:
+                    $ref: '#/components/schemas/Redundancy'
+                customerKeyEncryption:
+                    $ref: '#/components/schemas/CustomerKeyEncryption'
+                managedKeyEncryption:
+                    $ref: '#/components/schemas/ManagedKeyEncryption'
+                cipherSuite:
+                    $ref: '#/components/schemas/CipherSuite'
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                transportEncryption:
+                    $ref: '#/components/schemas/TransportEncryption'
+                automaticUpdates:
+                    $ref: '#/components/schemas/AutomaticUpdates'
+                immutability:
+                    $ref: '#/components/schemas/Immutability'
+            description: SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+        SingleSignOn:
+            type: object
+            properties:
+                contextIsChecked:
+                    type: boolean
+                enabled:
+                    type: boolean
+            description: SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         Status:
             type: object
             properties:
@@ -132,6 +1635,177 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        TokenBasedAuthentication:
+            type: object
+            properties:
+                contextIsChecked:
+                    type: boolean
+                enabled:
+                    type: boolean
+                enforced:
+                    type: boolean
+            description: TokenBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        TransportEncryption:
+            type: object
+            properties:
+                enabled:
+                    type: boolean
+                enforced:
+                    type: boolean
+                protocol:
+                    type: string
+                protocolVersion:
+                    type: number
+                    format: float
+                cipherSuite:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CipherSuite'
+            description: |-
+                TransportEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+                 enabled means the resource _can_ be reached via https, while enforced means it _can only_ be reached via https (or http traffic is redirected)
+        VMImage:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                applicationId:
+                    type: string
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: VMImage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        VirtualMachine:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
+                automaticUpdates:
+                    $ref: '#/components/schemas/AutomaticUpdates'
+                blockStorageIds:
+                    type: array
+                    items:
+                        type: string
+                bootLogging:
+                    $ref: '#/components/schemas/BootLogging'
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                malwareProtection:
+                    $ref: '#/components/schemas/MalwareProtection'
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                oslogging:
+                    $ref: '#/components/schemas/OSLogging'
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: VirtualMachine is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        VirtualNetwork:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: VirtualNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        VirtualSubNetwork:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: VirtualSubNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        WebApp:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                encryptionInUse:
+                    $ref: '#/components/schemas/EncryptionInUse'
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                networkInterfaceIds:
+                    type: array
+                    items:
+                        type: string
+                parentId:
+                    type: string
+                resourceLogging:
+                    $ref: '#/components/schemas/ResourceLogging'
+            description: WebApp is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         WebApplicationFirewall:
             type: object
             properties:
@@ -140,5 +1814,27 @@ components:
             description: |-
                 WebApplicationFirewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  A WAF is a L7 firewall that includes L3 capabilities
+        Workflow:
+            type: object
+            properties:
+                creationTime:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                labels:
+                    type: object
+                    additionalProperties:
+                        type: string
+                name:
+                    type: string
+                raw:
+                    type: string
+                    description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                geoLocation:
+                    $ref: '#/components/schemas/GeoLocation'
+                parentId:
+                    type: string
+            description: Workflow is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 tags:
     - name: Ontology
