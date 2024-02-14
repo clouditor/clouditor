@@ -38,7 +38,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "clouditor.io/clouditor/api/ontology";
 
 // Provides the Ontology within the Clouditor architecture
-service Ontology {
+service OntologyService {
   // List Ontology objects
   rpc ListOntologyObjects(ListOntologyObjectsRequest) returns (ListOntologyObjectsResponse) {
     option (google.api.http) = {post: "/v1/ontology/ontology_objects"};

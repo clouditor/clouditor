@@ -3,16 +3,16 @@
 
 openapi: 3.0.3
 info:
-    title: Ontology API
+    title: OntologyService API
     description: Provides the Ontology within the Clouditor architecture
     version: 0.0.1
 paths:
     /v1/ontology/ontology_objects:
         post:
             tags:
-                - Ontology
+                - OntologyService
             description: List Ontology objects
-            operationId: Ontology_ListOntologyObjects
+            operationId: OntologyService_ListOntologyObjects
             responses:
                 "200":
                     description: OK
@@ -1837,4 +1837,4 @@ components:
                     type: string
             description: Workflow is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 tags:
-    - name: Ontology
+    - name: OntologyService
