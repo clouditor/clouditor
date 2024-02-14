@@ -890,7 +890,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 						ProtocolVersion: 1.2,
 					},
 					AnomalyDetection: []*ontology.AnomalyDetection{
-						&ontology.AnomalyDetection{
+						{
 							Enabled: true,
 							Scope:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
 						},

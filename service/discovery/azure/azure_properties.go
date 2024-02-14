@@ -26,6 +26,7 @@
 package azure
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -78,29 +79,77 @@ func tlsVersion(version *string) float32 {
 	}
 }
 
+// tlsCipherSuites parses TLS cipher suites. Examples are TLS_AES_128_GCM_SHA256 or
+// TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384.
 func tlsCipherSuites(cs string) []*ontology.CipherSuite {
-	// TODO(oxisto): Implement this correctly
-	// hack hack
-	if cs == "TLS_AES_128_GCM_SHA256" {
-		return []*ontology.CipherSuite{
-			{
-				SessionCipher: "AES-128-GCM",
-				MacAlgorithm:  "SHA-256",
-			},
-		}
-	}
-	if cs == "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" {
-		return []*ontology.CipherSuite{
-			{
-				AuthenticationMechanism: "RSA",
-				KeyExchangeAlgorithm:    "ECDHE",
-				SessionCipher:           "AES-256-GCM",
-				MacAlgorithm:            "SHA-384",
-			},
-		}
-	} else {
+	var (
+		parts  []string
+		i      int
+		cipher ontology.CipherSuite
+	)
+
+	parts = strings.Split(cs, "_")
+
+	if parts[i] != "TLS" {
 		return nil
 	}
+
+	// Next is either a key exchange or directly the session cipher
+	i++
+	if parts[i] == "ECDHE" {
+		cipher.KeyExchangeAlgorithm = parts[i]
+	} else {
+		i--
+		goto cipher
+	}
+
+	i++
+	if slices.Contains([]string{"RSA", "ECDSA"}, parts[i]) {
+		cipher.AuthenticationMechanism = parts[i]
+	} else {
+		goto invalid
+	}
+
+	i++
+	if parts[i] != "WITH" {
+		goto invalid
+	}
+
+cipher:
+	i++
+	if parts[i] == "AES" {
+		cipher.SessionCipher = parts[i]
+	} else {
+		goto invalid
+	}
+
+	i++
+	if slices.Contains([]string{"128", "256"}, parts[i]) {
+		cipher.SessionCipher += "-" + parts[i]
+	} else {
+		goto invalid
+	}
+
+	i++
+	if slices.Contains([]string{"CBC", "GCM"}, parts[i]) {
+		cipher.SessionCipher += "-" + parts[i]
+	} else {
+		goto invalid
+	}
+
+	i++
+	if parts[i] == "SHA256" {
+		cipher.MacAlgorithm = "SHA-256"
+	} else if parts[i] == "SHA384" {
+		cipher.MacAlgorithm = "SHA-384"
+	} else {
+		goto invalid
+	}
+
+	return []*ontology.CipherSuite{&cipher}
+
+invalid:
+	return nil
 }
 
 // generalizeURL generalizes the URL, because the URL depends on the storage type
