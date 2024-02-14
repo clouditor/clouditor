@@ -89,7 +89,7 @@ func ResourceMap(r IsResource) (props map[string]any, err error) {
 	)
 
 	opts = protojson.MarshalOptions{
-		EmitDefaultValues: true,
+		EmitUnpopulated: true,
 	}
 
 	b, err = opts.Marshal(r)
