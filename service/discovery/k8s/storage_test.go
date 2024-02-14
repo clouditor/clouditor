@@ -1,5 +1,3 @@
-//go:build exclude
-
 // Copyright 2022 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,8 +31,9 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -127,24 +126,15 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 	assert.NotNil(t, list)
 
 	// Check persistentVolume
-	volume, ok := list[0].(*voc.BlockStorage)
+	volume, ok := list[0].(*ontology.BlockStorage)
 
-	// Create exptected voc.BlockStorage
-	expectedVolume := &voc.BlockStorage{
-		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(volumeUID),
-				ServiceID:    testdata.MockCloudServiceID1,
-				Name:         volumeName,
-				CreationTime: volume.CreationTime,
-				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "",
-				},
-				Labels: volumeLabel,
-			},
-			AtRestEncryption: &voc.AtRestEncryption{},
-		},
+	// Create expected ontology.BlockStorage
+	expectedVolume := &ontology.BlockStorage{
+		Id:               volumeUID,
+		Name:             volumeName,
+		CreationTime:     volume.CreationTime,
+		Labels:           volumeLabel,
+		AtRestEncryption: &ontology.AtRestEncryption{},
 	}
 
 	// Delete raw. We have to delete it, because of the creation time included in the raw field.
@@ -152,5 +142,5 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 	volume.Raw = ""
 
 	assert.True(t, ok)
-	assert.Equal(t, expectedVolume, volume)
+	prototest.Equal(t, expectedVolume, volume)
 }

@@ -237,23 +237,24 @@ message Resource {
     KeyVault key_vault = 18;
     NetworkInterface network_interface = 19;
     NetworkSecurityGroup network_security_group = 20;
-    LoadBalancer load_balancer = 21;
-    LoggingService logging_service = 22;
-    DocumentDatabaseService document_database_service = 23;
-    KeyValueDatabaseService key_value_database_service = 24;
-    MultiModalDatabaseService multi_modal_database_service = 25;
-    RelationalDatabaseService relational_database_service = 26;
-    FileStorageService file_storage_service = 27;
-    ObjectStorageService object_storage_service = 28;
-    VirtualNetwork virtual_network = 29;
-    VirtualSubNetwork virtual_sub_network = 30;
-    PasswordPolicy password_policy = 31;
-    ResourceGroup resource_group = 32;
-    BlockStorage block_storage = 33;
-    DatabaseStorage database_storage = 34;
-    FileStorage file_storage = 35;
-    ObjectStorage object_storage = 36;
-    Document document = 37;
+    GenericNetworkService generic_network_service = 21;
+    LoadBalancer load_balancer = 22;
+    LoggingService logging_service = 23;
+    DocumentDatabaseService document_database_service = 24;
+    KeyValueDatabaseService key_value_database_service = 25;
+    MultiModalDatabaseService multi_modal_database_service = 26;
+    RelationalDatabaseService relational_database_service = 27;
+    FileStorageService file_storage_service = 28;
+    ObjectStorageService object_storage_service = 29;
+    VirtualNetwork virtual_network = 30;
+    VirtualSubNetwork virtual_sub_network = 31;
+    PasswordPolicy password_policy = 32;
+    ResourceGroup resource_group = 33;
+    BlockStorage block_storage = 34;
+    DatabaseStorage database_storage = 35;
+    FileStorage file_storage = 36;
+    ObjectStorage object_storage = 37;
+    Document document = 38;
   }
 }
 
@@ -347,22 +348,23 @@ message CloudResource {
     KeyVault key_vault = 17;
     NetworkInterface network_interface = 18;
     NetworkSecurityGroup network_security_group = 19;
-    LoadBalancer load_balancer = 20;
-    LoggingService logging_service = 21;
-    DocumentDatabaseService document_database_service = 22;
-    KeyValueDatabaseService key_value_database_service = 23;
-    MultiModalDatabaseService multi_modal_database_service = 24;
-    RelationalDatabaseService relational_database_service = 25;
-    FileStorageService file_storage_service = 26;
-    ObjectStorageService object_storage_service = 27;
-    VirtualNetwork virtual_network = 28;
-    VirtualSubNetwork virtual_sub_network = 29;
-    PasswordPolicy password_policy = 30;
-    ResourceGroup resource_group = 31;
-    BlockStorage block_storage = 32;
-    DatabaseStorage database_storage = 33;
-    FileStorage file_storage = 34;
-    ObjectStorage object_storage = 35;
+    GenericNetworkService generic_network_service = 20;
+    LoadBalancer load_balancer = 21;
+    LoggingService logging_service = 22;
+    DocumentDatabaseService document_database_service = 23;
+    KeyValueDatabaseService key_value_database_service = 24;
+    MultiModalDatabaseService multi_modal_database_service = 25;
+    RelationalDatabaseService relational_database_service = 26;
+    FileStorageService file_storage_service = 27;
+    ObjectStorageService object_storage_service = 28;
+    VirtualNetwork virtual_network = 29;
+    VirtualSubNetwork virtual_sub_network = 30;
+    PasswordPolicy password_policy = 31;
+    ResourceGroup resource_group = 32;
+    BlockStorage block_storage = 33;
+    DatabaseStorage database_storage = 34;
+    FileStorage file_storage = 35;
+    ObjectStorage object_storage = 36;
   }
 }
 
@@ -725,6 +727,30 @@ message Functionality {
     LogOperation log_operation = 7;
     ObjectStorageRequest object_storage_request = 8;
   }
+}
+
+// GenericNetworkService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// A generic network service.
+message GenericNetworkService {
+  option (resource_type_name) = "GenericNetworkService";
+  option (resource_type_name) = "NetworkService";
+  option (resource_type_name) = "Networking";
+  option (resource_type_name) = "CloudResource";
+  option (resource_type_name) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 1;
+  string id = 2 [(buf.validate.field).required = true];
+  repeated string ips = 3;
+  map<string, string> labels = 4;
+  string name = 5 [(buf.validate.field).required = true];
+  repeated uint32 ports = 6;
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  Authenticity authenticity = 8;
+  optional string compute_id = 9;
+  GeoLocation geo_location = 10;
+  optional string parent_id = 11;
+  TransportEncryption transport_encryption = 12;
 }
 
 // GeoLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1165,14 +1191,15 @@ message NetworkSecurityGroup {
 // A NetworkService is an application (on the network layer) running on a Compute resource. It provides access to a resource
 message NetworkService {
   oneof type {
-    LoadBalancer load_balancer = 1;
-    LoggingService logging_service = 2;
-    DocumentDatabaseService document_database_service = 3;
-    KeyValueDatabaseService key_value_database_service = 4;
-    MultiModalDatabaseService multi_modal_database_service = 5;
-    RelationalDatabaseService relational_database_service = 6;
-    FileStorageService file_storage_service = 7;
-    ObjectStorageService object_storage_service = 8;
+    GenericNetworkService generic_network_service = 1;
+    LoadBalancer load_balancer = 2;
+    LoggingService logging_service = 3;
+    DocumentDatabaseService document_database_service = 4;
+    KeyValueDatabaseService key_value_database_service = 5;
+    MultiModalDatabaseService multi_modal_database_service = 6;
+    RelationalDatabaseService relational_database_service = 7;
+    FileStorageService file_storage_service = 8;
+    ObjectStorageService object_storage_service = 9;
   }
 }
 
@@ -1181,16 +1208,17 @@ message Networking {
   oneof type {
     NetworkInterface network_interface = 1;
     NetworkSecurityGroup network_security_group = 2;
-    LoadBalancer load_balancer = 3;
-    LoggingService logging_service = 4;
-    DocumentDatabaseService document_database_service = 5;
-    KeyValueDatabaseService key_value_database_service = 6;
-    MultiModalDatabaseService multi_modal_database_service = 7;
-    RelationalDatabaseService relational_database_service = 8;
-    FileStorageService file_storage_service = 9;
-    ObjectStorageService object_storage_service = 10;
-    VirtualNetwork virtual_network = 11;
-    VirtualSubNetwork virtual_sub_network = 12;
+    GenericNetworkService generic_network_service = 3;
+    LoadBalancer load_balancer = 4;
+    LoggingService logging_service = 5;
+    DocumentDatabaseService document_database_service = 6;
+    KeyValueDatabaseService key_value_database_service = 7;
+    MultiModalDatabaseService multi_modal_database_service = 8;
+    RelationalDatabaseService relational_database_service = 9;
+    FileStorageService file_storage_service = 10;
+    ObjectStorageService object_storage_service = 11;
+    VirtualNetwork virtual_network = 12;
+    VirtualSubNetwork virtual_sub_network = 13;
   }
 }
 

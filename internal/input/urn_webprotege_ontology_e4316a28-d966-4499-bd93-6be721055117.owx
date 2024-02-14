@@ -153,6 +153,9 @@
         <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/GenericNetworkService"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
     </Declaration>
     <Declaration>
@@ -1328,6 +1331,10 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
         <Class abbreviatedIRI="owl:Thing"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/GenericNetworkService"/>
+        <Class IRI="http://graph.clouditor.io/classes/NetworkService"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
@@ -2895,6 +2902,16 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/Functionality</IRI>
         <Literal xml:lang="english">Functionality</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/GenericNetworkService</IRI>
+        <Literal>A generic network service.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/GenericNetworkService</IRI>
+        <Literal>GenericNetworkService</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
