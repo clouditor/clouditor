@@ -41,6 +41,9 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
 	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/service/discovery/aws"
+	"clouditor.io/clouditor/service/discovery/azure"
+	"clouditor.io/clouditor/service/discovery/k8s"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
@@ -223,7 +226,11 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
-	// var opts = []azure.DiscoveryOption{}
+	var (
+		opts       = []azure.DiscoveryOption{}
+		discoverer []discovery.Discoverer
+	)
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -240,46 +247,41 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	log.Infof("Starting discovery...")
 	svc.scheduler.TagsUnique()
 
-	var discoverer []discovery.Discoverer
-
 	// Configure discoverers for given providers
 	for _, provider := range svc.providers {
 		switch {
 		case provider == ProviderAzure:
-		// 	authorizer, err := azure.NewAuthorizer()
-		// 	if err != nil {
-		// 		log.Errorf("Could not authenticate to Azure: %v", err)
-		// 		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
-		// 	}
-
-		// 	// Add authorizer and cloudServiceID
-		// 	opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
-
-		// 	// Check if resource group is given and append to discoverer
-		// 	if req.GetResourceGroup() != "" {
-		// 		opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
-		// 	}
-
-		// 	discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
+			authorizer, err := azure.NewAuthorizer()
+			if err != nil {
+				log.Errorf("Could not authenticate to Azure: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
+			}
+			// Add authorizer and cloudServiceID
+			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
+			// Check if resource group is given and append to discoverer
+			if req.GetResourceGroup() != "" {
+				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
+			}
+			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
-		// 	k8sClient, err := k8s.AuthFromKubeConfig()
-		// 	if err != nil {
-		// 		log.Errorf("Could not authenticate to Kubernetes: %v", err)
-		// 		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
-		// 	}
-		// 	discoverer = append(discoverer,
-		// 		k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
-		// 		k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
-		// 		k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
+			k8sClient, err := k8s.AuthFromKubeConfig()
+			if err != nil {
+				log.Errorf("Could not authenticate to Kubernetes: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
+			}
+			discoverer = append(discoverer,
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
 		case provider == ProviderAWS:
-		// 	awsClient, err := aws.NewClient()
-		// 	if err != nil {
-		// 		log.Errorf("Could not authenticate to AWS: %v", err)
-		// 		return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
-		// 	}
-		// 	discoverer = append(discoverer,
-		// 		aws.NewAwsStorageDiscovery(awsClient, svc.csID),
-		// 		aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+			awsClient, err := aws.NewClient()
+			if err != nil {
+				log.Errorf("Could not authenticate to AWS: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
+			}
+			discoverer = append(discoverer,
+				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

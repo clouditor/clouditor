@@ -45,11 +45,14 @@ import (
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/service"
 
+	"github.com/go-co-op/gocron"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -405,8 +408,6 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-// TODO(oxisto): Re-enable this test once Azure and K8S is migrated
-/*
 func TestService_Start(t *testing.T) {
 	type envVariable struct {
 		hasEnvVariable   bool
@@ -681,4 +682,3 @@ func TestService_Start(t *testing.T) {
 		})
 	}
 }
-*/
