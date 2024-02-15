@@ -44,6 +44,7 @@ func getName(id string) string {
 	if id == "" {
 		return ""
 	}
+
 	return strings.Split(id, "/")[8]
 }
 

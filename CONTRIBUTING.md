@@ -61,3 +61,7 @@ This makes use of the [`cmp`](https://pkg.go.dev/github.com/google/go-cmp/cmp) p
 https://pkg.go.dev/github.com/google/go-cmp as well as a special package
 [`protocmp`](https://pkg.go.dev/google.golang.org/protobuf/testing/protocmp) which is part of Go's protobuf
 implementation.
+
+For convenience, we wrapped the above construct in our own function
+`prototest.Equal` (and `prototest.EqualSlice` for slices) in the
+`internal/testutil/prototest` package.

@@ -386,7 +386,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 
 	// initialize defender client
 	if err := d.initDefenderClient(); err != nil {
-		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+		return nil, err
 	}
 
 	// List all pricings to get the enabled Defender for X

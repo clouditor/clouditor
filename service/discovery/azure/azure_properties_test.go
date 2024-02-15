@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/ontology"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 )
 
@@ -67,6 +68,55 @@ func Test_tlsCipherSuites(t *testing.T) {
 					MacAlgorithm:            "SHA-384",
 				},
 			},
+		},
+		{
+			name: "not a TLS cipher",
+			args: args{
+				cs: "NOTTLS_AES_256",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid authentication",
+			args: args{
+				cs: "TLS_ECDHE_RSB_WITH_AES_256_GCM_SHA384",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid authentication",
+			args: args{
+				cs: "TLS_ECDHE_RSA_WITHOUT_AES_256_GCM_SHA384",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid session cipher algorithm",
+			args: args{
+				cs: "TLS_ECDHE_RSA_WITH_AIS_256_GCM_SHA384",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid session cipher key length",
+			args: args{
+				cs: "TLS_ECDHE_RSA_WITH_AES_257_GCM_SHA384",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid session cipher mode",
+			args: args{
+				cs: "TLS_ECDHE_RSA_WITH_AES_256_FCM_SHA384",
+			},
+			want: nil,
+		},
+		{
+			name: "invalid mac algorithm",
+			args: args{
+				cs: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHO384",
+			},
+			want: nil,
 		},
 	}
 	for _, tt := range tests {

@@ -1,7 +1,10 @@
 {
-    "protoc": {
-        "options": [
-            "--proto_path=third_party",
-        ]
-    }
+  "protoc": {
+    "options": ["--proto_path=third_party"]
+  },
+  "cSpell.words": [
+    "protocmp",
+    "prototest",
+    "testutil"
+  ]
 }
