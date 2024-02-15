@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/prototest"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -196,6 +197,60 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 			if tt.want != nil {
 				tt.want(t, got)
 			}
+		})
+	}
+}
+
+func Test_k8sComputeDiscovery_handlePodVolume(t *testing.T) {
+	type fields struct {
+		k8sDiscovery k8sDiscovery
+	}
+	type args struct {
+		pod *corev1.Pod
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []ontology.IsResource
+	}{
+		{
+			name:   "file storage",
+			fields: fields{},
+			args: args{
+				pod: &corev1.Pod{
+					Spec: corev1.PodSpec{
+						Volumes: []corev1.Volume{
+							{
+								Name: "test",
+								VolumeSource: corev1.VolumeSource{
+									HostPath: &corev1.HostPathVolumeSource{
+										Path: "/tmp",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []ontology.IsResource{
+				&ontology.FileStorage{
+					Id:               "test",
+					Name:             "test",
+					AtRestEncryption: &ontology.AtRestEncryption{},
+					Raw:              `{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &k8sComputeDiscovery{
+				k8sDiscovery: tt.fields.k8sDiscovery,
+			}
+
+			got := d.handlePodVolume(tt.args.pod)
+			prototest.EqualSlice(t, tt.want, got)
 		})
 	}
 }

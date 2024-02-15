@@ -111,6 +111,7 @@ func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) ontology.IsResou
 
 		return v
 	} else if vs.AzureFile != nil || vs.NFS != nil || vs.HostPath != nil {
+		// TODO(oxisto): Does this even make sense? The volume is always a block storage, but the underlying storage might be a file storage?
 		v := &ontology.FileStorage{
 			Id:               string(pv.UID),
 			Name:             pv.Name,

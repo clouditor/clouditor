@@ -30,7 +30,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/ontology"
-
+	"clouditor.io/clouditor/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 )
 
@@ -123,6 +123,32 @@ func Test_tlsCipherSuites(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tlsCipherSuites(tt.args.cs); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("tlsCipherSuites() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_tlsVersion(t *testing.T) {
+	type args struct {
+		version *string
+	}
+	tests := []struct {
+		name string
+		args args
+		want float32
+	}{
+		{
+			name: "1_3",
+			args: args{
+				version: util.Ref("1_3"),
+			},
+			want: 1.3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tlsVersion(tt.args.version); got != tt.want {
+				t.Errorf("tlsVersion() = %v, want %v", got, tt.want)
 			}
 		})
 	}

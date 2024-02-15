@@ -58,7 +58,7 @@ func accountName(id string) string {
 	return splitName[8]
 }
 
-// tlsVersion returns Clouditor's TLS version constants for the given TLS version
+// tlsVersion returns a float value for the given TLS version string
 func tlsVersion(version *string) float32 {
 	if version == nil {
 		return 0
