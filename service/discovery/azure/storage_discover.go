@@ -93,8 +93,7 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 
 	// initialize Mongo DB resources client
 	if err = d.initMongoDResourcesBClient(); err != nil {
-		log.Errorf("error initializing Mongo DB resource client: %v", err)
-		return list
+		return nil
 	}
 
 	// Discover Mongo DB databases
@@ -174,8 +173,7 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 
 	// initialize SQL databases client
 	if err = d.initDatabasesClient(); err != nil {
-		log.Errorf("error initializing database client: %v", err)
-		return list, anomalyDetectionList
+		return list, nil
 	}
 
 	// Get databases for given server

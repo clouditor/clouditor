@@ -37,7 +37,6 @@ import (
 func (d *azureDiscovery) nsgFirewallEnabled(ni *armnetwork.Interface) bool {
 	// initialize network interfaces client
 	if err := d.initNetworkSecurityGroupClient(); err != nil {
-		log.Error(err)
 		return false
 	}
 
