@@ -107,7 +107,7 @@ func TestToDiscoveryResource(t *testing.T) {
 				resource: &ontology.BlockStorage{
 					Id:   "my-block-storage",
 					Name: "My Block Storage",
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:   true,
 							StorageId: util.Ref("my-offsite-backup-id"),
@@ -123,7 +123,7 @@ func TestToDiscoveryResource(t *testing.T) {
 				Properties: prototest.NewAny(t, &ontology.BlockStorage{
 					Id:   "my-block-storage",
 					Name: "My Block Storage",
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:   true,
 							StorageId: util.Ref("my-offsite-backup-id"),

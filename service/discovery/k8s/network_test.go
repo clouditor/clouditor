@@ -153,13 +153,13 @@ func TestListIngresses(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.Id))
-	assert.Equal(t, "http://myhost/test", lb.HttpEndpoint[0].Url)
+	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
 
 	lb, ok = list[2].(*ontology.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
 	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.Id))
-	assert.Equal(t, "https://myhost/test", lb.HttpEndpoint[0].Url)
-	assert.NotNil(t, (lb.HttpEndpoint)[0].TransportEncryption)
+	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
+	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }

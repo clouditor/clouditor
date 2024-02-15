@@ -648,7 +648,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),
 							},
-							Oslogging: &ontology.OSLogging{
+							OsLogging: &ontology.OSLogging{
 								LoggingServiceIds: []string{"SomeResourceId2"},
 								Enabled:           true,
 								RetentionPeriod:   durationpb.New(time.Hour * 24 * 36),

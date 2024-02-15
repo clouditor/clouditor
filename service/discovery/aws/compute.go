@@ -226,7 +226,7 @@ func (d *computeDiscovery) discoverVirtualMachines() ([]*ontology.VirtualMachine
 				NetworkInterfaceIds: d.getNetworkInterfacesOfVM(vm),
 				BlockStorageIds:     d.mapBlockStorageIDsOfVM(vm),
 				BootLogging:         d.getBootLog(vm),
-				Oslogging:           d.getOSLog(vm),
+				OsLogging:           d.getOSLog(vm),
 				Raw:                 discovery.Raw(&reservation),
 			})
 		}

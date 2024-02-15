@@ -68,7 +68,7 @@ func Related(r IsResource) []Relationship {
 func ResourceTypes(r IsResource) []string {
 	opts := r.ProtoReflect().Descriptor().Options()
 
-	x := proto.GetExtension(opts, E_ResourceTypeName)
+	x := proto.GetExtension(opts, E_ResourceTypeNames)
 	if types, ok := x.([]string); ok {
 		return types
 	}

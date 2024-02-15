@@ -135,7 +135,7 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]ontology.IsRe
 			Protocol:        constants.TLS,
 			ProtocolVersion: tlsVersion((*string)(server.Properties.MinimalTLSVersion)),
 		},
-		AnomalyDetection: anomalyDetectionList,
+		AnomalyDetections: anomalyDetectionList,
 	}
 
 	// Add SQL database service
@@ -279,7 +279,7 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 			MonitoringEnabled:     monitoringLogDataEnabled,
 			SecurityAlertsEnabled: securityAlertsEnabled,
 		},
-		Backup:       backups,
+		Backups:      backups,
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }

@@ -193,7 +193,7 @@ func Test_regoEval_Eval(t *testing.T) {
 						Enabled:           true,
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
 					},
-					Oslogging: &ontology.OSLogging{
+					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId2"},
 						Enabled:           true,
 						RetentionPeriod:   durationpb.New(36 * time.Hour * 24),
@@ -244,8 +244,7 @@ func Test_regoEval_Eval(t *testing.T) {
 						Enabled:           false,
 						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),
 					},
-					// TODO(oxisto): Naming -> OsLogging
-					Oslogging: &ontology.OSLogging{
+					OsLogging: &ontology.OSLogging{
 						LoggingServiceIds: []string{"SomeResourceId3"},
 						Enabled:           false,
 						RetentionPeriod:   durationpb.New(1 * time.Hour * 24),

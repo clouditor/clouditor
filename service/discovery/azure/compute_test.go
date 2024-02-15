@@ -417,7 +417,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
 					},
-					Oslogging: &ontology.OSLogging{
+					OsLogging: &ontology.OSLogging{
 						Enabled:           true,
 						RetentionPeriod:   durationpb.New(0),
 						LoggingServiceIds: []string{},
@@ -450,7 +450,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
 					},
-					Oslogging: &ontology.OSLogging{
+					OsLogging: &ontology.OSLogging{
 						Enabled:           true,
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
@@ -483,7 +483,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
 					},
-					Oslogging: &ontology.OSLogging{
+					OsLogging: &ontology.OSLogging{
 						Enabled:           false,
 						LoggingServiceIds: []string{},
 						RetentionPeriod:   durationpb.New(0),
@@ -614,7 +614,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 					MonitoringEnabled:     true,
 					SecurityAlertsEnabled: true,
 				},
-				Oslogging: &ontology.OSLogging{
+				OsLogging: &ontology.OSLogging{
 					Enabled:               false,
 					LoggingServiceIds:     []string{},
 					RetentionPeriod:       durationpb.New(0),
@@ -865,7 +865,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 						},
 					},
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:         false,
 							RetentionPeriod: nil,
@@ -892,7 +892,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 						},
 					},
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:         false,
 							RetentionPeriod: nil,
@@ -918,7 +918,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 							},
 						},
 					},
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:         false,
 							RetentionPeriod: nil,
@@ -1050,7 +1050,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 						},
 					},
 				},
-				Backup: []*ontology.Backup{
+				Backups: []*ontology.Backup{
 					{
 						Enabled:         false,
 						RetentionPeriod: nil,
@@ -1613,7 +1613,7 @@ func Test_getTransportEncryption(t *testing.T) {
 				Enabled:         true,
 				Protocol:        constants.TLS,
 				ProtocolVersion: 1.0,
-				CipherSuite: []*ontology.CipherSuite{
+				CipherSuites: []*ontology.CipherSuite{
 					{
 						SessionCipher: "AES-128-GCM",
 						MacAlgorithm:  "SHA-256",
@@ -1642,7 +1642,7 @@ func Test_getTransportEncryption(t *testing.T) {
 				Enabled:         true,
 				Protocol:        constants.TLS,
 				ProtocolVersion: 1.1,
-				CipherSuite: []*ontology.CipherSuite{
+				CipherSuites: []*ontology.CipherSuite{
 					{
 						SessionCipher: "AES-128-GCM",
 						MacAlgorithm:  "SHA-256",
@@ -1671,7 +1671,7 @@ func Test_getTransportEncryption(t *testing.T) {
 				Enabled:         true,
 				Protocol:        constants.TLS,
 				ProtocolVersion: 1.2,
-				CipherSuite: []*ontology.CipherSuite{
+				CipherSuites: []*ontology.CipherSuite{
 					{
 						SessionCipher: "AES-128-GCM",
 						MacAlgorithm:  "SHA-256",

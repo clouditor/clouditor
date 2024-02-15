@@ -537,7 +537,7 @@ func Test_handleObjectStorage(t *testing.T) {
 					MonitoringEnabled:     false,
 					SecurityAlertsEnabled: false,
 				},
-				Backup: []*ontology.Backup{
+				Backups: []*ontology.Backup{
 					{
 						Enabled:         false,
 						RetentionPeriod: nil,
@@ -763,7 +763,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 						MonitoringEnabled:     false,
 						SecurityAlertsEnabled: false,
 					},
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:         false,
 							RetentionPeriod: nil,
@@ -795,7 +795,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 						MonitoringEnabled:     false,
 						SecurityAlertsEnabled: false,
 					},
-					Backup: []*ontology.Backup{
+					Backups: []*ontology.Backup{
 						{
 							Enabled:         false,
 							RetentionPeriod: nil,
@@ -889,7 +889,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 						Protocol:        constants.TLS,
 						ProtocolVersion: 1.2,
 					},
-					AnomalyDetection: []*ontology.AnomalyDetection{
+					AnomalyDetections: []*ontology.AnomalyDetection{
 						{
 							Enabled: true,
 							Scope:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",

@@ -95,7 +95,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 			MonitoringEnabled:     monitoringLogDataEnabled,
 			SecurityAlertsEnabled: securityAlertsEnabled,
 		},
-		Oslogging: &ontology.OSLogging{
+		OsLogging: &ontology.OSLogging{
 			Enabled:               osLoggingEnabled,
 			RetentionPeriod:       durationpb.New(0),
 			LoggingServiceIds:     []string{}, // TODO(all): TBD
@@ -162,7 +162,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 		ParentId:         resourceGroupID(disk.ID),
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
-		Backup:           backups,
+		Backups:          backups,
 	}, nil
 }
 

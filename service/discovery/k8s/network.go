@@ -142,7 +142,7 @@ func (d *k8sNetworkDiscovery) handleIngress(ingress *v1.Ingress) ontology.IsReso
 				TransportEncryption: te,
 			}
 
-			lb.HttpEndpoint = append(lb.HttpEndpoint, http)
+			lb.HttpEndpoints = append(lb.HttpEndpoints, http)
 		}
 	}
 

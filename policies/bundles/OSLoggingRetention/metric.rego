@@ -2,10 +2,7 @@ package clouditor.metrics.os_logging_retention
 
 import data.clouditor.compare
 
-# spelling is incorrect, need to change after we fix it in owl2proto
-import input.oslogging as logging
-
-#import input.osLogging as logging
+import input.osLogging as logging
 
 default applicable = false
 

@@ -205,7 +205,7 @@ func getTransportEncryption(siteProperties *armappservice.SiteProperties, config
 			Enforced:        util.Deref(siteProperties.HTTPSOnly),
 			Protocol:        constants.TLS,
 			ProtocolVersion: tlsVersion,
-			CipherSuite:     tlsCipherSuites(string(util.Deref(config.Properties.MinTLSCipherSuite))), // MinTLSCipherSuite is a new property and currently not filled from Azure side
+			CipherSuites:    tlsCipherSuites(string(util.Deref(config.Properties.MinTLSCipherSuite))), // MinTLSCipherSuite is a new property and currently not filled from Azure side
 			Enabled:         true,
 		}
 	} else {

@@ -108,7 +108,7 @@ func TestResourceMap(t *testing.T) {
 				"name":                "My VM",
 				"networkInterfaceIds": []any{},
 				"malwareProtection":   nil,
-				"oslogging":           nil,
+				"osLogging":           nil,
 				"raw":                 "",
 				"resourceLogging":     nil,
 				"automaticUpdates": map[string]any{

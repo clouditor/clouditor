@@ -310,7 +310,7 @@ func TestComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	assert.Equal(t, mockVM1, testMachine.Name)
 	assert.Equal(t, "arn:aws:ec2:eu-central-1:MockAccountID1234:instance/mockVM1ID", testMachine.Id)
 	assert.False(t, testMachine.BootLogging.Enabled)
-	assert.False(t, testMachine.Oslogging.Enabled)
+	assert.False(t, testMachine.OsLogging.Enabled)
 	assert.Nil(t, testMachine.CreationTime)
 	assert.Equal(t, mockFunction1Region, testMachine.GeoLocation.Region)
 
