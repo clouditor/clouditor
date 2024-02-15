@@ -39,6 +39,7 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
@@ -919,7 +920,7 @@ func TestService_handleEvidence(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Contains(t, err.Error(), "resource embedded in evidence is not a valid ontology resource")
+				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
 			},
 		},
 		{

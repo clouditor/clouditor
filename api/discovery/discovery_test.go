@@ -36,6 +36,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestResource_ToOntologyResource(t *testing.T) {
@@ -66,6 +67,16 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				Id:              "vm1",
 				BlockStorageIds: []string{"bs1"},
 			},
+		},
+		{
+			name: "not an ontology resource",
+			fields: fields{
+				Id:             "vm1",
+				CloudServiceId: "service1",
+				ResourceType:   "Something",
+				Properties:     prototest.NewAny(t, &emptypb.Empty{}),
+			},
+			wantErr: true,
 		},
 	}
 

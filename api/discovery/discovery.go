@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -44,6 +45,8 @@ const (
 	DefaultCloudServiceID   = "00000000-0000-0000-0000-000000000000"
 	EvidenceCollectorToolId = "Clouditor Evidences Collection"
 )
+
+var ErrNotOntologyResource = errors.New("protobuf message is not a valid ontology resource")
 
 // Discoverer is a part of the discovery service that takes care of the actual discovering and translation into
 // vocabulary objects.
@@ -64,11 +67,12 @@ func (r *Resource) ToOntologyResource() (or ontology.IsResource, err error) {
 		return nil, err
 	}
 
-	if or, ok = m.(ontology.IsResource); ok {
-		return or, nil
+	or, ok = m.(ontology.IsResource)
+	if !ok {
+		return nil, ErrNotOntologyResource
 	}
 
-	return
+	return or, nil
 }
 
 func Raw(raws ...any) string {
