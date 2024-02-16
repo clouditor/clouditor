@@ -483,8 +483,23 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
-	r := &voc.VirtualMachine{}
+func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(set *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
+	r := &voc.VirtualMachineScaleSet{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(*set.ID),
+				*set.Name,
+				set.Properties.TimeCreated,
+				voc.GeoLocation{
+					Region: *set.Location,
+				},
+				labels(set.Tags),
+				"",
+				voc.VirtualMachineScaleSetType,
+				set,
+			),
+		},
+	}
 
 	return r, nil
 }
