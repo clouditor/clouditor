@@ -245,21 +245,21 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	return list, nil
 }
 
-func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
-	r := &voc.Redundancy{}
-	locations := acc.Properties.Locations
-	// If one location has zone redundancy enabled, we define the resource as zone redundant
-	for _, l := range locations {
-		if util.Deref(l.IsZoneRedundant) {
-			r.Zone = true
-		}
-	}
-	// If there are more than 1 region that means data is replicated geo-redundantly
-	if len(locations) > 1 {
-		r.Geo = true
-	}
-	return r
-}
+// func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
+// 	r := &voc.Redundancy{}
+// 	locations := acc.Properties.Locations
+// 	// If one location has zone redundancy enabled, we define the resource as zone redundant
+// 	for _, l := range locations {
+// 		if util.Deref(l.IsZoneRedundant) {
+// 			r.Zone = true
+// 		}
+// 	}
+// 	// If there are more than 1 region that means data is replicated geo-redundantly
+// 	if len(locations) > 1 {
+// 		r.Geo = true
+// 	}
+// 	return r
+// }
 
 // discoverSqlServers discovers the sql server and databases
 func (d *azureStorageDiscovery) discoverSqlServers() ([]voc.IsCloudResource, error) {
@@ -1092,13 +1092,6 @@ func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
 // initMongoDResourcesBClient creates the client if not already exists
 func (d *azureDiscovery) initMongoDResourcesBClient() (err error) {
 	d.clients.mongoDBResourcesClient, err = initClient(d.clients.mongoDBResourcesClient, d, armcosmos.NewMongoDBResourcesClient)
-
-	return
-}
-
-// initCosmosDBClient creates the client if not already exists
-func (d *azureDiscovery) initCosmosDBClient() (err error) {
-	d.clients.cosmosDBClient, err = initClient(d.clients.cosmosDBClient, d, armcosmos.NewDatabaseAccountsClient)
 
 	return
 }
