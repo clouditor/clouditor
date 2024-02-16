@@ -31,8 +31,8 @@ import (
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"google.golang.org/protobuf/types/known/durationpb"

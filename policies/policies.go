@@ -29,10 +29,10 @@ import (
 	"strings"
 	"sync"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/api/orchestrator"
 	"github.com/sirupsen/logrus"
 )
 

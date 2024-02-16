@@ -33,12 +33,12 @@ import (
 	"slices"
 	"sync"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/logging"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/logging"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"

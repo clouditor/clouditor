@@ -1,9 +1,9 @@
 package evidencetest
 
 import (
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

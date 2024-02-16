@@ -28,8 +28,8 @@ package assessment
 import (
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

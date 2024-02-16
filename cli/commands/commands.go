@@ -26,17 +26,17 @@
 package commands
 
 import (
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/cli/commands/assessmentresult"
-	"clouditor.io/clouditor/cli/commands/catalog"
-	"clouditor.io/clouditor/cli/commands/cloud"
-	"clouditor.io/clouditor/cli/commands/completion"
-	"clouditor.io/clouditor/cli/commands/evidence"
-	"clouditor.io/clouditor/cli/commands/login"
-	"clouditor.io/clouditor/cli/commands/metric"
-	"clouditor.io/clouditor/cli/commands/resource"
-	"clouditor.io/clouditor/cli/commands/service"
-	"clouditor.io/clouditor/cli/commands/tool"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/cli/commands/assessmentresult"
+	"clouditor.io/clouditor/v2/cli/commands/catalog"
+	"clouditor.io/clouditor/v2/cli/commands/cloud"
+	"clouditor.io/clouditor/v2/cli/commands/completion"
+	"clouditor.io/clouditor/v2/cli/commands/evidence"
+	"clouditor.io/clouditor/v2/cli/commands/login"
+	"clouditor.io/clouditor/v2/cli/commands/metric"
+	"clouditor.io/clouditor/v2/cli/commands/resource"
+	"clouditor.io/clouditor/v2/cli/commands/service"
+	"clouditor.io/clouditor/v2/cli/commands/tool"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

@@ -29,8 +29,8 @@ import (
 	"database/sql/driver"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/known/structpb"

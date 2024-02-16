@@ -37,11 +37,11 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/prototest"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"

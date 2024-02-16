@@ -34,8 +34,8 @@ import (
 	"fmt"
 	"time"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/aws/aws-sdk-go-v2/aws"

@@ -32,8 +32,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"

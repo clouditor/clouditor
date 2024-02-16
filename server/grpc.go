@@ -30,12 +30,12 @@ import (
 	"fmt"
 	"net"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evaluation"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/logging/formatter"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evaluation"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/logging/formatter"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"

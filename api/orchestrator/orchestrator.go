@@ -29,7 +29,7 @@ import (
 	"context"
 	"slices"
 
-	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/v2/api/assessment"
 
 	"google.golang.org/protobuf/proto"
 )

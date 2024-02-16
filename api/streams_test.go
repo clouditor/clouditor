@@ -38,9 +38,9 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/testdata"
 )
 
 var ErrSomeError = errors.New("some error")

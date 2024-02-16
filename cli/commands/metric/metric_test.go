@@ -30,11 +30,11 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/server"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"

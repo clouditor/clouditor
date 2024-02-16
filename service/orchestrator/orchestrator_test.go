@@ -34,11 +34,11 @@ import (
 	"sync"
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	apiruntime "clouditor.io/clouditor/api/runtime"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	apiruntime "clouditor.io/clouditor/v2/api/runtime"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/structpb"
 )

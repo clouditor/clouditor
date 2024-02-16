@@ -28,7 +28,7 @@ package azure
 import (
 	"context"
 
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )

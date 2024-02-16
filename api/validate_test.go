@@ -28,7 +28,7 @@ package api
 import (
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator"
 
 	"github.com/stretchr/testify/assert"
 )

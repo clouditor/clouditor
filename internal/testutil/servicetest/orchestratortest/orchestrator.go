@@ -3,10 +3,10 @@ package orchestratortest
 import (
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

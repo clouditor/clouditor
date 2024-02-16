@@ -20,8 +20,8 @@ RUN go install github.com/bufbuild/buf/cmd/buf@latest
 ADD . .
 
 RUN go generate ./...
-RUN go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/engine ./cmd/engine
-RUN go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/cl ./cmd/cli
+RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/engine ./cmd/engine
+RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/cl ./cmd/cli
 
 FROM alpine
 

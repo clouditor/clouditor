@@ -31,7 +31,7 @@ import (
 	"io"
 	"sync"
 
-	"clouditor.io/clouditor/internal/logging"
+	"clouditor.io/clouditor/v2/internal/logging"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"

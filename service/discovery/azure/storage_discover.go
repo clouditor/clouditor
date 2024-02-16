@@ -30,10 +30,10 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/internal/constants"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"

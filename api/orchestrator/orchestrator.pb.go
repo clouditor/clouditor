@@ -33,8 +33,8 @@ package orchestrator
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
-	assessment "clouditor.io/clouditor/api/assessment"
-	runtime "clouditor.io/clouditor/api/runtime"
+	assessment "clouditor.io/clouditor/v2/api/assessment"
+	runtime "clouditor.io/clouditor/v2/api/runtime"
 	_ "github.com/srikrsna/protoc-gen-gotag/tagger"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

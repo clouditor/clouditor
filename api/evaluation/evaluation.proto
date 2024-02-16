@@ -33,7 +33,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/evaluation";
+option go_package = "clouditor.io/clouditor/v2/api/evaluation";
 
 // Manages the evaluation of Clouditor's assessment results
 service Evaluation {

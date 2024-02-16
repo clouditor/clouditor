@@ -4,8 +4,8 @@ import (
 	"context"
 	"slices"
 
-	"clouditor.io/clouditor/internal/api"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/internal/api"
+	"clouditor.io/clouditor/v2/service"
 )
 
 // NewAuthorizationStrategy contains a mock for a

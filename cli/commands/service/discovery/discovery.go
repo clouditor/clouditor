@@ -29,9 +29,9 @@ import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/cli"
 
 	"github.com/spf13/cobra"
 )

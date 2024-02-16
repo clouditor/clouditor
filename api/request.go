@@ -26,7 +26,7 @@
 package api
 
 import (
-	"clouditor.io/clouditor/internal/api"
+	"clouditor.io/clouditor/v2/internal/api"
 )
 
 // PayloadRequest describes any kind of requests that carries a certain payload.

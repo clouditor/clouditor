@@ -29,7 +29,7 @@ import (
 	"context"
 	"slices"
 
-	"clouditor.io/clouditor/api"
+	"clouditor.io/clouditor/v2/api"
 	"github.com/golang-jwt/jwt/v5"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc/codes"

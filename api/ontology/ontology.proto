@@ -37,7 +37,7 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/ontology";
+option go_package = "clouditor.io/clouditor/v2/api/ontology";
 extend google.protobuf.MessageOptions {
   repeated string resource_type_names = 50000;
 }

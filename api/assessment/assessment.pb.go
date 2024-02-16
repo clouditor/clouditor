@@ -33,7 +33,7 @@ package assessment
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
-	evidence "clouditor.io/clouditor/api/evidence"
+	evidence "clouditor.io/clouditor/v2/api/evidence"
 	_ "github.com/srikrsna/protoc-gen-gotag/tagger"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

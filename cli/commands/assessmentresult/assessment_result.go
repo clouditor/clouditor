@@ -26,7 +26,7 @@
 package assessmentresult
 
 import (
-	"clouditor.io/clouditor/cli/commands/service/orchestrator"
+	"clouditor.io/clouditor/v2/cli/commands/service/orchestrator"
 	"github.com/spf13/cobra"
 )
 

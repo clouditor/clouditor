@@ -28,11 +28,11 @@ package discovery
 import (
 	"context"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

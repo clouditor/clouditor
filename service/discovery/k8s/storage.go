@@ -29,8 +29,8 @@ import (
 	"context"
 	"fmt"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

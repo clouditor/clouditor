@@ -3,10 +3,10 @@ package inmemory
 import (
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )

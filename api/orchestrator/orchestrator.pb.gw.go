@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 
-	runtime_0 "clouditor.io/clouditor/api/runtime"
+	runtime_0 "clouditor.io/clouditor/v2/api/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"google.golang.org/grpc"

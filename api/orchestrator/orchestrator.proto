@@ -35,7 +35,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/orchestrator";
+option go_package = "clouditor.io/clouditor/v2/api/orchestrator";
 
 // Manages the orchestration of components within the Clouditor architecture
 service Orchestrator {
