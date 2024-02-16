@@ -272,6 +272,7 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 							"linuxFxVersion": "PYTHON|3.8",
 						},
 						"publicNetworkAccess": "Enabled",
+						"resourceGroup":       "res1",
 					},
 				},
 				{
@@ -331,10 +332,30 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"javaVersion":   "1.8",
+				"minTlsVersion": "1.1",
+			},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/web" {
 		return createResponse(req, map[string]interface{}{
 			"properties": map[string]interface{}{
-				"javaVersion": "1.8",
+				"javaVersion":   "1.8",
+				"minTlsVersion": "1.1",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"minTlsVersion": "1.1",
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/web" {
+		return createResponse(req, map[string]interface{}{
+			"properties": map[string]interface{}{
+				"minTlsVersion": "1.1",
 			},
 		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
