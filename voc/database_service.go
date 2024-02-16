@@ -34,4 +34,5 @@ type DatabaseService struct {
 	*StorageService
 	AnomalyDetection *AnomalyDetection `json:"anomalyDetection"`
 	HttpEndpoint     *HttpEndpoint     `json:"httpEndpoint"`
+	PublicAccess     bool              `json:"publicAccess"`
 }
