@@ -116,13 +116,21 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
 	}
 
-	log.Info("Discover Azure compute resources")
+	log.Info("Discover Azure virtual machine resources")
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	list = append(list, virtualMachines...)
+
+	log.Info("Discover Azure VM scale set resources")
+	// Discover virtual machine scale sets
+	scaleSet, err := d.discoverVirtualMachineScaleSets()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover vm scale sets: %w", err)
+	}
+	list = append(list, scaleSet...)
 
 	// Discover functions and web apps
 	resources, err := d.discoverFunctionsWebApps()
@@ -134,6 +142,45 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// }
 
 	return
+}
+
+// Discover functions and web apps
+func (d *azureComputeDiscovery) discoverVirtualMachineScaleSets() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize virtual machine scale set client
+	if err := d.initVirtualMachineScaleSetClient(); err != nil {
+		return nil, err
+	}
+
+	// List all VMs
+	err := listPager(d.azureDiscovery,
+		d.clients.virtualMachineScaleSetClient.NewListAllPager,
+		d.clients.virtualMachineScaleSetClient.NewListPager,
+		func(res armcompute.VirtualMachineScaleSetsClientListAllResponse) []*armcompute.VirtualMachineScaleSet {
+			return res.Value
+		},
+		func(res armcompute.VirtualMachineScaleSetsClientListResponse) []*armcompute.VirtualMachineScaleSet {
+			return res.Value
+		},
+
+		func(vm *armcompute.VirtualMachineScaleSet) error {
+			r, err := d.handleVirtualMachineScaleSet(vm)
+			if err != nil {
+				return fmt.Errorf("could not handle virtual machine scale set: %w", err)
+			}
+
+			log.Infof("Adding virtual machine scale set '%s'", r.GetName())
+
+			list = append(list, r)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
 
 // Discover functions and web apps
@@ -434,6 +481,12 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	}
 
 	return list, nil
+}
+
+func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
+	r := &voc.VirtualMachine{}
+
+	return r, nil
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
@@ -791,6 +844,12 @@ func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
 	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
+	return
+}
+
+// initVirtualMachineScaleSetClient creates the client if not already exists
+func (d *azureComputeDiscovery) initVirtualMachineScaleSetClient() (err error) {
+	d.clients.virtualMachineScaleSetClient, err = initClient(d.clients.virtualMachineScaleSetClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetsClient)
 	return
 }
 

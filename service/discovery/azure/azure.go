@@ -29,11 +29,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -163,9 +164,10 @@ type clients struct {
 	sitesClient *armappservice.WebAppsClient
 
 	// Compute
-	virtualMachinesClient *armcompute.VirtualMachinesClient
-	blockStorageClient    *armcompute.DisksClient
-	diskEncSetClient      *armcompute.DiskEncryptionSetsClient
+	virtualMachinesClient        *armcompute.VirtualMachinesClient
+	virtualMachineScaleSetClient *armcompute.VirtualMachineScaleSetsClient
+	blockStorageClient           *armcompute.DisksClient
+	diskEncSetClient             *armcompute.DiskEncryptionSetsClient
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
