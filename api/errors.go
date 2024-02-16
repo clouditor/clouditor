@@ -30,15 +30,7 @@ import (
 )
 
 var (
-	ErrInvalidColumnName             = errors.New("column name is invalid")
-	ErrEmptyRequest                  = errors.New("empty request")
-	ErrInvalidRequest                = errors.New("invalid request")
-	ErrResourceNotStruct             = errors.New("resource in evidence is not struct value")
-	ErrResourceNotMap                = errors.New("resource in evidence is not a map")
-	ErrResourceIdIsEmpty             = errors.New("resource id in evidence is empty")
-	ErrResourceIdNotString           = errors.New("resource id in evidence is not a string")
-	ErrResourceIdFieldMissing        = errors.New("resource in evidence is missing the id field")
-	ErrResourceTypeFieldMissing      = errors.New("field type in evidence is missing")
-	ErrResourceTypeNotArrayOfStrings = errors.New("resource type in evidence is not an array of strings")
-	ErrResourceTypeEmpty             = errors.New("resource type (array) in evidence is empty")
+	ErrInvalidColumnName = errors.New("column name is invalid")
+	ErrEmptyRequest      = errors.New("empty request")
+	ErrInvalidRequest    = errors.New("invalid request")
 )

@@ -27,7 +27,9 @@ syntax = "proto3";
 
 package clouditor.ontology.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "clouditor.io/clouditor/api/ontology";

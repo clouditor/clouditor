@@ -1,7 +1,8 @@
 package clouditor.metrics.os_logging_output
 
 import data.clouditor.compare
-import input.oSLogging as logging
+
+import input.osLogging as logging
 
 default applicable = false
 
@@ -14,5 +15,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, count(logging.loggingService))
+	compare(data.operator, data.target_value, count(logging.loggingServiceIds))
 }

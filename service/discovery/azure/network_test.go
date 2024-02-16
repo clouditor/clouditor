@@ -29,9 +29,9 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +43,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -63,24 +63,22 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender(), WithResourceGroup("res1")),
 			},
-			want: []voc.IsCloudResource{
-				&voc.NetworkInterface{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							Name:      "iface1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.NetworkInterfaceType,
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Labels: map[string]string{},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
-						},
+			want: []ontology.IsResource{
+				&ontology.NetworkInterface{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					Name: "iface1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					AccessRestriction: &voc.L3Firewall{
-						Enabled: true,
+					Labels:   map[string]string{},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+					AccessRestriction: &ontology.AccessRestriction{
+						Type: &ontology.AccessRestriction_L3Firewall{
+							L3Firewall: &ontology.L3Firewall{
+								Enabled: true,
+							},
+						},
 					},
 				},
 			},
@@ -91,24 +89,22 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
-				&voc.NetworkInterface{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-							Name:      "iface1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.NetworkInterfaceType,
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Labels: map[string]string{},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
-						},
+			want: []ontology.IsResource{
+				&ontology.NetworkInterface{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+					Name: "iface1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					AccessRestriction: &voc.L3Firewall{
-						Enabled: true,
+					Labels:   map[string]string{},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+					AccessRestriction: &ontology.AccessRestriction{
+						Type: &ontology.AccessRestriction_L3Firewall{
+							L3Firewall: &ontology.L3Firewall{
+								Enabled: true,
+							},
+						},
 					},
 				},
 			},
@@ -135,7 +131,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -155,69 +151,45 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-								Name:      "lb1",
-								ServiceID: testdata.MockCloudServiceID1,
-								Type:      voc.LoadBalancerType,
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Labels: map[string]string{},
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-							},
-						},
-						Ips:   []string{"111.222.333.444"},
-						Ports: []uint16{1234, 5678},
+			want: []ontology.IsResource{
+				&ontology.LoadBalancer{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+					Name: "lb1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
+					Labels:        map[string]string{},
+					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					Ips:           []string{"111.222.333.444"},
+					Ports:         []uint32{1234, 5678},
+					HttpEndpoints: []*ontology.HttpEndpoint{},
 				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
-								Name:      "lb2",
-								ServiceID: testdata.MockCloudServiceID1,
-								Type:      voc.LoadBalancerType,
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Labels: map[string]string{},
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-							},
-						},
-						Ips:   []string{},
-						Ports: []uint16{1234, 5678},
+				&ontology.LoadBalancer{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+					Name: "lb2",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
+					Labels:        map[string]string{},
+					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					Ips:           []string{},
+					Ports:         []uint32{1234, 5678},
+					HttpEndpoints: []*ontology.HttpEndpoint{},
 				},
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
-								Name:      "lb3",
-								ServiceID: testdata.MockCloudServiceID1,
-								Type:      voc.LoadBalancerType,
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Labels: map[string]string{},
-								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
-								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-							},
-						},
-						Ips:   []string{},
-						Ports: []uint16{1234, 5678},
+				&ontology.LoadBalancer{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+					Name: "lb3",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					HttpEndpoints: []*voc.HttpEndpoint{},
+					Labels:        map[string]string{},
+					Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
+					ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					Ips:           []string{},
+					Ports:         []uint32{1234, 5678},
+					HttpEndpoints: []*ontology.HttpEndpoint{},
 				},
 			},
 			wantErr: assert.NoError,
@@ -231,7 +203,8 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "discoverLoadBalancer()")
+
+			prototest.EqualSlice(t, tt.want, got)
 		})
 	}
 }
@@ -379,7 +352,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -399,26 +372,22 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
-				&voc.LoadBalancer{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-								Name:      "appgw1",
-								ServiceID: testdata.MockCloudServiceID1,
-								Type:      voc.LoadBalancerType,
-								GeoLocation: voc.GeoLocation{
-									Region: "eastus",
-								},
-								Labels: map[string]string{},
-								Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
-								Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+			want: []ontology.IsResource{
+				&ontology.LoadBalancer{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+					Name: "appgw1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					Labels:   map[string]string{},
+					Raw:      "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+					AccessRestriction: &ontology.AccessRestriction{
+						Type: &ontology.AccessRestriction_WebApplicationFirewall{
+							WebApplicationFirewall: &ontology.WebApplicationFirewall{
+								Enabled: true,
 							},
 						},
-					},
-					AccessRestriction: voc.WebApplicationFirewall{
-						Enabled: true,
 					},
 				},
 			},
@@ -433,7 +402,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "discoverApplicationGateway()")
+			prototest.EqualSlice(t, tt.want, got)
 		})
 	}
 }
@@ -544,7 +513,7 @@ func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsNetwork
+		want   ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -565,29 +534,21 @@ func Test_azureDiscovery_handleLoadBalancer(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.LoadBalancer{
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
-							Name:      "lb1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.LoadBalancerType,
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Labels: map[string]string{
-								"tag1": "value1",
-								"tag2": "value2",
-							},
-							Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"loadBalancingRules\":[]},\"tags\":{\"tag1\":\"value1\",\"tag2\":\"value2\"}}]}",
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-						},
-					},
-					Ips:   []string{},
-					Ports: nil,
+			want: &ontology.LoadBalancer{
+				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+				Name: "lb1",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "eastus",
 				},
-				HttpEndpoints: []*voc.HttpEndpoint{},
+				Labels: map[string]string{
+					"tag1": "value1",
+					"tag2": "value2",
+				},
+				Raw:           "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"loadBalancingRules\":[]},\"tags\":{\"tag1\":\"value1\",\"tag2\":\"value2\"}}]}",
+				ParentId:      util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+				Ips:           []string{},
+				Ports:         nil,
+				HttpEndpoints: nil,
 			},
 		},
 	}
@@ -612,7 +573,7 @@ func Test_azureDiscovery_handleApplicationGateway(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsNetwork
+		want   ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -631,25 +592,21 @@ func Test_azureDiscovery_handleApplicationGateway(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.LoadBalancer{
-				NetworkService: &voc.NetworkService{
-					Networking: &voc.Networking{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
-							Name:      "appgw1",
-							ServiceID: testdata.MockCloudServiceID1,
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Type:   voc.LoadBalancerType,
-							Labels: map[string]string{},
-							Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+			want: &ontology.LoadBalancer{
+				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+				Name: "appgw1",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "eastus",
+				},
+				Labels:   map[string]string{},
+				Raw:      "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+				AccessRestriction: &ontology.AccessRestriction{
+					Type: &ontology.AccessRestriction_WebApplicationFirewall{
+						WebApplicationFirewall: &ontology.WebApplicationFirewall{
+							Enabled: true,
 						},
 					},
-				},
-				AccessRestriction: voc.WebApplicationFirewall{
-					Enabled: true,
 				},
 			},
 		},
@@ -671,7 +628,7 @@ func Test_loadBalancerPorts(t *testing.T) {
 	tests := []struct {
 		name                  string
 		args                  args
-		wantLoadBalancerPorts []uint16
+		wantLoadBalancerPorts []uint32
 	}{
 		{
 			name: "Happy path: empty input",
@@ -699,7 +656,7 @@ func Test_loadBalancerPorts(t *testing.T) {
 					},
 				},
 			},
-			wantLoadBalancerPorts: []uint16{99},
+			wantLoadBalancerPorts: []uint32{99},
 		},
 	}
 	for _, tt := range tests {
@@ -722,7 +679,7 @@ func Test_azureDiscovery_handleNetworkInterfaces(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsNetwork
+		want   ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -742,23 +699,21 @@ func Test_azureDiscovery_handleNetworkInterfaces(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.NetworkInterface{
-				Networking: &voc.Networking{
-					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
-						Name:      "iface1",
-						ServiceID: testdata.MockCloudServiceID1,
-						Type:      voc.NetworkInterfaceType,
-						GeoLocation: voc.GeoLocation{
-							Region: "eastus",
-						},
-						Labels: map[string]string{},
-						Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
-						Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
-					},
+			want: &ontology.NetworkInterface{
+				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+				Name: "iface1",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "eastus",
 				},
-				AccessRestriction: &voc.L3Firewall{
-					Enabled: true,
+				Labels:   map[string]string{},
+				Raw:      "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+				AccessRestriction: &ontology.AccessRestriction{
+					Type: &ontology.AccessRestriction_L3Firewall{
+						L3Firewall: &ontology.L3Firewall{
+							Enabled: true,
+						},
+					},
 				},
 			},
 		},

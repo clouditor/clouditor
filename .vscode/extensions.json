@@ -1,6 +1,8 @@
 {
     "recommendations": [
         "streetsidesoftware.code-spell-checker",
-        "golang.go"
+        "golang.go",
+        "bufbuild.vscode-buf",
+        "stkb.rewrap"
     ]
 }

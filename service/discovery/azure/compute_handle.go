@@ -30,17 +30,19 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 )
 
-func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
+func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (ontology.IsResource, error) {
 	var (
-		bootLogging              = []voc.ResourceID{}
+		bootLogging              = []string{}
 		osLoggingEnabled         bool
-		autoUpdates              *voc.AutomaticUpdates
+		autoUpdates              *ontology.AutomaticUpdates
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
 	)
@@ -51,7 +53,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (v
 	}
 
 	if bootLogOutput(vm) != "" {
-		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
+		bootLogging = []string{bootLogOutput(vm)}
 	}
 
 	autoUpdates = automaticUpdates(vm)
@@ -73,54 +75,37 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (v
 		}
 	}
 
-	r := &voc.VirtualMachine{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(vm.ID)),
-				util.Deref(vm.Name),
-				vm.Properties.TimeCreated,
-				voc.GeoLocation{
-					Region: util.Deref(vm.Location),
-				},
-				labels(vm.Tags),
-				resourceGroupID(vm.ID),
-				voc.VirtualMachineType,
-				vm,
-			),
-			NetworkInterfaces: []voc.ResourceID{},
+	r := &ontology.VirtualMachine{
+		Id:           util.Deref(vm.ID),
+		Name:         util.Deref(vm.Name),
+		CreationTime: creationTime(vm.Properties.TimeCreated),
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(vm.Location),
 		},
-		BlockStorage:      []voc.ResourceID{},
-		MalwareProtection: &voc.MalwareProtection{},
-		BootLogging: &voc.BootLogging{
-			Logging: &voc.Logging{
-				Enabled:         isBootDiagnosticEnabled(vm),
-				LoggingService:  bootLogging,
-				RetentionPeriod: 0, // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-				Auditing: &voc.Auditing{
-					SecurityFeature: &voc.SecurityFeature{},
-				},
-				MonitoringLogDataEnabled: monitoringLogDataEnabled,
-				SecurityAlertsEnabled:    securityAlertsEnabled,
-			},
+		Labels:              labels(vm.Tags),
+		ParentId:            resourceGroupID(vm.ID),
+		Raw:                 discovery.Raw(vm),
+		NetworkInterfaceIds: []string{},
+		BlockStorageIds:     []string{},
+		MalwareProtection:   &ontology.MalwareProtection{},
+		BootLogging: &ontology.BootLogging{
+			Enabled:               isBootDiagnosticEnabled(vm),
+			LoggingServiceIds:     bootLogging,
+			RetentionPeriod:       durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+			MonitoringEnabled:     monitoringLogDataEnabled,
+			SecurityAlertsEnabled: securityAlertsEnabled,
 		},
-		OsLogging: &voc.OSLogging{
-			Logging: &voc.Logging{
-				Enabled:         osLoggingEnabled,
-				RetentionPeriod: 0,
-				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
-				Auditing: &voc.Auditing{
-					SecurityFeature: &voc.SecurityFeature{},
-				},
-				MonitoringLogDataEnabled: monitoringLogDataEnabled,
-				SecurityAlertsEnabled:    monitoringLogDataEnabled,
-			},
+		OsLogging: &ontology.OSLogging{
+			Enabled:               osLoggingEnabled,
+			RetentionPeriod:       durationpb.New(0),
+			LoggingServiceIds:     []string{}, // TODO(all): TBD
+			MonitoringEnabled:     monitoringLogDataEnabled,
+			SecurityAlertsEnabled: monitoringLogDataEnabled,
 		},
-		ActivityLogging: &voc.ActivityLogging{
-			Logging: &voc.Logging{
-				Enabled:         true, // is always enabled
-				RetentionPeriod: RetentionPeriod90Days,
-				LoggingService:  []voc.ResourceID{}, // TODO(all): TBD
-			},
+		ActivityLogging: &ontology.ActivityLogging{
+			Enabled:           true, // is always enabled
+			RetentionPeriod:   durationpb.New(RetentionPeriod90Days),
+			LoggingServiceIds: []string{}, // TODO(all): TBD
 		},
 		AutomaticUpdates: autoUpdates,
 	}
@@ -128,28 +113,28 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (v
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+			r.NetworkInterfaceIds = append(r.NetworkInterfaceIds, util.Deref(networkInterfaces.ID))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorageIds = append(r.BlockStorageIds, util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
 		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+			r.BlockStorageIds = append(r.BlockStorageIds, util.Deref(blockstorage.ManagedDisk.ID))
 		}
 	}
 
 	return r, nil
 }
 
-func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockStorage, error) {
+func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.BlockStorage, error) {
 	var (
 		rawKeyUrl *armcompute.DiskEncryptionSet
-		backups   []*voc.Backup
+		backups   []*ontology.Backup
 	)
 
 	// If a mandatory field is empty, the whole disk is empty
@@ -168,27 +153,20 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.BlockSt
 	}
 	backups = backupsEmptyCheck(backups)
 
-	return &voc.BlockStorage{
-		Storage: &voc.Storage{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(disk.ID)),
-				util.Deref(disk.Name),
-				disk.Properties.TimeCreated,
-				voc.GeoLocation{
-					Region: util.Deref(disk.Location),
-				},
-				labels(disk.Tags),
-				resourceGroupID(disk.ID),
-				voc.BlockStorageType,
-				disk, rawKeyUrl,
-			),
-			AtRestEncryption: enc,
-			Backups:          backups,
-		},
+	return &ontology.BlockStorage{
+		Id:               util.Deref(disk.ID),
+		Name:             util.Deref(disk.Name),
+		CreationTime:     creationTime(disk.Properties.TimeCreated),
+		GeoLocation:      location(disk.Location),
+		Labels:           labels(disk.Tags),
+		ParentId:         resourceGroupID(disk.ID),
+		Raw:              discovery.Raw(disk, rawKeyUrl),
+		AtRestEncryption: enc,
+		Backups:          backups,
 	}, nil
 }
 
-func (d *azureDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
+func (d *azureDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) ontology.IsResource {
 	var (
 		runtimeLanguage string
 		runtimeVersion  string
@@ -228,63 +206,54 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		}
 	}
 
-	return &voc.Function{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(function.ID)),
-				util.Deref(function.Name),
-				// No creation time available
-				nil,
-				voc.GeoLocation{
-					Region: util.Deref(function.Location),
-				},
-				labels(function.Tags),
-				resourceGroupID(function.ID),
-				voc.FunctionType,
-				function,
-				config,
-			),
-			NetworkInterfaces: getVirtualNetworkSubnetId(function), // Add the Virtual Network Subnet ID
-			ResourceLogging:   d.getResourceLoggingWebApps(function),
+	return &ontology.Function{
+		Id:           util.Deref(function.ID),
+		Name:         util.Deref(function.Name),
+		CreationTime: nil, // No creation time available
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(function.Location),
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
+		Labels:              labels(function.Tags),
+		ParentId:            resourceGroupID(function.ID),
+		Raw:                 discovery.Raw(function, config),
+		NetworkInterfaceIds: getVirtualNetworkSubnetId(function), // Add the Virtual Network Subnet ID
+		ResourceLogging:     d.getResourceLoggingWebApps(function),
+		RuntimeLanguage:     runtimeLanguage,
+		RuntimeVersion:      runtimeVersion,
+		// TODO(oxisto): This is missing in the ontology
+		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
 		},
-		RuntimeLanguage: runtimeLanguage,
-		RuntimeVersion:  runtimeVersion,
 		PublicAccess:    getPublicAccessStatus(function),
 		Redundancy:      getRedundancy(function),
+		*/
 	}
 }
 
-func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
+func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) ontology.IsResource {
 	if webApp == nil || config == (armappservice.WebAppsClientGetConfigurationResponse{}) {
 		log.Error("input parameter empty")
 		return nil
 	}
 
-	return &voc.WebApp{
-		Compute: &voc.Compute{
-			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.ID)),
-				util.Deref(webApp.Name),
-				nil, // Only the last modified time is available.
-				voc.GeoLocation{
-					Region: util.Deref(webApp.Location),
-				},
-				labels(webApp.Tags),
-				resourceGroupID(webApp.ID),
-				voc.WebAppType,
-				webApp,
-				config,
-			),
-			NetworkInterfaces: getVirtualNetworkSubnetId(webApp), // Add the Virtual Network Subnet ID
-			ResourceLogging:   d.getResourceLoggingWebApps(webApp),
+	return &ontology.WebApp{
+		Id:           util.Deref(webApp.ID),
+		Name:         util.Deref(webApp.Name),
+		CreationTime: nil, // Only the last modified time is available.
+		GeoLocation: &ontology.GeoLocation{
+			Region: util.Deref(webApp.Location),
 		},
-		HttpEndpoint: &voc.HttpEndpoint{
+		Labels:              labels(webApp.Tags),
+		ParentId:            resourceGroupID(webApp.ID),
+		Raw:                 discovery.Raw(webApp, config),
+		NetworkInterfaceIds: getVirtualNetworkSubnetId(webApp), // Add the Virtual Network Subnet ID
+		ResourceLogging:     d.getResourceLoggingWebApps(webApp),
+		// TODO(oxisto): This is missing in the ontology
+		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},
-		PublicAccess: getPublicAccessStatus(webApp),
-		Redundancy:   getRedundancy(webApp),
+		PublicAccess:    getPublicAccessStatus(function),
+		Redundancy:      getRedundancy(function),
+		*/
 	}
 }

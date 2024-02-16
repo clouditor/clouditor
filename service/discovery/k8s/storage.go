@@ -30,7 +30,8 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/api/ontology"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -50,8 +51,8 @@ func (*k8sStorageDiscovery) Description() string {
 	return "Discover Kubernetes storage resources."
 }
 
-func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *k8sStorageDiscovery) List() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// Get persistent volumes
 	// Note: Volumes exist in the context of a pod and cannot be created on its own, PersistentVolumes are first class objects with its own lifecycle.
@@ -76,30 +77,8 @@ func (d *k8sStorageDiscovery) List() ([]voc.IsCloudResource, error) {
 }
 
 // handlePVC returns all PersistentVolumes
-func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) voc.IsCloudResource {
-	s := &voc.Storage{
-		Resource: discovery.NewResource(d,
-			voc.ResourceID(pv.UID),
-			pv.Name,
-			&pv.CreationTimestamp.Time,
-			// TODO(all) Add region
-			voc.GeoLocation{},
-			pv.Labels,
-			"",
-			voc.BlockStorageType,
-			pv,
-		),
-		AtRestEncryption: &voc.AtRestEncryption{},
-	}
-
-	v := addPersistentVolumeSource(s, pv.Spec.PersistentVolumeSource)
-
-	return v
-}
-
-// TODO(all): Is it possible to use generics for the PersistentVolumeSource and VolumeSource and thus delete duplicated code?
-// addPersistentVolumeSource adds a given volumeSource to the specific ontology storage type
-func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc.IsCloudResource {
+func (d *k8sStorageDiscovery) handlePV(pv *v1.PersistentVolume) ontology.IsResource {
+	vs := pv.Spec.PersistentVolumeSource
 
 	// TODO(all): Define all volume types
 	// LocalVolumeSource
@@ -121,57 +100,29 @@ func addPersistentVolumeSource(s *voc.Storage, vs v1.PersistentVolumeSource) voc
 	// quobyte - Quobyte volume (deprecated in v1.22)
 	// storageos - StorageOS volume (deprecated in v1.22)
 	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
-		v := &voc.BlockStorage{
-			Storage: s,
+		v := &ontology.BlockStorage{
+			Id:               string(pv.UID),
+			Name:             pv.Name,
+			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
+			Labels:           pv.Labels,
+			AtRestEncryption: &ontology.AtRestEncryption{},
+			Raw:              discovery.Raw(pv),
 		}
 
 		return v
 	} else if vs.AzureFile != nil || vs.NFS != nil || vs.HostPath != nil {
-		v := &voc.FileStorage{
-			Storage: s,
+		// TODO(oxisto): Does this even make sense? The volume is always a block storage, but the underlying storage might be a file storage?
+		v := &ontology.FileStorage{
+			Id:               string(pv.UID),
+			Name:             pv.Name,
+			CreationTime:     timestamppb.New(pv.CreationTimestamp.Time),
+			Labels:           pv.Labels,
+			AtRestEncryption: &ontology.AtRestEncryption{},
+			Raw:              discovery.Raw(pv),
 		}
 
 		return v
-	} else {
-		return nil
 	}
-}
 
-// addVolumeSource adds a given volumeSource to the specific ontology storage type
-func addVolumeSource(s *voc.Storage, vs v1.VolumeSource) voc.IsCloudResource {
-
-	// TODO(all): Define all volume types
-	// PersistentVolumeClaimVolumeSource
-	// DownwardAPIVolumeSource
-	// ConfigMapVolumeSource
-	// VsphereVirtualDiskVolumeSource
-	// QuobyteVolumeSource
-	// PhotonPersistentDiskVolumeSource
-	// ProjectedVolumeSource
-	// ScaleIOVolumeSource
-	// CSIVolumeSource -> CSI was developed as a standard for exposing arbitrary block and file storage storage systems to containerized workloads on Container Orchestration Systems (COs) like Kubernetes. (https://kubernetes.io/blog/2019/01/15/container-storage-interface-ga/)
-	// EphemeralVolumeSource
-
-	// Deprecated:
-	// GitRepoVolumeSource is deprecated
-	// cinder - Cinder (OpenStack block storage) (deprecated in v1.18)
-	// flexVolume - FlexVolume (deprecated in v1.23)
-	// flocker - Flocker storage (deprecated in v1.22)
-	// quobyte - Quobyte volume (deprecated in v1.22)
-	// storageos - StorageOS volume (deprecated in v1.22)
-	if vs.AWSElasticBlockStore != nil || vs.AzureDisk != nil || vs.Cinder != nil || vs.FlexVolume != nil || vs.CephFS != nil || vs.Glusterfs != nil || vs.GCEPersistentDisk != nil || vs.RBD != nil || vs.StorageOS != nil || vs.FC != nil || vs.PortworxVolume != nil || vs.ISCSI != nil || vs.Flocker != nil {
-		v := &voc.BlockStorage{
-			Storage: s,
-		}
-
-		return v
-	} else if vs.AzureFile != nil || vs.EmptyDir != nil || vs.NFS != nil || vs.HostPath != nil || vs.Secret != nil {
-		v := &voc.FileStorage{
-			Storage: s,
-		}
-
-		return v
-	} else {
-		return nil
-	}
+	return nil
 }

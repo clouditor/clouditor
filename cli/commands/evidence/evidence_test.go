@@ -28,21 +28,20 @@ package evidence
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"testing"
 
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/cli"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/server"
 	service_evidence "clouditor.io/clouditor/service/evidence"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -59,7 +58,7 @@ func TestMain(m *testing.M) {
 		CloudServiceId: testdata.MockCloudServiceID1,
 		ToolId:         testdata.MockEvidenceToolID1,
 		Timestamp:      timestamppb.Now(),
-		Resource:       toStruct(voc.VirtualMachine{Compute: &voc.Compute{Resource: &voc.Resource{ID: testdata.MockResourceID1, Type: []string{"VirtualMachine"}}}}),
+		Resource:       prototest.NewAnyWithPanic(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 	}})
 	if err != nil {
 		panic(err)
@@ -98,23 +97,4 @@ func TestNewListResultsCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response.Evidences)
-}
-
-func toStruct(r voc.IsCloudResource) (s *structpb.Value) {
-	var (
-		b   []byte
-		err error
-	)
-
-	s = new(structpb.Value)
-
-	b, err = json.Marshal(r)
-	if err != nil {
-		return nil
-	}
-	if err = json.Unmarshal(b, &s); err != nil {
-		return nil
-	}
-
-	return
 }

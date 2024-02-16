@@ -29,12 +29,14 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/voc"
-
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -125,24 +127,15 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 	assert.NotNil(t, list)
 
 	// Check persistentVolume
-	volume, ok := list[0].(*voc.BlockStorage)
+	volume, ok := list[0].(*ontology.BlockStorage)
 
-	// Create exptected voc.BlockStorage
-	expectedVolume := &voc.BlockStorage{
-		Storage: &voc.Storage{
-			Resource: &voc.Resource{
-				ID:           voc.ResourceID(volumeUID),
-				ServiceID:    testdata.MockCloudServiceID1,
-				Name:         volumeName,
-				CreationTime: volume.CreationTime,
-				Type:         []string{"BlockStorage", "Storage", "Resource"},
-				GeoLocation: voc.GeoLocation{
-					Region: "",
-				},
-				Labels: volumeLabel,
-			},
-			AtRestEncryption: &voc.AtRestEncryption{},
-		},
+	// Create expected ontology.BlockStorage
+	expectedVolume := &ontology.BlockStorage{
+		Id:               volumeUID,
+		Name:             volumeName,
+		CreationTime:     volume.CreationTime,
+		Labels:           volumeLabel,
+		AtRestEncryption: &ontology.AtRestEncryption{},
 	}
 
 	// Delete raw. We have to delete it, because of the creation time included in the raw field.
@@ -150,5 +143,57 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 	volume.Raw = ""
 
 	assert.True(t, ok)
-	assert.Equal(t, expectedVolume, volume)
+	prototest.Equal(t, expectedVolume, volume)
+}
+
+func Test_k8sStorageDiscovery_handlePV(t *testing.T) {
+	type fields struct {
+		k8sDiscovery k8sDiscovery
+	}
+	type args struct {
+		pv *corev1.PersistentVolume
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   ontology.IsResource
+	}{
+		{
+			name:   "file-based",
+			fields: fields{},
+			args: args{
+				pv: &corev1.PersistentVolume{
+					ObjectMeta: metav1.ObjectMeta{
+						UID:               "my-id",
+						Name:              "test",
+						CreationTimestamp: metav1.NewTime(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+					},
+					Spec: corev1.PersistentVolumeSpec{
+						PersistentVolumeSource: corev1.PersistentVolumeSource{
+							HostPath: &corev1.HostPathVolumeSource{
+								Path: "/tmp",
+							},
+						},
+					},
+				},
+			},
+			want: &ontology.FileStorage{
+				Id:               "my-id",
+				Name:             "test",
+				AtRestEncryption: &ontology.AtRestEncryption{},
+				CreationTime:     timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+				Raw:              `{"*v1.PersistentVolume":[{"metadata":{"name":"test","uid":"my-id","creationTimestamp":"2024-01-01T00:00:00Z"},"spec":{"hostPath":{"path":"/tmp"}},"status":{}}]}`,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &k8sStorageDiscovery{
+				k8sDiscovery: tt.fields.k8sDiscovery,
+			}
+			got := d.handlePV(tt.args.pv)
+			prototest.Equal(t, tt.want, got)
+		})
+	}
 }

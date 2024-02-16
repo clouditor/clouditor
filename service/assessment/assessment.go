@@ -35,7 +35,9 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/assessment"
+	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
 	"clouditor.io/clouditor/internal/logging"
 	"clouditor.io/clouditor/internal/util"
@@ -48,6 +50,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -210,25 +213,16 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Validate evidence
-	resourceId, err := api.ValidateWithResource(req.Evidence)
-	if err != nil {
-		err = fmt.Errorf("invalid evidence: %w", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Assess evidence
-	_, err = svc.handleEvidence(ctx, req.Evidence, resourceId)
+	// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
+	_, err = svc.handleEvidence(ctx, req.Evidence)
 	if err != nil {
-		err = fmt.Errorf("error while handling evidence: %v", err)
 		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, err
 	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
@@ -289,20 +283,42 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 	}
 }
 
-// handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences
-func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, resourceId string) (results []*assessment.AssessmentResult, err error) {
-	var types []string
+// handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences. This will
+// also validate the resource embedded into the evidence and return an error if validation fails. In order to
+// distinguish between internal errors and validation errors, this function already returns a gRPC error.
+func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (results []*assessment.AssessmentResult, err error) {
+	var (
+		types    []string
+		m        proto.Message
+		resource ontology.IsResource
+	)
 
-	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resourceId, ev.ToolId, ev.Timestamp.AsTime())
+	// First, try to extract the resource out of the evidence and validate it
+	m, err = ev.Resource.UnmarshalNew()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not unmarshal resource proto message: %v", err)
+	}
+
+	err = api.Validate(m)
+	if err != nil {
+		return nil, err
+	}
+
+	resource, ok := m.(ontology.IsResource)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "invalid embedded resource: %v", discovery.ErrNotOntologyResource)
+	}
+
+	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := svc.pe.Eval(ev, svc)
+	evaluations, err := svc.pe.Eval(ev, resource, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 
 		go svc.informHooks(ctx, nil, newError)
 
-		return nil, newError
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	// Send evidence via Evidence Store stream if sending evidences is not disabled
@@ -314,7 +330,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 
 			go svc.informHooks(ctx, nil, err)
 
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "%v", err)
 		}
 		channelEvidenceStore.Send(&evidence.StoreEvidenceRequest{Evidence: ev})
 	}
@@ -326,7 +342,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 
 		go svc.informHooks(ctx, nil, err)
 
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	for _, data := range evaluations {
@@ -340,10 +356,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 
 		log.Debugf("Evaluated evidence %v with metric '%v' as %v", ev.Id, metricID, data.Compliant)
 
-		types, err = ev.ResourceTypes()
-		if err != nil {
-			return nil, fmt.Errorf("could not extract resource types from evidence: %w", err)
-		}
+		types = ontology.ResourceTypes(resource)
 
 		result := &assessment.AssessmentResult{
 			Id:                    uuid.NewString(),
@@ -353,7 +366,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 			MetricConfiguration:   data.Config,
 			Compliant:             data.Compliant,
 			EvidenceId:            ev.GetId(),
-			ResourceId:            resourceId,
+			ResourceId:            resource.GetId(),
 			ResourceTypes:         types,
 			NonComplianceComments: "No comments so far",
 			ToolId:                util.Ref(assessment.AssessmentToolId),

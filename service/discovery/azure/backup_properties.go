@@ -28,17 +28,15 @@ package azure
 import (
 	"strings"
 
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/api/ontology"
 )
 
 // backupsEmptyCheck checks if the backups list is empty and returns voc.Backup with enabled = false.
-func backupsEmptyCheck(backups []*voc.Backup) []*voc.Backup {
+func backupsEmptyCheck(backups []*ontology.Backup) []*ontology.Backup {
 	if len(backups) == 0 {
-		return []*voc.Backup{
+		return []*ontology.Backup{
 			{
-				Enabled:         false,
-				RetentionPeriod: -1,
-				Interval:        -1,
+				Enabled: false,
 			},
 		}
 	}

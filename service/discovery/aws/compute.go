@@ -32,8 +32,10 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	typesEC2 "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -94,7 +96,7 @@ func (*computeDiscovery) Name() string {
 }
 
 // List is the method implementation defined in the discovery.Discoverer interface
-func (d *computeDiscovery) List() (resources []voc.IsCloudResource, err error) {
+func (d *computeDiscovery) List() (resources []ontology.IsResource, err error) {
 	log.Infof("Collecting evidences in %s", d.Name())
 
 	// Even though technically volumes are "storage", they are part of the EC2 API and therefore discovered here
@@ -138,18 +140,18 @@ func (d *computeDiscovery) CloudServiceID() string {
 	return d.csID
 }
 
-// discoverVolumes discoveres all volumes (in the current region)
-func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
+// discoverVolumes discovers all volumes (in the current region)
+func (d *computeDiscovery) discoverVolumes() ([]*ontology.BlockStorage, error) {
 	res, err := d.virtualMachineAPI.DescribeVolumes(context.TODO(), &ec2.DescribeVolumesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
 
-	var blocks []*voc.BlockStorage
+	var blocks []*ontology.BlockStorage
 	for i := range res.Volumes {
 		volume := &res.Volumes[i]
 
-		atRest := &voc.AtRestEncryption{
+		atRest := &ontology.ManagedKeyEncryption{
 			Enabled: util.Deref(volume.Encrypted),
 		}
 
@@ -158,22 +160,20 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 			atRest.Algorithm = "AES-256"
 		}
 
-		blocks = append(blocks, &voc.BlockStorage{
-			Storage: &voc.Storage{
-				Resource: discovery.NewResource(d,
-					d.arnify("volume", volume.VolumeId),
-					d.nameOrID(volume.Tags, volume.VolumeId),
-					volume.CreateTime,
-					voc.GeoLocation{
-						Region: d.awsConfig.cfg.Region,
-					},
-					d.labels(volume.Tags),
-					"",
-					voc.BlockStorageType,
-					&res.Volumes[i],
-				),
-				AtRestEncryption: atRest,
+		blocks = append(blocks, &ontology.BlockStorage{
+			Id:           d.arnify("volume", volume.VolumeId),
+			Name:         d.nameOrID(volume.Tags, volume.VolumeId),
+			CreationTime: timestamppb.New(util.Deref(volume.CreateTime)),
+			GeoLocation: &ontology.GeoLocation{
+				Region: d.awsConfig.cfg.Region,
 			},
+			Labels: d.labels(volume.Tags),
+			AtRestEncryption: &ontology.AtRestEncryption{
+				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+					ManagedKeyEncryption: atRest,
+				},
+			},
+			Raw: discovery.Raw(&res.Volumes[i]),
 		})
 	}
 
@@ -181,32 +181,24 @@ func (d *computeDiscovery) discoverVolumes() ([]*voc.BlockStorage, error) {
 }
 
 // discoverNetworkInterfaces discovers all network interfaces (in the current region)
-func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, error) {
+func (d *computeDiscovery) discoverNetworkInterfaces() ([]*ontology.NetworkInterface, error) {
 	res, err := d.virtualMachineAPI.DescribeNetworkInterfaces(context.TODO(), &ec2.DescribeNetworkInterfacesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
 
-	var ifcs []voc.NetworkInterface
+	var ifcs []*ontology.NetworkInterface
 	for i := range res.NetworkInterfaces {
 		ifc := &res.NetworkInterfaces[i]
 
-		ifcs = append(ifcs, voc.NetworkInterface{
-			Networking: &voc.Networking{
-				Resource: discovery.NewResource(
-					d,
-					d.arnify("network-interface", ifc.NetworkInterfaceId),
-					d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
-					nil,
-					voc.GeoLocation{
-						Region: d.awsConfig.cfg.Region,
-					},
-					d.labels(ifc.TagSet),
-					"",
-					[]string{"NetworkInterface", "Networking", "Resource"},
-					&res.NetworkInterfaces[i],
-				),
+		ifcs = append(ifcs, &ontology.NetworkInterface{
+			Id:   d.arnify("network-interface", ifc.NetworkInterfaceId),
+			Name: d.nameOrID(ifc.TagSet, ifc.NetworkInterfaceId),
+			GeoLocation: &ontology.GeoLocation{
+				Region: d.awsConfig.cfg.Region,
 			},
+			Labels: d.labels(ifc.TagSet),
+			Raw:    discovery.Raw(&res.NetworkInterfaces[i]),
 		})
 	}
 
@@ -214,46 +206,37 @@ func (d *computeDiscovery) discoverNetworkInterfaces() ([]voc.NetworkInterface, 
 }
 
 // discoverVirtualMachines discovers all VMs (in the current region)
-func (d *computeDiscovery) discoverVirtualMachines() ([]*voc.VirtualMachine, error) {
+func (d *computeDiscovery) discoverVirtualMachines() ([]*ontology.VirtualMachine, error) {
 	resp, err := d.virtualMachineAPI.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{})
 	if err != nil {
 		return nil, prettyError(err)
 	}
-	var resources []*voc.VirtualMachine
+	var resources []*ontology.VirtualMachine
 	for _, reservation := range resp.Reservations {
 		for i := range reservation.Instances {
 			vm := &reservation.Instances[i]
-			computeResource := &voc.Compute{
-				Resource: discovery.NewResource(
-					d,
-					d.arnify("instance", vm.InstanceId),
-					d.getNameOfVM(vm),
-					nil,
-					voc.GeoLocation{
-						Region: d.awsConfig.cfg.Region,
-					},
-					d.labels(vm.Tags),
-					"",
-					[]string{"VirtualMachine", "Compute", "Resource"},
-					&reservation,
-				),
 
-				NetworkInterfaces: d.getNetworkInterfacesOfVM(vm),
-			}
-
-			resources = append(resources, &voc.VirtualMachine{
-				Compute:      computeResource,
-				BlockStorage: d.mapBlockStorageIDsOfVM(vm),
-				BootLogging:  d.getBootLog(vm),
-				OsLogging:    d.getOSLog(vm),
+			resources = append(resources, &ontology.VirtualMachine{
+				Id:   d.arnify("instance", vm.InstanceId),
+				Name: d.getNameOfVM(vm),
+				GeoLocation: &ontology.GeoLocation{
+					Region: d.awsConfig.cfg.Region,
+				},
+				Labels:              d.labels(vm.Tags),
+				NetworkInterfaceIds: d.getNetworkInterfacesOfVM(vm),
+				BlockStorageIds:     d.mapBlockStorageIDsOfVM(vm),
+				BootLogging:         d.getBootLog(vm),
+				OsLogging:           d.getOSLog(vm),
+				Raw:                 discovery.Raw(&reservation),
 			})
 		}
 	}
+
 	return resources, nil
 }
 
 // discoverFunctions discovers all lambda functions
-func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err error) {
+func (d *computeDiscovery) discoverFunctions() (resources []*ontology.Function, err error) {
 	// 'listFunctions' discovers up to 50 Lambda functions per execution -> loop through when response has nextMarker set
 	var resp *lambda.ListFunctionsOutput
 	var nextMarker *string
@@ -275,61 +258,43 @@ func (d *computeDiscovery) discoverFunctions() (resources []*voc.Function, err e
 }
 
 // mapFunctionResources iterates functionConfigurations and returns a list of corresponding FunctionResources
-func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*voc.Function) {
+func (d *computeDiscovery) mapFunctionResources(functions []typesLambda.FunctionConfiguration) (resources []*ontology.Function) {
 	// TODO(all): Labels are missing
 	for i := range functions {
 		function := &functions[i]
 
-		resources = append(resources, &voc.Function{
-			Compute: &voc.Compute{
-				Resource: discovery.NewResource(
-					d,
-					voc.ResourceID(aws.ToString(function.FunctionArn)),
-					aws.ToString(function.FunctionName),
-					nil,
-					voc.GeoLocation{
-						Region: d.awsConfig.cfg.Region,
-					},
-					nil,
-					"",
-					voc.FunctionType,
-					&functions[i],
-				),
-			}})
+		resources = append(resources, &ontology.Function{
+			Id:   aws.ToString(function.FunctionArn),
+			Name: aws.ToString(function.FunctionName),
+			GeoLocation: &ontology.GeoLocation{
+				Region: d.awsConfig.cfg.Region,
+			},
+			Raw: discovery.Raw(&functions[i]),
+		})
 	}
 	return
 }
 
 // getBootLog checks if boot logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *voc.BootLogging) {
-	l = &voc.BootLogging{
-		Logging: &voc.Logging{
-			Auditing:        nil,
-			LoggingService:  nil,
-			Enabled:         false,
-			RetentionPeriod: 0,
-		},
+func (*computeDiscovery) getBootLog(_ *typesEC2.Instance) (l *ontology.BootLogging) {
+	l = &ontology.BootLogging{
+		Enabled: false,
 	}
 	return
 }
 
 // getOSLog checks if OS logging is enabled
 // Currently there is no option to find out if any logs are enabled -> Assign default zero values
-func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *voc.OSLogging) {
-	l = &voc.OSLogging{
-		Logging: &voc.Logging{
-			Auditing:        nil,
-			LoggingService:  nil,
-			Enabled:         false,
-			RetentionPeriod: 0,
-		},
+func (*computeDiscovery) getOSLog(_ *typesEC2.Instance) (l *ontology.OSLogging) {
+	l = &ontology.OSLogging{
+		Enabled: false,
 	}
 	return
 }
 
 // mapBlockStorageIDsOfVM returns block storages IDs by iterating the VMs block storages
-func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []voc.ResourceID) {
+func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockStorageIDs []string) {
 	// Loop through mappings using an index, since BlockDeviceMappings is an array of a struct
 	// and not of a pointer; otherwise we would copy a lot of data
 	for i := range vm.BlockDeviceMappings {
@@ -340,7 +305,7 @@ func (d *computeDiscovery) mapBlockStorageIDsOfVM(vm *typesEC2.Instance) (blockS
 }
 
 // getNetworkInterfacesOfVM returns the network interface IDs by iterating the VMs network interfaces
-func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []voc.ResourceID) {
+func (d *computeDiscovery) getNetworkInterfacesOfVM(vm *typesEC2.Instance) (networkInterfaceIDs []string) {
 	// Loop through mappings using an index, since is NetworkInterfaces an array of a struct
 	// and not of a pointer; otherwise we would copy a lot of data
 	for i := range vm.NetworkInterfaces {
@@ -383,11 +348,11 @@ func (*computeDiscovery) labels(tags []typesEC2.Tag) (labels map[string]string) 
 	return
 }
 
-// addARNToVolume generates the ARN of a volumne instance
-func (d *computeDiscovery) arnify(typ string, ID *string) voc.ResourceID {
-	return voc.ResourceID("arn:aws:ec2:" +
+// addARNToVolume generates the ARN of a volume instance
+func (d *computeDiscovery) arnify(typ string, ID *string) string {
+	return "arn:aws:ec2:" +
 		d.awsConfig.cfg.Region + ":" +
 		aws.ToString(d.awsConfig.accountID) +
 		":" + typ + "/" +
-		aws.ToString(ID))
+		aws.ToString(ID)
 }

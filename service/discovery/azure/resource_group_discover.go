@@ -29,13 +29,14 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
 // discoverResourceGroups discovers resource groups and cloud account
-func (d *azureDiscovery) discoverResourceGroups() (list []voc.IsCloudResource, err error) {
+func (d *azureDiscovery) discoverResourceGroups() (list []ontology.IsResource, err error) {
 	// initialize client
 	if err := d.initResourceGroupsClient(); err != nil {
 		return nil, err

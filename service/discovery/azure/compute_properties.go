@@ -31,15 +31,22 @@ import (
 	"fmt"
 	"strings"
 
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
+	"google.golang.org/protobuf/types/known/durationpb"
+)
+
+var (
+	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
 )
 
 // blockStorageAtRestEncryption takes encryption properties of an armcompute.Disk and converts it into our respective
 // ontology object.
-func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc voc.IsAtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
+func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (enc *ontology.AtRestEncryption, rawKeyUrl *armcompute.DiskEncryptionSet, err error) {
 	var (
 		diskEncryptionSetID string
 		keyUrl              string
@@ -52,10 +59,14 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 	if disk.Properties.Encryption.Type == nil {
 		return enc, nil, errors.New("error getting atRestEncryption properties of blockStorage")
 	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithPlatformKey {
-		enc = &voc.ManagedKeyEncryption{AtRestEncryption: &voc.AtRestEncryption{
-			Algorithm: "AES256",
-			Enabled:   true,
-		}}
+		enc = &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+					Algorithm: "AES256",
+					Enabled:   true,
+				},
+			},
+		}
 	} else if util.Deref(disk.Properties.Encryption.Type) == armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey {
 		diskEncryptionSetID = util.Deref(disk.Properties.Encryption.DiskEncryptionSetID)
 
@@ -64,12 +75,14 @@ func (d *azureDiscovery) blockStorageAtRestEncryption(disk *armcompute.Disk) (en
 			return nil, nil, fmt.Errorf("could not get keyVaultID: %w", err)
 		}
 
-		enc = &voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(all): TBD
-				Enabled:   true,
+		enc = &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+					Algorithm: "", // TODO(all): TBD
+					Enabled:   true,
+					KeyUrl:    keyUrl,
+				},
 			},
-			KeyUrl: keyUrl,
 		}
 	}
 
@@ -111,8 +124,8 @@ func diskEncryptionSetName(diskEncryptionSetID string) string {
 }
 
 // getVirtualNetworkSubnetId returns the virtual network subnet ID for webApp und function
-func getVirtualNetworkSubnetId(site *armappservice.Site) []voc.ResourceID {
-	var ni = []voc.ResourceID{}
+func getVirtualNetworkSubnetId(site *armappservice.Site) []string {
+	var ni = []string{}
 
 	// Check if a mandatory field is empty
 	if site == nil {
@@ -121,7 +134,7 @@ func getVirtualNetworkSubnetId(site *armappservice.Site) []voc.ResourceID {
 
 	// Get virtual network subnet ID
 	if site.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(util.Deref(site.Properties.VirtualNetworkSubnetID))}
+		ni = []string{util.Deref(site.Properties.VirtualNetworkSubnetID)}
 	}
 
 	return ni
@@ -143,8 +156,8 @@ func getPublicAccessStatus(site *armappservice.Site) bool {
 }
 
 // getResourceLoggingWebApps determines if logging is activated for given web app or function by checking the respective app setting
-func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl *voc.ResourceLogging) {
-	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl *ontology.ResourceLogging) {
+	rl = &ontology.ResourceLogging{}
 
 	if site == nil {
 		log.Error("given parameter is empty")
@@ -167,8 +180,8 @@ func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl
 }
 
 // getRedundancy returns the redundancy status
-func getRedundancy(app *armappservice.Site) *voc.Redundancy {
-	r := &voc.Redundancy{}
+func getRedundancy(app *armappservice.Site) *ontology.Redundancy {
+	r := &ontology.Redundancy{}
 	switch util.Deref(app.Properties.RedundancyMode) {
 	case armappservice.RedundancyModeNone:
 		break
@@ -182,23 +195,23 @@ func getRedundancy(app *armappservice.Site) *voc.Redundancy {
 }
 
 // We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
-func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *voc.TransportEncryption) {
+func getTransportEncryption(siteProperties *armappservice.SiteProperties, config armappservice.WebAppsClientGetConfigurationResponse) (enc *ontology.TransportEncryption) {
 	// Get the corresponding Clouditor TLS version
-	tlsVersion := tlsVersion((string(util.Deref(config.Properties.MinTLSVersion))))
+	tlsVersion := tlsVersion((*string)(config.Properties.MinTLSVersion))
 
 	// Create transportEncryption voc object
-	if tlsVersion != "" {
-		enc = &voc.TransportEncryption{
-			Enforced:   util.Deref(siteProperties.HTTPSOnly),
-			TlsVersion: tlsVersion,
-			Algorithm:  string(util.Deref(config.Properties.MinTLSCipherSuite)), // MinTLSCipherSuite is a new property and currently not filled from Azure side
-			Enabled:    true,
+	if tlsVersion != 0 {
+		enc = &ontology.TransportEncryption{
+			Enforced:        util.Deref(siteProperties.HTTPSOnly),
+			Protocol:        constants.TLS,
+			ProtocolVersion: tlsVersion,
+			CipherSuites:    tlsCipherSuites(string(util.Deref(config.Properties.MinTLSCipherSuite))), // MinTLSCipherSuite is a new property and currently not filled from Azure side
+			Enabled:         true,
 		}
 	} else {
-		enc = &voc.TransportEncryption{
-			Enforced:  util.Deref(siteProperties.HTTPSOnly),
-			Enabled:   false,
-			Algorithm: string(util.Deref(config.Properties.MinTLSCipherSuite)),
+		enc = &ontology.TransportEncryption{
+			Enforced: util.Deref(siteProperties.HTTPSOnly),
+			Enabled:  false,
 		}
 	}
 
@@ -218,8 +231,8 @@ func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string)
 }
 
 // automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
-func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
-	automaticUpdates = &voc.AutomaticUpdates{}
+func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *ontology.AutomaticUpdates) {
+	automaticUpdates = &ontology.AutomaticUpdates{}
 
 	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
 		return
@@ -230,7 +243,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
 		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
+			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 		}
 	}
@@ -241,7 +254,7 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
 			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
 			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
+			automaticUpdates.Interval = durationpb.New(Duration30Days)
 			return
 
 		} else {

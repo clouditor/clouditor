@@ -28,9 +28,10 @@ package azure
 import (
 	"testing"
 
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +48,7 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *voc.Account
+		want   *ontology.Account
 	}{
 		{
 			name: "Happy path",
@@ -61,13 +62,9 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 					ID:             util.Ref(testdata.MockSubscriptionResourceID),
 				},
 			},
-			want: &voc.Account{
-				Resource: &voc.Resource{
-					ID:        voc.ResourceID(testdata.MockSubscriptionResourceID),
-					ServiceID: testdata.MockCloudServiceID1,
-					Name:      "Wonderful Subscription",
-					Type:      voc.AccountType,
-				},
+			want: &ontology.Account{
+				Id:   testdata.MockSubscriptionResourceID,
+				Name: "Wonderful Subscription",
 			},
 		},
 	}
@@ -92,7 +89,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   voc.IsCloudResource
+		want   ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -110,21 +107,17 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.ResourceGroup{
-				Resource: &voc.Resource{
-					ID:        voc.ResourceID(testdata.MockResourceGroupID),
-					ServiceID: testdata.MockCloudServiceID1,
-					Name:      "res1",
-					Type:      voc.ResourceGroupType,
-					GeoLocation: voc.GeoLocation{
-						Region: "westus",
-					},
-					Labels: map[string]string{
-						"tag2Key": "tag2",
-						"tag1Key": "tag1",
-					},
-					Parent: testdata.MockSubscriptionResourceID,
+			want: &ontology.ResourceGroup{
+				Id:   testdata.MockResourceGroupID,
+				Name: "res1",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "westus",
 				},
+				Labels: map[string]string{
+					"tag2Key": "tag2",
+					"tag1Key": "tag1",
+				},
+				ParentId: util.Ref(testdata.MockSubscriptionResourceID),
 			},
 		},
 	}
@@ -145,7 +138,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 	tests := []struct {
 		name     string
 		fields   fields
-		wantList []voc.IsCloudResource
+		wantList []ontology.IsResource
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
@@ -169,46 +162,34 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
-			wantList: []voc.IsCloudResource{
-				&voc.Account{
-					Resource: &voc.Resource{
-						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "displayName",
-						Type:      voc.AccountType,
-					},
+			wantList: []ontology.IsResource{
+				&ontology.Account{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000",
+					Name: "displayName",
 				},
-				&voc.ResourceGroup{
-					Resource: &voc.Resource{
-						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "res1",
-						Type:      voc.ResourceGroupType,
-						GeoLocation: voc.GeoLocation{
-							Region: "westus",
-						},
-						Labels: map[string]string{
-							"testKey1": "testTag1",
-							"testKey2": "testTag2",
-						},
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
+				&ontology.ResourceGroup{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					Name: "res1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "westus",
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
 				},
-				&voc.ResourceGroup{
-					Resource: &voc.Resource{
-						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2"),
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "res2",
-						Type:      voc.ResourceGroupType,
-						GeoLocation: voc.GeoLocation{
-							Region: "eastus",
-						},
-						Labels: map[string]string{
-							"testKey1": "testTag1",
-							"testKey2": "testTag2",
-						},
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
+				&ontology.ResourceGroup{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
+					Name: "res2",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
 				},
 			},
 			wantErr: assert.NoError,
@@ -224,30 +205,22 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						SubscriptionID: util.Ref("00000000-0000-0000-0000-000000000000"),
 					})),
 			},
-			wantList: []voc.IsCloudResource{
-				&voc.Account{
-					Resource: &voc.Resource{
-						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "displayName",
-						Type:      voc.AccountType,
-					},
+			wantList: []ontology.IsResource{
+				&ontology.Account{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000",
+					Name: "displayName",
 				},
-				&voc.ResourceGroup{
-					Resource: &voc.Resource{
-						ID:        voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "res1",
-						Type:      voc.ResourceGroupType,
-						GeoLocation: voc.GeoLocation{
-							Region: "westus",
-						},
-						Labels: map[string]string{
-							"testKey1": "testTag1",
-							"testKey2": "testTag2",
-						},
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000"),
+				&ontology.ResourceGroup{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					Name: "res1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: "westus",
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
 				},
 			},
 			wantErr: assert.NoError,

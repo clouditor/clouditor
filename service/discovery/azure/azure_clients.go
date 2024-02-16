@@ -29,6 +29,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -45,7 +46,9 @@ import (
 // ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
 type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
 
-// initClient creates an Azure client if not already exists
+// initClient creates an Azure client if not already exists. This function will
+// log the error, so calling functions should just directly return the error in
+// order to avoid double-logging.
 func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T]) (client *T, err error) {
 	if existingClient != nil {
 		return existingClient, nil
@@ -59,7 +62,7 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	client, err = fun(subID, d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get %T client: %w", new(T), err)
-		log.Debug(err)
+		log.Error(err)
 		return nil, err
 	}
 
@@ -142,36 +145,42 @@ func (d *azureDiscovery) initDefenderClient() (err error) {
 // initDiskEncryptonSetClient creates the client if not already exists
 func (d *azureDiscovery) initDiskEncryptonSetClient() (err error) {
 	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d, armcompute.NewDiskEncryptionSetsClient)
+
 	return
 }
 
 // initFileStorageClient creates the client if not already exists
 func (d *azureDiscovery) initFileStorageClient() (err error) {
 	d.clients.fileStorageClient, err = initClient(d.clients.fileStorageClient, d, armstorage.NewFileSharesClient)
+
 	return
 }
 
 // initLoadBalancersClient creates the client if not already exists
 func (d *azureDiscovery) initLoadBalancersClient() (err error) {
 	d.clients.loadBalancerClient, err = initClient(d.clients.loadBalancerClient, d, armnetwork.NewLoadBalancersClient)
+
 	return
 }
 
 // initNetworkInterfacesClient creates the client if not already exists
 func (d *azureDiscovery) initNetworkInterfacesClient() (err error) {
 	d.clients.networkInterfacesClient, err = initClient(d.clients.networkInterfacesClient, d, armnetwork.NewInterfacesClient)
+
 	return
 }
 
 // initNetworkSecurityGroupClient creates the client if not already exists
 func (d *azureDiscovery) initNetworkSecurityGroupClient() (err error) {
 	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d, armnetwork.NewSecurityGroupsClient)
+
 	return
 }
 
 // azureDiscovery creates the client if not already exists
 func (d *azureDiscovery) initResourceGroupsClient() (err error) {
 	d.clients.rgClient, err = initClient(d.clients.rgClient, d, armresources.NewResourceGroupsClient)
+
 	return
 }
 
@@ -192,11 +201,13 @@ func (d *azureDiscovery) initThreatProtectionClient() (err error) {
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureDiscovery) initVirtualMachinesClient() (err error) {
 	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d, armcompute.NewVirtualMachinesClient)
+
 	return
 }
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureDiscovery) initWebAppsClient() (err error) {
 	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d, armappservice.NewWebAppsClient)
+
 	return
 }

@@ -27,18 +27,15 @@ package discovery
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil/clitest"
+	"clouditor.io/clouditor/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/server"
 	service_discovery "clouditor.io/clouditor/service/discovery"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -46,7 +43,7 @@ import (
 
 func TestMain(m *testing.M) {
 	svc := service_discovery.NewService()
-	svc.StartDiscovery(mockDiscoverer{testCase: 2})
+	svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
 
 	os.Exit(clitest.RunCLITest(m,
 		server.WithDiscovery(svc),
@@ -102,115 +99,4 @@ func TestNewQueryDiscoveryCommandWithArgs(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-}
-
-// Mocking code below is copied from clouditor.io/service/discovery
-
-// mockDiscoverer implements Discoverer and mocks the API to cloud resources
-type mockDiscoverer struct {
-	// testCase allows for different implementations for table tests in TestStartDiscovery
-	testCase int
-}
-
-func (mockDiscoverer) Name() string { return "just mocking" }
-
-func (m mockDiscoverer) List() ([]voc.IsCloudResource, error) {
-	switch m.testCase {
-	case 0:
-		return nil, fmt.Errorf("mock error in List()")
-	case 1:
-		return []voc.IsCloudResource{wrongFormattedResource()}, nil
-	case 2:
-		return []voc.IsCloudResource{
-			&voc.ObjectStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:     testdata.MockResourceID1,
-						Name:   testdata.MockResourceName1,
-						Type:   []string{"ObjectStorage", "Storage", "Resource"},
-						Parent: testdata.MockResourceStorageID,
-					},
-				},
-			},
-			&voc.ObjectStorageService{
-				StorageService: &voc.StorageService{
-					Storage: []voc.ResourceID{testdata.MockResourceID1},
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:   testdata.MockResourceStorageID,
-								Name: testdata.MockResourceStorageName,
-								Type: []string{"StorageService", "NetworkService", "Networking", "Resource"},
-							},
-						},
-					},
-				},
-				HttpEndpoint: &voc.HttpEndpoint{
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   false,
-						Enabled:    true,
-						TlsVersion: "TLS1_2",
-					},
-				},
-			},
-		}, nil
-	default:
-		return nil, nil
-	}
-}
-
-func (mockDiscoverer) CloudServiceID() string {
-	return testdata.MockCloudServiceID1
-}
-
-func wrongFormattedResource() voc.IsCloudResource {
-	res1 := mockIsCloudResource{Another: nil}
-	res2 := mockIsCloudResource{Another: &res1}
-	res1.Another = &res2
-	return res1
-}
-
-// mockIsCloudResource implements mockIsCloudResource interface.
-// It is used for json.marshal to fail since it contains circular dependency
-type mockIsCloudResource struct {
-	Another *mockIsCloudResource `json:"Another"`
-}
-
-func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceID"
-}
-
-func (mockIsCloudResource) GetServiceID() string {
-	return "MockServiceID"
-}
-
-func (mockIsCloudResource) SetServiceID(_ string) {
-
-}
-
-func (mockIsCloudResource) GetName() string {
-	return ""
-}
-
-func (mockIsCloudResource) GetType() []string {
-	return nil
-}
-
-func (mockIsCloudResource) HasType(_ string) bool {
-	return false
-}
-
-func (mockIsCloudResource) GetCreationTime() *time.Time {
-	return nil
-}
-
-func (mockIsCloudResource) GetRaw() string {
-	return ""
-}
-
-func (mockIsCloudResource) SetRaw(_ string) {
-}
-
-func (mockIsCloudResource) Related() []string {
-	return []string{}
 }

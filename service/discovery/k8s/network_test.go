@@ -31,8 +31,8 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
@@ -140,26 +140,26 @@ func TestListIngresses(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	service, ok := list[0].(*voc.NetworkService)
+	service, ok := list[0].(*ontology.GenericNetworkService)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-service", service.Name)
-	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.ID))
-	assert.Equal(t, []uint16{80}, service.Ports)
+	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.Id))
+	assert.Equal(t, []uint32{80}, service.Ports)
 	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)
 
-	lb, ok := list[1].(*voc.LoadBalancer)
+	lb, ok := list[1].(*ontology.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.Id))
 	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
 
-	lb, ok = list[2].(*voc.LoadBalancer)
+	lb, ok = list[2].(*ontology.LoadBalancer)
 
 	assert.True(t, ok)
 	assert.Equal(t, "my-other-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.Id))
 	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
 	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }

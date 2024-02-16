@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/inmemory"
@@ -43,7 +44,6 @@ import (
 	"clouditor.io/clouditor/service/discovery/aws"
 	"clouditor.io/clouditor/service/discovery/azure"
 	"clouditor.io/clouditor/service/discovery/k8s"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
@@ -52,7 +52,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -226,7 +226,11 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
-	var opts = []azure.DiscoveryOption{}
+	var (
+		opts       = []azure.DiscoveryOption{}
+		discoverer []discovery.Discoverer
+	)
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -243,8 +247,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	log.Infof("Starting discovery...")
 	svc.scheduler.TagsUnique()
 
-	var discoverer []discovery.Discoverer
-
 	// Configure discoverers for given providers
 	for _, provider := range svc.providers {
 		switch {
@@ -254,15 +256,12 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
-
 			// Add authorizer and cloudServiceID
 			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
-
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
 				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
-
 			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
@@ -319,7 +318,7 @@ func (svc *Service) Shutdown() {
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
-		list []voc.IsCloudResource
+		list []ontology.IsResource
 	)
 
 	go func() {
@@ -350,7 +349,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, v, err := toDiscoveryResource(resource)
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -362,14 +361,19 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
-		// TODO(all): What is the raw type in our case?
+		a, err := anypb.New(resource)
+		if err != nil {
+			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
+			continue
+		}
+
 		e := &evidence.Evidence{
 			Id:             uuid.New().String(),
-			CloudServiceId: resource.GetServiceID(),
+			CloudServiceId: svc.GetCloudServiceId(),
 			Timestamp:      timestamppb.Now(),
 			Raw:            util.Ref(resource.GetRaw()),
 			ToolId:         discovery.EvidenceCollectorToolId,
-			Resource:       v,
+			Resource:       a,
 		}
 
 		// Get Evidence Store stream
@@ -442,24 +446,4 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 // cloud service ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCloudServiceId() string {
 	return svc.csID
-}
-
-// toDiscoveryResource converts a [voc.IsCloudResource] into a resource that can be persisted in our database
-// ([discovery.Resource]). In the future we want to merge those two structs
-func toDiscoveryResource(resource voc.IsCloudResource) (r *discovery.Resource, v *structpb.Value, err error) {
-	v, err = voc.ToStruct(resource)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
-	}
-
-	// Build a resource struct. This will hold the latest sync state of the
-	// resource for our storage layer.
-	r = &discovery.Resource{
-		Id:             string(resource.GetID()),
-		ResourceType:   strings.Join(resource.GetType(), ","),
-		CloudServiceId: resource.GetServiceID(),
-		Properties:     v,
-	}
-
-	return
 }

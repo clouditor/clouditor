@@ -8,21 +8,15 @@ import (
 )
 
 func ExampleMarshal() {
-	var c = &Resource{
-		Type: &Resource_CloudResource{&CloudResource{
-			Type: &CloudResource_Compute{Compute: &Compute{
-				Type: &Compute_VirtualMachine{&VirtualMachine{
-					Id:   "my-id",
-					Name: "My VM",
-					BootLogging: &BootLogging{
-						Enabled: true,
-					},
-				}},
-			}},
-		}},
+	var vm = &VirtualMachine{
+		Id:   "my-id",
+		Name: "My VM",
+		BootLogging: &BootLogging{
+			Enabled: true,
+		},
 	}
 
-	b, err := protojson.Marshal(c)
+	b, err := protojson.Marshal(vm)
 	if err != nil {
 		panic(err)
 	}
@@ -41,5 +35,5 @@ func ExampleMarshal() {
 	}
 
 	fmt.Println(string(b))
-	// Output: {"cloudResource":{"compute":{"virtualMachine":{"bootLogging":{"enabled":true},"id":"my-id","name":"My VM"}}}}
+	// Output: {"bootLogging":{"enabled":true},"id":"my-id","name":"My VM"}
 }

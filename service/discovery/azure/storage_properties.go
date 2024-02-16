@@ -30,14 +30,16 @@ import (
 	"errors"
 	"fmt"
 
+	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/internal/constants"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
 // storageAtRestEncryption takes encryption properties of an armstorage.Account and converts it into our respective ontology object.
-func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncryption, err error) {
+func storageAtRestEncryption(account *armstorage.Account) (enc *ontology.AtRestEncryption, err error) {
 	if account == nil {
 		return enc, ErrEmptyStorageAccount
 	}
@@ -45,19 +47,24 @@ func storageAtRestEncryption(account *armstorage.Account) (enc voc.IsAtRestEncry
 	if account.Properties == nil || account.Properties.Encryption.KeySource == nil {
 		return enc, errors.New("keySource is empty")
 	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
-		enc = &voc.ManagedKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: AES256,
-				Enabled:   true,
+		enc = &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+					Algorithm: constants.AES256,
+					Enabled:   true,
+				},
 			},
 		}
 	} else if util.Deref(account.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftKeyvault {
-		enc = &voc.CustomerKeyEncryption{
-			AtRestEncryption: &voc.AtRestEncryption{
-				Algorithm: "", // TODO(all): TBD
-				Enabled:   true,
+		enc = &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+				CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+					Algorithm: "", // TODO(all): TBD
+					Enabled:   true,
+					// TODO(oxisto): This should also include the key!
+					KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
+				},
 			},
-			KeyUrl: util.Deref(account.Properties.Encryption.KeyVaultProperties.KeyVaultURI),
 		}
 	}
 

@@ -37,8 +37,10 @@ import (
 
 	"clouditor.io/clouditor/api"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/internal/testutil/servicetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
@@ -46,7 +48,6 @@ import (
 	"clouditor.io/clouditor/persistence"
 	"clouditor.io/clouditor/persistence/gorm"
 	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -55,7 +56,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -124,11 +124,9 @@ func TestService_StoreEvidence(t *testing.T) {
 						ToolId:         testdata.MockEvidenceToolID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
-						Resource: toStruct(voc.VirtualMachine{
-							Compute: &voc.Compute{Resource: &voc.Resource{
-								ID: "mock-id",
-							}},
-						}, t),
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id: "mock-id",
+						}),
 					}},
 			},
 			wantErr:  assert.NoError,
@@ -144,13 +142,9 @@ func TestService_StoreEvidence(t *testing.T) {
 						CloudServiceId: testdata.MockCloudServiceID1,
 						Timestamp:      timestamppb.Now(),
 						Raw:            nil,
-						Resource: toStruct(voc.VirtualMachine{
-							Compute: &voc.Compute{
-								Resource: &voc.Resource{
-									ID: "mock-id-1",
-								},
-							},
-						}, t),
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id: "mock-id-1",
+						}),
 					},
 				},
 			},
@@ -205,7 +199,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			name:   "Store 1 evidence to the map",
 			fields: fields{count: 1},
 			args: args{
-				streamToServer: createMockStream(createStoreEvidenceRequestMocks(1))},
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 1))},
 			wantErr: false,
 			wantRespMessage: &evidence.StoreEvidencesResponse{
 				Status: true,
@@ -215,7 +209,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			name:   "Store 2 evidences to the map",
 			fields: fields{count: 2},
 			args: args{
-				streamToServer: createMockStream(createStoreEvidenceRequestMocks(2))},
+				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 2))},
 			wantErr: false,
 			wantRespMessage: &evidence.StoreEvidencesResponse{
 				Status: true,
@@ -232,12 +226,8 @@ func TestService_StoreEvidences(t *testing.T) {
 							CloudServiceId: "MockCloudServiceId",
 							Timestamp:      timestamppb.Now(),
 							Raw:            nil,
-							Resource: toStructWithoutTest(voc.VirtualMachine{
-								Compute: &voc.Compute{
-									Resource: &voc.Resource{
-										ID: "mock-id-1",
-									},
-								},
+							Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+								Id: "mock-id-1",
 							}),
 						},
 					},
@@ -251,14 +241,14 @@ func TestService_StoreEvidences(t *testing.T) {
 		{
 			name: "Error in stream to server - Recv()-err",
 			args: args{
-				streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(1))},
+				streamToServerWithRecvErr: createMockStreamWithRecvErr(createStoreEvidenceRequestMocks(t, 1))},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
 		},
 		{
 			name: "Error in stream to client - Send()-err",
 			args: args{
-				streamToClientWithSendErr: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(1))},
+				streamToClientWithSendErr: createMockStreamWithSendErr(createStoreEvidenceRequestMocks(t, 1))},
 			wantErr:        true,
 			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client:",
 		},
@@ -603,13 +593,9 @@ func TestService_EvidenceHook(t *testing.T) {
 					Timestamp:      timestamppb.Now(),
 					Raw:            nil,
 					ToolId:         "mockToolId-1",
-					Resource: toStruct(voc.VirtualMachine{
-						Compute: &voc.Compute{
-							Resource: &voc.Resource{
-								ID: "mock-id-1",
-							},
-						},
-					}, t),
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id: "mock-id-1",
+					}),
 				},
 				},
 			},
@@ -645,7 +631,7 @@ func TestService_EvidenceHook(t *testing.T) {
 }
 
 // createStoreEvidenceRequestMocks creates store evidence requests with random evidence IDs
-func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest {
+func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreEvidenceRequest {
 	var mockRequests []*evidence.StoreEvidenceRequest
 
 	for i := 0; i < count; i++ {
@@ -656,12 +642,8 @@ func createStoreEvidenceRequestMocks(count int) []*evidence.StoreEvidenceRequest
 				CloudServiceId: testdata.MockCloudServiceID1,
 				Timestamp:      timestamppb.Now(),
 				Raw:            nil,
-				Resource: toStructWithoutTest(voc.VirtualMachine{
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID: "mock-id-1",
-						},
-					},
+				Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+					Id: "mock-id-1",
 				}),
 			},
 		}
@@ -805,24 +787,6 @@ func (m *mockStreamerWithSendErr) Recv() (req *evidence.StoreEvidenceRequest, er
 	return req, nil
 }
 
-func toStruct(r voc.IsCloudResource, t *testing.T) (s *structpb.Value) {
-	s, err := voc.ToStruct(r)
-	if err != nil {
-		assert.Error(t, err)
-	}
-
-	return
-}
-
-func toStructWithoutTest(r voc.IsCloudResource) (s *structpb.Value) {
-	s, err := voc.ToStruct(r)
-	if err != nil {
-		log.Errorf("error getting struct of resource: %v", err)
-	}
-
-	return
-}
-
 func TestService_GetEvidence(t *testing.T) {
 	type fields struct {
 		storage persistence.Storage
@@ -847,7 +811,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Id:             testdata.MockEvidenceID1,
 						CloudServiceId: testdata.MockCloudServiceID2,
 						ToolId:         testdata.MockEvidenceToolID1,
-						Resource:       structpb.NewNullValue(),
+						Resource:       nil,
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),
@@ -873,7 +837,7 @@ func TestService_GetEvidence(t *testing.T) {
 						Id:             testdata.MockEvidenceID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
 						ToolId:         testdata.MockEvidenceToolID1,
-						Resource:       structpb.NewNullValue(),
+						Resource:       nil,
 						Timestamp:      timestamppb.Now(),
 					}))
 				}),

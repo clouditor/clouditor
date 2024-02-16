@@ -31,8 +31,10 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/api/discovery"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/internal/testutil/prototest"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -135,59 +137,44 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 				NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1),
 			},
 			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				cloudResource, ok := i1.([]voc.IsCloudResource)
+				cloudResource, ok := i1.([]ontology.IsResource)
 				if !assert.True(tt, ok) {
 					return false
 				}
-				container, ok := cloudResource[0].(*voc.Container)
+				container, ok := cloudResource[0].(*ontology.Container)
 				if !assert.True(tt, ok) {
 					return false
 				}
-				// Create expected voc.Container
-				expectedContainer := &voc.Container{
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID:        voc.ResourceID(podID),
-							ServiceID: testdata.MockCloudServiceID1,
-							Name:      podName,
-							Type:      []string{"Container", "Compute", "Resource"},
-							Labels:    podLabel,
-							Raw:       "",
-						},
-						NetworkInterfaces: []voc.ResourceID{
-							voc.ResourceID(podNamespace),
-						},
+				// Create expected ontology.Container
+				expectedContainer := &ontology.Container{
+					Id:     podID,
+					Name:   podName,
+					Labels: podLabel,
+					Raw:    "",
+					NetworkInterfaceIds: []string{
+						podNamespace,
 					},
 				}
 
 				// Delete creation time
 				assert.NotNil(t, container.CreationTime)
-				container.CreationTime = 0
+				container.CreationTime = nil
 
 				// Delete raw. We have to delete it, because of the creation time included in the raw field.
 				assert.NotNil(t, container.Raw)
 				container.Raw = ""
 
 				assert.True(t, ok)
-				assert.Equal(t, expectedContainer, container)
+				prototest.Equal(t, expectedContainer, container)
 
 				// Check volume
-				volume, ok := cloudResource[1].(*voc.BlockStorage)
-				// Create expected voc.BlockStorage
-				expectedVolume := &voc.BlockStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           voc.ResourceID(volumeName),
-							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         volumeName,
-							CreationTime: 0,
-							Type:         []string{"BlockStorage", "Storage", "Resource"},
-							GeoLocation: voc.GeoLocation{
-								Region: "",
-							},
-						},
-						AtRestEncryption: &voc.AtRestEncryption{},
-					},
+				volume, ok := cloudResource[1].(*ontology.BlockStorage)
+				// Create expected ontology.BlockStorage
+				expectedVolume := &ontology.BlockStorage{
+					Id:               volumeName,
+					Name:             volumeName,
+					CreationTime:     nil,
+					AtRestEncryption: &ontology.AtRestEncryption{},
 				}
 
 				// Delete raw. We have to delete it, because of the creation time included in the raw field.
@@ -195,7 +182,7 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 				volume.Raw = ""
 
 				assert.True(t, ok)
-				return assert.Equal(t, expectedVolume, volume)
+				return prototest.Equal(t, expectedVolume, volume)
 			},
 			wantErr: assert.NoError,
 		},
@@ -210,6 +197,60 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 			if tt.want != nil {
 				tt.want(t, got)
 			}
+		})
+	}
+}
+
+func Test_k8sComputeDiscovery_handlePodVolume(t *testing.T) {
+	type fields struct {
+		k8sDiscovery k8sDiscovery
+	}
+	type args struct {
+		pod *corev1.Pod
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []ontology.IsResource
+	}{
+		{
+			name:   "file storage",
+			fields: fields{},
+			args: args{
+				pod: &corev1.Pod{
+					Spec: corev1.PodSpec{
+						Volumes: []corev1.Volume{
+							{
+								Name: "test",
+								VolumeSource: corev1.VolumeSource{
+									HostPath: &corev1.HostPathVolumeSource{
+										Path: "/tmp",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []ontology.IsResource{
+				&ontology.FileStorage{
+					Id:               "test",
+					Name:             "test",
+					AtRestEncryption: &ontology.AtRestEncryption{},
+					Raw:              `{"*v1.Pod":[{"metadata":{"creationTimestamp":null},"spec":{"volumes":[{"name":"test","hostPath":{"path":"/tmp"}}],"containers":null},"status":{}}],"*v1.Volume":[{"name":"test","hostPath":{"path":"/tmp"}}]}`,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &k8sComputeDiscovery{
+				k8sDiscovery: tt.fields.k8sDiscovery,
+			}
+
+			got := d.handlePodVolume(tt.args.pod)
+			prototest.EqualSlice(t, tt.want, got)
 		})
 	}
 }

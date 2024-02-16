@@ -153,6 +153,9 @@
         <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/GenericNetworkService"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
     </Declaration>
     <Declaration>
@@ -234,6 +237,9 @@
         <Class IRI="http://graph.clouditor.io/classes/MultiFactorAuthentiation"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/MultiModalDatabaseService"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
     </Declaration>
     <Declaration>
@@ -271,9 +277,6 @@
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/PasswordPolicy"/>
-    </Declaration>
-    <Declaration>
-        <Class IRI="http://graph.clouditor.io/classes/ProxiedEndpoint"/>
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/RBAC"/>
@@ -1015,20 +1018,6 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="http://graph.clouditor.io/classes/resourceType"/>
-            <Datatype abbreviatedIRI="xsd:listString"/>
-        </DataSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="http://graph.clouditor.io/classes/serviceID"/>
-            <Datatype abbreviatedIRI="xsd:string"/>
-        </DataSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
         <DataHasValue>
             <DataProperty abbreviatedIRI="prop:labels"/>
             <Literal>xsd:java.util.Map&lt;String, String&gt;</Literal>
@@ -1059,7 +1048,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CipherSuite"/>
-        <Class IRI="http://graph.clouditor.io/classes/Confidentiality"/>
+        <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CipherSuite"/>
@@ -1092,13 +1081,6 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
         <Class IRI="http://graph.clouditor.io/classes/BaseResource"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
-            <Class IRI="http://graph.clouditor.io/classes/SecurityFeature"/>
-        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
@@ -1142,7 +1124,7 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Container"/>
-        <Class IRI="http://graph.clouditor.io/classes/PasswordPolicy"/>
+        <Class IRI="http://graph.clouditor.io/classes/Compute"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Container"/>
@@ -1262,13 +1244,6 @@
         <Class IRI="http://graph.clouditor.io/classes/Storage"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/DatabaseStorage"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:parent"/>
-            <Class IRI="http://graph.clouditor.io/classes/Storage"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/DeviceProvisioningService"/>
         <Class IRI="http://graph.clouditor.io/classes/IoT"/>
     </SubClassOf>
@@ -1358,6 +1333,10 @@
         <Class abbreviatedIRI="owl:Thing"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/GenericNetworkService"/>
+        <Class IRI="http://graph.clouditor.io/classes/NetworkService"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/GeoLocation"/>
         <Class IRI="http://graph.clouditor.io/classes/Availability"/>
     </SubClassOf>
@@ -1388,6 +1367,13 @@
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/TransportEncryption"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:proxyTarget"/>
+            <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -1844,6 +1830,10 @@
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/MultiModalDatabaseService"/>
+        <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/NetworkInterface"/>
         <Class IRI="http://graph.clouditor.io/classes/Networking"/>
     </SubClassOf>
@@ -1985,17 +1975,6 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/PasswordPolicy"/>
         <Class IRI="http://graph.clouditor.io/classes/CloudResource"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/ProxiedEndpoint"/>
-        <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/ProxiedEndpoint"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:proxyTarget"/>
-            <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
-        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/RBAC"/>
@@ -2737,7 +2716,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/AutomaticUpdates</IRI>
-        <Literal>AutomaticSecurityUpdates</Literal>
+        <Literal>AutomaticUpdates</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -2925,6 +2904,16 @@ name = metadata.name</Literal>
         <Literal xml:lang="english">Functionality</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/GenericNetworkService</IRI>
+        <Literal>A generic network service.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/GenericNetworkService</IRI>
+        <Literal>GenericNetworkService</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/GeoLocation</IRI>
         <Literal xml:lang="english">GeoLocation</Literal>
@@ -2933,6 +2922,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/HttpClientLibrary</IRI>
         <Literal xml:lang="english">HttpClientLibrary</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/HttpEndpoint</IRI>
+        <Literal>An HTTP endpoint can set the &quot;proxyTarget&quot; property, in case that is routed through a (reverse) proxy, e.g. a load balancer.</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
@@ -3085,6 +3079,16 @@ name = metadata.name</Literal>
         <Literal>MultiFactorAuthentiation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/MultiModalDatabaseService</IRI>
+        <Literal>This class represents a database service that identifies itself as &quot;multi-model&quot;, e.g., offers document storage as well as relational features.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/MultiModalDatabaseService</IRI>
+        <Literal>MultiModalDatabaseService</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/NetworkInterface</IRI>
         <Literal xml:lang="english">NetworkInterface</Literal>
@@ -3158,16 +3162,6 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/PasswordPolicy</IRI>
         <Literal>PasswordPolicy</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>http://graph.clouditor.io/classes/ProxiedEndpoint</IRI>
-        <Literal>An HTTP endpoint, that is routed through a (reverse) proxy, e.g. a load balancer.</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
-        <IRI>http://graph.clouditor.io/classes/ProxiedEndpoint</IRI>
-        <Literal xml:lang="english">ProxiedEndpoint</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3317,7 +3311,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/daysSinceActive</IRI>
-        <Literal>daysSinceActive</Literal>
+        <Literal>durationSinceActive</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

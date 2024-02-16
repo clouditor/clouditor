@@ -2,14 +2,12 @@ package testdata
 
 import (
 	"google.golang.org/protobuf/types/known/structpb"
-
-	"clouditor.io/clouditor/voc"
 )
 
 const (
-	MockOrchestratorAddress = "bufnet"
-	MockLocationWestEurope  = "West Europe"
-	MockLocationEastUs      = "eastus"
+	MockOrchestratorAddress    = "bufnet"
+	MockLocationWestEurope     = "West Europe"
+	MockLocationEastUs         = "eastus"
 	MockSubscriptionID         = "00000000-0000-0000-0000-000000000000"
 	MockSubscriptionResourceID = "/subscriptions/00000000-0000-0000-0000-000000000000"
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"
@@ -77,7 +75,7 @@ const (
 	// Resource
 	MockResourceID1         = "my-resource-id"
 	MockResourceName1       = "my-resource-name"
-	MockResourceStorageID   = voc.ResourceID("some-storage-service-id")
+	MockResourceStorageID   = "some-storage-service-id"
 	MockResourceStorageName = "some-storage-service-name"
 	MockResourceID2         = "my-other-resource"
 

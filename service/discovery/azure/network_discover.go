@@ -26,14 +26,14 @@
 package azure
 
 import (
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"clouditor.io/clouditor/api/ontology"
 
-	"clouditor.io/clouditor/voc"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 )
 
 // discoverNetworkInterfaces discovers network interfaces
-func (d *azureDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverNetworkInterfaces() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize network interfaces client
 	if err := d.initNetworkInterfacesClient(); err != nil {
@@ -67,8 +67,8 @@ func (d *azureDiscovery) discoverNetworkInterfaces() ([]voc.IsCloudResource, err
 }
 
 // discoverApplicationGateway discovers application gateways
-func (d *azureDiscovery) discoverApplicationGateway() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverApplicationGateway() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize application gateway client
 	if err := d.initApplicationGatewayClient(); err != nil {
@@ -102,8 +102,8 @@ func (d *azureDiscovery) discoverApplicationGateway() ([]voc.IsCloudResource, er
 }
 
 // discoverLoadBalancer discovers load balancer
-func (d *azureDiscovery) discoverLoadBalancer() ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverLoadBalancer() ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// initialize load balancers client
 	if err := d.initLoadBalancersClient(); err != nil {

@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/api/assessment"
 	"clouditor.io/clouditor/api/evidence"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/api/orchestrator"
 	"github.com/sirupsen/logrus"
 )
@@ -48,7 +49,10 @@ type metricsCache struct {
 
 // PolicyEval is an interface for the policy evaluation engine
 type PolicyEval interface {
-	Eval(evidence *evidence.Evidence, src MetricsSource) (data []*Result, err error)
+	// Eval evaluates a given evidence against a metric coming from the metrics source. In order to avoid unnecessarily
+	// unwrapping, the callee of this function needs to supply the unwrapped ontology resource, since they most likely
+	// unwrapped the resource already, e.g. to check for validation.
+	Eval(evidence *evidence.Evidence, r ontology.IsResource, src MetricsSource) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 

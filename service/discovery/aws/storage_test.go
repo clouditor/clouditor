@@ -34,9 +34,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/internal/constants"
+	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -337,12 +336,11 @@ func TestAwsS3Discovery_getBuckets(t *testing.T) {
 // TestGetEncryptionAtRest tests the getEncryptionAtRest method
 func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	var (
-		encryptionAtRest    voc.IsAtRestEncryption
-		managedEncryption   *voc.ManagedKeyEncryption
-		customerEncryption  *voc.CustomerKeyEncryption
+		encryptionAtRest    *ontology.AtRestEncryption
+		managedEncryption   *ontology.ManagedKeyEncryption
+		customerEncryption  *ontology.CustomerKeyEncryption
 		rawEncryptionAtRest *s3.GetBucketEncryptionOutput
 
-		ok            bool
 		err           error
 		mockAccountID = "123456789"
 	)
@@ -359,16 +357,14 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// First case: SSE-S3 encryption
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket1})
 	assert.NoError(t, err)
-	managedEncryption, ok = encryptionAtRest.(*voc.ManagedKeyEncryption)
-	assert.True(t, ok)
+	managedEncryption = encryptionAtRest.GetManagedKeyEncryption()
 	assert.True(t, managedEncryption.Enabled)
 	assert.Equal(t, "AES256", managedEncryption.Algorithm)
 	assert.NotEmpty(t, rawEncryptionAtRest)
 
 	// Second case: SSE-KMS encryption
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: mockBucket2, region: mockBucket2Region})
-	customerEncryption, ok = encryptionAtRest.(*voc.CustomerKeyEncryption)
-	assert.True(t, ok)
+	customerEncryption = encryptionAtRest.GetCustomerKeyEncryption()
 	assert.NoError(t, err)
 	assert.True(t, customerEncryption.Enabled)
 	assert.Equal(t, "", customerEncryption.Algorithm)
@@ -378,7 +374,7 @@ func TestAwsS3Discovery_getEncryptionAtRest(t *testing.T) {
 	// Third case: No encryption
 	encryptionAtRest, rawEncryptionAtRest, err = d.getEncryptionAtRest(&bucket{name: "mockbucket3"})
 	assert.NoError(t, err)
-	assert.False(t, encryptionAtRest.IsEnabled())
+	assert.Nil(t, encryptionAtRest)
 	assert.Empty(t, rawEncryptionAtRest)
 
 	// 4th case: Connection error
@@ -412,7 +408,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err := d.getTransportEncryption(mockBucket1)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
+	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
 	assert.True(t, encryptionAtTransit.Enforced)
 	assert.NotEmpty(t, rawBucketPolicy)
 
@@ -426,7 +422,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption(mockBucket3)
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
+	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
 	assert.NotEmpty(t, rawBucketPolicy)
 
@@ -434,7 +430,7 @@ func TestAwsS3Discovery_getTransportEncryption(t *testing.T) {
 	encryptionAtTransit, rawBucketPolicy, err = d.getTransportEncryption("")
 	assert.NoError(t, err)
 	assert.True(t, encryptionAtTransit.Enabled)
-	assert.Equal(t, constants.TLS1_2, encryptionAtTransit.TlsVersion)
+	assert.Equal(t, float32(1.2), encryptionAtTransit.ProtocolVersion)
 	assert.False(t, encryptionAtTransit.Enforced)
 	assert.Empty(t, rawBucketPolicy)
 }
@@ -503,7 +499,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	log.Println("Testing name for resource (bucket)", 1)
 	assert.Equal(t, expectedResourceNames[0], resources[0].GetName())
 	log.Println("Testing type of resource", 1)
-	assert.True(t, resources[0].HasType("ObjectStorage"))
+	assert.True(t, ontology.HasType(resources[0], "ObjectStorage"))
 	expectedRaw := "{\"**s3.GetBucketEncryptionOutput\":[{\"ServerSideEncryptionConfiguration\":{\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\",\"KMSMasterKeyID\":null},\"BucketKeyEnabled\":false}]},\"ResultMetadata\":{}}],\"**s3.GetBucketPolicyOutput\":[{\"Policy\":\"{\\\"id\\\":\\\"Mock BucketPolicy ID 1234\\\",\\\"Version\\\":\\\"2012-10-17\\\",\\\"Statement\\\":[{\\\"Action\\\":\\\"s3:*\\\",\\\"Effect\\\":\\\"Deny\\\",\\\"Resource\\\":\\\"*\\\",\\\"Condition\\\":{\\\"aws:SecureTransport\\\":false}}]}\",\"ResultMetadata\":{}}],\"*[]interface {}\":[[{\"CreationDate\":\"2012-11-01T22:08:41Z\",\"Name\":\"mockbucket1\"},{\"LocationConstraint\":\"eu-central-1\",\"ResultMetadata\":{}}]],\"*aws.bucket\":[{}]}"
 	assert.Equal(t, expectedRaw, resources[0].GetRaw())
 
@@ -511,5 +507,5 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	log.Println("Testing name for resource (bucket)", 2)
 	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
 	log.Println("Testing type of resource", 2)
-	assert.True(t, resources[1].HasType("ObjectStorageService"))
+	assert.True(t, ontology.HasType(resources[1], "ObjectStorageService"))
 }

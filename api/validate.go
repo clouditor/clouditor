@@ -26,7 +26,6 @@
 package api
 
 import (
-	"clouditor.io/clouditor/api/evidence"
 	"clouditor.io/clouditor/internal/util"
 
 	"github.com/bufbuild/protovalidate-go"
@@ -65,59 +64,6 @@ func Validate(req IncomingRequest) (err error) {
 	}
 
 	return nil
-}
-
-// ValidateWithResource validates the evidence according to its resource
-// TODO(oxisto): Replace with CEL?
-func ValidateWithResource(ev *evidence.Evidence) (resourceId string, err error) {
-	err = Validate(ev)
-	if err != nil {
-		return "", err
-	}
-
-	value := ev.Resource.GetStructValue()
-	if value == nil {
-		return "", ErrResourceNotStruct
-	}
-
-	m := ev.Resource.GetStructValue().AsMap()
-	if m == nil {
-		return "", ErrResourceNotMap
-	}
-
-	field, ok := m["id"]
-	if !ok {
-		return "", ErrResourceIdFieldMissing
-	} else if field == "" {
-		return "", ErrResourceIdIsEmpty
-	}
-
-	resourceId, ok = field.(string)
-	if !ok {
-		return "", ErrResourceIdNotString
-	}
-
-	_, ok = m["type"]
-	if !ok {
-		return "", ErrResourceTypeFieldMissing
-	}
-
-	// Check if resource is a slice
-	fieldType, ok := m["type"].([]interface{})
-	if !ok {
-		// Resource is not a slice
-		return "", ErrResourceTypeNotArrayOfStrings
-	} else if len(fieldType) == 0 {
-		// Resource slice is empty
-		return "", ErrResourceTypeEmpty
-	} else {
-		if _, ok := fieldType[0].(string); !ok {
-			// Resource slice does not contain string values
-			return "", ErrResourceTypeNotArrayOfStrings
-		}
-	}
-
-	return
 }
 
 type IncomingRequest interface {
