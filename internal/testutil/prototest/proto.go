@@ -18,7 +18,7 @@ func NewAny(t *testing.T, m proto.Message) *anypb.Any {
 	return a
 }
 
-// NewAny creates a new [*anypb.Any] from a [proto.Message] with a panic that no error has been thrown.
+// NewAny creates a new [*anypb.Any] from a [proto.Message] with a panic if an error has been thrown.
 func NewAnyWithPanic(m proto.Message) *anypb.Any {
 	a, err := anypb.New(m)
 	if err != nil {

@@ -26,7 +26,6 @@
 package policies
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -35,11 +34,11 @@ import (
 	"clouditor.io/clouditor/api/ontology"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/internal/testutil/prototest"
 	"clouditor.io/clouditor/persistence"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -272,8 +271,6 @@ func Test_regoEval_Eval(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		resource, err := majorHack(tt.args.resource)
-		assert.NoError(t, err)
 		t.Run(tt.name, func(t *testing.T) {
 			pe := regoEval{
 				qc:   tt.fields.qc,
@@ -282,7 +279,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			}
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
-				Resource: resource,
+				Resource: prototest.NewAny(t, tt.args.resource),
 			}, tt.args.resource, tt.args.src)
 
 			if (err != nil) != tt.wantErr {
@@ -418,14 +415,4 @@ func Test_regoEval_evalMap(t *testing.T) {
 			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}
-}
-
-// TODO: Needed until IsCloudResource embeds proto.Message
-func majorHack(r ontology.IsResource) (*anypb.Any, error) {
-	m, ok := r.(proto.Message)
-	if !ok {
-		return nil, errors.New("not a proto message")
-	}
-
-	return anypb.New(m)
 }
