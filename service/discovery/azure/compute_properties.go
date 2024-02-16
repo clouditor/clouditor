@@ -134,7 +134,7 @@ func getVirtualNetworkSubnetId(site *armappservice.Site) []string {
 
 	// Get virtual network subnet ID
 	if site.Properties.VirtualNetworkSubnetID != nil {
-		ni = []string{util.Deref(site.Properties.VirtualNetworkSubnetID)}
+		ni = []string{resourceID(site.Properties.VirtualNetworkSubnetID)}
 	}
 
 	return ni

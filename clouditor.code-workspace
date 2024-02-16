@@ -71,6 +71,7 @@
       "protoreflect",
       "prototest",
       "Rego",
+      "resourcegroups",
       "resourcemanager",
       "servicetest",
       "sirupsen",

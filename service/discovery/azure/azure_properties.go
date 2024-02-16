@@ -48,6 +48,16 @@ func getName(id string) string {
 	return strings.Split(id, "/")[8]
 }
 
+// resourceID makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things
+// are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
+func resourceID(id *string) string {
+	if id == nil {
+		return ""
+	}
+
+	return strings.ToLower(*id)
+}
+
 // accountName return the ID's account name
 func accountName(id string) string {
 	if id == "" {
@@ -171,6 +181,8 @@ func resourceGroupName(id string) string {
 	return strings.Split(id, "/")[4]
 }
 
+// resourceGroupID builds a resource group ID out of the resource ID. It will also be lowercase (see resourceID function
+// for reasoning).
 func resourceGroupID(ID *string) *string {
 	if ID == nil {
 		return nil
@@ -184,7 +196,7 @@ func resourceGroupID(ID *string) *string {
 		return nil
 	}
 
-	id := strings.Join(s[:5], "/")
+	id := strings.ToLower(strings.Join(s[:5], "/"))
 
 	return &id
 }

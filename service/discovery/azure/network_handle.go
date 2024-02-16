@@ -35,7 +35,7 @@ import (
 
 func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) ontology.IsResource {
 	return &ontology.LoadBalancer{
-		Id:           util.Deref(lb.ID),
+		Id:           resourceID(lb.ID),
 		Name:         util.Deref(lb.Name),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
@@ -53,7 +53,7 @@ func (d *azureDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) ontolog
 // NOTE: handleApplicationGateway uses the LoadBalancer for now until there is a own resource
 func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGateway) ontology.IsResource {
 	return &ontology.LoadBalancer{
-		Id:           util.Deref(ag.ID),
+		Id:           resourceID(ag.ID),
 		Name:         util.Deref(ag.Name),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
@@ -74,7 +74,7 @@ func (d *azureDiscovery) handleApplicationGateway(ag *armnetwork.ApplicationGate
 
 func (d *azureDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface) ontology.IsResource {
 	return &ontology.NetworkInterface{
-		Id:           util.Deref(ni.ID),
+		Id:           resourceID(ni.ID),
 		Name:         util.Deref(ni.Name),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{

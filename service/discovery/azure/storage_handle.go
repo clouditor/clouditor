@@ -80,7 +80,7 @@ func (d *azureDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetRes
 	// TODO(oxisto): Actually, CosmosDB is a multi-model database, but for now we just model this as a document
 	// database.
 	dbService := &ontology.DocumentDatabaseService{
-		Id:           util.Deref(account.ID),
+		Id:           resourceID(account.ID),
 		Name:         util.Deref(account.Name),
 		CreationTime: creationTime(account.SystemData.CreatedAt),
 		GeoLocation:  location(account.Location),
@@ -121,7 +121,7 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]ontology.IsRe
 
 	// Create SQL database service voc object for SQL server
 	dbService = &ontology.RelationalDatabaseService{
-		Id:           util.Deref(server.ID),
+		Id:           resourceID(server.ID),
 		Name:         util.Deref(server.Name),
 		CreationTime: nil,
 		GeoLocation:  location(server.Location),
@@ -171,7 +171,7 @@ func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, stora
 	}
 
 	storageService := &ontology.ObjectStorageService{
-		Id:                  util.Deref(account.ID),
+		Id:                  resourceID(account.ID),
 		Name:                util.Deref(account.Name),
 		StorageIds:          storageResourceIDs,
 		CreationTime:        creationTime(account.Properties.CreationTime),
@@ -217,7 +217,7 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 	}
 
 	return &ontology.FileStorage{
-		Id:           util.Deref(fileshare.ID),
+		Id:           resourceID(fileshare.ID),
 		Name:         util.Deref(fileshare.Name),
 		CreationTime: creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:  location(account.Location),                    // The location is the same as the storage account
@@ -264,12 +264,12 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 	}
 
 	return &ontology.ObjectStorage{
-		Id:               util.Deref(container.ID),
+		Id:               resourceID(container.ID),
 		Name:             util.Deref(container.Name),
 		CreationTime:     creationTime(account.Properties.CreationTime), // We only have the creation time of the storage account the file storage belongs to
 		GeoLocation:      location(account.Location),                    // The location is the same as the storage account
 		Labels:           labels(account.Tags),                          // The storage account labels the file storage belongs to
-		ParentId:         account.ID,                                    // the storage account is our parent
+		ParentId:         util.Ref(resourceID(account.ID)),              // the storage account is our parent
 		Raw:              discovery.Raw(account, container),
 		AtRestEncryption: enc,
 		Immutability: &ontology.Immutability{
