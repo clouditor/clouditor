@@ -33,6 +33,8 @@ type EvidenceStoreClient interface {
 	// Returns a particular stored evidence. Part of the public API, also exposed
 	// as REST.
 	GetEvidence(ctx context.Context, in *GetEvidenceRequest, opts ...grpc.CallOption) (*Evidence, error)
+	// This is an internal endpoint that is only used to generate the ontology objects for the openapi file
+	InternalOntologyEndpoint(ctx context.Context, in *InternalOntologyEndpointRequest, opts ...grpc.CallOption) (*InternalOntologyEndpointResponse, error)
 }
 
 type evidenceStoreClient struct {
@@ -101,6 +103,15 @@ func (c *evidenceStoreClient) GetEvidence(ctx context.Context, in *GetEvidenceRe
 	return out, nil
 }
 
+func (c *evidenceStoreClient) InternalOntologyEndpoint(ctx context.Context, in *InternalOntologyEndpointRequest, opts ...grpc.CallOption) (*InternalOntologyEndpointResponse, error) {
+	out := new(InternalOntologyEndpointResponse)
+	err := c.cc.Invoke(ctx, "/clouditor.evidence.v1.EvidenceStore/InternalOntologyEndpoint", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EvidenceStoreServer is the server API for EvidenceStore service.
 // All implementations must embed UnimplementedEvidenceStoreServer
 // for forward compatibility
@@ -116,6 +127,8 @@ type EvidenceStoreServer interface {
 	// Returns a particular stored evidence. Part of the public API, also exposed
 	// as REST.
 	GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error)
+	// This is an internal endpoint that is only used to generate the ontology objects for the openapi file
+	InternalOntologyEndpoint(context.Context, *InternalOntologyEndpointRequest) (*InternalOntologyEndpointResponse, error)
 	mustEmbedUnimplementedEvidenceStoreServer()
 }
 
@@ -134,6 +147,9 @@ func (UnimplementedEvidenceStoreServer) ListEvidences(context.Context, *ListEvid
 }
 func (UnimplementedEvidenceStoreServer) GetEvidence(context.Context, *GetEvidenceRequest) (*Evidence, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEvidence not implemented")
+}
+func (UnimplementedEvidenceStoreServer) InternalOntologyEndpoint(context.Context, *InternalOntologyEndpointRequest) (*InternalOntologyEndpointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InternalOntologyEndpoint not implemented")
 }
 func (UnimplementedEvidenceStoreServer) mustEmbedUnimplementedEvidenceStoreServer() {}
 
@@ -228,6 +244,24 @@ func _EvidenceStore_GetEvidence_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EvidenceStore_InternalOntologyEndpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InternalOntologyEndpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EvidenceStoreServer).InternalOntologyEndpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/clouditor.evidence.v1.EvidenceStore/InternalOntologyEndpoint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EvidenceStoreServer).InternalOntologyEndpoint(ctx, req.(*InternalOntologyEndpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EvidenceStore_ServiceDesc is the grpc.ServiceDesc for EvidenceStore service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -246,6 +280,10 @@ var EvidenceStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetEvidence",
 			Handler:    _EvidenceStore_GetEvidence_Handler,
+		},
+		{
+			MethodName: "InternalOntologyEndpoint",
+			Handler:    _EvidenceStore_InternalOntologyEndpoint_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
