@@ -31,4 +31,5 @@ var BlockStorageType = []string{"BlockStorage", "Storage", "Resource"}
 
 type BlockStorage struct {
 	*Storage
+	PublicAccess bool `json:"publicAccess"`
 }
