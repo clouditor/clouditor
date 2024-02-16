@@ -107,7 +107,6 @@ func (d *k8sComputeDiscovery) handlePodVolume(pod *v1.Pod) []ontology.IsResource
 
 	// TODO(all): Do we have to differentiate between between persisted volume claim,persistent volumes and storage
 	// classes?
-	//
 	// TODO(all): The ID, region, label and atRestEncryption information we have to get directly from the related
 	// storage, but I think we do not have credentials for the other providers in Clouditor?
 	for _, vol := range pod.Spec.Volumes {
