@@ -308,12 +308,18 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	var (
 		dbList []voc.IsCloudResource
 		// anomalyDetectionList []voc.IsAnomalyDetection
-		dbService voc.IsCloudResource
-		list      []voc.IsCloudResource
+		dbService           voc.IsCloudResource
+		list                []voc.IsCloudResource
+		publicNetworkAccess = false
 	)
 
 	// Get SQL database storages and the corresponding anomaly detection property
 	dbList, _ = d.getSqlDBs(server)
+
+	// Check if resource is public available
+	if util.Deref(server.Properties.PublicNetworkAccess) == "Enabled" {
+		publicNetworkAccess = true
+	}
 
 	// Create SQL database service voc object for SQL server
 	dbService = &voc.DatabaseService{
@@ -341,6 +347,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 				},
 			},
 		},
+		PublicAccess: publicNetworkAccess,
 		// AnomalyDetection: anomalyDetectionList, //TODO(all): The anomaly detection changed, we have to update that.
 	}
 
