@@ -108,12 +108,12 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 		for _, value := range pageResponse.Value {
 			// Create Cosmos DB database storage voc object
 			mongoDB := &ontology.DatabaseStorage{
-				Id:               util.Deref(value.ID),
+				Id:               resourceID(value.ID),
 				Name:             util.Deref(value.Name),
 				CreationTime:     nil, // creation time of database not available
 				GeoLocation:      location(value.Location),
 				Labels:           labels(value.Tags),
-				ParentId:         account.ID,
+				ParentId:         resourceID2(account.ID),
 				Raw:              discovery.Raw(account, value),
 				AtRestEncryption: atRestEnc,
 			}
@@ -202,12 +202,12 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 
 			// Create database storage voc object
 			sqlDB := &ontology.DatabaseStorage{
-				Id:           util.Deref(value.ID),
+				Id:           resourceID(value.ID),
 				Name:         util.Deref(value.Name),
 				CreationTime: creationTime(value.Properties.CreationDate),
 				GeoLocation:  location(value.Location),
 				Labels:       labels(value.Tags),
-				ParentId:     server.ID,
+				ParentId:     resourceID2(server.ID),
 				Raw:          discovery.Raw(value),
 				AtRestEncryption: &ontology.AtRestEncryption{
 					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{

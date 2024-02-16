@@ -38,6 +38,7 @@
       "clitest",
       "Clouditor",
       "conds",
+      "dataprotection",
       "Debugf",
       "dialector",
       "discoverytest",
@@ -71,6 +72,7 @@
       "protoreflect",
       "prototest",
       "Rego",
+      "resourcegroups",
       "resourcemanager",
       "servicetest",
       "sirupsen",
@@ -81,6 +83,7 @@
       "testutil",
       "timestamppb",
       "unmarshalling",
+      "virtualnetworks",
       "Warnf"
     ]
   }

@@ -168,7 +168,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					Name: "displayName",
 				},
 				&ontology.ResourceGroup{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
 					Name: "res1",
 					GeoLocation: &ontology.GeoLocation{
 						Region: "westus",
@@ -180,7 +180,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
 				},
 				&ontology.ResourceGroup{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2",
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2",
 					Name: "res2",
 					GeoLocation: &ontology.GeoLocation{
 						Region: "eastus",
@@ -211,7 +211,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 					Name: "displayName",
 				},
 				&ontology.ResourceGroup{
-					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
 					Name: "res1",
 					GeoLocation: &ontology.GeoLocation{
 						Region: "westus",

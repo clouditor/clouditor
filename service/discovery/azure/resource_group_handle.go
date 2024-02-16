@@ -36,7 +36,7 @@ import (
 // handleResourceGroup returns a [voc.Account] out of an existing [armsubscription.Subscription].
 func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) ontology.IsResource {
 	return &ontology.ResourceGroup{
-		Id:          util.Deref(rg.ID),
+		Id:          resourceID(rg.ID),
 		Name:        util.Deref(rg.Name),
 		GeoLocation: location(rg.Location),
 		Labels:      labels(rg.Tags),
@@ -47,7 +47,7 @@ func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) ont
 // handleSubscription returns a [voc.Account] out of an existing [armsubscription.Subscription].
 func (d *azureDiscovery) handleSubscription(s *armsubscription.Subscription) *ontology.Account {
 	return &ontology.Account{
-		Id:           util.Deref(s.ID),
+		Id:           resourceID(s.ID),
 		Name:         util.Deref(s.DisplayName),
 		CreationTime: nil, // subscriptions do not have a creation date
 		GeoLocation:  nil, // subscriptions are global

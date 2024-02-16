@@ -76,7 +76,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 	}
 
 	r := &ontology.VirtualMachine{
-		Id:           util.Deref(vm.ID),
+		Id:           resourceID(vm.ID),
 		Name:         util.Deref(vm.Name),
 		CreationTime: creationTime(vm.Properties.TimeCreated),
 		GeoLocation: &ontology.GeoLocation{
@@ -113,18 +113,18 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterfaceIds = append(r.NetworkInterfaceIds, util.Deref(networkInterfaces.ID))
+			r.NetworkInterfaceIds = append(r.NetworkInterfaceIds, resourceID(networkInterfaces.ID))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorageIds = append(r.BlockStorageIds, util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID))
+		r.BlockStorageIds = append(r.BlockStorageIds, resourceID(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
 		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorageIds = append(r.BlockStorageIds, util.Deref(blockstorage.ManagedDisk.ID))
+			r.BlockStorageIds = append(r.BlockStorageIds, resourceID(blockstorage.ManagedDisk.ID))
 		}
 	}
 
@@ -154,7 +154,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 	backups = backupsEmptyCheck(backups)
 
 	return &ontology.BlockStorage{
-		Id:               util.Deref(disk.ID),
+		Id:               resourceID(disk.ID),
 		Name:             util.Deref(disk.Name),
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
@@ -207,7 +207,7 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 	}
 
 	return &ontology.Function{
-		Id:           util.Deref(function.ID),
+		Id:           resourceID(function.ID),
 		Name:         util.Deref(function.Name),
 		CreationTime: nil, // No creation time available
 		GeoLocation: &ontology.GeoLocation{
@@ -237,7 +237,7 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 	}
 
 	return &ontology.WebApp{
-		Id:           util.Deref(webApp.ID),
+		Id:           resourceID(webApp.ID),
 		Name:         util.Deref(webApp.Name),
 		CreationTime: nil, // Only the last modified time is available.
 		GeoLocation: &ontology.GeoLocation{
