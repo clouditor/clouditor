@@ -539,7 +539,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: true,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -581,7 +580,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: true,
 				},
 				&voc.FileStorage{
 					Storage: &voc.Storage{
@@ -720,7 +718,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: false,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -759,7 +756,6 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: false,
 				},
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
@@ -1560,7 +1556,6 @@ func Test_handleObjectStorage(t *testing.T) {
 						},
 					},
 				},
-				PublicAccess: false,
 			},
 			wantErr: assert.NoError,
 		},
@@ -1807,7 +1802,6 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: true,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -1845,7 +1839,6 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							},
 						},
 					},
-					PublicAccess: true,
 				},
 			},
 			wantErr: assert.NoError,

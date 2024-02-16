@@ -245,10 +245,6 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	return list, nil
 }
 
-func getPublicAccessOfCosmosDB(acc *armcosmos.DatabaseAccountGetResults) bool {
-	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
-}
-
 func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
 	r := &voc.Redundancy{}
 	locations := acc.Properties.Locations
@@ -731,8 +727,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			// Todo(lebogg): Add tests
 			Redundancy: getStorageAccountRedundancy(account),
 		},
-		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
-		IsBackup:     isBackup,
+		ContainerPublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone, // This is not the public network access https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal, but the container public access
+		IsBackup:              isBackup,
 	}, nil
 }
 

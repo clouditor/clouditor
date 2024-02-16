@@ -31,8 +31,8 @@ var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
 
 type ObjectStorage struct {
 	*Storage
-	PublicAccess bool `json:"publicAccess"`
-	IsBackup     bool `json:"isBackup"`
+	IsBackup              bool `json:"isBackup"`
+	ContainerPublicAccess bool `json:"containerPublicAccess"`
 }
 
 var ObjectType = []string{"Object", "Resource"}
