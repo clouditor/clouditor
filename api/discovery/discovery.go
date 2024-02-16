@@ -56,6 +56,7 @@ type Discoverer interface {
 	CloudServiceID() string
 }
 
+// ToOntologyResource converts the content of the "properties" (which is an [*anypb.Any]) into an [ontology.IsResource].
 func (r *Resource) ToOntologyResource() (or ontology.IsResource, err error) {
 	var (
 		m  proto.Message

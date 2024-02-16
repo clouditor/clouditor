@@ -26,7 +26,7 @@
 package discovery
 
 import (
-	reflect "reflect"
+	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/api/ontology"
