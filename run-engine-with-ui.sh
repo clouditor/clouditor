@@ -9,7 +9,7 @@ go build ./cmd/engine/engine.go
 # Install cl binary. 
 go install ./cmd/cli/cl.go
 
-# Build and run UI (in background). This requires nodejs to be installed
+# Build and run UI (in background). This requires Node.js to be installed
 pushd ui
 npm install
 npm run dev &
