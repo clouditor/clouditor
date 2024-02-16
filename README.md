@@ -29,11 +29,10 @@ Key features are:
 
 ## QuickStart with UI
 
-In order to just build and run the Clouditor , without generating the protobuf file, one can use the following script.
-This still requires Go and Node.js to be installed.
+In order to just build and run the Clouditor, without generating the protobuf file, one can use the `run-engine-with-ui.sh` script. This still requires Go and Node.js to be installed. For example, to run the engine in-memory with the Azure provider the following command can be used:
 
 ```
-./run-engine-with-ui.sh
+./run-engine-with-ui.sh --discovery-provider=azure
 ```
 
 This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:5173. The

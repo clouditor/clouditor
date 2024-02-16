@@ -19,4 +19,5 @@ popd
 ./engine --db-in-memory \
     --dashboard-url=http://localhost:5173 \
     --api-cors-allowed-origins=http://localhost:5173  \
-    --discovery-auto-start
+    --discovery-auto-start \
+    $*
