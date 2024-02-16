@@ -85,6 +85,7 @@ func init() {
 		voc.FileStorage{},
 		voc.KeyVault{},
 		voc.Key{},
+		voc.Secret{},
 		voc.Object{},
 		voc.WebApp{},
 		voc.Cluster{},

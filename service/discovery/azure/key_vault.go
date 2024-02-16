@@ -43,6 +43,10 @@ import (
 // TODO(lebogg): Do this for all storage and other resources we currently discover and support BYOK
 var keyUsage = make(map[string][]string)
 
+// secretUsage contains for each secret (key) an array of resources where it is being used. Currently we only look at
+// web apps
+var secretUsage = make(map[string][]string)
+
 type azureKeyVaultDiscovery struct {
 	*azureDiscovery
 	// metricsClient is a client to query Azure Monitor w.r.t. given metrics (e.g. API Hits)
@@ -97,6 +101,10 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 	// initialize keys client
 	if err = d.initKeysClient(); err != nil {
 		return nil, fmt.Errorf("could not initialize keys client: %v", err)
+	}
+	// initialize secrets client
+	if err = d.initSecretsClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize secrets client: %v", err)
 	}
 
 	err = listPager(d.azureDiscovery,
@@ -156,6 +164,10 @@ func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
 
 func (d *azureKeyVaultDiscovery) initKeysClient() (err error) {
 	d.clients.keysClient, err = initClient(d.clients.keysClient, d.azureDiscovery, armkeyvault.NewKeysClient)
+	return
+}
+func (d *azureKeyVaultDiscovery) initSecretsClient() (err error) {
+	d.clients.secretsClient, err = initClient(d.clients.secretsClient, d.azureDiscovery, armkeyvault.NewSecretsClient)
 	return
 }
 
@@ -307,6 +319,50 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 		}
 	}
 	return keys, nil
+}
+
+func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secret, error) {
+	var (
+		secrets []*voc.Secret
+		c       *armkeyvault.SecretsClient
+	)
+	c = d.clients.secretsClient
+	if c == nil {
+		return nil, errors.New("keys client is empty")
+	}
+	pager := c.NewListPager(util.Deref(d.azureDiscovery.rg), util.Deref(kv.Name), &armkeyvault.SecretsClientListOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("could not page next page (paging error): %v", err)
+		}
+		for _, s := range page.Value {
+			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
+			res, err := d.clients.secretsClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
+				util.Deref(s.Name), &armkeyvault.SecretsClientGetOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("could not get key: %v", err)
+			}
+			s = util.Ref(res.Secret) // maybe not the most beautiful thing to re-use var `k`
+			secret := &voc.Secret{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(s.ID)),
+					util.Deref(s.Name),
+					s.Properties.Attributes.Created,
+					voc.GeoLocation{Region: util.Deref(s.Location)},
+					labels(s.Tags),
+					voc.ResourceID(util.Deref(kv.ID)),
+					voc.KeyType,
+					kv),
+				Enabled:        util.Deref(s.Properties.Attributes.Enabled),
+				ActivationDate: util.Deref(s.Properties.Attributes.NotBefore).Unix(),
+				ExpirationDate: util.Deref(s.Properties.Attributes.Expires).Unix(),
+				NumberOfUsages: len(secretUsage[util.Deref(s.Properties.SecretURI)]), // TODO(lebogg): Test this!
+			}
+			secrets = append(secrets, secret)
+		}
+	}
+	return secrets, nil
 }
 
 // TODO(lebogg): How to define the range/scope of key types in the ontology?

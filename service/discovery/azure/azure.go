@@ -178,6 +178,7 @@ type clients struct {
 	// Key Vault
 	keyVaultClient *armkeyvault.VaultsClient
 	keysClient     *armkeyvault.KeysClient
+	secretsClient  *armkeyvault.SecretsClient
 
 	// Service Fabrics
 	fabricsServiceClusterClient *armservicefabric.ClustersClient

@@ -311,6 +311,16 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	resourceLogging := d.getResourceLoggingWebApp(webApp)
 
+	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), util.Deref(d.rg),
+		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
+	if err != nil {
+		return nil
+	}
+	checkUsageOfSecrets(webApp.ID, settings)
+
+	// Use NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
+	//pager := d.clients.sitesClient.NewGetAppSettingsKeyVaultReferencesPager(util.Deref(d.rg), util.Deref(webApp.Name), &armappservice.WebAppsClientGetAppSettingsKeyVaultReferencesOptions{})
+
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -842,6 +852,70 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 		rl.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 
+	}
+
+	return
+}
+
+// TODO(lebogg): Test
+func checkUsageOfSecrets(webAppID *string, settings armappservice.WebAppsClientListApplicationSettingsResponse) {
+	for _, v := range settings.Properties {
+		if s := util.Deref(v); strings.Contains(s, "@Microsoft.KeyVault") {
+			sURI := getSecretURI(s)
+			secretUsage[sURI] = append(secretUsage[sURI], util.Deref(webAppID))
+			sUsages := secretUsage
+			_ = sUsages
+		}
+	}
+}
+
+// getSecretURI gets the URI of the given secret s. There can be two options how a secret attribute is stored:
+// Option 1: @Microsoft.KeyVault(VaultName=myvault;SecretName=mysecret)
+// Option 2: @Microsoft.KeyVault(SecretUri=https://myvault.vault.azure.net/secrets/mysecret/)
+func getSecretURI(s string) (secretURI string) {
+	var (
+		vaultName  string
+		secretName string
+	)
+
+	// If s contains "VaultName" it is Option 1
+	if strings.Contains(s, "VaultName") {
+		s, ok := strings.CutPrefix(s, "@Microsoft.KeyVault(VaultName=")
+		if !ok {
+			log.Error("Could not find prefix '@Microsoft.KeyVault(VaultName=' in secret:", s)
+			return ""
+		}
+		splits := strings.Split(s, ";")
+		if len(splits) < 2 {
+			log.Error("Splitting ';' should give at least two strings but didn't:", s)
+			return ""
+		}
+		vaultName = splits[0]
+		s = splits[1]
+		s, ok = strings.CutPrefix(s, "SecretName=")
+		if !ok {
+			log.Error("Could not find prefix 'SecretName=' in:", s)
+			return ""
+		}
+		s, ok = strings.CutSuffix(s, ")")
+		if !ok {
+			log.Error("Could not find suffix ')' in:", s)
+			return ""
+		}
+		secretName = s
+		secretURI = "https://" + vaultName + ".vault.azure.net/secrets/" + secretName + "/"
+	} else { // Option 2
+		s, ok := strings.CutPrefix(s, "@Microsoft.KeyVault(SecretUri=")
+		if !ok {
+			log.Error("Could not find prefix '@Microsoft.KeyVault(SecretUri=' in secret:", s)
+			return ""
+		}
+		s, ok = strings.CutSuffix(s, ")")
+		if !ok {
+			log.Error("Could not find suffix ')' in:", s)
+			return ""
+		}
+		secretURI = s
 	}
 
 	return
