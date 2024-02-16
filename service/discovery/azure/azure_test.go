@@ -1351,7 +1351,7 @@ func Test_resourceGroupID(t *testing.T) {
 			args: args{
 				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 		},
 	}
 	for _, tt := range tests {

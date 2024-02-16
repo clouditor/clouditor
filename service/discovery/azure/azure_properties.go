@@ -58,6 +58,15 @@ func resourceID(id *string) string {
 	return strings.ToLower(*id)
 }
 
+func resourceID2(id *string) *string {
+	if id == nil {
+		return nil
+	}
+
+	s := strings.ToLower(*id)
+	return &s
+}
+
 // accountName return the ID's account name
 func accountName(id string) string {
 	if id == "" {

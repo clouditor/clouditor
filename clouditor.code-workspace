@@ -38,6 +38,7 @@
       "clitest",
       "Clouditor",
       "conds",
+      "dataprotection",
       "Debugf",
       "dialector",
       "discoverytest",
@@ -82,6 +83,7 @@
       "testutil",
       "timestamppb",
       "unmarshalling",
+      "virtualnetworks",
       "Warnf"
     ]
   }
