@@ -30,7 +30,7 @@ Key features are:
 ## QuickStart with UI
 
 In order to just build and run the Clouditor , without generating the protobuf file, one can use the following script.
-This still requires Go and nodejs to be installed.
+This still requires Go and Node.js to be installed.
 
 ```
 ./run-engine-with-ui.sh
