@@ -499,9 +499,46 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(set *armcompute.Vir
 				set,
 			),
 		},
+		AutomaticUpdates: automaticUpdatesScaleSet(set.Properties.VirtualMachineProfile.OSProfile),
 	}
 
 	return r, nil
+}
+
+// automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
+func automaticUpdatesScaleSet(set *armcompute.VirtualMachineScaleSetOSProfile) (automaticUpdates *voc.AutomaticUpdates) {
+	automaticUpdates = &voc.AutomaticUpdates{}
+
+	if set == nil {
+		return
+	}
+
+	// Check if Linux configuration is available
+	if set.LinuxConfiguration != nil &&
+		set.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(set.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+		}
+	}
+
+	// Check if Windows configuration is available
+	if set.WindowsConfiguration != nil &&
+		set.WindowsConfiguration.PatchSettings != nil {
+		if util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *set.WindowsConfiguration.EnableAutomaticUpdates ||
+			util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *set.WindowsConfiguration.EnableAutomaticUpdates {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+
+		} else {
+			return
+
+		}
+	}
+
+	return
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {

@@ -29,4 +29,5 @@ var VirtualMachineScaleSetType = []string{"VirtualMachineScaleSet", "Compute", "
 
 type VirtualMachineScaleSet struct {
 	*Compute
+	AutomaticUpdates *AutomaticUpdates `json:"automaticUpdates"`
 }
