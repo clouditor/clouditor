@@ -254,7 +254,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			authorizer, err := azure.NewAuthorizer()
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
-				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
+				continue
 			}
 			// Add authorizer and cloudServiceID
 			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
@@ -267,7 +267,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
-				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
+				continue
 			}
 			discoverer = append(discoverer,
 				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
@@ -277,7 +277,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			awsClient, err := aws.NewClient()
 			if err != nil {
 				log.Errorf("Could not authenticate to AWS: %v", err)
-				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
+				continue
 			}
 			discoverer = append(discoverer,
 				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
@@ -285,7 +285,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
-			return nil, status.Errorf(codes.InvalidArgument, "%s", newError)
+			continue
 		}
 	}
 

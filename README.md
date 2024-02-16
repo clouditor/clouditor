@@ -27,6 +27,18 @@ Key features are:
 - descriptive development of custom rules using [Cloud Compliance Language (CCL)](clouditor-engine-azure/src/main/resources/rules/azure/compute/vm-data-encryption.md) to support individual evaluation scenarios
 - integration of custom security requirements and mapping to rules
 
+## QuickStart with UI
+
+In order to just build and run the Clouditor , without generating the protobuf file, one can use the following script.
+This still requires Go and nodejs to be installed.
+
+```
+./run-engine-with-ui.sh
+```
+
+This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:5173. The
+default credentials are clouditor/clouditor.
+
 ## Build
 
 Install necessary protobuf tools, including `buf`. Please refer to the [`buf` install guide](https://buf.build/docs/installation).
@@ -59,6 +71,7 @@ Alternatively, be sure to start a postgre DB:
 ```
 docker run -e POSTGRES_HOST_AUTH_METHOD=trust -d -p 5432:5432 postgres
 ```
+
 
 ## Clouditor CLI
 
