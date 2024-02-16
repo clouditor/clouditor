@@ -29,7 +29,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"clouditor.io/clouditor/api/runtime"
+	"clouditor.io/clouditor/v2/api/runtime"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -34,8 +34,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"

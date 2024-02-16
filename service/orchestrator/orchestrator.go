@@ -30,12 +30,12 @@ import (
 	"embed"
 	"sync"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/api/runtime"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/api/runtime"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
 )

@@ -35,7 +35,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment";
+option go_package = "clouditor.io/clouditor/v2/api/assessment";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator

@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 
-	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testdata"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"

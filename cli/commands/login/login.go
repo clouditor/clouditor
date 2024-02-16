@@ -32,7 +32,7 @@ import (
 	"net/http"
 	"time"
 
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/v2/cli"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

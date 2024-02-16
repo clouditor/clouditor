@@ -37,8 +37,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm/schema"
 
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 // TimestampSerializer is a GORM serializer that allows the serialization and deserialization of the

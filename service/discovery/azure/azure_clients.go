@@ -28,7 +28,7 @@ package azure
 import (
 	"fmt"
 
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"

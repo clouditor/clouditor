@@ -30,12 +30,12 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/servicetest/discoverytest"
-	"clouditor.io/clouditor/server"
-	service_discovery "clouditor.io/clouditor/service/discovery"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
+	"clouditor.io/clouditor/v2/server"
+	service_discovery "clouditor.io/clouditor/v2/service/discovery"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"

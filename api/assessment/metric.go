@@ -32,7 +32,7 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/persistence"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"

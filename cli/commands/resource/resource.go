@@ -26,7 +26,7 @@
 package resource
 
 import (
-	"clouditor.io/clouditor/cli/commands/service/discovery"
+	"clouditor.io/clouditor/v2/cli/commands/service/discovery"
 	"github.com/spf13/cobra"
 )
 

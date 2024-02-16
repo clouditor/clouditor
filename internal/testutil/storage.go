@@ -3,8 +3,8 @@ package testutil
 import (
 	"testing"
 
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/inmemory"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/inmemory"
 )
 
 // NewInMemoryStorage uses the inmemory package to create a new in-memory storage that can be used

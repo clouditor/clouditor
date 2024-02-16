@@ -35,12 +35,12 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 var mockMetricRange = &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}}

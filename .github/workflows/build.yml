@@ -40,8 +40,8 @@ jobs:
       - name: Build
         run: |
           mkdir -p build
-          go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o build ./cmd/engine
-          go build -ldflags="-X clouditor.io/clouditor/service.version=$(git describe --exact-match --tags --abbrev=0)" -o build ./cmd/cli
+          go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o build ./cmd/engine
+          go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o build ./cmd/cli
       - name: Test
         run: |
           go install github.com/mfridman/tparse@latest

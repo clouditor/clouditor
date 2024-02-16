@@ -7,8 +7,8 @@
 package orchestrator
 
 import (
-	assessment "clouditor.io/clouditor/api/assessment"
-	runtime "clouditor.io/clouditor/api/runtime"
+	assessment "clouditor.io/clouditor/v2/api/assessment"
+	runtime "clouditor.io/clouditor/v2/api/runtime"
 	context "context"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"

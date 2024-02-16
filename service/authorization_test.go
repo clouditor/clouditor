@@ -30,10 +30,10 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )

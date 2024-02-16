@@ -30,10 +30,10 @@ import (
 	"net"
 	"syscall"
 
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	service_evidence "clouditor.io/clouditor/service/evidence"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	service_evidence "clouditor.io/clouditor/v2/service/evidence"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"

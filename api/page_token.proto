@@ -27,7 +27,7 @@ syntax = "proto3";
 
 package clouditor.v1;
 
-option go_package = "clouditor.io/clouditor/api;api";
+option go_package = "clouditor.io/clouditor/v2/api;api";
 
 message PageToken {
   int64 start = 1;

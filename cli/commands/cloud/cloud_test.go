@@ -32,12 +32,12 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/server"
+	"clouditor.io/clouditor/v2/server"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

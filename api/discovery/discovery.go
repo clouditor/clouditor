@@ -32,7 +32,7 @@ import (
 	"reflect"
 	"strings"
 
-	"clouditor.io/clouditor/api/ontology"
+	"clouditor.io/clouditor/v2/api/ontology"
 
 	"google.golang.org/protobuf/proto"
 	anypb "google.golang.org/protobuf/types/known/anypb"

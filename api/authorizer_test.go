@@ -32,8 +32,8 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/stretchr/testify/assert"

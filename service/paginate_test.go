@@ -29,11 +29,11 @@ import (
 	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 func TestPaginateSlice(t *testing.T) {

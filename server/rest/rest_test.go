@@ -37,10 +37,10 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/server"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

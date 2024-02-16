@@ -30,8 +30,8 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/internal/api"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/internal/api"
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/sirupsen/logrus"
 )
 

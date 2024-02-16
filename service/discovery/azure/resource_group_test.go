@@ -28,9 +28,9 @@ package azure
 import (
 	"testing"
 
-	"clouditor.io/clouditor/api/ontology"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"

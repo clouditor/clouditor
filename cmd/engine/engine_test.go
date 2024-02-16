@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/server/rest"
-	service_discovery "clouditor.io/clouditor/service/discovery"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server/rest"
+	service_discovery "clouditor.io/clouditor/v2/service/discovery"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

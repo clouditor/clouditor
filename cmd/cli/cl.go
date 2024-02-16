@@ -28,7 +28,7 @@ package main
 import (
 	"strings"
 
-	"clouditor.io/clouditor/cli/commands"
+	"clouditor.io/clouditor/v2/cli/commands"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

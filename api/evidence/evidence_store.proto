@@ -31,7 +31,7 @@ import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 
-option go_package = "clouditor.io/clouditor/api/evidence";
+option go_package = "clouditor.io/clouditor/v2/api/evidence";
 
 // Manages the storage of evidences
 service EvidenceStore {

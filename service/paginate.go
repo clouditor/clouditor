@@ -29,8 +29,8 @@ import (
 	"fmt"
 	"sort"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 // PaginationOpts can be used to fine-tune the pagination, especially with regards to the page sizes. This can be important

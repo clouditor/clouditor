@@ -33,8 +33,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/persistence"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"

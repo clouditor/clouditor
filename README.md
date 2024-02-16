@@ -3,13 +3,14 @@
 # Clouditor Community Edition
 
 [![build](https://github.com/clouditor/clouditor/actions/workflows/build.yml/badge.svg)](https://github.com/clouditor/clouditor/actions/workflows/build.yml)
-[![](https://godoc.org/clouditor.io/clouditor?status.svg)](https://pkg.go.dev/clouditor.io/clouditor)
-[![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor)](https://goreportcard.com/report/clouditor.io/clouditor)
+[![](https://godoc.org/clouditor.io/clouditor/v2?status.svg)](https://pkg.go.dev/clouditor.io/clouditor/v2)
+[![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor/v2)](https://goreportcard.com/report/clouditor.io/clouditor/v2)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
 
-> :warning: Note: We are currently in the transition of re-implementing most of the core functionality of Clouditor in Go. This choice will allows us to build a more scalable, microservice-friendly version of Clouditor. While we aim to replace most of the code, we still want to provide the same look and feel as before, so we decided NOT to brand this as a v2 release, but we are rather targeting to have a `v1.5` or later release with most of the functionality done. This is an intential break with our semver approach, but we feel it is necessary to circumvent some of the pitfalls of Go's enforced SIV-style for `v2` and later.
+> [!NOTE]
+> Note: We are currently preparing a `v2` release of Clouditor, which will be somewhat incompatible with regards to storage to `v1`. The APIs will remain largely the same, but will be improved and cleaned. We will regularly release pre-release `v2` versions, but do not have a concrete time-frame for a stable `v2` yet.
 >
-> If you are looking for a stable version using only the Java code, please use the [1.2.0](https://github.com/clouditor/clouditor/releases/tag/v1.2.0) release.
+> If you are looking for a stable version, please use the [v1.10.1](https://github.com/clouditor/clouditor/releases/tag/v10.10.1) release.
 
 ## Introduction
 

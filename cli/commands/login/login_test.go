@@ -32,8 +32,8 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"

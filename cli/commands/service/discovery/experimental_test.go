@@ -29,8 +29,8 @@ import (
 	"bytes"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/cli"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 )
