@@ -130,7 +130,7 @@ func Test_storage_Create(t *testing.T) {
 		Range: mockMetricRange,
 	}
 	// Check if metric has all necessary fields
-	assert.NoError(t, metric.Validate())
+	assert.NoError(t, api.Validate(metric))
 
 	// Create storage
 	s, err = NewStorage()
@@ -190,7 +190,7 @@ func Test_storage_Get(t *testing.T) {
 		Range: mockMetricRange,
 	}
 	// Check if metric has all necessary fields
-	assert.NoError(t, metric.Validate())
+	assert.NoError(t, api.Validate(metric))
 
 	// Create metric
 	err = s.Create(metric)
@@ -200,7 +200,7 @@ func Test_storage_Get(t *testing.T) {
 	gotMetric := &assessment.Metric{}
 	err = s.Get(gotMetric, "id = ?", testdata.MockMetricID1)
 	assert.NoError(t, err)
-	assert.NoError(t, gotMetric.Validate())
+	assert.NoError(t, api.Validate(gotMetric))
 	assert.Equal(t, metric, gotMetric)
 
 	var impl = &assessment.MetricImplementation{
@@ -209,7 +209,7 @@ func Test_storage_Get(t *testing.T) {
 		UpdatedAt: timestamppb.New(time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)),
 	}
 	// Check if impl has all necessary fields
-	assert.NoError(t, impl.Validate())
+	assert.NoError(t, api.Validate(impl))
 
 	// Create metric implementation
 	err = s.Create(impl)
@@ -219,7 +219,7 @@ func Test_storage_Get(t *testing.T) {
 	gotImpl := &assessment.MetricImplementation{}
 	err = s.Get(gotImpl, "metric_id = ?", testdata.MockMetricID1)
 	assert.NoError(t, err)
-	assert.NoError(t, gotImpl.Validate())
+	assert.NoError(t, api.Validate(gotImpl))
 	assert.Equal(t, impl, gotImpl)
 }
 

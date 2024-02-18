@@ -10,9 +10,7 @@ ADD .git .
 RUN apk update && apk add protobuf gcc libc-dev git
 
 RUN go install \
-    google.golang.org/protobuf/cmd/protoc-gen-go \
-    github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-    github.com/google/gnostic/cmd/protoc-gen-openapi \
+    github.com/oxisto/owl2proto/cmd/owl2proto \
     github.com/srikrsna/protoc-gen-gotag
 
 RUN go install github.com/bufbuild/buf/cmd/buf@latest

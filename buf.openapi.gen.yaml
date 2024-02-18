@@ -1,6 +1,6 @@
 version: v1
 plugins:
-  - plugin: openapi
+  - plugin: buf.build/community/google-gnostic-openapi
     out: .
     opt:
       - enum_type=string

@@ -29,7 +29,6 @@ import (
 	"context"
 	"errors"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -38,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
@@ -224,9 +224,9 @@ compliant {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotImpl, err := loadMetricImplementation(tt.args.metricID, tt.args.file)
-
-			assert.NoError(t, gotImpl.Validate())
-			tt.wantErr(t, err)
+			if tt.wantErr(t, err) && err == nil {
+				assert.NoError(t, api.Validate(gotImpl))
+			}
 
 			if tt.wantImpl != nil {
 				assert.NotEmpty(t, gotImpl)
@@ -236,9 +236,7 @@ compliant {
 				gotImpl.UpdatedAt = nil
 			}
 
-			if !reflect.DeepEqual(gotImpl, tt.wantImpl) {
-				t.Errorf("loadMetricImplementation() = %v, want %v", gotImpl, tt.wantImpl)
-			}
+			prototest.Equal(t, tt.wantImpl, gotImpl)
 		})
 	}
 }
@@ -395,9 +393,9 @@ func TestService_CreateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.CreateMetric(tt.args.in0, tt.args.req)
-
-			assert.NoError(t, gotMetric.Validate())
-			tt.wantErr(t, err)
+			if tt.wantErr(t, err) && err == nil {
+				assert.NoError(t, api.Validate(gotMetric))
+			}
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.CreateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -538,9 +536,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.UpdateMetric(tt.args.in0, tt.args.req)
-
-			assert.NoError(t, gotMetric.Validate())
-			tt.wantErr(t, err)
+			if tt.wantErr(t, err) && err == nil {
+				assert.NoError(t, api.Validate(gotMetric))
+			}
 
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.UpdateMetric() = %v, want %v", gotMetric, tt.wantMetric)
@@ -648,9 +646,10 @@ func TestService_GetMetric(t *testing.T) {
 				storage: tt.fields.storage,
 			}
 			gotMetric, err := svc.GetMetric(tt.args.in0, tt.args.req)
+			if tt.wantErr(t, err) && err == nil {
+				assert.NoError(t, api.Validate(gotMetric))
+			}
 
-			assert.NoError(t, gotMetric.Validate())
-			tt.wantErr(t, err)
 			if !proto.Equal(gotMetric, tt.wantMetric) {
 				t.Errorf("Service.GetMetric() = %v, want %v", gotMetric, tt.wantMetric)
 			}
@@ -885,12 +884,11 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			}
 
 			gotRes, err := svc.GetMetricImplementation(tt.args.ctx, tt.args.req)
-			assert.NoError(t, gotRes.Validate())
-
-			tt.wantErr(t, err)
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("Service.GetMetricImplementation() = %v, want %v", gotRes, tt.wantRes)
+			if tt.wantErr(t, err) && err == nil {
+				assert.NoError(t, api.Validate(gotRes))
 			}
+
+			prototest.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
@@ -1003,7 +1001,7 @@ func TestService_UpdateMetricImplementation(t *testing.T) {
 					assert.Equal(t, assessment.MetricImplementation_LANGUAGE_REGO, impl.Lang) &&
 					assert.Equal(t, "package example", impl.Code) &&
 					assert.True(t, impl.UpdatedAt.AsTime().Before(time.Now())) &&
-					assert.NoError(t, impl.Validate())
+					assert.NoError(t, api.Validate(impl))
 			},
 			wantErr: assert.NoError,
 		},
@@ -1126,7 +1124,7 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				resp.TargetValue = nil
 				wantResp.TargetValue = nil
 
-				if !reflect.DeepEqual(resp, wantResp) {
+				if !prototest.Equal(t, wantResp, resp) {
 					t.Errorf("Service.GetMetricConfiguration() = %v, want %v", resp, wantResp)
 					return false
 				}
@@ -1163,9 +1161,9 @@ func TestService_GetMetricConfiguration(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 			gotResponse, err := s.GetMetricConfiguration(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotResponse.Validate())
-
-			tt.wantErr(t, err, tt.args)
+			if tt.wantErr(t, err, tt.args) && err == nil {
+				assert.NoError(t, api.Validate(gotResponse))
+			}
 
 			tt.want(t, gotResponse, tt.wantResponse)
 		})
@@ -1656,9 +1654,9 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 			gotRes, err := svc.UpdateMetricConfiguration(tt.args.in0, tt.args.req)
-			assert.NoError(t, gotRes.Validate())
-
-			tt.wantErr(t, err)
+			if tt.wantErr(t, err, tt.args) && err == nil {
+				assert.NoError(t, api.Validate(gotRes))
+			}
 
 			tt.want(t, gotRes, svc)
 		})

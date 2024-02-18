@@ -28,12 +28,9 @@ syntax = "proto3";
 package clouditor.discovery.v1experimental;
 
 import "api/discovery/discovery.proto";
-import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
-import "tagger/tagger.proto";
 
-option go_package = "api/discovery";
+option go_package = "clouditor.io/clouditor/v2/api/discovery";
 
 // Discovers cloud resources and maps these properties to the format of the
 // ontology
