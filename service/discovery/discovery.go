@@ -44,6 +44,7 @@ import (
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
+	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
@@ -87,9 +88,6 @@ type DiscoveryEvent struct {
 // Service is an implementation of the Clouditor Discovery service (plus its experimental extensions). It should not be
 // used directly, but rather the NewService constructor should be used.
 type Service struct {
-	discovery.UnimplementedDiscoveryServer
-	discovery.UnimplementedExperimentalDiscoveryServer
-
 	assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 	assessment        *api.RPCConnection[assessment.AssessmentClient]
 
@@ -225,14 +223,14 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 }
 
 // Start starts discovery
-func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
+func (svc *Service) Start(ctx context.Context, req *connect.Request[discovery.StartDiscoveryRequest]) (res *connect.Response[discovery.StartDiscoveryResponse], err error) {
 	var (
 		opts       = []azure.DiscoveryOption{}
 		discoverer []discovery.Discoverer
 	)
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +240,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		return nil, service.ErrPermissionDenied
 	}
 
-	resp = &discovery.StartDiscoveryResponse{Successful: true}
+	res = connect.NewResponse(&discovery.StartDiscoveryResponse{Successful: true})
 
 	log.Infof("Starting discovery...")
 	svc.scheduler.TagsUnique()
@@ -259,8 +257,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			// Add authorizer and cloudServiceID
 			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
 			// Check if resource group is given and append to discoverer
-			if req.GetResourceGroup() != "" {
-				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
+			if req.Msg.GetResourceGroup() != "" {
+				opts = append(opts, azure.WithResourceGroup(req.Msg.GetResourceGroup()))
 			}
 			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
@@ -305,7 +303,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 
 	svc.scheduler.StartAsync()
 
-	return resp, nil
+	return res, nil
 }
 
 func (svc *Service) Shutdown() {
@@ -388,7 +386,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	}
 }
 
-func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResourcesRequest) (res *discovery.ListResourcesResponse, err error) {
+func (svc *Service) ListResources(ctx context.Context, req *connect.Request[discovery.ListResourcesRequest]) (res *connect.Response[discovery.ListResourcesResponse], err error) {
 	var (
 		query   []string
 		args    []any
@@ -397,7 +395,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	)
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
@@ -405,19 +403,19 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
-	if req.Filter != nil {
+	if req.Msg.Filter != nil {
 		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
-		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Msg.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CloudServiceId != nil {
+		if req.Msg.Filter.CloudServiceId != nil {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+			args = append(args, req.Msg.Filter.GetCloudServiceId())
 		}
-		if req.Filter.Type != nil {
+		if req.Msg.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
-			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
+			args = append(args, req.Msg.Filter.GetType()+",%", "%,"+req.Msg.Filter.GetType()+",%", "%,"+req.Msg.Filter.GetType())
 		}
 	}
 
@@ -431,12 +429,12 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		args = append(args, allowed)
 	}
 
-	res = new(discovery.ListResourcesResponse)
+	res = connect.NewResponse(&discovery.ListResourcesResponse{})
 
 	// Join query with AND and prepend the query
 	args = append([]any{strings.Join(query, " AND ")}, args...)
 
-	res.Results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req, svc.storage, service.DefaultPaginationOpts, args...)
+	res.Msg.Results, res.Msg.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req.Msg, svc.storage, service.DefaultPaginationOpts, args...)
 
 	return
 }

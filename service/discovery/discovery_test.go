@@ -48,6 +48,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
 	"google.golang.org/grpc"
@@ -224,7 +225,7 @@ func TestService_ListResources(t *testing.T) {
 		csID  string
 	}
 	type args struct {
-		req *discovery.ListResourcesRequest
+		req *connect.Request[discovery.ListResourcesRequest]
 	}
 	tests := []struct {
 		name                     string
@@ -239,12 +240,12 @@ func TestService_ListResources(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 				csID:  testdata.MockCloudServiceID1,
 			},
-			args: args{req: &discovery.ListResourcesRequest{
+			args: args{req: connect.NewRequest(&discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
 					// TODO(oxisto): This is a problem now, since we are only persisting the leaf node type, so we cannot "see" the inherited resource types anymore
 					Type: util.Ref("Storage"),
 				},
-			}},
+			})},
 			numberOfQueriedResources: 1,
 			wantErr:                  assert.NoError,
 		},
@@ -254,11 +255,11 @@ func TestService_ListResources(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 				csID:  testdata.MockCloudServiceID1,
 			},
-			args: args{req: &discovery.ListResourcesRequest{
+			args: args{req: connect.NewRequest(&discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
 					CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 				},
-			}},
+			})},
 			numberOfQueriedResources: 2,
 			wantErr:                  assert.NoError,
 		},
@@ -268,11 +269,11 @@ func TestService_ListResources(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
 				csID:  testdata.MockCloudServiceID1,
 			},
-			args: args{req: &discovery.ListResourcesRequest{
+			args: args{req: connect.NewRequest(&discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
 					CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
 				},
-			}},
+			})},
 			numberOfQueriedResources: 0,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
@@ -284,7 +285,7 @@ func TestService_ListResources(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 				csID:  testdata.MockCloudServiceID1,
 			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
+			args:                     args{req: connect.NewRequest(&discovery.ListResourcesRequest{})},
 			numberOfQueriedResources: 2,
 			wantErr:                  assert.NoError,
 		},
@@ -294,7 +295,7 @@ func TestService_ListResources(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 				csID:  testdata.MockCloudServiceID1,
 			},
-			args:                     args{req: &discovery.ListResourcesRequest{}},
+			args:                     args{req: connect.NewRequest(&discovery.ListResourcesRequest{})},
 			numberOfQueriedResources: 0,
 			wantErr:                  assert.NoError,
 		},
@@ -311,7 +312,7 @@ func TestService_ListResources(t *testing.T) {
 			tt.wantErr(t, err)
 
 			if err == nil {
-				assert.Equal(t, tt.numberOfQueriedResources, len(response.Results))
+				assert.Equal(t, tt.numberOfQueriedResources, len(response.Msg.Results))
 			}
 		})
 	}
@@ -422,7 +423,7 @@ func TestService_Start(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.StartDiscoveryRequest
+		req *connect.Request[discovery.StartDiscoveryRequest]
 	}
 	tests := []struct {
 		name    string
@@ -455,7 +456,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -471,7 +472,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -505,7 +506,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -530,7 +531,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -564,7 +565,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
@@ -598,7 +599,7 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{},
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
@@ -632,9 +633,9 @@ func TestService_Start(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				req: &discovery.StartDiscoveryRequest{
+				req: connect.NewRequest(&discovery.StartDiscoveryRequest{
 					ResourceGroup: util.Ref("testResourceGroup"),
-				},
+				}),
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)

@@ -50,6 +50,7 @@ import (
 	service_evaluation "clouditor.io/clouditor/v2/service/evaluation"
 	service_evidenceStore "clouditor.io/clouditor/v2/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
+	"connectrpc.com/connect"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
@@ -113,7 +114,7 @@ const (
 )
 
 var (
-	srv                  *server.Server
+	srv                  *http.Server
 	discoveryService     *service_discovery.Service
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    *service_assessment.Service
@@ -364,9 +365,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	if viper.GetBool(DiscoveryAutoStartFlag) {
 		go func() {
 			<-rest.GetReadyChannel()
-			_, err = discoveryService.Start(context.Background(), &discovery.StartDiscoveryRequest{
+			_, err = discoveryService.Start(context.Background(), connect.NewRequest(&discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(DiscoveryResourceGroupFlag)),
-			})
+			}))
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
 			}
@@ -380,12 +381,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
 		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
-		server.WithExperimentalDiscovery(discoveryService),
+		/*server.WithExperimentalDiscovery(discoveryService),
 		server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),
 		server.WithEvidenceStore(evidenceStoreService),
 		server.WithEvaluation(evaluationService),
-		server.WithReflection(),
+		server.WithReflection(),*/
 	)
 	if err != nil {
 		log.Errorf("Failed to serve gRPC endpoint: %s", err)
@@ -407,7 +408,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	discoveryService.Shutdown()
 
 	log.Infof("Stopping gRPC endpoint")
-	srv.Stop()
+	srv.Close()
 
 	return nil
 }

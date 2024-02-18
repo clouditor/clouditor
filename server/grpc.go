@@ -29,20 +29,17 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 
 	"clouditor.io/clouditor/v2/api/assessment"
-	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/discovery/discoveryconnect"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
-	"clouditor.io/clouditor/v2/logging/formatter"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 // Server is a typealias for [grpc.Server] so that users of this package do not need to import the grpc packages
@@ -59,6 +56,7 @@ type config struct {
 	publicEndpoints []string
 	ac              AuthConfig
 	reflection      bool
+	mux             *http.ServeMux
 }
 
 // WithOrchestrator is an option for [StartGRPCServer] to register a [orchestrator.OrchestratorServer] at start.
@@ -83,17 +81,19 @@ func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
 }
 
 // WithDiscovery is an option for [StartGRPCServer] to register a [discovery.DiscoveryServer] at start.
-func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
+func WithDiscovery(svc discoveryconnect.DiscoveryHandler) StartGRPCServerOption {
 	return func(c *config) {
-		c.services[&discovery.Discovery_ServiceDesc] = svc
+		path, handler := discoveryconnect.NewDiscoveryHandler(svc)
+		c.mux.Handle(path, handler)
 	}
 }
 
 // WithExperimentalDiscovery is an option for [StartGRPCServer] to register a [discovery.ExperimentalDiscoveryServer] at
 // start.
-func WithExperimentalDiscovery(svc discovery.ExperimentalDiscoveryServer) StartGRPCServerOption {
+func WithExperimentalDiscovery(svc discoveryconnect.ExperimentalDiscoveryHandler) StartGRPCServerOption {
 	return func(c *config) {
-		c.services[&discovery.ExperimentalDiscovery_ServiceDesc] = svc
+		path, handler := discoveryconnect.NewExperimentalDiscoveryHandler(svc)
+		c.mux.Handle(path, handler)
 	}
 }
 
@@ -129,8 +129,8 @@ func WithAdditionalGRPCOpts(opts []grpc.ServerOption) StartGRPCServerOption {
 // StartGRPCServer starts a gRPC server listening on the given address. The server can be configured using the supplied
 // opts, e.g., to register various Clouditor services. The server itself is started in a separate Go routine, therefore
 // this function will NOT block.
-func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *Server, err error) {
-	// create a new socket for gRPC communication
+func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Listener, srv *http.Server, err error) {
+	// create a new socket for RPC communication
 	sock, err = net.Listen("tcp", addr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not listen: %w", err)
@@ -138,7 +138,9 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 
 	var c config
 
-	grpcLogger := logrus.New()
+	c.mux = http.NewServeMux()
+
+	/*grpcLogger := logrus.New()
 	grpcLogger.Formatter = &formatter.GRPCFormatter{TextFormatter: logrus.TextFormatter{ForceColors: true}}
 	grpcLoggerEntry := grpcLogger.WithField("component", "grpc")
 
@@ -154,13 +156,13 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 			StreamServerInterceptorWithFilter(&c, grpc_auth.StreamServerInterceptor(c.ac.AuthFunc()), StreamReflectionFilter, StreamPublicEndpointFilter),
 		),
 	}
-	c.services = map[*grpc.ServiceDesc]any{}
+	c.services = map[*grpc.ServiceDesc]any{}*/
 
 	for _, o := range opts {
 		o(&c)
 	}
 
-	srv = grpc.NewServer(
+	/*srv = grpc.NewServer(
 		c.grpcOpts...,
 	)
 
@@ -172,10 +174,15 @@ func StartGRPCServer(addr string, opts ...StartGRPCServerOption) (sock net.Liste
 	// Enable reflection
 	if c.reflection {
 		reflection.Register(srv)
+	}*/
+
+	srv = &http.Server{
+		Addr:    addr,
+		Handler: h2c.NewHandler(c.mux, &http2.Server{}),
 	}
 
 	go func() {
-		// serve the gRPC socket
+		// serve the RPC socket
 		_ = srv.Serve(sock)
 	}()
 

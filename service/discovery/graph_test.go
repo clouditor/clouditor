@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/go-cmp/cmp"
@@ -59,7 +60,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.ListGraphEdgesRequest
+		req *connect.Request[discovery.ListGraphEdgesRequest]
 	}
 	tests := []struct {
 		name    string
@@ -103,7 +104,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
 			wantRes: &discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{},
@@ -137,7 +138,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
 			wantRes: &discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{
@@ -192,7 +193,7 @@ func TestService_UpdateResource(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.UpdateResourceRequest
+		req *connect.Request[discovery.UpdateResourceRequest]
 	}
 	tests := []struct {
 		name    string
@@ -207,11 +208,11 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "resource.id: value length must be at least 1 characters")
@@ -223,12 +224,12 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
@@ -241,12 +242,12 @@ func TestService_UpdateResource(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 				Id:   "my-id",

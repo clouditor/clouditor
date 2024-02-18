@@ -33,11 +33,12 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraphEdgesRequest) (res *discovery.ListGraphEdgesResponse, err error) {
+func (svc *Service) ListGraphEdges(ctx context.Context, req *connect.Request[discovery.ListGraphEdgesRequest]) (res *connect.Response[discovery.ListGraphEdgesResponse], err error) {
 	var (
 		results []*discovery.Resource
 		all     bool
@@ -47,7 +48,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 	)
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +59,11 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 		args = append(args, allowed)
 	}
 
-	res = new(discovery.ListGraphEdgesResponse)
+	res = connect.NewResponse(&discovery.ListGraphEdgesResponse{})
 
 	// This is a little problematic, since we are actually paginating the underlying resources and not the edges, but it
 	// is probably the best we can do for now while we are not storing the edges in the database.
-	results, res.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req,
+	results, res.Msg.NextPageToken, err = service.PaginateStorage[*discovery.Resource](req.Msg,
 		svc.storage,
 		service.DefaultPaginationOpts,
 		persistence.BuildConds(query, args)...,
@@ -86,30 +87,30 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 				Type:   rel.Property,
 			}
 
-			res.Edges = append(res.Edges, edge)
+			res.Msg.Edges = append(res.Msg.Edges, edge)
 		}
 	}
 
 	return
 }
 
-func (svc *Service) UpdateResource(ctx context.Context, req *discovery.UpdateResourceRequest) (res *discovery.Resource, err error) {
+func (svc *Service) UpdateResource(ctx context.Context, req *connect.Request[discovery.UpdateResourceRequest]) (res *connect.Response[discovery.Resource], err error) {
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
 
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Msg) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Save(&req.Resource, "id = ?", req.Resource.Id)
+	err = svc.storage.Save(&req.Msg.Resource, "id = ?", req.Msg.Resource.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	res = req.Resource
+	res.Msg = req.Msg.Resource
 
 	return
 }

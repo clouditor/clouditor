@@ -195,4 +195,6 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+require connectrpc.com/connect v1.15.0
+
 require github.com/google/flatbuffers v2.0.8+incompatible // indirect
