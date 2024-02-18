@@ -876,7 +876,6 @@ func TestService_GetMetricImplementation(t *testing.T) {
 			if tt.wantErr(t, err) && err == nil {
 				assert.NoError(t, api.Validate(gotRes))
 			}
-
 			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
