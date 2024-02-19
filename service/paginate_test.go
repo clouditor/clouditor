@@ -26,13 +26,13 @@
 package service
 
 import (
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/persistence"
 )
 
@@ -97,12 +97,8 @@ func TestPaginateSlice(t *testing.T) {
 				t.Errorf("PaginateSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotPage, tt.wantPage) {
-				t.Errorf("PaginateSlice() gotPage = %v, want %v", gotPage, tt.wantPage)
-			}
-			if gotNbt != tt.wantNbt {
-				t.Errorf("PaginateSlice() gotNbt = %v, want %v", gotNbt, tt.wantNbt)
-			}
+			assert.Equal(t, tt.wantPage, gotPage)
+			assert.Equal(t, tt.wantNbt, gotNbt)
 		})
 	}
 }
@@ -194,12 +190,8 @@ func TestPaginateStorage(t *testing.T) {
 				t.Errorf("PaginateStorage() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotPage, tt.wantPage) {
-				t.Errorf("PaginateStorage() gotPage = %v, want %v", gotPage, tt.wantPage)
-			}
-			if gotNbt != tt.wantNbt {
-				t.Errorf("PaginateStorage() gotNbt = %v, want %v", gotNbt, tt.wantNbt)
-			}
+			assert.Equal(t, tt.wantPage, gotPage)
+			assert.Equal(t, tt.wantNbt, gotNbt)
 		})
 	}
 }

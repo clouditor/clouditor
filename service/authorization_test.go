@@ -27,13 +27,13 @@ package service
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )
@@ -160,12 +160,8 @@ func TestAuthorizationStrategyAllowAll_AllowedCloudServices(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyAllowAll{}
 			gotAll, gotList := a.AllowedCloudServices(tt.args.ctx)
-			if gotAll != tt.wantAll {
-				t.Errorf("AuthorizationStrategyAllowAll.AllowedCloudServices() got = %v, want %v", gotAll, tt.wantAll)
-			}
-			if !reflect.DeepEqual(gotList, tt.wantList) {
-				t.Errorf("AuthorizationStrategyAllowAll.AllowedCloudServices() got1 = %v, want %v", gotList, tt.wantList)
-			}
+			assert.Equal(t, tt.wantAll, gotAll)
+			assert.Equal(t, tt.wantList, gotList)
 		})
 	}
 }
@@ -369,12 +365,8 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 				AllowAllKey:      tt.fields.AllowAllKey,
 			}
 			gotAll, gotList := a.AllowedCloudServices(tt.args.ctx)
-			if gotAll != tt.wantAll {
-				t.Errorf("AuthorizationStrategyJWT.AllowedCloudServices() gotAll = %v, want %v", gotAll, tt.wantAll)
-			}
-			if !reflect.DeepEqual(gotList, tt.wantList) {
-				t.Errorf("AuthorizationStrategyJWT.AllowedCloudServices() gotList = %v, want %v", gotList, tt.wantList)
-			}
+			assert.Equal(t, tt.wantAll, gotAll)
+			assert.Equal(t, tt.wantList, gotList)
 		})
 	}
 }

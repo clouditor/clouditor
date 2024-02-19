@@ -29,12 +29,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/server"
@@ -42,7 +42,6 @@ import (
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -146,7 +145,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  assert.ValueAssertionFunc
+		want  assert.Want[[]string]
 		want1 cobra.ShellCompDirective
 	}{
 		{
@@ -154,9 +153,7 @@ func TestValidArgsGetMetrics(t *testing.T) {
 			args: args{
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.NotNil(tt, i1)
-			},
+			want:  assert.NotNil[[]string],
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 	}
@@ -164,12 +161,8 @@ func TestValidArgsGetMetrics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetMetrics(tt.args.in0, tt.args.args, tt.args.toComplete)
-
 			tt.want(t, got)
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetMetrics() got1 = %v, want %v", got1, tt.want1)
-			}
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
@@ -183,7 +176,7 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  assert.ValueAssertionFunc
+		want  assert.Want[[]string]
 		want1 cobra.ShellCompDirective
 	}{
 		{
@@ -191,8 +184,8 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 			args: args{
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -202,9 +195,7 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Empty(t, i1)
-			},
+			want:  assert.Empty[[]string],
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 	}
@@ -212,12 +203,8 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCatalogs(tt.args.in0, tt.args.args, tt.args.toComplete)
-
 			tt.want(t, got)
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
-			}
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
@@ -231,7 +218,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  assert.ValueAssertionFunc
+		want  assert.Want[[]string]
 		want1 cobra.ShellCompDirective
 	}{
 		{
@@ -239,8 +226,8 @@ func TestValidArgsGetCategory(t *testing.T) {
 			args: args{
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -250,8 +237,8 @@ func TestValidArgsGetCategory(t *testing.T) {
 				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -261,9 +248,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Empty(t, i1)
-			},
+			want:  assert.Empty[[]string],
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 	}
@@ -271,12 +256,8 @@ func TestValidArgsGetCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCategory(tt.args.in0, tt.args.args, tt.args.toComplete)
-
 			tt.want(t, got)
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
-			}
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
@@ -290,7 +271,7 @@ func TestValidArgsGetControls(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  assert.ValueAssertionFunc
+		want  assert.Want[[]string]
 		want1 cobra.ShellCompDirective
 	}{
 		{
@@ -298,8 +279,8 @@ func TestValidArgsGetControls(t *testing.T) {
 			args: args{
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -309,8 +290,8 @@ func TestValidArgsGetControls(t *testing.T) {
 				args:       []string{testdata.MockCatalogID},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s", testdata.MockCategoryName, testdata.MockCategoryDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -320,8 +301,8 @@ func TestValidArgsGetControls(t *testing.T) {
 				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Contains(t, i1, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID1, testdata.MockControlName, testdata.MockControlDescription))
+			want: func(t *testing.T, got []string) bool {
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockControlID1, testdata.MockControlName, testdata.MockControlDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
@@ -331,9 +312,7 @@ func TestValidArgsGetControls(t *testing.T) {
 				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1},
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Empty(t, i1)
-			},
+			want:  assert.Empty[[]string],
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 	}
@@ -341,12 +320,8 @@ func TestValidArgsGetControls(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetControls(tt.args.in0, tt.args.args, tt.args.toComplete)
-
 			tt.want(t, got)
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ValidArgsGetCatalogs() got1 = %v, want %v", got1, tt.want1)
-			}
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }
@@ -360,7 +335,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  assert.ValueAssertionFunc
+		want  assert.Want[[]string]
 		want1 cobra.ShellCompDirective
 	}{
 		{
@@ -368,9 +343,7 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 			args: args{
 				toComplete: "",
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.NotNil(tt, i1)
-			},
+			want:  assert.NotNil[[]string],
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 	}
@@ -378,12 +351,8 @@ func TestValidArgsGetCloudServices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := cli.ValidArgsGetCloudServices(tt.args.in0, tt.args.args, tt.args.toComplete)
-
 			tt.want(t, got)
-
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("TestValidArgsGetCloudServices() got1 = %v, want %v", got1, tt.want1)
-			}
+			assert.Equal(t, tt.want1, got1)
 		})
 	}
 }

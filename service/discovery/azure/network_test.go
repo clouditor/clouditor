@@ -26,14 +26,13 @@
 package azure
 
 import (
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
@@ -119,7 +118,7 @@ func Test_azureNetworkDiscovery_discoverNetworkInterfaces(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "discoverNetworkInterfaces()")
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -204,7 +203,7 @@ func Test_azureNetworkDiscovery_discoverLoadBalancer(t *testing.T) {
 				return
 			}
 
-			prototest.EqualSlice(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -402,7 +401,7 @@ func Test_azureNetworkDiscovery_discoverApplicationGateway(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			prototest.EqualSlice(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -661,9 +660,8 @@ func Test_loadBalancerPorts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotLoadBalancerPorts := loadBalancerPorts(tt.args.lb); !reflect.DeepEqual(gotLoadBalancerPorts, tt.wantLoadBalancerPorts) {
-				t.Errorf("LoadBalancerPorts() = %v, want %v", gotLoadBalancerPorts, tt.wantLoadBalancerPorts)
-			}
+			gotLoadBalancerPorts := loadBalancerPorts(tt.args.lb)
+			assert.Equal(t, tt.wantLoadBalancerPorts, gotLoadBalancerPorts)
 		})
 	}
 }

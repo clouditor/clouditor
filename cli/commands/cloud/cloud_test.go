@@ -32,15 +32,14 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/v2/server"
-
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

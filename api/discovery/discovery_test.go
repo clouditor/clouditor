@@ -26,15 +26,14 @@
 package discovery
 
 import (
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -93,10 +92,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				t.Errorf("Resource.ToOntologyResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			if !proto.Equal(got, tt.want) {
-				t.Errorf("Resource.ToOntologyResource() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -152,9 +148,7 @@ func TestToDiscoveryResource(t *testing.T) {
 				t.Errorf("ToDiscoveryResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotR, tt.wantR) {
-				t.Errorf("ToDiscoveryResource() = %v, want %v", gotR, tt.wantR)
-			}
+			assert.Equal(t, tt.wantR, gotR)
 		})
 	}
 }

@@ -31,7 +31,8 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/cli"
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
