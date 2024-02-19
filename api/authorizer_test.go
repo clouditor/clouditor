@@ -29,14 +29,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
 	oauth2 "github.com/oxisto/oauth2go"
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
@@ -59,14 +58,13 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 		TokenSource oauth2.TokenSource
 	}
 	type args struct {
-		refreshToken string
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantResp assert.ValueAssertionFunc
-		wantErr  bool
+		name      string
+		fields    fields
+		args      args
+		wantToken assert.Want[*oauth2.Token]
+		wantErr   bool
 	}{
 		{
 			name: "fetch token without refresh token",
@@ -79,12 +77,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 					}).TokenSource(context.Background()),
 				),
 			},
-			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				token, ok := i1.(*oauth2.Token)
-				assert.True(t, ok)
-				assert.NotNil(tt, token)
-
-				return assert.NotEmpty(tt, token.AccessToken)
+			wantToken: func(t *testing.T, token *oauth2.Token) bool {
+				return assert.NotNil(t, token) && assert.NotEmpty(t, token.AccessToken)
 			},
 		},
 	}
@@ -95,15 +89,12 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 				TokenSource: tt.fields.TokenSource,
 			}
 
-			gotResp, err := o.Token()
+			gotToken, err := o.Token()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("oauthAuthorizer.fetchToken() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			if tt.wantResp != nil {
-				tt.wantResp(t, gotResp, tt.args.refreshToken)
-			}
+			tt.wantToken(t, gotToken)
 		})
 	}
 }
@@ -136,9 +127,8 @@ func TestNewOAuthAuthorizerFromClientCredentials(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewOAuthAuthorizerFromClientCredentials(tt.args.config); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewOAuthAuthorizerFromClientCredentials() = %v, want %v", got, tt.want)
-			}
+			got := NewOAuthAuthorizerFromClientCredentials(tt.args.config)
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 		})
 	}
 }

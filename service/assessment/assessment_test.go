@@ -45,6 +45,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
@@ -53,13 +54,11 @@ import (
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -90,7 +89,7 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "AssessmentServer created with option rego package name",
@@ -99,9 +98,8 @@ func TestNewService(t *testing.T) {
 					WithRegoPackageName("testPkg"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "testPkg", s.evalPkg)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "testPkg", got.evalPkg)
 			},
 		},
 		{
@@ -111,9 +109,8 @@ func TestNewService(t *testing.T) {
 					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
 			},
 		},
 		{
@@ -124,10 +121,9 @@ func TestNewService(t *testing.T) {
 					WithOrchestratorAddress("localhost:9092"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "localhost:9091", s.evidenceStore.Target) &&
-					assert.Equal(t, "localhost:9092", s.orchestrator.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target) &&
+					assert.Equal(t, "localhost:9092", got.orchestrator.Target)
 			},
 		},
 		{
@@ -137,9 +133,8 @@ func TestNewService(t *testing.T) {
 					WithoutEvidenceStore(),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.True(t, s.isEvidenceStoreDisabled)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.True(t, got.isEvidenceStoreDisabled)
 			},
 		},
 		{
@@ -149,9 +144,8 @@ func TestNewService(t *testing.T) {
 					WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"}),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.NotNil(t, s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.orchestrator.Authorizer())
 			},
 		},
 		{
@@ -161,10 +155,8 @@ func TestNewService(t *testing.T) {
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				a := s.authz.(*servicetest.AuthorizationStrategyMock)
-				return assert.NotNil(t, a)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.authz.(*servicetest.AuthorizationStrategyMock))
 			},
 		},
 	}
@@ -697,10 +689,6 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
-
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
@@ -1086,9 +1074,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 			svc.pe = rec
 			svc.recvEventsLoop()
 
-			if !proto.Equal(rec.event, tt.wantEvent) {
-				t.Errorf("recvEventsLoop() = %v, want %v", rec.event, tt.wantEvent)
-			}
+			assert.Equal(t, tt.wantEvent, rec.event)
 		})
 	}
 }

@@ -31,16 +31,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var mockMetricRange = &assessment.Range{Range: &assessment.Range_MinMax{MinMax: &assessment.MinMax{Min: 1, Max: 2}}}
@@ -91,10 +90,8 @@ func TestStorageOptions(t *testing.T) {
 				return
 			}
 
-			gorm, ok := s.(*storage)
-			assert.True(t, ok)
+			gorm := assert.Is[*storage](t, s)
 			assert.NotNil(t, gorm)
-
 			assert.Equal(t, tt.wantDialectorType, fmt.Sprintf("%T", gorm.dialector))
 
 			// Test to create a new cloud service and get it again with
@@ -112,7 +109,7 @@ func TestStorageOptions(t *testing.T) {
 			serviceOutput := &orchestrator.CloudService{}
 			err = s.Get(&serviceOutput, "name = ?", "SomeName")
 			assert.NoError(t, err)
-			assert.True(t, proto.Equal(serviceInput, serviceOutput), "Want: %v\nGot : %v", serviceInput, serviceOutput)
+			assert.Equal(t, serviceInput, serviceOutput)
 		})
 	}
 }
@@ -169,20 +166,20 @@ func Test_storage_Get(t *testing.T) {
 	gotService := &orchestrator.CloudService{}
 	err = s.Get(&gotService)
 	assert.NoError(t, err)
-	assert.True(t, proto.Equal(service, gotService), "Want: %v\nGot : %v", service, gotService)
+	assert.Equal(t, service, gotService)
 
 	// Get service via name
 	gotService2 := &orchestrator.CloudService{}
 	err = s.Get(&gotService2, "name = ?", service.Name)
 	assert.NoError(t, err)
-	assert.True(t, proto.Equal(service, gotService2), "Want: %v\nGot : %v", service, gotService2)
+	assert.Equal(t, service, gotService2)
 
 	// Get service via description
 	gotService3 := &orchestrator.CloudService{}
 	err = s.Get(&gotService3, "description = ?", service.Description)
 	assert.NoError(t, err)
 	assert.NoError(t, api.Validate(gotService3))
-	assert.True(t, proto.Equal(service, gotService3), "Want: %v\nGot : %v", service, gotService3)
+	assert.Equal(t, service, gotService3)
 
 	var metric = &assessment.Metric{
 		Id:    testdata.MockMetricID1,
@@ -297,9 +294,9 @@ func Test_storage_List(t *testing.T) {
 			return
 		}
 	}
-	// If not, let the test fail
-	assert.FailNow(t, "%s is not listed but should be.", certificate1.Id)
 
+	// If not, let the test fail
+	assert.Fail(t, "condition failed")
 }
 
 func Test_storage_Count(t *testing.T) {

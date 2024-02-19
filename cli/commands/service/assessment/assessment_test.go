@@ -28,7 +28,7 @@ package assessment
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 func TestAddCommands(t *testing.T) {

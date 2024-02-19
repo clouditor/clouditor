@@ -3,7 +3,6 @@ package orchestrator
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -12,15 +11,15 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 )
 
@@ -143,17 +142,13 @@ func Test_CreateCertificate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := tt.fields.svc
-			gotResponse, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
+			gotRes, err := svc.CreateCertificate(tt.args.in0, tt.args.req)
 			if tt.wantRes != nil {
-				assert.NoError(t, api.Validate(gotResponse))
+				assert.NoError(t, api.Validate(gotRes))
 			}
 
 			tt.wantErr(t, err)
-
-			// If no error is wanted, check response
-			if !reflect.DeepEqual(gotResponse, tt.wantRes) {
-				t.Errorf("Service.CreateCertificate() = %v, want %v", gotResponse, tt.wantRes)
-			}
+			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
@@ -253,16 +248,16 @@ func Test_GetCertificate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := tt.fields.svc.GetCertificate(context.Background(), tt.req)
+			gotRes, err := tt.fields.svc.GetCertificate(context.Background(), tt.req)
 
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
 
 			// Assert response
 			if tt.wantRes != nil {
-				assert.NoError(t, api.Validate(res))
-				assert.NotEmpty(t, res.Id)
-				assert.True(t, proto.Equal(tt.wantRes, res), "Want: %v\nGot : %v", tt.wantRes, res)
+				assert.NoError(t, api.Validate(gotRes))
+				assert.NotEmpty(t, gotRes.Id)
+				assert.Equal(t, tt.wantRes, gotRes)
 			}
 		})
 	}
@@ -279,7 +274,7 @@ func Test_ListCertificates(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes assert.ValueAssertionFunc
+		wantRes assert.Want[*orchestrator.ListCertificatesResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -291,9 +286,7 @@ func Test_ListCertificates(t *testing.T) {
 				ctx: nil,
 				req: nil,
 			},
-			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				return assert.Nil(t, i)
-			},
+			wantRes: assert.Nil[*orchestrator.ListCertificatesResponse],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
@@ -312,7 +305,7 @@ func Test_ListCertificates(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.ListCertificatesRequest{},
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*orchestrator.ListCertificatesResponse],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
 			},
@@ -331,12 +324,9 @@ func Test_ListCertificates(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.ListCertificatesRequest{},
 			},
-			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				res, ok := i.(*orchestrator.ListCertificatesResponse)
-				assert.True(t, ok)
-				assert.Len(t, res.Certificates, 1)
-				return assert.Equal(t, res.Certificates[0].Id, testdata.MockCertificateID)
-
+			wantRes: func(t *testing.T, got *orchestrator.ListCertificatesResponse) bool {
+				return assert.Equal(t, 1, len(got.Certificates)) &&
+					assert.Equal(t, got.Certificates[0].Id, testdata.MockCertificateID)
 			},
 			wantErr: assert.NoError,
 		},
@@ -355,13 +345,10 @@ func Test_ListCertificates(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.ListCertificatesRequest{},
 			},
-			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				res, ok := i.(*orchestrator.ListCertificatesResponse)
-				assert.True(t, ok)
-				assert.Len(t, res.Certificates, 2)
-				assert.Equal(t, res.Certificates[0].Id, testdata.MockCertificateID)
-				return assert.Equal(t, res.Certificates[1].Id, testdata.MockCertificateID2)
-
+			wantRes: func(t *testing.T, got *orchestrator.ListCertificatesResponse) bool {
+				return assert.Equal(t, 2, len(got.Certificates)) &&
+					assert.Equal(t, got.Certificates[0].Id, testdata.MockCertificateID) &&
+					assert.Equal(t, got.Certificates[1].Id, testdata.MockCertificateID2)
 			},
 			wantErr: assert.NoError,
 		},
@@ -370,9 +357,7 @@ func Test_ListCertificates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := tt.fields.svc.ListCertificates(context.TODO(), tt.args.req)
-			// Run ValueAssertionFunc on response
 			tt.wantRes(t, res)
-			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
 		})
 	}
@@ -480,9 +465,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			if tt.wantRes != nil {
 				assert.NoError(t, api.Validate(gotRes))
 			}
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListPublicCertificates() = %v, want %v", gotRes, tt.wantRes)
-			}
+			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
@@ -638,13 +621,13 @@ func Test_UpdateCertificate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := tt.fields.svc.UpdateCertificate(context.TODO(), tt.args.req)
+			gotRes, err := tt.fields.svc.UpdateCertificate(context.TODO(), tt.args.req)
 			// Run ErrorAssertionFunc
 			tt.wantErr(t, err)
 			// Assert response
 			if tt.wantRes != nil {
-				assert.NotEmpty(t, res.Id)
-				assert.True(t, proto.Equal(tt.wantRes, res), "Want: %v\nGot : %v", tt.wantRes, res)
+				assert.NotEmpty(t, gotRes.Id)
+				assert.Equal(t, tt.wantRes, gotRes)
 			}
 		})
 	}
@@ -662,7 +645,8 @@ func Test_RemoveCertificate(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes assert.ValueAssertionFunc
+		wantRes assert.Want[*emptypb.Empty]
+		wantSvc assert.Want[*Service]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -674,7 +658,7 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: nil,
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*emptypb.Empty],
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
@@ -689,7 +673,7 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: ""},
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*emptypb.Empty],
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrInvalidRequest.Error())
@@ -707,7 +691,7 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*emptypb.Empty],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
 				return assert.ErrorContains(t, err, gorm.ErrInvalidDB.Error())
@@ -726,7 +710,7 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*emptypb.Empty],
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, ErrCertificationNotFound.Error())
@@ -746,7 +730,7 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
 			},
-			wantRes: assert.Nil,
+			wantRes: assert.Nil[*emptypb.Empty],
 			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
 				assert.Equal(t, codes.PermissionDenied, status.Code(err))
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
@@ -767,19 +751,17 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
 			},
-			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				assert.NotNil(t, i)
-				svc, ok := i2[0].(*Service)
-				assert.True(t, ok)
+			wantSvc: func(t *testing.T, got *Service) bool {
 				// Verify that certificate 2 is still in the DB (by counting the number of occurrences = 1)
-				n, err := svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
+				n, err := got.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
 				assert.NoError(t, err)
 				assert.Equal(t, int64(1), n)
 				// Verify that the default certificate isn't in the DB anymore (occurrences = 0)
-				n, err = svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
+				n, err = got.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
 				assert.NoError(t, err)
 				return assert.Equal(t, int64(0), n)
 			},
+			wantRes: assert.NotNil[*emptypb.Empty],
 			wantErr: assert.NoError,
 		},
 		{
@@ -797,19 +779,17 @@ func Test_RemoveCertificate(t *testing.T) {
 				ctx: nil,
 				req: &orchestrator.RemoveCertificateRequest{CertificateId: testdata.MockCertificateID},
 			},
-			wantRes: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				assert.NotNil(t, i)
-				svc, ok := i2[0].(*Service)
-				assert.True(t, ok)
+			wantSvc: func(t *testing.T, got *Service) bool {
 				// Verify that certificate 2 is still in the DB (by counting the number of occurrences = 1)
-				n, err := svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
+				n, err := got.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID2)
 				assert.NoError(t, err)
 				assert.Equal(t, int64(1), n)
 				// Verify that the default certificate isn't in the DB anymore (occurrences = 0)
-				n, err = svc.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
+				n, err = got.storage.Count(&orchestrator.Certificate{}, testdata.MockCertificateID)
 				assert.NoError(t, err)
 				return assert.Equal(t, int64(0), n)
 			},
+			wantRes: assert.NotNil[*emptypb.Empty],
 			wantErr: assert.NoError,
 		},
 	}
@@ -817,10 +797,9 @@ func Test_RemoveCertificate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := tt.fields.svc.RemoveCertificate(context.TODO(), tt.args.req)
-			// Run ValueAssertionFunc on response
-			tt.wantRes(t, res, tt.fields.svc)
-			// Run ErrorAssertionFunc
+			tt.wantRes(t, res)
 			tt.wantErr(t, err)
+			assert.Optional(t, tt.wantSvc, tt.fields.svc)
 		})
 	}
 }

@@ -26,10 +26,10 @@
 package azure
 
 import (
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 )
@@ -121,9 +121,8 @@ func Test_tlsCipherSuites(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tlsCipherSuites(tt.args.cs); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("tlsCipherSuites() = %v, want %v", got, tt.want)
-			}
+			got := tlsCipherSuites(tt.args.cs)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
