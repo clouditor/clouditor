@@ -29,6 +29,7 @@ import (
 	"database/sql/driver"
 	"testing"
 
+	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/persistence"
 	"github.com/stretchr/testify/assert"
@@ -54,7 +55,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "MetricId: value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "metric_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -65,7 +66,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "TargetValue: value is required")
+				return assert.ErrorContains(t, err, "target_value: value is required")
 			},
 		},
 		{
@@ -84,7 +85,7 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := tt.fields.MetricConfiguration
-			tt.wantErr(t, c.Validate())
+			tt.wantErr(t, api.Validate(c))
 		})
 	}
 }

@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -180,8 +181,8 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			if tt.res == nil {
 				assert.Nil(t, gotRes)
 			} else {
-				assert.NoError(t, gotRes.Validate())
-				assert.Equal(t, tt.res, gotRes)
+				assert.NoError(t, api.Validate(gotRes))
+				prototest.Equal(t, tt.res, gotRes)
 			}
 		})
 	}

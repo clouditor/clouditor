@@ -971,7 +971,7 @@ func TestService_handleEvidence(t *testing.T) {
 				assert.NotEmpty(t, results)
 				// Check the result by validation
 				for _, result := range results {
-					err := result.Validate()
+					err := api.Validate(result)
 					assert.NoError(t, err)
 				}
 			}

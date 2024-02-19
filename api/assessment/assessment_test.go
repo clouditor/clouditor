@@ -28,6 +28,7 @@ package assessment
 import (
 	"testing"
 
+	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/stretchr/testify/assert"
@@ -62,7 +63,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid uuid format")
+				return assert.ErrorContains(t, err, "id: value must be a valid UUID")
 			},
 		},
 		{
@@ -82,7 +83,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid uuid format")
+				return assert.ErrorContains(t, err, "id: value must be a valid UUID")
 			},
 		},
 		{
@@ -102,7 +103,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid uuid format")
+				return assert.ErrorContains(t, err, "id: value must be a valid UUID")
 			},
 		},
 		{
@@ -140,7 +141,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "value length must be at least 1 runes")
+				return assert.ErrorContains(t, err, "metric_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -162,7 +163,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "ResourceTypes: value must contain at least 1 item(s")
+				return assert.ErrorContains(t, err, "resource_types: value must contain at least 1 item(s)")
 			},
 		},
 		{
@@ -178,7 +179,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "MetricConfiguration: value is required")
+				return assert.ErrorContains(t, err, "metric_configuration: value is required ")
 			},
 		},
 		{
@@ -198,7 +199,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid uuid format")
+				return assert.ErrorContains(t, err, "metric_configuration.cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -217,7 +218,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "TargetValue: value is required")
+				return assert.ErrorContains(t, err, "metric_configuration.target_value: value is required")
 			},
 		},
 		{
@@ -237,7 +238,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "invalid uuid format")
+				return assert.ErrorContains(t, err, "metric_configuration.cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -267,7 +268,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.args.AssessmentResult.Validate()
+			err := api.Validate(tt.args.AssessmentResult)
 			if tt.wantErr != nil {
 				tt.wantErr(t, err, tt.args)
 			} else {
