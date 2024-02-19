@@ -494,7 +494,7 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(set *armcompute.Vir
 					Region: *set.Location,
 				},
 				labels(set.Tags),
-				"",
+				resourceGroupID(set.ID),
 				voc.VirtualMachineScaleSetType,
 				set,
 			),

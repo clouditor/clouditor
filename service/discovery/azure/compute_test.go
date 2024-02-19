@@ -416,7 +416,29 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 			},
-			// },
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachineScaleSets" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+					"name":     "scaleSet1",
+					"location": "eastus",
+					"tags":     map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"virtualMachineProfile": map[string]interface{}{
+							"osProfile": map[string]interface{}{
+								"linuxConfiguration": map[string]interface{}{
+									"patchSettings": map[string]interface{}{
+										"patchMode": "AutomaticByPlatform",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		}, 200)
 	}
 
@@ -2915,4 +2937,156 @@ func Test_getTransportEncryption(t *testing.T) {
 func Test_IfWeConsiderAllPossibleDiskStorageAccountTypes(t *testing.T) {
 	currentlyConsideredDiskStorageAccountTypeValues := 7
 	assert.Equal(t, len(armcompute.PossibleDiskStorageAccountTypesValues()), currentlyConsideredDiskStorageAccountTypeValues)
+}
+
+func Test_azureComputeDiscovery_discoverVirtualMachineScaleSets(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.VirtualMachineScaleSet{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "scaleSet1",
+							CreationTime: util.SafeTimestamp(&creationTime),
+							Type:         voc.VirtualMachineScaleSetType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Raw:    "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\",\"location\":\"eastus\",\"name\":\"scaleSet1\",\"properties\":{\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\",\"virtualMachineProfile\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}}},\"tags\":{}}]}",
+							Parent: resourceGroupID(util.Ref("")),
+						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
+				},
+			},
+
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			got, err := d.discoverVirtualMachineScaleSets()
+
+			tt.wantErr(t, err)
+
+			assert.Equal(t, tt.want, got)
+
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_handleVirtualMachineScaleSet(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		set *armcompute.VirtualMachineScaleSet
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    voc.IsCompute
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				set: &armcompute.VirtualMachineScaleSet{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1"),
+					Name:     util.Ref("scaleSet1"),
+					Tags:     map[string]*string{},
+					Properties: &armcompute.VirtualMachineScaleSetProperties{
+						TimeCreated: &creationTime,
+						VirtualMachineProfile: &armcompute.VirtualMachineScaleSetVMProfile{
+							OSProfile: &armcompute.VirtualMachineScaleSetOSProfile{
+								LinuxConfiguration: &armcompute.LinuxConfiguration{
+									PatchSettings: &armcompute.LinuxPatchSettings{
+										PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &voc.VirtualMachineScaleSet{
+				Compute: &voc.Compute{
+					Resource: &voc.Resource{
+						ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+						Name:         "scaleSet1",
+						ServiceID:    testdata.MockCloudServiceID1,
+						CreationTime: util.SafeTimestamp(&creationTime),
+						Type:         voc.VirtualMachineScaleSetType,
+						GeoLocation: voc.GeoLocation{
+							Region: "eastus",
+						},
+						Labels: map[string]string{},
+						Raw:    "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\",\"location\":\"eastus\",\"name\":\"scaleSet1\",\"properties\":{\"timeCreated\":\"2017-05-24T13:28:53.004540398Z\",\"virtualMachineProfile\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}}},\"tags\":{}}]}",
+						Parent: resourceGroupID(util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1")),
+					},
+				},
+				AutomaticUpdates: &voc.AutomaticUpdates{
+					Enabled:  true,
+					Interval: Duration30Days,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			got, err := d.handleVirtualMachineScaleSet(tt.args.set)
+
+			tt.wantErr(t, err)
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }
