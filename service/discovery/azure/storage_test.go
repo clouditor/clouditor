@@ -68,6 +68,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
 					"name":     "account1",
 					"location": "eastus",
+					"sku": map[string]interface{}{
+						"name": "Standard_LRS",
+					},
 					"properties": map[string]interface{}{
 						"creationTime": "2017-05-24T13:28:53.4540398Z",
 						"primaryEndpoints": map[string]interface{}{
@@ -98,6 +101,9 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
 					"name":     "account2",
 					"location": "eastus",
+					"sku": map[string]interface{}{
+						"name": "Standard_LRS",
+					},
 					"properties": map[string]interface{}{
 						"creationTime": "2017-05-24T13:28:53.4540398Z",
 						"primaryEndpoints": map[string]interface{}{
@@ -227,6 +233,14 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/tableServices/default/tables" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/tableServices/default/tables" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{},
+		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.DataProtection/backupVaults" {
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
@@ -304,8 +318,12 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
 				{
-					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
-					"name": "SQLServer1",
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+					"name":     "SQLServer1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"publicNetworkAccess": "enabled",
+					},
 				},
 			},
 		}, 200)
@@ -511,7 +529,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -538,6 +556,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								SecurityAlertsEnabled:    true,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.ObjectStorage{
@@ -553,7 +572,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -579,6 +598,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								SecurityAlertsEnabled:    true,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.FileStorage{
@@ -594,7 +614,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -608,6 +628,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								SecurityAlertsEnabled:    true,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.FileStorage{
@@ -637,6 +658,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								SecurityAlertsEnabled:    true,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.ObjectStorageService{
@@ -717,6 +739,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Interval:        -1,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.ObjectStorage{
@@ -755,6 +778,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Interval:        -1,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.ObjectStorageService{
@@ -786,6 +810,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Algorithm:  constants.TLS,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 					HttpEndpoint: &voc.HttpEndpoint{
 						Url: "https://account1.[file,blob].core.windows.net/",
@@ -833,6 +858,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 					AnomalyDetection: &voc.AnomalyDetection{
 						Enabled: true,
@@ -858,6 +884,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							Enabled:   true,
 							Algorithm: AES256,
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseStorage{
@@ -884,6 +911,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseStorage{
@@ -910,6 +938,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Algorithm: AES256,
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
