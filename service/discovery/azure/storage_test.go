@@ -1290,6 +1290,9 @@ func Test_handleFileStorage(t *testing.T) {
 						},
 						CreationTime: &creationTime,
 					},
+					SKU: &armstorage.SKU{
+						Name: util.Ref(armstorage.SKUNamePremiumLRS),
+					},
 					Location: &accountRegion,
 				},
 				fileshare: &armstorage.FileShareItem{
@@ -1310,7 +1313,7 @@ func Test_handleFileStorage(t *testing.T) {
 						Labels: map[string]string{},
 						Type:   voc.FileStorageType,
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
+						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1324,6 +1327,9 @@ func Test_handleFileStorage(t *testing.T) {
 							MonitoringLogDataEnabled: false,
 							SecurityAlertsEnabled:    false,
 						},
+					},
+					Redundancy: &voc.Redundancy{
+						Local: true,
 					},
 				},
 			},
@@ -1413,6 +1419,9 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 				account: &armstorage.Account{
 					ID:   &accountID,
 					Name: &accountName,
+					SKU: &armstorage.SKU{
+						Name: util.Ref(armstorage.SKUNameStandardLRS),
+					},
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
@@ -1442,7 +1451,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 								},
 								Labels: map[string]string{},
 								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true}}]}",
+								Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}]}",
 							},
 						},
 						TransportEncryption: &voc.TransportEncryption{
@@ -1451,6 +1460,9 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 							TlsVersion: constants.TLS1_2,
 							Algorithm:  constants.TLS,
 						},
+					},
+					Redundancy: &voc.Redundancy{
+						Local: true,
 					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
@@ -1491,7 +1503,8 @@ func Test_handleObjectStorage(t *testing.T) {
 	publicAccess := armstorage.PublicAccessNone
 
 	type fields struct {
-		azureDiscovery *azureDiscovery
+		azureDiscovery      *azureDiscovery
+		blobContainerClient bool
 	}
 	type args struct {
 		account   *armstorage.Account
@@ -1541,11 +1554,15 @@ func Test_handleObjectStorage(t *testing.T) {
 		{
 			name: "No error",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery:      NewMockAzureDiscovery(newMockStorageSender()),
+				blobContainerClient: true,
 			},
 			args: args{
 				account: &armstorage.Account{
 					ID: &accountID,
+					SKU: &armstorage.SKU{
+						Name: util.Ref(armstorage.SKUNamePremiumLRS),
+					},
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
@@ -1576,7 +1593,7 @@ func Test_handleObjectStorage(t *testing.T) {
 						Labels: map[string]string{},
 						Type:   voc.ObjectStorageType,
 						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
+						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -1598,6 +1615,9 @@ func Test_handleObjectStorage(t *testing.T) {
 							Interval:        -1,
 						},
 					},
+					Redundancy: &voc.Redundancy{
+						Local: true,
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -1607,6 +1627,11 @@ func Test_handleObjectStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
+			}
+
+			// initialize blob container client
+			if tt.fields.blobContainerClient {
+				_ = d.initBlobContainerClient()
 			}
 
 			got, err := d.handleObjectStorage(tt.args.account, tt.args.container)
@@ -1664,6 +1689,9 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				account: &armstorage.Account{
 					ID:   &accountID,
 					Name: &accountName,
+					SKU: &armstorage.SKU{
+						Name: util.Ref(armstorage.SKUNamePremiumLRS),
+					},
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
@@ -1687,7 +1715,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1700,6 +1728,9 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								MonitoringLogDataEnabled: false,
 								SecurityAlertsEnabled:    false,
 							},
+						},
+						Redundancy: &voc.Redundancy{
+							Local: true,
 						},
 					},
 				},
@@ -1716,7 +1747,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1729,6 +1760,9 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								MonitoringLogDataEnabled: false,
 								SecurityAlertsEnabled:    false,
 							},
+						},
+						Redundancy: &voc.Redundancy{
+							Local: true,
 						},
 					},
 				},
@@ -1799,11 +1833,17 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				account: &armstorage.Account{
 					ID:   &accountID,
 					Name: &accountName,
+					SKU: &armstorage.SKU{
+						Name: util.Ref(armstorage.SKUNamePremiumLRS),
+					},
 					Properties: &armstorage.AccountProperties{
 						Encryption: &armstorage.Encryption{
 							KeySource: &keySource,
 						},
 						CreationTime: &creationTime,
+						PrimaryEndpoints: &armstorage.Endpoints{
+							Blob: util.Ref("blob"),
+						},
 					},
 					Location: &accountRegion,
 				},
@@ -1822,7 +1862,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"primaryEndpoints\":{\"blob\":\"blob\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1844,7 +1884,11 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Interval:        -1,
 							},
 						},
+						Redundancy: &voc.Redundancy{
+							Local: true,
+						},
 					},
+					ContainerPublicAccess: true,
 				},
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
@@ -1859,7 +1903,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Region: "eastus",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"primaryEndpoints\":{\"blob\":\"blob\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
 							AtRestEncryption: &voc.AtRestEncryption{
@@ -1881,7 +1925,11 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								Interval:        -1,
 							},
 						},
+						Redundancy: &voc.Redundancy{
+							Local: true,
+						},
 					},
+					ContainerPublicAccess: true,
 				},
 			},
 			wantErr: assert.NoError,
