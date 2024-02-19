@@ -695,7 +695,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 // not supported in Azure. Therefore, an Azure disk can be either locally redundant, zone redundant or not redundant at
 // all.
 func getDiskRedundancy(disk *armcompute.Disk) (r *voc.Redundancy) {
-	r = new(voc.Redundancy)
+	r = &voc.Redundancy{}
 	// If SKU is nil, no redundancy is set. Therefore, we return false for all redundant options in the ontology
 	if disk.SKU == nil {
 		return

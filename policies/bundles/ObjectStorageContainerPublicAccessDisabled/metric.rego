@@ -13,5 +13,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, storage.publicAccess)
+	compare(data.operator, data.target_value, storage.containerPublicAccess)
 }
