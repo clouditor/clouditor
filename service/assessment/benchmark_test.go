@@ -16,6 +16,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	service_evidence "clouditor.io/clouditor/v2/service/evidence"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -90,9 +91,9 @@ func createEvidences(n int, m int, b *testing.B) int {
 					log.Infof("Currently @ %v", i)
 				}
 
-				_, err := svc.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
+				_, err := svc.AssessEvidence(context.Background(), connect.NewRequest(&assessment.AssessEvidenceRequest{
 					Evidence: &e,
-				})
+				}))
 				if err != nil {
 					b.Errorf("Error while calling AssessEvidence: %v", err)
 				}

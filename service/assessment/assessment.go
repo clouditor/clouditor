@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -75,9 +76,6 @@ type cachedConfiguration struct {
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
-	// Embedded for FWD compatibility
-	assessment.UnimplementedAssessmentServer
-
 	// isEvidenceStoreDisabled specifies if evidences shall be discarded (when true).
 	isEvidenceStoreDisabled bool
 	// evidenceStoreStream sends evidences to the Evidence Store
@@ -204,30 +202,30 @@ func NewService(opts ...service.Option[Service]) *Service {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
-	resp = &assessment.AssessEvidenceResponse{}
+func (svc *Service) AssessEvidence(ctx context.Context, req *connect.Request[assessment.AssessEvidenceRequest]) (res *connect.Response[assessment.AssessEvidenceResponse], err error) {
+	res = connect.NewResponse(&assessment.AssessEvidenceResponse{})
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
-	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req.Msg) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-	_, err = svc.handleEvidence(ctx, req.Evidence)
+	_, err = svc.handleEvidence(ctx, req.Msg.Evidence)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req.Msg)
 
-	return resp, nil
+	return res, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
@@ -252,9 +250,9 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		}
 
 		// Call AssessEvidence for assessing a single evidence
-		assessEvidencesReq := &assessment.AssessEvidenceRequest{
+		assessEvidencesReq := connect.NewRequest(&assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
-		}
+		})
 		_, err = svc.AssessEvidence(stream.Context(), assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.

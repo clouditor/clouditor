@@ -31,7 +31,7 @@ import (
 	"net"
 	"net/http"
 
-	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/assessment/assessmentconnect"
 	"clouditor.io/clouditor/v2/api/discovery/discoveryconnect"
 	"clouditor.io/clouditor/v2/api/evaluation/evaluationconnect"
 	"clouditor.io/clouditor/v2/api/evidence"
@@ -67,9 +67,10 @@ func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption
 }
 
 // WithAssessment is an option for [StartGRPCServer] to register a [assessment.AssessmentServer] at start.
-func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
+func WithAssessment(svc assessmentconnect.AssessmentHandler) StartGRPCServerOption {
 	return func(c *config) {
-		c.services[&assessment.Assessment_ServiceDesc] = svc
+		path, handler := assessmentconnect.NewAssessmentHandler(svc)
+		c.mux.Handle(path, handler)
 	}
 }
 

@@ -29,7 +29,6 @@ import (
 	"context"
 	"net"
 
-	"clouditor.io/clouditor/v2/api/assessment"
 	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
 	"google.golang.org/grpc"
@@ -55,7 +54,8 @@ func startBufConnServer() (*grpc.Server, *service_assessment.Service) {
 	server := grpc.NewServer()
 
 	assessmentService := service_assessment.NewService()
-	assessment.RegisterAssessmentServer(server, assessmentService)
+	// TODO: Replace with ConnectRPC
+	//assessment.RegisterAssessmentServer(server, assessmentService)
 
 	go func() {
 		if err := server.Serve(bufConnListener); err != nil {

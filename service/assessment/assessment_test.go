@@ -52,6 +52,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/google/uuid"
 	"golang.org/x/oauth2/clientcredentials"
@@ -372,7 +373,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 				authz:                tt.fields.authz,
 			}
-			gotResp, err := s.AssessEvidence(tt.args.in0, &assessment.AssessEvidenceRequest{Evidence: tt.args.evidence})
+			gotResp, err := s.AssessEvidence(tt.args.in0, connect.NewRequest(&assessment.AssessEvidenceRequest{Evidence: tt.args.evidence}))
 
 			tt.wantErr(t, err)
 
@@ -410,7 +411,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 		Id:   testdata.MockResourceID1,
 		Name: testdata.MockResourceName1,
 	})
-	_, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: e})
+	_, err := s.AssessEvidence(context.Background(), connect.NewRequest(&assessment.AssessEvidenceRequest{Evidence: e}))
 	assert.NoError(t, err)
 
 	// Now assess a new evidence which has not a valid format other than the resource type and tool id is set correctly
@@ -421,7 +422,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	})
 
 	assert.NoError(t, err)
-	_, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
+	_, err = s.AssessEvidence(context.Background(), connect.NewRequest(&assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
 		Id:             uuid.NewString(),
 		Timestamp:      timestamppb.Now(),
 		CloudServiceId: testdata.MockCloudServiceID1,
@@ -429,7 +430,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 		ToolId:   e.ToolId,
 		Raw:      nil,
 		Resource: a,
-	}})
+	}}))
 	assert.NoError(t, err)
 }
 
@@ -614,7 +615,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 	type args struct {
 		in0         context.Context
-		evidence    *assessment.AssessEvidenceRequest
+		req         *connect.Request[assessment.AssessEvidenceRequest]
 		resultHooks []assessment.ResultHookFunc
 	}
 	tests := []struct {
@@ -627,7 +628,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			name: "Store evidence to the map",
 			args: args{
 				in0: context.TODO(),
-				evidence: &assessment.AssessEvidenceRequest{
+				req: connect.NewRequest(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
 						Id:             testdata.MockEvidenceID1,
 						ToolId:         testdata.MockEvidenceToolID1,
@@ -656,8 +657,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 								},
 							},
 						}),
-					}},
-
+					}}),
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr:  false,
@@ -680,7 +680,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.evidence)
+			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.req)
 
 			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
