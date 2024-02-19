@@ -33,7 +33,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/evidence"
 	commands_login "clouditor.io/clouditor/v2/cli/commands/login"
 	"clouditor.io/clouditor/v2/internal/auth"
@@ -119,7 +118,7 @@ var (
 	orchestratorService  *service_orchestrator.Service
 	assessmentService    *service_assessment.Service
 	evidenceStoreService evidence.EvidenceStoreServer
-	evaluationService    evaluation.EvaluationServer
+	evaluationService    *service_evaluation.Service
 	db                   persistence.Storage
 	providers            []string
 
@@ -381,12 +380,12 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
 		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
-		/*server.WithExperimentalDiscovery(discoveryService),
-		server.WithOrchestrator(orchestratorService),
+		server.WithExperimentalDiscovery(discoveryService),
+		/*server.WithOrchestrator(orchestratorService),
 		server.WithAssessment(assessmentService),
-		server.WithEvidenceStore(evidenceStoreService),
+		server.WithEvidenceStore(evidenceStoreService),*/
 		server.WithEvaluation(evaluationService),
-		server.WithReflection(),*/
+		/*server.WithReflection(),*/
 	)
 	if err != nil {
 		log.Errorf("Failed to serve gRPC endpoint: %s", err)

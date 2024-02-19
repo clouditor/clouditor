@@ -33,7 +33,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/discovery/discoveryconnect"
-	"clouditor.io/clouditor/v2/api/evaluation"
+	"clouditor.io/clouditor/v2/api/evaluation/evaluationconnect"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"golang.org/x/net/http2"
@@ -98,9 +98,10 @@ func WithExperimentalDiscovery(svc discoveryconnect.ExperimentalDiscoveryHandler
 }
 
 // WithEvaluation is an option for [StartGRPCServer] to register a [evaluation.EvaluationServer] at start.
-func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
+func WithEvaluation(svc evaluationconnect.EvaluationHandler) StartGRPCServerOption {
 	return func(c *config) {
-		c.services[&evaluation.Evaluation_ServiceDesc] = svc
+		path, handler := evaluationconnect.NewEvaluationHandler(svc)
+		c.mux.Handle(path, handler)
 	}
 }
 

@@ -27,6 +27,7 @@ package api
 
 import (
 	"clouditor.io/clouditor/v2/internal/util"
+	"connectrpc.com/connect"
 
 	"github.com/bufbuild/protovalidate-go"
 	"google.golang.org/grpc/codes"
@@ -39,6 +40,17 @@ var validator *protovalidate.Validator
 
 func init() {
 	validator, _ = protovalidate.New()
+}
+
+func ValidateRequest[T any](req *connect.Request[T]) (err error) {
+	if req == nil {
+		return status.Errorf(codes.InvalidArgument, "%s", ErrEmptyRequest)
+	}
+
+	// TODO: somehow stupid
+	err = Validate((any)(req).(proto.Message))
+
+	return
 }
 
 // Validate validates an incoming request according to different criteria:

@@ -49,6 +49,7 @@
       "emptypb",
       "Equalf",
       "errgroup",
+      "evaluationconnect",
       "evaluationtest",
       "evidencetest",
       "gocron",

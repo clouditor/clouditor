@@ -67,6 +67,10 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func successfulStartResponse(t *testing.T, got *connect.Response[discovery.StartDiscoveryResponse]) bool {
+	return assert.Equal(t, connect.NewResponse(&discovery.StartDiscoveryResponse{Successful: true}), got)
+}
+
 func TestNewService(t *testing.T) {
 	type args struct {
 		opts []ServiceOption
@@ -429,7 +433,7 @@ func TestService_Start(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.Want[*discovery.StartDiscoveryResponse]
+		want    assert.WantResponse[discovery.StartDiscoveryResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
@@ -442,7 +446,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: nil,
 			},
-			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			want: assert.Nil[*connect.Response[discovery.StartDiscoveryResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
@@ -458,7 +462,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			want: assert.NilResponse[discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "provider falseProvider not known")
 			},
@@ -474,7 +478,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			want: assert.NilResponse[discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "access denied")
 			},
@@ -508,7 +512,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			want: assert.NilResponse[discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not schedule job for ", ".Every() interval must be greater than 0")
 			},
@@ -533,7 +537,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			want: assert.NilResponse[discovery.StartDiscoveryResponse],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not authenticate to Kubernetes")
 			},
@@ -567,9 +571,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
-			},
+			want:    successfulStartResponse,
 			wantErr: assert.NoError,
 		},
 		{
@@ -601,9 +603,7 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: connect.NewRequest(&discovery.StartDiscoveryRequest{}),
 			},
-			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
-			},
+			want:    successfulStartResponse,
 			wantErr: assert.NoError,
 		},
 		{
@@ -637,9 +637,7 @@ func TestService_Start(t *testing.T) {
 					ResourceGroup: util.Ref("testResourceGroup"),
 				}),
 			},
-			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
-			},
+			want:    successfulStartResponse,
 			wantErr: assert.NoError,
 		},
 	}
@@ -665,7 +663,6 @@ func TestService_Start(t *testing.T) {
 			}
 
 			gotRes, err := svc.Start(tt.args.ctx, tt.args.req)
-
 			tt.want(t, gotRes)
 			tt.wantErr(t, err)
 		})

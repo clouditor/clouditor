@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"connectrpc.com/connect"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -29,6 +30,9 @@ type ErrorAssertionFunc = assert.ErrorAssertionFunc
 
 // Want is a function type that can hold asserts in order to check the validity of "got".
 type Want[T any] func(t *testing.T, got T) bool
+
+type WantResponse[T any] func(t *testing.T, got *connect.Response[T]) bool
+type WantRequest[T any] func(t *testing.T, got *connect.Request[T]) bool
 
 var _ Want[any] = AnyValue[any]
 var _ Want[any] = Nil[any]
@@ -73,6 +77,12 @@ func NotEqual[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 	}
 
 	return assert.Fail(t, "Equal, but excepted to be not equal", cmp.Diff(got, want, opts...))
+}
+
+func NilResponse[T any](t *testing.T, obj *connect.Response[T]) bool {
+	t.Helper()
+
+	return assert.Nil(t, obj)
 }
 
 func Nil[T any](t *testing.T, obj T) bool {

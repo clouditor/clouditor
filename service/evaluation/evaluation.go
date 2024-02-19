@@ -41,6 +41,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
@@ -71,8 +72,6 @@ const (
 
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
-	evaluation.UnimplementedEvaluationServer
-
 	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
 
 	scheduler *gocron.Scheduler
@@ -154,7 +153,7 @@ func NewService(opts ...service.Option[Service]) *Service {
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a
 // cloud service and the given catalog in the target_of_evaluation. If no interval time is given, the default value is
 // used.
-func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
+func (svc *Service) StartEvaluation(ctx context.Context, req *connect.Request[evaluation.StartEvaluationRequest]) (res *connect.Response[evaluation.StartEvaluationResponse], err error) {
 	var (
 		interval int
 		toe      *orchestrator.TargetOfEvaluation
@@ -163,13 +162,13 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	)
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req.Msg) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -177,14 +176,14 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	svc.scheduler.StartAsync()
 
 	// Set the interval to the default value if not set. If the interval is set to 0, the default interval is used.
-	if req.GetInterval() == 0 {
+	if req.Msg.GetInterval() == 0 {
 		interval = defaultInterval
 	} else {
-		interval = int(req.GetInterval())
+		interval = int(req.Msg.GetInterval())
 	}
 
 	// Get all Controls from Orchestrator for the evaluation
-	err = svc.cacheControls(req.CatalogId)
+	err = svc.cacheControls(req.Msg.CatalogId)
 	if err != nil {
 		err = fmt.Errorf("could not cache controls: %w", err)
 		log.Error(err)
@@ -193,8 +192,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 
 	// Get Target of Evaluation
 	toe, err = svc.orchestrator.Client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
-		CloudServiceId: req.CloudServiceId,
-		CatalogId:      req.CatalogId,
+		CloudServiceId: req.Msg.CloudServiceId,
+		CatalogId:      req.Msg.CatalogId,
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get target of evaluation: %w", err)
@@ -204,7 +203,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 
 	// Retrieve the catalog
 	catalog, err = svc.orchestrator.Client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{
-		CatalogId: req.CatalogId,
+		CatalogId: req.Msg.CatalogId,
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get catalog: %w", err)
@@ -213,7 +212,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check, if a previous job exists and/or is running
-	jobs, err = svc.scheduler.FindJobsByTag(req.CloudServiceId, req.CatalogId)
+	jobs, err = svc.scheduler.FindJobsByTag(req.Msg.CloudServiceId, req.Msg.CatalogId)
 	if err != nil && !errors.Is(err, gocron.ErrJobNotFoundWithTag) {
 		err = fmt.Errorf("error while retrieving existing scheduler job: %w", err)
 		log.Error(err)
@@ -239,42 +238,42 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		interval,
 	)
 
-	resp = &evaluation.StartEvaluationResponse{Successful: true}
+	res = connect.NewResponse(&evaluation.StartEvaluationResponse{Successful: true})
 
 	return
 }
 
 // StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a
 // TargetOfEvaluation.
-func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
+func (svc *Service) StopEvaluation(ctx context.Context, req *connect.Request[evaluation.StopEvaluationRequest]) (res *connect.Response[evaluation.StopEvaluationResponse], err error) {
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req.Msg) {
 		return nil, service.ErrPermissionDenied
 	}
 
 	// Stop jobs(s) for given cloud service and catalog
-	err = svc.scheduler.RemoveByTags(req.CloudServiceId, req.CatalogId)
+	err = svc.scheduler.RemoveByTags(req.Msg.CloudServiceId, req.Msg.CatalogId)
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for cloud service '%s' and catalog '%s' not running", req.CloudServiceId, req.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for cloud service '%s' and catalog '%s' not running", req.Msg.CloudServiceId, req.Msg.CatalogId)
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for cloud service '%s' and catalog '%s': %w", req.CloudServiceId, req.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for cloud service '%s' and catalog '%s': %w", req.Msg.CloudServiceId, req.Msg.CatalogId, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	resp = &evaluation.StopEvaluationResponse{}
+	res = connect.NewResponse(&evaluation.StopEvaluationResponse{})
 
 	return
 }
 
 // ListEvaluationResults is a method implementation of the assessment interface
-func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.ListEvaluationResultsRequest) (res *evaluation.ListEvaluationResultsResponse, err error) {
+func (svc *Service) ListEvaluationResults(ctx context.Context, req *connect.Request[evaluation.ListEvaluationResultsRequest]) (res *connect.Response[evaluation.ListEvaluationResultsResponse], err error) {
 	var (
 		// filtered_values []*evaluation.EvaluationResult
 		allowed   []string
@@ -285,7 +284,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	)
 
 	// Validate request
-	err = api.Validate(req)
+	err = api.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -298,39 +297,39 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 	// * cloud service ID
 	// * control ID
 	// * sub-controls
-	if req.Filter != nil {
+	if req.Msg.Filter != nil {
 		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
-		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
+		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Msg.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CloudServiceId != nil {
+		if req.Msg.Filter.CloudServiceId != nil {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+			args = append(args, req.Msg.Filter.GetCloudServiceId())
 		}
 
-		if req.Filter.CatalogId != nil {
+		if req.Msg.Filter.CatalogId != nil {
 			query = append(query, "control_catalog_id = ?")
-			args = append(args, req.Filter.GetCatalogId())
+			args = append(args, req.Msg.Filter.GetCatalogId())
 		}
 
-		if req.Filter.ControlId != nil {
+		if req.Msg.Filter.ControlId != nil {
 			query = append(query, "control_id = ?")
-			args = append(args, req.Filter.GetControlId())
+			args = append(args, req.Msg.Filter.GetControlId())
 		}
 
 		// TODO(anatheka): change that, in other catalogs maybe it's not that easy to get the sub-control by name
-		if req.Filter.SubControls != nil {
+		if req.Msg.Filter.SubControls != nil {
 			partition = append(partition, "control_id")
 			query = append(query, "control_id LIKE ?")
-			args = append(args, fmt.Sprintf("%s%%", req.Filter.GetSubControls()))
+			args = append(args, fmt.Sprintf("%s%%", req.Msg.Filter.GetSubControls()))
 		}
 
-		if util.Deref(req.Filter.ParentsOnly) {
+		if util.Deref(req.Msg.Filter.ParentsOnly) {
 			query = append(query, "parent_control_id IS NULL")
 		}
 
-		if util.Deref(req.Filter.ValidManualOnly) {
+		if util.Deref(req.Msg.Filter.ValidManualOnly) {
 			query = append(query, "status IN ?")
 			args = append(args, []any{
 				evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY,
@@ -348,10 +347,10 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		args = append(args, allowed)
 	}
 
-	res = new(evaluation.ListEvaluationResultsResponse)
+	res = connect.NewResponse(&evaluation.ListEvaluationResultsResponse{})
 
 	// If we want to have it grouped by resource ID, we need to do a raw query
-	if req.GetLatestByControlId() {
+	if req.Msg.GetLatestByControlId() {
 		// In the raw SQL, we need to build the whole WHERE statement
 		var where string
 		var p = ""
@@ -365,7 +364,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		}
 
 		// Execute the raw SQL statement
-		err = svc.storage.Raw(&res.Results,
+		err = svc.storage.Raw(&res.Msg.Results,
 			fmt.Sprintf(`WITH sorted_results AS (
 				SELECT *, ROW_NUMBER() OVER (PARTITION BY control_id %s ORDER BY timestamp DESC) AS row_number
 				FROM evaluation_results
@@ -380,7 +379,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		args = append([]any{strings.Join(query, " AND ")}, args...)
 
 		// Paginate the results according to the request
-		res.Results, res.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req, svc.storage, service.DefaultPaginationOpts, args...)
+		res.Msg.Results, res.Msg.NextPageToken, err = service.PaginateStorage[*evaluation.EvaluationResult](req.Msg, svc.storage, service.DefaultPaginationOpts, args...)
 		if err != nil {
 			err = fmt.Errorf("could not paginate evaluation results: %w", err)
 			log.Error(err)
@@ -392,32 +391,32 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 }
 
 // CreateEvaluationResult is a method implementation of the assessment interface
-func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.CreateEvaluationResultRequest) (res *evaluation.EvaluationResult, err error) {
+func (svc *Service) CreateEvaluationResult(ctx context.Context, req *connect.Request[evaluation.CreateEvaluationResultRequest]) (res *connect.Response[evaluation.EvaluationResult], err error) {
 	// Validate request
-	err = api.Validate(req)
+	err = api.Validate(req.Msg)
 	if err != nil {
 		return nil, err
 	}
 
 	// We only allow manually created statuses
-	if req.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY &&
-		req.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY {
+	if req.Msg.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY &&
+		req.Msg.Result.Status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY {
 		return nil, status.Errorf(codes.InvalidArgument, "only manually set statuses are allowed")
 	}
 
 	// The ValidUntil field must be checked separately as it is an optional field and not checked by the request
 	// validation. It is only mandatory when manually creating a result.
-	if req.Result.ValidUntil == nil {
+	if req.Msg.Result.ValidUntil == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validity must be set")
 	}
 
 	// Check, if this request has access to the cloud service according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req.Msg) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = req.Result
-	res.Id = uuid.NewString()
+	res = connect.NewResponse(req.Msg.Result)
+	res.Msg.Id = uuid.NewString()
 	err = svc.storage.Create(res)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
@@ -489,7 +488,12 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 		LatestByControlId: util.Ref(true),
 	},
 		func(ctx context.Context, req *evaluation.ListEvaluationResultsRequest, opts ...grpc.CallOption) (*evaluation.ListEvaluationResultsResponse, error) {
-			return svc.ListEvaluationResults(ctx, req)
+			res, err := svc.ListEvaluationResults(ctx, connect.NewRequest(req))
+			if err == nil {
+				return res.Msg, nil
+			} else {
+				return nil, err
+			}
 		}, func(res *evaluation.ListEvaluationResultsResponse) []*evaluation.EvaluationResult {
 			return res.Results
 		})
