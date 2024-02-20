@@ -153,6 +153,7 @@ type clients struct {
 	sqlServersClient       *armsql.ServersClient
 	threatProtectionClient *armsql.DatabaseAdvancedThreatProtectionSettingsClient
 	cosmosDBClient         *armcosmos.DatabaseAccountsClient
+	mongoDBResourcesClient *armcosmos.MongoDBResourcesClient
 
 	// Network
 	networkInterfacesClient     *armnetwork.InterfacesClient
@@ -629,4 +630,26 @@ func allPages[T any](pager *runtime.Pager[T], callback func(page T) error) error
 	}
 
 	return nil
+}
+
+// tlsVersion returns a float value for the given TLS version string
+func tlsVersion(version *string) string {
+	if version == nil {
+		return ""
+	}
+
+	// Check TLS version
+	switch *version {
+	case "1.0", "1_0", string(armstorage.MinimumTLSVersionTLS10):
+		return constants.TLS1_0
+	case "1.1", "1_1", string(armstorage.MinimumTLSVersionTLS11):
+		return constants.TLS1_1
+	case "1.2", "1_2", string(armstorage.MinimumTLSVersionTLS12):
+		return constants.TLS1_2
+	case "1.3", "1_3":
+		return constants.TLS1_3
+	default:
+		log.Warningf("'%s' is not an implemented TLS version.", *version)
+		return ""
+	}
 }

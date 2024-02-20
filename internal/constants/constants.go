@@ -30,6 +30,7 @@ const (
 	TLS1_0 = "TLS1_0"
 	TLS1_1 = "TLS1_1"
 	TLS1_2 = "TLS1_2"
+	TLS1_3 = "TLS1_3"
 
 	AES    = "AES"
 	AES256 = "AES256"
