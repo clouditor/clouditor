@@ -52,7 +52,7 @@ jobs:
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }} # not needed, but seems to be more reliable
       - name: "Upload Artifact"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: build
