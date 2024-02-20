@@ -255,14 +255,6 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{},
 		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp1/config/appsettings/list" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{},
-		}, 200)
-	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list" {
-		return createResponse(req, map[string]interface{}{
-			"value": &[]map[string]interface{}{},
-		}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Web/sites" {
 		return createResponse(req, map[string]interface{}{
 			"value": &[]map[string]interface{}{
