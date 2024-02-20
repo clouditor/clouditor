@@ -164,20 +164,53 @@ func (d *azureComputeDiscovery) discoverVirtualMachineScaleSets() ([]voc.IsCloud
 			return res.Value
 		},
 
-		func(vm *armcompute.VirtualMachineScaleSet) error {
-			r, err := d.handleVirtualMachineScaleSet(vm)
+		func(scaleSet *armcompute.VirtualMachineScaleSet) error {
+			r, err := d.discoverVMScaleSetVMs(scaleSet)
 			if err != nil {
 				return fmt.Errorf("could not handle virtual machine scale set: %w", err)
 			}
 
-			log.Infof("Adding virtual machine scale set '%s'", r.GetName())
+			log.Infof("Adding virtual machines for scale set '%s'", *scaleSet.Name)
 
-			list = append(list, r)
+			list = append(list, r...)
 
 			return nil
 		})
 	if err != nil {
 		return nil, err
+	}
+
+	return list, nil
+}
+
+// discoverVMScaleSetVMs discovers the virtual machines in a virtual machine scale set and returns the voc.VirtualMachine object
+func (d *azureComputeDiscovery) discoverVMScaleSetVMs(scaleSet *armcompute.VirtualMachineScaleSet) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize virtual machine scale set client
+	if err := d.initVirtualMachineScaleSetVMsClient(); err != nil {
+		return nil, err
+	}
+
+	// List all VMs in the scale set
+	listPager := d.clients.virtualMachineScaleSetVMsClient.NewListPager(resourceGroupName(util.Deref(scaleSet.ID)), util.Deref(scaleSet.Name), &armcompute.VirtualMachineScaleSetVMsClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			vm, err := d.handleVirtualMachineScaleSet(value, *scaleSet.ID)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle VM from scale set: %w", err)
+			}
+
+			log.Infof("Adding VM from scale set '%s", vm.GetName())
+
+			list = append(list, vm)
+		}
 	}
 
 	return list, nil
@@ -484,30 +517,31 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(set *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
-	r := &voc.VirtualMachineScaleSet{
+func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, parent string) (voc.IsCompute, error) {
+	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(*set.ID),
-				*set.Name,
-				set.Properties.TimeCreated,
+				voc.ResourceID(*vm.ID),
+				*vm.Name,
+				nil, // not available
 				voc.GeoLocation{
-					Region: *set.Location,
+					Region: *vm.Location,
 				},
-				labels(set.Tags),
-				resourceGroupID(set.ID),
-				voc.VirtualMachineScaleSetType,
-				set,
+				labels(vm.Tags),
+				voc.ResourceID(parent),
+				voc.VirtualMachineType,
+				vm,
 			),
 		},
-		AutomaticUpdates: automaticUpdatesScaleSet(set.Properties.VirtualMachineProfile.OSProfile),
+
+		AutomaticUpdates: automaticUpdatesScaleSet(vm.Properties.OSProfile),
 	}
 
 	return r, nil
 }
 
 // automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
-func automaticUpdatesScaleSet(set *armcompute.VirtualMachineScaleSetOSProfile) (automaticUpdates *voc.AutomaticUpdates) {
+func automaticUpdatesScaleSet(set *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
 	automaticUpdates = &voc.AutomaticUpdates{}
 
 	if set == nil {
@@ -903,6 +937,12 @@ func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
 // initVirtualMachineScaleSetClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachineScaleSetClient() (err error) {
 	d.clients.virtualMachineScaleSetClient, err = initClient(d.clients.virtualMachineScaleSetClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetsClient)
+	return
+}
+
+// initVirtualMachineScaleSetVMsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initVirtualMachineScaleSetVMsClient() (err error) {
+	d.clients.virtualMachineScaleSetVMsClient, err = initClient(d.clients.virtualMachineScaleSetVMsClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetVMsClient)
 	return
 }
 

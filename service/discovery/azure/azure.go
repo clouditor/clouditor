@@ -164,10 +164,11 @@ type clients struct {
 	sitesClient *armappservice.WebAppsClient
 
 	// Compute
-	virtualMachinesClient        *armcompute.VirtualMachinesClient
-	virtualMachineScaleSetClient *armcompute.VirtualMachineScaleSetsClient
-	blockStorageClient           *armcompute.DisksClient
-	diskEncSetClient             *armcompute.DiskEncryptionSetsClient
+	virtualMachinesClient           *armcompute.VirtualMachinesClient
+	virtualMachineScaleSetClient    *armcompute.VirtualMachineScaleSetsClient
+	virtualMachineScaleSetVMsClient *armcompute.VirtualMachineScaleSetVMsClient
+	blockStorageClient              *armcompute.DisksClient
+	diskEncSetClient                *armcompute.DiskEncryptionSetsClient
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
