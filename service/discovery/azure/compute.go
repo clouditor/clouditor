@@ -314,7 +314,8 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), util.Deref(d.rg),
 		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
-		return nil
+		// Maybe returning error better here
+		log.Warnf("Could not get application settings: %v", err)
 	}
 	checkUsageOfSecrets(webApp.ID, settings)
 
