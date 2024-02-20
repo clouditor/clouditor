@@ -118,6 +118,21 @@
     }
   },
   {
+    "id": "AutomaticUpdatesEnabled",
+    "name": "Automatic Updates: Enabled",
+    "description": "This metric is used to assess if automatic updates are enabled",
+    "category": "Endpoint Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
     "id": "AutomaticUpdatesInterval",
     "name": "Automatic Updates: Interval",
     "description": "This metric is used to assess if automatic updates are performed with sufficient frequency (days)",
@@ -177,6 +192,21 @@
     "name": "Code Commits: Requires Sign-Off",
     "description": "This metric is used to assess if Git commit messages contain a signoff",
     "category": "Development Life-Cycle",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          true,
+          false
+        ]
+      }
+    }
+  },
+  {
+    "id": "CustomerKeyEncryption",
+    "name": "Storage Encryption: Customer Key Encryption",
+    "description": "This metric is used to assess if encryption is done via customer keys",
+    "category": "Storage Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -289,9 +319,9 @@
     }
   },
   {
-    "id": "ObjectStoragePublicAccessDisabled",
-    "name": "Object Storage: Public Access Disabled",
-    "description": "This metric is used to assess if public acess is disabled for a object storage",
+    "id": "ObjectStorageContainerPublicAccessDisabled",
+    "name": "Object Storage: Container Public Access Disabled",
+    "description": "This metric is used to assess if public ascess is disabled for an object storage container",
     "category": "Identity Management",
     "scale": 1,
     "range": {
