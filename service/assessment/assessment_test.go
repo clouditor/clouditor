@@ -183,18 +183,18 @@ func TestService_AssessEvidence(t *testing.T) {
 		evidence *evidence.Evidence
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantResp *assessment.AssessEvidenceResponse
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		wantRes *connect.Response[assessment.AssessEvidenceResponse]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Missing evidence",
 			args: args{
 				in0: context.TODO(),
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence: value is required")
 			},
@@ -205,7 +205,7 @@ func TestService_AssessEvidence(t *testing.T) {
 				in0:      context.TODO(),
 				evidence: &evidence.Evidence{},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
 			},
@@ -224,7 +224,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Resource:  prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
 			},
@@ -244,7 +244,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
@@ -264,7 +264,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 				},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.timestamp: value is required")
 			},
@@ -288,8 +288,8 @@ func TestService_AssessEvidence(t *testing.T) {
 					}),
 					CloudServiceId: testdata.MockCloudServiceID1},
 			},
-			wantResp: &assessment.AssessEvidenceResponse{},
-			wantErr:  assert.NoError,
+			wantRes: connect.NewResponse(&assessment.AssessEvidenceResponse{}),
+			wantErr: assert.NoError,
 		},
 		{
 			name: "Assess resource of wrong could service",
@@ -308,7 +308,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					}),
 					CloudServiceId: testdata.MockCloudServiceID1},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
@@ -330,7 +330,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "id: value is required")
 			},
@@ -355,7 +355,7 @@ func TestService_AssessEvidence(t *testing.T) {
 					}),
 				},
 			},
-			wantResp: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "connection refused")
 			},
@@ -373,12 +373,12 @@ func TestService_AssessEvidence(t *testing.T) {
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 				authz:                tt.fields.authz,
 			}
-			gotResp, err := s.AssessEvidence(tt.args.in0, connect.NewRequest(&assessment.AssessEvidenceRequest{Evidence: tt.args.evidence}))
+			gotRes, err := s.AssessEvidence(tt.args.in0, connect.NewRequest(&assessment.AssessEvidenceRequest{Evidence: tt.args.evidence}))
 
 			tt.wantErr(t, err)
 
 			// Check response
-			assert.Empty(t, gotResp)
+			assert.Equal(t, tt.wantRes, gotRes, assert.CompareAllUnexported())
 		})
 	}
 }
@@ -619,10 +619,10 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 		resultHooks []assessment.ResultHookFunc
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *assessment.AssessEvidenceResponse
-		wantErr  bool
+		name    string
+		args    args
+		wantRes *connect.Response[assessment.AssessEvidenceResponse]
+		wantErr bool
 	}{
 		{
 			name: "Store evidence to the map",
@@ -660,8 +660,8 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 					}}),
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr:  false,
-			wantResp: &assessment.AssessEvidenceResponse{},
+			wantErr: false,
+			wantRes: connect.NewResponse(&assessment.AssessEvidenceResponse{}),
 		},
 	}
 
@@ -680,7 +680,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotResp, err := s.AssessEvidence(tt.args.in0, tt.args.req)
+			gotRes, err := s.AssessEvidence(tt.args.in0, tt.args.req)
 
 			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
@@ -689,7 +689,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.Equal(t, tt.wantResp, gotResp)
+			assert.Equal(t, tt.wantRes, gotRes, assert.CompareAllUnexported())
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
 	}
