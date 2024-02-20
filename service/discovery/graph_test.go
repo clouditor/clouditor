@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/assessment/assessmentconnect"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
@@ -49,14 +50,18 @@ import (
 
 func TestService_ListGraphEdges(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		csID              string
+		assessmentStreams *api.ConnectStreamsOf[
+			assessmentconnect.AssessmentClient,
+			assessment.AssessEvidenceRequest,
+			assessment.AssessEvidencesResponse,
+		]
+		assessment assessmentconnect.AssessmentClient
+		storage    persistence.Storage
+		scheduler  *gocron.Scheduler
+		authz      service.AuthorizationStrategy
+		providers  []string
+		Events     chan *DiscoveryEvent
+		csID       string
 	}
 	type args struct {
 		ctx context.Context
@@ -66,7 +71,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.ListGraphEdgesResponse
+		wantRes *connect.Response[discovery.ListGraphEdgesResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -106,9 +111,9 @@ func TestService_ListGraphEdges(t *testing.T) {
 			args: args{
 				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
+			wantRes: connect.NewResponse(&discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -140,7 +145,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 			args: args{
 				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
+			wantRes: connect.NewResponse(&discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{
 					{
 						Id:     "some-id-some-storage-account-id",
@@ -149,7 +154,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 						Type:   "parent",
 					},
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 	}
@@ -167,7 +172,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 
-			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
+			assert.Equal(t, tt.wantRes, gotRes, assert.CompareAllUnexported())
 			tt.wantErr(t, err)
 		})
 	}
@@ -182,14 +187,18 @@ func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, csID s
 
 func TestService_UpdateResource(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		csID              string
+		assessmentStreams *api.ConnectStreamsOf[
+			assessmentconnect.AssessmentClient,
+			assessment.AssessEvidenceRequest,
+			assessment.AssessEvidencesResponse,
+		]
+		assessment assessmentconnect.AssessmentClient
+		storage    persistence.Storage
+		scheduler  *gocron.Scheduler
+		authz      service.AuthorizationStrategy
+		providers  []string
+		Events     chan *DiscoveryEvent
+		csID       string
 	}
 	type args struct {
 		ctx context.Context

@@ -35,6 +35,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/assessment/assessmentconnect"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -76,6 +77,8 @@ type cachedConfiguration struct {
 // Service is an implementation of the Clouditor Assessment service. It should not be used directly,
 // but rather the NewService constructor should be used. It implements the AssessmentServer interface.
 type Service struct {
+	assessmentconnect.UnimplementedAssessmentHandler
+
 	// isEvidenceStoreDisabled specifies if evidences shall be discarded (when true).
 	isEvidenceStoreDisabled bool
 	// evidenceStoreStream sends evidences to the Evidence Store
@@ -229,7 +232,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *connect.Request[ass
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
-func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidencesServer) (err error) {
+func (svc *Service) AssessEvidences(ctx context.Context, stream *connect.BidiStream[assessment.AssessEvidenceRequest, assessment.AssessEvidencesResponse]) (err error) {
 	var (
 		req *assessment.AssessEvidenceRequest
 		res *assessment.AssessEvidencesResponse
@@ -237,7 +240,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 
 	for {
 		// Receive requests from client
-		req, err = stream.Recv()
+		req, err = stream.Receive()
 
 		// If no more input of the stream is available, return
 		if errors.Is(err, io.EOF) {
@@ -253,7 +256,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		assessEvidencesReq := connect.NewRequest(&assessment.AssessEvidenceRequest{
 			Evidence: req.Evidence,
 		})
-		_, err = svc.AssessEvidence(stream.Context(), assessEvidencesReq)
+		_, err = svc.AssessEvidence(ctx, assessEvidencesReq)
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &assessment.AssessEvidencesResponse{

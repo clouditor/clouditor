@@ -48,7 +48,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *connect.Request[dis
 	)
 
 	// Validate request
-	err = api.Validate(req.Msg)
+	err = api.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}

@@ -197,4 +197,7 @@ require (
 
 require connectrpc.com/connect v1.15.0
 
-require github.com/google/flatbuffers v2.0.8+incompatible // indirect
+require (
+	github.com/google/flatbuffers v2.0.8+incompatible // indirect
+	go.akshayshah.org/memhttp v0.1.0 // indirect
+)

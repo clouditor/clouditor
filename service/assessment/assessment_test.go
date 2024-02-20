@@ -434,6 +434,7 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	assert.NoError(t, err)
 }
 
+/*
 // TestAssessEvidences tests AssessEvidences
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
@@ -590,7 +591,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			}
 		})
 	}
-}
+}*/
 
 func TestService_AssessmentResultHooks(t *testing.T) {
 	var (

@@ -27,13 +27,20 @@ package discovery
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
+	"net/http"
 
+	"clouditor.io/clouditor/v2/api/assessment/assessmentconnect"
 	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
-	"google.golang.org/grpc"
+	"go.akshayshah.org/memhttp"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc/test/bufconn"
 )
+
+// TODO(oxisto): Adjust naming to memhttp
 
 const DefaultBufferSize = 1024 * 1024
 
@@ -41,27 +48,32 @@ var (
 	bufConnListener *bufconn.Listener
 )
 
-func bufConnDialer(context.Context, string) (net.Conn, error) {
-	return bufConnListener.Dial()
+func client(srv *memhttp.Server) *http.Client {
+	return &http.Client{
+		Transport: &http2.Transport{
+			DialTLSContext: func(ctx context.Context, network, addr string, cfg *tls.Config) (net.Conn, error) {
+				return srv.Transport().DialContext(ctx, network, addr)
+			},
+			AllowHTTP: true,
+		},
+	}
 }
 
 // startBufConnServer starts an gRPC listening on a bufconn listener. It exposes
 // real functionality of the following services for testing purposes:
 // * Assessment Service
-func startBufConnServer() (*grpc.Server, *service_assessment.Service) {
+func startBufConnServer() (*memhttp.Server, *service_assessment.Service) {
 	bufConnListener = bufconn.Listen(DefaultBufferSize)
 
-	server := grpc.NewServer()
+	svc := service_assessment.NewService()
 
-	assessmentService := service_assessment.NewService()
-	// TODO: Replace with ConnectRPC
-	//assessment.RegisterAssessmentServer(server, assessmentService)
+	mux := http.NewServeMux()
 
-	go func() {
-		if err := server.Serve(bufConnListener); err != nil {
-			log.Fatalf("Server exited with error: %v", err)
-		}
-	}()
+	mux.Handle(assessmentconnect.NewAssessmentHandler(svc))
+	srv, err := memhttp.New(h2c.NewHandler(mux, &http2.Server{}), memhttp.WithoutTLS())
+	if err != nil {
+		log.Fatalf("Could not set up memhttp: %v", err)
+	}
 
-	return server, assessmentService
+	return srv, svc
 }

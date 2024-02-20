@@ -48,7 +48,7 @@ func ValidateRequest[T any](req *connect.Request[T]) (err error) {
 	}
 
 	// TODO: somehow stupid
-	err = Validate((any)(req).(proto.Message))
+	err = Validate((any)(req.Msg).(proto.Message))
 
 	return
 }

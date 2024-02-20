@@ -41,6 +41,7 @@ import (
 // using [grpc.Dial]. It features transparent goroutine-safe lazy initialization of the connection by overloading the
 // underlying [grpc.ClientConn]. The connection is established automatically once the first client call is made. If an
 // [io.EOF] error is received the connection is tried to be re-established on the next client call.
+// TODO(oxisto): This is most likely not needed anymore since Connect will auto-reconnect
 type RPCConnection[T any] struct {
 	// Target contains the target used in grpc.Dial. Ideally, this should not be changed after the first client call.
 	Target string
