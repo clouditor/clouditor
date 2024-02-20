@@ -31,5 +31,6 @@ type KeyVault struct {
 	*Resource
 	IsActive     bool         `json:"isActive"`
 	Keys         []ResourceID `json:"keys"`
+	Secrets      []ResourceID `json:"secrets"`
 	PublicAccess bool         `json:"publicAccess"`
 }

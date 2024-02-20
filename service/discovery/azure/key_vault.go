@@ -128,24 +128,38 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			return res.Value
 		},
 		func(kv *armkeyvault.Vault) error {
+			// Handle key vault
 			keyVault, err := d.handleKeyVault(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle key vault: %w", err)
 			}
+
+			// Handle Keys and add IDs to the key vault
 			keys, err := d.getKeys(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle keys: %w", err)
 			}
-			// Add key IDs to keyvault
-			keyIDs := getIDs(keys)
+			keyIDs := getKeyIDs(keys)
 			keyVault.Keys = keyIDs
 
+			// Handle secrets and add IDs to the key vault
+			secrets, err := d.getSecrets(kv)
+			if err != nil {
+				return fmt.Errorf("could not handle secrets: %w", err)
+			}
+			secretIDs := getSecretIDs(secrets)
+			keyVault.Secrets = secretIDs
+
+			// Add all resources (key vaults, keys and secrets) to the list
 			log.Infof("Adding key vault '%s'", keyVault.GetID())
 			list = append(list, keyVault)
-
 			log.Infof("Adding keys '%s'", keyIDs)
 			for _, k := range keys {
 				list = append(list, k)
+			}
+			log.Infof("Adding secrets '%s'", secretIDs)
+			for _, s := range secrets {
+				list = append(list, s)
 			}
 
 			return nil
@@ -218,14 +232,22 @@ func getPublicAccess(kv *armkeyvault.Vault) bool {
 	return false
 }
 
-// getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
+// getKeyIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
 // resourceIDs (not nil slice)
-func getIDs(keys []*voc.Key) []voc.ResourceID {
+func getKeyIDs(keys []*voc.Key) []voc.ResourceID {
 	keyIDs := []voc.ResourceID{}
 	for _, k := range keys {
 		keyIDs = append(keyIDs, k.GetID())
 	}
 	return keyIDs
+}
+
+func getSecretIDs(secrets []*voc.Secret) []voc.ResourceID {
+	secretIDs := []voc.ResourceID{}
+	for _, s := range secrets {
+		secretIDs = append(secretIDs, s.GetID())
+	}
+	return secretIDs
 }
 
 // isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
@@ -355,14 +377,22 @@ func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secre
 					voc.KeyType,
 					kv),
 				Enabled:        util.Deref(s.Properties.Attributes.Enabled),
-				ActivationDate: util.Deref(s.Properties.Attributes.NotBefore).Unix(),
-				ExpirationDate: util.Deref(s.Properties.Attributes.Expires).Unix(),
+				ActivationDate: convertTime(s.Properties.Attributes.NotBefore),
+				ExpirationDate: convertTime(s.Properties.Attributes.Expires),
 				NumberOfUsages: len(secretUsage[util.Deref(s.Properties.SecretURI)]), // TODO(lebogg): Test this!
 			}
 			secrets = append(secrets, secret)
 		}
 	}
 	return secrets, nil
+}
+
+func convertTime(t *time.Time) int64 {
+	if t == nil {
+		return -1
+	} else {
+		return util.Deref(t).Unix()
+	}
 }
 
 // TODO(lebogg): How to define the range/scope of key types in the ontology?

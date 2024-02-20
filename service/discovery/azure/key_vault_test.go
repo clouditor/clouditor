@@ -231,7 +231,7 @@ func Test_getIDs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantKeyIDs, getIDs(tt.args.keys), "getIDs(%v)", tt.args.keys)
+			assert.Equalf(t, tt.wantKeyIDs, getKeyIDs(tt.args.keys), "getKeyIDs(%v)", tt.args.keys)
 		})
 	}
 }
