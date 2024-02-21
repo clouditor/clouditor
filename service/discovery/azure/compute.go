@@ -911,14 +911,14 @@ func getSecretURI(s string) (secretURI string) {
 			return ""
 		}
 		secretName = s
-		secretURI = "https://" + vaultName + ".vault.azure.net/secrets/" + secretName + "/"
+		secretURI = "https://" + vaultName + ".vault.azure.net/secrets/" + secretName
 	} else { // Option 2
 		s, ok := strings.CutPrefix(s, "@Microsoft.KeyVault(SecretUri=")
 		if !ok {
 			log.Error("Could not find prefix '@Microsoft.KeyVault(SecretUri=' in secret:", s)
 			return ""
 		}
-		s, ok = strings.CutSuffix(s, ")")
+		s, ok = strings.CutSuffix(s, "/)")
 		if !ok {
 			log.Error("Could not find suffix ')' in:", s)
 			return ""
