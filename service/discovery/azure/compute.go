@@ -202,7 +202,7 @@ func (d *azureComputeDiscovery) discoverVMScaleSetVMs(scaleSet *armcompute.Virtu
 		}
 
 		for _, value := range pageResponse.Value {
-			vm, err := d.handleVirtualMachineScaleSet(value, *scaleSet.ID)
+			vm, err := d.handleVirtualMachineScaleSet(value, scaleSet)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle VM from scale set: %w", err)
 			}
@@ -516,7 +516,13 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, parent string) (voc.IsCompute, error) {
+func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, scaleSet *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
+	var automaticUpdates *voc.AutomaticUpdates
+
+	if vm.Properties != nil {
+		automaticUpdates = automaticUpdatesScaleSet(vm.Properties.OSProfile)
+	}
+
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
@@ -527,13 +533,14 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 					Region: *vm.Location,
 				},
 				labels(vm.Tags),
-				voc.ResourceID(parent),
+				voc.ResourceID(*scaleSet.ID),
 				voc.VirtualMachineType,
+				scaleSet,
 				vm,
 			),
 		},
 
-		AutomaticUpdates: automaticUpdatesScaleSet(vm.Properties.OSProfile),
+		AutomaticUpdates: automaticUpdates,
 	}
 
 	return r, nil
