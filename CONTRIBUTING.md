@@ -46,15 +46,20 @@ In order to generate all necessary Go files, the command `go generate ./...` can
 
 ### Writing Assertions for Protobuf Message
 
-While in theory protobuf message are simple structs, they contain unexported fields that do some internal protobuf
-magic. Unfortunately, `assert.Equals` just uses `reflect.DeepEqual` under the hood, which also compares unexported
-fields. This can fail even though the messages are regarded as equal.
+While in theory protobuf message are simple structs, they contain un-exported fields that do some internal protobuf
+magic. Therefore, we cannot use `reflect.DeepEqual` because it also compares un-exported fields. This can fail even though
+the messages are regarded as equal.
 
-Therefore, the following code is recommended if you want to compare protobuf message and still want to have a proper
-diff between messages:
+Therefore, the usage of our internal `assert` package is mandatory (since it uses go-cmp under the hood) and the
+following code is recommended if you want to compare protobuf message and still want to have a proper diff between
+messages:
 
 ```go
-assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
+// Simple comparison
+assert.Equal(t, want, got)
+
+// Exclusion of certain fields
+assert.Equal(t, want, got, protocmp.IgnoreFields(&ontology.Container{}, "creation_time", "raw"))
 ```
 
 This makes use of the [`cmp`](https://pkg.go.dev/github.com/google/go-cmp/cmp) package of

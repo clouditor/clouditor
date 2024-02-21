@@ -29,7 +29,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -39,17 +38,20 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
+
 	"github.com/go-co-op/gocron"
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -86,16 +88,15 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "WithStorage",
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithStorage(inmem))},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, inmem, s.storage)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Same(t, inmem, got.storage)
 			},
 		},
 		{
@@ -103,9 +104,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, testdata.MockOrchestratorAddress, s.orchestrator.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, testdata.MockOrchestratorAddress, got.orchestrator.Target)
 			},
 		},
 		{
@@ -113,9 +113,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithOAuth2Authorizer(&clientcredentials.Config{}))},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
 			},
 		},
 		{
@@ -123,9 +122,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{service.Option[Service](WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
 			},
 		},
 		{
@@ -133,9 +131,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []service.Option[Service]{},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, DefaultOrchestratorAddress, s.orchestrator.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, DefaultOrchestratorAddress, got.orchestrator.Target)
 			},
 		},
 	}
@@ -156,13 +153,13 @@ func TestService_ListEvaluationResults(t *testing.T) {
 	}
 	type args struct {
 		in0 context.Context
-		req *evaluation.ListEvaluationResultsRequest
+		req *connect.Request[evaluation.ListEvaluationResultsRequest]
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *evaluation.ListEvaluationResultsResponse
+		wantRes *connect.Response[evaluation.ListEvaluationResultsResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -192,20 +189,20 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId:      util.Ref(testdata.MockSubControlID11),
 						SubControls:    util.Ref(testdata.MockControlID1),
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult22,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -218,18 +215,18 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId: util.Ref(testdata.MockSubControlID11),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult22,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -242,9 +239,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{LatestByControlId: util.Ref(true)},
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{LatestByControlId: util.Ref(true)}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 					evaluationtest.MockEvaluationResult22,
@@ -253,7 +250,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					evaluationtest.MockEvaluationResult5,
 					evaluationtest.MockEvaluationResult6,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -266,19 +263,19 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ParentsOnly: util.Ref(true),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 					evaluationtest.MockEvaluationResult4,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -291,17 +288,17 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						ControlId: util.Ref(testdata.MockControlID1),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -314,20 +311,20 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						SubControls: util.Ref(testdata.MockControlID1),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 					evaluationtest.MockEvaluationResult2,
 					evaluationtest.MockEvaluationResult22,
 					evaluationtest.MockEvaluationResult3,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -340,13 +337,13 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 					evaluationtest.MockEvaluationResult2,
@@ -356,7 +353,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					evaluationtest.MockEvaluationResult5,
 					evaluationtest.MockEvaluationResult6,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -369,11 +366,11 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					PageSize: 2,
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult1,
 					evaluationtest.MockEvaluationResult2,
@@ -382,7 +379,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 					token, _ := (&api.PageToken{Start: 2, Size: 2}).Encode()
 					return token
 				}(),
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -395,19 +392,19 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{
 					PageSize: 6,
 					PageToken: func() string {
 						token, _ := (&api.PageToken{Start: 6, Size: 4}).Encode()
 						return token
 					}(),
-				},
+				}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: []*evaluation.EvaluationResult{
 					evaluationtest.MockEvaluationResult6,
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -420,29 +417,24 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.ListEvaluationResultsRequest{},
+				req: connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}),
 			},
-			wantRes: &evaluation.ListEvaluationResultsResponse{
+			wantRes: connect.NewResponse(&evaluation.ListEvaluationResultsResponse{
 				Results: evaluationtest.MockEvaluationResults,
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				storage:                       tt.fields.storage,
-				authz:                         tt.fields.authz,
+				orchestrator: tt.fields.orchestrator,
+				storage:      tt.fields.storage,
+				authz:        tt.fields.authz,
 			}
 			gotRes, err := s.ListEvaluationResults(tt.args.in0, tt.args.req)
-
 			tt.wantErr(t, err)
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("ListEvaluationResults() gotResp = %v, want %v", gotRes, tt.wantRes)
-			}
-
+			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
@@ -531,10 +523,9 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				storage:                       tt.fields.storage,
-				catalogControls:               tt.fields.catalogControls,
+				orchestrator:    tt.fields.orchestrator,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
 			}
 			gotMetrics, err := s.getMetricsFromSubcontrols(tt.args.control)
 
@@ -542,9 +533,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 
 			assert.Equal(t, len(gotMetrics), len(tt.wantMetrics))
 			for i := range gotMetrics {
-				if !proto.Equal(gotMetrics[i], tt.wantMetrics[i]) {
-					t.Errorf("Service.GetControl() = %v, want %v", gotMetrics[i], tt.wantMetrics[i])
-				}
+				assert.Equal(t, tt.wantMetrics[i], gotMetrics[i])
 			}
 		})
 	}
@@ -561,21 +550,21 @@ func TestService_StopEvaluation(t *testing.T) {
 	}
 	type args struct {
 		in0              context.Context
-		req              *evaluation.StopEvaluationRequest
+		req              *connect.Request[evaluation.StopEvaluationRequest]
 		schedulerRunning bool
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *evaluation.StopEvaluationResponse
+		wantRes *connect.Response[evaluation.StopEvaluationResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Request input missing",
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{},
+				req: connect.NewRequest(&evaluation.StopEvaluationRequest{}),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -589,10 +578,10 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StopEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
-				},
+				}),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -603,10 +592,10 @@ func TestService_StopEvaluation(t *testing.T) {
 			name: "Evaluation not running",
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StopEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
-				},
+				}),
 				schedulerRunning: false,
 			},
 			fields: fields{
@@ -623,10 +612,10 @@ func TestService_StopEvaluation(t *testing.T) {
 			name: "Happy path",
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StopEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StopEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
-				},
+				}),
 				schedulerRunning: true,
 			},
 			fields: fields{
@@ -643,18 +632,17 @@ func TestService_StopEvaluation(t *testing.T) {
 				authz:  &service.AuthorizationStrategyAllowAll{},
 				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
 			},
-			wantRes: &evaluation.StopEvaluationResponse{},
+			wantRes: connect.NewResponse(&evaluation.StopEvaluationResponse{}),
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				scheduler:                     tt.fields.scheduler,
-				storage:                       tt.fields.storage,
-				authz:                         tt.fields.authz,
+				orchestrator: tt.fields.orchestrator,
+				scheduler:    tt.fields.scheduler,
+				storage:      tt.fields.storage,
+				authz:        tt.fields.authz,
 			}
 
 			gotRes, err := s.StopEvaluation(tt.args.in0, tt.args.req)
@@ -675,20 +663,21 @@ func TestService_StartEvaluation(t *testing.T) {
 	}
 	type args struct {
 		in0 context.Context
-		req *evaluation.StartEvaluationRequest
+		req *connect.Request[evaluation.StartEvaluationRequest]
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
+		want    assert.WantResponse[evaluation.StartEvaluationResponse]
+		wantSvc assert.Want[*Service]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Request input missing",
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{},
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -702,11 +691,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
-				},
+				}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -722,11 +711,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
-				},
+				}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -743,11 +732,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
-				},
+				}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -766,11 +755,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID2,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
-				},
+				}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -800,11 +789,11 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
 					Interval:       proto.Int32(5),
-				},
+				}),
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -827,30 +816,23 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			args: args{
 				in0: context.Background(),
-				req: &evaluation.StartEvaluationRequest{
+				req: connect.NewRequest(&evaluation.StartEvaluationRequest{
 					CloudServiceId: testdata.MockCloudServiceID1,
 					CatalogId:      testdata.MockCatalogID,
-				},
+				}),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				gotResp, ok := i2[0].(*evaluation.StartEvaluationResponse)
-				if !assert.True(tt, ok) {
-					return false
-				}
-				assert.True(t, gotResp.Successful)
-				return assert.Equal(t, 1, len(s.scheduler.Jobs()))
+			want: func(t *testing.T, got *connect.Response[evaluation.StartEvaluationResponse]) bool {
+				return assert.True(t, got.Msg.Successful)
+			},
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, 1, len(got.scheduler.Jobs()))
 			},
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
+			svc := &Service{
 				orchestrator:    tt.fields.orchestrator,
 				scheduler:       tt.fields.scheduler,
 				storage:         tt.fields.storage,
@@ -858,12 +840,10 @@ func TestService_StartEvaluation(t *testing.T) {
 				catalogControls: tt.fields.catalogControls,
 			}
 
-			gotResp, err := s.StartEvaluation(tt.args.in0, tt.args.req)
+			gotRes, err := svc.StartEvaluation(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, s, gotResp)
-			}
+			tt.want(t, gotRes)
+			assert.Optional(t, tt.wantSvc, svc)
 		})
 	}
 }
@@ -952,18 +932,17 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				scheduler:                     tt.fields.scheduler,
-				storage:                       tt.fields.storage,
-				catalogControls:               tt.fields.catalogControls,
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
 			}
 			gotMetrics, err := s.getAllMetricsFromControl(tt.args.catalogId, tt.args.categoryName, tt.args.controlId)
 			tt.wantErr(t, err)
 
 			if assert.Equal(t, len(gotMetrics), len(tt.wantMetrics)) {
 				for i := range gotMetrics {
-					reflect.DeepEqual(gotMetrics[i], tt.wantMetrics[i])
+					assert.Equal(t, tt.wantMetrics[i], gotMetrics[i])
 				}
 			}
 		})
@@ -1001,9 +980,8 @@ func Test_getMetricIds(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getMetricIds(tt.args.metrics); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getMetricIds() = %v, want %v", got, tt.want)
-			}
+			got := getMetricIds(tt.args.metrics)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1025,7 +1003,7 @@ func TestService_getControl(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
+		want    assert.Want[*orchestrator.Control]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1092,20 +1070,16 @@ func TestService_getControl(t *testing.T) {
 				categoryName: testdata.MockCategoryName,
 				controlId:    testdata.MockControlID1,
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				gotControl, ok := i1.(*orchestrator.Control)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
+			want: func(t *testing.T, got *orchestrator.Control) bool {
 				// We need to truncate the metric from the control because the control is only returned with its
 				// sub-control but without the sub-control's metric.
+				// TODO(oxisto): Use ignore fields instead
 				wantControl := orchestratortest.MockControl1
 				tmpMetrics := wantControl.Controls[0].Metrics
 				wantControl.Controls[0].Metrics = nil
 
-				if !proto.Equal(gotControl, wantControl) {
-					t.Errorf("Service.GetControl() = %v, want %v", gotControl, wantControl)
+				if !assert.Equal(t, wantControl, got) {
+					t.Errorf("Service.GetControl() = %v, want %v", got, wantControl)
 					wantControl.Controls[0].Metrics = tmpMetrics
 					return false
 				}
@@ -1119,11 +1093,10 @@ func TestService_getControl(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				scheduler:                     tt.fields.scheduler,
-				storage:                       tt.fields.storage,
-				catalogControls:               tt.fields.catalogControls,
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
 			}
 
 			gotControl, err := s.getControl(tt.args.catalogId, tt.args.categoryName, tt.args.controlId)
@@ -1215,10 +1188,9 @@ func TestService_addJobToScheduler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				scheduler:                     tt.fields.scheduler,
-				storage:                       tt.fields.storage,
+				orchestrator: tt.fields.orchestrator,
+				scheduler:    tt.fields.scheduler,
+				storage:      tt.fields.storage,
 			}
 			err := s.addJobToScheduler(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.interval)
 			tt.wantErr(t, err)
@@ -1246,7 +1218,7 @@ func TestService_evaluateControl(t *testing.T) {
 		fields               fields
 		args                 args
 		newEvaluationResults *evaluation.EvaluationResult
-		want                 assert.ValueAssertionFunc
+		want                 func(t *testing.T, gotSvc *Service, gotResult *evaluation.EvaluationResult) bool
 	}{
 		{
 			name: "AuthZ error in ListEvaluationResults",
@@ -1267,15 +1239,10 @@ func TestService_evaluateControl(t *testing.T) {
 				control: orchestratortest.MockControl1,
 			},
 			newEvaluationResults: &evaluation.EvaluationResult{},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			want: func(t *testing.T, gotSvc *Service, gotResult *evaluation.EvaluationResult) bool {
+				evalResults, err := gotSvc.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 0, len(evalResults.Msg.Results))
 			},
 		},
 		{
@@ -1302,17 +1269,12 @@ func TestService_evaluateControl(t *testing.T) {
 				control: orchestratortest.MockControl1,
 			},
 			newEvaluationResults: nil,
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				res, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			want: func(t *testing.T, gotSvc *Service, gotResult *evaluation.EvaluationResult) bool {
+				res, err := gotSvc.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				return assert.NoError(t, err) &&
-					assert.Equal(t, 2, len(res.Results)) &&
-					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Results[0].Status) &&
-					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Results[1].Status)
+					assert.Equal(t, 2, len(res.Msg.Results)) &&
+					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Msg.Results[0].Status) &&
+					assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, res.Msg.Results[1].Status)
 			},
 		},
 		{
@@ -1347,30 +1309,19 @@ func TestService_evaluateControl(t *testing.T) {
 				},
 			},
 			newEvaluationResults: evaluationtest.MockEvaluationResult1,
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				newEvalResults, ok := i2[0].(*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			want: func(t *testing.T, gotSvc *Service, gotResult *evaluation.EvaluationResult) bool {
+				evalResults, err := gotSvc.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				assert.Equal(t, 2, len(evalResults.Results))
+				assert.Equal(t, 2, len(evalResults.Msg.Results))
 
-				createdResult := evalResults.Results[len(evalResults.Results)-1]
+				createdResult := evalResults.Msg.Results[len(evalResults.Msg.Results)-1]
 
-				// Delete ID and timestamp from the evaluation results
-				assert.NotEmpty(t, createdResult.GetId())
-				createdResult.Id = ""
-				createdResult.Timestamp = nil
-				newEvalResults.Id = ""
-				newEvalResults.Timestamp = nil
-				return proto.Equal(newEvalResults, createdResult)
+				// Compare without ID and timestamp since they are random
+				return assert.NotEmpty(t, gotResult.Id) &&
+					assert.NotNil(t, gotResult.Timestamp) &&
+					assert.Equal(t, createdResult, gotResult,
+						protocmp.IgnoreFields(&evaluation.EvaluationResult{}, "id", "timestamp"),
+					)
 			},
 		},
 	}
@@ -1409,8 +1360,8 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
-		wantSvc assert.ValueAssertionFunc
+		want    assert.Want[*evaluation.EvaluationResult]
+		wantSvc assert.Want[*Service]
 	}{
 		{
 			name: "ToE input empty", // we do not check the other input parameters
@@ -1429,15 +1380,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CategoryName: testdata.MockCategoryName,
 				},
 			},
-			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			wantSvc: func(t *testing.T, got *Service) bool {
+				evalResults, err := got.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 0, len(evalResults.Msg.Results))
 			},
 		},
 		{
@@ -1461,15 +1407,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CategoryName: testdata.MockCategoryName,
 				},
 			},
-			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			wantSvc: func(t *testing.T, got *Service) bool {
+				evalResults, err := got.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 0, len(evalResults.Msg.Results))
 			},
 		},
 		{
@@ -1491,15 +1432,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CategoryName: testdata.MockCategoryName,
 				},
 			},
-			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			wantSvc: func(t *testing.T, got *Service) bool {
+				evalResults, err := got.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 0, len(evalResults.Msg.Results))
 			},
 		},
 		{
@@ -1523,15 +1459,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CategoryName: testdata.MockCategoryName,
 				},
 			},
-			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			wantSvc: func(t *testing.T, got *Service) bool {
+				evalResults, err := got.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 0, len(evalResults.Results))
+				return assert.Equal(t, 0, len(evalResults.Msg.Results))
 			},
 		},
 		{
@@ -1562,29 +1493,19 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 					CategoryName: testdata.MockCategoryName,
 				},
 			},
-			wantSvc: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				evalResults, err := service.ListEvaluationResults(context.Background(), &evaluation.ListEvaluationResultsRequest{})
+			wantSvc: func(t *testing.T, got *Service) bool {
+				evalResults, err := got.ListEvaluationResults(context.Background(), connect.NewRequest(&evaluation.ListEvaluationResultsRequest{}))
 				assert.NoError(t, err)
-				return assert.Equal(t, 1, len(evalResults.Results))
+				return assert.Equal(t, 1, len(evalResults.Msg.Results))
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				result, ok := i1.(*evaluation.EvaluationResult)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(t, testdata.MockSubControlID11, result.ControlId)
+			want: func(t *testing.T, got *evaluation.EvaluationResult) bool {
+				return assert.Equal(t, testdata.MockSubControlID11, got.ControlId)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
+			svc := &Service{
 				orchestrator:    tt.fields.orchestrator,
 				scheduler:       tt.fields.scheduler,
 				storage:         tt.fields.storage,
@@ -1592,15 +1513,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				catalogControls: tt.fields.catalogControls,
 			}
 
-			got, _ := s.evaluateSubcontrol(tt.args.ctx, tt.args.toe, tt.args.control)
-
-			if tt.wantSvc != nil {
-				tt.wantSvc(t, s)
-			}
-
-			if tt.want != nil {
-				tt.want(t, got)
-			}
+			got, _ := svc.evaluateSubcontrol(tt.args.ctx, tt.args.toe, tt.args.control)
+			assert.Optional(t, tt.want, got)
+			assert.Optional(t, tt.wantSvc, svc)
 		})
 	}
 }
@@ -1621,7 +1536,7 @@ func TestService_cacheControls(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
+		wantSvc assert.Want[*Service]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1666,34 +1581,25 @@ func TestService_cacheControls(t *testing.T) {
 			args: args{
 				catalogId: testdata.MockCatalogID,
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				service, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				assert.Equal(t, 1, len(service.catalogControls))
-				return assert.Equal(t, 4, len(service.catalogControls[testdata.MockCatalogID]))
+			wantSvc: func(t *testing.T, got *Service) bool {
+				assert.Equal(t, 1, len(got.catalogControls))
+				return assert.Equal(t, 4, len(got.catalogControls[testdata.MockCatalogID]))
 			},
 			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Service{
-				UnimplementedEvaluationServer: tt.fields.UnimplementedEvaluationServer,
-				orchestrator:                  tt.fields.orchestrator,
-				scheduler:                     tt.fields.scheduler,
-				authz:                         tt.fields.authz,
-				storage:                       tt.fields.storage,
-				catalogControls:               tt.fields.catalogControls,
+			svc := &Service{
+				orchestrator:    tt.fields.orchestrator,
+				scheduler:       tt.fields.scheduler,
+				authz:           tt.fields.authz,
+				storage:         tt.fields.storage,
+				catalogControls: tt.fields.catalogControls,
 			}
-			err := s.cacheControls(tt.args.catalogId)
+			err := svc.cacheControls(tt.args.catalogId)
 			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, s)
-			}
+			assert.Optional(t, tt.wantSvc, svc)
 		})
 	}
 }
@@ -1708,13 +1614,13 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *evaluation.CreateEvaluationResultRequest
+		req *connect.Request[evaluation.CreateEvaluationResultRequest]
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes assert.ValueAssertionFunc
+		wantRes assert.WantResponse[evaluation.EvaluationResult]
 		wantErr bool
 	}{
 		{
@@ -1724,7 +1630,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &evaluation.CreateEvaluationResultRequest{
+				req: connect.NewRequest(&evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
 						ControlId:           orchestratortest.MockControl1.Id,
 						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
@@ -1732,15 +1638,10 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
 						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
 					},
-				},
+				}),
 			},
-			wantRes: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res, ok := i1.(*evaluation.EvaluationResult)
-				if !ok {
-					return false
-				}
-
-				return assert.Equal(t, orchestratortest.MockControl1.Id, res.ControlId)
+			wantRes: func(t *testing.T, got *connect.Response[evaluation.EvaluationResult]) bool {
+				return assert.Equal(t, orchestratortest.MockControl1.Id, got.Msg.ControlId)
 			},
 		},
 		{
@@ -1750,14 +1651,14 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &evaluation.CreateEvaluationResultRequest{
+				req: connect.NewRequest(&evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
 						ControlId:           orchestratortest.MockControl1.Id,
 						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
 						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
 						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 					},
-				},
+				}),
 			},
 			wantRes: nil,
 			wantErr: true,
@@ -1769,14 +1670,14 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 				authz:   &service.AuthorizationStrategyAllowAll{},
 			},
 			args: args{
-				req: &evaluation.CreateEvaluationResultRequest{
+				req: connect.NewRequest(&evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
 						ControlId:           orchestratortest.MockControl1.Id,
 						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
 						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
 						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
 					},
-				},
+				}),
 			},
 			wantRes: nil,
 			wantErr: true,

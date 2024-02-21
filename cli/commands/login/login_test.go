@@ -34,10 +34,10 @@ import (
 
 	"clouditor.io/clouditor/v2/cli"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

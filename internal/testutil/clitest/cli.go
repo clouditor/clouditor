@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"testing"
 
@@ -14,7 +15,6 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
 )
 
 // PrepareSession prepares a session for unit tests. It creates a temporary folder to save
@@ -93,7 +93,7 @@ func RunCLITestFunc[T any](f func() T, opts ...server.StartGRPCServerOption) (re
 		authPort uint16
 		grpcPort uint16
 		sock     net.Listener
-		srv      *grpc.Server
+		srv      *http.Server
 	)
 
 	auth, authPort, err = testutil.StartAuthenticationServer()
@@ -119,7 +119,7 @@ func RunCLITestFunc[T any](f func() T, opts ...server.StartGRPCServerOption) (re
 	ret := f()
 
 	sock.Close()
-	srv.Stop()
+	srv.Close()
 
 	// Remove temporary session directory
 	os.RemoveAll(tmpDir)

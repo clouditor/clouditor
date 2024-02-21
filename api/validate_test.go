@@ -29,8 +29,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
-
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 func TestValidate(t *testing.T) {

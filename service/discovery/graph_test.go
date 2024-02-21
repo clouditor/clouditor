@@ -31,41 +31,47 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/assessment/assessmentconnect"
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestService_ListGraphEdges(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		csID              string
+		assessmentStreams *api.ConnectStreamsOf[
+			assessmentconnect.AssessmentClient,
+			assessment.AssessEvidenceRequest,
+			assessment.AssessEvidencesResponse,
+		]
+		assessment assessmentconnect.AssessmentClient
+		storage    persistence.Storage
+		scheduler  *gocron.Scheduler
+		authz      service.AuthorizationStrategy
+		providers  []string
+		Events     chan *DiscoveryEvent
+		csID       string
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.ListGraphEdgesRequest
+		req *connect.Request[discovery.ListGraphEdgesRequest]
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.ListGraphEdgesResponse
+		wantRes *connect.Response[discovery.ListGraphEdgesResponse]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -103,11 +109,11 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
+			wantRes: connect.NewResponse(&discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 		{
@@ -137,9 +143,9 @@ func TestService_ListGraphEdges(t *testing.T) {
 				}),
 			},
 			args: args{
-				req: &discovery.ListGraphEdgesRequest{},
+				req: connect.NewRequest(&discovery.ListGraphEdgesRequest{}),
 			},
-			wantRes: &discovery.ListGraphEdgesResponse{
+			wantRes: connect.NewResponse(&discovery.ListGraphEdgesResponse{
 				Edges: []*discovery.GraphEdge{
 					{
 						Id:     "some-id-some-storage-account-id",
@@ -148,7 +154,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 						Type:   "parent",
 					},
 				},
-			},
+			}),
 			wantErr: assert.NoError,
 		},
 	}
@@ -166,7 +172,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 
-			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
+			assert.Equal(t, tt.wantRes, gotRes, assert.CompareAllUnexported())
 			tt.wantErr(t, err)
 		})
 	}
@@ -181,18 +187,22 @@ func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, csID s
 
 func TestService_UpdateResource(t *testing.T) {
 	type fields struct {
-		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
-		assessment        *api.RPCConnection[assessment.AssessmentClient]
-		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
-		authz             service.AuthorizationStrategy
-		providers         []string
-		Events            chan *DiscoveryEvent
-		csID              string
+		assessmentStreams *api.ConnectStreamsOf[
+			assessmentconnect.AssessmentClient,
+			assessment.AssessEvidenceRequest,
+			assessment.AssessEvidencesResponse,
+		]
+		assessment assessmentconnect.AssessmentClient
+		storage    persistence.Storage
+		scheduler  *gocron.Scheduler
+		authz      service.AuthorizationStrategy
+		providers  []string
+		Events     chan *DiscoveryEvent
+		csID       string
 	}
 	type args struct {
 		ctx context.Context
-		req *discovery.UpdateResourceRequest
+		req *connect.Request[discovery.UpdateResourceRequest]
 	}
 	tests := []struct {
 		name    string
@@ -207,11 +217,11 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "resource.id: value length must be at least 1 characters")
@@ -223,12 +233,12 @@ func TestService_UpdateResource(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
@@ -241,12 +251,12 @@ func TestService_UpdateResource(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
-				req: &discovery.UpdateResourceRequest{
+				req: connect.NewRequest(&discovery.UpdateResourceRequest{
 					Resource: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 						Id:   "my-id",
 						Name: "some-name",
 					}, testdata.MockCloudServiceID1),
-				},
+				}),
 			},
 			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
 				Id:   "my-id",

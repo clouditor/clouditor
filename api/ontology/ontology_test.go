@@ -1,13 +1,12 @@
 package ontology
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -31,9 +30,8 @@ func TestResourceTypes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ResourceTypes(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ResourceTypes() = %v, want %v", got, tt.want)
-			}
+			got := ResourceTypes(tt.args.r)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -67,9 +65,8 @@ func TestRelated(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Related(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Related() = %v, want %v", got, tt.want)
-			}
+			got := Related(tt.args.r)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

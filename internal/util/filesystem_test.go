@@ -27,8 +27,9 @@ package util
 
 import (
 	"io"
-	"reflect"
 	"testing"
+
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 func TestGetJSONFilenames(t *testing.T) {
@@ -65,9 +66,7 @@ func TestGetJSONFilenames(t *testing.T) {
 				t.Errorf("GetJSONFilenames() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetJSONFilenames() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

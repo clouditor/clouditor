@@ -41,9 +41,9 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"

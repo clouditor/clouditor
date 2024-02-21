@@ -38,12 +38,9 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/server"
-	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
-
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 )
 
 var (
@@ -57,7 +54,7 @@ var (
 func TestMain(m *testing.M) {
 	var (
 		err      error
-		srv      *grpc.Server
+		srv      *http.Server
 		sock     net.Listener
 		authPort uint16
 	)
@@ -72,7 +69,7 @@ func TestMain(m *testing.M) {
 	// Start at least an orchestrator service, so that we have something to forward
 	sock, srv, err = server.StartGRPCServer("127.0.0.1:0",
 		server.WithJWKS(testutil.JWKSURL(authPort)),
-		server.WithOrchestrator(service_orchestrator.NewService()),
+		//server.WithOrchestrator(service_orchestrator.NewService()),
 	)
 	if err != nil {
 		panic(err)
@@ -83,7 +80,7 @@ func TestMain(m *testing.M) {
 	exit := m.Run()
 
 	sock.Close()
-	srv.Stop()
+	srv.Close()
 
 	os.Exit(exit)
 }
@@ -138,7 +135,7 @@ func TestREST(t *testing.T) {
 		args         args
 		statusCode   int
 		headers      map[string]string
-		wantResponse assert.ValueAssertionFunc
+		wantResponse assert.Want[*http.Response]
 	}{
 		{
 			name: "Preflight request from valid origin",
@@ -153,6 +150,7 @@ func TestREST(t *testing.T) {
 				"Access-Control-Allow-Headers": strings.Join(headers, ","),
 				"Access-Control-Allow-Methods": strings.Join(methods, ","),
 			},
+			wantResponse: assert.AnyValue[*http.Response],
 		},
 		{
 			name: "Actual request from valid origin",
@@ -168,6 +166,7 @@ func TestREST(t *testing.T) {
 				"Access-Control-Allow-Headers": "", // should only be part of preflight, not the actual request
 				"Access-Control-Allow-Methods": "", // should only be part of preflight, not the actual request
 			},
+			wantResponse: assert.AnyValue[*http.Response],
 		},
 		{
 			name: "Preflight request from valid origin",
@@ -181,6 +180,7 @@ func TestREST(t *testing.T) {
 			headers: map[string]string{
 				"Access-Control-Allow-Origin": "", // should not leak any origin
 			},
+			wantResponse: assert.AnyValue[*http.Response],
 		},
 		{
 			name: "Actual request from invalid origin",
@@ -194,6 +194,7 @@ func TestREST(t *testing.T) {
 			headers: map[string]string{
 				"Access-Control-Allow-Origin": "", // should not leak any origin
 			},
+			wantResponse: assert.AnyValue[*http.Response],
 		},
 		{
 			name: "Actual request to additional handler",
@@ -203,18 +204,13 @@ func TestREST(t *testing.T) {
 				preflight: false,
 			},
 			statusCode: 200,
-			wantResponse: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*http.Response)
-				if !ok {
-					return assert.True(tt, ok)
-				}
-
-				content, err := io.ReadAll(resp.Body)
-				if !assert.ErrorIs(tt, err, nil) {
+			wantResponse: func(t *testing.T, res *http.Response) bool {
+				content, err := io.ReadAll(res.Body)
+				if !assert.ErrorIs(t, err, nil) {
 					return false
 				}
 
-				return assert.Equal(tt, []byte("just a test"), content)
+				return assert.Equal(t, []byte("just a test"), content)
 			},
 		},
 	}
@@ -252,9 +248,7 @@ func TestREST(t *testing.T) {
 				assert.Equal(t, value, resp.Header.Get(key))
 			}
 
-			if tt.wantResponse != nil {
-				tt.wantResponse(t, resp)
-			}
+			tt.wantResponse(t, resp)
 		})
 	}
 }

@@ -27,6 +27,7 @@ package api
 
 import (
 	"clouditor.io/clouditor/v2/internal/util"
+	"connectrpc.com/connect"
 
 	"github.com/bufbuild/protovalidate-go"
 	"google.golang.org/grpc/codes"
@@ -41,6 +42,17 @@ func init() {
 	validator, _ = protovalidate.New()
 }
 
+func ValidateRequest[T any](req *connect.Request[T]) (err error) {
+	if req == nil {
+		return status.Errorf(codes.InvalidArgument, "%s", ErrEmptyRequest)
+	}
+
+	// TODO: somehow stupid
+	err = Validate((any)(req.Msg).(proto.Message))
+
+	return
+}
+
 // Validate validates an incoming request according to different criteria:
 //   - If the request is nil, [api.ErrEmptyRequest] is returned
 //   - The request is validated according to the generated validation method
@@ -48,17 +60,18 @@ func init() {
 //
 // Note: This function already returns a gRPC error, so the error can be returned directly without any wrapping in a
 // request function.
-func Validate(req IncomingRequest) (err error) {
+func Validate(msg proto.Message) (err error) {
 	// Check, if request is nil. We need to check whether the interface itself is nil (untyped nil); this happens if
 	// someone is directly setting nil to a variable of the interface IncomingRequest. Furthermore, we need to check,
 	// whether the *value* of the interface is nil. This can happen if nil is first assigned to a variable of a struct
 	// (pointer) that implements the interface. If this variable is then passed to the validate function, the req
 	// parameter is not nil, but the value of the interface representing it is.
-	if util.IsNil(req) {
+	if util.IsNil(msg) {
 		return status.Errorf(codes.InvalidArgument, "%s", ErrEmptyRequest)
 	}
+
 	// Validate request
-	err = validator.Validate(req)
+	err = validator.Validate(msg)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "%v: %v", ErrInvalidRequest, err)
 	}

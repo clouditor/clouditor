@@ -26,21 +26,20 @@
 package azure
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
@@ -50,7 +49,7 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
+		want    assert.Want[*azureDiscovery]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -65,7 +64,7 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 					},
 				},
 			},
-			want:    nil,
+			want:    assert.NotNil[*azureDiscovery],
 			wantErr: assert.NoError,
 		},
 		{
@@ -73,26 +72,22 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*ontology.Backup{{
-					RetentionPeriod: durationpb.New(Duration7Days),
-					Enabled:         true,
-					StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        true,
+			want: func(t *testing.T, got *azureDiscovery) bool {
+				want := []*ontology.Backup{
+					{
+						RetentionPeriod: durationpb.New(Duration7Days),
 						Enabled:         true,
-						ProtocolVersion: 1.2,
-						Protocol:        constants.TLS,
+						StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						TransportEncryption: &ontology.TransportEncryption{
+							Enforced:        true,
+							Enabled:         true,
+							ProtocolVersion: 1.2,
+							Protocol:        constants.TLS,
+						},
 					},
-				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+				return assert.Equal(t, want, got.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
 			},
 			wantErr: assert.NoError,
 		},
@@ -101,26 +96,22 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*ontology.Backup{{
-					RetentionPeriod: durationpb.New(Duration30Days),
-					Enabled:         true,
-					StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &ontology.TransportEncryption{
-						Enforced:        true,
+			want: func(t *testing.T, got *azureDiscovery) bool {
+				want := []*ontology.Backup{
+					{
+						RetentionPeriod: durationpb.New(Duration30Days),
 						Enabled:         true,
-						ProtocolVersion: 1.2,
-						Protocol:        constants.TLS,
+						StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+						TransportEncryption: &ontology.TransportEncryption{
+							Enforced:        true,
+							Enabled:         true,
+							ProtocolVersion: 1.2,
+							Protocol:        constants.TLS,
+						},
 					},
-				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
+				return assert.Equal(t, want, got.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
 			},
 			wantErr: assert.NoError,
 		},
@@ -130,12 +121,8 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			d := tt.fields.azureDiscovery
 
 			err := d.discoverBackupVaults()
-
 			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, d)
-			}
+			tt.want(t, d)
 		})
 	}
 }
@@ -231,10 +218,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			got, err := d.discoverBackupInstances(tt.args.resourceGroup, tt.args.vaultName)
 
 			tt.wantErr(t, err)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("azureDiscovery.discoverBackupInstances() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -400,9 +384,8 @@ func Test_backupsEmptyCheck(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
-			}
+			got := backupsEmptyCheck(tt.args.backups)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
@@ -50,7 +51,6 @@ import (
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -69,26 +69,22 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "EvidenceStoreServer created without options",
-			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
-				svc, ok := i.(*Service)
-				assert.True(t, ok)
+			want: func(t *testing.T, got *Service) bool {
 				// Storage should be default (in-memory storage). Hard to check since its type is not exported
-				assert.NotNil(t, svc.storage)
+				assert.NotNil(t, got.storage)
 				return true
 			},
 		},
 		{
 			name: "EvidenceStoreServer created with storage option",
 			args: args{opts: []service.Option[Service]{WithStorage(db)}},
-			want: func(t assert.TestingT, i interface{}, i3 ...interface{}) bool {
-				svc, ok := i.(*Service)
-				assert.True(t, ok)
+			want: func(t *testing.T, got *Service) bool {
 				// Storage should be gorm (in-memory storage). Hard to check since its type is not exported
-				assert.NotNil(t, svc.storage)
+				assert.NotNil(t, got.storage)
 				return true
 			},
 		},
@@ -108,10 +104,10 @@ func TestService_StoreEvidence(t *testing.T) {
 		req *evidence.StoreEvidenceRequest
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *evidence.StoreEvidenceResponse
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		args    args
+		wantRes *evidence.StoreEvidenceResponse
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Store req to the map",
@@ -129,8 +125,8 @@ func TestService_StoreEvidence(t *testing.T) {
 						}),
 					}},
 			},
-			wantErr:  assert.NoError,
-			wantResp: &evidence.StoreEvidenceResponse{},
+			wantErr: assert.NoError,
+			wantRes: &evidence.StoreEvidenceResponse{},
 		},
 		{
 			name: "Store an evidence without toolId to the map",
@@ -151,21 +147,18 @@ func TestService_StoreEvidence(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
-			wantResp: nil,
+			wantRes: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.req)
+			gotRes, err := s.StoreEvidence(tt.args.in0, tt.args.req)
 
 			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantRes, gotRes)
 
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
-
-			if gotResp != nil {
+			if gotRes != nil {
 				e := &evidence.Evidence{}
 				err := s.storage.Get(e)
 				assert.NoError(t, err)
@@ -188,12 +181,12 @@ func TestService_StoreEvidences(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		fields          fields
-		args            args
-		wantErr         bool
-		wantErrMessage  string
-		wantRespMessage *evidence.StoreEvidencesResponse
+		name           string
+		fields         fields
+		args           args
+		wantErr        bool
+		wantErrMessage string
+		wantResMessage *evidence.StoreEvidencesResponse
 	}{
 		{
 			name:   "Store 1 evidence to the map",
@@ -201,7 +194,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 1))},
 			wantErr: false,
-			wantRespMessage: &evidence.StoreEvidencesResponse{
+			wantResMessage: &evidence.StoreEvidencesResponse{
 				Status: true,
 			},
 		},
@@ -211,7 +204,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockStream(createStoreEvidenceRequestMocks(t, 2))},
 			wantErr: false,
-			wantRespMessage: &evidence.StoreEvidencesResponse{
+			wantResMessage: &evidence.StoreEvidencesResponse{
 				Status: true,
 			},
 		},
@@ -233,7 +226,7 @@ func TestService_StoreEvidences(t *testing.T) {
 					},
 				})},
 			wantErr: false,
-			wantRespMessage: &evidence.StoreEvidencesResponse{
+			wantResMessage: &evidence.StoreEvidencesResponse{
 				Status:        false,
 				StatusMessage: "evidence.cloud_service_id: value must be a valid UUID",
 			},
@@ -277,10 +270,10 @@ func TestService_StoreEvidences(t *testing.T) {
 
 			if !tt.wantErr {
 				assert.Nil(t, err)
-				assert.Equal(t, tt.wantRespMessage.Status, responseFromServer.Status)
+				assert.Equal(t, tt.wantResMessage.Status, responseFromServer.Status)
 				// We have to check both ways, as it fails if one StatusMessage is empty.
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantResMessage.StatusMessage)
+				assert.Contains(t, responseFromServer.StatusMessage, tt.wantResMessage.StatusMessage)
 			} else {
 				assert.ErrorContains(t, err, tt.wantErrMessage)
 			}
@@ -299,11 +292,11 @@ func TestService_ListEvidences(t *testing.T) {
 		req *evidence.ListEvidencesRequest
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantResp assert.ValueAssertionFunc
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*evidence.ListEvidencesResponse]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Successful List Of Evidences (with allowed cloud service)",
@@ -319,16 +312,10 @@ func TestService_ListEvidences(t *testing.T) {
 				req: &evidence.ListEvidencesRequest{},
 			},
 			wantErr: assert.NoError,
-			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res, ok := i1.(*evidence.ListEvidencesResponse)
-				assert.True(t, ok)
-				assert.Equal(t, len(res.Evidences), 2)
-
-				// Check cloud_service_id
-				assert.Equal(t, evidencetest.MockEvidence1.CloudServiceId, res.Evidences[0].CloudServiceId)
-				assert.Equal(t, evidencetest.MockEvidence2.CloudServiceId, res.Evidences[1].CloudServiceId)
-
-				return true
+			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
+				return assert.Equal(t, len(got.Evidences), 2) &&
+					assert.Equal(t, evidencetest.MockEvidence1.CloudServiceId, got.Evidences[0].CloudServiceId) &&
+					assert.Equal(t, evidencetest.MockEvidence2.CloudServiceId, got.Evidences[1].CloudServiceId)
 			},
 		},
 		{
@@ -345,11 +332,8 @@ func TestService_ListEvidences(t *testing.T) {
 				req: evidencetest.MockListEvidenceRequest1,
 			},
 			wantErr: assert.NoError,
-			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res, ok := i1.(*evidence.ListEvidencesResponse)
-				assert.True(t, ok)
-
-				for _, e := range res.Evidences {
+			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
+				for _, e := range got.Evidences {
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, e.CloudServiceId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, e.ToolId)
 				}
@@ -379,13 +363,8 @@ func TestService_ListEvidences(t *testing.T) {
 				},
 			},
 			wantErr: assert.NoError,
-			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res, ok := i1.(*evidence.ListEvidencesResponse)
-				assert.True(t, ok)
-
-				assert.Equal(t, 1, len(res.Evidences))
-
-				for _, r := range res.Evidences {
+			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
+				for _, r := range got.Evidences {
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
 				}
@@ -415,14 +394,11 @@ func TestService_ListEvidences(t *testing.T) {
 				},
 			},
 			wantErr: assert.NoError,
-			wantResp: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res, ok := i1.(*evidence.ListEvidencesResponse)
-				assert.True(t, ok)
-
-				assert.Equal(t, 1, len(res.Evidences))
+			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
+				assert.Equal(t, 1, len(got.Evidences))
 
 				// Loop through all received evidences and check whether tool and service ids are correct.
-				for _, r := range res.Evidences {
+				for _, r := range got.Evidences {
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
 				}
@@ -447,7 +423,7 @@ func TestService_ListEvidences(t *testing.T) {
 				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCloudServiceID2 is not allowed
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
-			wantResp: assert.Nil,
+			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
 			name: "Wrong Input handled correctly (req = nil)",
@@ -459,7 +435,7 @@ func TestService_ListEvidences(t *testing.T) {
 				assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
-			wantResp: assert.Nil,
+			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
 			name: "Wrong Input handled correctly (tool_id not UUID)",
@@ -478,7 +454,7 @@ func TestService_ListEvidences(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
-			wantResp: assert.Nil,
+			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
 			name: "Wrong Input handled correctly (cloud_service_id not UUID)",
@@ -497,7 +473,7 @@ func TestService_ListEvidences(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Equal(t, status.Code(err), codes.InvalidArgument)
 			},
-			wantResp: assert.Nil,
+			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
 			name: "DB (pagination) error",
@@ -520,7 +496,7 @@ func TestService_ListEvidences(t *testing.T) {
 				assert.ErrorContains(t, err, "could not paginate results")
 				return assert.Equal(t, status.Code(err), codes.Internal)
 			},
-			wantResp: assert.Nil,
+			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 	}
 	for _, tt := range tests {
@@ -532,7 +508,7 @@ func TestService_ListEvidences(t *testing.T) {
 
 			gotRes, err := svc.ListEvidences(tt.args.in0, tt.args.req)
 			tt.wantErr(t, err)
-			tt.wantResp(t, gotRes)
+			tt.wantRes(t, gotRes)
 		})
 	}
 }
@@ -578,10 +554,10 @@ func TestService_EvidenceHook(t *testing.T) {
 		evidence *evidence.StoreEvidenceRequest
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *evidence.StoreEvidenceResponse
-		wantErr  bool
+		name    string
+		args    args
+		wantRes *evidence.StoreEvidenceResponse
+		wantErr bool
 	}{
 		{
 			name: "Store an evidence to the map",
@@ -599,8 +575,8 @@ func TestService_EvidenceHook(t *testing.T) {
 				},
 				},
 			},
-			wantErr:  false,
-			wantResp: &evidence.StoreEvidenceResponse{},
+			wantErr: false,
+			wantRes: &evidence.StoreEvidenceResponse{},
 		},
 	}
 
@@ -617,9 +593,7 @@ func TestService_EvidenceHook(t *testing.T) {
 				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			assert.Equal(t, tt.wantRes, gotResp)
 			var evidences []evidence.Evidence
 			err = s.storage.List(&evidences, "", true, 0, -1)
 			assert.NoError(t, err)
@@ -800,7 +774,7 @@ func TestService_GetEvidence(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
+		want    assert.Want[*evidence.Evidence]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -823,7 +797,7 @@ func TestService_GetEvidence(t *testing.T) {
 					EvidenceId: testdata.MockEvidenceID1,
 				},
 			},
-			want: assert.Nil,
+			want: assert.Nil[*evidence.Evidence],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, "evidence not found")
@@ -849,9 +823,8 @@ func TestService_GetEvidence(t *testing.T) {
 				},
 			},
 			wantErr: assert.NoError,
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				res := i1.(*evidence.Evidence)
-				return assert.NoError(t, api.Validate(res))
+			want: func(t *testing.T, got *evidence.Evidence) bool {
+				return assert.NoError(t, api.Validate(got))
 			},
 		},
 		{
@@ -869,7 +842,7 @@ func TestService_GetEvidence(t *testing.T) {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "evidence_id: value must be a valid UUID")
 			},
-			want: assert.Nil,
+			want: assert.Nil[*evidence.Evidence],
 		},
 		{
 			name: "evidence not found",
@@ -886,7 +859,7 @@ func TestService_GetEvidence(t *testing.T) {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, "evidence not found")
 			},
-			want: assert.Nil,
+			want: assert.Nil[*evidence.Evidence],
 		},
 	}
 

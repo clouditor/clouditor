@@ -34,8 +34,9 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/persistence"
-	"github.com/stretchr/testify/assert"
+
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm/schema"
@@ -93,12 +94,8 @@ func TestTimestampSerializer_Value(t *testing.T) {
 			tr := TimestampSerializer{}
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
-
 			tt.wantErr(t, err, tt.args)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("TimestampSerializer.Value() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -147,7 +144,7 @@ func TestAnySerializer_Value(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    assert.ValueAssertionFunc
+		want    assert.Want[any]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -162,13 +159,13 @@ func TestAnySerializer_Value(t *testing.T) {
 					return a
 				}(),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
+			want: func(t *testing.T, got any) bool {
 				// output of protojson is randomized (see
 				// https://github.com/protocolbuffers/protobuf-go/commit/582ab3de426ef0758666e018b422dd20390f7f26),
 				// so we need to unmarshal it to compare the contents in a
 				// stable way
-				b, ok := i1.([]byte)
-				if assert.True(t, ok) {
+				b := assert.Is[[]byte](t, got)
+				if !assert.NotNil(t, b) {
 					return false
 				}
 
@@ -177,7 +174,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				assert.NoError(t, err)
 
 				return assert.Equal(t, m, map[string]interface{}{
-					"@type": "type.googleapis.com/clouditor.CloudService",
+					"@type": "type.googleapis.com/clouditor.orchestrator.v1.CloudService",
 					"id":    "my-service",
 				})
 			},
@@ -190,7 +187,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: nil,
 			},
-			want:    assert.Empty,
+			want:    assert.Nil[any],
 			wantErr: assert.NoError,
 		},
 		{
@@ -200,7 +197,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:        reflect.Value{},
 				fieldValue: "string",
 			},
-			want: assert.Empty,
+			want: assert.Nil[any],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, persistence.ErrUnsupportedType)
 			},
@@ -212,13 +209,8 @@ func TestAnySerializer_Value(t *testing.T) {
 			tr := AnySerializer{}
 
 			got, err := tr.Value(tt.args.ctx, tt.args.field, tt.args.dst, tt.args.fieldValue)
-
-			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err, tt.args)
-
-			// Validate the response via the ValueAssertionFunc function
 			tt.want(t, got)
-
 		})
 	}
 }

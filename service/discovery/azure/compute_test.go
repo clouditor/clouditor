@@ -27,20 +27,18 @@ package azure
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/constants"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-	"google.golang.org/protobuf/types/known/durationpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
@@ -201,7 +199,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			prototest.EqualSlice(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -366,7 +364,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				_ = d.initWebAppsClient()
 			}
 
-			assert.Equalf(t, tt.want, d.handleFunction(tt.args.function, tt.args.config), "handleFunction(%v)", tt.args.function)
+			assert.Equal(t, tt.want, d.handleFunction(tt.args.function, tt.args.config))
 		})
 	}
 }
@@ -511,7 +509,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			prototest.EqualSlice(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -643,7 +641,7 @@ func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			prototest.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -939,7 +937,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "discoverBlockStorages()")
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1070,7 +1068,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("handleBlockStorage(%v)", tt.args.disk)) {
 				return
 			}
-			prototest.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1239,7 +1237,7 @@ func Test_azureComputeDiscovery_keyURL(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("keyURL(%v)", tt.args.diskEncryptionSetID)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "keyURL(%v)", tt.args.diskEncryptionSetID)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1396,9 +1394,8 @@ func Test_automaticUpdates(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotAutomaticUpdates := automaticUpdates(tt.args.vm); !reflect.DeepEqual(gotAutomaticUpdates, tt.wantAutomaticUpdates) {
-				t.Errorf("automaticUpdates() = %v, want %v", gotAutomaticUpdates, tt.wantAutomaticUpdates)
-			}
+			gotAutomaticUpdates := automaticUpdates(tt.args.vm)
+			assert.Equal(t, tt.wantAutomaticUpdates, gotAutomaticUpdates)
 		})
 	}
 }
@@ -1559,7 +1556,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 				_ = d.initWebAppsClient()
 			}
 
-			prototest.Equal(t, tt.want, d.handleWebApp(tt.args.webApp, tt.args.config))
+			assert.Equal(t, tt.want, d.handleWebApp(tt.args.webApp, tt.args.config))
 		})
 	}
 }
@@ -1683,7 +1680,7 @@ func Test_getTransportEncryption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotEnc := getTransportEncryption(tt.args.siteProps, tt.args.config)
-			prototest.Equal(t, tt.wantEnc, gotEnc)
+			assert.Equal(t, tt.wantEnc, gotEnc)
 		})
 	}
 }
@@ -1769,9 +1766,8 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 				_ = d.initWebAppsClient()
 			}
 
-			if gotRl := d.getResourceLoggingWebApps(tt.args.site); !reflect.DeepEqual(gotRl, tt.wantRl) {
-				t.Errorf("azureComputeDiscovery.getResourceLoggingWebApp() = %v, want %v", gotRl, tt.wantRl)
-			}
+			gotRl := d.getResourceLoggingWebApps(tt.args.site)
+			assert.Equal(t, tt.wantRl, gotRl)
 		})
 	}
 }
@@ -1836,9 +1832,8 @@ func Test_getRedundancy(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getRedundancy(tt.args.app); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getRedundancy() = %v, want %v", got, tt.want)
-			}
+			got := getRedundancy(tt.args.app)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1926,9 +1921,8 @@ func Test_getVirtualNetworkSubnetId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getVirtualNetworkSubnetId(tt.args.site); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getVirtualNetworkSubnetId() = %v, want %v", got, tt.want)
-			}
+			got := getVirtualNetworkSubnetId(tt.args.site)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

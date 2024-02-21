@@ -34,11 +34,10 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/persistence"
 
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -404,10 +403,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				return
 			}
 
-			// Assert the configuration using protoequal
-			if !proto.Equal(gotResult.Config, tt.wantResult.Config) {
-				t.Errorf("regoEval.evalMap() = %v, want %v", gotResult.Config, tt.wantResult.Config)
-			}
+			assert.Equal(t, tt.wantResult, gotResult)
 
 			// Assert the remaining message regularly
 			tt.wantResult.Config = nil

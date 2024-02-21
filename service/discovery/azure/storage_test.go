@@ -33,12 +33,12 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -302,7 +302,7 @@ func Test_handleFileStorage(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -426,7 +426,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 			if !tt.wantErr(t, err) {
 				return
 			}
-			prototest.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -557,7 +557,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1423,7 +1423,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 				return
 			}
 
-			prototest.EqualSlice(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

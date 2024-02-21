@@ -27,7 +27,6 @@ package orchestrator
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
@@ -37,14 +36,14 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -155,7 +154,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 				tt.res.Id = ""
 			}
 
-			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
+			assert.Equal(t, tt.res, res)
 		})
 	}
 }
@@ -252,7 +251,7 @@ func TestService_GetCloudService(t *testing.T) {
 				res.UpdatedAt = nil
 			}
 
-			assert.True(t, proto.Equal(res, tt.res), "%v != %v", res, tt.res)
+			assert.Equal(t, tt.res, res)
 		})
 	}
 }
@@ -516,12 +515,8 @@ func TestService_ListCloudServices(t *testing.T) {
 			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
 			assert.NoError(t, api.Validate(gotRes))
 
-			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err, tt.args)
-
-			if !proto.Equal(gotRes, tt.wantRes) {
-				t.Errorf("Service.ListCloudServices() = %v, want %v", gotRes, tt.wantRes)
-			}
+			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }
@@ -544,18 +539,18 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 		req *orchestrator.GetCloudServiceStatisticsRequest
 	}
 	tests := []struct {
-		name         string
-		fields       fields
-		args         args
-		wantResponse *orchestrator.GetCloudServiceStatisticsResponse
-		wantErr      assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		wantRes *orchestrator.GetCloudServiceStatisticsResponse
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "Validate request error",
 			args: args{
 				ctx: context.TODO(),
 			},
-			wantResponse: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
@@ -571,7 +566,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantResponse: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
 					assert.Equal(t, codes.PermissionDenied, status.Code(err))
@@ -589,7 +584,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantResponse: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "service not found") &&
 					assert.Equal(t, codes.NotFound, status.Code(err))
@@ -607,7 +602,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantResponse: nil,
+			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "database error getting cloud service: some error") &&
 					assert.Equal(t, codes.Internal, status.Code(err))
@@ -671,7 +666,7 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 					CloudServiceId: testdata.MockCloudServiceID1,
 				},
 			},
-			wantResponse: &orchestrator.GetCloudServiceStatisticsResponse{
+			wantRes: &orchestrator.GetCloudServiceStatisticsResponse{
 				NumberOfDiscoveredResources: 1,
 				NumberOfAssessmentResults:   2,
 				NumberOfEvidences:           1,
@@ -694,13 +689,9 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 				events:                tt.fields.events,
 				authz:                 tt.fields.authz,
 			}
-			gotResponse, err := s.GetCloudServiceStatistics(tt.args.ctx, tt.args.req)
-
+			gotRes, err := s.GetCloudServiceStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
-
-			if !reflect.DeepEqual(gotResponse, tt.wantResponse) {
-				t.Errorf("Service.GetCloudServiceStatistics() = %v, want %v", gotResponse, tt.wantResponse)
-			}
+			assert.Equal(t, tt.wantRes, gotRes)
 		})
 	}
 }

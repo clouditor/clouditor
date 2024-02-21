@@ -1,9 +1,11 @@
 package commands
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
+	"github.com/spf13/cobra"
 )
 
 func TestAddCommands(t *testing.T) {

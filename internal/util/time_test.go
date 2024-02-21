@@ -29,7 +29,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 func Test_SafeTimestamp(t *testing.T) {
@@ -67,7 +67,7 @@ func Test_SafeTimestamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, SafeTimestamp(tt.args.t), "SafeTimestamp(%v)", tt.args.t)
+			assert.Equal(t, tt.want, SafeTimestamp(tt.args.t))
 		})
 	}
 }

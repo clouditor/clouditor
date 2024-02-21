@@ -27,15 +27,15 @@ package k8s
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
+	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,10 +77,7 @@ func TestNewKubernetesStorageDiscovery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewKubernetesStorageDiscovery(tt.args.intf, tt.args.cloudServiceID)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewKubernetesStorageDiscovery() = %v, want %v", got, tt.want)
-			}
-
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 			assert.Equal(t, "Kubernetes Storage", got.Name())
 		})
 	}
@@ -138,12 +135,8 @@ func Test_k8sStorageDiscovery_List(t *testing.T) {
 		AtRestEncryption: &ontology.AtRestEncryption{},
 	}
 
-	// Delete raw. We have to delete it, because of the creation time included in the raw field.
-	assert.NotNil(t, volume.Raw)
-	volume.Raw = ""
-
 	assert.True(t, ok)
-	prototest.Equal(t, expectedVolume, volume)
+	assert.Equal(t, expectedVolume, volume, protocmp.IgnoreFields(&ontology.BlockStorage{}, "raw"))
 }
 
 func Test_k8sStorageDiscovery_handlePV(t *testing.T) {
@@ -193,7 +186,7 @@ func Test_k8sStorageDiscovery_handlePV(t *testing.T) {
 				k8sDiscovery: tt.fields.k8sDiscovery,
 			}
 			got := d.handlePV(tt.args.pv)
-			prototest.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

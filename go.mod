@@ -194,3 +194,10 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+require connectrpc.com/connect v1.15.0
+
+require (
+	github.com/google/flatbuffers v2.0.8+incompatible // indirect
+	go.akshayshah.org/memhttp v0.1.0 // indirect
+)

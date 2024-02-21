@@ -31,11 +31,11 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1"
