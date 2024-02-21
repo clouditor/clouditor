@@ -123,7 +123,7 @@ func (d *azureDiscovery) discoverLoadBalancer() ([]ontology.IsResource, error) {
 		func(lbs *armnetwork.LoadBalancer) error {
 			s := d.handleLoadBalancer(lbs)
 
-			log.Infof("Adding load balancer %+v", s)
+			log.Infof("Adding load balancer %+v", s.GetName())
 
 			list = append(list, s)
 
