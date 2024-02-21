@@ -86,6 +86,7 @@ func init() {
 		voc.KeyVault{},
 		voc.Key{},
 		voc.Secret{},
+		voc.Certificate{},
 		voc.Object{},
 		voc.WebApp{},
 		voc.Cluster{},
