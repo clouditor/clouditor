@@ -479,7 +479,6 @@ func runtimeInfo(runtime string) (runtimeLanguage string, runtimeVersion string)
 }
 
 // Discover virtual machines
-// TODO(all): Do we want to discover the VMs of a scale set, too?
 func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
