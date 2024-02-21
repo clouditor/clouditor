@@ -155,8 +155,8 @@ func (d *azureComputeDiscovery) discoverVirtualMachineScaleSets() ([]voc.IsCloud
 
 	// List all VMs
 	err := listPager(d.azureDiscovery,
-		d.clients.virtualMachineScaleSetClient.NewListAllPager,
-		d.clients.virtualMachineScaleSetClient.NewListPager,
+		d.clients.virtualMachineScaleSetsClient.NewListAllPager,
+		d.clients.virtualMachineScaleSetsClient.NewListPager,
 		func(res armcompute.VirtualMachineScaleSetsClientListAllResponse) []*armcompute.VirtualMachineScaleSet {
 			return res.Value
 		},
@@ -942,7 +942,7 @@ func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
 
 // initVirtualMachineScaleSetClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachineScaleSetClient() (err error) {
-	d.clients.virtualMachineScaleSetClient, err = initClient(d.clients.virtualMachineScaleSetClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetsClient)
+	d.clients.virtualMachineScaleSetsClient, err = initClient(d.clients.virtualMachineScaleSetsClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetsClient)
 	return
 }
 
