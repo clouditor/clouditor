@@ -182,7 +182,7 @@ func (d *azureDiscovery) discoverFunctionsWebApps() ([]ontology.IsResource, erro
 			}
 
 			if r != nil {
-				log.Infof("Adding function %+v", r)
+				log.Infof("Adding function %+v", r.GetName())
 				list = append(list, r)
 			}
 
