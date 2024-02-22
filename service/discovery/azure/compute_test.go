@@ -3119,7 +3119,6 @@ func Test_addSecretUsages(t *testing.T) {
 	}
 }
 
-// TODO(lebogg):
 func Test_getSecretURI(t *testing.T) {
 	//assert.Len(t, secretUsage["https://SomeKeyVault.vault.azure.net/secrets/Secret1"], 1)
 	//assert.Len(t, secretUsage["https://SomeKeyVault.vault.azure.net/secrets/Secret2"], 2)
@@ -3131,7 +3130,46 @@ func Test_getSecretURI(t *testing.T) {
 		args          args
 		wantSecretURI string
 	}{
-		// TODO: Add test cases.
+		{
+			name:          "Happy path - Option 1",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret1)"},
+			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
+		},
+		{
+			name:          "Happy path - Option 1",
+			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1/)"},
+			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
+		},
+		{
+			name:          "Wrong prefix (option1)- return empty string",
+			args:          args{"VaultName="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No split (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No secret name (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;XXX="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No round bracket at the end (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret1/"},
+			wantSecretURI: "",
+		},
+		{
+			name:          "Wrong prefix (option2)- return empty string",
+			args:          args{"@SomeThingWrong"},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No round bracket at the end (option2)- return empty string",
+			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1/"},
+			wantSecretURI: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
