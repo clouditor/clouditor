@@ -27,6 +27,8 @@ package azure
 
 import (
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault/fake"
+	"slices"
 	"testing"
 	"time"
 
@@ -145,12 +147,64 @@ func TestNewKeyVaultDiscovery(t *testing.T) {
 //	}
 //}
 
+// TODO
 func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 	// Todo 1(lebogg): Write simple test
 	//d := NewKeyVaultDiscovery(WithSender(mockKeyVaultSender{}))
 	//req := "GET https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resources?$filter=resourceType eq 'Microsoft.KeyVault/vaults'&api-version=2015-11-01"
 
 	// TODO 2(lebogg): Use table
+}
+
+func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		kv *armkeyvault.Vault
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path - get two keys",
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewKeysServerTransport(&FakeKeyServer),
+				WithResourceGroup(string(mockKey1.Parent)))},
+			args: args{kv: &armkeyvault.Vault{
+				ID:   util.Ref("KeyVaultID"),
+				Name: util.Ref("KeyVaultName"),
+			}},
+			want: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				gotKeys, ok := i.([]*voc.Key)
+				assert.True(t, ok)
+				// Check if length is 2, i.e. both keys are returned
+				assert.Len(t, gotKeys, 2)
+				// Check if ID of mockKey1 is included
+				containsMockKey1ID := slices.ContainsFunc(gotKeys, func(key *voc.Key) bool {
+					return key.ID == mockKey1.ID
+				})
+				return assert.True(t, containsMockKey1ID)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureKeyVaultDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			assert.NoError(t, d.initKeysClient())
+			gotKeys, err := d.getKeys(tt.args.kv)
+			if !tt.wantErr(t, err, fmt.Sprintf("getKeys(%v)", tt.args.kv)) {
+				return
+			}
+			assert.True(t, tt.want(t, gotKeys), "getKeys(%v)", tt.args.kv)
+		})
+	}
 }
 
 func Test_getKeyIDs(t *testing.T) {

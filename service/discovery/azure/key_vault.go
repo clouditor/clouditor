@@ -1,4 +1,4 @@
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -340,7 +340,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 		}
 		for _, k := range page.Value {
 			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
-			res, err := d.clients.keysClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
+			res, err := c.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
 				util.Deref(k.Name), &armkeyvault.KeysClientGetOptions{})
 			if err != nil {
 				return nil, fmt.Errorf("could not get key: %v", err)
