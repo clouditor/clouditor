@@ -29,7 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
+	"slices"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -188,6 +188,13 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 				// Algorithm: algorithm, //TODO(anatheka): How do we get the algorithm? Are we available to do it by the related resources?
 			},
 			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
+		}
+		// Add key URI to keyUsage for tracking usages of single keys.
+		// Hacky, but we haven't related Evidences yet.
+		// We add the ID of this resource to the list of usages for the given key. But only if it is not there already
+		if !slices.Contains(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID)) {
+			keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)] =
+				append(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID))
 		}
 	} else {
 		atRestEnc = &voc.ManagedKeyEncryption{
