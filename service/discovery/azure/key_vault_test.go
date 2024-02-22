@@ -196,7 +196,7 @@ func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 				metricsClient:  tt.fields.metricsClient,
 			}
 			gotList, err := d.List()
-			tt.wantErr(t, err, fmt.Sprintf("List()"))
+			tt.wantErr(t, err, "List()")
 			assert.Equalf(t, tt.wantList, gotList, "List()")
 		})
 	}
