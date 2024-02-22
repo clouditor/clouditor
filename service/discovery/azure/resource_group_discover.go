@@ -28,6 +28,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -56,8 +57,9 @@ func (d *azureDiscovery) discoverResourceGroups() (list []ontology.IsResource, e
 		}
 
 		for _, rg := range page.Value {
-			// If we are scoped to one resource group, we can skip the rest of the groups
-			if d.rg != nil && util.Deref(rg.Name) != util.Deref(d.rg) {
+			// If we are scoped to one resource group, we can skip the rest of the groups. Resource group names are
+			// case-insensitive
+			if d.rg != nil && !strings.EqualFold(util.Deref(rg.Name), util.Deref(d.rg)) {
 				continue
 			}
 
