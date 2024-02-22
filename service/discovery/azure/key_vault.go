@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
@@ -58,12 +57,9 @@ type azureKeyVaultDiscovery struct {
 func NewKeyVaultDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureKeyVaultDiscovery{
 		azureDiscovery: &azureDiscovery{
-			clientOptions: arm.ClientOptions{},
-			// Todo(all): What do we need this for?
 			discovererComponent: KeyVaultComponent,
-			// Todo(lebogg): In service/discovery/discovery.go:257 csID is set anyway. Maybe for testing?
-			csID:      discovery.DefaultCloudServiceID,
-			backupMap: make(map[string]*backup),
+			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*backup),
 		},
 	}
 	for _, opt := range opts {
@@ -79,14 +75,16 @@ func (*azureKeyVaultDiscovery) Name() string {
 func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// make sure, we are authorized
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+		err = fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+		return
 	}
 
 	// Discover Key Vaults
 	log.Info("Discover Azure Key Vaults")
 	keyVaults, err := d.discoverKeyVaults()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover Key Vaults: %w", err)
+		err = fmt.Errorf("could not discover Key Vaults: %w", err)
+		return
 	}
 	list = append(list, keyVaults...)
 

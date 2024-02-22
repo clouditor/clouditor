@@ -148,12 +148,58 @@ func TestNewKeyVaultDiscovery(t *testing.T) {
 //}
 
 // TODO
-func Test_azureKeyVaultDiscovery_List(t *testing.T) {
-	// Todo 1(lebogg): Write simple test
-	//d := NewKeyVaultDiscovery(WithSender(mockKeyVaultSender{}))
-	//req := "GET https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resources?$filter=resourceType eq 'Microsoft.KeyVault/vaults'&api-version=2015-11-01"
 
-	// TODO 2(lebogg): Use table
+func Test_azureKeyVaultDiscovery_List(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+		metricsClient  *azquery.MetricsClient
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList []voc.IsCloudResource
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error - authorization",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{},
+				metricsClient:  nil,
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+				return false
+			},
+		},
+		{
+			name: "Error - discovery error",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{Transport: mockSender{}},
+					}},
+				metricsClient: nil,
+			},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "could not discover Key Vaults")
+				return false
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureKeyVaultDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+				metricsClient:  tt.fields.metricsClient,
+			}
+			gotList, err := d.List()
+			tt.wantErr(t, err, fmt.Sprintf("List()"))
+			assert.Equalf(t, tt.wantList, gotList, "List()")
+		})
+	}
 }
 
 func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
