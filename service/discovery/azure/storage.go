@@ -745,7 +745,7 @@ func (d *azureStorageDiscovery) isBackup(account *armstorage.Account, container 
 
 	// Check if the container serves as backup
 	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
-		backupOf[util.Deref(b)] = util.Deref(container.ID)
+		backupOf[resourceID(b)] = resourceID(container.ID)
 		return true
 	}
 	return false
@@ -771,10 +771,12 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
+	backupOFF := backupOf
+	_ = backupOFF
 	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
 		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
 	} else { // approach with Tagging
-		if backupLocation, ok := backupOf["https://"+util.Deref(account.Name)+".table.core.windows.net/"+util.Deref(table.Name)]; ok {
+		if backupLocation, ok := backupOf["https://"+resourceID(account.Name)+".table.core.windows.net/"+resourceID(table.Name)]; ok {
 			backups = []*voc.Backup{
 				{
 					Availability:        nil,
