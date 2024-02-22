@@ -120,35 +120,6 @@ func TestNewKeyVaultDiscovery(t *testing.T) {
 	}
 }
 
-//type mockKeyVaultSender struct {
-//	mockSender
-//}
-//
-//func (s *mockKeyVaultSender) Do(req *http.Request) (res *http.Response, err error) {
-//	if req.URL.Path == "GET https://management.azure.com/subscriptions/00000000-0000-0000-0000-000000000000/resources?$filter=resourceType eq 'Microsoft.KeyVault/vaults'&api-version=2015-11-01" {
-//		return createResponse(req, map[string]interface{}{
-//			"value": &[]map[string]interface{}{
-//				{
-//					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/RG1/providers/Microsoft.KeyVault/vaults/keyvault1",
-//					"name":     "keyvault1",
-//					"location": "eastus",
-//				},
-//				{
-//					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/RG1/providers/Microsoft.KeyVault/vaults/keyvault2",
-//					"name":     "keyvault2",
-//					"location": "westeurope",
-//				},
-//			},
-//		}, 200)
-//
-//	} else {
-//		// If req doesn't match, call method of anonymous field, i.e. returns error message in most cases
-//		return s.mockSender.Do(req)
-//	}
-//}
-
-// TODO
-
 func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -198,6 +169,39 @@ func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 			gotList, err := d.List()
 			tt.wantErr(t, err, "List()")
 			assert.Equalf(t, tt.wantList, gotList, "List()")
+		})
+	}
+}
+
+func Test_azureKeyVaultDiscovery_discoverKeyVaults(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+		metricsClient  *azquery.MetricsClient
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantList []voc.IsCloudResource
+		wantErr  assert.ErrorAssertionFunc
+	}{
+		{
+			name:     "Error (pager) - due to no key vault client",
+			fields:   fields{azureDiscovery: &azureDiscovery{}},
+			wantList: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureKeyVaultDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+				metricsClient:  tt.fields.metricsClient,
+			}
+			gotList, err := d.discoverKeyVaults()
+			tt.wantErr(t, err)
+			assert.Equalf(t, tt.wantList, gotList, "discoverKeyVaults()")
 		})
 	}
 }
