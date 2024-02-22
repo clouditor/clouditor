@@ -26,17 +26,21 @@
 package azure
 
 import (
+	"fmt"
+	"testing"
+	"time"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/testdata"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewKeyVaultDiscovery(t *testing.T) {
@@ -149,49 +153,7 @@ func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 	// TODO 2(lebogg): Use table
 }
 
-func Test_getKeyType(t *testing.T) {
-	type args struct {
-		kt *armkeyvault.JSONWebKeyType
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "Unsupported key type",
-			args: args{kt: util.Ref(armkeyvault.JSONWebKeyType("NotSupportedKeyType"))},
-			want: "NotSupportedKeyType",
-		},
-		{
-			name: "EC 1",
-			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeEC)},
-			want: "EC",
-		},
-		{
-			name: "EC 2",
-			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeECHSM)},
-			want: "EC",
-		},
-		{
-			name: "RSA 1",
-			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSA)},
-			want: "RSA",
-		},
-		{
-			name: "RSA 2",
-			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSAHSM)},
-			want: "RSA",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, getKeyType(tt.args.kt), "getKeyType(%v)", tt.args.kt)
-		})
-	}
-}
-
-func Test_getIDs(t *testing.T) {
+func Test_getKeyIDs(t *testing.T) {
 	type args struct {
 		keys []*voc.Key
 	}
@@ -236,6 +198,95 @@ func Test_getIDs(t *testing.T) {
 	}
 }
 
+func Test_getSecretIDs(t *testing.T) {
+	type args struct {
+		secrets []*voc.Secret
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantSecretIDs []voc.ResourceID
+	}{
+		{
+			name: "happy path - 2 secrets",
+			args: args{
+				secrets: []*voc.Secret{
+					{
+						Resource: &voc.Resource{ID: "Secret1"},
+					},
+					{
+						Resource: &voc.Resource{ID: "Secret2"},
+					},
+				},
+			},
+			wantSecretIDs: []voc.ResourceID{"Secret1", "Secret2"},
+		},
+		{
+			name: "slice of secrets is empty - return empty slice of resource ids",
+			args: args{
+				secrets: []*voc.Secret{},
+			},
+			wantSecretIDs: []voc.ResourceID{},
+		},
+		{
+			name: "slice of secrets is nil - return empty slice of resource ids",
+			args: args{
+				secrets: nil,
+			},
+			wantSecretIDs: []voc.ResourceID{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantSecretIDs, getSecretIDs(tt.args.secrets), "getSecretIDs(%v)", tt.args.secrets)
+		})
+	}
+}
+
+func Test_getCertificateIDs(t *testing.T) {
+	type args struct {
+		certificates []*voc.Certificate
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantCertificatesIDs []voc.ResourceID
+	}{
+		{
+			name: "happy path - 2 certificates",
+			args: args{
+				certificates: []*voc.Certificate{
+					{
+						Resource: &voc.Resource{ID: "certificate1"},
+					},
+					{
+						Resource: &voc.Resource{ID: "certificate2"},
+					},
+				},
+			},
+			wantCertificatesIDs: []voc.ResourceID{"certificate1", "certificate2"},
+		},
+		{
+			name: "slice of certificates is empty - return empty slice of resource ids",
+			args: args{
+				certificates: []*voc.Certificate{},
+			},
+			wantCertificatesIDs: []voc.ResourceID{},
+		},
+		{
+			name: "slice of certificates is nil - return empty slice of resource ids",
+			args: args{
+				certificates: nil,
+			},
+			wantCertificatesIDs: []voc.ResourceID{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantCertificatesIDs, getCertificateIDs(tt.args.certificates), "getCertificateIDs(%v)", tt.args.certificates)
+		})
+	}
+}
 func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
@@ -272,6 +323,129 @@ func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.wantIsActive, gotIsActive, "isActive(%v)", tt.args.kv)
+		})
+	}
+}
+
+func Test_getCertificateName(t *testing.T) {
+	certName := "SomeCertificationName"
+	certIDString := "https://SomeKeyVault.vault.azure.net/certificates/" + certName
+	type args struct {
+		id *azcertificates.ID
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantCertName string
+	}{
+		{
+			name:         "Happy path - get name of rightly formatted ID",
+			args:         args{id: util.Ref(azcertificates.ID(certIDString))},
+			wantCertName: certName,
+		},
+		{
+			name:         "Empty string provided - return empty string as well",
+			args:         args{id: util.Ref(azcertificates.ID(""))},
+			wantCertName: "",
+		},
+		{
+			name:         "Wrongly formatted ID - return ID as name",
+			args:         args{id: util.Ref(azcertificates.ID("subscriptions/SomeID"))},
+			wantCertName: "subscriptions/SomeID",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantCertName, getCertificateName(tt.args.id), "getCertificateName(%v)", tt.args.id)
+		})
+	}
+}
+
+func Test_convertTime(t *testing.T) {
+	someDateTime := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
+	someDateToOldForUnix := time.Date(1200, time.January, 1, 0, 0, 0, 0, time.UTC)
+	someDateUnix := someDateTime.Unix()
+	type args struct {
+		t *time.Time
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "Happy path - correct time",
+			args: args{util.Ref(someDateTime)},
+			want: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				gotUnix, ok := i.(int64)
+				assert.True(t, ok)
+				return assert.Equal(t, someDateUnix, gotUnix)
+			},
+		},
+		{
+			name: "provided time is nil - return -1",
+			args: args{nil},
+			want: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				gotUnix, ok := i.(int64)
+				assert.True(t, ok)
+				return assert.Equal(t, int64(-1), gotUnix)
+			},
+		},
+		{
+			name: "provided time is before 1970 - return some negative number",
+			args: args{util.Ref(someDateToOldForUnix)},
+			want: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				gotUnix, ok := i.(int64)
+				assert.True(t, ok)
+				return assert.Less(t, gotUnix, int64(0))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Truef(t, tt.want(t, convertTime(tt.args.t)), "convertTime(%v)", tt.args.t)
+		})
+	}
+}
+
+func Test_getKeyType(t *testing.T) {
+	type args struct {
+		kt *armkeyvault.JSONWebKeyType
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Unsupported key type",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyType("NotSupportedKeyType"))},
+			want: "NotSupportedKeyType",
+		},
+		{
+			name: "EC 1",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeEC)},
+			want: "EC",
+		},
+		{
+			name: "EC 2",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeECHSM)},
+			want: "EC",
+		},
+		{
+			name: "RSA 1",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSA)},
+			want: "RSA",
+		},
+		{
+			name: "RSA 2",
+			args: args{kt: util.Ref(armkeyvault.JSONWebKeyTypeRSAHSM)},
+			want: "RSA",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getKeyType(tt.args.kt), "getKeyType(%v)", tt.args.kt)
 		})
 	}
 }

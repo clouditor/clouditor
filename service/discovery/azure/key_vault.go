@@ -469,6 +469,7 @@ func getCertificateName(id *azcertificates.ID) (certName string) {
 	return
 }
 
+// convertTime converts a time pointer (given via Azure SDK) to a Unix time - handling nil pointers appropriately
 func convertTime(t *time.Time) int64 {
 	if t == nil {
 		return -1
