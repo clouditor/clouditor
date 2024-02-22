@@ -172,7 +172,7 @@ func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 	}{
 		{
 			name: "Happy path - get two keys",
-			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewKeysServerTransport(&FakeKeyServer),
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewKeysServerTransport(&FakeKeysServer),
 				WithResourceGroup(string(mockKey1.Parent)))},
 			args: args{kv: &armkeyvault.Vault{
 				ID:   util.Ref("KeyVaultID"),
@@ -203,6 +203,57 @@ func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 				return
 			}
 			assert.True(t, tt.want(t, gotKeys), "getKeys(%v)", tt.args.kv)
+		})
+	}
+}
+
+func Test_azureKeyVaultDiscovery_getSecrets(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		kv *armkeyvault.Vault
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.ValueAssertionFunc
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path - get two secrets",
+			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewSecretsServerTransport(&FakeSecretsServer),
+				WithResourceGroup(string(mockSecret1.Parent)))},
+			args: args{kv: &armkeyvault.Vault{
+				ID:   util.Ref("KeyVaultID"),
+				Name: util.Ref("KeyVaultName"),
+			}},
+			want: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
+				gotSecrets, ok := i.([]*voc.Secret)
+				assert.True(t, ok)
+				// Check if length is 2, i.e. both keys are returned
+				assert.Len(t, gotSecrets, 2)
+				// Check if ID of mockKey1 is included
+				containsMockSecret1ID := slices.ContainsFunc(gotSecrets, func(s *voc.Secret) bool {
+					return s.ID == mockSecret1.ID
+				})
+				return assert.True(t, containsMockSecret1ID)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureKeyVaultDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			assert.NoError(t, d.initSecretsClient())
+			gotSecrets, err := d.getSecrets(tt.args.kv)
+			if !tt.wantErr(t, err, fmt.Sprintf("getSecrets(%v)", tt.args.kv)) {
+				return
+			}
+			assert.True(t, tt.want(t, gotSecrets), "getSecrets(%v)", tt.args.kv)
 		})
 	}
 }

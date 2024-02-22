@@ -35,12 +35,18 @@ import (
 	"time"
 )
 
-var FakeKeyServer = fake.KeysServer{}
+var FakeKeysServer = fake.KeysServer{}
+var FakeSecretsServer = fake.SecretsServer{}
 
 // init initializes fake functions, e.g. for fake key client
 func init() {
+	initFakeKeysServer()
+	initFakeSecretsServer()
+}
+
+func initFakeKeysServer() {
 	// Set up fake ListPager for Keys
-	FakeKeyServer.NewListPager = func(resourceGroupName string, vaultName string,
+	FakeKeysServer.NewListPager = func(resourceGroupName string, vaultName string,
 		options *armkeyvault.KeysClientListOptions) (resp azfake.PagerResponder[armkeyvault.KeysClientListResponse]) {
 		resp.AddPage(200, armkeyvault.KeysClientListResponse{
 			KeyListResult: armkeyvault.KeyListResult{
@@ -60,7 +66,7 @@ func init() {
 	}
 
 	// Set up fake Get Function for Keys
-	FakeKeyServer.Get = func(ctx context.Context, resourceGroupName string, vaultName string, keyName string,
+	FakeKeysServer.Get = func(ctx context.Context, resourceGroupName string, vaultName string, keyName string,
 		options *armkeyvault.KeysClientGetOptions) (
 		resp azfake.Responder[armkeyvault.KeysClientGetResponse], errResp azfake.ErrorResponder) {
 		if resourceGroupName != "MockResourceGroupName" {
@@ -80,7 +86,7 @@ func init() {
 						KeySize: util.Ref(int32(mockKey1.KeySize)),
 						Kty:     util.Ref(armkeyvault.JSONWebKeyType(mockKey1.KeyType)),
 						KeyURI:  util.Ref(string(mockKey1.ID)),
-					}, // Important for attributes like Dates
+					},
 					ID:   util.Ref(string(mockKey1.ID)),
 					Name: util.Ref(mockKey1.Name),
 				},
@@ -108,6 +114,72 @@ func init() {
 		return
 	}
 }
+func initFakeSecretsServer() {
+	// Set up fake ListPager for Secrets
+	FakeSecretsServer.NewListPager = func(resourceGroupName string, vaultName string,
+		options *armkeyvault.SecretsClientListOptions) (resp azfake.PagerResponder[armkeyvault.SecretsClientListResponse]) {
+		resp.AddPage(200, armkeyvault.SecretsClientListResponse{
+			SecretListResult: armkeyvault.SecretListResult{
+				Value: []*armkeyvault.Secret{
+					{
+						ID:   util.Ref(string(mockSecret1.ID)),
+						Name: util.Ref(mockSecret1.Name),
+					},
+					{
+						ID:   util.Ref(string(mockSecret2.ID)),
+						Name: util.Ref(mockSecret2.Name),
+					},
+				},
+			},
+		}, &azfake.AddPageOptions{})
+		return
+	}
+
+	// Set up fake Get Function for Secrets
+	FakeSecretsServer.Get = func(ctx context.Context, resourceGroupName string, vaultName string, keyName string,
+		options *armkeyvault.SecretsClientGetOptions) (
+		resp azfake.Responder[armkeyvault.SecretsClientGetResponse], errResp azfake.ErrorResponder) {
+		if resourceGroupName != "MockResourceGroupName" {
+			resp.SetResponse(404, armkeyvault.SecretsClientGetResponse{}, &azfake.SetResponseOptions{})
+			return
+		}
+		if keyName == mockSecret1.Name {
+			resp.SetResponse(200, armkeyvault.SecretsClientGetResponse{
+				Secret: armkeyvault.Secret{
+					Properties: &armkeyvault.SecretProperties{
+						Attributes: &armkeyvault.SecretAttributes{
+							Enabled:   util.Ref(mockKey1.Enabled),
+							Expires:   util.Ref(time.Unix(mockSecret1.ExpirationDate, 0)),
+							NotBefore: util.Ref(time.Unix(mockSecret1.ActivationDate, 0)),
+							Created:   util.Ref(time.Unix(mockSecret1.ActivationDate, 0)),
+						},
+						SecretURI: util.Ref(string(mockSecret1.ID)),
+					},
+					ID:   util.Ref(string(mockSecret1.ID)),
+					Name: util.Ref(mockSecret1.Name),
+				},
+			}, &azfake.SetResponseOptions{})
+		}
+		if keyName == mockSecret2.Name {
+			resp.SetResponse(200, armkeyvault.SecretsClientGetResponse{
+				Secret: armkeyvault.Secret{
+					Properties: &armkeyvault.SecretProperties{
+						Attributes: &armkeyvault.SecretAttributes{
+							Enabled:   util.Ref(mockSecret2.Enabled),
+							Expires:   util.Ref(time.Unix(mockSecret2.ExpirationDate, 0)),
+							NotBefore: util.Ref(time.Unix(mockSecret2.ActivationDate, 0)),
+							Created:   util.Ref(time.Unix(mockSecret2.ActivationDate, 0)),
+						},
+						SecretURI: util.Ref(string(mockSecret2.ID)),
+					},
+					ID:   util.Ref(string(mockSecret2.ID)),
+					Name: util.Ref(mockSecret2.Name),
+				},
+			}, &azfake.SetResponseOptions{})
+		}
+		return
+	}
+}
 
 var mockKey1 = &voc.Key{
 	Resource: &voc.Resource{
@@ -115,7 +187,7 @@ var mockKey1 = &voc.Key{
 		ServiceID:    "11111111-1111-1111-1111-111111111111",
 		Name:         "mockKey1Name",
 		CreationTime: 0,
-		Type:         []string{"Key"},
+		Type:         voc.KeyType,
 		Parent:       "MockResourceGroupName",
 	},
 	Enabled:        true,
@@ -123,7 +195,7 @@ var mockKey1 = &voc.Key{
 	ExpirationDate: time.Now().Add(24 * time.Hour).Unix(),
 	KeyType:        "RSA",
 	KeySize:        2048,
-	NumberOfUsages: 0, // TODO(lebogg)
+	NumberOfUsages: 0,
 }
 
 var mockKey2 = &voc.Key{
@@ -132,13 +204,43 @@ var mockKey2 = &voc.Key{
 		ServiceID:    "11111111-1111-1111-1111-111111111111",
 		Name:         "mockKey2Name",
 		CreationTime: time.Now().Unix(),
-		Type:         []string{"Key"},
+		Type:         voc.KeyType,
 		Parent:       "MockResourceGroupName",
 	},
 	Enabled:        true,
-	ActivationDate: time.Now().Unix(), // about 2 years
-	ExpirationDate: time.Now().Add(24 * 30 * 24 * time.Hour).Unix(),
+	ActivationDate: time.Now().Unix(),
+	ExpirationDate: time.Now().Add(24 * 30 * 24 * time.Hour).Unix(), // about 2 years
 	KeyType:        "RSA",
 	KeySize:        4096,
-	NumberOfUsages: 0, // TODO(lebogg)
+	NumberOfUsages: 0,
+}
+
+var mockSecret1 = &voc.Secret{
+	Resource: &voc.Resource{
+		ID:           "https://mockvault.vault.azure.net/secrets/mockSecret1Name/",
+		ServiceID:    "11111111-1111-1111-1111-111111111111",
+		Name:         "mockSecret1Name",
+		CreationTime: time.Now().Unix(),
+		Type:         voc.SecretType,
+		Parent:       "MockResourceGroupName",
+	},
+	Enabled:        true,
+	ActivationDate: time.Now().Unix(),
+	ExpirationDate: time.Now().Add(24 * time.Hour).Unix(),
+	NumberOfUsages: 0,
+}
+
+var mockSecret2 = &voc.Secret{
+	Resource: &voc.Resource{
+		ID:           "https://mockvault.vault.azure.net/secrets/mockSecret2Name/",
+		ServiceID:    "11111111-1111-1111-1111-111111111111",
+		Name:         "mockSecret2Name",
+		CreationTime: time.Now().Unix(),
+		Type:         voc.SecretType,
+		Parent:       "MockResourceGroupName",
+	},
+	Enabled:        true,
+	ActivationDate: time.Now().Unix(),
+	ExpirationDate: time.Now().Add(24 * 30 * 24 * time.Hour).Unix(), // about 2 years
+	NumberOfUsages: 0,
 }
