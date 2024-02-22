@@ -376,7 +376,7 @@ func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secre
 	)
 	c = d.clients.secretsClient
 	if c == nil {
-		return nil, errors.New("keys client is empty")
+		return nil, errors.New("secrets client is empty")
 	}
 	pager := c.NewListPager(util.Deref(d.azureDiscovery.rg), util.Deref(kv.Name), &armkeyvault.SecretsClientListOptions{})
 	for pager.More() {

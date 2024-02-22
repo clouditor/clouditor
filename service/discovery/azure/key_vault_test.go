@@ -159,6 +159,7 @@ func Test_azureKeyVaultDiscovery_List(t *testing.T) {
 func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
+		initNewClient  bool
 	}
 	type args struct {
 		kv *armkeyvault.Vault
@@ -172,8 +173,10 @@ func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 	}{
 		{
 			name: "Happy path - get two keys",
-			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewKeysServerTransport(&FakeKeysServer),
-				WithResourceGroup(string(mockKey1.Parent)))},
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewKeysServerTransport(&FakeKeysServer),
+					WithResourceGroup(string(mockKey1.Parent))),
+				initNewClient: true},
 			args: args{kv: &armkeyvault.Vault{
 				ID:   util.Ref("KeyVaultID"),
 				Name: util.Ref("KeyVaultName"),
@@ -191,13 +194,24 @@ func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		{
+			name:   "Error - key client empty",
+			fields: fields{azureDiscovery: &azureDiscovery{}, initNewClient: false},
+			want:   nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "keys client is empty")
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureKeyVaultDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			assert.NoError(t, d.initKeysClient())
+			if tt.fields.initNewClient {
+				assert.NoError(t, d.initKeysClient())
+			}
 			gotKeys, err := d.getKeys(tt.args.kv)
 			if !tt.wantErr(t, err, fmt.Sprintf("getKeys(%v)", tt.args.kv)) {
 				return
@@ -210,6 +224,7 @@ func Test_azureKeyVaultDiscovery_getKeys(t *testing.T) {
 func Test_azureKeyVaultDiscovery_getSecrets(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
+		initNewClient  bool
 	}
 	type args struct {
 		kv *armkeyvault.Vault
@@ -224,7 +239,8 @@ func Test_azureKeyVaultDiscovery_getSecrets(t *testing.T) {
 		{
 			name: "Happy path - get two secrets",
 			fields: fields{azureDiscovery: NewMockAzureDiscovery(fake.NewSecretsServerTransport(&FakeSecretsServer),
-				WithResourceGroup(string(mockSecret1.Parent)))},
+				WithResourceGroup(string(mockSecret1.Parent))),
+				initNewClient: true},
 			args: args{kv: &armkeyvault.Vault{
 				ID:   util.Ref("KeyVaultID"),
 				Name: util.Ref("KeyVaultName"),
@@ -242,13 +258,24 @@ func Test_azureKeyVaultDiscovery_getSecrets(t *testing.T) {
 			},
 			wantErr: assert.NoError,
 		},
+		{
+			name:   "Error - secret client empty",
+			fields: fields{azureDiscovery: &azureDiscovery{}, initNewClient: false},
+			want:   nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.ErrorContains(t, err, "secrets client is empty")
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureKeyVaultDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			assert.NoError(t, d.initSecretsClient())
+			if tt.fields.initNewClient {
+				assert.NoError(t, d.initSecretsClient())
+			}
 			gotSecrets, err := d.getSecrets(tt.args.kv)
 			if !tt.wantErr(t, err, fmt.Sprintf("getSecrets(%v)", tt.args.kv)) {
 				return
