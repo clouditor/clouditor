@@ -41,11 +41,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
 )
 
-// TODO(lebogg): Do this for all storage and other resources we currently discover and support BYOK
+// keyUsage contains for each key an array of resources where it is being used. Currently, only Cosmos DB is supported
 var keyUsage = make(map[string][]string)
 
-// secretUsage contains for each secret (key) an array of resources where it is being used. Currently we only look at
-// web apps
+// secretUsage contains for each secret an array of resources where it is being used. Currently, only web app is supported
 var secretUsage = make(map[string][]string)
 
 type azureKeyVaultDiscovery struct {

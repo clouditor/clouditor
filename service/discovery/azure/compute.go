@@ -311,17 +311,15 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	resourceLogging := d.getResourceLoggingWebApp(webApp)
 
+	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
+	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
 	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), util.Deref(d.rg),
 		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		// Maybe returning error better here
 		log.Warnf("Could not get application settings: %v", err)
 	}
-	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	addSecretUsages(webApp.ID, settings)
-
-	// Use NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
-	//pager := d.clients.sitesClient.NewGetAppSettingsKeyVaultReferencesPager(util.Deref(d.rg), util.Deref(webApp.Name), &armappservice.WebAppsClientGetAppSettingsKeyVaultReferencesOptions{})
 
 	return &voc.WebApp{
 		Compute: &voc.Compute{
@@ -866,7 +864,6 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 	return
 }
 
-// TODO(lebogg): Test
 // addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
 func addSecretUsages(webAppID *string, settings armappservice.WebAppsClientListApplicationSettingsResponse) {
 	for _, v := range settings.Properties {
