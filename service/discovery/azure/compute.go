@@ -317,7 +317,8 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 		// Maybe returning error better here
 		log.Warnf("Could not get application settings: %v", err)
 	}
-	checkUsageOfSecrets(webApp.ID, settings)
+	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
+	addSecretUsages(webApp.ID, settings)
 
 	// Use NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
 	//pager := d.clients.sitesClient.NewGetAppSettingsKeyVaultReferencesPager(util.Deref(d.rg), util.Deref(webApp.Name), &armappservice.WebAppsClientGetAppSettingsKeyVaultReferencesOptions{})
@@ -866,7 +867,8 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 }
 
 // TODO(lebogg): Test
-func checkUsageOfSecrets(webAppID *string, settings armappservice.WebAppsClientListApplicationSettingsResponse) {
+// addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
+func addSecretUsages(webAppID *string, settings armappservice.WebAppsClientListApplicationSettingsResponse) {
 	for _, v := range settings.Properties {
 		if s := util.Deref(v); strings.Contains(s, "@Microsoft.KeyVault") {
 			sURI := getSecretURI(s)
@@ -884,11 +886,12 @@ func getSecretURI(s string) (secretURI string) {
 	var (
 		vaultName  string
 		secretName string
+		ok         bool
 	)
 
 	// If s contains "VaultName" it is Option 1
 	if strings.Contains(s, "VaultName") {
-		s, ok := strings.CutPrefix(s, "@Microsoft.KeyVault(VaultName=")
+		s, ok = strings.CutPrefix(s, "@Microsoft.KeyVault(VaultName=")
 		if !ok {
 			log.Error("Could not find prefix '@Microsoft.KeyVault(VaultName=' in secret:", s)
 			return ""
