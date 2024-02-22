@@ -397,7 +397,7 @@ func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secre
 					voc.GeoLocation{Region: util.Deref(s.Location)},
 					labels(s.Tags),
 					voc.ResourceID(util.Deref(kv.ID)),
-					voc.KeyType,
+					voc.SecretType,
 					s, kv),
 				Enabled:        util.Deref(s.Properties.Attributes.Enabled),
 				ActivationDate: convertTime(s.Properties.Attributes.NotBefore),
