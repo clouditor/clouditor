@@ -771,8 +771,6 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 	if err != nil {
 		return nil, fmt.Errorf("could not get object storage properties for the atRestEncryption: %w", err)
 	}
-	backupOFF := backupOf
-	_ = backupOFF
 	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
 		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
 	} else { // approach with Tagging

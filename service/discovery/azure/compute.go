@@ -870,8 +870,6 @@ func addSecretUsages(webAppID *string, settings armappservice.WebAppsClientListA
 		if s := util.Deref(v); strings.Contains(s, "@Microsoft.KeyVault") {
 			sURI := getSecretURI(s)
 			secretUsage[sURI] = append(secretUsage[sURI], util.Deref(webAppID))
-			sUsages := secretUsage
-			_ = sUsages
 		}
 	}
 }
