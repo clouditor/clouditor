@@ -42,6 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2/fake"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/stretchr/testify/assert"
 )
@@ -3178,6 +3179,53 @@ func Test_getSecretURI(t *testing.T) {
 	}
 }
 
+func Test_azureComputeDiscovery_getRedundancy(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		app *armappservice.Site
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wantR  *voc.Redundancy
+	}{
+		{
+			name: "Happy path - zone redundancy enabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer),
+					WithResourceGroup("someRG")),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/FarmWithZoneRedundancy")}}},
+			wantR: &voc.Redundancy{Zone: true},
+		},
+		{
+			name: "Web App without zone redundancy enabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/FarmWithNoRedundancy")}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			assert.NoError(t, d.initAppServiceFarmsClient())
+			assert.Equalf(t, tt.wantR, d.getRedundancy(tt.args.app), "getRedundancy(%v)", tt.args.app)
+		})
+	}
+}
+
 func Test_getAppServiceFarmName(t *testing.T) {
 	type args struct {
 		id *string
@@ -3189,7 +3237,7 @@ func Test_getAppServiceFarmName(t *testing.T) {
 	}{
 		{
 			name:         "Happy path",
-			args:         args{id: util.Ref("/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/appServicePlanName")},
+			args:         args{id: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/appServicePlanName")},
 			wantFarmName: "appServicePlanName",
 		},
 		{
