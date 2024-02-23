@@ -1578,7 +1578,6 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				// initialize backup vaults client
 				_ = az.initWebAppsClient()
 			}
-
 			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function, tt.args.config), "handleFunction(%v)", tt.args.function)
 		})
 	}
@@ -3181,8 +3180,7 @@ func Test_getSecretURI(t *testing.T) {
 
 func Test_azureComputeDiscovery_getRedundancy(t *testing.T) {
 	type fields struct {
-		azureDiscovery     *azureDiscovery
-		defenderProperties map[string]*defenderProperties
+		azureDiscovery *azureDiscovery
 	}
 	type args struct {
 		app *armappservice.Site

@@ -357,6 +357,10 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.Redundancy) {
 	r = &voc.Redundancy{}
 
+	if app.Properties == nil || app.Properties.ServerFarmID == nil {
+		log.Errorf("Could not look at properties or the Server Farm ID because one of them is empty")
+		return
+	}
 	farmName := getAppServiceFarmName(app.Properties.ServerFarmID)
 	farm, err := d.clients.appServiceFarmsClient.Get(context.TODO(), util.Deref(d.rg), farmName, &armappservice.PlansClientGetOptions{})
 	if err != nil {
