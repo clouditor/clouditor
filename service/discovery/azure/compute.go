@@ -220,18 +220,13 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
 	var (
-		runtimeLanguage     string
-		runtimeVersion      string
-		publicNetworkAccess = false
+		runtimeLanguage string
+		runtimeVersion  string
 	)
 
 	// If a mandatory field is empty, the whole function is empty
 	if function == nil {
 		return nil
-	}
-
-	if util.Deref(function.Properties.PublicNetworkAccess) == "Enabled" {
-		publicNetworkAccess = true
 	}
 
 	if *function.Kind == "functionapp,linux" { // Linux function
@@ -288,7 +283,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 		},
 		RuntimeLanguage: runtimeLanguage,
 		RuntimeVersion:  runtimeVersion,
-		PublicAccess:    publicNetworkAccess,
+		PublicAccess:    getPublicAccessOfAppService(function, config),
 		Redundancy:      d.getRedundancy(function),
 	}
 }
