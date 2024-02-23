@@ -1246,9 +1246,7 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 func getCosmosDBRedundancy(account *armcosmos.DatabaseAccountGetResults) (r *voc.Redundancy) {
 	r = &voc.Redundancy{}
 	for _, l := range account.Properties.Locations {
-		if util.Deref(l.IsZoneRedundant) {
-			r.Zone = true
-		}
+		r.Zone = util.Deref(l.IsZoneRedundant)
 	}
 	return
 }
