@@ -106,8 +106,9 @@ func TestService_StoreEvidence(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		wantRes *evidence.StoreEvidenceResponse
-		wantErr assert.ErrorAssertionFunc
+		wantRes assert.Want[*evidence.StoreEvidenceResponse]
+		want    assert.Want[*Service]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store req to the map",
@@ -125,8 +126,16 @@ func TestService_StoreEvidence(t *testing.T) {
 						}),
 					}},
 			},
-			wantErr: assert.NoError,
-			wantRes: &evidence.StoreEvidenceResponse{},
+			wantRes: func(t *testing.T, got *evidence.StoreEvidenceResponse) bool {
+				return assert.Empty[*evidence.StoreEvidenceResponse](t, got)
+			},
+			want: func(t *testing.T, s *Service) bool {
+				e := &evidence.Evidence{}
+				err := s.storage.Get(e)
+				assert.NoError(t, err)
+				return assert.Equal(t, testdata.MockEvidenceID1, e.Id)
+			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Store an evidence without toolId to the map",
@@ -144,10 +153,10 @@ func TestService_StoreEvidence(t *testing.T) {
 					},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantRes: assert.Nil[*evidence.StoreEvidenceResponse],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "evidence.tool_id: value length must be at least 1 characters")
 			},
-			wantRes: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -156,14 +165,7 @@ func TestService_StoreEvidence(t *testing.T) {
 			gotRes, err := s.StoreEvidence(tt.args.in0, tt.args.req)
 
 			tt.wantErr(t, err)
-			assert.Equal(t, tt.wantRes, gotRes)
-
-			if gotRes != nil {
-				e := &evidence.Evidence{}
-				err := s.storage.Get(e)
-				assert.NoError(t, err)
-				assert.Equal(t, tt.args.req.Evidence.Id, e.Id)
-			}
+			tt.wantRes(t, gotRes)
 		})
 	}
 }
