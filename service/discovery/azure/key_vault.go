@@ -90,7 +90,6 @@ func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) 
 	return
 }
 
-// TODO(lebogg): Finished here last time. Not tested, yet
 // discoverKeyVaults discovers all key vaults as well as all belonging keys
 func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// initialize key vault client
@@ -176,6 +175,7 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			return nil
 		})
 	if err != nil {
+		log.Errorf("Could not run list pager in while discovering key vaults: %v", err)
 		list = nil
 		return
 	}
@@ -258,6 +258,8 @@ func getKeyIDs(keys []*voc.Key) []voc.ResourceID {
 	return keyIDs
 }
 
+// getSecretIDs returns the ID values corresponding to the given secrets. If slice of secrets is empty, return empty
+// slice of resourceIDs (not nil slice)
 func getSecretIDs(secrets []*voc.Secret) []voc.ResourceID {
 	secretIDs := []voc.ResourceID{}
 	for _, s := range secrets {
@@ -265,6 +267,9 @@ func getSecretIDs(secrets []*voc.Secret) []voc.ResourceID {
 	}
 	return secretIDs
 }
+
+// getCertificateIDs returns the ID values corresponding to the given certificates. If slice of certificates is empty,
+// return empty slice of resourceIDs (not nil slice)
 func getCertificateIDs(certs []*voc.Certificate) []voc.ResourceID {
 	certificateIDs := []voc.ResourceID{}
 	for _, c := range certs {
@@ -397,7 +402,7 @@ func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secre
 					voc.GeoLocation{Region: util.Deref(s.Location)},
 					labels(s.Tags),
 					voc.ResourceID(util.Deref(kv.ID)),
-					voc.KeyType,
+					voc.SecretType,
 					s, kv),
 				Enabled:        util.Deref(s.Properties.Attributes.Enabled),
 				ActivationDate: convertTime(s.Properties.Attributes.NotBefore),
@@ -426,13 +431,6 @@ func (d *azureKeyVaultDiscovery) getCertificates(kv *armkeyvault.Vault) (certs [
 			return certs, nil
 		}
 		for _, c := range page.Value {
-			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
-			//res, err := d.clients.secretsClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
-			//	util.Deref(s.Name), &armkeyvault.SecretsClientGetOptions{})
-			//if err != nil {
-			//	return nil, fmt.Errorf("could not get key: %v", err)
-			//}
-			//s = util.Ref(res.Secret) // maybe not the most beautiful thing to re-use var `k`
 			cert := &voc.Certificate{
 				Resource: discovery.NewResource(d,
 					voc.ResourceID(util.Deref(c.ID)),
