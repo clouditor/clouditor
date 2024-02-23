@@ -3250,3 +3250,114 @@ func Test_getAppServiceFarmName(t *testing.T) {
 		})
 	}
 }
+
+func Test_getPublicAccessOfAppService_and_containsDenyAllRule(t *testing.T) {
+	type args struct {
+		s      *armappservice.Site
+		config armappservice.WebAppsClientGetConfigurationResponse
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Happy path - Disabled",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("Disabled")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{},
+			},
+			want: false,
+		},
+		{
+			name: "Happy path - Enabled and no rules",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("Enabled")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{
+					SiteConfigResource: armappservice.SiteConfigResource{
+						Properties: &armappservice.SiteConfig{
+							IPSecurityRestrictions: []*armappservice.IPSecurityRestriction{},
+						}}},
+			},
+			want: true,
+		},
+		{
+			name: "Happy path - Enabled without any rule matching a deny all rule",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("Enabled")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{
+					SiteConfigResource: armappservice.SiteConfigResource{
+						Properties: &armappservice.SiteConfig{
+							IPSecurityRestrictions: []*armappservice.IPSecurityRestriction{
+								{
+									Action:    util.Ref("allow"),
+									IPAddress: util.Ref("142.351.0.0/16"),
+								},
+								{
+									Action:    util.Ref("deny"),
+									IPAddress: util.Ref("10.3.0.0/16"),
+								},
+							},
+						}}},
+			},
+			want: true,
+		},
+		{
+			name: "Happy path - Disable because one rule matching deny all rule",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("Enabled")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{
+					SiteConfigResource: armappservice.SiteConfigResource{
+						Properties: &armappservice.SiteConfig{
+							IPSecurityRestrictions: []*armappservice.IPSecurityRestriction{
+								{
+									Action:    util.Ref("allow"),
+									IPAddress: util.Ref("142.351.0.0/16"),
+								},
+								{
+									Action:    util.Ref("deny"),
+									IPAddress: util.Ref("any"),
+								},
+							},
+						}}},
+			},
+			want: false,
+		},
+		{
+			name: "Enabled without valid value + config is nil",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("SomeWeirdValue")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{},
+			},
+			want: true,
+		},
+		{
+			name: "Enabled without valid value + config is non-nil",
+			args: args{
+				s: &armappservice.Site{
+					Properties: &armappservice.SiteProperties{PublicNetworkAccess: util.Ref("SomeWeirdValue")},
+				},
+				config: armappservice.WebAppsClientGetConfigurationResponse{
+					SiteConfigResource: armappservice.SiteConfigResource{
+						Properties: &armappservice.SiteConfig{IPSecurityRestrictions: []*armappservice.IPSecurityRestriction{}},
+					}},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getPublicAccessOfAppService(tt.args.s, tt.args.config), "getPublicAccessOfAppService(%v, %v)", tt.args.s, tt.args.config)
+		})
+	}
+}
