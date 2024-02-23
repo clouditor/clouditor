@@ -39,34 +39,35 @@ func TestGetJSONFilenames(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []string
-		wantErr bool
+		want    assert.Want[[]string]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Empty input folder",
 			args: args{
 				folder: "",
 			},
-			want:    nil,
-			wantErr: true,
+			want: assert.Nil[[]string],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "open : no such file or directory")
+			},
 		},
 		{
 			name: "Happy path",
 			args: args{
 				folder: "../testdata/catalogs",
 			},
-			want:    []string{"../testdata/catalogs/test_catalog.json"},
-			wantErr: false,
+			want: func(t *testing.T, got []string) bool {
+				return assert.Equal[[]string](t, []string{"../testdata/catalogs/test_catalog.json"}, got)
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GetJSONFilenames(tt.args.folder)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetJSONFilenames() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.Equal(t, tt.want, got)
+			tt.wantErr(t, err)
+			tt.want(t, got)
 		})
 	}
 }
@@ -79,8 +80,8 @@ func TestExpandPath(t *testing.T) {
 		name            string
 		userHomeDirFunc func() (string, error)
 		args            args
-		wantOut         string
-		wantErr         bool
+		want            string
+		wantErr         assert.WantErr
 	}{
 		{
 			name: "fail",
@@ -90,7 +91,10 @@ func TestExpandPath(t *testing.T) {
 			args: args{
 				path: "~",
 			},
-			wantErr: true,
+			want: "",
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not find retrieve current user: EOF")
+			},
 		},
 		{
 			name: "happy path with home",
@@ -100,7 +104,9 @@ func TestExpandPath(t *testing.T) {
 			args: args{
 				path: "~/test",
 			},
-			wantOut: "/home/test/test",
+			want: "/home/test/test",
+
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "happy path relative",
@@ -110,7 +116,8 @@ func TestExpandPath(t *testing.T) {
 			args: args{
 				path: "test",
 			},
-			wantOut: "test",
+			wantErr: assert.Nil[error],
+			want:    "test",
 		},
 	}
 	for _, tt := range tests {
@@ -121,14 +128,10 @@ func TestExpandPath(t *testing.T) {
 				userHomeDirFunc = old
 			}()
 
-			gotOut, err := ExpandPath(tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ExpandPath() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotOut != tt.wantOut {
-				t.Errorf("ExpandPath() = %v, want %v", gotOut, tt.wantOut)
-			}
+			got, err := ExpandPath(tt.args.path)
+
+			assert.Equal(t, tt.want, got)
+			tt.wantErr(t, err)
 		})
 	}
 }

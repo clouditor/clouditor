@@ -1162,7 +1162,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 		name    string
 		fields  fields
 		want    assert.Want[[]ontology.IsResource]
-		wantErr assert.WantErr[error]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Authorize error: no credentials configured",
