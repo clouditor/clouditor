@@ -29,6 +29,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -519,7 +520,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
@@ -528,7 +529,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -565,7 +566,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
@@ -574,7 +575,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -610,7 +611,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
@@ -619,7 +620,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -642,7 +643,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
@@ -651,7 +652,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -674,15 +675,15 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
 						Storage: []voc.ResourceID{
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
 						},
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account1",
 									Type:         voc.ObjectStorageServiceType,
@@ -691,7 +692,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									GeoLocation: voc.GeoLocation{
 										Region: "eastus",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\",\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}]}",
 								},
 							},
@@ -719,7 +720,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container3",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container3",
 							Type:         voc.ObjectStorageType,
@@ -728,7 +729,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3\",\"name\":\"container3\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
@@ -760,7 +761,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container4",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container4",
 							Type:         voc.ObjectStorageType,
@@ -769,7 +770,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4\",\"name\":\"container4\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.CustomerKeyEncryption{
@@ -801,13 +802,13 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
 						Storage: []voc.ResourceID{
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container3",
-							"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2/blobServices/default/containers/container4",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container3",
+							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container4",
 						},
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2",
 									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "account2",
 									Type:         voc.ObjectStorageServiceType,
@@ -816,7 +817,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									GeoLocation: voc.GeoLocation{
 										Region: "eastus",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2\",\"location\":\"eastus\",\"name\":\"account2\",\"properties\":{\"allowBlobPublicAccess\":false,\"creationTime\":\"2017-05-24T13:28:53.4540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Keyvault\",\"keyvaultproperties\":{\"keyvaulturi\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"services\":{\"blob\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"},\"file\":{\"enabled\":true,\"keyType\":\"Account\",\"lastEnabledTime\":\"2019-12-11T20:49:31.703614Z\"}}},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net/\",\"file\":\"https://account1.file.core.windows.net/\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}]}",
 								},
 							},
@@ -845,7 +846,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/account1-account1-22222222-2222-2222-2222-222222222222",
 							Name:         "account1-account1-22222222-2222-2222-2222-222222222222",
 							ServiceID:    testdata.MockCloudServiceID1,
 							CreationTime: 0,
@@ -854,7 +855,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								Region: "westeurope",
 							},
 							//Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1"),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 							Raw:    "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"resourceID\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"},\"policyInfo\":{\"policyId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupPolicies/backupPolicyContainer\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 						},
 					},
@@ -864,7 +865,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "SQLServer1",
 									CreationTime: 0,
@@ -873,7 +874,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 										Region: "eastus",
 									},
 									Labels: make(map[string]string),
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"publicNetworkAccess\":\"enabled\"}}]}",
 								},
 							},
@@ -887,7 +888,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				&voc.DatabaseStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1/databases/sqldatabase1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "SqlDatabase1",
 							CreationTime: 0,
@@ -897,7 +898,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 							},
 							Labels: make(map[string]string),
 							//Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1"),
 							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -912,7 +913,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb1",
 									Name:         "CosmosDB1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -924,7 +925,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 								},
 							},
@@ -936,7 +937,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb2",
 									Name:         "CosmosDB2",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -948,7 +949,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 								},
 							},
@@ -1303,7 +1304,7 @@ func Test_handleFileStorage(t *testing.T) {
 			want: &voc.FileStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:           voc.ResourceID(fileShareID),
+						ID:           voc.ResourceID(strings.ToLower(fileShareID)),
 						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         fileShareName,
 						CreationTime: util.SafeTimestamp(&creationTime),
@@ -1312,7 +1313,7 @@ func Test_handleFileStorage(t *testing.T) {
 						},
 						Labels: map[string]string{},
 						Type:   voc.FileStorageType,
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1441,7 +1442,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:           voc.ResourceID(accountID),
+								ID:           voc.ResourceID(strings.ToLower(accountID)),
 								ServiceID:    testdata.MockCloudServiceID1,
 								Name:         accountName,
 								CreationTime: util.SafeTimestamp(&creationTime),
@@ -1450,7 +1451,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 									Region: accountRegion,
 								},
 								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 								Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true},\"sku\":{\"name\":\"Standard_LRS\"}}]}",
 							},
 						},
@@ -1583,7 +1584,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			want: &voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:           voc.ResourceID(containerID),
+						ID:           voc.ResourceID(strings.ToLower(containerID)),
 						ServiceID:    testdata.MockCloudServiceID1,
 						Name:         containerName,
 						CreationTime: util.SafeTimestamp(&creationTime),
@@ -1592,7 +1593,7 @@ func Test_handleObjectStorage(t *testing.T) {
 						},
 						Labels: map[string]string{},
 						Type:   voc.ObjectStorageType,
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
 					},
 					AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1705,7 +1706,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare1",
 							Type:         voc.FileStorageType,
@@ -1714,7 +1715,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1737,7 +1738,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 				&voc.FileStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "fileshare2",
 							Type:         voc.FileStorageType,
@@ -1746,7 +1747,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1852,7 +1853,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container1",
 							Type:         voc.ObjectStorageType,
@@ -1861,7 +1862,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"primaryEndpoints\":{\"blob\":\"blob\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1893,7 +1894,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 				&voc.ObjectStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
 							ServiceID:    testdata.MockCloudServiceID1,
 							Name:         "container2",
 							Type:         voc.ObjectStorageType,
@@ -1902,7 +1903,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							GeoLocation: voc.GeoLocation{
 								Region: "eastus",
 							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
 							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"primaryEndpoints\":{\"blob\":\"blob\"}},\"sku\":{\"name\":\"Premium_LRS\"}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
 						},
 						AtRestEncryption: &voc.ManagedKeyEncryption{
@@ -1989,7 +1990,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									Name:         "SQLServer1",
 									CreationTime: 0,
@@ -1998,7 +1999,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 										Region: "eastus",
 									},
 									Labels: make(map[string]string),
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"publicNetworkAccess\":\"Disabled\"}}]}",
 								},
 							},
@@ -2013,7 +2014,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 				&voc.DatabaseStorage{
 					Storage: &voc.Storage{
 						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1/databases/sqldatabase1",
 							Name:         "SqlDatabase1",
 							ServiceID:    testdata.MockCloudServiceID1,
 							CreationTime: 0,
@@ -2022,7 +2023,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 								Region: "eastus",
 							},
 							Labels: make(map[string]string),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1"),
 							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
 						},
 						AtRestEncryption: &voc.AtRestEncryption{
@@ -2169,7 +2170,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb1",
 									Name:         "CosmosDB1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -2181,7 +2182,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 								},
 							},
@@ -2193,7 +2194,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb2",
 									Name:         "CosmosDB2",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&creationTime),
@@ -2205,7 +2206,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 								},
 							},
@@ -2273,7 +2274,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb1",
 									Name:         "CosmosDB1",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -2285,7 +2286,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1\",\"location\":\"eastus\",\"name\":\"CosmosDB1\",\"properties\":{},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 								},
 							},
@@ -2324,7 +2325,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2",
+									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/cosmosdb2",
 									Name:         "CosmosDB2",
 									ServiceID:    testdata.MockCloudServiceID1,
 									CreationTime: util.SafeTimestamp(&time.Time{}),
@@ -2336,7 +2337,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 										"testKey1": "testTag1",
 										"testKey2": "testTag2",
 									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB2\",\"location\":\"eastus\",\"name\":\"CosmosDB2\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 								},
 							},

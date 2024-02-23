@@ -262,7 +262,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(function.ID)),
+				voc.ResourceID(resourceID(function.ID)),
 				util.Deref(function.Name),
 				// No creation time available
 				nil,
@@ -301,7 +301,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	// Get virtual network subnet ID
 	if webApp.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
+		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
 	// Check if resource is public available
@@ -324,7 +324,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.ID)),
+				voc.ResourceID(resourceID(webApp.ID)),
 				util.Deref(webApp.Name),
 				// No creation time available
 				nil, // Only the last modified time is available
@@ -486,7 +486,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(vm.ID)),
+				voc.ResourceID(resourceID(vm.ID)),
 				util.Deref(vm.Name),
 				vm.Properties.TimeCreated,
 				voc.GeoLocation{
@@ -538,18 +538,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(resourceID(networkInterfaces.ID)))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(resourceID(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
 		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(resourceID(blockstorage.ManagedDisk.ID)))
 		}
 	}
 
@@ -680,7 +680,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(disk.ID)),
+				voc.ResourceID(resourceID(disk.ID)),
 				util.Deref(disk.Name),
 				disk.Properties.TimeCreated,
 				voc.GeoLocation{
