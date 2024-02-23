@@ -842,7 +842,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			wantResource: &voc.ObjectStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/account1-account1-22222222-2222-2222-2222-222222222222",
 						ServiceID: testdata.MockCloudServiceID1,
 						Name:      "account1-account1-22222222-2222-2222-2222-222222222222",
 						GeoLocation: voc.GeoLocation{
@@ -851,7 +851,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						CreationTime: 0,
 						Type:         voc.ObjectStorageType,
 						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
@@ -882,7 +882,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 			wantResource: &voc.BlockStorage{
 				Storage: &voc.Storage{
 					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
 						ServiceID: testdata.MockCloudServiceID1,
 						Name:      "disk1-disk1-22222222-2222-2222-2222-222222222222",
 						GeoLocation: voc.GeoLocation{
@@ -891,7 +891,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 						CreationTime: 0,
 						Type:         voc.BlockStorageType,
 						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 					},
 				},
@@ -990,7 +990,7 @@ func Test_resourceGroupID(t *testing.T) {
 			args: args{
 				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
 		},
 	}
 	for _, tt := range tests {

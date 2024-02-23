@@ -1,5 +1,3 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
 // Copyright 2023 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,17 +25,17 @@
 
 package voc
 
-var ObjectStorageType = []string{"ObjectStorage", "Storage", "Resource"}
+var SecretType = []string{"Secret"}
 
-type ObjectStorage struct {
-	*Storage
-	IsBackup              bool `json:"isBackup"`
-	ContainerPublicAccess bool `json:"containerPublicAccess"`
+type Secret struct {
+	*Resource
+	*Confidentiality
+	Enabled        bool  `json:"enabled"`
+	ActivationDate int64 `json:"activationDate"`
+	ExpirationDate int64 `json:"expirationDate"`
+	NumberOfUsages int   `json:"numberOfUsages"`
 }
 
-var ObjectType = []string{"Object", "Resource"}
-
-type Object struct {
-	*Resource
-	IsBackup bool `json:"isBackup"`
+func (*Secret) Type() string {
+	return "Secret"
 }

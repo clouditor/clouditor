@@ -1,4 +1,4 @@
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,19 +29,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/monitor/azquery"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
 )
 
-// TODO(lebogg): Do this for all storage and other resources we currently discover and support BYOK
+// keyUsage contains for each key an array of resources where it is being used. Currently, only Cosmos DB is supported
 var keyUsage = make(map[string][]string)
+
+// secretUsage contains for each secret an array of resources where it is being used. Currently, only web app is supported
+var secretUsage = make(map[string][]string)
 
 type azureKeyVaultDiscovery struct {
 	*azureDiscovery
@@ -52,12 +56,9 @@ type azureKeyVaultDiscovery struct {
 func NewKeyVaultDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureKeyVaultDiscovery{
 		azureDiscovery: &azureDiscovery{
-			clientOptions: arm.ClientOptions{},
-			// Todo(all): What do we need this for?
 			discovererComponent: KeyVaultComponent,
-			// Todo(lebogg): In service/discovery/discovery.go:257 csID is set anyway. Maybe for testing?
-			csID:      discovery.DefaultCloudServiceID,
-			backupMap: make(map[string]*backup),
+			csID:                discovery.DefaultCloudServiceID,
+			backupMap:           make(map[string]*backup),
 		},
 	}
 	for _, opt := range opts {
@@ -73,21 +74,22 @@ func (*azureKeyVaultDiscovery) Name() string {
 func (d *azureKeyVaultDiscovery) List() (list []voc.IsCloudResource, err error) {
 	// make sure, we are authorized
 	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+		err = fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
+		return
 	}
 
 	// Discover Key Vaults
 	log.Info("Discover Azure Key Vaults")
 	keyVaults, err := d.discoverKeyVaults()
 	if err != nil {
-		return nil, fmt.Errorf("could not discover Key Vaults: %w", err)
+		err = fmt.Errorf("could not discover Key Vaults: %w", err)
+		return
 	}
 	list = append(list, keyVaults...)
 
 	return
 }
 
-// TODO(lebogg): Finished here last time. Not tested, yet
 // discoverKeyVaults discovers all key vaults as well as all belonging keys
 func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource, err error) {
 	// initialize key vault client
@@ -97,6 +99,10 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 	// initialize keys client
 	if err = d.initKeysClient(); err != nil {
 		return nil, fmt.Errorf("could not initialize keys client: %v", err)
+	}
+	// initialize secrets client
+	if err = d.initSecretsClient(); err != nil {
+		return nil, fmt.Errorf("could not initialize secrets client: %v", err)
 	}
 
 	err = listPager(d.azureDiscovery,
@@ -120,29 +126,56 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			return res.Value
 		},
 		func(kv *armkeyvault.Vault) error {
+			// Handle key vault
 			keyVault, err := d.handleKeyVault(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle key vault: %w", err)
 			}
+
+			// Handle Keys and add IDs to the key vault
 			keys, err := d.getKeys(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle keys: %w", err)
 			}
-			// Add key IDs to keyvault
-			keyIDs := getIDs(keys)
+			keyIDs := getKeyIDs(keys)
 			keyVault.Keys = keyIDs
 
+			// Handle secrets and add IDs to the key vault
+			secrets, err := d.getSecrets(kv)
+			if err != nil {
+				return fmt.Errorf("could not handle secrets: %w", err)
+			}
+			secretIDs := getSecretIDs(secrets)
+			keyVault.Secrets = secretIDs
+
+			// Handle certificates
+			certificates, err := d.getCertificates(kv)
+			if err != nil {
+				return fmt.Errorf("could not handle secrets: %w", err)
+			}
+			certificateIDs := getCertificateIDs(certificates)
+			keyVault.Certificates = certificateIDs
+
+			// Add all resources (key vaults, keys and secrets) to the list
 			log.Infof("Adding key vault '%s'", keyVault.GetID())
 			list = append(list, keyVault)
-
 			log.Infof("Adding keys '%s'", keyIDs)
 			for _, k := range keys {
 				list = append(list, k)
+			}
+			log.Infof("Adding secrets '%s'", secretIDs)
+			for _, s := range secrets {
+				list = append(list, s)
+			}
+			log.Infof("Adding certificates '%s'", secretIDs)
+			for _, c := range certificates {
+				list = append(list, c)
 			}
 
 			return nil
 		})
 	if err != nil {
+		log.Errorf("Could not run list pager in while discovering key vaults: %v", err)
 		list = nil
 		return
 	}
@@ -156,6 +189,15 @@ func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
 
 func (d *azureKeyVaultDiscovery) initKeysClient() (err error) {
 	d.clients.keysClient, err = initClient(d.clients.keysClient, d.azureDiscovery, armkeyvault.NewKeysClient)
+	return
+}
+func (d *azureKeyVaultDiscovery) initSecretsClient() (err error) {
+	d.clients.secretsClient, err = initClient(d.clients.secretsClient, d.azureDiscovery, armkeyvault.NewSecretsClient)
+	return
+}
+
+func (d *azureKeyVaultDiscovery) initCertificatesClient(kv *armkeyvault.Vault) (err error) {
+	d.clients.certificationsClient, err = azcertificates.NewClient(util.Deref(kv.Properties.VaultURI), d.cred, nil)
 	return
 }
 
@@ -206,14 +248,34 @@ func getPublicAccess(kv *armkeyvault.Vault) bool {
 	return false
 }
 
-// getIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
+// getKeyIDs returns the ID values corresponding to the given keys. If slice of keys is empty, return empty slice of
 // resourceIDs (not nil slice)
-func getIDs(keys []*voc.Key) []voc.ResourceID {
+func getKeyIDs(keys []*voc.Key) []voc.ResourceID {
 	keyIDs := []voc.ResourceID{}
 	for _, k := range keys {
 		keyIDs = append(keyIDs, k.GetID())
 	}
 	return keyIDs
+}
+
+// getSecretIDs returns the ID values corresponding to the given secrets. If slice of secrets is empty, return empty
+// slice of resourceIDs (not nil slice)
+func getSecretIDs(secrets []*voc.Secret) []voc.ResourceID {
+	secretIDs := []voc.ResourceID{}
+	for _, s := range secrets {
+		secretIDs = append(secretIDs, s.GetID())
+	}
+	return secretIDs
+}
+
+// getCertificateIDs returns the ID values corresponding to the given certificates. If slice of certificates is empty,
+// return empty slice of resourceIDs (not nil slice)
+func getCertificateIDs(certs []*voc.Certificate) []voc.ResourceID {
+	certificateIDs := []voc.ResourceID{}
+	for _, c := range certs {
+		certificateIDs = append(certificateIDs, c.GetID())
+	}
+	return certificateIDs
 }
 
 // isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
@@ -280,7 +342,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 		}
 		for _, k := range page.Value {
 			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
-			res, err := d.clients.keysClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
+			res, err := c.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
 				util.Deref(k.Name), &armkeyvault.KeysClientGetOptions{})
 			if err != nil {
 				return nil, fmt.Errorf("could not get key: %v", err)
@@ -295,7 +357,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 					labels(k.Tags),
 					voc.ResourceID(util.Deref(kv.ID)),
 					voc.KeyType,
-					kv),
+					k, kv),
 				Enabled:        util.Deref(k.Properties.Attributes.Enabled),
 				ActivationDate: util.Deref(k.Properties.Attributes.NotBefore),
 				ExpirationDate: util.Deref(k.Properties.Attributes.Expires),
@@ -307,6 +369,108 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 		}
 	}
 	return keys, nil
+}
+
+func (d *azureKeyVaultDiscovery) getSecrets(kv *armkeyvault.Vault) ([]*voc.Secret, error) {
+	var (
+		secrets []*voc.Secret
+		c       *armkeyvault.SecretsClient
+	)
+	c = d.clients.secretsClient
+	if c == nil {
+		return nil, errors.New("secrets client is empty")
+	}
+	pager := c.NewListPager(util.Deref(d.azureDiscovery.rg), util.Deref(kv.Name), &armkeyvault.SecretsClientListOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("could not page next page (paging error): %v", err)
+		}
+		for _, s := range page.Value {
+			// We have to request each single key because this lazy NewListPager doesn't fill out all key information
+			res, err := d.clients.secretsClient.Get(context.Background(), util.Deref(d.rg), util.Deref(kv.Name),
+				util.Deref(s.Name), &armkeyvault.SecretsClientGetOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("could not get key: %v", err)
+			}
+			s = util.Ref(res.Secret) // maybe not the most beautiful thing to re-use var `k`
+			secret := &voc.Secret{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(s.ID)),
+					util.Deref(s.Name),
+					s.Properties.Attributes.Created,
+					voc.GeoLocation{Region: util.Deref(s.Location)},
+					labels(s.Tags),
+					voc.ResourceID(util.Deref(kv.ID)),
+					voc.SecretType,
+					s, kv),
+				Enabled:        util.Deref(s.Properties.Attributes.Enabled),
+				ActivationDate: convertTime(s.Properties.Attributes.NotBefore),
+				ExpirationDate: convertTime(s.Properties.Attributes.Expires),
+				NumberOfUsages: len(secretUsage[util.Deref(s.Properties.SecretURI)]), // TODO(lebogg): Test this!
+			}
+			secrets = append(secrets, secret)
+		}
+	}
+	return secrets, nil
+}
+
+func (d *azureKeyVaultDiscovery) getCertificates(kv *armkeyvault.Vault) (certs []*voc.Certificate, err error) {
+	certs = []*voc.Certificate{}
+	// initialize certificates client
+	if err = d.initCertificatesClient(kv); err != nil {
+		err = fmt.Errorf("could not initialize certificates client: %v", err)
+		return
+	}
+
+	pager := d.clients.certificationsClient.NewListCertificatePropertiesPager(&azcertificates.ListCertificatePropertiesOptions{})
+	for pager.More() {
+		page, err := pager.NextPage(context.Background())
+		if err != nil {
+			log.Errorf("Could not page next page (paging error), probably you do not have the right permissions: %v", err)
+			return certs, nil
+		}
+		for _, c := range page.Value {
+			cert := &voc.Certificate{
+				Resource: discovery.NewResource(d,
+					voc.ResourceID(util.Deref(c.ID)),
+					getCertificateName(c.ID),
+					c.Attributes.Created,
+					voc.GeoLocation{Region: util.Deref(kv.Location)},
+					labels(c.Tags),
+					voc.ResourceID(util.Deref(kv.ID)),
+					voc.CertificateType,
+					c, kv),
+				Enabled:        util.Deref(c.Attributes.Enabled),
+				ActivationDate: convertTime(c.Attributes.NotBefore),
+				ExpirationDate: convertTime(c.Attributes.Expires),
+			}
+			certs = append(certs, cert)
+		}
+	}
+	return
+
+}
+
+func getCertificateName(id *azcertificates.ID) (certName string) {
+	certID := string(util.Deref(id))
+	splits := strings.Split(certID, "/certificates/")
+	if len(splits) < 2 {
+		log.Errorf("Could not split certificate with ID '%s'. Probably it is wrongly formatted. Using ID instead.", certID)
+		certName = certID
+		return
+	}
+	certName = splits[len(splits)-1]
+	return
+}
+
+// convertTime converts a time pointer (given via Azure SDK) to a Unix time - handling nil pointers appropriately
+func convertTime(t *time.Time) int64 {
+	if t == nil {
+		return -1
+	} else {
+		return util.Deref(t).Unix()
+	}
 }
 
 // TODO(lebogg): How to define the range/scope of key types in the ontology?
