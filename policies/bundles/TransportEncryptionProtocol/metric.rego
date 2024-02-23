@@ -8,7 +8,7 @@ default compliant = false
 default applicable = false
 
 applicable {
-	enc
+	enc != null
 }
 
 compliant {
