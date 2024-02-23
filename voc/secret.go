@@ -25,13 +25,17 @@
 
 package voc
 
-var KeyVaultType = []string{"KeyVault", "Resource"}
+var SecretType = []string{"Secret"}
 
-type KeyVault struct {
+type Secret struct {
 	*Resource
-	IsActive     bool         `json:"isActive"`
-	Keys         []ResourceID `json:"keys"`
-	Secrets      []ResourceID `json:"secrets"`
-	Certificates []ResourceID `json:"certificates"`
-	PublicAccess bool         `json:"publicAccess"`
+	*Confidentiality
+	Enabled        bool  `json:"enabled"`
+	ActivationDate int64 `json:"activationDate"`
+	ExpirationDate int64 `json:"expirationDate"`
+	NumberOfUsages int   `json:"numberOfUsages"`
+}
+
+func (*Secret) Type() string {
+	return "Secret"
 }
