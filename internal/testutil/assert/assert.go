@@ -33,8 +33,8 @@ type Want[T any] func(t *testing.T, got T) bool
 var _ Want[any] = AnyValue[any]
 var _ Want[any] = Nil[any]
 
-// WantErr is a function type that can hold asserts in order to check the error of "gotErr".
-type WantErr func(t *testing.T, gotErr error) bool
+// WantErr is a function type that can hold asserts in order to check the error of "err".
+type WantErr func(t *testing.T, err error) bool
 
 var _ WantErr = AnyValue[error]
 var _ WantErr = Nil[error]

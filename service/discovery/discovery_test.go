@@ -231,7 +231,7 @@ func TestService_ListResources(t *testing.T) {
 		fields                   fields
 		args                     args
 		numberOfQueriedResources int
-		wantErr                  assert.ErrorAssertionFunc
+		wantErr                  assert.WantErr
 	}{
 		{
 			name: "Filter type, allow all",
@@ -246,7 +246,7 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 1,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, allow",
@@ -260,7 +260,7 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, not allowed",
@@ -274,8 +274,8 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 0,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
 			},
 		},
 		{
@@ -286,7 +286,7 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "No filtering, allow different cloud service, empty result",
@@ -296,7 +296,7 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 0,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 	}
 
@@ -429,7 +429,7 @@ func TestService_Start(t *testing.T) {
 		fields  fields
 		args    args
 		want    assert.Want[*discovery.StartDiscoveryResponse]
-		wantErr assert.ErrorAssertionFunc
+		wantErr assert.WantErr
 	}{
 		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
 		{
@@ -442,8 +442,8 @@ func TestService_Start(t *testing.T) {
 				req: nil,
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
@@ -458,8 +458,8 @@ func TestService_Start(t *testing.T) {
 				req: &discovery.StartDiscoveryRequest{},
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "provider falseProvider not known")
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "provider falseProvider not known")
 			},
 		},
 		{
@@ -474,8 +474,8 @@ func TestService_Start(t *testing.T) {
 				req: &discovery.StartDiscoveryRequest{},
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "access denied")
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "access denied")
 			},
 		},
 		{
@@ -508,8 +508,8 @@ func TestService_Start(t *testing.T) {
 				req: &discovery.StartDiscoveryRequest{},
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not schedule job for ", ".Every() interval must be greater than 0")
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not schedule job for ", ".Every() interval must be greater than 0")
 			},
 		},
 		{
@@ -533,8 +533,8 @@ func TestService_Start(t *testing.T) {
 				req: &discovery.StartDiscoveryRequest{},
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not authenticate to Kubernetes")
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not authenticate to Kubernetes")
 			},
 		},
 		{
@@ -569,7 +569,7 @@ func TestService_Start(t *testing.T) {
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure authorizer from ENV",
@@ -603,7 +603,7 @@ func TestService_Start(t *testing.T) {
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure with resource group",
@@ -639,7 +639,7 @@ func TestService_Start(t *testing.T) {
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
 				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
