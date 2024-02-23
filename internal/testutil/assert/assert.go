@@ -34,10 +34,10 @@ var _ Want[any] = AnyValue[any]
 var _ Want[any] = Nil[any]
 
 // WantErr is a function type that can hold asserts in order to check the error of "gotErr".
-type WantErr[T error] func(t *testing.T, gotErr T) bool
+type WantErr func(t *testing.T, gotErr error) bool
 
-var _ WantErr[error] = AnyValue[error]
-var _ WantErr[error] = Nil[error]
+var _ WantErr = AnyValue[error]
+var _ WantErr = Nil[error]
 
 // CompareAllUnexported is a [cmp.Option] that allows the introspection of all un-exported fields in order to use them in
 // [Equal] or [NotEqual].
