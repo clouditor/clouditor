@@ -1162,7 +1162,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 		name    string
 		fields  fields
 		want    assert.Want[[]ontology.IsResource]
-		wantErr assert.ErrorAssertionFunc
+		wantErr assert.WantErr[error]
 	}{
 		{
 			name: "Authorize error: no credentials configured",
@@ -1170,10 +1170,9 @@ func Test_azureDiscovery_List(t *testing.T) {
 				&azureDiscovery{},
 			},
 			want: assert.Empty[[]ontology.IsResource],
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, ErrNoCredentialsConfigured.Error())
-
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			wantErr: func(t *testing.T, gotErr error) bool {
+				assert.ErrorContains(t, gotErr, ErrNoCredentialsConfigured.Error())
+				return assert.ErrorContains(t, gotErr, ErrCouldNotAuthenticate.Error())
 			},
 		},
 		{
@@ -1184,7 +1183,7 @@ func Test_azureDiscovery_List(t *testing.T) {
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				return assert.True(t, len(got) > 31)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
