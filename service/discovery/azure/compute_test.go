@@ -3177,3 +3177,30 @@ func Test_getSecretURI(t *testing.T) {
 		})
 	}
 }
+
+func Test_getAppServiceFarmName(t *testing.T) {
+	type args struct {
+		id *string
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantFarmName string
+	}{
+		{
+			name:         "Happy path",
+			args:         args{id: util.Ref("/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/appServicePlanName")},
+			wantFarmName: "appServicePlanName",
+		},
+		{
+			name:         "Wrongly formatted id - return empty string",
+			args:         args{id: util.Ref("/SomeNonsense/prefix/appServicePlanName")},
+			wantFarmName: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantFarmName, getAppServiceFarmName(tt.args.id), "getAppServiceFarmName(%v)", tt.args.id)
+		})
+	}
+}
