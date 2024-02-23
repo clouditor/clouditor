@@ -930,6 +930,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseService{
@@ -954,6 +955,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2187,6 +2189,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseService{
@@ -2211,6 +2214,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2291,6 +2295,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2342,6 +2347,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2361,6 +2367,59 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_getCosmosDBRedundancy(t *testing.T) {
+	type args struct {
+		account *armcosmos.DatabaseAccountGetResults
+	}
+	tests := []struct {
+		name  string
+		args  args
+		wantR *voc.Redundancy
+	}{
+		{
+			name: "Happy path second location is zone redundant - return zone redundancy equals true ",
+			args: args{account: &armcosmos.DatabaseAccountGetResults{
+				Properties: &armcosmos.DatabaseAccountGetProperties{
+					Locations: []*armcosmos.Location{
+						{
+							ID:              util.Ref("location1ID"),
+							IsZoneRedundant: util.Ref(false),
+						},
+						{
+							ID:              util.Ref("location2ID"),
+							IsZoneRedundant: util.Ref(true),
+						},
+					},
+				},
+			}},
+			wantR: &voc.Redundancy{Zone: true},
+		},
+		{
+			name: "No location is zone redundant - return zone redundancy equals false",
+			args: args{account: &armcosmos.DatabaseAccountGetResults{
+				Properties: &armcosmos.DatabaseAccountGetProperties{
+					Locations: []*armcosmos.Location{
+						{
+							ID:              util.Ref("location1ID"),
+							IsZoneRedundant: util.Ref(false),
+						},
+						{
+							ID:              util.Ref("location2ID"),
+							IsZoneRedundant: util.Ref(false),
+						},
+					},
+				},
+			}},
+			wantR: &voc.Redundancy{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantR, getCosmosDBRedundancy(tt.args.account), "getCosmosDBRedundancy(%v)", tt.args.account)
 		})
 	}
 }

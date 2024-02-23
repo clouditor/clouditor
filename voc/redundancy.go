@@ -27,7 +27,7 @@ package voc
 
 type Redundancy struct {
 	*Availability
-	Local bool // True when local redundancy is enabled
-	Zone  bool // True when zone redundancy is enabled
-	Geo   bool // True when geo redundancy is enabled
+	Local bool `json:"local"` // True when local redundancy is enabled
+	Zone  bool `json:"zone"`  // True when zone redundancy is enabled
+	Geo   bool `json:"geo"`   // True when geo redundancy is enabled
 }

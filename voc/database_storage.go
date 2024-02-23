@@ -32,6 +32,5 @@ var DatabaseStorageType = []string{"DatabaseStorage", "Storage", "Resource"}
 // DatabaseStorage is an entity in our Cloud ontology. describes the actual database or a table in a database
 type DatabaseStorage struct {
 	*Storage
-	Redundancy   *Redundancy `json:"redundancy"`
-	PublicAccess bool        `json:"publicAccess"`
+	PublicAccess bool `json:"publicAccess"`
 }

@@ -229,6 +229,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 					),
 				},
 			},
+			Redundancy: getCosmosDBRedundancy(account),
 		},
 		PublicAccess: publicNetworkAccess,
 	}
@@ -1230,6 +1231,7 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 						value),
 
 					AtRestEncryption: atRestEnc,
+					Redundancy:       nil, // Redundancy is done over database service (Cosmos DB)
 				},
 			}
 			list = append(list, mongoDB)
@@ -1237,4 +1239,14 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 	}
 
 	return list
+}
+
+// getCosmosDBRedundancy returns for a given cosmos DB account the redundancy object in the voc format. Currently, only
+// zone redundancy is supported
+func getCosmosDBRedundancy(account *armcosmos.DatabaseAccountGetResults) (r *voc.Redundancy) {
+	r = &voc.Redundancy{}
+	for _, l := range account.Properties.Locations {
+		r.Zone = util.Deref(l.IsZoneRedundant)
+	}
+	return
 }
