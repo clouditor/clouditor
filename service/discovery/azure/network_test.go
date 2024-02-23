@@ -269,7 +269,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 				&voc.NetworkInterface{
 					Networking: &voc.Networking{
 						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1",
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networkinterfaces/iface1",
 							ServiceID: testdata.MockCloudServiceID1,
 							Name:      "iface1",
 							GeoLocation: voc.GeoLocation{
@@ -277,7 +277,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 							},
 							Type:   voc.NetworkInterfaceType,
 							Labels: map[string]string{},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 							Raw:    "{\"*armnetwork.Interface\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkInterfaces/iface1\",\"location\":\"eastus\",\"name\":\"iface1\",\"properties\":{\"networkSecurityGroup\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\"}}}]}",
 						},
 					},
@@ -289,7 +289,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1",
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb1",
 								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb1",
 								GeoLocation: voc.GeoLocation{
@@ -297,7 +297,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								},
 								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1\",\"location\":\"eastus\",\"name\":\"lb1\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"ipAddress\":\"111.222.333.444\"}}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
 							},
 						},
@@ -310,7 +310,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2",
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb2",
 								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb2",
 								GeoLocation: voc.GeoLocation{
@@ -318,7 +318,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								},
 								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb2\",\"location\":\"eastus\",\"name\":\"lb2\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
 							},
 						},
@@ -331,7 +331,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3",
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/loadbalancers/lb3",
 								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "lb3",
 								GeoLocation: voc.GeoLocation{
@@ -339,7 +339,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								},
 								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 								Raw:    "{\"*armnetwork.LoadBalancer\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb3\",\"location\":\"eastus\",\"name\":\"lb3\",\"properties\":{\"frontendIPConfigurations\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/loadBalancers/lb1/frontendIPConfigurations/b9cb3645-25d0-4288-910a-020563f63b1c\",\"name\":\"b9cb3645-25d0-4288-910a-020563f63b1c\",\"properties\":{\"publicIPAddress\":{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/publicIPAddresses/test-b9cb3645-25d0-4288-910a-020563f63b1d\"}}}],\"loadBalancingRules\":[{\"properties\":{\"frontendPort\":1234}},{\"properties\":{\"frontendPort\":5678}}]}}]}",
 							},
 						},
@@ -352,7 +352,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					NetworkService: &voc.NetworkService{
 						Networking: &voc.Networking{
 							Resource: &voc.Resource{
-								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1",
+								ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/applicationgateways/appgw1",
 								ServiceID: testdata.MockCloudServiceID1,
 								Name:      "appgw1",
 								GeoLocation: voc.GeoLocation{
@@ -360,7 +360,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 								},
 								Type:   voc.LoadBalancerType,
 								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
+								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 								Raw:    "{\"*armnetwork.ApplicationGateway\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/applicationGateways/appgw1\",\"location\":\"eastus\",\"name\":\"appgw1\",\"properties\":{\"webApplicationFirewallConfiguration\":{\"enabled\":true}}}]}",
 							},
 						},

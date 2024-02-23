@@ -262,7 +262,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 	return &voc.Function{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(function.ID)),
+				voc.ResourceID(resourceID(function.ID)),
 				util.Deref(function.Name),
 				// No creation time available
 				nil,
@@ -301,7 +301,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	// Get virtual network subnet ID
 	if webApp.Properties.VirtualNetworkSubnetID != nil {
-		ni = []voc.ResourceID{voc.ResourceID(*webApp.Properties.VirtualNetworkSubnetID)}
+		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
 	// Check if resource is public available
@@ -311,10 +311,20 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	resourceLogging := d.getResourceLoggingWebApp(webApp)
 
+	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
+	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
+	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), util.Deref(d.rg),
+		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
+	if err != nil {
+		// Maybe returning error better here
+		log.Warnf("Could not get application settings: %v", err)
+	}
+	addSecretUsages(webApp.ID, settings)
+
 	return &voc.WebApp{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(webApp.ID)),
+				voc.ResourceID(resourceID(webApp.ID)),
 				util.Deref(webApp.Name),
 				// No creation time available
 				nil, // Only the last modified time is available
@@ -476,7 +486,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(vm.ID)),
+				voc.ResourceID(resourceID(vm.ID)),
 				util.Deref(vm.Name),
 				vm.Properties.TimeCreated,
 				voc.GeoLocation{
@@ -528,18 +538,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	// Reference to networkInterfaces
 	if vm.Properties.NetworkProfile != nil {
 		for _, networkInterfaces := range vm.Properties.NetworkProfile.NetworkInterfaces {
-			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(util.Deref(networkInterfaces.ID)))
+			r.NetworkInterfaces = append(r.NetworkInterfaces, voc.ResourceID(resourceID(networkInterfaces.ID)))
 		}
 	}
 
 	// Reference to blockstorage
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.OSDisk != nil && vm.Properties.StorageProfile.OSDisk.ManagedDisk != nil {
-		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
+		r.BlockStorage = append(r.BlockStorage, voc.ResourceID(resourceID(vm.Properties.StorageProfile.OSDisk.ManagedDisk.ID)))
 	}
 
 	if vm.Properties.StorageProfile != nil && vm.Properties.StorageProfile.DataDisks != nil {
 		for _, blockstorage := range vm.Properties.StorageProfile.DataDisks {
-			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(util.Deref(blockstorage.ManagedDisk.ID)))
+			r.BlockStorage = append(r.BlockStorage, voc.ResourceID(resourceID(blockstorage.ManagedDisk.ID)))
 		}
 	}
 
@@ -670,7 +680,7 @@ func (d *azureComputeDiscovery) handleBlockStorage(disk *armcompute.Disk) (*voc.
 	return &voc.BlockStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(disk.ID)),
+				voc.ResourceID(resourceID(disk.ID)),
 				util.Deref(disk.Name),
 				disk.Properties.TimeCreated,
 				voc.GeoLocation{
@@ -849,6 +859,69 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 		rl.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 
+	}
+
+	return
+}
+
+// addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
+func addSecretUsages(webAppID *string, settings armappservice.WebAppsClientListApplicationSettingsResponse) {
+	for _, v := range settings.Properties {
+		if s := util.Deref(v); strings.Contains(s, "@Microsoft.KeyVault") {
+			sURI := getSecretURI(s)
+			secretUsage[sURI] = append(secretUsage[sURI], util.Deref(webAppID))
+		}
+	}
+}
+
+// getSecretURI gets the URI of the given secret s. There can be two options how a secret attribute is stored:
+// Option 1: @Microsoft.KeyVault(VaultName=myvault;SecretName=mysecret)
+// Option 2: @Microsoft.KeyVault(SecretUri=https://myvault.vault.azure.net/secrets/mysecret/)
+func getSecretURI(s string) (secretURI string) {
+	var (
+		vaultName  string
+		secretName string
+		ok         bool
+	)
+
+	// If s contains "VaultName" it is Option 1
+	if strings.Contains(s, "VaultName") {
+		s, ok = strings.CutPrefix(s, "@Microsoft.KeyVault(VaultName=")
+		if !ok {
+			log.Error("Could not find prefix '@Microsoft.KeyVault(VaultName=' in secret:", s)
+			return ""
+		}
+		splits := strings.Split(s, ";")
+		if len(splits) < 2 {
+			log.Error("Splitting ';' should give at least two strings but didn't:", s)
+			return ""
+		}
+		vaultName = splits[0]
+		s = splits[1]
+		s, ok = strings.CutPrefix(s, "SecretName=")
+		if !ok {
+			log.Error("Could not find prefix 'SecretName=' in:", s)
+			return ""
+		}
+		s, ok = strings.CutSuffix(s, ")")
+		if !ok {
+			log.Error("Could not find suffix ')' in:", s)
+			return ""
+		}
+		secretName = s
+		secretURI = "https://" + vaultName + ".vault.azure.net/secrets/" + secretName
+	} else { // Option 2
+		s, ok := strings.CutPrefix(s, "@Microsoft.KeyVault(SecretUri=")
+		if !ok {
+			log.Error("Could not find prefix '@Microsoft.KeyVault(SecretUri=' in secret:", s)
+			return ""
+		}
+		s, ok = strings.CutSuffix(s, "/)")
+		if !ok {
+			log.Error("Could not find suffix ')' in:", s)
+			return ""
+		}
+		secretURI = s
 	}
 
 	return

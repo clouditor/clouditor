@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
@@ -67,7 +68,7 @@ func (d *azureResourceGroupDiscovery) List() (list []voc.IsCloudResource, err er
 
 		for _, rg := range page.Value {
 			// If we are scoped to one resource group, we can skip the rest of the groups
-			if d.azureDiscovery.rg != nil && util.Deref(rg.Name) != util.Deref(d.azureDiscovery.rg) {
+			if d.azureDiscovery.rg != nil && !strings.EqualFold(util.Deref(rg.Name), util.Deref(d.azureDiscovery.rg)) {
 				continue
 			}
 
@@ -93,7 +94,7 @@ func (d *azureResourceGroupDiscovery) handleResourceGroup(rg *armresources.Resou
 	return &voc.ResourceGroup{
 		Resource: discovery.NewResource(
 			d,
-			voc.ResourceID(util.Deref(rg.ID)),
+			voc.ResourceID(resourceID(rg.ID)),
 			util.Deref(rg.Name),
 			nil,
 			voc.GeoLocation{
