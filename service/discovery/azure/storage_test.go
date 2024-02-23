@@ -930,6 +930,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseService{
@@ -954,6 +955,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2187,6 +2189,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 				&voc.DatabaseService{
@@ -2211,6 +2214,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2291,6 +2295,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2342,6 +2347,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 								},
 							},
 						},
+						Redundancy: &voc.Redundancy{},
 					},
 				},
 			},
@@ -2408,7 +2414,7 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 					},
 				},
 			}},
-			wantR: &voc.Redundancy{Zone: false},
+			wantR: &voc.Redundancy{},
 		},
 	}
 	for _, tt := range tests {
