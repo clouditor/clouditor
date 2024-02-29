@@ -920,7 +920,7 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	}
 
 	// Get disk encryption set
-	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
+	kv, err := d.clients.diskEncSetsClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
 		return "", nil, err
@@ -967,7 +967,7 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	d.clients.diskEncSetsClient, err = initClient(d.clients.diskEncSetsClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
 	return
 }
 

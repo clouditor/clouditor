@@ -169,7 +169,7 @@ type clients struct {
 	virtualMachineScaleSetsClient   *armcompute.VirtualMachineScaleSetsClient
 	virtualMachineScaleSetVMsClient *armcompute.VirtualMachineScaleSetVMsClient
 	blockStorageClient              *armcompute.DisksClient
-	diskEncSetClient                *armcompute.DiskEncryptionSetsClient
+	diskEncSetsClient               *armcompute.DiskEncryptionSetsClient
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
