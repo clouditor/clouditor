@@ -536,7 +536,7 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 	var automaticUpdates *voc.AutomaticUpdates
 
 	// Check if VM is from a VMSS, then skip. VMs from the VMSS (Virtual Machine Scale Set) appear also in the Virtual Machines list, whereas the VMs from the AKS pool does not appear in the VMs list.
-	// If a VM Scale Set VM is from Kubernetes, the instanceID is a numeric digit
+	// If a VM Scale Set VM is from Kubernetes, the instanceID is a numeric digit.
 	sampleRegex := regexp.MustCompile(`\d+$`)
 	match := sampleRegex.Match([]byte(util.Deref(vm.InstanceID)))
 	if !match {
