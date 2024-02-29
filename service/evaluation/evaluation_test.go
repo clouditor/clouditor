@@ -1628,7 +1628,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 		fields  fields
 		args    args
 		wantRes assert.Want[*evaluation.EvaluationResult]
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Happy path",
@@ -1650,6 +1650,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			wantRes: func(t *testing.T, got *evaluation.EvaluationResult) bool {
 				return assert.Equal(t, orchestratortest.MockControl1.Id, got.ControlId)
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Wrong status",
@@ -1667,8 +1668,10 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 					},
 				},
 			},
-			wantRes: nil,
-			wantErr: true,
+			wantRes: assert.Nil[*evaluation.EvaluationResult],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "only manually set statuses are allowed")
+			},
 		},
 		{
 			name: "Missing validity",
@@ -1686,8 +1689,10 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 					},
 				},
 			},
-			wantRes: nil,
-			wantErr: true,
+			wantRes: assert.Nil[*evaluation.EvaluationResult],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "validity must be set")
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -1700,14 +1705,9 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 				catalogControls: tt.fields.catalogControls,
 			}
 			gotRes, err := svc.CreateEvaluationResult(tt.args.ctx, tt.args.req)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.CreateEvaluationResult() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 
-			if tt.wantRes != nil {
-				tt.wantRes(t, gotRes)
-			}
+			tt.wantErr(t, err)
+			tt.wantRes(t, gotRes)
 		})
 	}
 }

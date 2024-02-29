@@ -433,7 +433,6 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	assert.NoError(t, err)
 }
 
-// TestAssessEvidences tests AssessEvidences
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks          []assessment.ResultHookFunc
@@ -447,12 +446,11 @@ func TestService_AssessEvidences(t *testing.T) {
 		streamToServerWithRecvErr *mockAssessmentServerStreamWithRecvErr
 	}
 	tests := []struct {
-		name            string
-		fields          fields
-		args            args
-		wantErr         bool
-		wantErrMessage  string
-		wantRespMessage *assessment.AssessEvidencesResponse
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.WantErr
+		want    assert.Want[*assessment.AssessEvidencesResponse]
 	}{
 		{
 			name: "Missing toolId",
@@ -466,10 +464,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "evidence.tool_id: value length must be at least 1 characters",
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
+				return assert.Contains(t, got.StatusMessage, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -484,10 +482,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "evidence.id: value must be a valid UUID",
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
+				return assert.Contains(t, got.StatusMessage, "evidence.id: value must be a valid UUID")
 			},
 		},
 		{
@@ -504,13 +502,17 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id:   testdata.MockResourceID1,
+							Name: testdata.MockResourceName1,
+						}),
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status: assessment.AssessEvidencesResponse_ASSESSED,
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_ASSESSED, got.Status)
+				return assert.Empty(t, got.StatusMessage)
 			},
 		},
 		{
@@ -528,8 +530,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
+			want: assert.Nil[*assessment.AssessEvidencesResponse],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Unknown desc = cannot send response to the client")
+			},
 		},
 		{
 			name: "Error in stream to server - Recv()-err",
@@ -546,8 +550,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
+			want: assert.Nil[*assessment.AssessEvidencesResponse],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Unknown desc = cannot receive stream request")
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -576,17 +582,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
 			}
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				assert.Nil(t, err)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
-			} else {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
-			}
+			tt.wantErr(t, err)
+			tt.want(t, responseFromServer)
 		})
 	}
 }

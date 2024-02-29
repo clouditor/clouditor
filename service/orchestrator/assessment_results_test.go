@@ -639,7 +639,7 @@ func TestAssessmentResultHook(t *testing.T) {
 		name    string
 		args    args
 		wantRes *orchestrator.StoreAssessmentResultResponse
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store first assessment result to the map",
@@ -667,7 +667,7 @@ func TestAssessmentResultHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 			wantRes: &orchestrator.StoreAssessmentResultResponse{},
 		},
 	}
@@ -681,10 +681,7 @@ func TestAssessmentResultHook(t *testing.T) {
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotRes)
 
 			var results []*assessment.AssessmentResult

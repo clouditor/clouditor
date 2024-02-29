@@ -491,7 +491,7 @@ func TestToeHook(t *testing.T) {
 		name    string
 		args    args
 		wantRes *orchestrator.TargetOfEvaluation
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store first assessment result to the map",
@@ -505,7 +505,7 @@ func TestToeHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 			wantRes: &orchestrator.TargetOfEvaluation{
 				CloudServiceId: testdata.MockCloudServiceID1,
 				CatalogId:      testdata.MockCatalogID,
@@ -537,10 +537,7 @@ func TestToeHook(t *testing.T) {
 
 			assert.NoError(t, api.Validate(gotRes))
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotRes)
 			assert.Equal(t, 2, hookCallCounter)
 		})

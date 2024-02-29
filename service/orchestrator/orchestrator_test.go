@@ -157,7 +157,7 @@ func TestCloudServiceHooks(t *testing.T) {
 		name    string
 		args    args
 		wantRes assert.Want[*orchestrator.CloudService]
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Update Cloud Service",
@@ -172,7 +172,7 @@ func TestCloudServiceHooks(t *testing.T) {
 				},
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 			wantRes: func(t *testing.T, got *orchestrator.CloudService) bool {
 				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
 					assert.Equal(t, "test service", got.Name) && assert.Equal(t, "test service", got.Description)
@@ -205,10 +205,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			// wait for all hooks (2 services * 2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
 
 			assert.Equal(t, hookCounts, hookCallCounter)
@@ -228,22 +225,20 @@ func TestService_GetRuntimeInfo(t *testing.T) {
 		fields  fields
 		args    args
 		want    assert.Want[*apiruntime.Runtime]
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
-			name: "return runtime",
-			want: assert.NotNil[*apiruntime.Runtime],
+			name:    "return runtime",
+			want:    assert.NotNil[*apiruntime.Runtime],
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{}
 			gotRes, err := svc.GetRuntimeInfo(tt.args.in0, tt.args.in1)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetRuntimeInfo() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 
+			tt.wantErr(t, err)
 			tt.want(t, gotRes)
 		})
 	}

@@ -396,7 +396,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		name    string
 		fields  fields
 		want    []*ontology.Function
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		// Test cases
 		{
@@ -417,7 +417,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 					Raw: "{\"*types.FunctionConfiguration\":[{\"Architectures\":null,\"CodeSha256\":null,\"CodeSize\":0,\"DeadLetterConfig\":null,\"Description\":null,\"Environment\":null,\"EphemeralStorage\":null,\"FileSystemConfigs\":null,\"FunctionArn\":\"arn:aws:lambda:eu-central-1:123456789:function:mock-function:1\",\"FunctionName\":\"MockFunction1\",\"Handler\":null,\"ImageConfigResponse\":null,\"KMSKeyArn\":null,\"LastModified\":\"2012-11-01T22:08:41.0+00:00\",\"LastUpdateStatus\":\"\",\"LastUpdateStatusReason\":null,\"LastUpdateStatusReasonCode\":\"\",\"Layers\":null,\"LoggingConfig\":null,\"MasterArn\":null,\"MemorySize\":null,\"PackageType\":\"\",\"RevisionId\":null,\"Role\":null,\"Runtime\":\"\",\"RuntimeVersionConfig\":null,\"SigningJobArn\":null,\"SigningProfileVersionArn\":null,\"SnapStart\":null,\"State\":\"\",\"StateReason\":null,\"StateReasonCode\":\"\",\"Timeout\":null,\"TracingConfig\":null,\"Version\":null,\"VpcConfig\":null}]}",
 				},
 			},
-			false,
+			assert.Nil[error],
 		},
 		{
 			"Test case 3 (API error)",
@@ -425,7 +425,9 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				functionAPI: mockLambdaAPIWithErrors{},
 			},
 			nil,
-			true,
+			func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "code: 500, fault: unknown, message: Internal Server Error")
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -438,10 +440,8 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				csID:              tt.fields.csID,
 			}
 			got, err := d.discoverFunctions()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("discoverFunctions() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
+			tt.wantErr(t, err)
 			if !assert.Empty(t, cmp.Diff(tt.want, got, protocmp.Transform())) {
 				t.Errorf("discoverFunctions() got = %v, want %v", got, tt.want)
 			}

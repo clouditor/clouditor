@@ -49,7 +49,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 		name    string
 		fields  fields
 		want    ontology.IsResource
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "happy path VM",
@@ -66,6 +66,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				Id:              "vm1",
 				BlockStorageIds: []string{"bs1"},
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "not an ontology resource",
@@ -75,7 +76,10 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				ResourceType:   "Something",
 				Properties:     prototest.NewAny(t, &emptypb.Empty{}),
 			},
-			wantErr: true,
+			want: nil,
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, ErrNotOntologyResource.Error())
+			},
 		},
 	}
 
@@ -88,10 +92,8 @@ func TestResource_ToOntologyResource(t *testing.T) {
 				Properties:     tt.fields.Properties,
 			}
 			got, err := r.ToOntologyResource()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Resource.ToOntologyResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -105,8 +107,8 @@ func TestToDiscoveryResource(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		wantR   *Resource
-		wantErr bool
+		want    *Resource
+		wantErr assert.WantErr
 	}{
 		{
 			name: "happy path",
@@ -123,7 +125,7 @@ func TestToDiscoveryResource(t *testing.T) {
 				},
 				csID: testdata.MockCloudServiceID1,
 			},
-			wantR: &Resource{
+			want: &Resource{
 				Id:             "my-block-storage",
 				CloudServiceId: testdata.MockCloudServiceID1,
 				ResourceType:   "BlockStorage,Storage,CloudResource,Resource",
@@ -138,17 +140,16 @@ func TestToDiscoveryResource(t *testing.T) {
 					},
 				}),
 			},
+			wantErr: assert.Nil[error],
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.csID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ToDiscoveryResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.Equal(t, tt.wantR, gotR)
+
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.want, gotR)
 		})
 	}
 }

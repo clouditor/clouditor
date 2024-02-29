@@ -559,7 +559,7 @@ func TestService_EvidenceHook(t *testing.T) {
 		name    string
 		args    args
 		wantRes *evidence.StoreEvidenceResponse
-		wantErr bool
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store an evidence to the map",
@@ -577,25 +577,23 @@ func TestService_EvidenceHook(t *testing.T) {
 				},
 				},
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 			wantRes: &evidence.StoreEvidenceResponse{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			hookCallCounter = 0
 			s := svc
 			gotResp, err := s.StoreEvidence(tt.args.in0, tt.args.evidence)
 
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotResp)
+
+			// Check if evidence is stored in storage DB
 			var evidences []evidence.Evidence
 			err = s.storage.List(&evidences, "", true, 0, -1)
 			assert.NoError(t, err)
