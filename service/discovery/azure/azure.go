@@ -33,9 +33,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -45,12 +42,15 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azcertificates"
 
 	"github.com/sirupsen/logrus"
 
@@ -180,8 +180,10 @@ type clients struct {
 	backupInstancesClient *armdataprotection.BackupInstancesClient
 
 	// Key Vault
-	keyVaultClient *armkeyvault.VaultsClient
-	keysClient     *armkeyvault.KeysClient
+	keyVaultClient       *armkeyvault.VaultsClient
+	keysClient           *armkeyvault.KeysClient
+	secretsClient        *armkeyvault.SecretsClient
+	certificationsClient *azcertificates.Client
 
 	// Service Fabrics
 	fabricsServiceClusterClient *armservicefabric.ClustersClient
@@ -407,7 +409,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 		resource = &voc.ObjectStorage{
 			Storage: &voc.Storage{
 				Resource: &voc.Resource{
-					ID:           voc.ResourceID(*instance.ID),
+					ID:           voc.ResourceID(resourceID(instance.ID)),
 					Name:         *instance.Name,
 					CreationTime: 0,
 					GeoLocation: voc.GeoLocation{
@@ -416,7 +418,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 					Labels:    nil,
 					ServiceID: d.csID,
 					Type:      voc.ObjectStorageType,
-					Parent:    resourceGroupID(instance.ID),
+					Parent:    resourceGroupID(util.Ref(resourceID(instance.ID))),
 					Raw:       raw,
 				},
 			},
@@ -425,7 +427,7 @@ func (d *azureDiscovery) handleInstances(vault *armdataprotection.BackupVaultRes
 		resource = &voc.BlockStorage{
 			Storage: &voc.Storage{
 				Resource: &voc.Resource{
-					ID:           voc.ResourceID(*instance.ID),
+					ID:           voc.ResourceID(resourceID(instance.ID)),
 					Name:         *instance.Name,
 					ServiceID:    d.csID,
 					CreationTime: 0,
@@ -505,7 +507,7 @@ func resourceGroupID(ID *string) voc.ResourceID {
 		return ""
 	}
 
-	id := strings.Join(s[:5], "/")
+	id := strings.ToLower(strings.Join(s[:5], "/"))
 
 	return voc.ResourceID(id)
 }
@@ -652,4 +654,14 @@ func tlsVersion(version *string) string {
 		log.Warningf("'%s' is not an implemented TLS version.", *version)
 		return ""
 	}
+}
+
+// resourceID makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things
+// are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
+func resourceID(id *string) string {
+	if id == nil {
+		return ""
+	}
+
+	return strings.ToLower(*id)
 }

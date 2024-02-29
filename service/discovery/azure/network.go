@@ -208,7 +208,7 @@ func (d *azureNetworkDiscovery) handleLoadBalancer(lb *armnetwork.LoadBalancer) 
 		NetworkService: &voc.NetworkService{
 			Networking: &voc.Networking{
 				Resource: discovery.NewResource(d,
-					voc.ResourceID(util.Deref(lb.ID)),
+					voc.ResourceID(resourceID(lb.ID)),
 					util.Deref(lb.Name),
 					// No creation time available
 					nil,
@@ -237,7 +237,7 @@ func (d *azureNetworkDiscovery) handleApplicationGateway(ag *armnetwork.Applicat
 			Networking: &voc.Networking{
 				Resource: discovery.NewResource(
 					d,
-					voc.ResourceID(util.Deref(ag.ID)),
+					voc.ResourceID(resourceID(ag.ID)),
 					util.Deref(ag.Name),
 					nil,
 					voc.GeoLocation{Region: util.Deref(ag.Location)},
@@ -258,7 +258,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 	return &voc.NetworkInterface{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(ni.ID)),
+				voc.ResourceID(resourceID(ni.ID)),
 				util.Deref(ni.Name),
 				// No creation time available
 				nil,

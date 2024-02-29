@@ -1,6 +1,4 @@
-// Auto-generated code by owl2java (https://github.com/clouditor/cloud-property-graph)
-
-// Copyright 2023 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,10 +25,16 @@
 
 package voc
 
-var DatabaseStorageType = []string{"DatabaseStorage", "Storage", "Resource"}
+var CertificateType = []string{"Certificate"}
 
-// DatabaseStorage is an entity in our Cloud ontology. describes the actual database or a table in a database
-type DatabaseStorage struct {
-	*Storage
-	PublicAccess bool `json:"publicAccess"`
+type Certificate struct {
+	*Resource
+	*Confidentiality
+	Enabled        bool  `json:"enabled"`
+	ActivationDate int64 `json:"activationDate"`
+	ExpirationDate int64 `json:"expirationDate"`
+}
+
+func (*Certificate) Type() string {
+	return "Certificate"
 }

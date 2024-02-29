@@ -29,7 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
+	"slices"
 	"strings"
 
 	"clouditor.io/clouditor/api/discovery"
@@ -189,6 +189,13 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			},
 			KeyUrl: util.Deref(account.Properties.KeyVaultKeyURI),
 		}
+		// Add key URI to keyUsage for tracking usages of single keys.
+		// Hacky, but we haven't related Evidences yet.
+		// We add the ID of this resource to the list of usages for the given key. But only if it is not there already
+		if !slices.Contains(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID)) {
+			keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)] =
+				append(keyUsage[util.Deref(account.Properties.KeyVaultKeyURI)], util.Deref(account.ID))
+		}
 	} else {
 		atRestEnc = &voc.ManagedKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
@@ -209,7 +216,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			NetworkService: &voc.NetworkService{
 				Networking: &voc.Networking{
 					Resource: discovery.NewResource(d,
-						voc.ResourceID(*account.ID),
+						voc.ResourceID(resourceID(account.ID)),
 						*account.Name,
 						account.SystemData.CreatedAt,
 						voc.GeoLocation{
@@ -222,6 +229,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 					),
 				},
 			},
+			Redundancy: getCosmosDBRedundancy(account),
 		},
 		PublicAccess: publicNetworkAccess,
 	}
@@ -323,7 +331,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 			NetworkService: &voc.NetworkService{
 				Networking: &voc.Networking{
 					Resource: discovery.NewResource(d,
-						voc.ResourceID(*server.ID),
+						voc.ResourceID(resourceID(server.ID)),
 						*server.Name,
 						nil, // creation time not available
 						voc.GeoLocation{
@@ -574,7 +582,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 			NetworkService: &voc.NetworkService{
 				Networking: &voc.Networking{
 					Resource: discovery.NewResource(d,
-						voc.ResourceID(util.Deref(account.ID)),
+						voc.ResourceID(resourceID(account.ID)),
 						util.Deref(account.Name),
 						account.Properties.CreationTime,
 						voc.GeoLocation{
@@ -634,7 +642,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 	return &voc.FileStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(fileshare.ID)),
+				voc.ResourceID(resourceID(fileshare.ID)),
 				util.Deref(fileshare.Name),
 				// We only have the creation time of the storage account the file storage belongs to
 				account.Properties.CreationTime,
@@ -645,7 +653,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 				// The storage account labels the file storage belongs to
 				labels(account.Tags),
 				// the storage account is our parent
-				voc.ResourceID(util.Deref(account.ID)),
+				voc.ResourceID(resourceID(account.ID)),
 				voc.FileStorageType,
 				account, fileshare,
 			),
@@ -698,7 +706,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	return &voc.ObjectStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(container.ID)),
+				voc.ResourceID(resourceID(container.ID)),
 				util.Deref(container.Name),
 				// We only have the creation time of the storage account the object storage belongs to
 				account.Properties.CreationTime,
@@ -709,7 +717,7 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
 				// the storage account is our parent
-				voc.ResourceID(util.Deref(account.ID)),
+				voc.ResourceID(resourceID(account.ID)),
 				voc.ObjectStorageType,
 				account, container,
 			),
@@ -745,7 +753,7 @@ func (d *azureStorageDiscovery) isBackup(account *armstorage.Account, container 
 
 	// Check if the container serves as backup
 	if b, ok := res.ContainerProperties.Metadata["backupOf"]; ok {
-		backupOf[util.Deref(b)] = util.Deref(container.ID)
+		backupOf[resourceID(b)] = resourceID(container.ID)
 		return true
 	}
 	return false
@@ -774,7 +782,7 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 	if d.backupMap[DataSourceTypeStorageAccountObject] != nil && d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)] != nil {
 		backups = d.backupMap[DataSourceTypeStorageAccountObject].backup[util.Deref(account.ID)]
 	} else { // approach with Tagging
-		if backupLocation, ok := backupOf["https://"+util.Deref(account.Name)+".table.core.windows.net/"+util.Deref(table.Name)]; ok {
+		if backupLocation, ok := backupOf["https://"+resourceID(account.Name)+".table.core.windows.net/"+resourceID(table.Name)]; ok {
 			backups = []*voc.Backup{
 				{
 					Availability:        nil,
@@ -797,7 +805,7 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 	return &voc.DatabaseStorage{
 		Storage: &voc.Storage{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(util.Deref(table.ID)),
+				voc.ResourceID(resourceID(table.ID)),
 				util.Deref(table.Name),
 				// We only have the creation time of the storage account the object storage belongs to
 				account.Properties.CreationTime,
@@ -808,7 +816,7 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 				// The storage account labels the object storage belongs to
 				labels(account.Tags),
 				// the storage account is our parent
-				voc.ResourceID(util.Deref(account.ID)),
+				voc.ResourceID(resourceID(account.ID)),
 				voc.DatabaseStorageType,
 				account, table,
 			),
@@ -944,7 +952,7 @@ func (d *azureStorageDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudR
 			}
 
 			a := &voc.AnomalyDetection{
-				Scope:   voc.ResourceID(*value.ID),
+				Scope:   voc.ResourceID(resourceID(value.ID)),
 				Enabled: anomalyDetectionEnabled,
 			}
 
@@ -954,14 +962,14 @@ func (d *azureStorageDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudR
 			sqlDB := &voc.DatabaseStorage{
 				Storage: &voc.Storage{
 					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
+						voc.ResourceID(resourceID(value.ID)),
 						*value.Name,
 						value.Properties.CreationDate,
 						voc.GeoLocation{
 							Region: *value.Location,
 						},
 						labels(value.Tags),
-						voc.ResourceID(*server.ID),
+						voc.ResourceID(resourceID(server.ID)),
 						voc.DatabaseStorageType,
 						value),
 					AtRestEncryption: &voc.AtRestEncryption{
@@ -1161,8 +1169,8 @@ func (d *azureStorageDiscovery) handleObjects(acc *armstorage.Account, container
 			// Add resource to list
 			objects = append(objects, &voc.Object{
 				Resource: discovery.NewResource(d,
-					voc.ResourceID("https://"+util.Deref(acc.Name)+".blob.core.windows.net/"+
-						util.Deref(container.Name)+"/"+util.Deref(blobItem.Name)),
+					voc.ResourceID("https://"+resourceID(acc.Name)+".blob.core.windows.net/"+
+						resourceID(container.Name)+"/"+resourceID(blobItem.Name)),
 					util.Deref(blobItem.Name),
 					// We only have the creation time of the storage account the object storage belongs to
 					acc.Properties.CreationTime,
@@ -1172,7 +1180,7 @@ func (d *azureStorageDiscovery) handleObjects(acc *armstorage.Account, container
 					},
 					blobLabels,
 					// the storage account is our parent
-					voc.ResourceID(util.Deref(container.ID)),
+					voc.ResourceID(resourceID(container.ID)),
 					voc.ObjectType,
 					container, blobItem,
 				),
@@ -1210,19 +1218,20 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 			mongoDB := &voc.DatabaseStorage{
 				Storage: &voc.Storage{
 					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
+						voc.ResourceID(resourceID(value.ID)),
 						util.Deref(value.Name),
 						nil, // creation time of database not available
 						voc.GeoLocation{
 							Region: *value.Location,
 						},
 						labels(value.Tags),
-						voc.ResourceID(*account.ID),
+						voc.ResourceID(resourceID(account.ID)),
 						voc.DatabaseStorageType,
 						account,
 						value),
 
 					AtRestEncryption: atRestEnc,
+					Redundancy:       nil, // Redundancy is done over database service (Cosmos DB)
 				},
 			}
 			list = append(list, mongoDB)
@@ -1230,4 +1239,14 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 	}
 
 	return list
+}
+
+// getCosmosDBRedundancy returns for a given cosmos DB account the redundancy object in the voc format. Currently, only
+// zone redundancy is supported
+func getCosmosDBRedundancy(account *armcosmos.DatabaseAccountGetResults) (r *voc.Redundancy) {
+	r = &voc.Redundancy{}
+	for _, l := range account.Properties.Locations {
+		r.Zone = util.Deref(l.IsZoneRedundant)
+	}
+	return
 }
