@@ -3136,6 +3136,124 @@ func Test_IfWeConsiderAllPossibleDiskStorageAccountTypes(t *testing.T) {
 	assert.Equal(t, len(armcompute.PossibleDiskStorageAccountTypesValues()), currentlyConsideredDiskStorageAccountTypeValues)
 }
 
+func Test_addSecretUsages(t *testing.T) {
+	// Use struct including both id and settings of an web app - allowing to use it smoothly as a list in args
+	type webApp struct {
+		id       *string
+		settings armappservice.WebAppsClientListApplicationSettingsResponse
+	}
+	// Some mocked strings
+	secretURI1 := "@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret1)"
+	secretURI2 := "@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret2)"
+	type args struct {
+		apps []webApp
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.ValueAssertionFunc
+	}{
+		{
+			name: "Happy path - add two",
+			args: args{apps: []webApp{
+				{
+					id: util.Ref("WebApp1"),
+					settings: armappservice.WebAppsClientListApplicationSettingsResponse{
+						StringDictionary: armappservice.StringDictionary{
+							Properties: map[string]*string{
+								"SecretUsedOnce":  util.Ref(secretURI1),
+								"SecretUsedTwice": util.Ref(secretURI2),
+							},
+						}},
+				},
+				{
+					id: util.Ref("WebApp2"),
+					settings: armappservice.WebAppsClientListApplicationSettingsResponse{
+						StringDictionary: armappservice.StringDictionary{
+							Properties: map[string]*string{
+								"SecretUsedTwice": util.Ref(secretURI2),
+							},
+						}},
+				},
+			}},
+			want: func(t assert.TestingT, _ interface{}, _ ...interface{}) bool {
+				secretUsage := secretUsage
+				assert.Len(t, secretUsage[getSecretURI(secretURI1)], 1)
+				assert.Len(t, secretUsage[getSecretURI(secretURI2)], 2)
+				return assert.Len(t, secretUsage, 2)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, wa := range tt.args.apps {
+				addSecretUsages(wa.id, wa.settings)
+			}
+			tt.want(t, nil)
+			assert.Truef(t, tt.want(t, nil), "call addSecretUsages with %v", tt.args.apps)
+		})
+	}
+}
+
+func Test_getSecretURI(t *testing.T) {
+	//assert.Len(t, secretUsage["https://SomeKeyVault.vault.azure.net/secrets/Secret1"], 1)
+	//assert.Len(t, secretUsage["https://SomeKeyVault.vault.azure.net/secrets/Secret2"], 2)
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantSecretURI string
+	}{
+		{
+			name:          "Happy path - Option 1",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret1)"},
+			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
+		},
+		{
+			name:          "Happy path - Option 1",
+			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1/)"},
+			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
+		},
+		{
+			name:          "Wrong prefix (option1)- return empty string",
+			args:          args{"VaultName="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No split (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No secret name (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;XXX="},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No round bracket at the end (option1)- return empty string",
+			args:          args{"@Microsoft.KeyVault(VaultName=SomeKeyVault;SecretName=Secret1/"},
+			wantSecretURI: "",
+		},
+		{
+			name:          "Wrong prefix (option2)- return empty string",
+			args:          args{"@SomeThingWrong"},
+			wantSecretURI: "",
+		},
+		{
+			name:          "No round bracket at the end (option2)- return empty string",
+			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1/"},
+			wantSecretURI: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantSecretURI, getSecretURI(tt.args.s), "getSecretURI(%v)", tt.args.s)
+		})
+	}
+}
+
 func Test_azureComputeDiscovery_discoverVirtualMachineScaleSets(t *testing.T) {
 	type fields struct {
 		azureDiscovery     *azureDiscovery
