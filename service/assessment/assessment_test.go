@@ -28,7 +28,6 @@ package assessment
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -618,7 +617,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 		name     string
 		args     args
 		wantResp *assessment.AssessEvidenceResponse
-		wantErr  bool
+		wantErr  assert.WantErr
 	}{
 		{
 			name: "Store evidence to the map",
@@ -657,7 +656,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr:  false,
+			wantErr:  assert.Nil[error],
 			wantResp: &assessment.AssessEvidenceResponse{},
 		},
 	}
@@ -682,10 +681,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
@@ -841,7 +837,8 @@ func TestService_handleEvidence(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[[]*assessment.AssessmentResult]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "correct evidence",
@@ -865,10 +862,14 @@ func TestService_handleEvidence(t *testing.T) {
 					}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.NoError(t, err)
-				return false
+			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				for _, result := range got {
+					err := api.Validate(result)
+					assert.NoError(t, err)
+				}
+				return assert.Equal(t, 11, len(got))
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "broken Any message",
@@ -885,7 +886,8 @@ func TestService_handleEvidence(t *testing.T) {
 					Resource:       &anypb.Any{TypeUrl: "does-not-exist"},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.Contains(t, err.Error(), "could not unmarshal resource proto message")
 			},
 		},
@@ -904,7 +906,8 @@ func TestService_handleEvidence(t *testing.T) {
 					Resource:       prototest.NewAny(t, &emptypb.Empty{}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
 			},
 		},
@@ -929,7 +932,8 @@ func TestService_handleEvidence(t *testing.T) {
 						}}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				if !assert.NotEmpty(t, err) {
 					return false
 				}
@@ -950,16 +954,10 @@ func TestService_handleEvidence(t *testing.T) {
 				authz:                tt.fields.authz,
 			}
 
-			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
 			results, err := s.handleEvidence(context.Background(), tt.args.evidence)
-			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v)", tt.args.evidence)) {
-				assert.NotEmpty(t, results)
-				// Check the result by validation
-				for _, result := range results {
-					err := api.Validate(result)
-					assert.NoError(t, err)
-				}
-			}
+
+			tt.wantErr(t, err)
+			tt.want(t, results)
 		})
 	}
 }
@@ -975,7 +973,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[orchestrator.Orchestrator_StoreAssessmentResultsClient]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Invalid RPC connection",
@@ -987,7 +986,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOrchestratorAddress("localhost:1"),
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Empty[orchestrator.Orchestrator_StoreAssessmentResultsClient],
+			wantErr: func(t *testing.T, err error) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
 				return assert.Equal(t, codes.Unavailable, s.Code())
 			},
@@ -1003,7 +1003,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Empty[orchestrator.Orchestrator_StoreAssessmentResultsClient],
+			wantErr: func(t *testing.T, err error) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
 				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
@@ -1015,11 +1016,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			s := NewService(tt.fields.opts...)
 			stream, err := s.initOrchestratorStream(tt.args.url, s.orchestrator.Opts...)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			} else {
-				assert.NotEmpty(t, stream)
-			}
+			tt.wantErr(t, err)
+			tt.want(t, stream)
 		})
 	}
 }
@@ -1113,11 +1111,11 @@ func TestService_MetricImplementation(t *testing.T) {
 		metric string
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantImpl *assessment.MetricImplementation
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*assessment.MetricImplementation]
+		wantErr assert.WantErr
 	}{
 
 		{
@@ -1125,8 +1123,8 @@ func TestService_MetricImplementation(t *testing.T) {
 			args: args{
 				lang: assessment.MetricImplementation_LANGUAGE_UNSPECIFIED,
 			},
-			wantImpl: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[*assessment.MetricImplementation],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "unsupported language")
 			},
 		},
@@ -1145,8 +1143,9 @@ func TestService_MetricImplementation(t *testing.T) {
 				evalPkg:                 tt.fields.evalPkg,
 			}
 			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
+
 			tt.wantErr(t, err)
-			assert.Equal(t, tt.wantImpl, gotImpl)
+			tt.want(t, gotImpl)
 		})
 	}
 }
