@@ -3246,7 +3246,7 @@ func Test_getAppServiceFarmName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantFarmName, getAppServiceFarmName(tt.args.id), "getAppServiceFarmName(%v)", tt.args.id)
+			assert.Equalf(t, tt.wantFarmName, getAppServicePlanName(tt.args.id), "getAppServicePlanName(%v)", tt.args.id)
 		})
 	}
 }

@@ -361,8 +361,8 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 		log.Errorf("Could not look at properties or the Server Farm ID because one of them is empty")
 		return
 	}
-	farmName := getAppServiceFarmName(app.Properties.ServerFarmID)
-	farm, err := d.clients.appServiceFarmsClient.Get(context.TODO(), util.Deref(d.rg), farmName, &armappservice.PlansClientGetOptions{})
+	planName := getAppServicePlanName(app.Properties.ServerFarmID)
+	farm, err := d.clients.plansClient.Get(context.TODO(), util.Deref(d.rg), planName, &armappservice.PlansClientGetOptions{})
 	if err != nil {
 		log.Errorf("Could not get App Service Farm '%s', zone redundancy of web app '%s' is assumed to be false: %v",
 			util.Deref(app.Properties.ServerFarmID), util.Deref(app.Name), err)
@@ -372,11 +372,11 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 	return
 }
 
-// getAppServiceFarmName returns the name for the given ID of a app service farm. If it is wrongly formatted, the empty
-// string will be returned
-// A farm id has the following form:
+// getAppServicePlanName returns the name for the given ID of an app service plan (formerly farm). If it is wrongly
+// formatted, the empty string will be returned
+// A plan/farm id has the following form:
 // "/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/{appServicePlanName}"
-func getAppServiceFarmName(id *string) (farmName string) {
+func getAppServicePlanName(id *string) (farmName string) {
 	var ok bool
 	_, farmName, ok = strings.Cut(util.Deref(id),
 		"/Microsoft.Web/serverfarms/")
@@ -833,7 +833,7 @@ func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
 
 // initWebAppsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initAppServiceFarmsClient() (err error) {
-	d.clients.appServiceFarmsClient, err = initClient(d.clients.appServiceFarmsClient, d.azureDiscovery, armappservice.NewPlansClient)
+	d.clients.plansClient, err = initClient(d.clients.plansClient, d.azureDiscovery, armappservice.NewPlansClient)
 	return
 }
 
