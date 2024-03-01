@@ -90,6 +90,7 @@ func init() {
 		voc.Object{},
 		voc.WebApp{},
 		voc.Cluster{},
+		voc.NetworkSecurityGroup{},
 	}
 	for _, v := range types {
 		t := reflect.TypeOf(v)
