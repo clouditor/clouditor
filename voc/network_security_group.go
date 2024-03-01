@@ -31,4 +31,5 @@ var NetworkSecurityGroupType = []string{"NetworkSecurityGroup", "Networking", "R
 
 type NetworkSecurityGroup struct {
 	*Networking
+	PublicAccess bool `json:"publicAccess"`
 }
