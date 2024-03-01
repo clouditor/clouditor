@@ -22,13 +22,9 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install buf
-        uses: bufbuild/buf-setup-action@v1.9.0
+        uses: bufbuild/buf-setup-action@v1.29.0
         with:
           github_token: ${{ github.token }}
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate
         run: |
           go install \
@@ -46,7 +42,7 @@ jobs:
 
           go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tee output.json | tparse -follow || true
           tparse -format markdown -file output.json > $GITHUB_STEP_SUMMARY
-      - uses: codecov/codecov-action@v4.0.1
+      - uses: codecov/codecov-action@v4.0.2
         with:
           files: coverage.cov
           flags: unittests

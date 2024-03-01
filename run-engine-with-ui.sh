@@ -1,6 +1,7 @@
 #/bin/bash
 
 # Make sure the UI submodules are up-to-date
+git submodule init
 git submodule update --remote
 
 # Build engine. This requires Go to be installed
