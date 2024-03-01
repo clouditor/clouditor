@@ -274,6 +274,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						},
 						"publicNetworkAccess": "Enabled",
 						"resourceGroup":       "res1",
+						"minTlsVersion":       "1.1",
+						"minTlsCipherSuite":   "TLS_AES_128_GCM_SHA256",
 					},
 				},
 				{
@@ -289,6 +291,8 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"siteConfig":          map[string]interface{}{},
 						"resourceGroup":       "res1",
 						"publicNetworkAccess": "Disabled",
+						"minTlsVersion":       "1.1",
+						"minTlsCipherSuite":   "TLS_AES_128_GCM_SHA256",
 					},
 				},
 				{
@@ -321,8 +325,10 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 						"testKey2": "testTag2",
 					},
 					"properties": map[string]interface{}{
+						"minTlsVersion":     "1.1",
+						"minTlsCipherSuite": "TLS_AES_128_GCM_SHA256",
 						"siteConfig": map[string]interface{}{
-							"minTlsVersion":     nil,
+							"minTlsVersion":     "1.1",
 							"minTlsCipherSuite": "",
 						},
 						"httpsOnly":              false,
@@ -376,6 +382,11 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 				"APPLICATIONINSIGHTS_CONNECTION_STRING": "some_application_settings_string",
 			},
 		}, 200)
+
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/function2/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2/config/appsettings/list" {
+		return createResponse(req, map[string]interface{}{}, 200)
 	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1" {
 		return createResponse(req, map[string]interface{}{
 			"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryption-keyvault1",
@@ -455,7 +466,75 @@ func (m mockComputeSender) Do(req *http.Request) (res *http.Response, err error)
 					},
 				},
 			},
-			// },
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Compute/virtualMachineScaleSets" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+					"name":     "scaleSet1",
+					"location": "eastus",
+					"tags":     map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"virtualMachineProfile": map[string]interface{}{
+							"osProfile": map[string]interface{}{
+								"linuxConfiguration": map[string]interface{}{
+									"patchSettings": map[string]interface{}{
+										"patchMode": "AutomaticByPlatform",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					// Scale set VM from AKS
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0",
+					"name":       "ScaleSetVM0",
+					"instanceId": "0",
+					"location":   "eastus",
+					"tags":       map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
+								},
+							},
+						},
+					},
+				},
+			},
+		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachineScaleSets" {
+		return createResponse(req, map[string]interface{}{}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					// Scale set VM from VMSS
+					"id":         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM0",
+					"name":       "ScaleSetVM0",
+					"instanceId": "ScaleSetVM0",
+					"location":   "eastus",
+					"tags":       map[string]interface{}{},
+					"properties": map[string]interface{}{
+						"osProfile": map[string]interface{}{
+							"linuxConfiguration": map[string]interface{}{
+								"patchSettings": map[string]interface{}{
+									"patchMode": "AutomaticByPlatform",
+								},
+							},
+						},
+					},
+				},
+			},
 		}, 200)
 	}
 
@@ -563,7 +642,7 @@ func TestCompute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 11, len(list))
+	assert.Equal(t, 12, len(list))
 	assert.NotEmpty(t, d.Name())
 }
 
@@ -612,9 +691,9 @@ func TestFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, 11, len(list))
+	assert.Equal(t, 12, len(list))
 
-	function, ok := list[7].(*voc.Function)
+	function, ok := list[8].(*voc.Function)
 
 	assert.True(t, ok)
 	assert.Equal(t, "function1", function.Name)
@@ -1002,6 +1081,26 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 						},
 					},
 				},
+				&voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0",
+							Name: "ScaleSetVM0",
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							ServiceID: testdata.MockCloudServiceID1,
+							Type:      voc.VirtualMachineType,
+							Labels:    map[string]string{},
+							Parent:    "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+							Raw:       "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\",\"location\":\"eastus\",\"name\":\"scaleSet1\",\"properties\":{\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\",\"virtualMachineProfile\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}}},\"tags\":{}}],\"*armcompute.VirtualMachineScaleSetVM\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0\",\"instanceId\":\"0\",\"location\":\"eastus\",\"name\":\"ScaleSetVM0\",\"properties\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}},\"tags\":{}}]}",
+						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
+				},
 				&voc.Function{
 					Compute: &voc.Compute{
 						Resource: &voc.Resource{
@@ -1130,7 +1229,7 @@ func Test_azureComputeDiscovery_List(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"linuxFxVersion\":\"\",\"minTlsVersion\":\"1.1\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\",\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"linuxFxVersion\":\"\",\"minTlsVersion\":\"1.1\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
 						ResourceLogging: &voc.ResourceLogging{
@@ -1364,7 +1463,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 								Region: "West Europe",
 							},
 							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"linuxFxVersion\":\"\",\"minTlsVersion\":\"1.1\"}}]}",
+							Raw:    "{\"*armappservice.Site\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Web/sites/WebApp2\",\"kind\":\"app,linux\",\"location\":\"West Europe\",\"name\":\"WebApp2\",\"properties\":{\"httpsOnly\":false,\"publicNetworkAccess\":\"Disabled\",\"resourceGroup\":\"res1\",\"siteConfig\":{\"minTlsCipherSuite\":\"\",\"minTlsVersion\":\"1.1\"},\"virtualNetworkSubnetId\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet2\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"armappservice.WebAppsClientGetConfigurationResponse\":[{\"properties\":{\"linuxFxVersion\":\"\",\"minTlsVersion\":\"1.1\"}}]}",
 						},
 						NetworkInterfaces: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/virtualnetworks/vnet1/subnets/subnet2"},
 						ResourceLogging: &voc.ResourceLogging{
@@ -2874,6 +2973,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 						VirtualNetworkSubnetID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Network/virtualNetworks/vnet1/subnets/subnet1"),
 					},
 				},
+
 				config: armappservice.WebAppsClientGetConfigurationResponse{
 					SiteConfigResource: armappservice.SiteConfigResource{
 						Properties: &armappservice.SiteConfig{
@@ -2913,7 +3013,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 						Enabled:    true,
 						Enforced:   true,
 						TlsVersion: constants.TLS1_2,
-						Algorithm:  "TLS_AES_128_GCM_SHA256",
+						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 					},
 				},
 				Redundancy: &voc.Redundancy{},
@@ -2981,7 +3081,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 						Enabled:    true,
 						Enforced:   false,
 						TlsVersion: constants.TLS1_2,
-						Algorithm:  "TLS_AES_128_GCM_SHA256",
+						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 					},
 				},
 				Redundancy: &voc.Redundancy{},
@@ -3247,6 +3347,217 @@ func Test_getAppServiceFarmName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.wantFarmName, getAppServicePlanName(tt.args.id), "getAppServicePlanName(%v)", tt.args.id)
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_discoverVirtualMachineScaleSets(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []voc.IsCloudResource
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			want: []voc.IsCloudResource{
+				&voc.VirtualMachine{
+					Compute: &voc.Compute{
+						Resource: &voc.Resource{
+							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0",
+							ServiceID: testdata.MockCloudServiceID1,
+							Name:      "ScaleSetVM0",
+							Type:      voc.VirtualMachineType,
+							GeoLocation: voc.GeoLocation{
+								Region: "eastus",
+							},
+							Labels: map[string]string{},
+							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+							Raw:    "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\",\"location\":\"eastus\",\"name\":\"scaleSet1\",\"properties\":{\"timeCreated\":\"2017-05-24T13:28:53.4540398Z\",\"virtualMachineProfile\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}}},\"tags\":{}}],\"*armcompute.VirtualMachineScaleSetVM\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0\",\"instanceId\":\"0\",\"location\":\"eastus\",\"name\":\"ScaleSetVM0\",\"properties\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}},\"tags\":{}}]}",
+						},
+					},
+					AutomaticUpdates: &voc.AutomaticUpdates{
+						Enabled:  true,
+						Interval: Duration30Days,
+					},
+				},
+			},
+
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			got, err := d.discoverVirtualMachineScaleSets()
+
+			tt.wantErr(t, err)
+
+			assert.Equal(t, tt.want, got)
+
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_handleVirtualMachineScaleSet(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		set      *armcompute.VirtualMachineScaleSetVM
+		scaleSet *armcompute.VirtualMachineScaleSet
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    voc.IsCompute
+		wantErr assert.ErrorAssertionFunc
+	}{{
+		name: "VM properties are nil",
+		fields: fields{
+			azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+		},
+		args: args{
+			set: &armcompute.VirtualMachineScaleSetVM{
+				Location:   util.Ref("eastus"),
+				ID:         util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1"),
+				InstanceID: util.Ref("ScaleSetVM1"),
+				Name:       util.Ref("ScaleSetVM1"),
+				Tags:       map[string]*string{},
+			},
+			scaleSet: &armcompute.VirtualMachineScaleSet{
+				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1"),
+			},
+		},
+		want: &voc.VirtualMachine{
+			Compute: &voc.Compute{
+				Resource: &voc.Resource{
+					ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1",
+					Name:      "ScaleSetVM1",
+					ServiceID: testdata.MockCloudServiceID1,
+					Type:      voc.VirtualMachineType,
+					GeoLocation: voc.GeoLocation{
+						Region: "eastus",
+					},
+					Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+					Labels: map[string]string{},
+					Raw:    "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\"}],\"*armcompute.VirtualMachineScaleSetVM\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1\",\"instanceId\":\"ScaleSetVM1\",\"location\":\"eastus\",\"name\":\"ScaleSetVM1\",\"tags\":{}}]}",
+				},
+			},
+		},
+		wantErr: assert.NoError,
+	},
+
+		{
+			name: "Happy path: VM from AKS pool",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				set: &armcompute.VirtualMachineScaleSetVM{
+					Location: util.Ref("eastus"),
+					ID:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/0"),
+					Name:     util.Ref("ScaleSetVM1"),
+					Tags:     map[string]*string{},
+					Properties: &armcompute.VirtualMachineScaleSetVMProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+				scaleSet: &armcompute.VirtualMachineScaleSet{
+					ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1"),
+				},
+			},
+			want:    nil,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: VM from VMSS",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockComputeSender()),
+			},
+			args: args{
+				set: &armcompute.VirtualMachineScaleSetVM{
+					Location:   util.Ref("eastus"),
+					ID:         util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1"),
+					InstanceID: util.Ref("ScaleSetVM1"),
+					Name:       util.Ref("ScaleSetVM1"),
+					Tags:       map[string]*string{},
+					Properties: &armcompute.VirtualMachineScaleSetVMProperties{
+						OSProfile: &armcompute.OSProfile{
+							LinuxConfiguration: &armcompute.LinuxConfiguration{
+								PatchSettings: &armcompute.LinuxPatchSettings{
+									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
+								},
+							},
+						},
+					},
+				},
+				scaleSet: &armcompute.VirtualMachineScaleSet{
+					ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1"),
+				},
+			},
+			want: &voc.VirtualMachine{
+				Compute: &voc.Compute{
+					Resource: &voc.Resource{
+						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1",
+						Name:      "ScaleSetVM1",
+						ServiceID: testdata.MockCloudServiceID1,
+						Type:      voc.VirtualMachineType,
+						GeoLocation: voc.GeoLocation{
+							Region: "eastus",
+						},
+						Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1",
+						Labels: map[string]string{},
+						Raw:    "{\"*armcompute.VirtualMachineScaleSet\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1\"}],\"*armcompute.VirtualMachineScaleSetVM\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachineScaleSets/scaleSet1/virtualMachines/ScaleSetVM1\",\"instanceId\":\"ScaleSetVM1\",\"location\":\"eastus\",\"name\":\"ScaleSetVM1\",\"properties\":{\"osProfile\":{\"linuxConfiguration\":{\"patchSettings\":{\"patchMode\":\"AutomaticByPlatform\"}}}},\"tags\":{}}]}",
+					},
+				},
+				AutomaticUpdates: &voc.AutomaticUpdates{
+					Enabled:  true,
+					Interval: Duration30Days,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+			got, err := d.handleVirtualMachineScaleSet(tt.args.set, tt.args.scaleSet)
+
+			tt.wantErr(t, err)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
