@@ -64,7 +64,7 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 		fields    fields
 		args      args
 		wantToken assert.Want[*oauth2.Token]
-		wantErr   bool
+		wantErr   assert.WantErr
 	}{
 		{
 			name: "fetch token without refresh token",
@@ -80,6 +80,7 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			wantToken: func(t *testing.T, token *oauth2.Token) bool {
 				return assert.NotNil(t, token) && assert.NotEmpty(t, token.AccessToken)
 			},
+			wantErr: assert.Nil[error],
 		},
 	}
 
@@ -90,10 +91,8 @@ func Test_oauthAuthorizer_Token(t *testing.T) {
 			}
 
 			gotToken, err := o.Token()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("oauthAuthorizer.fetchToken() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+
+			tt.wantErr(t, err)
 			tt.wantToken(t, gotToken)
 		})
 	}

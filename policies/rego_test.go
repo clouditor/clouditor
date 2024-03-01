@@ -61,7 +61,7 @@ func Test_regoEval_Eval(t *testing.T) {
 		args       args
 		applicable bool
 		compliant  map[string]bool
-		wantErr    bool
+		wantErr    assert.WantErr
 	}{
 		{
 			name: "ObjectStorage: Compliant Case",
@@ -96,7 +96,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ObjectStoragePublicAccessDisabled": true,
 				"ResourceInventory":                 true,
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
@@ -131,7 +131,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ObjectStoragePublicAccessDisabled": false,
 				"ResourceInventory":                 true,
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
@@ -167,7 +167,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"ObjectStoragePublicAccessDisabled": false,
 				"ResourceInventory":                 true,
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "VM: Compliant Case",
@@ -224,7 +224,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"OSLoggingEnabled":             true,
 				"ResourceInventory":            true,
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "VM: Non-Compliant Case",
@@ -265,7 +265,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				"OSLoggingRetention":           false,
 				"ResourceInventory":            true,
 			},
-			wantErr: false,
+			wantErr: assert.Nil[error],
 		},
 	}
 
@@ -281,10 +281,7 @@ func Test_regoEval_Eval(t *testing.T) {
 				Resource: prototest.NewAny(t, tt.args.resource),
 			}, tt.args.resource, tt.args.src)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("RunEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 
 			assert.NotEmpty(t, results)
 
@@ -318,8 +315,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 		name       string
 		fields     fields
 		args       args
-		wantResult *Result
-		wantErr    bool
+		wantResult assert.Want[*Result]
+		wantErr    assert.WantErr
 	}{
 		{
 			name: "default metric configuration",
@@ -339,21 +336,26 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &mockMetricsSource{t: t},
 			},
-			wantResult: &Result{
-				Applicable:  true,
-				Compliant:   true,
-				TargetValue: true,
-				Operator:    "==",
-				MetricID:    "AutomaticUpdatesEnabled",
-				Config: &assessment.MetricConfiguration{
-					Operator:       "==",
-					TargetValue:    structpb.NewBoolValue(true),
-					IsDefault:      true,
-					UpdatedAt:      nil,
-					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID1,
-				},
+			wantResult: func(t *testing.T, got *Result) bool {
+				want := &Result{
+					Applicable:  true,
+					Compliant:   true,
+					TargetValue: true,
+					Operator:    "==",
+					MetricID:    "AutomaticUpdatesEnabled",
+					Config: &assessment.MetricConfiguration{
+						Operator:       "==",
+						TargetValue:    structpb.NewBoolValue(true),
+						IsDefault:      true,
+						UpdatedAt:      nil,
+						MetricId:       "AutomaticUpdatesEnabled",
+						CloudServiceId: testdata.MockCloudServiceID1,
+					},
+				}
+
+				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "updated metric configuration",
@@ -373,21 +375,26 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &updatedMockMetricsSource{mockMetricsSource{t: t}},
 			},
-			wantResult: &Result{
-				Applicable:  true,
-				Compliant:   false,
-				TargetValue: false,
-				Operator:    "==",
-				MetricID:    "AutomaticUpdatesEnabled",
-				Config: &assessment.MetricConfiguration{
-					Operator:       "==",
-					TargetValue:    structpb.NewBoolValue(false),
-					IsDefault:      false,
-					UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
-					MetricId:       "AutomaticUpdatesEnabled",
-					CloudServiceId: testdata.MockCloudServiceID1,
-				},
+			wantResult: func(t *testing.T, got *Result) bool {
+				want := &Result{
+					Applicable:  true,
+					Compliant:   false,
+					TargetValue: false,
+					Operator:    "==",
+					MetricID:    "AutomaticUpdatesEnabled",
+					Config: &assessment.MetricConfiguration{
+						Operator:       "==",
+						TargetValue:    structpb.NewBoolValue(false),
+						IsDefault:      false,
+						UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+						MetricId:       "AutomaticUpdatesEnabled",
+						CloudServiceId: testdata.MockCloudServiceID1,
+					},
+				}
+
+				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
@@ -398,17 +405,9 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  tt.fields.pkg,
 			}
 			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metricID, tt.args.m, tt.args.src)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("regoEval.evalMap() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 
-			assert.Equal(t, tt.wantResult, gotResult)
-
-			// Assert the remaining message regularly
-			tt.wantResult.Config = nil
-			gotResult.Config = nil
-			assert.Equal(t, tt.wantResult, gotResult)
+			tt.wantErr(t, err)
+			tt.wantResult(t, gotResult)
 		})
 	}
 }
