@@ -28,7 +28,6 @@ package assessment
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -45,6 +44,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
@@ -53,13 +53,11 @@ import (
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -90,7 +88,7 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "AssessmentServer created with option rego package name",
@@ -99,9 +97,8 @@ func TestNewService(t *testing.T) {
 					WithRegoPackageName("testPkg"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "testPkg", s.evalPkg)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "testPkg", got.evalPkg)
 			},
 		},
 		{
@@ -111,9 +108,8 @@ func TestNewService(t *testing.T) {
 					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
 			},
 		},
 		{
@@ -124,10 +120,9 @@ func TestNewService(t *testing.T) {
 					WithOrchestratorAddress("localhost:9092"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "localhost:9091", s.evidenceStore.Target) &&
-					assert.Equal(t, "localhost:9092", s.orchestrator.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "localhost:9091", got.evidenceStore.Target) &&
+					assert.Equal(t, "localhost:9092", got.orchestrator.Target)
 			},
 		},
 		{
@@ -137,9 +132,8 @@ func TestNewService(t *testing.T) {
 					WithoutEvidenceStore(),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.True(t, s.isEvidenceStoreDisabled)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.True(t, got.isEvidenceStoreDisabled)
 			},
 		},
 		{
@@ -149,9 +143,8 @@ func TestNewService(t *testing.T) {
 					WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"}),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.NotNil(t, s.orchestrator.Authorizer())
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.orchestrator.Authorizer())
 			},
 		},
 		{
@@ -161,10 +154,8 @@ func TestNewService(t *testing.T) {
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				a := s.authz.(*servicetest.AuthorizationStrategyMock)
-				return assert.NotNil(t, a)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.authz.(*servicetest.AuthorizationStrategyMock))
 			},
 		},
 	}
@@ -441,7 +432,6 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 	assert.NoError(t, err)
 }
 
-// TestAssessEvidences tests AssessEvidences
 func TestService_AssessEvidences(t *testing.T) {
 	type fields struct {
 		ResultHooks          []assessment.ResultHookFunc
@@ -455,12 +445,11 @@ func TestService_AssessEvidences(t *testing.T) {
 		streamToServerWithRecvErr *mockAssessmentServerStreamWithRecvErr
 	}
 	tests := []struct {
-		name            string
-		fields          fields
-		args            args
-		wantErr         bool
-		wantErrMessage  string
-		wantRespMessage *assessment.AssessEvidencesResponse
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.WantErr
+		want    assert.Want[*assessment.AssessEvidencesResponse]
 	}{
 		{
 			name: "Missing toolId",
@@ -474,10 +463,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "evidence.tool_id: value length must be at least 1 characters",
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
+				return assert.Contains(t, got.StatusMessage, "evidence.tool_id: value length must be at least 1 characters")
 			},
 		},
 		{
@@ -492,10 +481,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
-				StatusMessage: "evidence.id: value must be a valid UUID",
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
+				return assert.Contains(t, got.StatusMessage, "evidence.id: value must be a valid UUID")
 			},
 		},
 		{
@@ -512,13 +501,17 @@ func TestService_AssessEvidences(t *testing.T) {
 						Timestamp:      timestamppb.Now(),
 						ToolId:         testdata.MockEvidenceToolID1,
 						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id:   testdata.MockResourceID1,
+							Name: testdata.MockResourceName1,
+						}),
 					},
 				}),
 			},
-			wantErr: false,
-			wantRespMessage: &assessment.AssessEvidencesResponse{
-				Status: assessment.AssessEvidencesResponse_ASSESSED,
+			wantErr: assert.Nil[error],
+			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
+				assert.Equal(t, assessment.AssessEvidencesResponse_ASSESSED, got.Status)
+				return assert.Empty(t, got.StatusMessage)
 			},
 		},
 		{
@@ -536,8 +529,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Unknown desc = cannot send response to the client",
+			want: assert.Nil[*assessment.AssessEvidencesResponse],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Unknown desc = cannot send response to the client")
+			},
 		},
 		{
 			name: "Error in stream to server - Recv()-err",
@@ -554,8 +549,10 @@ func TestService_AssessEvidences(t *testing.T) {
 					},
 				}),
 			},
-			wantErr:        true,
-			wantErrMessage: "rpc error: code = Unknown desc = cannot receive stream request",
+			want: assert.Nil[*assessment.AssessEvidencesResponse],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "rpc error: code = Unknown desc = cannot receive stream request")
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -584,17 +581,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				err = s.AssessEvidences(tt.args.streamToServerWithRecvErr)
 			}
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				assert.Nil(t, err)
-				assert.Contains(t, responseFromServer.StatusMessage, tt.wantRespMessage.StatusMessage)
-			} else {
-				assert.Contains(t, err.Error(), tt.wantErrMessage)
-			}
+			tt.wantErr(t, err)
+			tt.want(t, responseFromServer)
 		})
 	}
 }
@@ -629,7 +617,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 		name     string
 		args     args
 		wantResp *assessment.AssessEvidenceResponse
-		wantErr  bool
+		wantErr  assert.WantErr
 	}{
 		{
 			name: "Store evidence to the map",
@@ -668,7 +656,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 
 				resultHooks: []assessment.ResultHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr:  false,
+			wantErr:  assert.Nil[error],
 			wantResp: &assessment.AssessEvidenceResponse{},
 		},
 	}
@@ -693,14 +681,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 			// wait for all hooks (2 metrics * 2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("AssessEvidence() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("AssessEvidence() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
-
+			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantResp, gotResp)
 			assert.Equal(t, hookCounts, hookCallCounter)
 		})
@@ -856,7 +837,8 @@ func TestService_handleEvidence(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[[]*assessment.AssessmentResult]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "correct evidence",
@@ -880,10 +862,14 @@ func TestService_handleEvidence(t *testing.T) {
 					}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.NoError(t, err)
-				return false
+			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				for _, result := range got {
+					err := api.Validate(result)
+					assert.NoError(t, err)
+				}
+				return assert.Equal(t, 11, len(got))
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "broken Any message",
@@ -900,7 +886,8 @@ func TestService_handleEvidence(t *testing.T) {
 					Resource:       &anypb.Any{TypeUrl: "does-not-exist"},
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.Contains(t, err.Error(), "could not unmarshal resource proto message")
 			},
 		},
@@ -919,7 +906,8 @@ func TestService_handleEvidence(t *testing.T) {
 					Resource:       prototest.NewAny(t, &emptypb.Empty{}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.Contains(t, err.Error(), discovery.ErrNotOntologyResource.Error())
 			},
 		},
@@ -944,7 +932,8 @@ func TestService_handleEvidence(t *testing.T) {
 						}}),
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[[]*assessment.AssessmentResult],
+			wantErr: func(t *testing.T, err error) bool {
 				if !assert.NotEmpty(t, err) {
 					return false
 				}
@@ -965,16 +954,10 @@ func TestService_handleEvidence(t *testing.T) {
 				authz:                tt.fields.authz,
 			}
 
-			// Two tests: 1st) wantErr function. 2nd) if wantErr false then check if the results are valid
 			results, err := s.handleEvidence(context.Background(), tt.args.evidence)
-			if !tt.wantErr(t, err, fmt.Sprintf("handleEvidence(%v)", tt.args.evidence)) {
-				assert.NotEmpty(t, results)
-				// Check the result by validation
-				for _, result := range results {
-					err := api.Validate(result)
-					assert.NoError(t, err)
-				}
-			}
+
+			tt.wantErr(t, err)
+			tt.want(t, results)
 		})
 	}
 }
@@ -990,7 +973,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[orchestrator.Orchestrator_StoreAssessmentResultsClient]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Invalid RPC connection",
@@ -1002,7 +986,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOrchestratorAddress("localhost:1"),
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Empty[orchestrator.Orchestrator_StoreAssessmentResultsClient],
+			wantErr: func(t *testing.T, err error) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
 				return assert.Equal(t, codes.Unavailable, s.Code())
 			},
@@ -1018,7 +1003,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Empty[orchestrator.Orchestrator_StoreAssessmentResultsClient],
+			wantErr: func(t *testing.T, err error) bool {
 				s, _ := status.FromError(errors.Unwrap(err))
 				return assert.Equal(t, codes.Unauthenticated, s.Code())
 			},
@@ -1030,11 +1016,8 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 			s := NewService(tt.fields.opts...)
 			stream, err := s.initOrchestratorStream(tt.args.url, s.orchestrator.Opts...)
 
-			if tt.wantErr != nil {
-				tt.wantErr(t, err)
-			} else {
-				assert.NotEmpty(t, stream)
-			}
+			tt.wantErr(t, err)
+			tt.want(t, stream)
 		})
 	}
 }
@@ -1086,9 +1069,7 @@ func TestService_recvEventsLoop(t *testing.T) {
 			svc.pe = rec
 			svc.recvEventsLoop()
 
-			if !proto.Equal(rec.event, tt.wantEvent) {
-				t.Errorf("recvEventsLoop() = %v, want %v", rec.event, tt.wantEvent)
-			}
+			assert.Equal(t, tt.wantEvent, rec.event)
 		})
 	}
 }
@@ -1130,11 +1111,11 @@ func TestService_MetricImplementation(t *testing.T) {
 		metric string
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		wantImpl *assessment.MetricImplementation
-		wantErr  assert.ErrorAssertionFunc
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*assessment.MetricImplementation]
+		wantErr assert.WantErr
 	}{
 
 		{
@@ -1142,8 +1123,8 @@ func TestService_MetricImplementation(t *testing.T) {
 			args: args{
 				lang: assessment.MetricImplementation_LANGUAGE_UNSPECIFIED,
 			},
-			wantImpl: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+			want: assert.Nil[*assessment.MetricImplementation],
+			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "unsupported language")
 			},
 		},
@@ -1162,8 +1143,9 @@ func TestService_MetricImplementation(t *testing.T) {
 				evalPkg:                 tt.fields.evalPkg,
 			}
 			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
+
 			tt.wantErr(t, err)
-			assert.Equal(t, tt.wantImpl, gotImpl)
+			tt.want(t, gotImpl)
 		})
 	}
 }

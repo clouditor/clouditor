@@ -36,10 +36,11 @@ import (
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	apiruntime "clouditor.io/clouditor/v2/api/runtime"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/service"
-	"github.com/stretchr/testify/assert"
+
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -78,20 +79,15 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "New service with database",
 			args: args{
 				opts: []ServiceOption{WithStorage(myStorage)},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(tt, myStorage, s.storage)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Same(t, myStorage, got.storage)
 			},
 		},
 		{
@@ -99,13 +95,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []ServiceOption{WithCatalogsFolder("catalogsFolder.json")},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(tt, "catalogsFolder.json", s.catalogsFolder)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "catalogsFolder.json", got.catalogsFolder)
 			},
 		},
 		{
@@ -113,13 +104,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(tt, "metricsfile.json", s.metricsFile)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "metricsfile.json", got.metricsFile)
 			},
 		},
 		{
@@ -127,13 +113,8 @@ func TestNewService(t *testing.T) {
 			args: args{
 				opts: []ServiceOption{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s, ok := i1.(*Service)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Equal(tt, &service.AuthorizationStrategyAllowAll{}, s.authz)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyAllowAll{}, got.authz)
 			},
 		},
 	}
@@ -141,10 +122,7 @@ func TestNewService(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewService(tt.args.opts...)
-
-			if tt.want != nil {
-				tt.want(t, got, tt.args.opts)
-			}
+			tt.want(t, got)
 		})
 	}
 }
@@ -178,8 +156,8 @@ func TestCloudServiceHooks(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		wantRes assert.ValueAssertionFunc
-		wantErr bool
+		wantRes assert.Want[*orchestrator.CloudService]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Update Cloud Service",
@@ -194,11 +172,10 @@ func TestCloudServiceHooks(t *testing.T) {
 				},
 				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
 			},
-			wantErr: false,
-			wantRes: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*orchestrator.CloudService)
-				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", s.Id) &&
-					assert.Equal(t, "test service", s.Name) && assert.Equal(t, "test service", s.Description)
+			wantErr: assert.Nil[error],
+			wantRes: func(t *testing.T, got *orchestrator.CloudService) bool {
+				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
+					assert.Equal(t, "test service", got.Name) && assert.Equal(t, "test service", got.Description)
 			},
 		},
 	}
@@ -228,10 +205,7 @@ func TestCloudServiceHooks(t *testing.T) {
 			// wait for all hooks (2 services * 2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateCloudService() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
 
 			assert.Equal(t, hookCounts, hookCallCounter)
@@ -250,23 +224,21 @@ func TestService_GetRuntimeInfo(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
-		wantErr bool
+		want    assert.Want[*apiruntime.Runtime]
+		wantErr assert.WantErr
 	}{
 		{
-			name: "return runtime",
-			want: assert.NotNil,
+			name:    "return runtime",
+			want:    assert.NotNil[*apiruntime.Runtime],
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{}
 			gotRes, err := svc.GetRuntimeInfo(tt.args.in0, tt.args.in1)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Service.GetRuntimeInfo() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 
+			tt.wantErr(t, err)
 			tt.want(t, gotRes)
 		})
 	}

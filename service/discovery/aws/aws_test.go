@@ -32,11 +32,12 @@ import (
 	"errors"
 	"testing"
 
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
-	"github.com/stretchr/testify/assert"
 )
 
 const mockRegion = "mockRegion"

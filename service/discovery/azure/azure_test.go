@@ -33,16 +33,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -50,7 +48,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type mockSender struct {
@@ -1151,7 +1149,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewAzureDiscovery(tt.args.opts...)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 		})
 	}
 }
@@ -1163,19 +1161,18 @@ func Test_azureDiscovery_List(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Authorize error: no credentials configured",
 			fields: fields{
 				&azureDiscovery{},
 			},
-			want: assert.Empty,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, ErrNoCredentialsConfigured.Error())
-
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			want: assert.Empty[[]ontology.IsResource],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				assert.ErrorContains(t, gotErr, ErrNoCredentialsConfigured.Error())
+				return assert.ErrorContains(t, gotErr, ErrCouldNotAuthenticate.Error())
 			},
 		},
 		{
@@ -1183,16 +1180,10 @@ func Test_azureDiscovery_List(t *testing.T) {
 			fields: fields{
 				NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.([]ontology.IsResource)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Greater(t, len(got), 31)
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.True(t, len(got) > 31)
 			},
-
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
@@ -1201,7 +1192,6 @@ func Test_azureDiscovery_List(t *testing.T) {
 			gotList, err := d.List()
 
 			tt.wantErr(t, err)
-
 			tt.want(t, gotList)
 		})
 	}
@@ -1356,9 +1346,8 @@ func Test_resourceGroupID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
-			}
+			got := resourceGroupID(tt.args.ID)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1440,7 +1429,7 @@ func Test_labels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+			assert.Equal(t, tt.want, labels(tt.args.tags))
 		})
 	}
 }
@@ -1460,7 +1449,7 @@ func Test_initClient(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantClient assert.ValueAssertionFunc
+		wantClient assert.Want[*armstorage.AccountsClient]
 		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
@@ -1480,7 +1469,7 @@ func Test_initClient(t *testing.T) {
 				},
 				fun: armstorage.NewAccountsClient,
 			},
-			wantClient: assert.NotEmpty,
+			wantClient: assert.NotNil[*armstorage.AccountsClient],
 			wantErr:    assert.NoError,
 		},
 		{
@@ -1502,7 +1491,7 @@ func Test_initClient(t *testing.T) {
 					return nil, someError
 				},
 			},
-			wantClient: assert.Empty,
+			wantClient: assert.Nil[*armstorage.AccountsClient],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, someError)
 			},
@@ -1524,8 +1513,8 @@ func Test_initClient(t *testing.T) {
 				},
 				fun: armstorage.NewAccountsClient,
 			},
-			wantClient: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Same(t, i1, someClient)
+			wantClient: func(t *testing.T, got *armstorage.AccountsClient) bool {
+				return assert.Same(t, someClient, got)
 			},
 			wantErr: assert.NoError,
 		},
@@ -1615,7 +1604,7 @@ func Test_retentionDuration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := retentionDuration(tt.args.retention)
-			prototest.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1627,7 +1616,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
+		want    assert.Want[map[string]*defenderProperties]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1635,18 +1624,13 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.(map[string]*defenderProperties)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
+			want: func(t *testing.T, got map[string]*defenderProperties) bool {
 				want := &defenderProperties{
 					monitoringLogDataEnabled: true,
 					securityAlertsEnabled:    true,
 				}
 
-				return assert.Equal(t, want, got[DefenderStorageType])
+				return assert.Equal(t, want, got[DefenderStorageType], assert.CompareAllUnexported())
 			},
 			wantErr: assert.NoError,
 		},

@@ -41,6 +41,7 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
@@ -49,10 +50,8 @@ import (
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/go-co-op/gocron"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -74,7 +73,7 @@ func TestNewService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
@@ -83,9 +82,8 @@ func TestNewService(t *testing.T) {
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "localhost:9091", s.assessment.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "localhost:9091", got.assessment.Target)
 			},
 		},
 		{
@@ -95,9 +93,8 @@ func TestNewService(t *testing.T) {
 					WithCloudServiceID(testdata.MockCloudServiceID1),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, testdata.MockCloudServiceID1, s.csID)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, testdata.MockCloudServiceID1, got.csID)
 			},
 		},
 		{
@@ -107,9 +104,8 @@ func TestNewService(t *testing.T) {
 					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, got.authz)
 			},
 		},
 		{
@@ -119,9 +115,8 @@ func TestNewService(t *testing.T) {
 					WithStorage(testutil.NewInMemoryStorage(t)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.NotNil(t, s.storage)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.storage)
 			},
 		},
 		{
@@ -131,9 +126,8 @@ func TestNewService(t *testing.T) {
 					WithDiscoveryInterval(time.Duration(8)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, s.discoveryInterval, time.Duration(8))
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, time.Duration(8), got.discoveryInterval)
 			},
 		},
 	}
@@ -237,7 +231,7 @@ func TestService_ListResources(t *testing.T) {
 		fields                   fields
 		args                     args
 		numberOfQueriedResources int
-		wantErr                  assert.ErrorAssertionFunc
+		wantErr                  assert.WantErr
 	}{
 		{
 			name: "Filter type, allow all",
@@ -252,7 +246,7 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 1,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, allow",
@@ -266,7 +260,7 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, not allowed",
@@ -280,8 +274,8 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 0,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
 			},
 		},
 		{
@@ -292,7 +286,7 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "No filtering, allow different cloud service, empty result",
@@ -302,7 +296,7 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 0,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 	}
 
@@ -434,8 +428,8 @@ func TestService_Start(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[*discovery.StartDiscoveryResponse]
+		wantErr assert.WantErr
 	}{
 		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
 		{
@@ -447,9 +441,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: nil,
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
@@ -463,9 +457,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "provider falseProvider not known")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "provider falseProvider not known")
 			},
 		},
 		{
@@ -479,9 +473,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "access denied")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "access denied")
 			},
 		},
 		{
@@ -513,9 +507,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not schedule job for ", ".Every() interval must be greater than 0")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not schedule job for ", ".Every() interval must be greater than 0")
 			},
 		},
 		{
@@ -538,9 +532,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not authenticate to Kubernetes")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not authenticate to Kubernetes")
 			},
 		},
 		{
@@ -572,12 +566,10 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.True(t, proto.Equal(&discovery.StartDiscoveryResponse{Successful: true}, resp))
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure authorizer from ENV",
@@ -608,12 +600,10 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.True(t, proto.Equal(&discovery.StartDiscoveryResponse{Successful: true}, resp))
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure with resource group",
@@ -646,12 +636,10 @@ func TestService_Start(t *testing.T) {
 					ResourceGroup: util.Ref("testResourceGroup"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.True(t, proto.Equal(&discovery.StartDiscoveryResponse{Successful: true}, resp))
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
@@ -675,9 +663,9 @@ func TestService_Start(t *testing.T) {
 				}
 			}
 
-			gotResp, err := svc.Start(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.Start(tt.args.ctx, tt.args.req)
 
-			tt.want(t, gotResp)
+			tt.want(t, gotRes)
 			tt.wantErr(t, err)
 		})
 	}

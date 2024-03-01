@@ -26,6 +26,7 @@
     "cSpell.words": [
       "AISEC",
       "anypb",
+      "apiruntime",
       "armappservice",
       "armcompute",
       "armcosmos",
@@ -37,6 +38,7 @@
       "clientcredentials",
       "clitest",
       "Clouditor",
+      "cmpopts",
       "conds",
       "dataprotection",
       "Debugf",
@@ -61,6 +63,7 @@
       "Kube",
       "Kubernetes",
       "logrus",
+      "metav",
       "orchestratortest",
       "oxisto",
       "PBES",

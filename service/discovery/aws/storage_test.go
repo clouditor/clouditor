@@ -35,13 +35,13 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -488,7 +488,7 @@ func TestAwsS3Discovery_List(t *testing.T) {
 		},
 	}
 	resources, err := d.List()
-	assert.NotNil(t, err, "EXPECTED error because MockBucket2 should throw JSON error. But GOT no error")
+	assert.NotNil(t, err)
 
 	log.Println("Testing number of resources (buckets)")
 	assert.Equal(t, 2, len(resources))

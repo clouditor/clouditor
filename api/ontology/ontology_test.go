@@ -1,13 +1,12 @@
 package ontology
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -31,9 +30,8 @@ func TestResourceTypes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ResourceTypes(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ResourceTypes() = %v, want %v", got, tt.want)
-			}
+			got := ResourceTypes(tt.args.r)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -67,9 +65,8 @@ func TestRelated(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Related(tt.args.r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Related() = %v, want %v", got, tt.want)
-			}
+			got := Related(tt.args.r)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -81,8 +78,8 @@ func TestResourceMap(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		wantProps map[string]any
-		wantErr   bool
+		wantProps assert.Want[map[string]any]
+		wantErr   assert.WantErr
 	}{
 		{
 			name: "happy path",
@@ -96,38 +93,41 @@ func TestResourceMap(t *testing.T) {
 					},
 				},
 			},
-			wantProps: map[string]any{
-				"activityLogging":     nil,
-				"blockStorageIds":     []any{},
-				"bootLogging":         nil,
-				"creationTime":        "2024-01-01T00:00:00Z",
-				"encryptionInUse":     nil,
-				"geoLocation":         nil,
-				"id":                  "my-id",
-				"labels":              map[string]any{},
-				"name":                "My VM",
-				"networkInterfaceIds": []any{},
-				"malwareProtection":   nil,
-				"osLogging":           nil,
-				"raw":                 "",
-				"resourceLogging":     nil,
-				"automaticUpdates": map[string]any{
-					"enabled":      false,
-					"interval":     "172800s",
-					"securityOnly": false,
-				},
-				"type": []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+			wantProps: func(t *testing.T, got map[string]any) bool {
+				want := map[string]any{
+					"activityLogging":     nil,
+					"blockStorageIds":     []any{},
+					"bootLogging":         nil,
+					"creationTime":        "2024-01-01T00:00:00Z",
+					"encryptionInUse":     nil,
+					"geoLocation":         nil,
+					"id":                  "my-id",
+					"labels":              map[string]any{},
+					"name":                "My VM",
+					"networkInterfaceIds": []any{},
+					"malwareProtection":   nil,
+					"osLogging":           nil,
+					"raw":                 "",
+					"resourceLogging":     nil,
+					"automaticUpdates": map[string]any{
+						"enabled":      false,
+						"interval":     "172800s",
+						"securityOnly": false,
+					},
+					"type": []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+				}
+
+				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotProps, err := ResourceMap(tt.args.r)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ResourceProperties() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			assert.Equal(t, tt.wantProps, gotProps)
+
+			tt.wantErr(t, err)
+			tt.wantProps(t, gotProps)
 		})
 	}
 }

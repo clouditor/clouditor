@@ -37,15 +37,15 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-	"github.com/stretchr/testify/assert"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestService_CreateTargetOfEvaluation(t *testing.T) {
@@ -72,7 +72,8 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
+		want    assert.Want[*orchestrator.TargetOfEvaluation]
+		wantSvc assert.Want[*Service]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -85,7 +86,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "target_of_evaluation: value is required")
 			},
-			want: assert.Empty,
+			want: assert.Nil[*orchestrator.TargetOfEvaluation],
 		},
 		{
 			name: "Error getting catalog",
@@ -96,7 +97,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
 			}},
-			want: assert.Empty,
+			want: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "invalid catalog or cloud service")
@@ -117,13 +118,11 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(""),
 			}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				svc := i2[0].(*Service)
-
+			wantSvc: func(t *testing.T, got *Service) bool {
 				// We want to assert that certain things happened in our database
 				var toes []*orchestrator.TargetOfEvaluation
 				// for join tables, do not use preload (which is the default)
-				err := svc.storage.List(&toes, "", false, 0, -1, gorm.WithoutPreload())
+				err := got.storage.List(&toes, "", false, 0, -1, gorm.WithoutPreload())
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -132,13 +131,15 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}
 
 				var service orchestrator.CloudService
-				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
+				err = got.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
 
 				return assert.Equal(t, 1, len(service.CatalogsInScope))
+
 			},
+			want:    assert.AnyValue[*orchestrator.TargetOfEvaluation],
 			wantErr: assert.NoError,
 		},
 		{
@@ -156,13 +157,11 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			args: args{req: &orchestrator.CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic),
 			}},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				svc := i2[0].(*Service)
-
+			wantSvc: func(t *testing.T, got *Service) bool {
 				// We want to assert that certain things happened in our database
 				var toes []*orchestrator.TargetOfEvaluation
 				// for join tables, do not use preload (which is the default)
-				err := svc.storage.List(&toes, "", false, 0, -1, gorm.WithoutPreload())
+				err := got.storage.List(&toes, "", false, 0, -1, gorm.WithoutPreload())
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -171,13 +170,14 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 				}
 
 				var service orchestrator.CloudService
-				err = svc.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
+				err = got.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
 
 				return assert.Equal(t, 1, len(service.CatalogsInScope))
 			},
+			want:    assert.AnyValue[*orchestrator.TargetOfEvaluation],
 			wantErr: assert.NoError,
 		},
 	}
@@ -198,7 +198,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
-			tt.want(t, gotRes, svc)
+			tt.want(t, gotRes)
 		})
 	}
 }
@@ -215,7 +215,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 		name         string
 		fields       fields
 		args         args
-		wantResponse assert.ValueAssertionFunc
+		wantResponse assert.Want[*orchestrator.TargetOfEvaluation]
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
@@ -225,7 +225,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args:         args{req: nil},
-			wantResponse: assert.Nil,
+			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "empty request")
@@ -240,7 +240,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
 				CloudServiceId: "",
 			}},
-			wantResponse: assert.Nil,
+			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
@@ -265,7 +265,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				CloudServiceId: testdata.MockCloudServiceID2,
 				CatalogId:      testdata.MockCatalogID,
 			}},
-			wantResponse: assert.Nil,
+			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
 				return assert.ErrorContains(t, err, "ToE not found")
@@ -290,14 +290,12 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				CloudServiceId: testdata.MockCloudServiceID1,
 				CatalogId:      testdata.MockCatalogID,
 			}},
-			wantResponse: func(t assert.TestingT, i interface{}, i2 ...interface{}) bool {
-				res, ok := i.(*orchestrator.TargetOfEvaluation)
+			wantResponse: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
 				want := orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)
 
-				return assert.True(t, ok) &&
-					assert.NoError(t, api.Validate(res)) &&
-					assert.Equal(t, want.CloudServiceId, res.CloudServiceId) &&
-					assert.Equal(t, want.CatalogId, res.CatalogId)
+				return assert.NoError(t, api.Validate(got)) &&
+					assert.Equal(t, want.CloudServiceId, got.CloudServiceId) &&
+					assert.Equal(t, want.CatalogId, got.CatalogId)
 			},
 			wantErr: assert.NoError,
 		},
@@ -309,11 +307,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz:   tt.fields.authz,
 			}
 			res, err := orchestratorService.GetTargetOfEvaluation(context.Background(), tt.args.req)
-
-			// Validate the error via the ErrorAssertionFunc function
 			tt.wantErr(t, err)
-
-			// Validate the response via the ValueAssertionFunc function
 			tt.wantResponse(t, res)
 		})
 	}
@@ -494,10 +488,10 @@ func TestToeHook(t *testing.T) {
 		req *orchestrator.UpdateTargetOfEvaluationRequest
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *orchestrator.TargetOfEvaluation
-		wantErr  bool
+		name    string
+		args    args
+		wantRes *orchestrator.TargetOfEvaluation
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store first assessment result to the map",
@@ -511,8 +505,8 @@ func TestToeHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
-			wantResp: &orchestrator.TargetOfEvaluation{
+			wantErr: assert.Nil[error],
+			wantRes: &orchestrator.TargetOfEvaluation{
 				CloudServiceId: testdata.MockCloudServiceID1,
 				CatalogId:      testdata.MockCatalogID,
 				AssuranceLevel: &testdata.AssuranceLevelSubstantial,
@@ -536,20 +530,15 @@ func TestToeHook(t *testing.T) {
 			err = s.storage.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic))
 			assert.NoError(t, err)
 
-			gotResp, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
+			gotRes, err := s.UpdateTargetOfEvaluation(tt.args.ctx, tt.args.req)
 
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
-			assert.NoError(t, api.Validate(gotResp))
+			assert.NoError(t, api.Validate(gotRes))
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateTargetOfEvaluation() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-			if !proto.Equal(gotResp, tt.wantResp) {
-				t.Errorf("UpdateTargetOfEvaluation() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantRes, gotRes)
 			assert.Equal(t, 2, hookCallCounter)
 		})
 	}

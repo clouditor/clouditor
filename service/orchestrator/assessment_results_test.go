@@ -40,19 +40,18 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
-	"clouditor.io/clouditor/v2/internal/testutil/prototest"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -182,7 +181,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 				assert.Nil(t, gotRes)
 			} else {
 				assert.NoError(t, api.Validate(gotRes))
-				prototest.Equal(t, tt.res, gotRes)
+				assert.Equal(t, tt.res, gotRes)
 			}
 		})
 	}
@@ -287,7 +286,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Equal(t, err, service.ErrPermissionDenied)
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
 			},
 		},
 		{
@@ -590,7 +589,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 				assert.Nil(t, gotRes)
 			} else {
 				assert.NoError(t, api.Validate(gotRes))
-				assert.True(t, proto.Equal(tt.wantRes, gotRes), "Want: %v\nGot : %v", tt.wantRes, gotRes)
+				assert.Equal(t, tt.wantRes, gotRes)
 			}
 		})
 	}
@@ -637,10 +636,10 @@ func TestAssessmentResultHook(t *testing.T) {
 		assessment *orchestrator.StoreAssessmentResultRequest
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantResp *orchestrator.StoreAssessmentResultResponse
-		wantErr  bool
+		name    string
+		args    args
+		wantRes *orchestrator.StoreAssessmentResultResponse
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Store first assessment result to the map",
@@ -668,8 +667,8 @@ func TestAssessmentResultHook(t *testing.T) {
 					},
 				},
 			},
-			wantErr:  false,
-			wantResp: &orchestrator.StoreAssessmentResultResponse{},
+			wantErr: assert.Nil[error],
+			wantRes: &orchestrator.StoreAssessmentResultResponse{},
 		},
 	}
 
@@ -677,18 +676,13 @@ func TestAssessmentResultHook(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
 			s := service
-			gotResp, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
+			gotRes, err := s.StoreAssessmentResult(tt.args.in0, tt.args.assessment)
 
 			// wait for all hooks (2 hooks)
 			wg.Wait()
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("StoreAssessmentResult() error = %v, wantErrMessage %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotResp, tt.wantResp) {
-				t.Errorf("StoreAssessmentResult() gotResp = %v, want %v", gotResp, tt.wantResp)
-			}
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantRes, gotRes)
 
 			var results []*assessment.AssessmentResult
 			assert.NoError(t, s.storage.List(&results, "", true, 0, -1))
