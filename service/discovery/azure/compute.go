@@ -162,6 +162,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 		},
 		func(site *armappservice.Site) error {
 			var r voc.IsCompute
+			var isWebApp bool
 
 			// Get configuration
 			config, err := d.clients.sitesClient.GetConfiguration(context.Background(), *site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientGetConfigurationOptions{})
@@ -173,8 +174,10 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			switch *site.Kind {
 			case "app": // Windows Web App
 				r = d.handleWebApp(site, config)
+				isWebApp = true
 			case "app,linux": // Linux Web app
 				r = d.handleWebApp(site, config)
+				isWebApp = true
 			case "app,linux,container": // Linux Container Web App
 				// TODO(all): TBD
 				log.Debug("Linux Container Web App Web App currently not implemented.")
@@ -207,6 +210,11 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			if r != nil {
 				log.Infof("Adding function %+v", r)
 				list = append(list, r)
+
+				// Also add function/web app slots
+				var slots []voc.IsCloudResource
+				slots, err = d.discoverSlots(site, config, isWebApp)
+				list = append(list, slots...)
 			}
 
 			return nil
@@ -216,6 +224,43 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	}
 
 	return list, nil
+}
+
+func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c armappservice.WebAppsClientGetConfigurationResponse, isWebApp bool) (list []voc.IsCloudResource, err error) {
+	var (
+		page armappservice.WebAppsClientListSlotsResponse
+		s    voc.IsCompute
+	)
+
+	pager := d.clients.sitesClient.NewListSlotsPager(util.Deref(d.rg), util.Deref(baseSite.Name), &armappservice.WebAppsClientListSlotsOptions{})
+	for pager.More() {
+		page, err = pager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("could not advance to next page (NewListSlotsPager): %v", err)
+			return
+		}
+		for _, slot := range page.Value {
+			if isWebApp {
+				s = d.handleWebApp(slot, c)
+				// Change parent to actual web app the slot belongs to
+				app, ok := s.(*voc.WebApp)
+				if ok {
+					app.Parent = voc.ResourceID(resourceID(baseSite.ID))
+					s = app
+				}
+			} else {
+				s = d.handleFunction(slot, c)
+				// Change parent to actual function the slot belongs to
+				function, ok := s.(*voc.Function)
+				if ok {
+					function.Parent = voc.ResourceID(resourceID(baseSite.ID))
+					s = function
+				}
+			}
+			list = append(list, s)
+		}
+	}
+	return
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
@@ -355,7 +400,7 @@ func getPublicAccessOfAppService(s *armappservice.Site, config armappservice.Web
 	if config.Properties == nil || config.Properties.IPSecurityRestrictions == nil {
 		return true
 	}
-	// Case 1.2: Fields are are non-nil
+	// Case 1.2: Fields are non-nil
 	rules := config.Properties.IPSecurityRestrictions
 	if publicAccess == "enabled" && len(rules) == 0 {
 		return true
