@@ -210,6 +210,19 @@ func (m mockNetworkSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Network/networkSecurityGroups" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1",
+					"name":     "nsg1",
+					"location": "eastus",
+					"properties": map[string]interface{}{
+						"defaultSecurityRules": []string{},
+					},
+				},
+			},
+		}, 200)
 	}
 	// return createResponse(req, map[string]interface{}{
 	// 	"value": &[]map[string]interface{}{
@@ -284,6 +297,7 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					AccessRestriction: &voc.L3Firewall{
 						Enabled: true,
 					},
+					NetworkSecurityGroup: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networksecuritygroups/nsg1"),
 				},
 				&voc.LoadBalancer{
 					NetworkService: &voc.NetworkService{
@@ -368,6 +382,22 @@ func Test_azureNetworkDiscovery_List(t *testing.T) {
 					AccessRestriction: voc.WebApplicationFirewall{
 						Enabled: true,
 					},
+				},
+				&voc.NetworkSecurityGroup{
+					Networking: &voc.Networking{
+						Resource: &voc.Resource{
+							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.network/networksecuritygroups/nsg1",
+							ServiceID:    testdata.MockCloudServiceID1,
+							Name:         "nsg1",
+							CreationTime: 0,
+							GeoLocation:  voc.GeoLocation{Region: "eastus"},
+							Type:         voc.NetworkSecurityGroupType,
+							Labels:       map[string]string{},
+							Parent:       "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
+							Raw:          "{\"armnetwork.SecurityGroup\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/Microsoft.Network/networkSecurityGroups/nsg1\",\"location\":\"eastus\",\"name\":\"nsg1\",\"properties\":{\"defaultSecurityRules\":[]}}]}",
+						},
+					},
+					PublicAccess: true,
 				},
 			},
 			wantErr: assert.NoError,

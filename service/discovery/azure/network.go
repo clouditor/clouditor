@@ -460,7 +460,7 @@ func (d *azureNetworkDiscovery) discoverNSGs() (list []voc.IsCloudResource, err 
 }
 
 func (d *azureNetworkDiscovery) handleNetworkSecurityGroup(securityGroup *armnetwork.SecurityGroup) (nsg voc.IsNetwork, err error) {
-	nsg = voc.NetworkSecurityGroup{
+	nsg = &voc.NetworkSecurityGroup{
 		Networking: &voc.Networking{
 			Resource: discovery.NewResource(d,
 				voc.ResourceID(resourceID(securityGroup.ID)),
