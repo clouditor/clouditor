@@ -232,7 +232,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	}
 
 	// initialize farms client
-	if err := d.initAppServiceFarmsClient(); err != nil {
+	if err := d.initAppServicePlansClient(); err != nil {
 		return nil, err
 	}
 
@@ -991,8 +991,8 @@ func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
 	return
 }
 
-// initWebAppsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initAppServiceFarmsClient() (err error) {
+// initAppServicePlansClient creates the client if not already exists
+func (d *azureComputeDiscovery) initAppServicePlansClient() (err error) {
 	d.clients.plansClient, err = initClient(d.clients.plansClient, d.azureDiscovery, armappservice.NewPlansClient)
 	return
 }

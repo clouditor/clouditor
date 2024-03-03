@@ -3303,7 +3303,7 @@ func Test_azureComputeDiscovery_getRedundancy(t *testing.T) {
 			wantR: &voc.Redundancy{Zone: true},
 		},
 		{
-			name: "Web App without zone redundancy enabled",
+			name: "Happy path - zone redundancy disabled",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
 			},
@@ -3312,19 +3312,39 @@ func Test_azureComputeDiscovery_getRedundancy(t *testing.T) {
 					ServerFarmID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/FarmWithNoRedundancy")}}},
 			wantR: &voc.Redundancy{Zone: false},
 		},
+		{
+			name: "Missing properties (app.properties is nil) - zone redundancy disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: nil}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
+		{
+			name: "Missing property (ServerFarmID is nil) - zone redundancy disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: nil}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &azureComputeDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			assert.NoError(t, d.initAppServiceFarmsClient())
+			assert.NoError(t, d.initAppServicePlansClient())
 			assert.Equalf(t, tt.wantR, d.getRedundancy(tt.args.app), "getRedundancy(%v)", tt.args.app)
 		})
 	}
 }
 
-func Test_getAppServiceFarmName(t *testing.T) {
+func Test_getAppServicePlanName(t *testing.T) {
 	type args struct {
 		id *string
 	}
