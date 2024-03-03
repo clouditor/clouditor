@@ -95,6 +95,13 @@ func (d *azureNetworkDiscovery) List() (list []voc.IsCloudResource, err error) {
 	}
 	list = append(list, ag...)
 
+	// Discover Network Security Groups (NSGs)
+	nsg, err := d.discoverNSGs()
+	if err != nil {
+		return list, fmt.Errorf("could not discover network security groups: %w", err)
+	}
+	list = append(list, nsg...)
+
 	return
 }
 
@@ -276,6 +283,7 @@ func (d *azureNetworkDiscovery) handleNetworkInterfaces(ni *armnetwork.Interface
 			// Inbound: ,
 			// RestrictedPorts: ,
 		},
+		NetworkSecurityGroup: voc.ResourceID(resourceID(ni.Properties.NetworkSecurityGroup.ID)),
 	}
 }
 
@@ -420,4 +428,74 @@ func (d *azureNetworkDiscovery) initApplicationGatewayClient() (err error) {
 func (d *azureNetworkDiscovery) initNetworkSecurityGroupClient() (err error) {
 	d.clients.networkSecurityGroupsClient, err = initClient(d.clients.networkSecurityGroupsClient, d.azureDiscovery, armnetwork.NewSecurityGroupsClient)
 	return
+}
+
+func (d *azureNetworkDiscovery) discoverNSGs() (list []voc.IsCloudResource, err error) {
+	err = d.initNetworkSecurityGroupClient()
+	if err != nil {
+		err = fmt.Errorf("could not init network security group: %w", err)
+		return
+	}
+
+	err = listPager(d.azureDiscovery,
+		d.clients.networkSecurityGroupsClient.NewListAllPager,
+		d.clients.networkSecurityGroupsClient.NewListPager,
+		func(res armnetwork.SecurityGroupsClientListAllResponse) []*armnetwork.SecurityGroup {
+			return res.Value
+		},
+		func(res armnetwork.SecurityGroupsClientListResponse) []*armnetwork.SecurityGroup {
+			return res.Value
+		},
+		func(securityGroup *armnetwork.SecurityGroup) (err error) {
+			var nsg voc.IsNetwork
+			nsg, err = d.handleNetworkSecurityGroup(securityGroup)
+			if err != nil {
+				err = fmt.Errorf("could not handle NSG '%s': %w", util.Deref(securityGroup.Name), err)
+				return
+			}
+			list = append(list, nsg)
+			return
+		})
+	return
+}
+
+func (d *azureNetworkDiscovery) handleNetworkSecurityGroup(securityGroup *armnetwork.SecurityGroup) (nsg voc.IsNetwork, err error) {
+	nsg = voc.NetworkSecurityGroup{
+		Networking: &voc.Networking{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(resourceID(securityGroup.ID)),
+				util.Deref(securityGroup.Name),
+				nil,
+				voc.GeoLocation{Region: util.Deref(securityGroup.Location)},
+				labels(securityGroup.Tags),
+				// Leaving parent out would look more clean if it is connected to a network interface. If it is not, it
+				// looks like an island that doesn't belong to anything/RG
+				resourceGroupID(securityGroup.ID),
+				voc.NetworkSecurityGroupType,
+				util.Deref(securityGroup),
+			)},
+
+		PublicAccess: !isDenyAll(securityGroup),
+	}
+	return
+}
+
+func isDenyAll(group *armnetwork.SecurityGroup) (isDenyAll bool) {
+	for _, r := range group.Properties.DefaultSecurityRules {
+		if util.Deref(r.Properties.Direction) == armnetwork.SecurityRuleDirectionInbound &&
+			util.Deref(r.Properties.Access) == armnetwork.SecurityRuleAccessDeny &&
+			util.Deref(r.Properties.SourceAddressPrefix) == "*" {
+			isDenyAll = true
+			return
+		}
+	}
+	for _, r := range group.Properties.SecurityRules {
+		if util.Deref(r.Properties.Direction) == armnetwork.SecurityRuleDirectionInbound &&
+			util.Deref(r.Properties.Access) == armnetwork.SecurityRuleAccessDeny &&
+			util.Deref(r.Properties.SourceAddressPrefix) == "*" {
+			isDenyAll = true
+			return
+		}
+	}
+	return false
 }
