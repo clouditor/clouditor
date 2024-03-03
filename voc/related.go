@@ -137,3 +137,8 @@ func (a Application) Related() []string {
 
 	return list
 }
+
+func (ni NetworkInterface) Related() (list []string) {
+	list = append(list, string(ni.NetworkSecurityGroup))
+	return
+}

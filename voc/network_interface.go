@@ -31,6 +31,7 @@ var NetworkInterfaceType = []string{"NetworkInterface", "Networking", "Resource"
 
 type NetworkInterface struct {
 	*Networking
-	AccessRestriction IsAccessRestriction `json:"accessRestriction"`
-	NetworkService    ResourceID          `json:"networkService"`
+	AccessRestriction    IsAccessRestriction `json:"accessRestriction"`
+	NetworkService       ResourceID          `json:"networkService"`
+	NetworkSecurityGroup ResourceID          `json:"networkSecurityGroup"`
 }
