@@ -654,14 +654,14 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 	r := &voc.VirtualMachine{
 		Compute: &voc.Compute{
 			Resource: discovery.NewResource(d,
-				voc.ResourceID(*vm.ID),
+				voc.ResourceID(resourceID(vm.ID)),
 				*vm.Name,
 				nil, // not available
 				voc.GeoLocation{
 					Region: *vm.Location,
 				},
 				labels(vm.Tags),
-				voc.ResourceID(*scaleSet.ID),
+				resourceGroupID(vm.ID),
 				voc.VirtualMachineType,
 				scaleSet,
 				vm,
