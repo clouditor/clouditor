@@ -163,6 +163,7 @@ type clients struct {
 
 	// AppService
 	sitesClient *armappservice.WebAppsClient
+	plansClient *armappservice.PlansClient
 
 	// Compute
 	virtualMachinesClient           *armcompute.VirtualMachinesClient

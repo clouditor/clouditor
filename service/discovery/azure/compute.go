@@ -231,6 +231,11 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 		return nil, err
 	}
 
+	// initialize farms client
+	if err := d.initAppServicePlansClient(); err != nil {
+		return nil, err
+	}
+
 	// List functions
 	err := listPager(d.azureDiscovery,
 		d.clients.sitesClient.NewListPager,
@@ -370,7 +375,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 		RuntimeLanguage: runtimeLanguage,
 		RuntimeVersion:  runtimeVersion,
 		PublicAccess:    publicNetworkAccess,
-		Redundancy:      getRedundancy(function),
+		Redundancy:      d.getRedundancy(function),
 	}
 }
 
@@ -430,22 +435,43 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
 		},
 		PublicAccess: publicNetworkAccess,
-		Redundancy:   getRedundancy(webApp),
+		Redundancy:   d.getRedundancy(webApp),
 	}
 }
 
-func getRedundancy(app *armappservice.Site) *voc.Redundancy {
-	r := &voc.Redundancy{}
-	switch util.Deref(app.Properties.RedundancyMode) {
-	case armappservice.RedundancyModeNone:
-		break
-	case armappservice.RedundancyModeActiveActive:
-		r.Zone = true
-	case armappservice.RedundancyModeFailover, armappservice.RedundancyModeGeoRedundant:
-		r.Zone = true
-		r.Geo = true
+// getRedundancy returns for a given web app/function the redundancy in the voc format
+func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.Redundancy) {
+	r = &voc.Redundancy{}
+
+	if app.Properties == nil || app.Properties.ServerFarmID == nil {
+		log.Errorf("Could not look at properties or the Server Farm ID because one of them is empty")
+		return
 	}
-	return r
+	planName := getAppServicePlanName(app.Properties.ServerFarmID)
+	farm, err := d.clients.plansClient.Get(context.TODO(), util.Deref(d.rg), planName, &armappservice.PlansClientGetOptions{})
+	if err != nil {
+		log.Errorf("Could not get App Service Farm '%s', zone redundancy of web app '%s' is assumed to be false: %v",
+			util.Deref(app.Properties.ServerFarmID), util.Deref(app.Name), err)
+		return
+	}
+	r.Zone = util.Deref(farm.Properties.ZoneRedundant)
+	return
+}
+
+// getAppServicePlanName returns the name for the given ID of an app service plan (formerly farm). If it is wrongly
+// formatted, the empty string will be returned
+// A plan/farm id has the following form:
+// "/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/{appServicePlanName}"
+func getAppServicePlanName(id *string) (farmName string) {
+	var ok bool
+	_, farmName, ok = strings.Cut(util.Deref(id),
+		"/Microsoft.Web/serverfarms/")
+	if !ok {
+		log.Errorf("Could not cut the ID '%s' correctly. Probably it is not formatted correctly", util.Deref(id))
+		farmName = ""
+		return
+	}
+	return
 }
 
 // We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property
@@ -962,6 +988,12 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 // initWebAppsClient creates the client if not already exists
 func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
 	d.clients.sitesClient, err = initClient(d.clients.sitesClient, d.azureDiscovery, armappservice.NewWebAppsClient)
+	return
+}
+
+// initAppServicePlansClient creates the client if not already exists
+func (d *azureComputeDiscovery) initAppServicePlansClient() (err error) {
+	d.clients.plansClient, err = initClient(d.clients.plansClient, d.azureDiscovery, armappservice.NewPlansClient)
 	return
 }
 

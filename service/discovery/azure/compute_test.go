@@ -42,6 +42,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2/fake"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/stretchr/testify/assert"
 )
@@ -1676,7 +1677,6 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				// initialize backup vaults client
 				_ = az.initWebAppsClient()
 			}
-
 			assert.Equalf(t, tt.want, az.handleFunction(tt.args.function, tt.args.config), "handleFunction(%v)", tt.args.function)
 		})
 	}
@@ -3274,6 +3274,99 @@ func Test_getSecretURI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.wantSecretURI, getSecretURI(tt.args.s), "getSecretURI(%v)", tt.args.s)
+		})
+	}
+}
+
+func Test_azureComputeDiscovery_getRedundancy(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		app *armappservice.Site
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wantR  *voc.Redundancy
+	}{
+		{
+			name: "Happy path - zone redundancy enabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer),
+					WithResourceGroup("someRG")),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/FarmWithZoneRedundancy")}}},
+			wantR: &voc.Redundancy{Zone: true},
+		},
+		{
+			name: "Happy path - zone redundancy disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/FarmWithNoRedundancy")}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
+		{
+			name: "Missing properties (app.properties is nil) - zone redundancy disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: nil}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
+		{
+			name: "Missing property (ServerFarmID is nil) - zone redundancy disabled",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(fake.NewPlansServerTransport(&FakeFarmServer)),
+			},
+			args: args{app: &armappservice.Site{
+				Properties: &armappservice.SiteProperties{
+					ServerFarmID: nil}}},
+			wantR: &voc.Redundancy{Zone: false},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureComputeDiscovery{
+				azureDiscovery: tt.fields.azureDiscovery,
+			}
+			assert.NoError(t, d.initAppServicePlansClient())
+			assert.Equalf(t, tt.wantR, d.getRedundancy(tt.args.app), "getRedundancy(%v)", tt.args.app)
+		})
+	}
+}
+
+func Test_getAppServicePlanName(t *testing.T) {
+	type args struct {
+		id *string
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantFarmName string
+	}{
+		{
+			name:         "Happy path",
+			args:         args{id: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/someRG/providers/Microsoft.Web/serverfarms/appServicePlanName")},
+			wantFarmName: "appServicePlanName",
+		},
+		{
+			name:         "Wrongly formatted id - return empty string",
+			args:         args{id: util.Ref("/SomeNonsense/prefix/appServicePlanName")},
+			wantFarmName: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantFarmName, getAppServicePlanName(tt.args.id), "getAppServicePlanName(%v)", tt.args.id)
 		})
 	}
 }
