@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appservice/armappservice/v2"
@@ -116,13 +117,21 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 		list = append(list, d.backupMap[DataSourceTypeDisc].backupStorages...)
 	}
 
-	log.Info("Discover Azure compute resources")
+	log.Info("Discover Azure virtual machine resources")
 	// Discover virtual machines
 	virtualMachines, err := d.discoverVirtualMachines()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover virtual machines: %w", err)
 	}
 	list = append(list, virtualMachines...)
+
+	log.Info("Discover Azure VM scale set resources")
+	// Discover virtual machine scale sets
+	scaleSet, err := d.discoverVirtualMachineScaleSets()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover vm scale sets: %w", err)
+	}
+	list = append(list, scaleSet...)
 
 	// Discover functions and web apps
 	resources, err := d.discoverFunctionsWebApps()
@@ -137,6 +146,83 @@ func (d *azureComputeDiscovery) List() (list []voc.IsCloudResource, err error) {
 }
 
 // Discover functions and web apps
+func (d *azureComputeDiscovery) discoverVirtualMachineScaleSets() ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize virtual machine scale set client
+	if err := d.initVirtualMachineScaleSetClient(); err != nil {
+		return nil, err
+	}
+
+	// List all VMs
+	err := listPager(d.azureDiscovery,
+		d.clients.virtualMachineScaleSetsClient.NewListAllPager,
+		d.clients.virtualMachineScaleSetsClient.NewListPager,
+		func(res armcompute.VirtualMachineScaleSetsClientListAllResponse) []*armcompute.VirtualMachineScaleSet {
+			return res.Value
+		},
+		func(res armcompute.VirtualMachineScaleSetsClientListResponse) []*armcompute.VirtualMachineScaleSet {
+			return res.Value
+		},
+
+		func(scaleSet *armcompute.VirtualMachineScaleSet) error {
+			r, err := d.discoverVMScaleSetVMs(scaleSet)
+			if err != nil {
+				return fmt.Errorf("could not handle virtual machine scale set: %w", err)
+			}
+
+			log.Infof("Adding virtual machines for scale set '%s'", *scaleSet.Name)
+
+			list = append(list, r...)
+
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+// discoverVMScaleSetVMs discovers the virtual machines in a virtual machine scale set and returns the voc.VirtualMachine object
+func (d *azureComputeDiscovery) discoverVMScaleSetVMs(scaleSet *armcompute.VirtualMachineScaleSet) ([]voc.IsCloudResource, error) {
+	var list []voc.IsCloudResource
+
+	// initialize virtual machine scale set client
+	if err := d.initVirtualMachineScaleSetVMsClient(); err != nil {
+		return nil, err
+	}
+
+	// List all VMs in the scale set
+	listPager := d.clients.virtualMachineScaleSetVMsClient.NewListPager(resourceGroupName(util.Deref(scaleSet.ID)), util.Deref(scaleSet.Name), &armcompute.VirtualMachineScaleSetVMsClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			vm, err := d.handleVirtualMachineScaleSet(value, scaleSet)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle VM from scale set: %w", err)
+			}
+
+			// If no error and VirtualMachine object is returned, continue
+			if vm == nil {
+				continue
+			}
+
+			log.Infof("Adding VM from scale set '%s", vm.GetName())
+
+			list = append(list, vm)
+		}
+	}
+
+	return list, nil
+}
+
+// Discover functions and web apps
 func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -146,7 +232,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	}
 
 	// initialize farms client
-	if err := d.initAppServiceFarmsClient(); err != nil {
+	if err := d.initAppServicePlansClient(); err != nil {
 		return nil, err
 	}
 
@@ -436,8 +522,8 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 		log.Errorf("Could not look at properties or the Server Farm ID because one of them is empty")
 		return
 	}
-	farmName := getAppServiceFarmName(app.Properties.ServerFarmID)
-	farm, err := d.clients.appServiceFarmsClient.Get(context.TODO(), util.Deref(d.rg), farmName, &armappservice.PlansClientGetOptions{})
+	planName := getAppServicePlanName(app.Properties.ServerFarmID)
+	farm, err := d.clients.plansClient.Get(context.TODO(), util.Deref(d.rg), planName, &armappservice.PlansClientGetOptions{})
 	if err != nil {
 		log.Errorf("Could not get App Service Farm '%s', zone redundancy of web app '%s' is assumed to be false: %v",
 			util.Deref(app.Properties.ServerFarmID), util.Deref(app.Name), err)
@@ -447,11 +533,11 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 	return
 }
 
-// getAppServiceFarmName returns the name for the given ID of a app service farm. If it is wrongly formatted, the empty
-// string will be returned
-// A farm id has the following form:
+// getAppServicePlanName returns the name for the given ID of an app service plan (formerly farm). If it is wrongly
+// formatted, the empty string will be returned
+// A plan/farm id has the following form:
 // "/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/{appServicePlanName}"
-func getAppServiceFarmName(id *string) (farmName string) {
+func getAppServicePlanName(id *string) (farmName string) {
 	var ok bool
 	_, farmName, ok = strings.Cut(util.Deref(id),
 		"/Microsoft.Web/serverfarms/")
@@ -545,6 +631,80 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 	}
 
 	return list, nil
+}
+
+func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, scaleSet *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
+	var automaticUpdates *voc.AutomaticUpdates
+
+	// Check if VM is from a VMSS, then skip. VMs from the VMSS (Virtual Machine Scale Set) appear also in the Virtual Machines list, whereas the VMs from the AKS pool does not appear in the VMs list.
+	// If a VM Scale Set VM is from Kubernetes, the instanceID is a numeric digit.
+	sampleRegex := regexp.MustCompile(`\d+$`)
+	match := sampleRegex.Match([]byte(util.Deref(vm.InstanceID)))
+	if !match {
+		return nil, nil
+	}
+
+	if vm.Properties != nil {
+		automaticUpdates = automaticUpdatesScaleSet(vm.Properties.OSProfile)
+	}
+
+	r := &voc.VirtualMachine{
+		Compute: &voc.Compute{
+			Resource: discovery.NewResource(d,
+				voc.ResourceID(*vm.ID),
+				*vm.Name,
+				nil, // not available
+				voc.GeoLocation{
+					Region: *vm.Location,
+				},
+				labels(vm.Tags),
+				voc.ResourceID(*scaleSet.ID),
+				voc.VirtualMachineType,
+				scaleSet,
+				vm,
+			),
+		},
+
+		AutomaticUpdates: automaticUpdates,
+	}
+
+	return r, nil
+}
+
+// automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
+func automaticUpdatesScaleSet(set *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
+	automaticUpdates = &voc.AutomaticUpdates{}
+
+	if set == nil {
+		return
+	}
+
+	// Check if Linux configuration is available
+	if set.LinuxConfiguration != nil &&
+		set.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(set.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+		}
+	}
+
+	// Check if Windows configuration is available
+	if set.WindowsConfiguration != nil &&
+		set.WindowsConfiguration.PatchSettings != nil {
+		if util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *set.WindowsConfiguration.EnableAutomaticUpdates ||
+			util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *set.WindowsConfiguration.EnableAutomaticUpdates {
+			automaticUpdates.Enabled = true
+			automaticUpdates.Interval = Duration30Days
+			return
+
+		} else {
+			return
+
+		}
+	}
+
+	return
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
@@ -885,7 +1045,7 @@ func (d *azureComputeDiscovery) keyURL(diskEncryptionSetID string) (string, *arm
 	}
 
 	// Get disk encryption set
-	kv, err := d.clients.diskEncSetClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
+	kv, err := d.clients.diskEncSetsClient.Get(context.TODO(), resourceGroupName(diskEncryptionSetID), diskEncryptionSetName(diskEncryptionSetID), &armcompute.DiskEncryptionSetsClientGetOptions{})
 	if err != nil {
 		err = fmt.Errorf("could not get key vault: %w", err)
 		return "", nil, err
@@ -906,15 +1066,27 @@ func (d *azureComputeDiscovery) initWebAppsClient() (err error) {
 	return
 }
 
-// initWebAppsClient creates the client if not already exists
-func (d *azureComputeDiscovery) initAppServiceFarmsClient() (err error) {
-	d.clients.appServiceFarmsClient, err = initClient(d.clients.appServiceFarmsClient, d.azureDiscovery, armappservice.NewPlansClient)
+// initAppServicePlansClient creates the client if not already exists
+func (d *azureComputeDiscovery) initAppServicePlansClient() (err error) {
+	d.clients.plansClient, err = initClient(d.clients.plansClient, d.azureDiscovery, armappservice.NewPlansClient)
 	return
 }
 
 // initVirtualMachinesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initVirtualMachinesClient() (err error) {
 	d.clients.virtualMachinesClient, err = initClient(d.clients.virtualMachinesClient, d.azureDiscovery, armcompute.NewVirtualMachinesClient)
+	return
+}
+
+// initVirtualMachineScaleSetClient creates the client if not already exists
+func (d *azureComputeDiscovery) initVirtualMachineScaleSetClient() (err error) {
+	d.clients.virtualMachineScaleSetsClient, err = initClient(d.clients.virtualMachineScaleSetsClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetsClient)
+	return
+}
+
+// initVirtualMachineScaleSetVMsClient creates the client if not already exists
+func (d *azureComputeDiscovery) initVirtualMachineScaleSetVMsClient() (err error) {
+	d.clients.virtualMachineScaleSetVMsClient, err = initClient(d.clients.virtualMachineScaleSetVMsClient, d.azureDiscovery, armcompute.NewVirtualMachineScaleSetVMsClient)
 	return
 }
 
@@ -926,7 +1098,7 @@ func (d *azureComputeDiscovery) initBlockStoragesClient() (err error) {
 
 // initBlockStoragesClient creates the client if not already exists
 func (d *azureComputeDiscovery) initDiskEncryptonSetClient() (err error) {
-	d.clients.diskEncSetClient, err = initClient(d.clients.diskEncSetClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
+	d.clients.diskEncSetsClient, err = initClient(d.clients.diskEncSetsClient, d.azureDiscovery, armcompute.NewDiskEncryptionSetsClient)
 	return
 }
 

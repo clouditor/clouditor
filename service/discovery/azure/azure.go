@@ -162,13 +162,15 @@ type clients struct {
 	networkSecurityGroupsClient *armnetwork.SecurityGroupsClient
 
 	// AppService
-	sitesClient           *armappservice.WebAppsClient
-	appServiceFarmsClient *armappservice.PlansClient
+	sitesClient *armappservice.WebAppsClient
+	plansClient *armappservice.PlansClient
 
 	// Compute
-	virtualMachinesClient *armcompute.VirtualMachinesClient
-	blockStorageClient    *armcompute.DisksClient
-	diskEncSetClient      *armcompute.DiskEncryptionSetsClient
+	virtualMachinesClient           *armcompute.VirtualMachinesClient
+	virtualMachineScaleSetsClient   *armcompute.VirtualMachineScaleSetsClient
+	virtualMachineScaleSetVMsClient *armcompute.VirtualMachineScaleSetVMsClient
+	blockStorageClient              *armcompute.DisksClient
+	diskEncSetsClient               *armcompute.DiskEncryptionSetsClient
 
 	// Security
 	defenderClient *armsecurity.PricingsClient
