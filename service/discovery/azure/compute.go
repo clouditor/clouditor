@@ -300,6 +300,9 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 				// Also add function/web app slots
 				var slots []voc.IsCloudResource
 				slots, err = d.discoverSlots(site, config, isWebApp)
+				if err != nil {
+					log.Errorf("Could not discover slots: %v", err)
+				}
 				list = append(list, slots...)
 			}
 
