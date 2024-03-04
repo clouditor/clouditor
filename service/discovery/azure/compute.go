@@ -1133,7 +1133,7 @@ func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Sit
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
-		log.Errorf("could not get application settings for '%s': %v", util.Deref(site.Name), err)
+		log.Warnf("Could not get resource logging information: could not get application settings for '%s', maybe it is a slot: %v", util.Deref(site.Name), err)
 		return
 	}
 
