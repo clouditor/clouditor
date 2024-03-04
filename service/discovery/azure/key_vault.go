@@ -137,37 +137,34 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			if err != nil {
 				return fmt.Errorf("could not handle keys: %w", err)
 			}
-			keyIDs := getKeyIDs(keys)
-			keyVault.Keys = keyIDs
+			keyVault.Keys = getKeyIDs(keys)
 
 			// Handle secrets and add IDs to the key vault
 			secrets, err := d.getSecrets(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle secrets: %w", err)
 			}
-			secretIDs := getSecretIDs(secrets)
-			keyVault.Secrets = secretIDs
+			keyVault.Secrets = getSecretIDs(secrets)
 
 			// Handle certificates
 			certificates, err := d.getCertificates(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle secrets: %w", err)
 			}
-			certificateIDs := getCertificateIDs(certificates)
-			keyVault.Certificates = certificateIDs
+			keyVault.Certificates = getCertificateIDs(certificates)
 
 			// Add all resources (key vaults, keys and secrets) to the list
 			log.Infof("Adding key vault '%s'", keyVault.GetID())
 			list = append(list, keyVault)
-			log.Infof("Adding keys '%s'", keyIDs)
+			log.Infof("Adding keys '%s'", gekKeyNames(keys))
 			for _, k := range keys {
 				list = append(list, k)
 			}
-			log.Infof("Adding secrets '%s'", secretIDs)
+			log.Infof("Adding secrets '%s'", getSecretNames(secrets))
 			for _, s := range secrets {
 				list = append(list, s)
 			}
-			log.Infof("Adding certificates '%s'", secretIDs)
+			log.Infof("Adding certificates '%s'", getCertificationNames(certificates))
 			for _, c := range certificates {
 				list = append(list, c)
 			}
@@ -180,6 +177,28 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 		return
 	}
 	return
+}
+
+func gekKeyNames(keys []*voc.Key) (keyNames []string) {
+	for _, k := range keys {
+		keyNames = append(keyNames, k.GetName())
+	}
+	return keyNames
+}
+
+func getSecretNames(secrets []*voc.Secret) (secretNames []string) {
+	for _, k := range secrets {
+		secretNames = append(secretNames, k.GetName())
+	}
+	return secretNames
+}
+
+func getCertificationNames(certificates []*voc.Certificate) (certificatesNames []string) {
+	for _, k := range certificates {
+		certificatesNames = append(certificatesNames, k.GetName())
+	}
+	return certificatesNames
+
 }
 
 func (d *azureKeyVaultDiscovery) initKeyVaultClient() (err error) {
