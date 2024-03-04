@@ -31,7 +31,7 @@ require (
 // testing dependencies (core)
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 // runtime dependencies (Azure)
@@ -194,5 +194,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-require clouditor.io/clouditor v1.10.1 // indirect
