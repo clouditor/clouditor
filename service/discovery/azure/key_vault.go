@@ -154,7 +154,7 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			keyVault.Certificates = getCertificateIDs(certificates)
 
 			// Add all resources (key vaults, keys and secrets) to the list
-			log.Infof("Adding key vault '%s'", keyVault.GetID())
+			log.Infof("Adding key vault '%s'", keyVault.GetName())
 			list = append(list, keyVault)
 			log.Infof("Adding keys '%s'", gekKeyNames(keys))
 			for _, k := range keys {

@@ -294,7 +294,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 			}
 
 			if r != nil {
-				log.Infof("Adding function %+v", r)
+				log.Infof("Adding web app/function '%+v'", r.GetName())
 				list = append(list, r)
 
 				// Also add function/web app slots
