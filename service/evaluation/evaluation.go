@@ -393,7 +393,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *connect.Requ
 // CreateEvaluationResult is a method implementation of the assessment interface
 func (svc *Service) CreateEvaluationResult(ctx context.Context, req *connect.Request[evaluation.CreateEvaluationResultRequest]) (res *connect.Response[evaluation.EvaluationResult], err error) {
 	// Validate request
-	err = api.Validate(req.Msg)
+	err = api.ValidateRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -417,7 +417,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *connect.Req
 
 	res = connect.NewResponse(req.Msg.Result)
 	res.Msg.Id = uuid.NewString()
-	err = svc.storage.Create(res)
+	err = svc.storage.Create(res.Msg)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}

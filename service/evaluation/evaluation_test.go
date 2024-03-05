@@ -679,7 +679,7 @@ func TestService_StartEvaluation(t *testing.T) {
 				in0: context.Background(),
 				req: connect.NewRequest(&evaluation.StartEvaluationRequest{}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
@@ -697,7 +697,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					Interval:       proto.Int32(5),
 				}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
 			},
@@ -717,7 +717,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					Interval:       proto.Int32(5),
 				}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "connection refused")
 			},
@@ -738,7 +738,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					Interval:       proto.Int32(5),
 				}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not cache controls:")
 			},
@@ -761,7 +761,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					Interval:       proto.Int32(5),
 				}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "could not get target of evaluation:")
 			},
@@ -795,7 +795,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					Interval:       proto.Int32(5),
 				}),
 			},
-			want: nil,
+			want: assert.Nil[*connect.Response[evaluation.StartEvaluationResponse]],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Cloud Service")
 			},
