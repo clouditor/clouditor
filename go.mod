@@ -4,9 +4,9 @@ go 1.21.6
 
 // runtime dependencies (core)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20231115204500-e097f827e652.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20240221180331-f05a6f4403ce.1
 	github.com/MicahParks/keyfunc/v2 v2.1.0
-	github.com/bufbuild/protovalidate-go v0.5.0
+	github.com/bufbuild/protovalidate-go v0.6.0
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-co-op/gocron v1.37.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
@@ -114,7 +114,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/cel-go v0.18.2 // indirect
+	github.com/google/cel-go v0.20.0 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
