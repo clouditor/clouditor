@@ -39,6 +39,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -364,7 +365,9 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	return list, nil
 }
 func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
-	var storageResourcesList []voc.IsCloudResource
+	var (
+		storageResourcesList []voc.IsCloudResource
+	)
 
 	// initialize backup policies client
 	if err := d.initBackupPoliciesClient(); err != nil {
@@ -401,6 +404,11 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 		return nil, err
 	}
 
+	// initialize diagnostic settings client
+	if err := d.initDiagnosticsSettingsClient(); err != nil {
+		return nil, err
+	}
+
 	// Discover backup vaults
 	err := d.azureDiscovery.discoverBackupVaults()
 	if err != nil {
@@ -418,8 +426,14 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			return res.Value
 		},
 		func(account *armstorage.Account) error {
+			// Get ActivityLogging for table
+			activityLogging, err := d.discoverDiagnosticSettings(util.Deref(account.ID))
+			if err != nil {
+				log.Error("could not discover diagnostic settings: %w", err)
+			}
+
 			// Discover object storages
-			objectStorages, err := d.discoverObjectStorages(account)
+			objectStorages, err := d.discoverObjectStorages(account, activityLogging)
 			if err != nil {
 				return fmt.Errorf("could not handle object storages: %w", err)
 			}
@@ -462,6 +476,38 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	return storageResourcesList, nil
 }
 
+// discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the voc.ActivityLogging object.
+func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.ActivityLogging, error) {
+	var (
+		log          *voc.ActivityLogging
+		workspaceIDs []voc.ResourceID
+	)
+
+	// List all diagnostic settings for the storage account
+	listPager := d.clients.diagnosticSettingsClient.NewListPager(resourceURI, &armmonitor.DiagnosticSettingsClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			// Add all Log Analytics WorkspaceIDs
+			workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
+		}
+	}
+
+	log = &voc.ActivityLogging{
+		Logging: &voc.Logging{
+			Enabled:        true,
+			LoggingService: workspaceIDs,
+		},
+	}
+
+	return log, nil
+}
+
 func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -489,7 +535,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Account, activityLogging *voc.ActivityLogging) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// List all blob containers in the specified resource group
@@ -502,7 +548,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 		}
 
 		for _, value := range pageResponse.Value {
-			objectStorages, err := d.handleObjectStorage(account, value)
+			objectStorages, err := d.handleObjectStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
@@ -519,7 +565,6 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 			for _, o := range objects {
 				list = append(list, o)
 			}
-
 		}
 	}
 
@@ -669,7 +714,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 	}, nil
 }
 
-func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*voc.ObjectStorage, error) {
+func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem, activityLogging *voc.ActivityLogging) (*voc.ObjectStorage, error) {
 	var (
 		backups                  []*voc.Backup
 		monitoringLogDataEnabled bool
@@ -731,7 +776,8 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
-			Backups: backups,
+			ActivityLogging: activityLogging,
+			Backups:         backups,
 			// Todo(lebogg): Add tests
 			Redundancy: getStorageAccountRedundancy(account),
 		},
@@ -1097,9 +1143,16 @@ func (d *azureStorageDiscovery) initThreatProtectionClient() (err error) {
 	return
 }
 
-// initMongoDResourcesBClient creates the client if not already exists
-func (d *azureDiscovery) initMongoDResourcesBClient() (err error) {
+// initMongoDBResourcesClient creates the client if not already exists
+func (d *azureDiscovery) initMongoDBResourcesClient() (err error) {
 	d.clients.mongoDBResourcesClient, err = initClient(d.clients.mongoDBResourcesClient, d, armcosmos.NewMongoDBResourcesClient)
+
+	return
+}
+
+// initMongoDResourcesBClient creates the client if not already exists
+func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
+	d.clients.diagnosticSettingsClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
 
 	return
 }
@@ -1132,6 +1185,7 @@ func (d *azureStorageDiscovery) handleObjects(acc *armstorage.Account, container
 			continue
 		}
 		for _, blobItem := range page.Segment.BlobItems {
+
 			// Label and Backup Stuff
 			blobLabels := make(map[string]string)
 			if blobItem.BlobTags != nil {
@@ -1199,7 +1253,7 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 	)
 
 	// initialize Mongo DB resources client
-	if err = d.initMongoDResourcesBClient(); err != nil {
+	if err = d.initMongoDBResourcesClient(); err != nil {
 		log.Errorf("error initializing Mongo DB resource client: %v", err)
 		return list
 	}
