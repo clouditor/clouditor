@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator/orchestratorconnect"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
@@ -72,7 +74,7 @@ const (
 
 // Service is an implementation of the Clouditor Evaluation service
 type Service struct {
-	orchestrator *api.RPCConnection[orchestrator.OrchestratorClient]
+	orchestrator *api.ConnectConnection[orchestratorconnect.OrchestratorClient]
 
 	scheduler *gocron.Scheduler
 
@@ -113,9 +115,9 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(baseURL string, opts ...connect.ClientOption) service.Option[Service] {
 	return func(svc *Service) {
-		svc.orchestrator.Target = target
+		svc.orchestrator.BaseURL = baseURL
 		svc.orchestrator.Opts = opts
 	}
 }
@@ -124,7 +126,11 @@ func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Opt
 func NewService(opts ...service.Option[Service]) *Service {
 	var err error
 	svc := Service{
-		orchestrator:    api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
+		orchestrator: api.NewConnectConnection(
+			orchestratorconnect.NewOrchestratorClient,
+			http.DefaultClient,
+			DefaultOrchestratorAddress,
+		),
 		scheduler:       gocron.NewScheduler(time.Local),
 		catalogControls: make(map[string]map[string]*orchestrator.Control),
 	}
@@ -191,25 +197,27 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *connect.Request[ev
 	}
 
 	// Get Target of Evaluation
-	toe, err = svc.orchestrator.Client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
+	resToe, err := svc.orchestrator.Client.GetTargetOfEvaluation(context.Background(), connect.NewRequest(&orchestrator.GetTargetOfEvaluationRequest{
 		CloudServiceId: req.Msg.CloudServiceId,
 		CatalogId:      req.Msg.CatalogId,
-	})
+	}))
 	if err != nil {
 		err = fmt.Errorf("could not get target of evaluation: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
+	toe = resToe.Msg
 
 	// Retrieve the catalog
-	catalog, err = svc.orchestrator.Client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{
+	resCatalog, err := svc.orchestrator.Client.GetCatalog(context.Background(), connect.NewRequest(&orchestrator.GetCatalogRequest{
 		CatalogId: req.Msg.CatalogId,
-	})
+	}))
 	if err != nil {
 		err = fmt.Errorf("could not get catalog: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
+	catalog = resCatalog.Msg
 
 	// Check, if a previous job exists and/or is running
 	jobs, err = svc.scheduler.FindJobsByTag(req.Msg.CloudServiceId, req.Msg.CatalogId)
@@ -695,7 +703,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		// Get latest assessment_results by resource_id filtered by
 		// * cloud service id
 		// * metric ids
-		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
+		assessments, err = api.ListAllPaginatedConnect(orchestrator.ListAssessmentResultsRequest{
 			Filter: &orchestrator.Filter{
 				CloudServiceId: &toe.CloudServiceId,
 				MetricIds:      getMetricIds(metrics),
@@ -834,7 +842,7 @@ func (svc *Service) cacheControls(catalogId string) error {
 	}
 
 	// Get controls for given catalog
-	controls, err = api.ListAllPaginated[*orchestrator.ListControlsResponse](&orchestrator.ListControlsRequest{
+	controls, err = api.ListAllPaginatedConnect[*orchestrator.ListControlsResponse](&orchestrator.ListControlsRequest{
 		CatalogId: catalogId,
 	}, svc.orchestrator.Client.ListControls, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
 		return res.Controls

@@ -30,6 +30,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"connectrpc.com/connect"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -44,13 +45,15 @@ type PaginatedRequest interface {
 	GetPageSize() int32
 	GetOrderBy() string // For ordering
 	GetAsc() bool       // For ordering
-	proto.Message
+	//proto.Message
 }
 
 // PaginatedResponse contains the typical parameters for a paginated response, usually a response for a List gRPC call.
 type PaginatedResponse interface {
 	GetNextPageToken() string
 }
+
+type PaginatedConnectResponse connect.Response[PaginatedResponse]
 
 // Encode encodes this page token into a base64 URL encoded string.
 func (t *PageToken) Encode() (b64token string, err error) {
@@ -99,7 +102,7 @@ func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedReque
 
 	for {
 		// Modify the request to include our page token using protoreflect. This will be empty for the first page
-		m := req.ProtoReflect()
+		m := any(req).(proto.Message).ProtoReflect()
 		m.Set(m.Descriptor().Fields().ByName(PageTokenField), protoreflect.ValueOf(pageToken))
 
 		// Call the list function to fetch the next page
@@ -112,6 +115,46 @@ func ListAllPaginated[ResponseType PaginatedResponse, RequestType PaginatedReque
 		// Append results and retrieve our next page token
 		results = append(results, getter(res)...)
 		pageToken = res.GetNextPageToken()
+
+		// If the page token is empty, there are no more pages left to fetch
+		if pageToken == "" {
+			break
+		}
+	}
+
+	return
+}
+
+// ListAllPaginatedConnect invokes a List connect function that supports pagination, fetches all pages using individual
+// calls and finally combines all results of all pages into a single slice. It executes the function specified in list
+// using the req of RequestType. Afterwards, the function getter is executed to transform the response of the list calls
+// into the results slice.
+func ListAllPaginatedConnect[ResponseType PaginatedResponse, RequestType PaginatedRequest, ResultType any](
+	req RequestType, list func(context.Context, *connect.Request[RequestType]) (*connect.Response[ResponseType], error),
+	getter func(res *ResponseType) []*ResultType) (results []*ResultType, err error) {
+
+	var (
+		res       *connect.Response[ResponseType]
+		msg       *ResponseType
+		pageToken string
+	)
+
+	for {
+		// Modify the request to include our page token using protoreflect. This will be empty for the first page
+		m := any(req).(proto.Message).ProtoReflect()
+		m.Set(m.Descriptor().Fields().ByName(PageTokenField), protoreflect.ValueOf(pageToken))
+
+		// Call the list function to fetch the next page
+		res, err = list(context.Background(), connect.NewRequest(&req))
+		if err != nil {
+			// Transparently return the error of the list function without any wrapping
+			return nil, err
+		}
+		msg = res.Msg
+
+		// Append results and retrieve our next page token
+		results = append(results, getter(msg)...)
+		pageToken = (*msg).GetNextPageToken()
 
 		// If the page token is empty, there are no more pages left to fetch
 		if pageToken == "" {

@@ -46,12 +46,14 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"connectrpc.com/connect"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -185,6 +187,48 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			}
 		})
 	}
+}
+
+type PaginatedResponseMessage interface {
+	GetNextPageToken() string
+	proto.Message
+}
+
+func test() {
+	ListAll[
+		*orchestrator.ListAssessmentResultsResponse,
+		orchestrator.ListAssessmentResultsResponse,
+		assessment.AssessmentResult,
+	]()
+}
+
+func ListAll[
+	PRMType PaginatedResponseMessage,
+	ConnectRequestType any,
+	ReturnType any,
+]() (results []*ReturnType) {
+	var (
+		npt    string
+		pr     PRMType
+		list   func(ctx context.Context, req connect.Request[ConnectRequestType])
+		getter func(res PRMType) []*ReturnType
+	)
+
+	for {
+		msg := connect.Response[PRMType]{}
+		pr = msg.Any().(PRMType)
+
+		// Append results and retrieve our next page token
+		results = append(results, getter(pr)...)
+		npt = pr.GetNextPageToken()
+
+		// If the page token is empty, there are no more pages left to fetch
+		if npt == "" {
+			break
+		}
+	}
+
+	return results
 }
 
 func TestService_ListAssessmentResults(t *testing.T) {
