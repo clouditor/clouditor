@@ -54,7 +54,7 @@ func Equal[T any](t TestingT, want T, got T, opts ...cmp.Option) bool {
 		tt.Helper()
 	}
 
-	opts = append(opts, protocmp.Transform())
+	opts = append(opts, protocmp.Transform(), CompareAllUnexported())
 
 	if cmp.Equal(got, want, opts...) {
 		return true

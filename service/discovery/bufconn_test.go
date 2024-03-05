@@ -48,6 +48,8 @@ var (
 	bufConnListener *bufconn.Listener
 )
 
+// client is a small work-around because the http.Client returned by the [memhttp] package only works with HTTP2 with
+// TLS but not with H2C.
 func client(srv *memhttp.Server) *http.Client {
 	return &http.Client{
 		Transport: &http2.Transport{

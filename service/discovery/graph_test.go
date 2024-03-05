@@ -44,8 +44,6 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/go-co-op/gocron"
-	"github.com/google/go-cmp/cmp"
-	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestService_ListGraphEdges(t *testing.T) {
@@ -208,7 +206,7 @@ func TestService_UpdateResource(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		wantRes *discovery.Resource
+		wantRes *connect.Response[discovery.Resource]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -258,10 +256,10 @@ func TestService_UpdateResource(t *testing.T) {
 					}, testdata.MockCloudServiceID1),
 				}),
 			},
-			wantRes: panicToDiscoveryResource(t, &ontology.VirtualMachine{
+			wantRes: connect.NewResponse(panicToDiscoveryResource(t, &ontology.VirtualMachine{
 				Id:   "my-id",
 				Name: "some-name",
-			}, testdata.MockCloudServiceID1),
+			}, testdata.MockCloudServiceID1)),
 			wantErr: assert.NoError,
 		},
 	}
@@ -278,7 +276,7 @@ func TestService_UpdateResource(t *testing.T) {
 				csID:              tt.fields.csID,
 			}
 			gotRes, err := svc.UpdateResource(tt.args.ctx, tt.args.req)
-			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
+			assert.Equal(t, tt.wantRes, gotRes)
 			tt.wantErr(t, err)
 		})
 	}

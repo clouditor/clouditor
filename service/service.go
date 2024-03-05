@@ -26,6 +26,8 @@
 package service
 
 import (
+	"clouditor.io/clouditor/v2/api"
+	"connectrpc.com/connect"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,3 +39,11 @@ func init() {
 
 // Option is a functional option type to configure services.
 type Option[T any] func(*T)
+
+// ConnectionOptions is a small struct that bundles all RPC connection related options.
+type ConnectionOptions struct {
+	URL        string
+	Client     connect.HTTPClient
+	Opts       []connect.ClientOption
+	Authorizer api.Authorizer
+}

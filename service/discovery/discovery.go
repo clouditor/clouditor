@@ -86,12 +86,6 @@ type DiscoveryEvent struct {
 	Time            time.Time
 }
 
-type rpcOpts struct {
-	URL    string
-	Client connect.HTTPClient
-	Opts   []connect.ClientOption
-}
-
 // Service is an implementation of the Clouditor Discovery service (plus its experimental extensions). It should not be
 // used directly, but rather the NewService constructor should be used.
 type Service struct {
@@ -103,7 +97,7 @@ type Service struct {
 		assessment.AssessEvidencesResponse,
 	]
 	assessment     assessmentconnect.AssessmentClient
-	assessmentOpts rpcOpts
+	assessmentOpts service.ConnectionOptions
 
 	storage persistence.Storage
 
@@ -119,8 +113,6 @@ type Service struct {
 
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
-
-	target string
 }
 
 func init() {
@@ -200,7 +192,7 @@ func NewService(opts ...ServiceOption) *Service {
 			assessment.AssessEvidenceRequest,
 			assessment.AssessEvidencesResponse,
 		](assessmentconnect.AssessmentClient.AssessEvidences),
-		assessmentOpts: rpcOpts{
+		assessmentOpts: service.ConnectionOptions{
 			URL:    DefaultAssessmentAddress,
 			Client: http.DefaultClient,
 		},
@@ -390,7 +382,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		// Get Evidence Store stream
 		channel, err := svc.assessmentStreams.GetStream(svc.assessment, "Assessment")
 		if err != nil {
-			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.target, err)
+			err = fmt.Errorf("could not get stream to assessment service (%s): %w", svc.assessmentOpts.URL, err)
 			log.Error(err)
 			continue
 		}

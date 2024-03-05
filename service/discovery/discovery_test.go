@@ -49,9 +49,9 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 	"connectrpc.com/connect"
-	"go.akshayshah.org/memhttp"
 
 	"github.com/go-co-op/gocron"
+	"go.akshayshah.org/memhttp"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -90,7 +90,7 @@ func TestNewService(t *testing.T) {
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Equal(t, "localhost:9091", got.target)
+				return assert.Equal(t, "localhost:9091", got.assessmentOpts.URL)
 			},
 		},
 		{
