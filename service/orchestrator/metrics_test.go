@@ -1408,7 +1408,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUI")
+				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1469,7 +1469,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "configuration.cloud_service_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{

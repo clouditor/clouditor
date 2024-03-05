@@ -205,11 +205,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
-			name: "Assess resource without id",
+			name: "Assess evidence without id",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -224,7 +224,7 @@ func TestService_AssessEvidence(t *testing.T) {
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "evidence.id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -484,7 +484,7 @@ func TestService_AssessEvidences(t *testing.T) {
 			wantErr: assert.Nil[error],
 			want: func(t *testing.T, got *assessment.AssessEvidencesResponse) bool {
 				assert.Equal(t, assessment.AssessEvidencesResponse_FAILED, got.Status)
-				return assert.Contains(t, got.StatusMessage, "evidence.id: value must be a valid UUID")
+				return assert.Contains(t, got.StatusMessage, "evidence.id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
