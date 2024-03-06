@@ -426,26 +426,44 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			return res.Value
 		},
 		func(account *armstorage.Account) error {
-			// Get ActivityLogging for table
-			activityLogging, err := d.discoverDiagnosticSettings(util.Deref(account.ID))
+			// Get ActivityLogging for the storage account
+			activityLoggingAccount, err := d.discoverDiagnosticSettings(util.Deref(account.ID))
 			if err != nil {
-				log.Error("could not discover diagnostic settings: %w", err)
+				log.Error("could not discover diagnostic settings for the storage account: %w", err)
+			}
+
+			// Get ActivityLogging for the blob service
+			activityLoggingBlob, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/blobServices/default")
+			if err != nil {
+				log.Error("could not discover diagnostic settings for the blob service: %w", err)
+			}
+
+			// Get ActivityLogging for the table service
+			activityLoggingTable, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/tableServices/default")
+			if err != nil {
+				log.Error("could not discover diagnostic settings for the table service: %w", err)
+			}
+
+			// Get ActivityLogging for the file service
+			activityLoggingFile, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/fileServices/default")
+			if err != nil {
+				log.Error("could not discover diagnostic settings for the file service: %w", err)
 			}
 
 			// Discover object storages
-			objectStorages, err := d.discoverObjectStorages(account, activityLogging)
+			objectStorages, err := d.discoverObjectStorages(account, activityLoggingBlob)
 			if err != nil {
 				return fmt.Errorf("could not handle object storages: %w", err)
 			}
 
 			// Discover file storages
-			fileStorages, err := d.discoverFileStorages(account)
+			fileStorages, err := d.discoverFileStorages(account, activityLoggingFile)
 			if err != nil {
 				return fmt.Errorf("could not handle file storages: %w", err)
 			}
 
 			// Discover file storages
-			tableStorages, err := d.discoverTableStorages(account)
+			tableStorages, err := d.discoverTableStorages(account, activityLoggingTable)
 			if err != nil {
 				return fmt.Errorf("could not handle table storages: %w", err)
 			}
@@ -455,7 +473,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			storageResourcesList = append(storageResourcesList, tableStorages...)
 
 			// Create storage service for all storage account resources
-			storageService, err := d.handleStorageAccount(account, storageResourcesList)
+			storageService, err := d.handleStorageAccount(account, storageResourcesList, activityLoggingAccount)
 			if err != nil {
 				return fmt.Errorf("could not create storage service: %w", err)
 			}
@@ -476,10 +494,10 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	return storageResourcesList, nil
 }
 
-// discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the voc.ActivityLogging object.
+// discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object.
 func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.ActivityLogging, error) {
 	var (
-		log          *voc.ActivityLogging
+		al           = &voc.ActivityLogging{}
 		workspaceIDs []voc.ResourceID
 	)
 
@@ -493,22 +511,74 @@ func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (
 		}
 
 		for _, value := range pageResponse.Value {
-			// Add all Log Analytics WorkspaceIDs
+			// Check if data is send to a log analytics workspace
+			if value.Properties.WorkspaceID == nil {
+				log.Debugf("diagnostic setting '%s' does not send data to a Log Analytics Workspace", util.Deref(value.Name))
+				continue
+			}
+
+			if len(value.Properties.Logs) == 0 {
+				log.Debugf("diagnostic setting '%s' does not send log data to a Log Analytics Workspace", util.Deref(value.Name))
+			}
+
+			// Add Log Analytics WorkspaceIDs to slice
 			workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
 		}
 	}
 
-	log = &voc.ActivityLogging{
-		Logging: &voc.Logging{
-			Enabled:        true,
-			LoggingService: workspaceIDs,
-		},
+	if len(workspaceIDs) > 0 {
+		al = &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled:        true,
+				LoggingService: workspaceIDs, // TODO(all): Each diagnostic setting has also a retention period, maybe we should add that information as well
+			},
+		}
+	}
+
+	return al, nil
+}
+
+// discoverDiagnosticCategory discovers the diagnostic setting for the the given resource URI and returns the voc.ActivityLogging object.
+func (d *azureStorageDiscovery) discoverDiagnosticCategory(resourceURI string) (*voc.ActivityLogging, error) {
+	var (
+		log          = &voc.ActivityLogging{}
+		workspaceIDs []voc.ResourceID
+	)
+
+	// initialize diagnostic category client
+	if err := d.initDiagnosticsCategoryClient(); err != nil {
+		return nil, err
+	}
+
+	// List all diagnostic settings for the storage account
+	listPager := d.clients.diagnosticCategoryClient.NewListPager(resourceURI, &armmonitor.DiagnosticSettingsCategoryClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, err
+		}
+
+		for _, value := range pageResponse.Value {
+			// Add all Log Analytics WorkspaceIDs
+			_ = value.ID
+			// workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
+		}
+	}
+
+	if len(workspaceIDs) > 0 {
+		log = &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled:        true,
+				LoggingService: workspaceIDs,
+			},
+		}
 	}
 
 	return log, nil
 }
 
-func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account, activityLogging *voc.ActivityLogging) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// List all file shares in the specified resource group
@@ -521,7 +591,7 @@ func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account
 		}
 
 		for _, value := range pageResponse.Value {
-			fileStorages, err := d.handleFileStorage(account, value)
+			fileStorages, err := d.handleFileStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle file storage: %w", err)
 			}
@@ -548,6 +618,12 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 		}
 
 		for _, value := range pageResponse.Value {
+			// Discover diagnostic settings for the given container
+			_, err := d.discoverDiagnosticCategory(util.Deref(account.ID))
+			if err != nil {
+				log.Error("could not discover diagnostic settings: %w", err)
+			}
+
 			objectStorages, err := d.handleObjectStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
@@ -571,7 +647,7 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Account, activityLogging *voc.ActivityLogging) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
 	// List all blob containers in the specified resource group
@@ -584,7 +660,7 @@ func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Accoun
 		}
 
 		for _, value := range pageResponse.Value {
-			tableStorage, err := d.handleTableStorage(account, value)
+			tableStorage, err := d.handleTableStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle table storage: %w", err)
 			}
@@ -598,7 +674,7 @@ func (d *azureStorageDiscovery) discoverTableStorages(account *armstorage.Accoun
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource) (*voc.ObjectStorageService, error) {
+func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []voc.IsCloudResource, activityLogging *voc.ActivityLogging) (*voc.ObjectStorageService, error) {
 	var (
 		storageResourceIDs []voc.ResourceID
 	)
@@ -641,8 +717,10 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 				},
 				TransportEncryption: te,
 			},
-			Redundancy: getStorageAccountRedundancy(account),
+			Redundancy:      getStorageAccountRedundancy(account),
+			ActivityLogging: activityLogging,
 		},
+
 		HttpEndpoint: &voc.HttpEndpoint{
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
 			TransportEncryption: te,
@@ -657,7 +735,7 @@ func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
 	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
 }
 
-func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*voc.FileStorage, error) {
+func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem, activityLogging *voc.ActivityLogging) (*voc.FileStorage, error) {
 	var (
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
@@ -708,6 +786,7 @@ func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, f
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
+			ActivityLogging:  activityLogging,
 			AtRestEncryption: enc,
 			Redundancy:       getStorageAccountRedundancy(account),
 		},
@@ -729,6 +808,10 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	if container == nil || container.ID == nil {
 		return nil, fmt.Errorf("container is nil")
 	}
+
+	// Get Diagnostic Settings information for ActivityLogging
+	al, _ := d.discoverDiagnosticSettings(util.Deref(container.ID))
+	log.Infof("al: %v", al)
 
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
@@ -805,7 +888,7 @@ func (d *azureStorageDiscovery) isBackup(account *armstorage.Account, container 
 	return false
 }
 
-func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table) (*voc.DatabaseStorage, error) {
+func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, table *armstorage.Table, activityLogging *voc.ActivityLogging) (*voc.DatabaseStorage, error) {
 	var (
 		backups                  []*voc.Backup
 		monitoringLogDataEnabled bool
@@ -875,7 +958,8 @@ func (d *azureStorageDiscovery) handleTableStorage(account *armstorage.Account, 
 					SecurityAlertsEnabled:    securityAlertsEnabled,
 				},
 			},
-			Redundancy: getStorageAccountRedundancy(account),
+			ActivityLogging: activityLogging,
+			Redundancy:      getStorageAccountRedundancy(account),
 		},
 	}, nil
 }
@@ -1150,9 +1234,16 @@ func (d *azureDiscovery) initMongoDBResourcesClient() (err error) {
 	return
 }
 
-// initMongoDResourcesBClient creates the client if not already exists
+// initDiagnosticsSettingsClient creates the client if not already exists
 func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
 	d.clients.diagnosticSettingsClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
+
+	return
+}
+
+// initDiagnosticsCategoryClient creates the client if not already exists
+func (d *azureDiscovery) initDiagnosticsCategoryClient() (err error) {
+	d.clients.diagnosticCategoryClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticCategoryClient, d, armmonitor.NewDiagnosticSettingsCategoryClient)
 
 	return
 }
