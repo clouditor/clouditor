@@ -148,7 +148,6 @@ type clients struct {
 	fileStorageClient        *armstorage.FileSharesClient
 	accountsClient           *armstorage.AccountsClient
 	diagnosticSettingsClient *armmonitor.DiagnosticSettingsClient
-	diagnosticCategoryClient *armmonitor.DiagnosticSettingsCategoryClient
 	tableStorageClient       *armstorage.TableClient
 
 	// DB

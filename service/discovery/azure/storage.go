@@ -555,46 +555,6 @@ func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (
 	return al, nil
 }
 
-// discoverDiagnosticCategory discovers the diagnostic setting for the the given resource URI and returns the voc.ActivityLogging object.
-func (d *azureStorageDiscovery) discoverDiagnosticCategory(resourceURI string) (*voc.ActivityLogging, error) {
-	var (
-		log          = &voc.ActivityLogging{}
-		workspaceIDs []voc.ResourceID
-	)
-
-	// initialize diagnostic category client
-	if err := d.initDiagnosticsCategoryClient(); err != nil {
-		return nil, err
-	}
-
-	// List all diagnostic settings for the storage account
-	listPager := d.clients.diagnosticCategoryClient.NewListPager(resourceURI, &armmonitor.DiagnosticSettingsCategoryClientListOptions{})
-	for listPager.More() {
-		pageResponse, err := listPager.NextPage(context.TODO())
-		if err != nil {
-			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
-			return nil, err
-		}
-
-		for _, value := range pageResponse.Value {
-			// Add all Log Analytics WorkspaceIDs
-			_ = value.ID
-			// workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
-		}
-	}
-
-	if len(workspaceIDs) > 0 {
-		log = &voc.ActivityLogging{
-			Logging: &voc.Logging{
-				Enabled:        true,
-				LoggingService: workspaceIDs,
-			},
-		}
-	}
-
-	return log, nil
-}
-
 func (d *azureStorageDiscovery) discoverFileStorages(account *armstorage.Account, activityLogging *voc.ActivityLogging) ([]voc.IsCloudResource, error) {
 	var list []voc.IsCloudResource
 
@@ -635,12 +595,6 @@ func (d *azureStorageDiscovery) discoverObjectStorages(account *armstorage.Accou
 		}
 
 		for _, value := range pageResponse.Value {
-			// Discover diagnostic settings for the given container
-			_, err := d.discoverDiagnosticCategory(util.Deref(account.ID))
-			if err != nil {
-				log.Error("could not discover diagnostic settings: %w", err)
-			}
-
 			objectStorages, err := d.handleObjectStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
@@ -1250,13 +1204,6 @@ func (d *azureDiscovery) initMongoDBResourcesClient() (err error) {
 // initDiagnosticsSettingsClient creates the client if not already exists
 func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
 	d.clients.diagnosticSettingsClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
-
-	return
-}
-
-// initDiagnosticsCategoryClient creates the client if not already exists
-func (d *azureDiscovery) initDiagnosticsCategoryClient() (err error) {
-	d.clients.diagnosticCategoryClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticCategoryClient, d, armmonitor.NewDiagnosticSettingsCategoryClient)
 
 	return
 }
