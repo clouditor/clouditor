@@ -426,29 +426,7 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 			return res.Value
 		},
 		func(account *armstorage.Account) error {
-			// Get ActivityLogging for the storage account
-			activityLoggingAccount, err := d.discoverDiagnosticSettings(util.Deref(account.ID))
-			if err != nil {
-				log.Error("could not discover diagnostic settings for the storage account: %w", err)
-			}
-
-			// Get ActivityLogging for the blob service
-			activityLoggingBlob, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/blobServices/default")
-			if err != nil {
-				log.Error("could not discover diagnostic settings for the blob service: %w", err)
-			}
-
-			// Get ActivityLogging for the table service
-			activityLoggingTable, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/tableServices/default")
-			if err != nil {
-				log.Error("could not discover diagnostic settings for the table service: %w", err)
-			}
-
-			// Get ActivityLogging for the file service
-			activityLoggingFile, err := d.discoverDiagnosticSettings(util.Deref(account.ID) + "/fileServices/default")
-			if err != nil {
-				log.Error("could not discover diagnostic settings for the file service: %w", err)
-			}
+			activityLoggingAccount, activityLoggingBlob, activityLoggingFile, activityLoggingTable := d.getActivityLogging(account)
 
 			// Discover object storages
 			objectStorages, err := d.discoverObjectStorages(account, activityLoggingBlob)
@@ -492,6 +470,38 @@ func (d *azureStorageDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource
 	}
 
 	return storageResourcesList, nil
+}
+
+func (d *azureStorageDiscovery) getActivityLogging(account *armstorage.Account) (activityLoggingAccount, activityLoggingBlob, activityLoggingTable, activityLoggingFile *voc.ActivityLogging) {
+
+	var err error
+
+	// Get ActivityLogging for the storage account
+	activityLoggingAccount, err = d.discoverDiagnosticSettings(util.Deref(account.ID))
+	if err != nil {
+		log.Error("could not discover diagnostic settings for the storage account: %w", err)
+	}
+
+	// Get ActivityLogging for the blob service
+	activityLoggingBlob, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/blobServices/default")
+	if err != nil {
+		log.Error("could not discover diagnostic settings for the blob service: %w", err)
+	}
+
+	// Get ActivityLogging for the table service
+	activityLoggingTable, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/tableServices/default")
+	if err != nil {
+		log.Error("could not discover diagnostic settings for the table service: %w", err)
+	}
+
+	// Get ActivityLogging for the file service
+	activityLoggingFile, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/fileServices/default")
+	if err != nil {
+		log.Error("could not discover diagnostic settings for the file service: %w", err)
+	}
+
+	return
+
 }
 
 // discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object.
@@ -808,10 +818,6 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 	if container == nil || container.ID == nil {
 		return nil, fmt.Errorf("container is nil")
 	}
-
-	// Get Diagnostic Settings information for ActivityLogging
-	al, _ := d.discoverDiagnosticSettings(util.Deref(container.ID))
-	log.Infof("al: %v", al)
 
 	enc, err := storageAtRestEncryption(account)
 	if err != nil {
