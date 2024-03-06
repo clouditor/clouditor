@@ -151,7 +151,13 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 			return res.Value
 		},
 		func(dbAccount *armcosmos.DatabaseAccountGetResults) error {
-			cosmos, err := d.handleCosmosDB(dbAccount)
+			// Get ActivityLogging for the CosmosDB
+			activityLogging, err := d.discoverDiagnosticSettings(util.Deref(dbAccount.ID))
+			if err != nil {
+				log.Error("could not discover diagnostic settings for the storage account: %w", err)
+			}
+
+			cosmos, err := d.handleCosmosDB(dbAccount, activityLogging)
 			if err != nil {
 				return fmt.Errorf("could not cosmos db accounts: %w", err)
 			}
@@ -167,7 +173,7 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 	return list, nil
 }
 
-func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults) ([]voc.IsCloudResource, error) {
+func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults, activityLogging *voc.ActivityLogging) ([]voc.IsCloudResource, error) {
 	var (
 		atRestEnc           voc.IsAtRestEncryption
 		err                 error
@@ -230,7 +236,8 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 					),
 				},
 			},
-			Redundancy: getCosmosDBRedundancy(account),
+			ActivityLogging: activityLogging,
+			Redundancy:      getCosmosDBRedundancy(account),
 		},
 		PublicAccess: publicNetworkAccess,
 	}
@@ -1383,6 +1390,7 @@ func (d *azureStorageDiscovery) discoverMongoDBDatabases(account *armcosmos.Data
 
 					AtRestEncryption: atRestEnc,
 					Redundancy:       nil, // Redundancy is done over database service (Cosmos DB)
+					ActivityLogging:  nil, // ActivityLogging is done over database service (Cosmos DB)
 				},
 			}
 			list = append(list, mongoDB)
