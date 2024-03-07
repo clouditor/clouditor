@@ -486,25 +486,25 @@ func (d *azureStorageDiscovery) getActivityLogging(account *armstorage.Account) 
 	// Get ActivityLogging for the storage account
 	activityLoggingAccount, err = d.discoverDiagnosticSettings(util.Deref(account.ID))
 	if err != nil {
-		log.Error("could not discover diagnostic settings for the storage account: %w", err)
+		log.Errorf("could not discover diagnostic settings for the storage account: %v", err)
 	}
 
 	// Get ActivityLogging for the blob service
 	activityLoggingBlob, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/blobServices/default")
 	if err != nil {
-		log.Error("could not discover diagnostic settings for the blob service: %w", err)
+		log.Errorf("could not discover diagnostic settings for the blob service: %v", err)
 	}
 
 	// Get ActivityLogging for the table service
 	activityLoggingTable, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/tableServices/default")
 	if err != nil {
-		log.Error("could not discover diagnostic settings for the table service: %w", err)
+		log.Errorf("could not discover diagnostic settings for the table service: %v", err)
 	}
 
 	// Get ActivityLogging for the file service
 	activityLoggingFile, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/fileServices/default")
 	if err != nil {
-		log.Error("could not discover diagnostic settings for the file service: %w", err)
+		log.Errorf("could not discover diagnostic settings for the file service: %v", err)
 	}
 
 	return
@@ -514,7 +514,7 @@ func (d *azureStorageDiscovery) getActivityLogging(account *armstorage.Account) 
 // discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object.
 func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.ActivityLogging, error) {
 	var (
-		al           = &voc.ActivityLogging{}
+		al           *voc.ActivityLogging
 		workspaceIDs []voc.ResourceID
 	)
 
@@ -536,6 +536,7 @@ func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (
 
 			if len(value.Properties.Logs) == 0 {
 				log.Debugf("diagnostic setting '%s' does not send log data to a Log Analytics Workspace", util.Deref(value.Name))
+				continue
 			}
 
 			// Add Log Analytics WorkspaceIDs to slice
