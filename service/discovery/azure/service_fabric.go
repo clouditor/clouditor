@@ -1,11 +1,12 @@
 package azure
 
 import (
+	"context"
+	"fmt"
+
 	"clouditor.io/clouditor/api/discovery"
 	"clouditor.io/clouditor/internal/util"
 	"clouditor.io/clouditor/voc"
-	"context"
-	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicefabric/armservicefabric"
 )
 
@@ -94,7 +95,8 @@ func (d *azureServiceFabricDiscovery) discoverClusters() ([]voc.IsCloudResource,
 		clusters = append(clusters, response.Value...)
 	}
 	for _, c := range clusters {
-		var r *voc.Redundancy
+		var r = &voc.Redundancy{}
+
 		if c.Properties.VmssZonalUpgradeMode != nil {
 			r.Zone = true
 		}

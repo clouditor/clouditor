@@ -33,4 +33,5 @@ type Compute struct {
 	*Resource
 	NetworkInterfaces []ResourceID     `json:"networkInterfaces"`
 	ResourceLogging   *ResourceLogging `json:"resourceLogging"`
+	ActivityLogging   *ActivityLogging `json:"activityLogging"`
 }

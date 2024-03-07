@@ -36,4 +36,5 @@ type Storage struct {
 	Immutability     *Immutability      `json:"immutability"`
 	Redundancy       *Redundancy        `json:"redundancy"`
 	ResourceLogging  *ResourceLogging   `json:"resourceLogging"`
+	ActivityLogging  *ActivityLogging   `json:"activityLogging"`
 }

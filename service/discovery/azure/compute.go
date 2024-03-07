@@ -391,7 +391,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
-	resourceLogging := d.getResourceLoggingWebApp(function)
+	activityLogging := d.getActivityLogging(function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -410,7 +410,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 				config,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
-			ResourceLogging:   resourceLogging,
+			ActivityLogging:   activityLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
@@ -437,7 +437,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
-	resourceLogging := d.getResourceLoggingWebApp(webApp)
+	activityLogging := d.getActivityLogging(webApp)
 
 	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
@@ -466,7 +466,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 				config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
-			ResourceLogging:   resourceLogging,
+			ActivityLogging:   activityLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
@@ -1126,9 +1126,11 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 	return
 }
 
-// getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
-func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
-	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+// getResourceLogging determines if logging is activated for a given web app or function by checking the respective app setting
+// In this case logging means the Application Insights logging. The Application Insights logging is automatically forwarded to Log Analytics which is defined in the Diagnostic Settings.
+// TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
+func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (rl *voc.ActivityLogging) {
+	rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
 
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})

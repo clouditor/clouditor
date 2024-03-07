@@ -43,6 +43,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -143,10 +144,11 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
-	accountsClient      *armstorage.AccountsClient
-	tableStorageClient  *armstorage.TableClient
+	blobContainerClient      *armstorage.BlobContainersClient
+	fileStorageClient        *armstorage.FileSharesClient
+	accountsClient           *armstorage.AccountsClient
+	diagnosticSettingsClient *armmonitor.DiagnosticSettingsClient
+	tableStorageClient       *armstorage.TableClient
 
 	// DB
 	databasesClient        *armsql.DatabasesClient
@@ -532,6 +534,9 @@ func labels(tags map[string]*string) map[string]string {
 // ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
 type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
 
+// ClientCreateFuncWithoutSubscriptionID is a type that describes a function to create a new Azure SDK client without subscriptionID.
+type ClientCreateFuncWithoutSubscriptionID[T any] func(credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
+
 // initClient creates an Azure client if not already exists
 func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFunc[T]) (client *T, err error) {
 	if existingClient != nil {
@@ -544,6 +549,22 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	}
 
 	client, err = fun(subID, d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get %T client: %w", new(T), err)
+		log.Debug(err)
+		return nil, err
+	}
+
+	return
+}
+
+// initClientWithoutSubscriptionID creates an Azure client if not already exists. The subscriptionID is not necessary for this client.
+func initClientWithoutSubscriptionID[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFuncWithoutSubscriptionID[T]) (client *T, err error) {
+	if existingClient != nil {
+		return existingClient, nil
+	}
+
+	client, err = fun(d.cred, &d.clientOptions)
 	if err != nil {
 		err = fmt.Errorf("could not get %T client: %w", new(T), err)
 		log.Debug(err)

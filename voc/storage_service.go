@@ -32,6 +32,7 @@ var StorageServiceType = []string{"StorageService", "NetworkService", "Networkin
 // StorageService is an entity in our Cloud ontology. This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
 type StorageService struct {
 	*NetworkService
-	Redundancy *Redundancy  `json:"redundancy"`
-	Storage    []ResourceID `json:"storage"`
+	Redundancy      *Redundancy      `json:"redundancy"`
+	Storage         []ResourceID     `json:"storage"`
+	ActivityLogging *ActivityLogging `json:"activityLogging"`
 }
