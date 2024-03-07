@@ -391,8 +391,25 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 				},
 			},
 		}, 200)
+	} else if req.URL.Path == "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1/providers/Microsoft.Insights/diagnosticSettings" {
+		return createResponse(req, map[string]interface{}{
+			"value": &[]map[string]interface{}{
+				{
+					"id":   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/CosmosDB1",
+					"name": "CosmosDB1",
+					"type": "Microsoft.DocumentDB/databaseAccounts",
+					"properties": map[string]interface{}{
+						"logs": &[]map[string]interface{}{
+							{
+								"enabled": true,
+							},
+						},
+						"workspaceId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1",
+					},
+				},
+			},
+		}, 200)
 	}
-
 	return m.mockSender.Do(req)
 }
 
@@ -989,13 +1006,13 @@ func TestStorageHandleMethodsWhenInputIsInvalid(t *testing.T) {
 
 	// Test method handleObjectStorage
 	containerItem := armstorage.ListContainerItem{}
-	handleObjectStorageRespone, err := d.handleObjectStorage(mockedStorageAccountObject, &containerItem)
+	handleObjectStorageRespone, err := d.handleObjectStorage(mockedStorageAccountObject, &containerItem, &voc.ActivityLogging{})
 	assert.Error(t, err)
 	assert.Nil(t, handleObjectStorageRespone)
 
 	// Test method handleFileStorage
 	fileShare := &armstorage.FileShareItem{}
-	handleFileStorageRespone, err := d.handleFileStorage(mockedStorageAccountObject, fileShare)
+	handleFileStorageRespone, err := d.handleFileStorage(mockedStorageAccountObject, fileShare, &voc.ActivityLogging{})
 	assert.Error(t, err)
 	assert.Nil(t, handleFileStorageRespone)
 }
@@ -1032,12 +1049,12 @@ func TestStorageDiscoverMethodsWhenInputIsInvalid(t *testing.T) {
 	assert.Nil(t, discoverStorageAccountsResponse)
 
 	// Test method discoverObjectStorages
-	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject)
+	discoverObjectStoragesResponse, err := d.discoverObjectStorages(mockedStorageAccountObject, &voc.ActivityLogging{})
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverObjectStoragesResponse)
 
 	// Test method discoverFileStorages
-	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject)
+	discoverFileStoragesResponse, err := d.discoverFileStorages(mockedStorageAccountObject, &voc.ActivityLogging{})
 	assert.ErrorContains(t, err, ErrGettingNextPage.Error())
 	assert.Nil(t, discoverFileStoragesResponse)
 }
@@ -1234,8 +1251,9 @@ func Test_handleFileStorage(t *testing.T) {
 		azureDiscovery *azureDiscovery
 	}
 	type args struct {
-		account   *armstorage.Account
-		fileshare *armstorage.FileShareItem
+		account         *armstorage.Account
+		fileshare       *armstorage.FileShareItem
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -1302,6 +1320,11 @@ func Test_handleFileStorage(t *testing.T) {
 					ID:   &fileShareID,
 					Name: &fileShareName,
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: &voc.FileStorage{
 				Storage: &voc.Storage{
@@ -1331,6 +1354,11 @@ func Test_handleFileStorage(t *testing.T) {
 							SecurityAlertsEnabled:    false,
 						},
 					},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: true,
+						},
+					},
 					Redundancy: &voc.Redundancy{
 						Local: true,
 					},
@@ -1345,7 +1373,7 @@ func Test_handleFileStorage(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
 
-			got, err := d.handleFileStorage(tt.args.account, tt.args.fileshare)
+			got, err := d.handleFileStorage(tt.args.account, tt.args.fileshare, tt.args.activityLogging)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)) {
 				return
 			}
@@ -1396,8 +1424,9 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 		azureDiscovery *azureDiscovery
 	}
 	type args struct {
-		account      *armstorage.Account
-		storagesList []voc.IsCloudResource
+		account         *armstorage.Account
+		storagesList    []voc.IsCloudResource
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -1438,6 +1467,11 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					},
 					Location: &accountRegion,
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: &voc.ObjectStorageService{
 				StorageService: &voc.StorageService{
@@ -1467,6 +1501,11 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					Redundancy: &voc.Redundancy{
 						Local: true,
 					},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: true,
+						},
+					},
 				},
 				HttpEndpoint: &voc.HttpEndpoint{
 					Url: "https://account1.[file,blob].core.windows.net",
@@ -1486,7 +1525,7 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 			az := &azureStorageDiscovery{
 				azureDiscovery: tt.fields.azureDiscovery,
 			}
-			got, err := az.handleStorageAccount(tt.args.account, tt.args.storagesList)
+			got, err := az.handleStorageAccount(tt.args.account, tt.args.storagesList, tt.args.activityLogging)
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -1510,8 +1549,9 @@ func Test_handleObjectStorage(t *testing.T) {
 		blobContainerClient bool
 	}
 	type args struct {
-		account   *armstorage.Account
-		container *armstorage.ListContainerItem
+		account         *armstorage.Account
+		container       *armstorage.ListContainerItem
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -1582,6 +1622,11 @@ func Test_handleObjectStorage(t *testing.T) {
 						PublicAccess:          &publicAccess,
 					},
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: &voc.ObjectStorage{
 				Storage: &voc.Storage{
@@ -1611,6 +1656,11 @@ func Test_handleObjectStorage(t *testing.T) {
 							SecurityAlertsEnabled:    false,
 						},
 					},
+					ActivityLogging: &voc.ActivityLogging{
+						Logging: &voc.Logging{
+							Enabled: true,
+						},
+					},
 					Backups: []*voc.Backup{
 						{
 							Enabled:         false,
@@ -1637,7 +1687,7 @@ func Test_handleObjectStorage(t *testing.T) {
 				_ = d.initBlobContainerClient()
 			}
 
-			got, err := d.handleObjectStorage(tt.args.account, tt.args.container)
+			got, err := d.handleObjectStorage(tt.args.account, tt.args.container, tt.args.activityLogging)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
 				return
 			}
@@ -1657,7 +1707,8 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		azureDiscovery *azureDiscovery
 	}
 	type args struct {
-		account *armstorage.Account
+		account         *armstorage.Account
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -1703,6 +1754,11 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					},
 					Location: &accountRegion,
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: []voc.IsCloudResource{
 				&voc.FileStorage{
@@ -1730,6 +1786,11 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 							Logging: &voc.Logging{
 								MonitoringLogDataEnabled: false,
 								SecurityAlertsEnabled:    false,
+							},
+						},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
 							},
 						},
 						Redundancy: &voc.Redundancy{
@@ -1764,6 +1825,11 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 								SecurityAlertsEnabled:    false,
 							},
 						},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
+							},
+						},
 						Redundancy: &voc.Redundancy{
 							Local: true,
 						},
@@ -1781,7 +1847,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 			// initialize file share client
 			_ = d.initFileStorageClient()
 
-			got, err := d.discoverFileStorages(tt.args.account)
+			got, err := d.discoverFileStorages(tt.args.account, tt.args.activityLogging)
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -1801,7 +1867,8 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		azureDiscovery *azureDiscovery
 	}
 	type args struct {
-		account *armstorage.Account
+		account         *armstorage.Account
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -1850,6 +1917,11 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					},
 					Location: &accountRegion,
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: []voc.IsCloudResource{
 				&voc.ObjectStorage{
@@ -1878,6 +1950,11 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 							Logging: &voc.Logging{
 								MonitoringLogDataEnabled: false,
 								SecurityAlertsEnabled:    false,
+							},
+						},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
 							},
 						},
 						Backups: []*voc.Backup{
@@ -1921,6 +1998,11 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 								SecurityAlertsEnabled:    false,
 							},
 						},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
+							},
+						},
 						Backups: []*voc.Backup{
 							{
 								Enabled:         false,
@@ -1947,7 +2029,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 			// initialize blob container client
 			_ = d.initBlobContainerClient()
 
-			got, err := d.discoverObjectStorages(tt.args.account)
+			got, err := d.discoverObjectStorages(tt.args.account, tt.args.activityLogging)
 			if !tt.wantErr(t, err) {
 				return
 			}
@@ -2142,8 +2224,9 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
-		azureDiscovery     *azureDiscovery
-		defenderProperties map[string]*defenderProperties
+		azureDiscovery           *azureDiscovery
+		defenderProperties       map[string]*defenderProperties
+		diagnosticSettingsClient bool
 	}
 	tests := []struct {
 		name    string
@@ -2164,7 +2247,8 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+				azureDiscovery:           NewMockAzureDiscovery(newMockStorageSender()),
+				diagnosticSettingsClient: true,
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
@@ -2190,6 +2274,12 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 							},
 						},
 						Redundancy: &voc.Redundancy{},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled:        true,
+								LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1"},
+							},
+						},
 					},
 				},
 				&voc.DatabaseService{
@@ -2228,6 +2318,12 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 				azureDiscovery:     tt.fields.azureDiscovery,
 				defenderProperties: tt.fields.defenderProperties,
 			}
+
+			// initialize diagnostic settings client
+			if tt.fields.diagnosticSettingsClient {
+				_ = d.initDiagnosticsSettingsClient()
+			}
+
 			got, err := d.discoverCosmosDB()
 			if !tt.wantErr(t, err) {
 				return
@@ -2243,7 +2339,8 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		defenderProperties map[string]*defenderProperties
 	}
 	type args struct {
-		account *armcosmos.DatabaseAccountGetResults
+		account         *armcosmos.DatabaseAccountGetResults
+		activityLogging *voc.ActivityLogging
 	}
 	tests := []struct {
 		name    string
@@ -2271,6 +2368,11 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						CreatedAt: &time.Time{},
 					},
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
@@ -2296,6 +2398,11 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							},
 						},
 						Redundancy: &voc.Redundancy{},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
+							},
+						},
 					},
 				},
 			},
@@ -2323,6 +2430,11 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						CreatedAt: &time.Time{},
 					},
 				},
+				activityLogging: &voc.ActivityLogging{
+					Logging: &voc.Logging{
+						Enabled: true,
+					},
+				},
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
@@ -2348,6 +2460,11 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 							},
 						},
 						Redundancy: &voc.Redundancy{},
+						ActivityLogging: &voc.ActivityLogging{
+							Logging: &voc.Logging{
+								Enabled: true,
+							},
+						},
 					},
 				},
 			},
@@ -2361,7 +2478,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 				azureDiscovery:     tt.fields.azureDiscovery,
 				defenderProperties: tt.fields.defenderProperties,
 			}
-			got, err := d.handleCosmosDB(tt.args.account)
+			got, err := d.handleCosmosDB(tt.args.account, tt.args.activityLogging)
 			if !tt.wantErr(t, err, fmt.Sprintf("handleCosmosDB(%v, %v)", tt.args.account, tt.args.account)) {
 				return
 			}
