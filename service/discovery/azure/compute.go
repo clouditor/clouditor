@@ -391,7 +391,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
-	resourceLogging := d.getResourceLoggingWebApp(function)
+	activityLogging := d.getResourceLoggingWebApp(function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -410,7 +410,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 				config,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
-			ResourceLogging:   resourceLogging,
+			ActivityLogging:   activityLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
@@ -437,7 +437,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
-	resourceLogging := d.getResourceLoggingWebApp(webApp)
+	activityLogging := d.getResourceLoggingWebApp(webApp)
 
 	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
@@ -466,7 +466,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 				config,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
-			ResourceLogging:   resourceLogging,
+			ActivityLogging:   activityLogging,
 		},
 		HttpEndpoint: &voc.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
@@ -1127,8 +1127,8 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 }
 
 // getResourceLoggingWebApp determines if logging is activated for given web app by checking the respective app setting
-func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ResourceLogging) {
-	rl = &voc.ResourceLogging{Logging: &voc.Logging{}}
+func (d *azureComputeDiscovery) getResourceLoggingWebApp(site *armappservice.Site) (rl *voc.ActivityLogging) {
+	rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
 
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
