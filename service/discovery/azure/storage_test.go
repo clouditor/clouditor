@@ -2711,17 +2711,6 @@ func Test_azureStorageDiscovery_discoverDiagnosticSettings(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path: no log settings available",
-			fields: fields{
-				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
-			},
-			args: args{
-				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account4",
-			},
-			want:    nil,
-			wantErr: assert.NoError,
-		},
-		{
 			name: "Happy path: data logged",
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),

@@ -534,11 +534,6 @@ func (d *azureStorageDiscovery) discoverDiagnosticSettings(resourceURI string) (
 				continue
 			}
 
-			if len(value.Properties.Logs) == 0 {
-				log.Debugf("diagnostic setting '%s' does not send log data to a Log Analytics Workspace", util.Deref(value.Name))
-				continue
-			}
-
 			// Add Log Analytics WorkspaceIDs to slice
 			workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
 		}
