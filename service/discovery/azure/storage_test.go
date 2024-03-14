@@ -2584,7 +2584,10 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 					},
 				},
 			}},
-			wantR: &voc.Redundancy{Zone: true},
+			wantR: &voc.Redundancy{
+				Zone: true,
+				Geo:  true,
+			},
 		},
 		{
 			name: "No location is zone redundant - return zone redundancy equals false",
@@ -2602,7 +2605,9 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 					},
 				},
 			}},
-			wantR: &voc.Redundancy{},
+			wantR: &voc.Redundancy{
+				Geo: true,
+			},
 		},
 	}
 	for _, tt := range tests {
