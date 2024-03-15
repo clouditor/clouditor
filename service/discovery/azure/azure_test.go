@@ -1001,3 +1001,77 @@ func Test_resourceGroupID(t *testing.T) {
 		})
 	}
 }
+
+func Test_azureStorageDiscovery_discoverDiagnosticSettings(t *testing.T) {
+	type fields struct {
+		azureDiscovery     *azureDiscovery
+		defenderProperties map[string]*defenderProperties
+	}
+	type args struct {
+		resourceURI string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *voc.ActivityLogging
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "No Diagnostic Setting available",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account3",
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "Happy path: no workspace available",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account2",
+			},
+			want:    nil,
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: data logged",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockStorageSender()),
+			},
+			args: args{
+				resourceURI: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1",
+			},
+			want: &voc.ActivityLogging{
+				Logging: &voc.Logging{
+					Enabled:        true,
+					LoggingService: []voc.ResourceID{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1"},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &azureStorageDiscovery{
+				azureDiscovery:     tt.fields.azureDiscovery,
+				defenderProperties: tt.fields.defenderProperties,
+			}
+
+			// Init Diagnostic Settings Client
+			_ = d.initDiagnosticsSettingsClient()
+
+			got, err := d.discoverDiagnosticSettings(tt.args.resourceURI)
+
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
