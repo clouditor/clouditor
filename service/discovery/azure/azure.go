@@ -687,3 +687,58 @@ func resourceID(id *string) string {
 
 	return strings.ToLower(*id)
 }
+
+// discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object.
+func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.ActivityLogging, string, error) {
+	var (
+		al           *voc.ActivityLogging
+		workspaceIDs []voc.ResourceID
+		raw          string
+	)
+
+	if err := d.initDiagnosticsSettingsClient(); err != nil {
+		return nil, "", err
+	}
+
+	// List all diagnostic settings for the storage account
+	listPager := d.clients.diagnosticSettingsClient.NewListPager(resourceURI, &armmonitor.DiagnosticSettingsClientListOptions{})
+	for listPager.More() {
+		pageResponse, err := listPager.NextPage(context.TODO())
+		if err != nil {
+			err = fmt.Errorf("%s: %v", ErrGettingNextPage, err)
+			return nil, "", err
+		}
+
+		// store raw information for resource
+		raw, _ = voc.ToStringInterface([]interface{}{pageResponse})
+
+		for _, value := range pageResponse.Value {
+			// Check if data is send to a log analytics workspace
+			if value.Properties.WorkspaceID == nil {
+				log.Debugf("diagnostic setting '%s' does not send data to a Log Analytics Workspace", util.Deref(value.Name))
+				continue
+			}
+
+			// Add Log Analytics WorkspaceIDs to slice
+			workspaceIDs = append(workspaceIDs, voc.ResourceID(util.Deref(value.Properties.WorkspaceID)))
+		}
+	}
+
+	if len(workspaceIDs) > 0 {
+		al = &voc.ActivityLogging{
+			Logging: &voc.Logging{
+				Enabled:        true,
+				LoggingService: workspaceIDs, // TODO(all): Each diagnostic setting has also a retention period, maybe we should add that information as well
+			},
+		}
+	}
+
+	return al, raw, nil
+}
+
+// initDiagnosticsSettingsClient creates the client if not already exists
+func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
+	d.clients.diagnosticSettingsClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
+
+	return
+}

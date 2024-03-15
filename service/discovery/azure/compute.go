@@ -1131,23 +1131,32 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 // getResourceLogging determines if logging is activated for a given web app or function by checking the respective app setting
 // In this case logging means the Application Insights logging. The Application Insights logging is automatically forwarded to Log Analytics which is defined in the Diagnostic Settings.
 // TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
-func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, armappservice.WebAppsClientListApplicationSettingsResponse) {
-	var rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
+func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, string) {
+	var (
+		rl  = &voc.ActivityLogging{Logging: &voc.Logging{}}
+		raw string
+	)
 
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Warnf("Could not get resource logging information: could not get application settings for '%s', maybe it is a slot: %v", util.Deref(site.Name), err)
-		return rl, appSettings
+		// return rl, appSettings
 	}
 
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
 		rl.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
-
+		raw, _ = voc.ToStringInterface([]interface{}{appSettings})
+	} else {
+		rl, raw, err = d.azureDiscovery.discoverDiagnosticSettings(util.Deref(site.ID))
+		if err != nil {
+			log.Warnf("Could not get diagnostic settings for %s: %v", util.Deref(site.Name), err)
+			return rl, ""
+		}
 	}
 
-	return rl, appSettings
+	return rl, raw
 }
 
 // addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
