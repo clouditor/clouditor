@@ -391,7 +391,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
-	activityLogging := d.getActivityLogging(function)
+	activityLogging, appSettings := d.getActivityLogging(function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -408,6 +408,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 				voc.FunctionType,
 				function,
 				config,
+				appSettings,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 			ActivityLogging:   activityLogging,
@@ -437,7 +438,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
-	activityLogging := d.getActivityLogging(webApp)
+	activityLogging, appSettings := d.getActivityLogging(webApp)
 
 	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
@@ -464,6 +465,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 				voc.WebAppType,
 				webApp,
 				config,
+				appSettings,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 			ActivityLogging:   activityLogging,
@@ -1129,14 +1131,14 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 // getResourceLogging determines if logging is activated for a given web app or function by checking the respective app setting
 // In this case logging means the Application Insights logging. The Application Insights logging is automatically forwarded to Log Analytics which is defined in the Diagnostic Settings.
 // TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
-func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (rl *voc.ActivityLogging) {
-	rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
+func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, armappservice.WebAppsClientListApplicationSettingsResponse) {
+	var rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
 
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Warnf("Could not get resource logging information: could not get application settings for '%s', maybe it is a slot: %v", util.Deref(site.Name), err)
-		return
+		return rl, appSettings
 	}
 
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
@@ -1145,7 +1147,7 @@ func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (rl
 
 	}
 
-	return
+	return rl, appSettings
 }
 
 // addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
