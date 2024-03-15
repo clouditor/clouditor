@@ -99,7 +99,8 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
-	providers []string
+	providers   []string
+	discoverers []discovery.Discoverer
 
 	discoveryInterval time.Duration
 
@@ -152,6 +153,14 @@ func WithProviders(providersList []string) ServiceOption {
 
 	return func(s *Service) {
 		s.providers = providersList
+	}
+}
+
+// WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: This are added in
+// addition to the ones created by [WithProviders].
+func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) ServiceOption {
+	return func(s *Service) {
+		s.discoverers = append(s.discoverers, discoverers...)
 	}
 }
 
@@ -227,8 +236,7 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
 	var (
-		opts       = []azure.DiscoveryOption{}
-		discoverer []discovery.Discoverer
+		opts = []azure.DiscoveryOption{}
 	)
 
 	// Validate request
@@ -262,14 +270,14 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			if req.GetResourceGroup() != "" {
 				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
-			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
+			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
-			discoverer = append(discoverer,
+			svc.discoverers = append(svc.discoverers,
 				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
 				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
 				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
@@ -279,7 +287,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to AWS: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
-			discoverer = append(discoverer,
+			svc.discoverers = append(svc.discoverers,
 				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		default:
@@ -289,7 +297,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		}
 	}
 
-	for _, v := range discoverer {
+	for _, v := range svc.discoverers {
 		log.Infof("Scheduling {%s} to execute every {%v} minutes...", v.Name(), svc.discoveryInterval.Minutes())
 
 		_, err = svc.scheduler.
