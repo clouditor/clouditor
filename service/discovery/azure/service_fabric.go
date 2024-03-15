@@ -80,6 +80,7 @@ func (d *azureServiceFabricDiscovery) discoverClusters() ([]voc.IsCloudResource,
 	}
 
 	var clusters []*armservicefabric.Cluster
+	// TODO(all): I think it would be better to use the listPager function.
 	if util.Deref(d.rg) != "" {
 		response, err := d.clients.fabricsServiceClusterClient.List(context.Background(), &armservicefabric.ClustersClientListOptions{})
 		if err != nil {

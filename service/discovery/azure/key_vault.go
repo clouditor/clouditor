@@ -353,6 +353,7 @@ func (d *azureKeyVaultDiscovery) getKeys(kv *armkeyvault.Vault) ([]*voc.Key, err
 	if c == nil {
 		return nil, errors.New("keys client is empty")
 	}
+	// TODO(all): We should use the listPager function, otherwise the call does not work if the Clouditor starts without a specific resource group.
 	pager := c.NewListPager(util.Deref(d.azureDiscovery.rg), util.Deref(kv.Name), &armkeyvault.KeysClientListOptions{})
 	for pager.More() {
 		page, err := pager.NextPage(context.Background())
