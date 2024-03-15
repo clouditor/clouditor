@@ -803,17 +803,22 @@ func automaticUpdates(os *armcompute.OSProfile) (automaticUpdates *voc.Automatic
 	}
 
 	// Check if Windows configuration is available
-	if os.WindowsConfiguration != nil &&
-		os.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(os.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *os.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(os.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *os.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
+	if os.WindowsConfiguration != nil {
+		// If the VM is from, e.g., a AKS scale set, the automaticUpdates information can be found in WindowsConfiguration.EnableAutomaticUpdates, otherwise the information is in WindowsConfiguration.PatchSettings.
+		if os.WindowsConfiguration.EnableAutomaticUpdates != nil {
+			automaticUpdates.Enabled = util.Deref(os.WindowsConfiguration.EnableAutomaticUpdates)
 			return
+		} else if os.WindowsConfiguration.PatchSettings != nil {
+			if util.Deref(os.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *os.WindowsConfiguration.EnableAutomaticUpdates ||
+				util.Deref(os.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *os.WindowsConfiguration.EnableAutomaticUpdates {
+				automaticUpdates.Enabled = true
+				automaticUpdates.Interval = Duration30Days
+				return
 
-		} else {
-			return
+			} else {
+				return
 
+			}
 		}
 	}
 
