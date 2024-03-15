@@ -1068,9 +1068,12 @@ func Test_azureStorageDiscovery_discoverDiagnosticSettings(t *testing.T) {
 			// Init Diagnostic Settings Client
 			_ = d.initDiagnosticsSettingsClient()
 
-			got, err := d.discoverDiagnosticSettings(tt.args.resourceURI)
+			got, raw, err := d.azureDiscovery.discoverDiagnosticSettings(tt.args.resourceURI)
 
 			tt.wantErr(t, err)
+			if tt.wantErr != nil {
+				assert.NotNil(t, raw)
+			}
 			assert.Equal(t, tt.want, got)
 		})
 	}
