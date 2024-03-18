@@ -7,7 +7,7 @@ require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20240221180331-f05a6f4403ce.1
 	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/bufbuild/protovalidate-go v0.6.0
-	github.com/glebarez/sqlite v1.10.0
+	github.com/glebarez/sqlite v1.11.0
 	github.com/go-co-op/gocron v1.37.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.6.0
@@ -25,7 +25,7 @@ require (
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
 	gorm.io/driver/postgres v1.5.0
-	gorm.io/gorm v1.25.5
+	gorm.io/gorm v1.25.7
 )
 
 // testing dependencies (core)
