@@ -126,32 +126,29 @@ func (d *azureKeyVaultDiscovery) discoverKeyVaults() (list []voc.IsCloudResource
 			return res.Value
 		},
 		func(kv *armkeyvault.Vault) error {
-			// Handle key vault
-			keyVault, err := d.handleKeyVault(kv)
-			if err != nil {
-				return fmt.Errorf("could not handle key vault: %w", err)
-			}
-
-			// Handle Keys and add IDs to the key vault
+			// Handle Keys
 			keys, err := d.getKeys(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle keys: %w", err)
 			}
-			keyVault.Keys = getKeyIDs(keys)
 
-			// Handle secrets and add IDs to the key vault
+			// Handle secrets
 			secrets, err := d.getSecrets(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle secrets: %w", err)
 			}
-			keyVault.Secrets = getSecretIDs(secrets)
 
 			// Handle certificates
 			certificates, err := d.getCertificates(kv)
 			if err != nil {
 				return fmt.Errorf("could not handle secrets: %w", err)
 			}
-			keyVault.Certificates = getCertificateIDs(certificates)
+
+			// Handle key vault
+			keyVault, err := d.handleKeyVault(kv, keys, secrets, certificates)
+			if err != nil {
+				return fmt.Errorf("could not handle key vault: %w", err)
+			}
 
 			// Add all resources (key vaults, keys and secrets) to the list
 			log.Infof("Adding key vault '%s'", keyVault.GetName())
@@ -229,10 +226,10 @@ func (d *azureKeyVaultDiscovery) initMetricsClient() (err error) {
 }
 
 // TODO(lebogg): Test
-func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.KeyVault, error) {
+func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault, keys []*voc.Key, secrets []*voc.Secret, certificates []*voc.Certificate) (*voc.KeyVault, error) {
 	var createdAt *time.Time
 	// Find out if key vault is actively used
-	isActive, err := d.isActive(kv)
+	isActive, err := d.isActive(kv, keys, secrets, certificates)
 	if err != nil {
 		return nil, fmt.Errorf("could not handle key vault: %v", err)
 	}
@@ -254,7 +251,9 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 			voc.KeyVaultType,
 			kv),
 		IsActive:     isActive,
-		Keys:         []voc.ResourceID{}, // Will be added later when we retrieve the single keys
+		Keys:         getKeyIDs(keys),
+		Secrets:      getSecretIDs(secrets),
+		Certificates: getCertificateIDs(certificates),
 		PublicAccess: getPublicAccess(kv),
 	}, nil
 }
@@ -297,10 +296,16 @@ func getCertificateIDs(certs []*voc.Certificate) []voc.ResourceID {
 	return certificateIDs
 }
 
-// isActive determines whether the key vault is being actively used. Measuring is done by examining the API traffic of
-// the key vault (API hits via Azure Monitoring). The number of required API hits and the time period measured are
-// defined by NumberOfAPIHits and PeriodOfAPIHits, respectively.
-func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault) (isActive bool, err error) {
+// isActive determines whether the key vault is being actively used. Decision is made twofold::
+// 1st) We check if there is any resource (e.g. keys) stored in the Key Vault in the first place
+// 2nd) By measuring the API traffic of the key vault (API hits via Azure Monitoring). The number of required API hits
+// and the time period measured are defined by NumberOfAPIHits and PeriodOfAPIHits, respectively.
+func (d *azureKeyVaultDiscovery) isActive(kv *armkeyvault.Vault, keys []*voc.Key, secrets []*voc.Secret, certificates []*voc.Certificate) (isActive bool, err error) {
+	// When there are no keys, secrets or certificates in the KeyVault it assumed to be inactive
+	if len(keys) == 0 && len(secrets) == 0 && len(certificates) == 0 {
+		isActive = false
+		return
+	}
 	// We need the client for doing metric queries to Azure Monitor
 	err = d.initMetricsClient()
 	if err != nil {

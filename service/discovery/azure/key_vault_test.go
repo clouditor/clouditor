@@ -475,7 +475,10 @@ func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
 		metricsClient  *azquery.MetricsClient
 	}
 	type args struct {
-		kv *armkeyvault.Vault
+		kv           *armkeyvault.Vault
+		keys         []*voc.Key
+		secrets      []*voc.Secret
+		certificates []*voc.Certificate
 	}
 	tests := []struct {
 		name         string
@@ -484,15 +487,21 @@ func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
 		wantIsActive bool
 		wantErr      assert.ErrorAssertionFunc
 	}{
-		//{
-		//	name: "happy path",
-		//	fields: fields{
-		//		azureDiscovery: NewMockAzureDiscovery(&mockKeyVaultSender{}),
-		//	},
-		//	args:         args{kv: &armkeyvault.Vault{ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.KeyVault/vaults/myKeyVault")}},
-		//	wantIsActive: true,
-		//	wantErr:      assert.NoError, // TODO(lebogg): Does not work yet. Since I cannot mock it currently
-		//},
+		{
+			name: "happy path - inactive because key vault is empty",
+			fields: fields{
+				azureDiscovery: nil,
+			},
+			args: args{
+				kv:           &armkeyvault.Vault{ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.KeyVault/vaults/myKeyVault")},
+				keys:         []*voc.Key{},         // no keys stored in key vault
+				secrets:      []*voc.Secret{},      // no secrets stored in key vault
+				certificates: []*voc.Certificate{}, // no certificates stored in key vault
+			},
+			wantIsActive: false,
+			wantErr:      assert.NoError,
+		},
+		// Add test for second case (API Hits) -> Need to mock azquery
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -500,7 +509,7 @@ func Test_azureKeyVaultDiscovery_isActive(t *testing.T) {
 				azureDiscovery: tt.fields.azureDiscovery,
 				metricsClient:  tt.fields.metricsClient,
 			}
-			gotIsActive, err := d.isActive(tt.args.kv)
+			gotIsActive, err := d.isActive(tt.args.kv, tt.args.keys, tt.args.secrets, tt.args.certificates)
 			if !tt.wantErr(t, err, fmt.Sprintf("isActive(%v)", tt.args.kv)) {
 				return
 			}
