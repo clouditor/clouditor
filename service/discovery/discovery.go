@@ -156,7 +156,7 @@ func WithProviders(providersList []string) ServiceOption {
 	}
 }
 
-// WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: This are added in
+// WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: These are added in
 // addition to the ones created by [WithProviders].
 func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) ServiceOption {
 	return func(s *Service) {
