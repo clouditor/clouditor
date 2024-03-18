@@ -1202,8 +1202,12 @@ func getSecretURI(s string) (secretURI string) {
 		}
 		s, ok = strings.CutSuffix(s, "/)")
 		if !ok {
-			log.Error("Could not find suffix ')' in:", s)
-			return ""
+			log.Debugf("Could not find suffix '/)' in '%s'. Trying to look for suffix without backslash in the end:", s)
+			s, ok = strings.CutSuffix(s, ")")
+			if !ok {
+				log.Errorf("Could find neither suffix '/)' nor ')' (without backslash) in '%s'", s)
+				return ""
+			}
 		}
 		secretURI = s
 	}
