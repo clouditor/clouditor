@@ -33,8 +33,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/api/evaluation"
-	"clouditor.io/clouditor/v2/api/evidence"
 	commands_login "clouditor.io/clouditor/v2/cli/commands/login"
 	"clouditor.io/clouditor/v2/internal/auth"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -45,11 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
-	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 	service_discovery "clouditor.io/clouditor/v2/service/discovery"
-	service_evaluation "clouditor.io/clouditor/v2/service/evaluation"
-	service_evidenceStore "clouditor.io/clouditor/v2/service/evidence"
-	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/login"
@@ -72,6 +66,8 @@ const (
 	APICORSAllowedMethodsFlags       = "api-cors-allowed-methods"
 	APIJWKSURLFlag                   = "api-jwks-url"
 	APIStartEmbeddedOAuth2ServerFlag = "api-start-embedded-oauth-server"
+	AssessmentURLFlag                = "assessment-url"
+	CloudServiceIDFlag               = "cloud-service-id"
 	ServiceOAuth2EndpointFlag        = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag        = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag    = "service-oauth2-client-secret"
@@ -82,7 +78,6 @@ const (
 	DBPortFlag                       = "db-port"
 	DBSSLModeFlag                    = "db-ssl-mode"
 	DBInMemoryFlag                   = "db-in-memory"
-	CreateDefaultTarget              = "target-default-create"
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
 	DiscoveryResourceGroupFlag       = "discovery-resource-group"
@@ -91,8 +86,10 @@ const (
 
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
-	DefaultAPIgRPCPort                  uint16 = 9090
+	DefaultAPIgRPCPort                  uint16 = 9091
+	DefaultAPIHTTPPort                  uint16 = 8081
 	DefaultAPIStartEmbeddedOAuth2Server        = true
+	DefaultAssessmentURL                       = "localhost:9092"
 	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID               = "clouditor"
 	DefaultServiceOAuth2ClientSecret           = "clouditor"
@@ -103,7 +100,6 @@ const (
 	DefaultDBPort                       uint16 = 5432
 	DefaultDBSSLMode                           = "disable"
 	DefaultDBInMemory                          = false
-	DefaultCreateDefaultTarget                 = true
 	DefaultDiscoveryAutoStart                  = false
 	DefaultDiscoveryResourceGroup              = ""
 	DefaultDashboardURL                        = "http://localhost:8080"
@@ -113,14 +109,10 @@ const (
 )
 
 var (
-	srv                  *server.Server
-	discoveryService     *service_discovery.Service
-	orchestratorService  *service_orchestrator.Service
-	assessmentService    *service_assessment.Service
-	evidenceStoreService evidence.EvidenceStoreServer
-	evaluationService    evaluation.EvaluationServer
-	db                   persistence.Storage
-	providers            []string
+	srv              *server.Server
+	discoveryService *service_discovery.Service
+	db               persistence.Storage
+	providers        []string
 
 	log *logrus.Entry
 )
@@ -143,12 +135,14 @@ func init() {
 	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortFlag, DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, server.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
 	engineCmd.Flags().String(ServiceOAuth2ClientSecretFlag, DefaultServiceOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
 	engineCmd.Flags().Bool(APIStartEmbeddedOAuth2ServerFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
+	engineCmd.Flags().String(AssessmentURLFlag, DefaultAssessmentURL, "Specifies the Assessment URL")
+	engineCmd.Flags().String(CloudServiceIDFlag, discovery.DefaultCloudServiceID, "Specifies the Assessment URL")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
@@ -159,7 +153,6 @@ func init() {
 	engineCmd.Flags().Uint16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().String(DBSSLModeFlag, DefaultDBSSLMode, "The SSL mode for the database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
-	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
@@ -178,6 +171,8 @@ func init() {
 	_ = viper.BindPFlag(ServiceOAuth2ClientIDFlag, engineCmd.Flags().Lookup(ServiceOAuth2ClientIDFlag))
 	_ = viper.BindPFlag(ServiceOAuth2ClientSecretFlag, engineCmd.Flags().Lookup(ServiceOAuth2ClientSecretFlag))
 	_ = viper.BindPFlag(APIStartEmbeddedOAuth2ServerFlag, engineCmd.Flags().Lookup(APIStartEmbeddedOAuth2ServerFlag))
+	_ = viper.BindPFlag(AssessmentURLFlag, engineCmd.Flags().Lookup(AssessmentURLFlag))
+	_ = viper.BindPFlag(CloudServiceIDFlag, engineCmd.Flags().Lookup(CloudServiceIDFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
@@ -188,7 +183,6 @@ func init() {
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBSSLModeFlag, engineCmd.Flags().Lookup(DBSSLModeFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
-	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
@@ -221,7 +215,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
  \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
   \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
  
-  Version %s
+  Clouditor Discovery Service Version %s
   `, rt.VersionString())
 	fmt.Println()
 
@@ -249,7 +243,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return fmt.Errorf("could not create storage: %w", err)
 	}
 
-	// If no CSPs for discovering is given, take all implemented discoverers
+	// If no CSPs for discovering are given, take all implemented discoverers
 	if len(viper.GetStringSlice(DiscoveryProviderFlag)) == 0 {
 		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
 	} else {
@@ -257,8 +251,10 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	discoveryService = service_discovery.NewService(
+		service_discovery.WithCloudServiceID(viper.GetString(CloudServiceIDFlag)),
 		service_discovery.WithProviders(providers),
 		service_discovery.WithStorage(db),
+		service_discovery.WithAssessmentAddress(viper.GetString(AssessmentURLFlag)),
 		service_discovery.WithOAuth2Authorizer(
 			// Configure the OAuth 2.0 client credentials for this service
 			&clientcredentials.Config{
@@ -267,49 +263,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
 			}),
 	)
-
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
-
-	assessmentService = service_assessment.NewService(
-		service_assessment.WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
-			},
-		),
-	)
-
-	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
-
-	evaluationService = service_evaluation.NewService(
-		service_evaluation.WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
-			},
-		),
-		service_evaluation.WithStorage(db),
-	)
-
-	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
-	//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
-	//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
-	//  * The hook functions in assessment are implemented in AssessEvidence(s)
-
-	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
-	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
-	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
-
-	if viper.GetBool(CreateDefaultTarget) {
-		_, err := orchestratorService.CreateDefaultTargetCloudService()
-		if err != nil {
-			log.Errorf("could not register default target cloud service: %v", err)
-		}
-	}
 
 	grpcPort := viper.GetUint16(APIgRPCPortFlag)
 	httpPort := viper.GetUint16(APIHTTPPortFlag)
@@ -378,13 +331,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// Start the gRPC server
 	_, srv, err = server.StartGRPCServer(
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		server.WithJWKS(viper.GetString(APIJWKSURLFlag)),
 		server.WithDiscovery(discoveryService),
 		server.WithExperimentalDiscovery(discoveryService),
-		server.WithOrchestrator(orchestratorService),
-		server.WithAssessment(assessmentService),
-		server.WithEvidenceStore(evidenceStoreService),
-		server.WithEvaluation(evaluationService),
 		server.WithReflection(),
 	)
 	if err != nil {
@@ -403,7 +351,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return err
 	}
 
-	assessmentService.Shutdown()
 	discoveryService.Shutdown()
 
 	log.Infof("Stopping gRPC endpoint")
