@@ -784,7 +784,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	return r, nil
 }
 
-// automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
+// automaticUpdatesScaleSet returns voc.AutomaticUpdates for a given VM scale set.
 func automaticUpdates(os *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
 	automaticUpdates = &voc.AutomaticUpdates{}
 
@@ -803,13 +803,10 @@ func automaticUpdates(os *armcompute.OSProfile) (automaticUpdates *voc.Automatic
 	}
 
 	// Check if Windows configuration is available
-	if os.WindowsConfiguration != nil {
-		// If the VM is from, e.g., a AKS nodepool, the automaticUpdates information can be found in WindowsConfiguration.EnableAutomaticUpdates, otherwise the information is in WindowsConfiguration.PatchSettings.
-		if os.WindowsConfiguration.EnableAutomaticUpdates != nil {
-			automaticUpdates.Enabled = util.Deref(os.WindowsConfiguration.EnableAutomaticUpdates)
-			automaticUpdates.Interval = Duration30Days
-			return
-		}
+	if os.WindowsConfiguration != nil && os.WindowsConfiguration.EnableAutomaticUpdates != nil {
+		automaticUpdates.Enabled = util.Deref(os.WindowsConfiguration.EnableAutomaticUpdates)
+		automaticUpdates.Interval = Duration30Days
+		return
 	}
 
 	return
