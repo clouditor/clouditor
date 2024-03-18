@@ -637,7 +637,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, scaleSet *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
-	var automaticUpdates *voc.AutomaticUpdates
+	var autoUpdates *voc.AutomaticUpdates
 
 	// Check if VM is from a VMSS, then skip. VMs from the VMSS (Virtual Machine Scale Set) appear also in the Virtual Machines list, whereas the VMs from the AKS pool does not appear in the VMs list.
 	// If a VM Scale Set VM is from Kubernetes, the instanceID is a numeric digit.
@@ -648,7 +648,7 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 	}
 
 	if vm.Properties != nil {
-		automaticUpdates = automaticUpdatesScaleSet(vm.Properties.OSProfile)
+		autoUpdates = automaticUpdates(vm.Properties.OSProfile)
 	}
 
 	r := &voc.VirtualMachine{
@@ -668,46 +668,10 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 			),
 		},
 
-		AutomaticUpdates: automaticUpdates,
+		AutomaticUpdates: autoUpdates,
 	}
 
 	return r, nil
-}
-
-// automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
-func automaticUpdatesScaleSet(set *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
-	automaticUpdates = &voc.AutomaticUpdates{}
-
-	if set == nil {
-		return
-	}
-
-	// Check if Linux configuration is available
-	if set.LinuxConfiguration != nil &&
-		set.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(set.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-		}
-	}
-
-	// Check if Windows configuration is available
-	if set.WindowsConfiguration != nil &&
-		set.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *set.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *set.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
-	}
-
-	return
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
@@ -728,7 +692,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
 	}
 
-	autoUpdates = automaticUpdates(vm)
+	autoUpdates = automaticUpdates(vm.Properties.OSProfile)
 
 	if d.defenderProperties[DefenderVirtualMachineType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
@@ -820,18 +784,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	return r, nil
 }
 
-// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
-func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
+// automaticUpdatesScaleSet returns voc.AutomaticUpdates for a given VM scale set.
+func automaticUpdates(os *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
 	automaticUpdates = &voc.AutomaticUpdates{}
 
-	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
+	if os == nil {
 		return
 	}
 
 	// Check if Linux configuration is available
-	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
-		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
+	if os.LinuxConfiguration != nil &&
+		os.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(os.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -839,18 +803,10 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	}
 
 	// Check if Windows configuration is available
-	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
-		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
+	if os.WindowsConfiguration != nil && os.WindowsConfiguration.EnableAutomaticUpdates != nil {
+		automaticUpdates.Enabled = util.Deref(os.WindowsConfiguration.EnableAutomaticUpdates)
+		automaticUpdates.Interval = Duration30Days
+		return
 	}
 
 	return

@@ -2759,7 +2759,7 @@ func Test_runtimeInfo(t *testing.T) {
 
 func Test_automaticUpdatesEnabled(t *testing.T) {
 	type args struct {
-		vm *armcompute.VirtualMachine
+		vm *armcompute.OSProfile
 	}
 	tests := []struct {
 		name string
@@ -2775,16 +2775,23 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 			},
 		},
 		{
+			name: "No automatic update for the given VM",
+			args: args{
+				&armcompute.OSProfile{
+					LinuxConfiguration: &armcompute.LinuxConfiguration{
+						PatchSettings: &armcompute.LinuxPatchSettings{},
+					},
+				},
+			},
+			want: &voc.AutomaticUpdates{},
+		},
+		{
 			name: "Happy path: Windows configuration set to manual",
 			args: args{
-				&armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							WindowsConfiguration: &armcompute.WindowsConfiguration{
-								PatchSettings: &armcompute.PatchSettings{
-									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeManual),
-								},
-							},
+				&armcompute.OSProfile{
+					WindowsConfiguration: &armcompute.WindowsConfiguration{
+						PatchSettings: &armcompute.PatchSettings{
+							PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeManual),
 						},
 					},
 				},
@@ -2797,14 +2804,10 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 		{
 			name: "Happy path: Linux configuration",
 			args: args{
-				&armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							LinuxConfiguration: &armcompute.LinuxConfiguration{
-								PatchSettings: &armcompute.LinuxPatchSettings{
-									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
-								},
-							},
+				&armcompute.OSProfile{
+					LinuxConfiguration: &armcompute.LinuxConfiguration{
+						PatchSettings: &armcompute.LinuxPatchSettings{
+							PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
 						},
 					},
 				},
@@ -2817,18 +2820,13 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 		{
 			name: "Happy path: Windows configuration",
 			args: args{
-				&armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							WindowsConfiguration: &armcompute.WindowsConfiguration{
-								PatchSettings: &armcompute.PatchSettings{
-									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
-								},
-								EnableAutomaticUpdates: util.Ref(true),
-							},
+				&armcompute.OSProfile{
+					WindowsConfiguration: &armcompute.WindowsConfiguration{
+						PatchSettings: &armcompute.PatchSettings{
+							PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByOS),
 						},
-					},
-				},
+						EnableAutomaticUpdates: util.Ref(true),
+					}},
 			},
 			want: &voc.AutomaticUpdates{
 				Enabled:  true,
@@ -2841,86 +2839,6 @@ func Test_automaticUpdatesEnabled(t *testing.T) {
 			got := automaticUpdates(tt.args.vm)
 
 			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
-func Test_automaticUpdates(t *testing.T) {
-	type args struct {
-		vm *armcompute.VirtualMachine
-	}
-	tests := []struct {
-		name                 string
-		args                 args
-		wantAutomaticUpdates *voc.AutomaticUpdates
-	}{
-		{
-			name:                 "Empty input",
-			args:                 args{},
-			wantAutomaticUpdates: &voc.AutomaticUpdates{},
-		},
-		{
-			name: "No automatic update for the given VM",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							LinuxConfiguration: &armcompute.LinuxConfiguration{
-								PatchSettings: &armcompute.LinuxPatchSettings{},
-							},
-						},
-					},
-				},
-			},
-			wantAutomaticUpdates: &voc.AutomaticUpdates{},
-		},
-		{
-			name: "Happy path: Linux",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							LinuxConfiguration: &armcompute.LinuxConfiguration{
-								PatchSettings: &armcompute.LinuxPatchSettings{
-									PatchMode: util.Ref(armcompute.LinuxVMGuestPatchModeAutomaticByPlatform),
-								},
-							},
-						},
-					},
-				},
-			},
-			wantAutomaticUpdates: &voc.AutomaticUpdates{
-				Enabled:  true,
-				Interval: Duration30Days,
-			},
-		},
-		{
-			name: "Happy path: Windows",
-			args: args{
-				vm: &armcompute.VirtualMachine{
-					Properties: &armcompute.VirtualMachineProperties{
-						OSProfile: &armcompute.OSProfile{
-							WindowsConfiguration: &armcompute.WindowsConfiguration{
-								PatchSettings: &armcompute.PatchSettings{
-									PatchMode: util.Ref(armcompute.WindowsVMGuestPatchModeAutomaticByPlatform),
-								},
-								EnableAutomaticUpdates: util.Ref(true),
-							},
-						},
-					},
-				},
-			},
-			wantAutomaticUpdates: &voc.AutomaticUpdates{
-				Enabled:  true,
-				Interval: Duration30Days,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if gotAutomaticUpdates := automaticUpdates(tt.args.vm); !reflect.DeepEqual(gotAutomaticUpdates, tt.wantAutomaticUpdates) {
-				t.Errorf("automaticUpdates() = %v, want %v", gotAutomaticUpdates, tt.wantAutomaticUpdates)
-			}
 		})
 	}
 }
