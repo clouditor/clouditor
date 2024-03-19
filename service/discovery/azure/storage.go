@@ -701,7 +701,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 
 // TODO(lebogg): Test it. Maybe add more logic to it, depending on test results
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
-	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny {
 		if len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) == 0 && len(acc.Properties.NetworkRuleSet.IPRules) == 0 {
 			return true
 		} else {
