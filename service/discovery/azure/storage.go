@@ -699,15 +699,17 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
-// TODO(lebogg): Test it. Maybe add more logic to it, depending on test results
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
-	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny {
-		if len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) == 0 && len(acc.Properties.NetworkRuleSet.IPRules) == 0 {
-			return true
-		} else {
+	// Check if Public Network Access of Storage Account is set to "enabled"
+	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
+		if acc.Properties.NetworkRuleSet != nil && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny && (len(acc.Properties.NetworkRuleSet.IPRules) > 0 || len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) > 0) {
 			return false
+		} else { // Option 2: Key vault is public accessible without restrictions
+			return true
 		}
 	}
+	// Public network access is set to "Disabled" or properties is not set -> we assume no access
 	return false
 }
 

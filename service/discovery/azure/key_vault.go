@@ -260,16 +260,16 @@ func (d *azureKeyVaultDiscovery) handleKeyVault(kv *armkeyvault.Vault) (*voc.Key
 }
 
 func getPublicAccess(kv *armkeyvault.Vault) bool {
-	// Key Vault is set to "enabled"
+	// Check if Public Network Access of Key Vault is set to "enabled"
 	if kv.Properties != nil && util.Deref(kv.Properties.PublicNetworkAccess) == "Enabled" {
-		// Check if there is at least one ip rule or selected network and default action is deny, i.e. we assume that public network access is restricted
-		if kv.Properties.NetworkACLs != nil && util.Deref(kv.Properties.NetworkACLs.DefaultAction) == armkeyvault.NetworkRuleActionDeny && (len(kv.Properties.NetworkACLs.VirtualNetworkRules) > 0 || len(kv.Properties.NetworkACLs.IPRules) > 0) {
+		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
+		if kv.Properties.NetworkACLs != nil && util.Deref(kv.Properties.NetworkACLs.DefaultAction) == armkeyvault.NetworkRuleActionDeny && (len(kv.Properties.NetworkACLs.IPRules) > 0 || len(kv.Properties.NetworkACLs.VirtualNetworkRules) > 0) {
 			return false
-		} else { // Otherwise the key vault is public accessible
+		} else { // Option 2: Key vault is public accessible without restrictions
 			return true
 		}
 	}
-	// Otherwise, public network access is set to "Disabled" or properties is not set -> we assume no access
+	// Public network access is set to "Disabled" or properties is not set -> we assume no access
 	return false
 }
 
