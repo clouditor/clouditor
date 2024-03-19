@@ -181,6 +181,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		publicNetworkAccess = false
 	)
 
+	// TODO(lebogg): Initialization can be removed here, it is done in discoverCosmosDBs - or vice versa.
 	// initialize Cosmos DB client
 	if err = d.initCosmosDBClient(); err != nil {
 		return nil, err
