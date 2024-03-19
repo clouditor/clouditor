@@ -140,8 +140,8 @@ func getVirtualNetworkSubnetId(site *armappservice.Site) []string {
 	return ni
 }
 
-// getPublicAccessStatus returns the public access status for webApp and function
-func getPublicAccessStatus(site *armappservice.Site) bool {
+// getInternetAccessibleEndpoint returns the public access status for webApp and function
+func getInternetAccessibleEndpoint(site *armappservice.Site) bool {
 	// Check if a mandatory field is empty
 	if site == nil {
 		return false
@@ -179,19 +179,23 @@ func (d *azureDiscovery) getResourceLoggingWebApps(site *armappservice.Site) (rl
 
 }
 
-// getRedundancy returns the redundancy status
-func getRedundancy(app *armappservice.Site) *ontology.Redundancy {
-	r := &ontology.Redundancy{}
+// getRedundancies returns the redundancy status
+func getRedundancies(app *armappservice.Site) []*ontology.Redundancy {
 	switch util.Deref(app.Properties.RedundancyMode) {
 	case armappservice.RedundancyModeNone:
 		break
 	case armappservice.RedundancyModeActiveActive:
-		r.Zone = true
+		return []*ontology.Redundancy{
+			{Type: &ontology.Redundancy_ZoneRedundancy{}},
+		}
 	case armappservice.RedundancyModeFailover, armappservice.RedundancyModeGeoRedundant:
-		r.Zone = true
-		r.Geo = true
+		return []*ontology.Redundancy{
+			{Type: &ontology.Redundancy_ZoneRedundancy{}},
+			{Type: &ontology.Redundancy_GeoRedundancy{}},
+		}
 	}
-	return r
+
+	return nil
 }
 
 // We really need both parameters since config is indeed more precise but it does not include the `httpsOnly` property

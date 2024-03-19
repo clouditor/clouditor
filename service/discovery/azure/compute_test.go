@@ -68,7 +68,6 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-
 			want: []ontology.IsResource{
 				&ontology.Function{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function1",
@@ -94,12 +93,11 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							TlsVersion: constants.TLS1_1,
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
-					},
-					PublicAccess:    true,
-					Redundancy:      &ontology.Redundancy{},
-					*/
-					RuntimeVersion:  "3.8",
-					RuntimeLanguage: "PYTHON",
+					},*/
+					InternetAccessibleEndpoint: true,
+					Redundancies:               []*ontology.Redundancy{},
+					RuntimeVersion:             "3.8",
+					RuntimeLanguage:            "PYTHON",
 				},
 				&ontology.Function{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/function2",
@@ -125,11 +123,11 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							TlsVersion: "",
 							Algorithm:  "",
 						},
-					},
-					PublicAccess:    false,
-					Redundancy:      &ontology.Redundancy{},*/
-					RuntimeVersion:  "1.8",
-					RuntimeLanguage: "Java",
+					},*/
+					InternetAccessibleEndpoint: false,
+					Redundancies:               []*ontology.Redundancy{},
+					RuntimeVersion:             "1.8",
+					RuntimeLanguage:            "Java",
 				},
 				&ontology.WebApp{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1",
@@ -155,9 +153,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							TlsVersion: constants.TLS1_1,
 							Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 						},
-					},
-					PublicAccess: true,
-					Redundancy:   &ontology.Redundancy{},*/
+					},*/
+					InternetAccessibleEndpoint: true,
+					Redundancies:               []*ontology.Redundancy{},
 				},
 				&ontology.WebApp{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2",
@@ -183,9 +181,9 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 							TlsVersion: "",
 							Algorithm:  "",
 						},
-					},
-					PublicAccess: false,
-					Redundancy:   &ontology.Redundancy{},*/
+					},*/
+					InternetAccessibleEndpoint: false,
+					Redundancies:               []*ontology.Redundancy{},
 				},
 			},
 			wantErr: assert.NoError,
@@ -276,8 +274,10 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				ResourceLogging: &ontology.ResourceLogging{
 					Enabled: false,
 				},
-				RuntimeVersion:  "3.8",
-				RuntimeLanguage: "PYTHON",
+				InternetAccessibleEndpoint: false,
+				Redundancies:               []*ontology.Redundancy{},
+				RuntimeVersion:             "3.8",
+				RuntimeLanguage:            "PYTHON",
 				/*HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
 						Enforced:   true,
@@ -286,7 +286,6 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 					},
 				},
-				Redundancy:      &ontology.Redundancy{},
 				PublicAccess:    false,*/
 			},
 		},
@@ -339,8 +338,10 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 				ResourceLogging: &ontology.ResourceLogging{
 					Enabled: false,
 				},
-				RuntimeVersion:  "1.8",
-				RuntimeLanguage: "Java",
+				InternetAccessibleEndpoint: false,
+				Redundancies:               []*ontology.Redundancy{},
+				RuntimeVersion:             "1.8",
+				RuntimeLanguage:            "Java",
 				/*HttpEndpoint: &ontology.HttpEndpoint{
 					TransportEncryption: &ontology.TransportEncryption{
 						Enforced:   true,
@@ -349,8 +350,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 					},
 				},
-				PublicAccess:    false,
-				Redundancy:      &ontology.Redundancy{},*/
+				*/
 			},
 		},
 	}
@@ -1480,9 +1480,9 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 						TlsVersion: constants.TLS1_2,
 						Algorithm:  string(armappservice.TLSCipherSuitesTLSAES128GCMSHA256),
 					},
-				},
-				PublicAccess: false,
-				Redundancy:   &ontology.Redundancy{},*/
+				},*/
+				InternetAccessibleEndpoint: false,
+				Redundancies:               []*ontology.Redundancy{},
 			},
 		},
 		{
@@ -1540,9 +1540,9 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 						TlsVersion: "",
 						Algorithm:  "",
 					},
-				},
-				PublicAccess: false,
-				Redundancy:   &ontology.Redundancy{},*/
+				},*/
+				InternetAccessibleEndpoint: false,
+				Redundancies:               []*ontology.Redundancy{},
 			},
 		},
 	}
@@ -1772,14 +1772,14 @@ func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
 	}
 }
 
-func Test_getRedundancy(t *testing.T) {
+func Test_getRedundancies(t *testing.T) {
 	type args struct {
 		app *armappservice.Site
 	}
 	tests := []struct {
 		name string
 		args args
-		want *ontology.Redundancy
+		want []*ontology.Redundancy
 	}{
 		{
 			name: "Happy path: no redundancy",
@@ -1792,10 +1792,7 @@ func Test_getRedundancy(t *testing.T) {
 					},
 				},
 			},
-			want: &ontology.Redundancy{
-				Zone: false,
-				Geo:  false,
-			},
+			want: nil,
 		},
 		{
 			name: "Happy path: zone redundancy",
@@ -1808,9 +1805,8 @@ func Test_getRedundancy(t *testing.T) {
 					},
 				},
 			},
-			want: &ontology.Redundancy{
-				Zone: true,
-				Geo:  false,
+			want: []*ontology.Redundancy{
+				{Type: &ontology.Redundancy_ZoneRedundancy{}},
 			},
 		},
 		{
@@ -1824,21 +1820,21 @@ func Test_getRedundancy(t *testing.T) {
 					},
 				},
 			},
-			want: &ontology.Redundancy{
-				Zone: true,
-				Geo:  true,
+			want: []*ontology.Redundancy{
+				{Type: &ontology.Redundancy_ZoneRedundancy{}},
+				{Type: &ontology.Redundancy_GeoRedundancy{}},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getRedundancy(tt.args.app)
+			got := getRedundancies(tt.args.app)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func Test_getPublicAccessStatus(t *testing.T) {
+func Test_getInternetAccessibleEndpoint(t *testing.T) {
 	type args struct {
 		site *armappservice.Site
 	}
@@ -1877,8 +1873,8 @@ func Test_getPublicAccessStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getPublicAccessStatus(tt.args.site); got != tt.want {
-				t.Errorf("getPublicAccessStatus() = %v, want %v", got, tt.want)
+			if got := getInternetAccessibleEndpoint(tt.args.site); got != tt.want {
+				t.Errorf("getInternetAccessibleEndpoint() = %v, want %v", got, tt.want)
 			}
 		})
 	}
