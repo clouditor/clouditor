@@ -699,8 +699,16 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
+// TODO(lebogg): Test it. Maybe add more logic to it, depending on test results
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
-	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
+	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+		if len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) == 0 && len(acc.Properties.NetworkRuleSet.IPRules) == 0 {
+			return true
+		} else {
+			return false
+		}
+	}
+	return false
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem, activityLogging *voc.ActivityLogging) (*voc.FileStorage, error) {
