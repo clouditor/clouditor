@@ -223,10 +223,9 @@ func (d *azureDiscovery) handleFunction(function *armappservice.Site, config arm
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(function.Properties, config),
-		},
-		PublicAccess:    getPublicAccessStatus(function),
-		Redundancy:      getRedundancy(function),
-		*/
+		},*/
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(function),
+		Redundancies:               getRedundancies(function),
 	}
 }
 
@@ -251,9 +250,8 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 		// TODO(oxisto): This is missing in the ontology
 		/*HttpEndpoint: &ontology.HttpEndpoint{
 			TransportEncryption: getTransportEncryption(webApp.Properties, config),
-		},
-		PublicAccess:    getPublicAccessStatus(function),
-		Redundancy:      getRedundancy(function),
-		*/
+		},*/
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(webApp),
+		Redundancies:               getRedundancies(webApp),
 	}
 }

@@ -120,6 +120,17 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
+			name: "Create service with option 'WithAdditionalDiscoverers'",
+			args: args{
+				opts: []ServiceOption{
+					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID}}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID})
+			},
+		},
+		{
 			name: "Create service with option 'WithDiscoveryInterval'",
 			args: args{
 				opts: []ServiceOption{
