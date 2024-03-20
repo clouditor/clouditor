@@ -79,6 +79,7 @@ const (
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
 	DefaultAPIgRPCPort                  uint16 = 9092
+	DefaultAPIHTTPPort                  uint16 = 8082
 	DefaultAPIStartEmbeddedOAuth2Server        = true
 	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID               = "clouditor"
@@ -123,7 +124,7 @@ func init() {
 	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
 	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortFlag, DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, server.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
