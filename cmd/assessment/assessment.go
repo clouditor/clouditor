@@ -73,10 +73,6 @@ const (
 	DBPortFlag                       = "db-port"
 	DBSSLModeFlag                    = "db-ssl-mode"
 	DBInMemoryFlag                   = "db-in-memory"
-	CreateDefaultTarget              = "target-default-create"
-	DiscoveryAutoStartFlag           = "discovery-auto-start"
-	DiscoveryProviderFlag            = "discovery-provider"
-	DiscoveryResourceGroupFlag       = "discovery-resource-group"
 	DashboardURLFlag                 = "dashboard-url"
 	LogLevelFlag                     = "log-level"
 
@@ -96,9 +92,6 @@ const (
 	DefaultDBPort                       uint16 = 5432
 	DefaultDBSSLMode                           = "disable"
 	DefaultDBInMemory                          = false
-	DefaultCreateDefaultTarget                 = true
-	DefaultDiscoveryAutoStart                  = false
-	DefaultDiscoveryResourceGroup              = ""
 	DefaultDashboardURL                        = "http://localhost:8080"
 	DefaultLogLevel                            = "info"
 
@@ -148,10 +141,6 @@ func init() {
 	engineCmd.Flags().Uint16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().String(DBSSLModeFlag, DefaultDBSSLMode, "The SSL mode for the database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
-	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
-	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
-	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
-	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
 	engineCmd.Flags().String(LogLevelFlag, DefaultLogLevel, "The default log level")
 
@@ -179,10 +168,6 @@ func init() {
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBSSLModeFlag, engineCmd.Flags().Lookup(DBSSLModeFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
-	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
-	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
-	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
-	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
 	_ = viper.BindPFlag(LogLevelFlag, engineCmd.Flags().Lookup(LogLevelFlag))
 }
@@ -235,13 +220,9 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		service_assessment.WithEvidenceStoreAddress(viper.GetString(EvidenceStoreURLFlag)),
 	)
 
-	// It is possible to register hook functions for the orchestrator, evidenceStore and assessment service.
-	//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
-	//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
+	// It is possible to register hook functions for the assessment service.
 	//  * The hook functions in assessment are implemented in AssessEvidence(s)
 
-	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
-	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
 	grpcPort := viper.GetUint16(APIgRPCPortFlag)
