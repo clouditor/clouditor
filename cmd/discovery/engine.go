@@ -327,6 +327,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	}
 
 	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
+	log.Infof("Assessment URL is set to %s", viper.GetString(AssessmentURLFlag))
 
 	// Start the gRPC server
 	_, srv, err = server.StartGRPCServer(
