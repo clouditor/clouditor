@@ -33,7 +33,6 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
-	commands_login "clouditor.io/clouditor/v2/cli/commands/login"
 	"clouditor.io/clouditor/v2/internal/auth"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/logging/formatter"
@@ -45,8 +44,6 @@ import (
 	"clouditor.io/clouditor/v2/service"
 	service_discovery "clouditor.io/clouditor/v2/service/discovery"
 
-	oauth2 "github.com/oxisto/oauth2go"
-	"github.com/oxisto/oauth2go/login"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -271,46 +268,6 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
 		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
 		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-	}
-
-	// Let's check, if we are using our embedded OAuth 2.0 server, which we need to start (using additional arguments to
-	// our existing REST gateway). In a production scenario the usage of a dedicated (external) OAuth 2.0 server is
-	// recommended. In order to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
-	// can be used.
-	if viper.GetBool(APIStartEmbeddedOAuth2ServerFlag) {
-		opts = append(opts,
-			rest.WithEmbeddedOAuth2Server(
-				viper.GetString(APIKeyPathFlag),
-				viper.GetString(APIKeyPasswordFlag),
-				viper.GetBool(APIKeySaveOnCreateFlag),
-				// Create a public client for our CLI
-				oauth2.WithClient(
-					commands_login.DefaultClientID,
-					"",
-					commands_login.DefaultCallback,
-				),
-				// Create a public client for our dashboard
-				oauth2.WithClient(
-					"dashboard",
-					"",
-					fmt.Sprintf("%s/callback", viper.GetString(DashboardURLFlag)),
-				),
-				// Create a confidential client with default credentials for our services
-				oauth2.WithClient(
-					viper.GetString(ServiceOAuth2ClientIDFlag),
-					viper.GetString(ServiceOAuth2ClientIDFlag),
-					"",
-				),
-				// Createa a default user for logging in
-				login.WithLoginPage(
-					login.WithUser(
-						viper.GetString(APIDefaultUserFlag),
-						viper.GetString(APIDefaultPasswordFlag),
-					),
-					login.WithBaseURL("/v1/auth"),
-				),
-			),
-		)
 	}
 
 	// Automatically start the discovery, if we have this flag enabled
