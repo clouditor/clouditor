@@ -66,11 +66,11 @@ const (
 	APICORSAllowedMethodsFlags       = "api-cors-allowed-methods"
 	APIJWKSURLFlag                   = "api-jwks-url"
 	APIStartEmbeddedOAuth2ServerFlag = "api-start-embedded-oauth-server"
-	AssessmentURLFlag                = "assessment-url"
 	CloudServiceIDFlag               = "cloud-service-id"
 	ServiceOAuth2EndpointFlag        = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag        = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag    = "service-oauth2-client-secret"
+	AssessmentURLFlag                = "assessment-url"
 	DBUserNameFlag                   = "db-user-name"
 	DBPasswordFlag                   = "db-password"
 	DBHostFlag                       = "db-host"
@@ -89,10 +89,10 @@ const (
 	DefaultAPIgRPCPort                  uint16 = 9091
 	DefaultAPIHTTPPort                  uint16 = 8081
 	DefaultAPIStartEmbeddedOAuth2Server        = true
-	DefaultAssessmentURL                       = "localhost:9092"
 	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID               = "clouditor"
 	DefaultServiceOAuth2ClientSecret           = "clouditor"
+	DefaultAssessmentURL                       = "localhost:9092"
 	DefaultDBUserName                          = "postgres"
 	DefaultDBPassword                          = "postgres"
 	DefaultDBHost                              = "localhost"
@@ -141,11 +141,11 @@ func init() {
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
 	engineCmd.Flags().String(ServiceOAuth2ClientSecretFlag, DefaultServiceOAuth2ClientSecret, "Specifies the OAuth 2.0 client secret")
 	engineCmd.Flags().Bool(APIStartEmbeddedOAuth2ServerFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
-	engineCmd.Flags().String(AssessmentURLFlag, DefaultAssessmentURL, "Specifies the Assessment URL")
 	engineCmd.Flags().String(CloudServiceIDFlag, discovery.DefaultCloudServiceID, "Specifies the Assessment URL")
 	engineCmd.Flags().StringArray(APICORSAllowedOriginsFlags, rest.DefaultAllowedOrigins, "Specifies the origins allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedHeadersFlags, rest.DefaultAllowedHeaders, "Specifies the headers allowed in CORS")
 	engineCmd.Flags().StringArray(APICORSAllowedMethodsFlags, rest.DefaultAllowedMethods, "Specifies the methods allowed in CORS")
+	engineCmd.Flags().String(AssessmentURLFlag, DefaultAssessmentURL, "Specifies the Assessment URL")
 	engineCmd.Flags().String(DBUserNameFlag, DefaultDBUserName, "Provides user name of database")
 	engineCmd.Flags().String(DBPasswordFlag, DefaultDBPassword, "Provides password of database")
 	engineCmd.Flags().String(DBHostFlag, DefaultDBHost, "Provides address of database")
@@ -171,11 +171,11 @@ func init() {
 	_ = viper.BindPFlag(ServiceOAuth2ClientIDFlag, engineCmd.Flags().Lookup(ServiceOAuth2ClientIDFlag))
 	_ = viper.BindPFlag(ServiceOAuth2ClientSecretFlag, engineCmd.Flags().Lookup(ServiceOAuth2ClientSecretFlag))
 	_ = viper.BindPFlag(APIStartEmbeddedOAuth2ServerFlag, engineCmd.Flags().Lookup(APIStartEmbeddedOAuth2ServerFlag))
-	_ = viper.BindPFlag(AssessmentURLFlag, engineCmd.Flags().Lookup(AssessmentURLFlag))
 	_ = viper.BindPFlag(CloudServiceIDFlag, engineCmd.Flags().Lookup(CloudServiceIDFlag))
 	_ = viper.BindPFlag(APICORSAllowedOriginsFlags, engineCmd.Flags().Lookup(APICORSAllowedOriginsFlags))
 	_ = viper.BindPFlag(APICORSAllowedHeadersFlags, engineCmd.Flags().Lookup(APICORSAllowedHeadersFlags))
 	_ = viper.BindPFlag(APICORSAllowedMethodsFlags, engineCmd.Flags().Lookup(APICORSAllowedMethodsFlags))
+	_ = viper.BindPFlag(AssessmentURLFlag, engineCmd.Flags().Lookup(AssessmentURLFlag))
 	_ = viper.BindPFlag(DBUserNameFlag, engineCmd.Flags().Lookup(DBUserNameFlag))
 	_ = viper.BindPFlag(DBPasswordFlag, engineCmd.Flags().Lookup(DBPasswordFlag))
 	_ = viper.BindPFlag(DBHostFlag, engineCmd.Flags().Lookup(DBHostFlag))
