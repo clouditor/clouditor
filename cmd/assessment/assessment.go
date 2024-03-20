@@ -78,7 +78,7 @@ const (
 
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
-	DefaultAPIgRPCPort                  uint16 = 9090
+	DefaultAPIgRPCPort                  uint16 = 9092
 	DefaultAPIStartEmbeddedOAuth2Server        = true
 	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID               = "clouditor"
