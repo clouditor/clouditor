@@ -710,7 +710,10 @@ func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.Ac
 		}
 
 		// store raw information for resource
-		raw, _ = voc.ToStringInterface([]interface{}{pageResponse})
+		raw, err = voc.ToStringInterface([]interface{}{pageResponse})
+		if err != nil {
+		    log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
+		}
 
 		for _, value := range pageResponse.Value {
 			// Check if data is send to a log analytics workspace
