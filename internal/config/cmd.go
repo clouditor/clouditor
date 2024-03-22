@@ -40,11 +40,13 @@ const (
 	APIKeyPasswordFlag               = "api-key-password"
 	APIKeyPathFlag                   = "api-key-path"
 	APIKeySaveOnCreateFlag           = "api-key-save-on-create"
+	APIgRPCPortFlag                  = "api-grpc-port"
 	APIgRPCPortOrchestratorFlag      = "api-grpc-port-orchestrator"
 	APIgRPCPortDiscoveryFlag         = "api-grpc-port-discovery"
 	APIgRPCPortEvidenceStoreFlag     = "api-grpc-port-evidence-store"
 	APIgRPCPortAssessmentFlag        = "api-grpc-port-assessment"
 	APIgRPCPortEvaluationFlag        = "api-grpc-port-evaluation"
+	APIHTTPPortFlag                  = "api-http-port"
 	APIHTTPPortOrchestratorFlag      = "api-http-port-orchestrator"
 	APIHTTPPortDiscoveryFlag         = "api-http-port-discovery"
 	APIHTTPPortEvidenceStoreFlag     = "api-http-port-evidence-store"
@@ -94,8 +96,8 @@ const (
 	DefaultServiceOAuth2ClientID               = "clouditor"
 	DefaultServiceOAuth2ClientSecret           = "clouditor"
 	DefaultOrchestratorURL                     = "localhost:9090"
-	DefaultEvidenceStoreURL                    = "localhost:9093"
-	DefaultAssessmentURL                       = "localhost:9092"
+	DefaultEvidenceStoreURL                    = "localhost:9092"
+	DefaultAssessmentURL                       = "localhost:9093"
 	DefaultDBUserName                          = "postgres"
 	DefaultDBPassword                          = "postgres"
 	DefaultDBHost                              = "localhost"
@@ -118,11 +120,13 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	engineCmd.Flags().String(APIKeyPasswordFlag, auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
 	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
+	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	engineCmd.Flags().Uint16(APIgRPCPortOrchestratorFlag, DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Orchestrator gRPC API")
 	engineCmd.Flags().Uint16(APIgRPCPortDiscoveryFlag, DefaultAPIgRPCPortDiscovery, "Specifies the port used for the Discovery gRPC API")
 	engineCmd.Flags().Uint16(APIgRPCPortEvidenceStoreFlag, DefaultAPIgRPCPortEvidenceStore, "Specifies the port used for the Evidence Store gRPC API")
 	engineCmd.Flags().Uint16(APIgRPCPortAssessmentFlag, DefaultAPIgRPCPortAssessment, "Specifies the port used for the Assessment gRPC API")
 	engineCmd.Flags().Uint16(APIgRPCPortEvaluationFlag, DefaultAPIgRPCPortEvaluation, "Specifies the port used for the Evaluation gRPC API")
+	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
 	engineCmd.Flags().Uint16(APIHTTPPortOrchestratorFlag, DefaultAPIHTTPPortOrchestrator, "Specifies the port used for the Orchestrator HTTP API")
 	engineCmd.Flags().Uint16(APIHTTPPortDiscoveryFlag, DefaultAPIHTTPPortDiscovery, "Specifies the port used for the Discovery HTTP API")
 	engineCmd.Flags().Uint16(APIHTTPPortEvidenceStoreFlag, DefaultAPIHTTPPortEvidenceStore, "Specifies the port used for the Evidence Store HTTP API")
