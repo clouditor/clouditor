@@ -101,6 +101,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return err
 	}
 	logrus.SetLevel(level)
+	log.Infof("Log level is set to %s", level)
 
 	assessmentService = service_assessment.NewService(
 		service_assessment.WithOAuth2Authorizer(

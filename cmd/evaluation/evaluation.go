@@ -106,6 +106,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		return err
 	}
 	logrus.SetLevel(level)
+	log.Infof("Log level is set to %s", level)
 
 	if viper.GetBool(config.DBInMemoryFlag) {
 		db, err = inmemory.NewStorage()
