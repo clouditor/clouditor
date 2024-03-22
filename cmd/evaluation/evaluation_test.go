@@ -57,6 +57,16 @@ func Test_doCmd(t *testing.T) {
 		wantErr   assert.WantErr
 	}{
 		{
+			name: "Launch without log level",
+			prepViper: func() {
+				viper.Set(config.LogLevelFlag, "")
+			},
+			want: assert.Nil[evaluation.EvaluationServer],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "not a valid logrus Level:")
+			},
+		},
+		{
 			name: "Launch with invalid postgres port",
 			prepViper: func() {
 				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
