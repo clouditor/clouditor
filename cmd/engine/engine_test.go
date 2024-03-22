@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/server/rest"
@@ -34,7 +35,7 @@ func Test_doCmd(t *testing.T) {
 		{
 			name: "Launch without log level",
 			prepViper: func() {
-				viper.Set(LogLevelFlag, "")
+				viper.Set(config.LogLevelFlag, "")
 			},
 			want: assert.Nil[*service_discovery.Service],
 			wantErr: func(t *testing.T, err error) bool {
@@ -44,11 +45,11 @@ func Test_doCmd(t *testing.T) {
 		{
 			name: "Launch with --db-in-memory",
 			prepViper: func() {
-				viper.Set(DBInMemoryFlag, true)
-				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
-				viper.Set(APIHTTPPortFlag, 0)
-				viper.Set(APIgRPCPortFlag, 0)
-				viper.Set(LogLevelFlag, DefaultLogLevel)
+				viper.Set(config.DBInMemoryFlag, true)
+				viper.Set(config.APIStartEmbeddedOAuth2ServerFlag, true)
+				viper.Set(config.APIHTTPPortFlag, 0)
+				viper.Set(config.APIgRPCPortFlag, 0)
+				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
 			},
 			want: func(t *testing.T, got *service_discovery.Service) bool {
 				return assert.NotNil(t, got)
@@ -58,8 +59,8 @@ func Test_doCmd(t *testing.T) {
 		{
 			name: "Launch with invalid postgres port",
 			prepViper: func() {
-				viper.Set(LogLevelFlag, DefaultLogLevel)
-				viper.Set(DBPortFlag, 0)
+				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
+				viper.Set(config.DBPortFlag, 0)
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not create storage:")
