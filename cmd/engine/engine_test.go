@@ -32,6 +32,16 @@ func Test_doCmd(t *testing.T) {
 		wantErr   assert.WantErr
 	}{
 		{
+			name: "Launch without log level",
+			prepViper: func() {
+				viper.Set(LogLevelFlag, "")
+			},
+			want: assert.Nil[*service_discovery.Service],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "not a valid logrus Level:")
+			},
+		},
+		{
 			name: "Launch with --db-in-memory",
 			prepViper: func() {
 				viper.Set(DBInMemoryFlag, true)
