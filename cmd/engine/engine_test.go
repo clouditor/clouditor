@@ -4,13 +4,13 @@ import (
 	"os"
 	"testing"
 
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/server/rest"
 	service_discovery "clouditor.io/clouditor/v2/service/discovery"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -28,8 +28,8 @@ func Test_doCmd(t *testing.T) {
 		name      string
 		prepViper func()
 		args      args
-		want      assert.ValueAssertionFunc
-		wantErr   bool
+		want      assert.Want[*service_discovery.Service]
+		wantErr   assert.WantErr
 	}{
 		{
 			name: "Launch with --db-in-memory",
@@ -40,17 +40,20 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(APIgRPCPortFlag, 0)
 				viper.Set(LogLevelFlag, DefaultLogLevel)
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				discoveryService := i1.(*service_discovery.Service)
-				return assert.NotNil(t, discoveryService)
+			want: func(t *testing.T, got *service_discovery.Service) bool {
+				return assert.NotNil(t, got)
 			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Launch with invalid postgres port",
 			prepViper: func() {
+				viper.Set(LogLevelFlag, DefaultLogLevel)
 				viper.Set(DBPortFlag, 0)
 			},
-			wantErr: true,
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, "could not create storage:")
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -60,9 +63,7 @@ func Test_doCmd(t *testing.T) {
 
 			go func() {
 				err := doCmd(tt.args.in0, tt.args.in1)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("doCmd() error = %v, wantErr %v", err, tt.wantErr)
-				}
+				tt.wantErr(t, err)
 
 				if err != nil {
 					// Signal that we are ready anyway, so that we fail properly
