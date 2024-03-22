@@ -70,8 +70,8 @@ func Test_doCmd(t *testing.T) {
 			name: "Happy path: launch with --db-in-memory",
 			prepViper: func() {
 				viper.Set(config.DBInMemoryFlag, true)
-				viper.Set(config.APIgRPCPortFlag, "9091")
-				viper.Set(config.APIHTTPPortFlag, "8081")
+				viper.Set(config.APIgRPCPortAssessmentFlag, "9091")
+				viper.Set(config.APIHTTPPortAssessmentFlag, "8081")
 				viper.Set(config.OrchestratorURLFlag, "testhost:9090")
 				viper.Set(config.EvidenceStoreURLFlag, "testhost:9093")
 				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)

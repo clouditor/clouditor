@@ -138,8 +138,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		service_evaluation.WithStorage(db),
 	)
 
-	grpcPort := viper.GetUint16(config.APIgRPCPortFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortFlag)
+	grpcPort := viper.GetUint16(config.APIgRPCPortEvaluationFlag)
+	httpPort := viper.GetUint16(config.APIHTTPPortEvaluationFlag)
 
 	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),

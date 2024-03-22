@@ -132,8 +132,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 
-	grpcPort := viper.GetUint16(config.APIgRPCPortFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortFlag)
+	grpcPort := viper.GetUint16(config.APIgRPCPortEvidenceStoreFlag)
+	httpPort := viper.GetUint16(config.APIHTTPPortEvidenceStoreFlag)
 
 	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),

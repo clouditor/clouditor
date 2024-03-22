@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,8 +40,16 @@ const (
 	APIKeyPasswordFlag               = "api-key-password"
 	APIKeyPathFlag                   = "api-key-path"
 	APIKeySaveOnCreateFlag           = "api-key-save-on-create"
-	APIgRPCPortFlag                  = "api-grpc-port"
-	APIHTTPPortFlag                  = "api-http-port"
+	APIgRPCPortOrchestratorFlag      = "api-grpc-port-orchestrator"
+	APIgRPCPortDiscoveryFlag         = "api-grpc-port-discovery"
+	APIgRPCPortEvidenceStoreFlag     = "api-grpc-port-evidence-store"
+	APIgRPCPortAssessmentFlag        = "api-grpc-port-assessment"
+	APIgRPCPortEvaluationFlag        = "api-grpc-port-evaluation"
+	APIHTTPPortOrchestratorFlag      = "api-http-port-orchestrator"
+	APIHTTPPortDiscoveryFlag         = "api-http-port-discovery"
+	APIHTTPPortEvidenceStoreFlag     = "api-http-port-evidence-store"
+	APIHTTPPortAssessmentFlag        = "api-http-port-assessment"
+	APIHTTPPortEvaluationFlag        = "api-http-port-evaluation"
 	APICORSAllowedOriginsFlags       = "api-cors-allowed-origins"
 	APICORSAllowedHeadersFlags       = "api-cors-allowed-headers"
 	APICORSAllowedMethodsFlags       = "api-cors-allowed-methods"
@@ -71,13 +79,23 @@ const (
 	DefaultAPIDefaultUser                      = "clouditor"
 	DefaultAPIDefaultPassword                  = "clouditor"
 	DefaultAPIgRPCPort                  uint16 = 9090
+	DefaultAPIgRPCPortOrchestrator      uint16 = 9090
+	DefaultAPIgRPCPortDiscovery         uint16 = 9091
+	DefaultAPIgRPCPortEvidenceStore     uint16 = 9092
+	DefaultAPIgRPCPortAssessment        uint16 = 9093
+	DefaultAPIgRPCPortEvaluation        uint16 = 9094
+	DefaultAPIHTTPPortOrchestrator      uint16 = 8080
+	DefaultAPIHTTPPortDiscovery         uint16 = 8081
+	DefaultAPIHTTPPortEvidenceStore     uint16 = 8082
+	DefaultAPIHTTPPortAssessment        uint16 = 8083
+	DefaultAPIHTTPPortEvaluation        uint16 = 8084
 	DefaultAPIStartEmbeddedOAuth2Server        = true
 	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
 	DefaultServiceOAuth2ClientID               = "clouditor"
 	DefaultServiceOAuth2ClientSecret           = "clouditor"
-	DefaultAssessmentURL                       = "localhost:9092"
 	DefaultOrchestratorURL                     = "localhost:9090"
 	DefaultEvidenceStoreURL                    = "localhost:9093"
+	DefaultAssessmentURL                       = "localhost:9092"
 	DefaultDBUserName                          = "postgres"
 	DefaultDBPassword                          = "postgres"
 	DefaultDBHost                              = "localhost"
@@ -100,8 +118,16 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	engineCmd.Flags().String(APIKeyPasswordFlag, auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
 	engineCmd.Flags().String(APIKeyPathFlag, auth.DefaultApiKeyPath, "Specifies the location of the API private key")
 	engineCmd.Flags().Bool(APIKeySaveOnCreateFlag, auth.DefaultApiKeySaveOnCreate, "Specifies whether the API key should be saved on creation. It will only created if the default location is used.")
-	engineCmd.Flags().Uint16(APIgRPCPortFlag, DefaultAPIgRPCPort, "Specifies the port used for the gRPC API")
-	engineCmd.Flags().Uint16(APIHTTPPortFlag, rest.DefaultAPIHTTPPort, "Specifies the port used for the HTTP API")
+	engineCmd.Flags().Uint16(APIgRPCPortOrchestratorFlag, DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Orchestrator gRPC API")
+	engineCmd.Flags().Uint16(APIgRPCPortDiscoveryFlag, DefaultAPIgRPCPortDiscovery, "Specifies the port used for the Discovery gRPC API")
+	engineCmd.Flags().Uint16(APIgRPCPortEvidenceStoreFlag, DefaultAPIgRPCPortEvidenceStore, "Specifies the port used for the Evidence Store gRPC API")
+	engineCmd.Flags().Uint16(APIgRPCPortAssessmentFlag, DefaultAPIgRPCPortAssessment, "Specifies the port used for the Assessment gRPC API")
+	engineCmd.Flags().Uint16(APIgRPCPortEvaluationFlag, DefaultAPIgRPCPortEvaluation, "Specifies the port used for the Evaluation gRPC API")
+	engineCmd.Flags().Uint16(APIHTTPPortOrchestratorFlag, DefaultAPIHTTPPortOrchestrator, "Specifies the port used for the Orchestrator HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortDiscoveryFlag, DefaultAPIHTTPPortDiscovery, "Specifies the port used for the Discovery HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortEvidenceStoreFlag, DefaultAPIHTTPPortEvidenceStore, "Specifies the port used for the Evidence Store HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortAssessmentFlag, DefaultAPIHTTPPortAssessment, "Specifies the port used for the Assessment HTTP API")
+	engineCmd.Flags().Uint16(APIHTTPPortEvaluationFlag, DefaultAPIHTTPPortEvaluation, "Specifies the port used for the Evaluation HTTP API")
 	engineCmd.Flags().String(APIJWKSURLFlag, server.DefaultJWKSURL, "Specifies the JWKS URL used to verify authentication tokens in the gRPC and HTTP API")
 	engineCmd.Flags().String(ServiceOAuth2EndpointFlag, DefaultServiceOAuth2Endpoint, "Specifies the OAuth 2.0 token endpoint")
 	engineCmd.Flags().String(ServiceOAuth2ClientIDFlag, DefaultServiceOAuth2ClientID, "Specifies the OAuth 2.0 client ID")
@@ -133,8 +159,16 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	_ = viper.BindPFlag(APIKeyPasswordFlag, engineCmd.Flags().Lookup(APIKeyPasswordFlag))
 	_ = viper.BindPFlag(APIKeyPathFlag, engineCmd.Flags().Lookup(APIKeyPathFlag))
 	_ = viper.BindPFlag(APIKeySaveOnCreateFlag, engineCmd.Flags().Lookup(APIKeySaveOnCreateFlag))
-	_ = viper.BindPFlag(APIgRPCPortFlag, engineCmd.Flags().Lookup(APIgRPCPortFlag))
-	_ = viper.BindPFlag(APIHTTPPortFlag, engineCmd.Flags().Lookup(APIHTTPPortFlag))
+	_ = viper.BindPFlag(APIgRPCPortOrchestratorFlag, engineCmd.Flags().Lookup(APIgRPCPortOrchestratorFlag))
+	_ = viper.BindPFlag(APIgRPCPortDiscoveryFlag, engineCmd.Flags().Lookup(APIgRPCPortDiscoveryFlag))
+	_ = viper.BindPFlag(APIgRPCPortEvidenceStoreFlag, engineCmd.Flags().Lookup(APIgRPCPortEvidenceStoreFlag))
+	_ = viper.BindPFlag(APIgRPCPortAssessmentFlag, engineCmd.Flags().Lookup(APIgRPCPortAssessmentFlag))
+	_ = viper.BindPFlag(APIgRPCPortEvaluationFlag, engineCmd.Flags().Lookup(APIgRPCPortEvaluationFlag))
+	_ = viper.BindPFlag(APIHTTPPortOrchestratorFlag, engineCmd.Flags().Lookup(APIHTTPPortOrchestratorFlag))
+	_ = viper.BindPFlag(APIHTTPPortDiscoveryFlag, engineCmd.Flags().Lookup(APIHTTPPortDiscoveryFlag))
+	_ = viper.BindPFlag(APIHTTPPortEvidenceStoreFlag, engineCmd.Flags().Lookup(APIHTTPPortEvidenceStoreFlag))
+	_ = viper.BindPFlag(APIHTTPPortAssessmentFlag, engineCmd.Flags().Lookup(APIHTTPPortAssessmentFlag))
+	_ = viper.BindPFlag(APIHTTPPortEvaluationFlag, engineCmd.Flags().Lookup(APIHTTPPortEvaluationFlag))
 	_ = viper.BindPFlag(APIJWKSURLFlag, engineCmd.Flags().Lookup(APIJWKSURLFlag))
 	_ = viper.BindPFlag(ServiceOAuth2EndpointFlag, engineCmd.Flags().Lookup(ServiceOAuth2EndpointFlag))
 	_ = viper.BindPFlag(ServiceOAuth2ClientIDFlag, engineCmd.Flags().Lookup(ServiceOAuth2ClientIDFlag))

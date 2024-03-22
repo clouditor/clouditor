@@ -84,8 +84,8 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(config.CloudServiceIDFlag, discovery.DefaultCloudServiceID)
 				viper.Set(config.DBInMemoryFlag, true)
 				viper.Set(config.DiscoveryProviderFlag, "azure")
-				viper.Set(config.APIgRPCPortFlag, "9081")
-				viper.Set(config.APIHTTPPortFlag, "8081")
+				viper.Set(config.APIgRPCPortOrchestratorFlag, "9081")
+				viper.Set(config.APIHTTPPortOrchestratorFlag, "8081")
 				viper.Set(config.AssessmentURLFlag, "testhost:9092")
 				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
 			},
