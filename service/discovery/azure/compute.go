@@ -1133,7 +1133,7 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 // TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
 func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, string) {
 	var (
-		rl  = &voc.ActivityLogging{Logging: &voc.Logging{}}
+		al  = &voc.ActivityLogging{Logging: &voc.Logging{}}
 		raw string
 	)
 
@@ -1145,18 +1145,18 @@ func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*v
 	}
 
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
-		rl.Enabled = true
+		al.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
 		raw, _ = voc.ToStringInterface([]interface{}{appSettings})
 	} else {
-		rl, raw, err = d.azureDiscovery.discoverDiagnosticSettings(util.Deref(site.ID))
+		al, raw, err = d.azureDiscovery.discoverDiagnosticSettings(util.Deref(site.ID))
 		if err != nil {
 			log.Warnf("Could not get diagnostic settings for %s: %v", util.Deref(site.Name), err)
-			return rl, ""
+			return al, ""
 		}
 	}
 
-	return rl, raw
+	return al, raw
 }
 
 // addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
