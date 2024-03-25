@@ -26,6 +26,8 @@
 package config
 
 import (
+	"strings"
+
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/internal/auth"
 	"clouditor.io/clouditor/v2/server"
@@ -200,4 +202,13 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	_ = viper.BindPFlag(LogLevelFlag, engineCmd.Flags().Lookup(LogLevelFlag))
 
 	return engineCmd
+}
+
+func InitConfig() {
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.SetEnvPrefix(EnvPrefix)
+	viper.SetConfigName("clouditor")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
 }

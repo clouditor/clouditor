@@ -30,7 +30,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/internal/config"
@@ -67,18 +66,9 @@ var engineCmd = &cobra.Command{
 func init() {
 	log = logrus.WithField("component", "grpc")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(config.InitConfig)
 
 	engineCmd = config.InitCobra(engineCmd)
-}
-
-func initConfig() {
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-	viper.SetEnvPrefix(config.EnvPrefix)
-	viper.SetConfigName("clouditor")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
 }
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
