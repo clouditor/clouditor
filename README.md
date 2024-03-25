@@ -6,6 +6,7 @@
 [![](https://godoc.org/clouditor.io/clouditor/v2?status.svg)](https://pkg.go.dev/clouditor.io/clouditor/v2)
 [![Go Report Card](https://goreportcard.com/badge/clouditor.io/clouditor/v2)](https://goreportcard.com/report/clouditor.io/clouditor/v2)
 [![codecov](https://codecov.io/gh/clouditor/clouditor/branch/main/graph/badge.svg)](https://codecov.io/gh/clouditor/clouditor)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8691/badge)](https://www.bestpractices.dev/projects/8691)
 
 > [!NOTE]
 > Note: We are currently preparing a `v2` release of Clouditor, which will be somewhat incompatible with regards to storage to `v1`. The APIs will remain largely the same, but will be improved and cleaned. We will regularly release pre-release `v2` versions, but do not have a concrete time-frame for a stable `v2` yet.
