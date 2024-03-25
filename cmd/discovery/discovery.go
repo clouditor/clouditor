@@ -66,7 +66,7 @@ var engineCmd = &cobra.Command{
 }
 
 func init() {
-	log = logrus.WithField("component", "grpc")
+	log = logrus.WithField("component", "discovery-grpc")
 	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 	cobra.OnInitialize(config.InitConfig)
 
