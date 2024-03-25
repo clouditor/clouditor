@@ -84,8 +84,8 @@ func Test_doCmd(t *testing.T) {
 				viper.Set(config.CloudServiceIDFlag, discovery.DefaultCloudServiceID)
 				viper.Set(config.DBInMemoryFlag, true)
 				viper.Set(config.DiscoveryProviderFlag, "azure")
-				viper.Set(config.APIgRPCPortEvidenceStoreFlag, "9082")
-				viper.Set(config.APIHTTPPortEvidenceStoreFlag, "8082")
+				viper.Set(config.APIgRPCPortEvidenceStoreFlag, "0")
+				viper.Set(config.APIHTTPPortEvidenceStoreFlag, "0")
 				viper.Set(config.AssessmentURLFlag, "testhost:9093")
 				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
 			},
@@ -117,10 +117,6 @@ func Test_doCmd(t *testing.T) {
 			}
 
 			tt.want(t, evidenceStoreService)
-
-			if srv != nil {
-				srv.GracefulStop()
-			}
 		})
 	}
 }
