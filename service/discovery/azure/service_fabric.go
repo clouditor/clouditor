@@ -88,6 +88,7 @@ func (d *azureServiceFabricDiscovery) discoverClusters() ([]voc.IsCloudResource,
 		}
 		clusters = append(clusters, response.Value...)
 	} else {
+		// TODO(all): Change d.rg to the fabrics resource group, here d.rg is nil.
 		response, err := d.clients.fabricsServiceClusterClient.ListByResourceGroup(context.Background(),
 			util.Deref(d.rg), &armservicefabric.ClustersClientListByResourceGroupOptions{})
 		if err != nil {
