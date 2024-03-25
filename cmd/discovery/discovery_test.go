@@ -117,6 +117,8 @@ func Test_doCmd(t *testing.T) {
 			}
 
 			tt.want(t, discoveryService)
+
+			srv.GracefulStop()
 		})
 	}
 }
