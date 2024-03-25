@@ -117,7 +117,10 @@ func Test_doCmd(t *testing.T) {
 			}
 
 			tt.want(t, evidenceStoreService)
-			srv.GracefulStop()
+
+			if srv != nil {
+				srv.GracefulStop()
+			}
 		})
 	}
 }

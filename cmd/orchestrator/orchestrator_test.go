@@ -118,7 +118,9 @@ func Test_doCmd(t *testing.T) {
 
 			tt.want(t, orchestratorService)
 
-			srv.GracefulStop()
+			if srv != nil {
+				srv.GracefulStop()
+			}
 		})
 	}
 }
