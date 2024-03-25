@@ -1128,9 +1128,9 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 	return
 }
 
-// getResourceLogging determines if logging is activated for a given web app or function by checking the respective app setting
-// In this case logging means the Application Insights logging. The Application Insights logging is automatically forwarded to Log Analytics which is defined in the Diagnostic Settings.
-// TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
+// getActivityLogging determines if logging is activated for a given web app or function by checking the respective app setting
+// First, it is checked if Application Insights is configured. If this is not configured, it is checked if Diagnostic Settings are configured and the logs are stored in a Log Analytics Workspace.    
+// The Application Insights logging is automatically forwarded to Log Analytics.
 func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, string) {
 	var (
 		al  = &voc.ActivityLogging{Logging: &voc.Logging{}}

@@ -688,7 +688,7 @@ func resourceID(id *string) string {
 	return strings.ToLower(*id)
 }
 
-// discoverDiagnosticSettings discovers the diagnostic setting for the the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object.
+// discoverDiagnosticSettings discovers the diagnostic setting for the given resource URI and returns the information of the needed information of the log properties as voc.ActivityLogging object and the Azure response.
 func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.ActivityLogging, string, error) {
 	var (
 		al           *voc.ActivityLogging
@@ -710,10 +710,13 @@ func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*voc.Ac
 		}
 
 		// store raw information for resource
-		raw, _ = voc.ToStringInterface([]interface{}{pageResponse})
+		raw, err = voc.ToStringInterface([]interface{}{pageResponse})
+		if err != nil {
+		    log.Errorf("%v: %v", voc.ErrConvertingStructToString, err)
+		}
 
 		for _, value := range pageResponse.Value {
-			// Check if data is send to a log analytics workspace
+			// Check if data is sent to a log analytics workspace
 			if value.Properties.WorkspaceID == nil {
 				log.Debugf("diagnostic setting '%s' does not send data to a Log Analytics Workspace", util.Deref(value.Name))
 				continue
