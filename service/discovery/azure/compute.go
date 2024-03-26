@@ -321,7 +321,7 @@ func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c ar
 		s    voc.IsCompute
 	)
 
-	pager := d.clients.sitesClient.NewListSlotsPager(resourceGroupName(*baseSite.ID), util.Deref(baseSite.Name), &armappservice.WebAppsClientListSlotsOptions{})
+	pager := d.clients.sitesClient.NewListSlotsPager(resourceGroupName(util.Deref(baseSite.ID)), util.Deref(baseSite.Name), &armappservice.WebAppsClientListSlotsOptions{})
 	for pager.More() {
 		page, err = pager.NextPage(context.TODO())
 		if err != nil {
@@ -442,7 +442,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 
 	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
-	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), resourceGroupName(*webApp.ID),
+	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), resourceGroupName(util.Deref(webApp.ID)),
 		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		// Maybe returning error better here
@@ -528,7 +528,7 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 		return
 	}
 	planName := getAppServicePlanName(app.Properties.ServerFarmID)
-	farm, err := d.clients.plansClient.Get(context.TODO(), resourceGroupName(*app.ID), planName, &armappservice.PlansClientGetOptions{})
+	farm, err := d.clients.plansClient.Get(context.TODO(), resourceGroupName(util.Deref(app.ID)), planName, &armappservice.PlansClientGetOptions{})
 	if err != nil {
 		log.Errorf("Could not get App Service Farm '%s', zone redundancy of web app '%s' is assumed to be false: %v",
 			util.Deref(app.Properties.ServerFarmID), util.Deref(app.Name), err)
