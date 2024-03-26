@@ -52,9 +52,9 @@ var (
 )
 
 var engineCmd = &cobra.Command{
-	Use:   "engine",
-	Short: "engine launches the Clouditors Discovery Engine",
-	Long:  "Discovery Engine is a component of the Clouditor and starts the Discovery Service.",
+	Use:   "assessment",
+	Short: "assessment launches the Clouditor Assessment Service",
+	Long:  "Assessment is a component of the Clouditor and starts the Assessment Service.",
 	RunE:  doCmd,
 }
 

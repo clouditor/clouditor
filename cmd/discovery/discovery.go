@@ -59,9 +59,9 @@ var (
 )
 
 var engineCmd = &cobra.Command{
-	Use:   "engine",
-	Short: "engine launches the Clouditor Engine",
-	Long:  "Clouditor Engine is the main component of Clouditor. It is an all-in-one solution of several microservices, which also can be started individually.",
+	Use:   "discovery",
+	Short: "discovery launches the Clouditor Discovery Service",
+	Long:  "Discovery is a component of the Clouditor and starts the Discovery Service.",
 	RunE:  doCmd,
 }
 
