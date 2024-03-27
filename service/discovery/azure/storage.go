@@ -805,9 +805,17 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			// Todo(lebogg): Add tests
 			Redundancy: getStorageAccountRedundancy(account),
 		},
-		ContainerPublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone, // This is not the public network access https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal, but the container public access
+		ContainerPublicAccess: getPublicAccessOfContainer(container.Properties.PublicAccess), // This is not the public network access https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal, but the container public access
 		IsBackup:              isBackup,
 	}, nil
+}
+
+func getPublicAccessOfContainer(publicAccess *armstorage.PublicAccess) bool {
+	pa := util.Deref(publicAccess)
+	if pa == armstorage.PublicAccessNone || pa == armstorage.PublicAccessBlob {
+		return false
+	}
+	return true // publicAccess is PublicAccessContainer
 }
 
 // isBackup checks if container is used as a backup - and metadata.  If so, it is
