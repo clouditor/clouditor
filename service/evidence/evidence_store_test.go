@@ -64,7 +64,7 @@ func TestNewService(t *testing.T) {
 	db, err := gorm.NewStorage(gorm.WithInMemory())
 	assert.NoError(t, err)
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -81,7 +81,7 @@ func TestNewService(t *testing.T) {
 		},
 		{
 			name: "EvidenceStoreServer created with storage option",
-			args: args{opts: []service.Option[Service]{WithStorage(db)}},
+			args: args{opts: []service.Option[*Service]{WithStorage(db)}},
 			want: func(t *testing.T, got *Service) bool {
 				// Storage should be gorm (in-memory storage). Hard to check since its type is not exported
 				assert.NotNil(t, got.storage)

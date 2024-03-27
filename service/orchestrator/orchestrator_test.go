@@ -74,7 +74,7 @@ func TestNewService(t *testing.T) {
 	assert.NoError(t, err)
 
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -84,7 +84,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with database",
 			args: args{
-				opts: []service.Option[Service]{WithStorage(myStorage)},
+				opts: []service.Option[*Service]{WithStorage(myStorage)},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Same(t, myStorage, got.storage)
@@ -93,7 +93,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with catalogs file",
 			args: args{
-				opts: []service.Option[Service]{WithCatalogsFolder("catalogsFolder.json")},
+				opts: []service.Option[*Service]{WithCatalogsFolder("catalogsFolder.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "catalogsFolder.json", got.catalogsFolder)
@@ -102,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with metrics file",
 			args: args{
-				opts: []service.Option[Service]{WithMetricsFile("metricsfile.json")},
+				opts: []service.Option[*Service]{WithMetricsFile("metricsfile.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "metricsfile.json", got.metricsFile)
@@ -111,7 +111,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with authorization strategy",
 			args: args{
-				opts: []service.Option[Service]{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
+				opts: []service.Option[*Service]{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyAllowAll{}, got.authz)

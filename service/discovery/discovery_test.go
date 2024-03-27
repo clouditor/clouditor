@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -78,7 +78,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
@@ -89,7 +89,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithCloudServiceID(testdata.MockCloudServiceID1),
 				},
 			},
@@ -100,7 +100,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAuthorizationStrategy'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
 				},
 			},
@@ -111,7 +111,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithStorage'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithStorage(testutil.NewInMemoryStorage(t)),
 				},
 			},
@@ -122,7 +122,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAdditionalDiscoverers'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID}}),
 				},
 			},
@@ -133,7 +133,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithDiscoveryInterval'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithDiscoveryInterval(time.Duration(8)),
 				},
 			},
