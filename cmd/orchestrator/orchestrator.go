@@ -50,7 +50,7 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher[service_orchestrator.Service](
+	l, err := launcher.NewLauncher[*service_orchestrator.Service](
 		cmd.Use,
 		service_orchestrator.NewService,
 		service_orchestrator.WithStorage,

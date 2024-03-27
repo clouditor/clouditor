@@ -26,13 +26,24 @@ type Launcher[T any] struct {
 	log       *logrus.Entry
 	grpcOpts  []server.StartGRPCServerOption
 
-	Service *T
+	Service T
 }
 
-type NewServiceFunc[T any] func(opts ...service.Option[T]) *T
+func (l Launcher[T]) ToAny() *Launcher[any] {
+	return &Launcher[any]{
+		srv:       l.srv,
+		component: l.component,
+		db:        l.db,
+		log:       l.log,
+		grpcOpts:  l.grpcOpts,
+		Service:   l.Service,
+	}
+}
+
+type NewServiceFunc[T any] func(opts ...service.Option[T]) T
 type WithStorageFunc[T any] func(db persistence.Storage) service.Option[T]
 
-func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init func(svc *T) ([]server.StartGRPCServerOption, error), serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
+func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init func(svc T) ([]server.StartGRPCServerOption, error), serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
 	l = new(Launcher[T])
 	l.component = component
 

@@ -36,4 +36,4 @@ func init() {
 }
 
 // Option is a functional option type to configure services.
-type Option[T any] func(*T)
+type Option[T any] func(T)
