@@ -28,8 +28,13 @@ package main
 import (
 	"os"
 
+	"clouditor.io/clouditor/v2/cli/commands/evidence"
 	"clouditor.io/clouditor/v2/server/commands"
-
+	"clouditor.io/clouditor/v2/server/commands/assessment"
+	"clouditor.io/clouditor/v2/server/commands/discovery"
+	"clouditor.io/clouditor/v2/server/commands/evaluation"
+	"clouditor.io/clouditor/v2/server/commands/orchestrator"
+	"clouditor.io/clouditor/v2/server/commands/standalone"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +45,17 @@ func newRootCommand() *cobra.Command {
 		Long:  "It can be used to launch an all-in-one solution of several microservices or each service can be started individually.",
 	}
 
-	commands.AddCommands(cmd)
+	// AddCommands adds all subcommands
+	cmd.AddCommand(
+		assessment.NewAssessmentCommand(),
+		discovery.NewDiscoveryCommand(),
+		evaluation.NewEvaluationCommand(),
+		evidence.NewEvidenceCommand(),
+		orchestrator.NewOrchestratorCommand(),
+		standalone.NewStandaloneCommand(),
+	)
+
+	commands.BindPersistentFlags(cmd)
 
 	return cmd
 }

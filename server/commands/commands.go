@@ -29,30 +29,10 @@ import (
 	"clouditor.io/clouditor/v2/internal/auth"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/server"
-	"clouditor.io/clouditor/v2/server/commands/assessment"
-	"clouditor.io/clouditor/v2/server/commands/discovery"
-	"clouditor.io/clouditor/v2/server/commands/evaluation"
-	"clouditor.io/clouditor/v2/server/commands/evidence"
-	"clouditor.io/clouditor/v2/server/commands/orchestrator"
-	"clouditor.io/clouditor/v2/server/commands/standalone"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-// AddCommands adds all subcommands
-func AddCommands(cmd *cobra.Command) {
-	cmd.AddCommand(
-		assessment.NewAssessmentCommand(),
-		discovery.NewDiscoveryCommand(),
-		evaluation.NewEvaluationCommand(),
-		evidence.NewEvidenceCommand(),
-		orchestrator.NewOrchestratorCommand(),
-		standalone.NewStandaloneCommand(),
-	)
-
-	BindPersistentFlags(cmd)
-}
 
 func BindPersistentFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().String(config.APIDefaultUserFlag, config.DefaultAPIDefaultUser, "Specifies the default API username")
