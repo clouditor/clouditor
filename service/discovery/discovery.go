@@ -119,11 +119,8 @@ const (
 	DefaultAssessmentAddress = "localhost:9090"
 )
 
-// ServiceOption is a functional option type to configure the discovery service.
-type ServiceOption func(*Service)
-
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption {
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
 	return func(s *Service) {
 		s.assessment.Target = target
 		s.assessment.Opts = opts
@@ -131,21 +128,21 @@ func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption
 }
 
 // WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
-func WithCloudServiceID(ID string) ServiceOption {
+func WithCloudServiceID(ID string) service.Option[Service] {
 	return func(svc *Service) {
 		svc.csID = ID
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
 	return func(svc *Service) {
 		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithProviders is an option to set providers for discovering
-func WithProviders(providersList []string) ServiceOption {
+func WithProviders(providersList []string) service.Option[Service] {
 	if len(providersList) == 0 {
 		newError := errors.New("no providers given")
 		log.Error(newError)
@@ -158,34 +155,34 @@ func WithProviders(providersList []string) ServiceOption {
 
 // WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: These are added in
 // addition to the ones created by [WithProviders].
-func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) ServiceOption {
+func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) service.Option[Service] {
 	return func(s *Service) {
 		s.discoverers = append(s.discoverers, discoverers...)
 	}
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
-func WithDiscoveryInterval(interval time.Duration) ServiceOption {
+func WithDiscoveryInterval(interval time.Duration) service.Option[Service] {
 	return func(s *Service) {
 		s.discoveryInterval = interval
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[Service]) *Service {
 	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
