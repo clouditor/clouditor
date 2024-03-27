@@ -26,14 +26,12 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/internal/auth"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
-	"clouditor.io/clouditor/v2/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -75,7 +73,7 @@ const (
 	DBPortFlag                       = "db-port"
 	DBSSLModeFlag                    = "db-ssl-mode"
 	DBInMemoryFlag                   = "db-in-memory"
-	CreateDefaultTarget              = "target-default-create"
+	CreateDefaultTargetFlag          = "target-default-create"
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
 	DiscoveryResourceGroupFlag       = "discovery-resource-group"
@@ -118,7 +116,7 @@ const (
 	EnvPrefix = "CLOUDITOR"
 )
 
-func InitCobra(engineCmd *cobra.Command) *cobra.Command {
+func InitCobra(engineCmd *cobra.Command) {
 	engineCmd.Flags().String(APIDefaultUserFlag, DefaultAPIDefaultUser, "Specifies the default API username")
 	engineCmd.Flags().String(APIDefaultPasswordFlag, DefaultAPIDefaultPassword, "Specifies the default API password")
 	engineCmd.Flags().String(APIKeyPasswordFlag, auth.DefaultApiKeyPassword, "Specifies the password used to proctect the API private key")
@@ -155,7 +153,7 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	engineCmd.Flags().Uint16(DBPortFlag, DefaultDBPort, "Provides port for database")
 	engineCmd.Flags().String(DBSSLModeFlag, DefaultDBSSLMode, "The SSL mode for the database")
 	engineCmd.Flags().Bool(DBInMemoryFlag, DefaultDBInMemory, "Uses an in-memory database which is not persisted at all")
-	engineCmd.Flags().Bool(CreateDefaultTarget, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	engineCmd.Flags().Bool(CreateDefaultTargetFlag, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
@@ -196,40 +194,21 @@ func InitCobra(engineCmd *cobra.Command) *cobra.Command {
 	_ = viper.BindPFlag(DBPortFlag, engineCmd.Flags().Lookup(DBPortFlag))
 	_ = viper.BindPFlag(DBSSLModeFlag, engineCmd.Flags().Lookup(DBSSLModeFlag))
 	_ = viper.BindPFlag(DBInMemoryFlag, engineCmd.Flags().Lookup(DBInMemoryFlag))
-	_ = viper.BindPFlag(CreateDefaultTarget, engineCmd.Flags().Lookup(CreateDefaultTarget))
+	_ = viper.BindPFlag(CreateDefaultTargetFlag, engineCmd.Flags().Lookup(CreateDefaultTargetFlag))
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
 	_ = viper.BindPFlag(LogLevelFlag, engineCmd.Flags().Lookup(LogLevelFlag))
 
-	return engineCmd
+	cobra.OnInitialize(initConfig)
 }
 
-func InitConfig() {
+func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.SetEnvPrefix(EnvPrefix)
 	viper.SetConfigName("clouditor")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
-}
-
-// PrintClouditorHeader prints the Clouditor header for the given component
-func PrintClouditorHeader(component string) {
-	rt, _ := service.GetRuntimeInfo()
-
-	fmt.Printf(`
-           $$\                           $$\ $$\   $$\
-           $$ |                          $$ |\__|  $$ |
-  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
-  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- 
-  %s Version %s
-`, component, rt.VersionString())
-	fmt.Println()
 }

@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
@@ -45,35 +46,33 @@ var engineCmd = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(config.InitConfig)
-	engineCmd = config.InitCobra(engineCmd)
+	config.InitCobra(engineCmd)
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	var (
-		grpcOpts []server.StartGRPCServerOption
-		l        *config.Launcher[service_orchestrator.Service]
-	)
-
-	l, err = config.NewLauncher[service_orchestrator.Service](
+	l, err := launcher.NewLauncher[service_orchestrator.Service](
 		cmd.Use,
 		service_orchestrator.NewService,
 		service_orchestrator.WithStorage,
-		func(svc *service_orchestrator.Service) error {
+		func(svc *service_orchestrator.Service) ([]server.StartGRPCServerOption, error) {
 			// It is possible to register hook functions for the orchestrator.
 			//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
 
 			// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
 			// Create default target Cloud Service
-			if viper.GetBool(config.CreateDefaultTarget) {
+			if viper.GetBool(config.CreateDefaultTargetFlag) {
 				_, err := svc.CreateDefaultTargetCloudService()
 				if err != nil {
-					return fmt.Errorf("could not register default target cloud service: %v", err)
+					return nil, fmt.Errorf("could not register default target cloud service: %v", err)
 				}
 			}
 
-			return nil
+			return []server.StartGRPCServerOption{
+				server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
+				server.WithOrchestrator(svc),
+				server.WithReflection(),
+			}, nil
 		},
 	)
 	if err != nil {
@@ -81,12 +80,7 @@ func doCmd(cmd *cobra.Command, _ []string) (err error) {
 	}
 
 	// Start the gRPC server and the corresponding gRPC-HTTP gateway
-	grpcOpts = []server.StartGRPCServerOption{
-		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-		server.WithOrchestrator(l.Service),
-		server.WithReflection()}
-
-	return l.Launch(grpcOpts...)
+	return l.Launch()
 }
 
 func main() {

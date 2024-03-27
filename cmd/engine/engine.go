@@ -195,7 +195,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-	if viper.GetBool(config.CreateDefaultTarget) {
+	if viper.GetBool(config.CreateDefaultTargetFlag) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()
 		if err != nil {
 			log.Errorf("could not register default target cloud service: %v", err)
