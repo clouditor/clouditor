@@ -2569,7 +2569,7 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 		wantR *voc.Redundancy
 	}{
 		{
-			name: "Happy path second location is zone redundant - return zone redundancy equals true ",
+			name: "Happy path (second location is zone redundant) - return zone redundancy equals true ",
 			args: args{account: &armcosmos.DatabaseAccountGetResults{
 				Properties: &armcosmos.DatabaseAccountGetProperties{
 					Locations: []*armcosmos.Location{
@@ -2590,7 +2590,7 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 			},
 		},
 		{
-			name: "No location is zone redundant - return zone redundancy equals false",
+			name: "Happy path (no location is zone redundant but we have multiple locations) - return zone redundancy equals true",
 			args: args{account: &armcosmos.DatabaseAccountGetResults{
 				Properties: &armcosmos.DatabaseAccountGetProperties{
 					Locations: []*armcosmos.Location{
@@ -2606,7 +2606,8 @@ func Test_getCosmosDBRedundancy(t *testing.T) {
 				},
 			}},
 			wantR: &voc.Redundancy{
-				Geo: true,
+				Geo:  true,
+				Zone: true,
 			},
 		},
 	}

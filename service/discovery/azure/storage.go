@@ -1317,6 +1317,7 @@ func getCosmosDBRedundancy(account *armcosmos.DatabaseAccountGetResults) (r *voc
 	}
 	if len(locations) > 1 {
 		r.Geo = true
+		r.Zone = true // Probably, we don't want that in main this way
 	}
 	return
 }
