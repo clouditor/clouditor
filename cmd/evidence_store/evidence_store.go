@@ -26,33 +26,15 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
 	"os"
 
-	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/logging/formatter"
-	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/gorm"
-	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/server"
-	"clouditor.io/clouditor/v2/server/rest"
-	"clouditor.io/clouditor/v2/service"
 	service_evidenceStore "clouditor.io/clouditor/v2/service/evidence"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-var (
-	srv                  *server.Server
-	evidenceStoreService evidence.EvidenceStoreServer
-	db                   persistence.Storage
-
-	log *logrus.Entry
 )
 
 var engineCmd = &cobra.Command{
@@ -63,103 +45,32 @@ var engineCmd = &cobra.Command{
 }
 
 func init() {
-	log = logrus.WithField("component", "evidence-store-grpc")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-	cobra.OnInitialize(config.InitConfig)
-
-	engineCmd = config.InitCobra(engineCmd)
+	config.InitCobra(engineCmd)
 }
 
-func doCmd(_ *cobra.Command, _ []string) (err error) {
-	var (
-		rt, _ = service.GetRuntimeInfo()
-		level logrus.Level
+func doCmd(cmd *cobra.Command, _ []string) (err error) {
+	l, err := launcher.NewLauncher[service_evidenceStore.Service](
+		cmd.Use,
+		service_evidenceStore.NewService,
+		service_evidenceStore.WithStorage,
+		func(svc *service_evidenceStore.Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the evidenceStore.
+			//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
+			// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+
+			return []server.StartGRPCServerOption{
+				server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
+				server.WithEvidenceStore(svc),
+				server.WithReflection(),
+			}, nil
+		},
 	)
-
-	fmt.Printf(`
-           $$\                           $$\ $$\   $$\
-           $$ |                          $$ |\__|  $$ |
-  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
-  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- 
-  Clouditor Evidence Store Service Version %s
-  `, rt.VersionString())
-	fmt.Println()
-
-	level, err = logrus.ParseLevel(viper.GetString(config.LogLevelFlag))
 	if err != nil {
 		return err
 	}
-	logrus.SetLevel(level)
-	log.Infof("Log level is set to %s", level)
 
-	if viper.GetBool(config.DBInMemoryFlag) {
-		db, err = inmemory.NewStorage()
-	} else {
-		db, err = gorm.NewStorage(gorm.WithPostgres(
-			viper.GetString(config.DBHostFlag),
-			viper.GetUint16(config.DBPortFlag),
-			viper.GetString(config.DBUserNameFlag),
-			viper.GetString(config.DBPasswordFlag),
-			viper.GetString(config.DBNameFlag),
-			viper.GetString(config.DBSSLModeFlag),
-		))
-	}
-	if err != nil {
-		// We could also just log the error and forward db = nil which will result in inmemory storages for each service
-		// below
-		return fmt.Errorf("could not create storage: %w", err)
-	}
-
-	evidenceStoreService = service_evidenceStore.NewService(service_evidenceStore.WithStorage(db))
-
-	// It is possible to register hook functions for the evidenceStore.
-	//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
-
-	// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
-
-	grpcPort := viper.GetUint16(config.APIgRPCPortEvidenceStoreFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortEvidenceStoreFlag)
-
-	var opts = []rest.ServerConfigOption{
-		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
-		rest.WithAllowedHeaders(viper.GetStringSlice(config.APICORSAllowedHeadersFlags)),
-		rest.WithAllowedMethods(viper.GetStringSlice(config.APICORSAllowedMethodsFlags)),
-	}
-
-	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
-
-	// Start the gRPC server
-	_, srv, err = server.StartGRPCServer(
-		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-		server.WithEvidenceStore(evidenceStoreService),
-		server.WithReflection(),
-	)
-	if err != nil {
-		log.Errorf("Failed to serve gRPC endpoint: %s", err)
-		return err
-	}
-
-	// Start the gRPC-HTTP gateway
-	err = rest.RunServer(context.Background(),
-		grpcPort,
-		httpPort,
-		opts...,
-	)
-	if err != nil && err != http.ErrServerClosed {
-		log.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
-		return err
-	}
-
-	log.Infof("Stopping gRPC endpoint")
-	srv.Stop()
-
-	return nil
+	// Start the gRPC server and the corresponding gRPC-HTTP gateway
+	return l.Launch()
 }
 
 func main() {
