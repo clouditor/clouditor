@@ -174,10 +174,9 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults, activityLogging *voc.ActivityLogging, raw string) ([]voc.IsCloudResource, error) {
 	var (
-		atRestEnc           voc.IsAtRestEncryption
-		err                 error
-		list                []voc.IsCloudResource
-		publicNetworkAccess = false
+		atRestEnc voc.IsAtRestEncryption
+		err       error
+		list      []voc.IsCloudResource
 	)
 
 	// TODO(lebogg): Initialization can be removed here, it is done in discoverCosmosDBs - or vice versa.
@@ -212,11 +211,6 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
-	// Check if resource is public available
-	if util.Deref(account.Properties.PublicNetworkAccess) == "Enabled" {
-		publicNetworkAccess = true
-	}
-
 	// Create Cosmos DB database service voc object for the database account
 	dbService := &voc.DatabaseService{
 		StorageService: &voc.StorageService{
@@ -240,7 +234,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			ActivityLogging: activityLogging,
 			Redundancy:      getCosmosDBRedundancy(account),
 		},
-		PublicAccess: publicNetworkAccess,
+		PublicAccess: getPublicAccessOfCosmosDB(account),
 	}
 
 	// Add Mongo DB database service
@@ -260,6 +254,17 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	}
 
 	return list, nil
+}
+
+func getPublicAccessOfCosmosDB(account *armcosmos.DatabaseAccountGetResults) bool {
+	if util.Deref(account.Properties.PublicNetworkAccess) == armcosmos.PublicNetworkAccessDisabled {
+		return false
+	}
+	if util.Deref(account.Properties.PublicNetworkAccess) == armcosmos.PublicNetworkAccessEnabled && (len(account.Properties.IPRules) > 0 || len(account.Properties.VirtualNetworkRules) > 0) {
+		return false
+	}
+	// Otherwise, we assume public network access is enabled
+	return true
 }
 
 // func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
@@ -659,7 +664,9 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
+// TODO(lebogg): Maybe just check "acc.Properties.NetworkRuleSet.DefaultAction", other things are redundant?
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
+	// TODO(lebogg): ADd check for default action allow in rule set before (this would include the special case as well, wher public network access is nil
 	// Check if Public Network Access of Storage Account is set to "enabled"
 	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
 		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
