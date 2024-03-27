@@ -39,13 +39,17 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/policies"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -56,6 +60,23 @@ import (
 
 var (
 	log *logrus.Entry
+)
+
+var DefaultServiceSpec = launcher.NewServiceSpec(
+	NewService,
+	nil,
+	func(svc *Service) ([]server.StartGRPCServerOption, error) {
+		// It is possible to register hook functions for the assessment service.
+		//  * The hook functions in assessment are implemented in AssessEvidence(s)
+
+		// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+
+		return []server.StartGRPCServerOption{
+			server.WithAssessment(svc),
+		}, nil
+	},
+	WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+	WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
 )
 
 func init() {
@@ -128,6 +149,8 @@ func WithoutEvidenceStore() service.Option[*Service] {
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
 func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Evidence Store URL is set to %s", address)
+
 		svc.evidenceStore.Target = address
 		svc.evidenceStore.Opts = opts
 	}
@@ -136,6 +159,8 @@ func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.O
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
 func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Orchestrator URL is set to %s", target)
+
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
 	}

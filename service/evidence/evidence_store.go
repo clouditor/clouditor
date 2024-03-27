@@ -35,9 +35,11 @@ import (
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
@@ -46,6 +48,21 @@ import (
 )
 
 var log *logrus.Entry
+
+var DefaultServiceSpec = launcher.NewServiceSpec(
+	NewService,
+	WithStorage,
+	func(svc *Service) ([]server.StartGRPCServerOption, error) {
+		// It is possible to register hook functions for the evidenceStore.
+		//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
+
+		// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+
+		return []server.StartGRPCServerOption{
+			server.WithEvidenceStore(svc),
+		}, nil
+	},
+)
 
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {

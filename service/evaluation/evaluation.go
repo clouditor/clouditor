@@ -37,9 +37,11 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/go-co-op/gocron"
@@ -59,6 +61,16 @@ var (
 	ErrCategoryNameIsMissing = errors.New("category_name is missing")
 	ErrControlIdIsMissing    = errors.New("control_id is missing")
 	ErrControlNotAvailable   = errors.New("control not available")
+)
+
+var DefaultServiceSpec = launcher.NewServiceSpec(
+	NewService,
+	WithStorage,
+	func(svc *Service) ([]server.StartGRPCServerOption, error) {
+		return []server.StartGRPCServerOption{
+			server.WithEvaluation(svc),
+		}, nil
+	},
 )
 
 const (

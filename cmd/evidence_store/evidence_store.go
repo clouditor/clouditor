@@ -30,11 +30,9 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/launcher"
-	"clouditor.io/clouditor/v2/server"
 	service_evidenceStore "clouditor.io/clouditor/v2/service/evidence"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var engineCmd = &cobra.Command{
@@ -49,28 +47,16 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher[service_evidenceStore.Service](
+	ml, err := launcher.NewLauncher(
 		cmd.Use,
-		service_evidenceStore.NewService,
-		service_evidenceStore.WithStorage,
-		func(svc *service_evidenceStore.Service) ([]server.StartGRPCServerOption, error) {
-			// It is possible to register hook functions for the evidenceStore.
-			//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
-			// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
-
-			return []server.StartGRPCServerOption{
-				server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-				server.WithEvidenceStore(svc),
-				server.WithReflection(),
-			}, nil
-		},
+		service_evidenceStore.DefaultServiceSpec,
 	)
 	if err != nil {
 		return err
 	}
 
-	// Start the gRPC server and the corresponding gRPC-HTTP gateway
-	return l.Launch()
+	// Start the gRPC server and the corresponding gRPC-HTTP gateways
+	return ml.Launch()
 }
 
 func main() {

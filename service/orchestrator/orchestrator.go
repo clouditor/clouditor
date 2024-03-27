@@ -28,16 +28,22 @@ package orchestrator
 import (
 	"context"
 	"embed"
+	"fmt"
 	"sync"
 
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/api/runtime"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
+
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 //go:embed *.json
@@ -49,6 +55,29 @@ var DefaultCatalogsFolder = "catalogs"
 var (
 	defaultMetricConfigurations map[string]*assessment.MetricConfiguration
 	log                         *logrus.Entry
+)
+
+var DefaultServiceSpec = launcher.NewServiceSpec(
+	NewService,
+	WithStorage,
+	func(svc *Service) ([]server.StartGRPCServerOption, error) {
+		// It is possible to register hook functions for the orchestrator.
+		//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+
+		// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+
+		// Create default target Cloud Service
+		if viper.GetBool(config.CreateDefaultTargetFlag) {
+			_, err := svc.CreateDefaultTargetCloudService()
+			if err != nil {
+				return nil, fmt.Errorf("could not register default target cloud service: %v", err)
+			}
+		}
+
+		return []server.StartGRPCServerOption{
+			server.WithOrchestrator(svc),
+		}, nil
+	},
 )
 
 // Service is an implementation of the Clouditor Orchestrator service

@@ -26,29 +26,13 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/logging/formatter"
-	"clouditor.io/clouditor/v2/server"
-	"clouditor.io/clouditor/v2/server/rest"
-	"clouditor.io/clouditor/v2/service"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2/clientcredentials"
-)
-
-var (
-	srv               *server.Server
-	assessmentService *service_assessment.Service
-
-	log *logrus.Entry
 )
 
 var engineCmd = &cobra.Command{
@@ -59,101 +43,24 @@ var engineCmd = &cobra.Command{
 }
 
 func init() {
-	log = logrus.WithField("component", "assessment-grpc")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
-	cobra.OnInitialize(config.InitConfig)
-
-	engineCmd = config.InitCobra(engineCmd)
+	config.InitCobra(engineCmd)
 }
 
-func doCmd(_ *cobra.Command, _ []string) (err error) {
-	var (
-		rt, _ = service.GetRuntimeInfo()
-		level logrus.Level
+func doCmd(cmd *cobra.Command, _ []string) (err error) {
+	ml, err := launcher.NewLauncher(
+		cmd.Use,
+		service_assessment.DefaultServiceSpec,
 	)
-
-	fmt.Printf(`
-           $$\                           $$\ $$\   $$\
-           $$ |                          $$ |\__|  $$ |
-  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
-  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- 
-  Clouditor Assessment Service Version %s
-  `, rt.VersionString())
-	fmt.Println()
-
-	level, err = logrus.ParseLevel(viper.GetString(config.LogLevelFlag))
 	if err != nil {
 		return err
 	}
-	logrus.SetLevel(level)
-	log.Infof("Log level is set to %s", level)
 
-	assessmentService = service_assessment.NewService(
-		service_assessment.WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
-			},
-		),
-		service_assessment.WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
-		service_assessment.WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
-	)
-
-	// It is possible to register hook functions for the assessment service.
-	//  * The hook functions in assessment are implemented in AssessEvidence(s)
-
-	// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
-
-	grpcPort := viper.GetUint16(config.APIgRPCPortAssessmentFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortAssessmentFlag)
-
-	var opts = []rest.ServerConfigOption{
-		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
-		rest.WithAllowedHeaders(viper.GetStringSlice(config.APICORSAllowedHeadersFlags)),
-		rest.WithAllowedMethods(viper.GetStringSlice(config.APICORSAllowedMethodsFlags)),
-	}
-
-	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
-	log.Infof("Orchestrator URL is set to %s", viper.GetString(config.OrchestratorURLFlag))
-	log.Infof("Evidence Store URL is set to %s", viper.GetString(config.EvidenceStoreURLFlag))
-
-	// Start the gRPC server
-	_, srv, err = server.StartGRPCServer(
-		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-		server.WithAssessment(assessmentService),
-		server.WithReflection(),
-	)
-	if err != nil {
-		log.Errorf("Failed to serve gRPC endpoint: %s", err)
-		return err
-	}
-
-	// Start the gRPC-HTTP gateway
-	err = rest.RunServer(context.Background(),
-		grpcPort,
-		httpPort,
-		opts...,
-	)
-	if err != nil && err != http.ErrServerClosed {
-		log.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
-		return err
-	}
-
-	assessmentService.Shutdown()
-
-	log.Infof("Stopping gRPC endpoint")
-	srv.Stop()
-
-	return nil
+	// Start the gRPC server and the corresponding gRPC-HTTP gateways
+	return ml.Launch()
 }
+
+// TODO(oxisto): Do we need that?
+// assessmentService.Shutdown()
 
 func main() {
 	if err := engineCmd.Execute(); err != nil {

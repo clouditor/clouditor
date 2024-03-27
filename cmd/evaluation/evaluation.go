@@ -30,12 +30,9 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/launcher"
-	"clouditor.io/clouditor/v2/server"
 	service_evaluation "clouditor.io/clouditor/v2/service/evaluation"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2/clientcredentials"
 )
 
 var engineCmd = &cobra.Command{
@@ -50,32 +47,16 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher[service_evaluation.Service](
+	ml, err := launcher.NewLauncher(
 		cmd.Use,
-		service_evaluation.NewService,
-		service_evaluation.WithStorage,
-		func(svc *service_evaluation.Service) ([]server.StartGRPCServerOption, error) {
-			return []server.StartGRPCServerOption{
-				server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-				server.WithEvaluation(svc),
-				server.WithReflection(),
-			}, nil
-		},
-		service_evaluation.WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
-			},
-		),
+		service_evaluation.DefaultServiceSpec,
 	)
 	if err != nil {
 		return err
 	}
 
-	// Start the gRPC server and the corresponding gRPC-HTTP gateway
-	return l.Launch()
+	// Start the gRPC server and the corresponding gRPC-HTTP gateways
+	return ml.Launch()
 }
 
 func main() {

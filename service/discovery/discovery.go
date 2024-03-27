@@ -37,9 +37,12 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
@@ -48,6 +51,7 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -63,6 +67,25 @@ const (
 )
 
 var log *logrus.Entry
+
+var DefaultServiceSpec = launcher.NewServiceSpec(
+	NewService,
+	WithStorage,
+	func(svc *Service) ([]server.StartGRPCServerOption, error) {
+		// It is possible to register hook functions for the orchestrator.
+		//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+
+		// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+
+		return []server.StartGRPCServerOption{
+			server.WithDiscovery(svc),
+			server.WithExperimentalDiscovery(svc),
+		}, nil
+	},
+	WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
+	WithProviders(providers),
+	WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
+)
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
@@ -133,6 +156,8 @@ func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Optio
 // WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
 func WithCloudServiceID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Cloud Service ID is set to %s", ID)
+
 		svc.csID = ID
 	}
 }
