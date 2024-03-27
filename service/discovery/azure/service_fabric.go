@@ -80,6 +80,7 @@ func (d *azureServiceFabricDiscovery) discoverClusters() ([]voc.IsCloudResource,
 	}
 
 	var clusters []*armservicefabric.Cluster
+	// TODO(all): I think it would be better to use the listPager function.
 	if util.Deref(d.rg) != "" {
 		response, err := d.clients.fabricsServiceClusterClient.List(context.Background(), &armservicefabric.ClustersClientListOptions{})
 		if err != nil {
@@ -87,6 +88,7 @@ func (d *azureServiceFabricDiscovery) discoverClusters() ([]voc.IsCloudResource,
 		}
 		clusters = append(clusters, response.Value...)
 	} else {
+		// TODO(all): Change d.rg to the fabrics resource group, here d.rg is nil.
 		response, err := d.clients.fabricsServiceClusterClient.ListByResourceGroup(context.Background(),
 			util.Deref(d.rg), &armservicefabric.ClustersClientListByResourceGroupOptions{})
 		if err != nil {

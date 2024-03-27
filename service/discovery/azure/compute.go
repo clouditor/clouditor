@@ -321,7 +321,7 @@ func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c ar
 		s    voc.IsCompute
 	)
 
-	pager := d.clients.sitesClient.NewListSlotsPager(util.Deref(d.rg), util.Deref(baseSite.Name), &armappservice.WebAppsClientListSlotsOptions{})
+	pager := d.clients.sitesClient.NewListSlotsPager(resourceGroupName(util.Deref(baseSite.ID)), util.Deref(baseSite.Name), &armappservice.WebAppsClientListSlotsOptions{})
 	for pager.More() {
 		page, err = pager.NextPage(context.TODO())
 		if err != nil {
@@ -391,7 +391,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 			runtimeVersion = *config.Properties.NetFrameworkVersion
 		}
 	}
-	activityLogging := d.getActivityLogging(function)
+	activityLogging, appSettings := d.getActivityLogging(function)
 
 	return &voc.Function{
 		Compute: &voc.Compute{
@@ -408,6 +408,7 @@ func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, con
 				voc.FunctionType,
 				function,
 				config,
+				appSettings,
 			),
 			NetworkInterfaces: []voc.ResourceID{},
 			ActivityLogging:   activityLogging,
@@ -437,11 +438,11 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 		ni = []voc.ResourceID{voc.ResourceID(resourceID(webApp.Properties.VirtualNetworkSubnetID))}
 	}
 
-	activityLogging := d.getActivityLogging(webApp)
+	activityLogging, appSettings := d.getActivityLogging(webApp)
 
 	// Check if secrets are used and if so, add them to the 'secretUsage' dictionary
 	// Using NewGetAppSettingsKeyVaultReferencesPager would be optimal but is bugged, see https://github.com/Azure/azure-sdk-for-go/issues/14509
-	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), util.Deref(d.rg),
+	settings, err := d.clients.sitesClient.ListApplicationSettings(context.TODO(), resourceGroupName(util.Deref(webApp.ID)),
 		util.Deref(webApp.Name), &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		// Maybe returning error better here
@@ -464,6 +465,7 @@ func (d *azureComputeDiscovery) handleWebApp(webApp *armappservice.Site, config 
 				voc.WebAppType,
 				webApp,
 				config,
+				appSettings,
 			),
 			NetworkInterfaces: ni, // Add the Virtual Network Subnet ID
 			ActivityLogging:   activityLogging,
@@ -526,7 +528,7 @@ func (d *azureComputeDiscovery) getRedundancy(app *armappservice.Site) (r *voc.R
 		return
 	}
 	planName := getAppServicePlanName(app.Properties.ServerFarmID)
-	farm, err := d.clients.plansClient.Get(context.TODO(), util.Deref(d.rg), planName, &armappservice.PlansClientGetOptions{})
+	farm, err := d.clients.plansClient.Get(context.TODO(), resourceGroupName(util.Deref(app.ID)), planName, &armappservice.PlansClientGetOptions{})
 	if err != nil {
 		log.Errorf("Could not get App Service Farm '%s', zone redundancy of web app '%s' is assumed to be false: %v",
 			util.Deref(app.Properties.ServerFarmID), util.Deref(app.Name), err)
@@ -637,7 +639,7 @@ func (d *azureComputeDiscovery) discoverVirtualMachines() ([]voc.IsCloudResource
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.VirtualMachineScaleSetVM, scaleSet *armcompute.VirtualMachineScaleSet) (voc.IsCompute, error) {
-	var automaticUpdates *voc.AutomaticUpdates
+	var autoUpdates *voc.AutomaticUpdates
 
 	// Check if VM is from a VMSS, then skip. VMs from the VMSS (Virtual Machine Scale Set) appear also in the Virtual Machines list, whereas the VMs from the AKS pool does not appear in the VMs list.
 	// If a VM Scale Set VM is from Kubernetes, the instanceID is a numeric digit.
@@ -648,7 +650,7 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 	}
 
 	if vm.Properties != nil {
-		automaticUpdates = automaticUpdatesScaleSet(vm.Properties.OSProfile)
+		autoUpdates = automaticUpdates(vm.Properties.OSProfile)
 	}
 
 	r := &voc.VirtualMachine{
@@ -668,46 +670,10 @@ func (d *azureComputeDiscovery) handleVirtualMachineScaleSet(vm *armcompute.Virt
 			),
 		},
 
-		AutomaticUpdates: automaticUpdates,
+		AutomaticUpdates: autoUpdates,
 	}
 
 	return r, nil
-}
-
-// automaticUpdatesScaleSet returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM scale set.
-func automaticUpdatesScaleSet(set *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
-	automaticUpdates = &voc.AutomaticUpdates{}
-
-	if set == nil {
-		return
-	}
-
-	// Check if Linux configuration is available
-	if set.LinuxConfiguration != nil &&
-		set.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(set.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-		}
-	}
-
-	// Check if Windows configuration is available
-	if set.WindowsConfiguration != nil &&
-		set.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *set.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(set.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *set.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
-	}
-
-	return
 }
 
 func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (voc.IsCompute, error) {
@@ -728,7 +694,7 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 		bootLogging = []voc.ResourceID{voc.ResourceID(bootLogOutput(vm))}
 	}
 
-	autoUpdates = automaticUpdates(vm)
+	autoUpdates = automaticUpdates(vm.Properties.OSProfile)
 
 	if d.defenderProperties[DefenderVirtualMachineType] != nil {
 		monitoringLogDataEnabled = d.defenderProperties[DefenderVirtualMachineType].monitoringLogDataEnabled
@@ -820,18 +786,18 @@ func (d *azureComputeDiscovery) handleVirtualMachines(vm *armcompute.VirtualMach
 	return r, nil
 }
 
-// automaticUpdates returns automaticUpdatesEnabled and automaticUpdatesInterval for a given VM.
-func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.AutomaticUpdates) {
+// automaticUpdatesScaleSet returns voc.AutomaticUpdates for a given VM scale set.
+func automaticUpdates(os *armcompute.OSProfile) (automaticUpdates *voc.AutomaticUpdates) {
 	automaticUpdates = &voc.AutomaticUpdates{}
 
-	if vm == nil || vm.Properties == nil || vm.Properties.OSProfile == nil {
+	if os == nil {
 		return
 	}
 
 	// Check if Linux configuration is available
-	if vm.Properties.OSProfile.LinuxConfiguration != nil &&
-		vm.Properties.OSProfile.LinuxConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
+	if os.LinuxConfiguration != nil &&
+		os.LinuxConfiguration.PatchSettings != nil {
+		if util.Deref(os.LinuxConfiguration.PatchSettings.PatchMode) == armcompute.LinuxVMGuestPatchModeAutomaticByPlatform {
 			automaticUpdates.Enabled = true
 			automaticUpdates.Interval = Duration30Days
 			return
@@ -839,18 +805,10 @@ func automaticUpdates(vm *armcompute.VirtualMachine) (automaticUpdates *voc.Auto
 	}
 
 	// Check if Windows configuration is available
-	if vm.Properties.OSProfile.WindowsConfiguration != nil &&
-		vm.Properties.OSProfile.WindowsConfiguration.PatchSettings != nil {
-		if util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByOS && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates ||
-			util.Deref(vm.Properties.OSProfile.WindowsConfiguration.PatchSettings.PatchMode) == armcompute.WindowsVMGuestPatchModeAutomaticByPlatform && *vm.Properties.OSProfile.WindowsConfiguration.EnableAutomaticUpdates {
-			automaticUpdates.Enabled = true
-			automaticUpdates.Interval = Duration30Days
-			return
-
-		} else {
-			return
-
-		}
+	if os.WindowsConfiguration != nil && os.WindowsConfiguration.EnableAutomaticUpdates != nil {
+		automaticUpdates.Enabled = util.Deref(os.WindowsConfiguration.EnableAutomaticUpdates)
+		automaticUpdates.Interval = Duration30Days
+		return
 	}
 
 	return
@@ -1126,26 +1084,35 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 	return
 }
 
-// getResourceLogging determines if logging is activated for a given web app or function by checking the respective app setting
-// In this case logging means the Application Insights logging. The Application Insights logging is automatically forwarded to Log Analytics which is defined in the Diagnostic Settings.
-// TODO(all): Maybe be should discover also the Diagnostic Settings and split the logging from Application Insights and Diagnostic Settings (Log Analytics).
-func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (rl *voc.ActivityLogging) {
-	rl = &voc.ActivityLogging{Logging: &voc.Logging{}}
+// getActivityLogging determines if logging is activated for a given web app or function by checking the respective app setting
+// First, it is checked if Application Insights is configured. If this is not configured, it is checked if Diagnostic Settings are configured and the logs are stored in a Log Analytics Workspace.    
+// The Application Insights logging is automatically forwarded to Log Analytics.
+func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, string) {
+	var (
+		al  = &voc.ActivityLogging{Logging: &voc.Logging{}}
+		raw string
+	)
 
 	appSettings, err := d.clients.sitesClient.ListApplicationSettings(context.Background(),
 		*site.Properties.ResourceGroup, *site.Name, &armappservice.WebAppsClientListApplicationSettingsOptions{})
 	if err != nil {
 		log.Warnf("Could not get resource logging information: could not get application settings for '%s', maybe it is a slot: %v", util.Deref(site.Name), err)
-		return
+		// return rl, appSettings
 	}
 
 	if appSettings.Properties["APPLICATIONINSIGHTS_CONNECTION_STRING"] != nil {
-		rl.Enabled = true
+		al.Enabled = true
 		// TODO: Get id of logging service and add it (currently not possible via app settings): rl.LoggingService
-
+		raw, _ = voc.ToStringInterface([]interface{}{appSettings})
+	} else {
+		al, raw, err = d.azureDiscovery.discoverDiagnosticSettings(util.Deref(site.ID))
+		if err != nil {
+			log.Warnf("Could not get diagnostic settings for %s: %v", util.Deref(site.Name), err)
+			return al, ""
+		}
 	}
 
-	return
+	return al, raw
 }
 
 // addSecretUsages checks if secrets are used in the given web app and, if so, adds them to secretUsage
@@ -1202,8 +1169,12 @@ func getSecretURI(s string) (secretURI string) {
 		}
 		s, ok = strings.CutSuffix(s, "/)")
 		if !ok {
-			log.Error("Could not find suffix ')' in:", s)
-			return ""
+			log.Debugf("Could not find suffix '/)' in '%s'. Trying to look for suffix without backslash at the end:", s)
+			s, ok = strings.CutSuffix(s, ")")
+			if !ok {
+				log.Errorf("Could find neither suffix '/)' nor ')' (without backslash) in '%s'", s)
+				return ""
+			}
 		}
 		secretURI = s
 	}
