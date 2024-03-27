@@ -14,8 +14,12 @@ type spec[T service.Service] struct {
 }
 
 func (s spec[T]) newService(db persistence.Storage) (svc T, grpcOpts []server.StartGRPCServerOption, err error) {
-	// Append the WithStorageFunc to the specified service options.
-	var opts = append(s.opts, s.wsf(db))
+	var opts = s.opts
+
+	// Append the WithStorageFunc (if its non-nil) to the specified service options.
+	if s.wsf != nil {
+		opts = append(opts, s.wsf(db))
+	}
 
 	// Create the service with the NewServiceFunc using the supplied server options
 	svc = s.nsf(opts...)

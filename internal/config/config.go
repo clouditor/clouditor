@@ -84,8 +84,8 @@ const (
 	DefaultServiceOAuth2ClientID               = "clouditor"
 	DefaultServiceOAuth2ClientSecret           = "clouditor"
 	DefaultOrchestratorURL                     = "localhost:9090"
-	DefaultEvidenceStoreURL                    = "localhost:9092"
-	DefaultAssessmentURL                       = "localhost:9093"
+	DefaultEvidenceStoreURL                    = "localhost:9090"
+	DefaultAssessmentURL                       = "localhost:9090"
 	DefaultDBUserName                          = "postgres"
 	DefaultDBPassword                          = "postgres"
 	DefaultDBHost                              = "localhost"
@@ -118,6 +118,14 @@ var (
 	DefaultAPIHTTPPort uint16 = 8080
 )
 
+const (
+	// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
+	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+	// structures for this feature.
+	DefaultCloudServiceID   = "00000000-0000-0000-0000-000000000000"
+	EvidenceCollectorToolId = "Clouditor Evidences Collection"
+)
+
 func init() {
 	cobra.OnInitialize(InitConfig)
 }
@@ -125,16 +133,7 @@ func init() {
 func InitCobra(engineCmd *cobra.Command) {
 	engineCmd.Flags().Bool(APIStartEmbeddedOAuth2ServerFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
-	engineCmd.Flags().String(OrchestratorURLFlag, DefaultOrchestratorURL, "Specifies the Orchestrator URL")
-	engineCmd.Flags().String(EvidenceStoreURLFlag, DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
-	engineCmd.Flags().Bool(CreateDefaultTargetFlag, DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
-
 	_ = viper.BindPFlag(APIStartEmbeddedOAuth2ServerFlag, engineCmd.Flags().Lookup(APIStartEmbeddedOAuth2ServerFlag))
-
-	_ = viper.BindPFlag(OrchestratorURLFlag, engineCmd.Flags().Lookup(OrchestratorURLFlag))
-	_ = viper.BindPFlag(EvidenceStoreURLFlag, engineCmd.Flags().Lookup(EvidenceStoreURLFlag))
-
-	_ = viper.BindPFlag(CreateDefaultTargetFlag, engineCmd.Flags().Lookup(CreateDefaultTargetFlag))
 }
 
 func InitConfig() {

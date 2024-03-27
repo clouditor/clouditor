@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -123,11 +124,11 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithAdditionalDiscoverers'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID}}),
+					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID}}),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID})
+				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID})
 			},
 		},
 		{
@@ -165,15 +166,15 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 			checkEvidence: true,
 		},

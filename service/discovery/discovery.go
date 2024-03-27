@@ -88,6 +88,14 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				server.WithExperimentalDiscovery(svc),
 			}, nil
 		},
+		WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
+			},
+		),
 		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
 		WithProviders(providers),
 		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
@@ -183,10 +191,7 @@ func WithProviders(providersList []string) service.Option[*Service] {
 		log.Error(newError)
 	}
 
-	fmt.Printf("in WithProviders %+v\n", providersList)
-
 	return func(s *Service) {
-		fmt.Printf("Setting %+v\n", providersList)
 		s.providers = providersList
 	}
 }
@@ -227,12 +232,10 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
-		csID:              discovery.DefaultCloudServiceID,
+		csID:              config.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
-
-	fmt.Printf("%+v\n", opts)
 
 	// Apply any options
 	for _, o := range opts {
@@ -318,9 +321,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	for _, provider := range svc.providers {
 		switch {
 		case provider == ProviderAzure:
-			fmt.Println("hello")
 			authorizer, err := azure.NewAuthorizer()
-			fmt.Println("hello")
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
@@ -434,7 +435,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			CloudServiceId: svc.GetCloudServiceId(),
 			Timestamp:      timestamppb.Now(),
 			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         discovery.EvidenceCollectorToolId,
+			ToolId:         config.EvidenceCollectorToolId,
 			Resource:       a,
 		}
 

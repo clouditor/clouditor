@@ -28,39 +28,15 @@ package main
 import (
 	"os"
 
-	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
-	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
-
-	"github.com/spf13/cobra"
+	"clouditor.io/clouditor/v2/server/commands"
+	"clouditor.io/clouditor/v2/server/commands/orchestrator"
 )
 
-var engineCmd = &cobra.Command{
-	Use:   "orchestrator",
-	Short: "orchestrator launches the Clouditor Orchestrator Service",
-	Long:  "Orchestrator is a component of the Clouditor and starts the Orchestrator Service.",
-	RunE:  doCmd,
-}
-
-func init() {
-	config.InitCobra(engineCmd)
-}
-
-func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher(
-		cmd.Use,
-		service_orchestrator.DefaultServiceSpec,
-	)
-	if err != nil {
-		return err
-	}
-
-	// Start the gRPC server and the corresponding gRPC-HTTP gateways
-	return l.Launch()
-}
-
 func main() {
-	if err := engineCmd.Execute(); err != nil {
+	cmd := orchestrator.NewOrchestratorCommand()
+	commands.BindPersistentFlags(cmd)
+
+	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

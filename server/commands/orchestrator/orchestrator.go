@@ -23,20 +23,42 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package main
+package orchestrator
 
 import (
-	"os"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/service/orchestrator"
 
-	"clouditor.io/clouditor/v2/server/commands"
-	"clouditor.io/clouditor/v2/server/commands/discovery"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-func main() {
-	cmd := discovery.NewDiscoveryCommand()
-	commands.BindPersistentFlags(cmd)
+func NewOrchestratorCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "orchestrator",
+		Short: "Starts a server which contains the Clouditor Orchestrator Service",
+		Long:  "This command starts a Clouditor Orchestrator service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l, err := launcher.NewLauncher(cmd.Use,
+				orchestrator.DefaultServiceSpec(),
+			)
+			if err != nil {
+				return err
+			}
 
-	if err := cmd.Execute(); err != nil {
-		os.Exit(1)
+			return l.Launch()
+		},
 	}
+
+	BindFlags(cmd)
+
+	return cmd
+}
+
+func BindFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+
+	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
+
 }

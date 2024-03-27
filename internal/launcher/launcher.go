@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	commands_login "clouditor.io/clouditor/v2/cli/commands/login"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/logging/formatter"
 	"clouditor.io/clouditor/v2/persistence"
@@ -13,6 +14,9 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
+
+	oauth2 "github.com/oxisto/oauth2go"
+	"github.com/oxisto/oauth2go/login"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/text/cases"
@@ -54,7 +58,6 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 
 	// Create the services out of the service specs
 	for _, spec := range specs {
-		fmt.Printf("%+v\n", spec)
 		// Create the service and gather the gRPC server options
 		svc, grpcOpts, err := spec.NewService(l.db)
 		if err != nil {
@@ -96,6 +99,46 @@ func (l *Launcher) Launch() (err error) {
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
 		rest.WithAllowedHeaders(viper.GetStringSlice(config.APICORSAllowedHeadersFlags)),
 		rest.WithAllowedMethods(viper.GetStringSlice(config.APICORSAllowedMethodsFlags)),
+	}
+
+	// Let's check, if we are using our embedded OAuth 2.0 server, which we need to start (using additional arguments to
+	// our existing REST gateway). In a production scenario the usage of a dedicated (external) OAuth 2.0 server is
+	// recommended. In order to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
+	// can be used.
+	if viper.GetBool(config.APIStartEmbeddedOAuth2ServerFlag) {
+		restOpts = append(restOpts,
+			rest.WithEmbeddedOAuth2Server(
+				viper.GetString(config.APIKeyPathFlag),
+				viper.GetString(config.APIKeyPasswordFlag),
+				viper.GetBool(config.APIKeySaveOnCreateFlag),
+				// Create a public client for our CLI
+				oauth2.WithClient(
+					commands_login.DefaultClientID,
+					"",
+					commands_login.DefaultCallback,
+				),
+				// Create a public client for our dashboard
+				oauth2.WithClient(
+					"dashboard",
+					"",
+					fmt.Sprintf("%s/callback", viper.GetString(config.DashboardURLFlag)),
+				),
+				// Create a confidential client with default credentials for our services
+				oauth2.WithClient(
+					viper.GetString(config.ServiceOAuth2ClientIDFlag),
+					viper.GetString(config.ServiceOAuth2ClientIDFlag),
+					"",
+				),
+				// Createa a default user for logging in
+				login.WithLoginPage(
+					login.WithUser(
+						viper.GetString(config.APIDefaultUserFlag),
+						viper.GetString(config.APIDefaultPasswordFlag),
+					),
+					login.WithBaseURL("/v1/auth"),
+				),
+			),
+		)
 	}
 
 	l.log.Infof("Starting gRPC endpoint on :%d", grpcPort)

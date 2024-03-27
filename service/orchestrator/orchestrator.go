@@ -57,28 +57,30 @@ var (
 	log                         *logrus.Entry
 )
 
-var DefaultServiceSpec = launcher.NewServiceSpec(
-	NewService,
-	WithStorage,
-	func(svc *Service) ([]server.StartGRPCServerOption, error) {
-		// It is possible to register hook functions for the orchestrator.
-		//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the orchestrator.
+			//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
 
-		// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+			// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
-		// Create default target Cloud Service
-		if viper.GetBool(config.CreateDefaultTargetFlag) {
-			_, err := svc.CreateDefaultTargetCloudService()
-			if err != nil {
-				return nil, fmt.Errorf("could not register default target cloud service: %v", err)
+			// Create default target Cloud Service
+			if viper.GetBool(config.CreateDefaultTargetFlag) {
+				_, err := svc.CreateDefaultTargetCloudService()
+				if err != nil {
+					return nil, fmt.Errorf("could not register default target cloud service: %v", err)
+				}
 			}
-		}
 
-		return []server.StartGRPCServerOption{
-			server.WithOrchestrator(svc),
-		}, nil
-	},
-)
+			return []server.StartGRPCServerOption{
+				server.WithOrchestrator(svc),
+			}, nil
+		},
+	)
+}
 
 // Service is an implementation of the Clouditor Orchestrator service
 type Service struct {

@@ -23,20 +23,31 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package main
+package evidence
 
 import (
-	"os"
+	"clouditor.io/clouditor/v2/internal/launcher"
+	evidences "clouditor.io/clouditor/v2/service/evidence"
 
-	"clouditor.io/clouditor/v2/server/commands"
-	"clouditor.io/clouditor/v2/server/commands/discovery"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd := discovery.NewDiscoveryCommand()
-	commands.BindPersistentFlags(cmd)
+func NewEvidenceCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "evidence",
+		Short: "Starts a server which contains the Clouditor Evidence Store Service",
+		Long:  "This command starts a Clouditor Evidence Store service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l, err := launcher.NewLauncher(cmd.Use,
+				evidences.DefaultServiceSpec(),
+			)
+			if err != nil {
+				return err
+			}
 
-	if err := cmd.Execute(); err != nil {
-		os.Exit(1)
+			return l.Launch()
+		},
 	}
+
+	return cmd
 }

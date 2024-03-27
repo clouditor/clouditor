@@ -28,15 +28,10 @@ package main
 import (
 	"os"
 
-	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/server/commands"
 
 	"github.com/spf13/cobra"
 )
-
-func init() {
-	cobra.OnInitialize(config.InitConfig)
-}
 
 func newRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{

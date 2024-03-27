@@ -62,22 +62,32 @@ var (
 	log *logrus.Entry
 )
 
-var DefaultServiceSpec = launcher.NewServiceSpec(
-	NewService,
-	nil,
-	func(svc *Service) ([]server.StartGRPCServerOption, error) {
-		// It is possible to register hook functions for the assessment service.
-		//  * The hook functions in assessment are implemented in AssessEvidence(s)
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		nil,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the assessment service.
+			//  * The hook functions in assessment are implemented in AssessEvidence(s)
 
-		// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+			// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-		return []server.StartGRPCServerOption{
-			server.WithAssessment(svc),
-		}, nil
-	},
-	WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
-	WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
-)
+			return []server.StartGRPCServerOption{
+				server.WithAssessment(svc),
+			}, nil
+		},
+		WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
+			},
+		),
+		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
+	)
+}
 
 func init() {
 	log = logrus.WithField("component", "assessment")

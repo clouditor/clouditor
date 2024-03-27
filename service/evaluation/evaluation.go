@@ -37,6 +37,7 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/launcher"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
@@ -47,6 +48,7 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -63,15 +65,26 @@ var (
 	ErrControlNotAvailable   = errors.New("control not available")
 )
 
-var DefaultServiceSpec = launcher.NewServiceSpec(
-	NewService,
-	WithStorage,
-	func(svc *Service) ([]server.StartGRPCServerOption, error) {
-		return []server.StartGRPCServerOption{
-			server.WithEvaluation(svc),
-		}, nil
-	},
-)
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			return []server.StartGRPCServerOption{
+				server.WithEvaluation(svc),
+			}, nil
+		},
+		WithOAuth2Authorizer(
+			// Configure the OAuth 2.0 client credentials for this service
+			&clientcredentials.Config{
+				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
+				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
+				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
+			},
+		),
+		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+	)
+}
 
 const (
 	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator service.
