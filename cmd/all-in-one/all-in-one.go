@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,17 +23,51 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"os"
+
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
+
+	"github.com/spf13/cobra"
 )
 
-var log *logrus.Entry
-
-func init() {
-	log = logrus.WithField("component", "service")
+var engineCmd = &cobra.Command{
+	Use:   "all-in-one",
+	Short: "all-in-one launches all Clouditor services",
+	Long:  "It is an all-in-one solution of several microservices, which also can be started individually.",
+	RunE:  doCmd,
 }
 
-// Option is a functional option type to configure services.
-type Option[T any] func(T)
+func init() {
+	config.InitCobra(engineCmd)
+}
+
+func doCmd(cmd *cobra.Command, _ []string) (err error) {
+	ml, err := launcher.NewMultiLauncher(
+		launcher.NewServiceSpec(
+			service_orchestrator.NewService,
+			service_orchestrator.WithStorage,
+			func(svc *service_orchestrator.Service) ([]server.StartGRPCServerOption, error) {
+				return []server.StartGRPCServerOption{
+					server.WithOrchestrator(svc),
+				}, nil
+			},
+		),
+	)
+	if err != nil {
+		return err
+	}
+
+	return ml.Launch()
+}
+
+func main() {
+	if err := engineCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}

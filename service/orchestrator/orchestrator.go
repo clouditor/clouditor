@@ -94,55 +94,55 @@ func init() {
 }
 
 // WithMetricsFile can be used to load a different metrics file
-func WithMetricsFile(file string) service.Option[Service] {
+func WithMetricsFile(file string) service.Option[*Service] {
 	return func(s *Service) {
 		s.metricsFile = file
 	}
 }
 
 // WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[Service] {
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[*Service] {
 	return func(s *Service) {
 		s.loadMetricsFunc = f
 	}
 }
 
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
-func WithCatalogsFolder(folder string) service.Option[Service] {
+func WithCatalogsFolder(folder string) service.Option[*Service] {
 	return func(s *Service) {
 		s.catalogsFolder = folder
 	}
 }
 
 // WithExternalCatalogs can be used to load catalog definitions from an external source
-func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Option[Service] {
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Option[*Service] {
 	return func(s *Service) {
 		s.loadCatalogsFunc = f
 	}
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) service.Option[Service] {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
-func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[Service] {
+func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[*Service] {
 	return func(s *Service) {
 		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
 	}
 }
 
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
 // NewService creates a new Orchestrator service
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := Service{
 		metricsFile:    DefaultMetricsFile,
