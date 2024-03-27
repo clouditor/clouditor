@@ -19,65 +19,24 @@ import (
 	"golang.org/x/text/language"
 )
 
-type spec[T any] struct {
-	nsf  NewServiceFunc[T]
-	wsf  WithStorageFunc[T]
-	init ServiceInitFunc[T]
-	opts []service.Option[T]
-}
-
-func (s spec[T]) newService(db persistence.Storage) (svc T, grpcOpts []server.StartGRPCServerOption, err error) {
-	// Append the WithStorageFunc to the specified service options.
-	var opts []service.Option[T]
-	opts = append(opts, s.wsf(db))
-
-	// Create the service with the NewServiceFunc using the supplied server options
-	svc = s.nsf(opts...)
-
-	// Initialize the service using the ServiceInitFunc. This returns a possible list of StartGRPCServerOptions that we need to return
-	grpcOpts, err = s.init(svc)
-	if err != nil {
-		return *new(T), nil, err
-	}
-
-	return
-}
-
-func (s spec[T]) NewService(db persistence.Storage) (svc any, grpcOpts []server.StartGRPCServerOption, err error) {
-	return s.newService(db)
-}
-
-type Launcher[T any] struct {
-	srv       *server.Server
-	component string
-	db        persistence.Storage
-	log       *logrus.Entry
-	grpcOpts  []server.StartGRPCServerOption
-
-	Service T
-}
-
-func (l Launcher[T]) ToAny() *Launcher[any] {
-	return &Launcher[any]{
-		srv:       l.srv,
-		component: l.component,
-		db:        l.db,
-		log:       l.log,
-		grpcOpts:  l.grpcOpts,
-		Service:   l.Service,
-	}
+type Launcher struct {
+	name     string
+	srv      *server.Server
+	db       persistence.Storage
+	log      *logrus.Entry
+	grpcOpts []server.StartGRPCServerOption
+	services []any
 }
 
 type NewServiceFunc[T any] func(opts ...service.Option[T]) T
 type WithStorageFunc[T any] func(db persistence.Storage) service.Option[T]
 type ServiceInitFunc[T any] func(svc T) ([]server.StartGRPCServerOption, error)
 
-func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init ServiceInitFunc[T], serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
-	l = new(Launcher[T])
-	l.component = component
+func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
+	l = &Launcher{}
 
 	// Print Clouditor header with the used Clouditor version
-	printClouditorHeader(fmt.Sprintf("Clouditor %s Service", cases.Title(language.English).String(l.component)))
+	printClouditorHeader(fmt.Sprintf("Clouditor %s Service", cases.Title(language.English).String(name)))
 
 	// Set log level
 	err = l.initLogging()
@@ -91,25 +50,26 @@ func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorage
 		return nil, err
 	}
 
-	// Build a service spec to be consistent with the multi-launcher approach
-	spec := &spec[T]{
-		nsf:  nsf,
-		wsf:  wsf,
-		init: init,
-		opts: serviceOpts,
-	}
+	// Create the services out of the service specs
+	for _, f := range specs {
+		// Create the service and gather the gRPC server options
+		svc, grpcOpts, err := f.NewService(l.db)
+		if err != nil {
+			return nil, err
+		}
 
-	// Create a new service from the service spec
-	l.Service, l.grpcOpts, err = spec.newService(l.db)
-	if err != nil {
-		return nil, err
+		// Append the gRPC server options
+		l.grpcOpts = append(grpcOpts, grpcOpts...)
+
+		// Add the service to the list of our managed services
+		l.services = append(l.services, svc)
 	}
 
 	return
 }
 
 // Launch starts the gRPC server and the corresponding gRPC-HTTP gateway with the given gRPC Server Options
-func (l *Launcher[T]) Launch() (err error) {
+func (l *Launcher) Launch() (err error) {
 	var (
 		grpcPort uint16
 		httpPort uint16
@@ -163,8 +123,8 @@ func (l *Launcher[T]) Launch() (err error) {
 }
 
 // initLogging initializes the logging
-func (l *Launcher[T]) initLogging() error {
-	l.log = logrus.WithField("component", l.component)
+func (l *Launcher) initLogging() error {
+	l.log = logrus.WithField("launcher", l.name)
 	l.log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 
 	level, err := logrus.ParseLevel(viper.GetString(config.LogLevelFlag))
@@ -179,7 +139,7 @@ func (l *Launcher[T]) initLogging() error {
 }
 
 // initStorage sets the storage config to the in-memory DB or to a given Postgres DB
-func (l *Launcher[T]) initStorage() (err error) {
+func (l *Launcher) initStorage() (err error) {
 	if viper.GetBool(config.DBInMemoryFlag) {
 		l.db, err = inmemory.NewStorage()
 	} else {

@@ -48,7 +48,8 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	ml, err := launcher.NewMultiLauncher(
+	l, err := launcher.NewLauncher(
+		cmd.Use,
 		launcher.NewServiceSpec(
 			service_orchestrator.NewService,
 			service_orchestrator.WithStorage,
@@ -63,7 +64,7 @@ func doCmd(cmd *cobra.Command, _ []string) (err error) {
 		return err
 	}
 
-	return ml.Launch()
+	return l.Launch()
 }
 
 func main() {
