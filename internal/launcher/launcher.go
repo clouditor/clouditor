@@ -32,7 +32,7 @@ type Launcher[T any] struct {
 type NewServiceFunc[T any] func(opts ...service.Option[T]) *T
 type WithStorageFunc[T any] func(db persistence.Storage) service.Option[T]
 
-func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], inits ...func(svc *T) ([]server.StartGRPCServerOption, error)) (l *Launcher[T], err error) {
+func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init func(svc *T) ([]server.StartGRPCServerOption, error), serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
 	l = new(Launcher[T])
 	l.component = component
 
@@ -51,16 +51,15 @@ func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorage
 		return nil, err
 	}
 
-	l.Service = nsf(wsf(l.db))
+	// Add the WithStorageFunction option to the additional service options for the NewServiceFunc
+	serviceOpts = append(serviceOpts, wsf(l.db))
+	l.Service = nsf(serviceOpts...)
 
-	for _, init := range inits {
-		opts, err := init(l.Service)
-		if err != nil {
-			return nil, err
-		}
-
-		l.grpcOpts = append(l.grpcOpts, opts...)
+	opts, err := init(l.Service)
+	if err != nil {
+		return nil, err
 	}
+	l.grpcOpts = append(l.grpcOpts, opts...)
 
 	return
 }
