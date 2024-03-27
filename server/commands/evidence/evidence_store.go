@@ -26,7 +26,7 @@
 package evidence
 
 import (
-	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/launcher"
 	evidences "clouditor.io/clouditor/v2/service/evidence"
 
 	"github.com/spf13/cobra"

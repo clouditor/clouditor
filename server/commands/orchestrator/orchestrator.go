@@ -27,7 +27,7 @@ package orchestrator
 
 import (
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/cobra"
@@ -60,5 +60,4 @@ func BindFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 
 	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
-
 }

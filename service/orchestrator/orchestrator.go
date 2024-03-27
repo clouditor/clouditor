@@ -35,8 +35,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/api/runtime"
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
-
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"

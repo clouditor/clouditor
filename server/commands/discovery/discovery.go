@@ -27,7 +27,7 @@ package discovery
 
 import (
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service/discovery"
 
 	"github.com/spf13/cobra"

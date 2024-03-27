@@ -26,7 +26,7 @@
 package standalone
 
 import (
-	"clouditor.io/clouditor/v2/internal/launcher"
+	"clouditor.io/clouditor/v2/launcher"
 	command_assessment "clouditor.io/clouditor/v2/server/commands/assessment"
 	command_discovery "clouditor.io/clouditor/v2/server/commands/discovery"
 	command_evaluation "clouditor.io/clouditor/v2/server/commands/evaluation"
