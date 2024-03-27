@@ -208,6 +208,10 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	return &s
 }
 
+func (svc *Service) Init() {}
+
+func (svc *Service) Shutdown() {}
+
 // informHooks informs the registered hook functions
 func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudService, err error) {
 	s.hookMutex.RLock()

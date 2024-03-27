@@ -29,45 +29,31 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
-	"clouditor.io/clouditor/v2/service/assessment"
-	service_discovery "clouditor.io/clouditor/v2/service/discovery"
-	"clouditor.io/clouditor/v2/service/evaluation"
-	evidences "clouditor.io/clouditor/v2/service/evidence"
-	"clouditor.io/clouditor/v2/service/orchestrator"
+	"clouditor.io/clouditor/v2/server/commands"
 
 	"github.com/spf13/cobra"
 )
 
-var engineCmd = &cobra.Command{
-	Use:   "all-in-one",
-	Short: "all-in-one launches all Clouditor services",
-	Long:  "It is an all-in-one solution of several microservices, which also can be started individually.",
-	RunE:  doCmd,
-}
-
 func init() {
-	config.InitCobra(engineCmd)
+	cobra.OnInitialize(config.InitConfig)
 }
 
-func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	ml, err := launcher.NewLauncher(
-		cmd.Use,
-		orchestrator.DefaultServiceSpec,
-		service_discovery.DefaultServiceSpec,
-		evidences.DefaultServiceSpec,
-		assessment.DefaultServiceSpec,
-		evaluation.DefaultServiceSpec,
-	)
-	if err != nil {
-		return err
+func newRootCommand() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "server",
+		Short: "server launches a Clouditor server",
+		Long:  "It can be used to launch an all-in-one solution of several microservices or each service can be started individually.",
 	}
 
-	return ml.Launch()
+	commands.AddCommands(cmd)
+
+	return cmd
 }
 
 func main() {
-	if err := engineCmd.Execute(); err != nil {
+	var cmd = newRootCommand()
+
+	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

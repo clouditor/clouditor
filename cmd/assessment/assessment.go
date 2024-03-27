@@ -47,7 +47,7 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	ml, err := launcher.NewLauncher(
+	l, err := launcher.NewLauncher(
 		cmd.Use,
 		service_assessment.DefaultServiceSpec,
 	)
@@ -55,12 +55,8 @@ func doCmd(cmd *cobra.Command, _ []string) (err error) {
 		return err
 	}
 
-	// Start the gRPC server and the corresponding gRPC-HTTP gateways
-	return ml.Launch()
+	return l.Launch()
 }
-
-// TODO(oxisto): Do we need that?
-// assessmentService.Shutdown()
 
 func main() {
 	if err := engineCmd.Execute(); err != nil {

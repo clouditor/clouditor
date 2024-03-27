@@ -28,50 +28,15 @@ package main
 import (
 	"os"
 
-	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/internal/launcher"
-	service_discovery "clouditor.io/clouditor/v2/service/discovery"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"clouditor.io/clouditor/v2/server/commands"
+	"clouditor.io/clouditor/v2/server/commands/discovery"
 )
 
-var engineCmd = &cobra.Command{
-	Use:   "discovery",
-	Short: "discovery launches the Clouditor Discovery Service",
-	Long:  "Discovery is a component of the Clouditor and starts the Discovery Service.",
-	RunE:  doCmd,
-}
-
-func init() {
-	config.InitCobra(engineCmd)
-}
-
-func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	var providers []string
-
-	// If no CSPs for discovering are given, take all implemented discoverers
-	if len(viper.GetStringSlice(config.DiscoveryProviderFlag)) == 0 {
-		providers = []string{service_discovery.ProviderAWS, service_discovery.ProviderAzure, service_discovery.ProviderK8S}
-	} else {
-		providers = viper.GetStringSlice(config.DiscoveryProviderFlag)
-	}
-
-	l, err := launcher.NewLauncher(
-		cmd.Use,
-		service_discovery.DefaultServiceSpec,
-	)
-	if err != nil {
-		return err
-	}
-
-	// Start the gRPC server and the corresponding gRPC-HTTP gateway
-	return l.Launch()
-
-}
-
 func main() {
-	if err := engineCmd.Execute(); err != nil {
+	cmd := discovery.NewDiscoveryCommand()
+	commands.BindPersistentFlags(cmd)
+
+	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

@@ -228,6 +228,8 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	return svc
 }
 
+func (svc *Service) Init() {}
+
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
 	resp = &assessment.AssessEvidenceResponse{}

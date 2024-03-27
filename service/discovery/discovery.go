@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
+	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
@@ -68,32 +69,38 @@ const (
 
 var log *logrus.Entry
 
-var DefaultServiceSpec = launcher.NewServiceSpec(
-	NewService,
-	WithStorage,
-	func(svc *Service) ([]server.StartGRPCServerOption, error) {
-		// It is possible to register hook functions for the orchestrator.
-		//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
+func DefaultServiceSpec() launcher.ServiceSpec {
+	var providers []string
 
-		// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+	// If no CSPs for discovering are given, take all implemented discoverers
+	if len(viper.GetStringSlice(config.DiscoveryProviderFlag)) == 0 {
+		providers = []string{ProviderAWS, ProviderAzure, ProviderK8S}
+	} else {
+		providers = viper.GetStringSlice(config.DiscoveryProviderFlag)
+	}
 
-		return []server.StartGRPCServerOption{
-			server.WithDiscovery(svc),
-			server.WithExperimentalDiscovery(svc),
-		}, nil
-	},
-	WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
-	WithProviders(providers),
-	WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
-)
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			return []server.StartGRPCServerOption{
+				server.WithDiscovery(svc),
+				server.WithExperimentalDiscovery(svc),
+			}, nil
+		},
+		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
+		WithProviders(providers),
+		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
+	)
+}
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
 
 const (
-	// DiscovererStart is emmited at the start of a discovery run.
+	// DiscovererStart is emitted at the start of a discovery run.
 	DiscovererStart DiscoveryEventType = iota
-	// DiscovererFinished is emmited at the end of a discovery run.
+	// DiscovererFinished is emitted at the end of a discovery run.
 	DiscovererFinished
 )
 
@@ -176,7 +183,10 @@ func WithProviders(providersList []string) service.Option[*Service] {
 		log.Error(newError)
 	}
 
+	fmt.Printf("in WithProviders %+v\n", providersList)
+
 	return func(s *Service) {
+		fmt.Printf("Setting %+v\n", providersList)
 		s.providers = providersList
 	}
 }
@@ -222,6 +232,8 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
 
+	fmt.Printf("%+v\n", opts)
+
 	// Apply any options
 	for _, o := range opts {
 		o(s)
@@ -236,6 +248,28 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	}
 
 	return s
+}
+
+func (svc *Service) Init() {
+	var err error
+
+	// Automatically start the discovery, if we have this flag enabled
+	if viper.GetBool(config.DiscoveryAutoStartFlag) {
+		go func() {
+			<-rest.GetReadyChannel()
+			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
+				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
+			})
+			if err != nil {
+				log.Errorf("Could not automatically start discovery: %v", err)
+			}
+		}()
+	}
+}
+
+func (svc *Service) Shutdown() {
+	svc.assessmentStreams.CloseAll()
+	svc.scheduler.Stop()
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
@@ -284,7 +318,9 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	for _, provider := range svc.providers {
 		switch {
 		case provider == ProviderAzure:
+			fmt.Println("hello")
 			authorizer, err := azure.NewAuthorizer()
+			fmt.Println("hello")
 			if err != nil {
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
@@ -339,13 +375,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	svc.scheduler.StartAsync()
 
 	return resp, nil
-}
-
-func (svc *Service) Shutdown() {
-	log.Info("Shutting down discovery service")
-
-	svc.assessmentStreams.CloseAll()
-	svc.scheduler.Stop()
 }
 
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {

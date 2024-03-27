@@ -37,11 +37,11 @@ import (
 	"testing"
 	"time"
 
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
 	"clouditor.io/clouditor/v2/server"
-	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"google.golang.org/grpc"
 )
@@ -49,7 +49,7 @@ import (
 var (
 	origins = []string{"clouditor.io", "localhost"}
 	methods = []string{"GET", "POST"}
-	headers = DefaultAllowedHeaders
+	headers = config.DefaultAllowedHeaders
 
 	grpcPort uint16 = 0
 )
@@ -72,7 +72,7 @@ func TestMain(m *testing.M) {
 	// Start at least an orchestrator service, so that we have something to forward
 	sock, srv, err = server.StartGRPCServer("127.0.0.1:0",
 		server.WithJWKS(testutil.JWKSURL(authPort)),
-		server.WithOrchestrator(service_orchestrator.NewService()),
+		//server.WithOrchestrator(service_orchestrator.NewService()),
 	)
 	if err != nil {
 		panic(err)

@@ -200,8 +200,8 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	grpcPort := viper.GetUint16(config.APIgRPCPortOrchestratorFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortOrchestratorFlag)
+	grpcPort := viper.GetUint16(config.APIgRPCPortFlag)
+	httpPort := viper.GetUint16(config.APIHTTPPortFlag)
 
 	var opts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),

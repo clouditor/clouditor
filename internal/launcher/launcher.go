@@ -25,18 +25,20 @@ type Launcher struct {
 	db       persistence.Storage
 	log      *logrus.Entry
 	grpcOpts []server.StartGRPCServerOption
-	services []any
+	services []service.Service
 }
 
-type NewServiceFunc[T any] func(opts ...service.Option[T]) T
-type WithStorageFunc[T any] func(db persistence.Storage) service.Option[T]
-type ServiceInitFunc[T any] func(svc T) ([]server.StartGRPCServerOption, error)
+type NewServiceFunc[T service.Service] func(opts ...service.Option[T]) T
+type WithStorageFunc[T service.Service] func(db persistence.Storage) service.Option[T]
+type ServiceInitFunc[T service.Service] func(svc T) ([]server.StartGRPCServerOption, error)
 
 func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
-	l = &Launcher{}
+	l = &Launcher{
+		name: name,
+	}
 
 	// Print Clouditor header with the used Clouditor version
-	printClouditorHeader(fmt.Sprintf("Clouditor %s Service", cases.Title(language.English).String(name)))
+	printClouditorHeader(fmt.Sprintf("Clouditor %s Service", cases.Title(language.English).String(l.name)))
 
 	// Set log level
 	err = l.initLogging()
@@ -51,15 +53,16 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 	}
 
 	// Create the services out of the service specs
-	for _, f := range specs {
+	for _, spec := range specs {
+		fmt.Printf("%+v\n", spec)
 		// Create the service and gather the gRPC server options
-		svc, grpcOpts, err := f.NewService(l.db)
+		svc, grpcOpts, err := spec.NewService(l.db)
 		if err != nil {
 			return nil, err
 		}
 
 		// Append the gRPC server options
-		l.grpcOpts = append(grpcOpts, grpcOpts...)
+		l.grpcOpts = append(l.grpcOpts, grpcOpts...)
 
 		// Add the service to the list of our managed services
 		l.services = append(l.services, svc)
@@ -68,7 +71,7 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 	return
 }
 
-// Launch starts the gRPC server and the corresponding gRPC-HTTP gateway with the given gRPC Server Options
+// Launch starts the gRPC server and the corresponding gRPC-HTTP gateway with the given gRPC server Options
 func (l *Launcher) Launch() (err error) {
 	var (
 		grpcPort uint16
@@ -86,8 +89,8 @@ func (l *Launcher) Launch() (err error) {
 	// Append launch-specific ones
 	grpcOpts = append(grpcOpts, l.grpcOpts...)
 
-	grpcPort = viper.GetUint16(config.APIgRPCPortOrchestratorFlag)
-	httpPort = viper.GetUint16(config.APIHTTPPortOrchestratorFlag)
+	grpcPort = viper.GetUint16(config.APIgRPCPortFlag)
+	httpPort = viper.GetUint16(config.APIHTTPPortFlag)
 
 	restOpts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
@@ -106,6 +109,11 @@ func (l *Launcher) Launch() (err error) {
 		return fmt.Errorf("failed to serve gRPC endpoint: %w", err)
 	}
 
+	// Do any post-start initialization of the services
+	for _, svc := range l.services {
+		svc.Init()
+	}
+
 	// Start the gRPC-HTTP gateway
 	err = rest.RunServer(context.Background(),
 		grpcPort,
@@ -116,10 +124,15 @@ func (l *Launcher) Launch() (err error) {
 		return fmt.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
 	}
 
+	for _, svc := range l.services {
+		l.log.Infof("Stopping %T service", svc)
+		svc.Shutdown()
+	}
+
 	l.log.Infof("Stopping gRPC endpoint")
 	l.srv.Stop()
 
-	return
+	return nil
 }
 
 // initLogging initializes the logging

@@ -42,6 +42,7 @@ import (
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -66,11 +67,11 @@ var (
 
 	ready = make(chan bool)
 
-	cnf config
+	cnf restConfig
 )
 
 // config holds different configuration options for the REST gateway.
-type config struct {
+type restConfig struct {
 	// cors holds the global CORS configuration.
 	cors *corsConfig
 
@@ -91,59 +92,43 @@ type corsConfig struct {
 }
 
 // ServerConfigOption represents functional-style options to modify the server configuration in RunServer.
-type ServerConfigOption func(*config, *runtime.ServeMux)
-
-var (
-	// DefaultAllowedOrigins contains a nil slice, as per default, no origins are allowed.
-	DefaultAllowedOrigins []string = nil
-
-	// DefaultAllowedHeaders contains sensible defaults for the Access-Control-Allow-Headers header.
-	// Please adjust accordingly in production using WithAllowedHeaders.
-	DefaultAllowedHeaders = []string{"Content-Type", "Accept", "Authorization"}
-
-	// DefaultAllowedMethods contains sensible defaults for the Access-Control-Allow-Methods header.
-	// Please adjust accordingly in production using WithAllowedMethods.
-	DefaultAllowedMethods = []string{"GET", "POST", "PUT", "DELETE"}
-
-	// DefaultAPIHTTPPort specifies the default port for the REST API.
-	DefaultAPIHTTPPort uint16 = 8080
-)
+type ServerConfigOption func(*restConfig, *runtime.ServeMux)
 
 func init() {
 	log = logrus.WithField("component", "rest")
 
 	// initialize the CORS config with restrictive default values, e.g. no origin allowed
 	cnf.cors = &corsConfig{
-		allowedOrigins: DefaultAllowedOrigins,
-		allowedHeaders: DefaultAllowedHeaders,
-		allowedMethods: DefaultAllowedMethods,
+		allowedOrigins: config.DefaultAllowedOrigins,
+		allowedHeaders: config.DefaultAllowedHeaders,
+		allowedMethods: config.DefaultAllowedMethods,
 	}
 }
 
 // WithAllowedOrigins is an option to supply allowed origins in CORS.
 func WithAllowedOrigins(origins []string) ServerConfigOption {
-	return func(c *config, _ *runtime.ServeMux) {
+	return func(c *restConfig, _ *runtime.ServeMux) {
 		c.cors.allowedOrigins = origins
 	}
 }
 
 // WithAllowedHeaders is an option to supply allowed headers in CORS.
 func WithAllowedHeaders(headers []string) ServerConfigOption {
-	return func(c *config, _ *runtime.ServeMux) {
+	return func(c *restConfig, _ *runtime.ServeMux) {
 		c.cors.allowedHeaders = headers
 	}
 }
 
 // WithAllowedMethods is an option to supply allowed methods in CORS.
 func WithAllowedMethods(methods []string) ServerConfigOption {
-	return func(c *config, _ *runtime.ServeMux) {
+	return func(c *restConfig, _ *runtime.ServeMux) {
 		c.cors.allowedMethods = methods
 	}
 }
 
 // WithAdditionalHandler is an option to add an additional handler func in the REST server.
 func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) ServerConfigOption {
-	return func(_ *config, sm *runtime.ServeMux) {
+	return func(_ *restConfig, sm *runtime.ServeMux) {
 		_ = sm.HandlePath(method, path, h)
 	}
 }
@@ -151,7 +136,7 @@ func WithAdditionalHandler(method string, path string, h runtime.HandlerFunc) Se
 // WithAdditionalGRPCOpts is an option to add an additional gRPC dial options in the REST server communication to the
 // backend.
 func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
-	return func(c *config, sm *runtime.ServeMux) {
+	return func(c *restConfig, sm *runtime.ServeMux) {
 		c.opts = append(c.opts, opts...)
 	}
 }
@@ -167,7 +152,7 @@ func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
 // In production scenarios, the usage of a dedicated authentication and authorization server is
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
-	return func(c *config, sm *runtime.ServeMux) {
+	return func(c *restConfig, sm *runtime.ServeMux) {
 		publicURL := fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)

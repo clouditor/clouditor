@@ -163,6 +163,12 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	return &svc
 }
 
+func (svc *Service) Init() {}
+
+func (svc *Service) Shutdown() {
+	svc.scheduler.Stop()
+}
+
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a
 // cloud service and the given catalog in the target_of_evaluation. If no interval time is given, the default value is
 // used.
