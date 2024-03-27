@@ -26,25 +26,15 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
-	"clouditor.io/clouditor/v2/logging/formatter"
-	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/server"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-var (
-	srv                 *server.Server
-	orchestratorService *service_orchestrator.Service
-	db                  persistence.Storage
-
-	log *logrus.Entry
 )
 
 var engineCmd = &cobra.Command{
@@ -55,61 +45,48 @@ var engineCmd = &cobra.Command{
 }
 
 func init() {
-	log = logrus.WithField("component", "orchestrator-grpc")
-	log.Logger.Formatter = formatter.CapitalizeFormatter{Formatter: &logrus.TextFormatter{ForceColors: true}}
 	cobra.OnInitialize(config.InitConfig)
-
 	engineCmd = config.InitCobra(engineCmd)
 }
 
-func doCmd(_ *cobra.Command, _ []string) (err error) {
+func doCmd(cmd *cobra.Command, _ []string) (err error) {
 	var (
 		grpcOpts []server.StartGRPCServerOption
+		l        *config.Launcher[service_orchestrator.Service]
 	)
 
-	// Print Clouditor header with the used Clouditor version
-	config.PrintClouditorHeader("Clouditor Orchestrator Service")
+	l, err = config.NewLauncher[service_orchestrator.Service](
+		cmd.Use,
+		service_orchestrator.NewService,
+		service_orchestrator.WithStorage,
+		func(svc *service_orchestrator.Service) error {
+			// It is possible to register hook functions for the orchestrator.
+			//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
 
-	// Set log level
-	log, err = config.SetLogLevel(log)
+			// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
+
+			// Create default target Cloud Service
+			if viper.GetBool(config.CreateDefaultTarget) {
+				_, err := svc.CreateDefaultTargetCloudService()
+				if err != nil {
+					return fmt.Errorf("could not register default target cloud service: %v", err)
+				}
+			}
+
+			return nil
+		},
+	)
 	if err != nil {
 		return err
-	}
-
-	// Set storage
-	db, err = config.SetStorage()
-	if err != nil {
-		return err
-	}
-
-	// Create new Orchestrator Service
-	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
-
-	// It is possible to register hook functions for the orchestrator.
-	//  * The hook functions in orchestrator are implemented in StoreAssessmentResult(s)
-
-	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
-
-	// Create default target Cloud Service
-	if viper.GetBool(config.CreateDefaultTarget) {
-		_, err := orchestratorService.CreateDefaultTargetCloudService()
-		if err != nil {
-			log.Errorf("could not register default target cloud service: %v", err)
-		}
 	}
 
 	// Start the gRPC server and the corresponding gRPC-HTTP gateway
 	grpcOpts = []server.StartGRPCServerOption{
 		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
-		server.WithOrchestrator(orchestratorService),
+		server.WithOrchestrator(l.Service),
 		server.WithReflection()}
 
-	srv, err = config.StartServer(log, grpcOpts...)
-	if err != nil {
-		log.Errorf("could not register default target cloud service: %v", err)
-	}
-
-	return nil
+	return l.Launch(grpcOpts...)
 }
 
 func main() {

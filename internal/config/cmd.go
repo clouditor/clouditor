@@ -26,20 +26,14 @@
 package config
 
 import (
-	"context"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/internal/auth"
-	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/gorm"
-	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -238,84 +232,4 @@ func PrintClouditorHeader(component string) {
   %s Version %s
 `, component, rt.VersionString())
 	fmt.Println()
-}
-
-// SetLogLevel sets the logrus log level
-func SetLogLevel(log *logrus.Entry) (*logrus.Entry, error) {
-	level, err := logrus.ParseLevel(viper.GetString(LogLevelFlag))
-	if err != nil {
-		return nil, fmt.Errorf("could not set log level: %w", err)
-	}
-
-	logrus.SetLevel(level)
-	log.Infof("Log level is set to %s", level)
-
-	return log, nil
-}
-
-// SetStorage sets the storage config to the in-memory DB or to a given Postgres DB
-func SetStorage() (db persistence.Storage, err error) {
-	if viper.GetBool(DBInMemoryFlag) {
-		db, err = inmemory.NewStorage()
-	} else {
-		db, err = gorm.NewStorage(gorm.WithPostgres(
-			viper.GetString(DBHostFlag),
-			viper.GetUint16(DBPortFlag),
-			viper.GetString(DBUserNameFlag),
-			viper.GetString(DBPasswordFlag),
-			viper.GetString(DBNameFlag),
-			viper.GetString(DBSSLModeFlag),
-		))
-	}
-	if err != nil {
-		// We could also just log the error and forward db = nil which will result in inmemory storages for each service
-		// below
-		return nil, fmt.Errorf("could not create storage: %w", err)
-	}
-
-	return
-}
-
-// StartServer starts the gRPC server and the corresponding gRPC-HTTP gateway with the given gRPC Server Options
-func StartServer(log *logrus.Entry, grpcOpts ...server.StartGRPCServerOption) (srv *server.Server, err error) {
-	var (
-		grpcPort uint16
-		httpPort uint16
-		restOpts []rest.ServerConfigOption
-	)
-
-	grpcPort = viper.GetUint16(APIgRPCPortOrchestratorFlag)
-	httpPort = viper.GetUint16(APIHTTPPortOrchestratorFlag)
-
-	restOpts = []rest.ServerConfigOption{
-		rest.WithAllowedOrigins(viper.GetStringSlice(APICORSAllowedOriginsFlags)),
-		rest.WithAllowedHeaders(viper.GetStringSlice(APICORSAllowedHeadersFlags)),
-		rest.WithAllowedMethods(viper.GetStringSlice(APICORSAllowedMethodsFlags)),
-	}
-
-	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
-
-	// Start the gRPC server
-	_, srv, err = server.StartGRPCServer(
-		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		grpcOpts...,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to serve gRPC endpoint: %w", err)
-	}
-
-	// Start the gRPC-HTTP gateway
-	err = rest.RunServer(context.Background(),
-		grpcPort,
-		httpPort,
-		restOpts...,
-	)
-	if err != nil && err != http.ErrServerClosed {
-		return nil, fmt.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
-	}
-
-	log.Infof("Stopping gRPC endpoint")
-	srv.Stop()
-
-	return
 }

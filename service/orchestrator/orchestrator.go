@@ -93,59 +93,56 @@ func init() {
 	log = logrus.WithField("component", "orchestrator")
 }
 
-// ServiceOption is a function-style option to configure the Orchestrator Service
-type ServiceOption func(*Service)
-
 // WithMetricsFile can be used to load a different metrics file
-func WithMetricsFile(file string) ServiceOption {
+func WithMetricsFile(file string) service.Option[Service] {
 	return func(s *Service) {
 		s.metricsFile = file
 	}
 }
 
 // WithExternalMetrics can be used to load metric definitions from an external source
-func WithExternalMetrics(f func() ([]*assessment.Metric, error)) ServiceOption {
+func WithExternalMetrics(f func() ([]*assessment.Metric, error)) service.Option[Service] {
 	return func(s *Service) {
 		s.loadMetricsFunc = f
 	}
 }
 
 // WithCatalogsFolder can be used to load catalog files from a different catalogs folder
-func WithCatalogsFolder(folder string) ServiceOption {
+func WithCatalogsFolder(folder string) service.Option[Service] {
 	return func(s *Service) {
 		s.catalogsFolder = folder
 	}
 }
 
 // WithExternalCatalogs can be used to load catalog definitions from an external source
-func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) ServiceOption {
+func WithExternalCatalogs(f func() ([]*orchestrator.Catalog, error)) service.Option[Service] {
 	return func(s *Service) {
 		s.loadCatalogsFunc = f
 	}
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
-func WithAuthorizationStrategyJWT(key string, allowAllKey string) ServiceOption {
+func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[Service] {
 	return func(s *Service) {
 		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
 	}
 }
 
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
 // NewService creates a new Orchestrator service
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[Service]) *Service {
 	var err error
 	s := Service{
 		metricsFile:    DefaultMetricsFile,
