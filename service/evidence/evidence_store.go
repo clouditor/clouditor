@@ -64,13 +64,13 @@ type Service struct {
 	evidence.UnimplementedEvidenceStoreServer
 }
 
-func WithStorage(storage persistence.Storage) service.Option[Service] {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.storage = storage
 	}
 }
 
-func NewService(opts ...service.Option[Service]) (svc *Service) {
+func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	var (
 		err error
 	)

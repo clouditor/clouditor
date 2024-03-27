@@ -119,14 +119,14 @@ const (
 )
 
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
-func WithoutEvidenceStore() service.Option[Service] {
+func WithoutEvidenceStore() service.Option[*Service] {
 	return func(svc *Service) {
 		svc.isEvidenceStoreDisabled = true
 	}
 }
 
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
-func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.evidenceStore.Target = address
 		svc.evidenceStore.Opts = opts
@@ -134,7 +134,7 @@ func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.O
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
@@ -142,7 +142,7 @@ func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Opt
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(s *Service) {
 		auth := api.NewOAuthAuthorizerFromClientCredentials(config)
 		s.evidenceStore.SetAuthorizer(auth)
@@ -151,7 +151,7 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Servi
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
-func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(s *Service) {
 		s.evidenceStore.SetAuthorizer(auth)
 		s.orchestrator.SetAuthorizer(auth)
@@ -159,21 +159,21 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 }
 
 // WithRegoPackageName is an option to configure the Rego package name
-func WithRegoPackageName(pkg string) service.Option[Service] {
+func WithRegoPackageName(pkg string) service.Option[*Service] {
 	return func(s *Service) {
 		s.evalPkg = pkg
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.authz = authz
 	}
 }
 
 // NewService creates a new assessment service with default values.
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	svc := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),

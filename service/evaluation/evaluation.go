@@ -93,28 +93,28 @@ func init() {
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) service.Option[Service] {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.storage = storage
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
-func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.SetAuthorizer(auth)
 	}
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
@@ -122,7 +122,7 @@ func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Opt
 }
 
 // NewService creates a new Evaluation service
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	svc := Service{
 		orchestrator:    api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
