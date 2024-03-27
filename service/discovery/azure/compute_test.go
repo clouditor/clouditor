@@ -3139,8 +3139,13 @@ func Test_getSecretURI(t *testing.T) {
 			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
 		},
 		{
-			name:          "Happy path - Option 1",
+			name:          "Happy path - Option 2 Variant 1 with backslash at the end",
 			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1/)"},
+			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
+		},
+		{
+			name:          "Happy path - Option 2 Variant 2 without backslash at the end",
+			args:          args{"@Microsoft.KeyVault(SecretUri=https://SomeKeyVault.vault.azure.net/secrets/Secret1)"},
 			wantSecretURI: "https://SomeKeyVault.vault.azure.net/secrets/Secret1",
 		},
 		{
