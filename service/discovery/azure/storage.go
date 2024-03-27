@@ -668,7 +668,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
 	// TODO(lebogg): ADd check for default action allow in rule set before (this would include the special case as well, wher public network access is nil
 	// Check if Public Network Access of Storage Account is set to "enabled"
-	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled" {
+	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == armstorage.PublicNetworkAccessEnabled {
 		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
 		if acc.Properties.NetworkRuleSet != nil && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny && (len(acc.Properties.NetworkRuleSet.IPRules) > 0 || len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) > 0) {
 			return false
