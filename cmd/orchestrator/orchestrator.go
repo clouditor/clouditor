@@ -26,19 +26,12 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"net/http"
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/logging/formatter"
 	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/gorm"
-	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/server"
-	"clouditor.io/clouditor/v2/server/rest"
-	"clouditor.io/clouditor/v2/service"
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/sirupsen/logrus"
@@ -71,49 +64,25 @@ func init() {
 
 func doCmd(_ *cobra.Command, _ []string) (err error) {
 	var (
-		rt, _ = service.GetRuntimeInfo()
-		level logrus.Level
+		grpcOpts []server.StartGRPCServerOption
 	)
 
-	fmt.Printf(`
-           $$\                           $$\ $$\   $$\
-           $$ |                          $$ |\__|  $$ |
-  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
-  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- 
-  Clouditor Orchestrator Service Version %s
-  `, rt.VersionString())
-	fmt.Println()
+	// Print Clouditor header with the used Clouditor version
+	config.PrintClouditorHeader("Clouditor Orchestrator Service")
 
-	level, err = logrus.ParseLevel(viper.GetString(config.LogLevelFlag))
+	// Set log level
+	log, err = config.SetLogLevel(log)
 	if err != nil {
 		return err
 	}
-	logrus.SetLevel(level)
-	log.Infof("Log level is set to %s", level)
 
-	if viper.GetBool(config.DBInMemoryFlag) {
-		db, err = inmemory.NewStorage()
-	} else {
-		db, err = gorm.NewStorage(gorm.WithPostgres(
-			viper.GetString(config.DBHostFlag),
-			viper.GetUint16(config.DBPortFlag),
-			viper.GetString(config.DBUserNameFlag),
-			viper.GetString(config.DBPasswordFlag),
-			viper.GetString(config.DBNameFlag),
-			viper.GetString(config.DBSSLModeFlag),
-		))
-	}
+	// Set storage
+	db, err = config.SetStorage()
 	if err != nil {
-		// We could also just log the error and forward db = nil which will result in inmemory storages for each service
-		// below
-		return fmt.Errorf("could not create storage: %w", err)
+		return err
 	}
 
+	// Create new Orchestrator Service
 	orchestratorService = service_orchestrator.NewService(service_orchestrator.WithStorage(db))
 
 	// It is possible to register hook functions for the orchestrator.
@@ -121,6 +90,7 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 
 	// orchestratorService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
+	// Create default target Cloud Service
 	if viper.GetBool(config.CreateDefaultTarget) {
 		_, err := orchestratorService.CreateDefaultTargetCloudService()
 		if err != nil {
@@ -128,42 +98,16 @@ func doCmd(_ *cobra.Command, _ []string) (err error) {
 		}
 	}
 
-	grpcPort := viper.GetUint16(config.APIgRPCPortOrchestratorFlag)
-	httpPort := viper.GetUint16(config.APIHTTPPortOrchestratorFlag)
-
-	var opts = []rest.ServerConfigOption{
-		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
-		rest.WithAllowedHeaders(viper.GetStringSlice(config.APICORSAllowedHeadersFlags)),
-		rest.WithAllowedMethods(viper.GetStringSlice(config.APICORSAllowedMethodsFlags)),
-	}
-
-	log.Infof("Starting gRPC endpoint on :%d", grpcPort)
-
-	// Start the gRPC server
-	_, srv, err = server.StartGRPCServer(
-		fmt.Sprintf("0.0.0.0:%d", grpcPort),
+	// Start the gRPC server and the corresponding gRPC-HTTP gateway
+	grpcOpts = []server.StartGRPCServerOption{
 		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
 		server.WithOrchestrator(orchestratorService),
-		server.WithReflection(),
-	)
+		server.WithReflection()}
+
+	srv, err = config.StartServer(log, grpcOpts...)
 	if err != nil {
-		log.Errorf("Failed to serve gRPC endpoint: %s", err)
-		return err
+		log.Errorf("could not register default target cloud service: %v", err)
 	}
-
-	// Start the gRPC-HTTP gateway
-	err = rest.RunServer(context.Background(),
-		grpcPort,
-		httpPort,
-		opts...,
-	)
-	if err != nil && err != http.ErrServerClosed {
-		log.Errorf("failed to serve gRPC-HTTP gateway: %v", err)
-		return err
-	}
-
-	log.Infof("Stopping gRPC endpoint")
-	srv.Stop()
 
 	return nil
 }
