@@ -19,6 +19,34 @@ import (
 	"golang.org/x/text/language"
 )
 
+type spec[T any] struct {
+	nsf  NewServiceFunc[T]
+	wsf  WithStorageFunc[T]
+	init ServiceInitFunc[T]
+	opts []service.Option[T]
+}
+
+func (s spec[T]) newService(db persistence.Storage) (svc T, grpcOpts []server.StartGRPCServerOption, err error) {
+	// Append the WithStorageFunc to the specified service options.
+	var opts []service.Option[T]
+	opts = append(opts, s.wsf(db))
+
+	// Create the service with the NewServiceFunc using the supplied server options
+	svc = s.nsf(opts...)
+
+	// Initialize the service using the ServiceInitFunc. This returns a possible list of StartGRPCServerOptions that we need to return
+	grpcOpts, err = s.init(svc)
+	if err != nil {
+		return *new(T), nil, err
+	}
+
+	return
+}
+
+func (s spec[T]) NewService(db persistence.Storage) (svc any, grpcOpts []server.StartGRPCServerOption, err error) {
+	return s.newService(db)
+}
+
 type Launcher[T any] struct {
 	srv       *server.Server
 	component string
@@ -42,8 +70,9 @@ func (l Launcher[T]) ToAny() *Launcher[any] {
 
 type NewServiceFunc[T any] func(opts ...service.Option[T]) T
 type WithStorageFunc[T any] func(db persistence.Storage) service.Option[T]
+type ServiceInitFunc[T any] func(svc T) ([]server.StartGRPCServerOption, error)
 
-func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init func(svc T) ([]server.StartGRPCServerOption, error), serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
+func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorageFunc[T], init ServiceInitFunc[T], serviceOpts ...service.Option[T]) (l *Launcher[T], err error) {
 	l = new(Launcher[T])
 	l.component = component
 
@@ -62,15 +91,19 @@ func NewLauncher[T any](component string, nsf NewServiceFunc[T], wsf WithStorage
 		return nil, err
 	}
 
-	// Add the WithStorageFunction option to the additional service options for the NewServiceFunc
-	serviceOpts = append(serviceOpts, wsf(l.db))
-	l.Service = nsf(serviceOpts...)
+	// Build a service spec to be consistent with the multi-launcher approach
+	spec := &spec[T]{
+		nsf:  nsf,
+		wsf:  wsf,
+		init: init,
+		opts: serviceOpts,
+	}
 
-	opts, err := init(l.Service)
+	// Create a new service from the service spec
+	l.Service, l.grpcOpts, err = spec.newService(l.db)
 	if err != nil {
 		return nil, err
 	}
-	l.grpcOpts = append(l.grpcOpts, opts...)
 
 	return
 }
@@ -81,7 +114,17 @@ func (l *Launcher[T]) Launch() (err error) {
 		grpcPort uint16
 		httpPort uint16
 		restOpts []rest.ServerConfigOption
+		grpcOpts []server.StartGRPCServerOption
 	)
+
+	// Default gRPC opts we want for all services
+	grpcOpts = []server.StartGRPCServerOption{
+		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
+		server.WithReflection(),
+	}
+
+	// Append launch-specific ones
+	grpcOpts = append(grpcOpts, l.grpcOpts...)
 
 	grpcPort = viper.GetUint16(config.APIgRPCPortOrchestratorFlag)
 	httpPort = viper.GetUint16(config.APIHTTPPortOrchestratorFlag)
@@ -97,7 +140,7 @@ func (l *Launcher[T]) Launch() (err error) {
 	// Start the gRPC server
 	_, l.srv, err = server.StartGRPCServer(
 		fmt.Sprintf("0.0.0.0:%d", grpcPort),
-		l.grpcOpts...,
+		grpcOpts...,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to serve gRPC endpoint: %w", err)

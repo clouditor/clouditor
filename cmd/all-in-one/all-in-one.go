@@ -26,7 +26,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"clouditor.io/clouditor/v2/internal/config"
@@ -35,13 +34,12 @@ import (
 	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var engineCmd = &cobra.Command{
-	Use:   "orchestrator",
-	Short: "orchestrator launches the Clouditor Orchestrator Service",
-	Long:  "Orchestrator is a component of the Clouditor and starts the Orchestrator Service.",
+	Use:   "all-in-one",
+	Short: "all-in-one launches all Clouditor services",
+	Long:  "It is an all-in-one solution of several microservices, which also can be started individually.",
 	RunE:  doCmd,
 }
 
@@ -50,7 +48,17 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher[*service_orchestrator.Service](
+	orchSpec := launcher.NewServiceSpec(
+		service_orchestrator.NewService,
+		service_orchestrator.WithStorage,
+		func(svc *service_orchestrator.Service) ([]server.StartGRPCServerOption, error) {
+			return []server.StartGRPCServerOption{
+				server.WithOrchestrator(svc),
+			}, nil
+		},
+	)
+
+	/*orchLauncher, err := launcher.NewLauncher(
 		cmd.Use,
 		service_orchestrator.NewService,
 		service_orchestrator.WithStorage,
@@ -69,16 +77,22 @@ func doCmd(cmd *cobra.Command, _ []string) (err error) {
 			}
 
 			return []server.StartGRPCServerOption{
+				server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
 				server.WithOrchestrator(svc),
+				server.WithReflection(),
 			}, nil
 		},
 	)
 	if err != nil {
 		return err
+	}*/
+
+	ml, err := launcher.NewMultiLauncher(orchSpec)
+	if err != nil {
+		return err
 	}
 
-	// Start the gRPC server and the corresponding gRPC-HTTP gateway
-	return l.Launch()
+	return ml.Launch()
 }
 
 func main() {
