@@ -30,8 +30,11 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/launcher"
-	"clouditor.io/clouditor/v2/server"
-	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
+	"clouditor.io/clouditor/v2/service/assessment"
+	service_discovery "clouditor.io/clouditor/v2/service/discovery"
+	"clouditor.io/clouditor/v2/service/evaluation"
+	evidences "clouditor.io/clouditor/v2/service/evidence"
+	"clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/cobra"
 )
@@ -48,23 +51,19 @@ func init() {
 }
 
 func doCmd(cmd *cobra.Command, _ []string) (err error) {
-	l, err := launcher.NewLauncher(
+	ml, err := launcher.NewLauncher(
 		cmd.Use,
-		launcher.NewServiceSpec(
-			service_orchestrator.NewService,
-			service_orchestrator.WithStorage,
-			func(svc *service_orchestrator.Service) ([]server.StartGRPCServerOption, error) {
-				return []server.StartGRPCServerOption{
-					server.WithOrchestrator(svc),
-				}, nil
-			},
-		),
+		orchestrator.DefaultServiceSpec,
+		service_discovery.DefaultServiceSpec,
+		evidences.DefaultServiceSpec,
+		assessment.DefaultServiceSpec,
+		evaluation.DefaultServiceSpec,
 	)
 	if err != nil {
 		return err
 	}
 
-	return l.Launch()
+	return ml.Launch()
 }
 
 func main() {
