@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidences
+package evidence
 
 import (
 	"context"
@@ -46,6 +46,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
@@ -64,7 +65,7 @@ func TestNewService(t *testing.T) {
 	db, err := gorm.NewStorage(gorm.WithInMemory())
 	assert.NoError(t, err)
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -81,7 +82,7 @@ func TestNewService(t *testing.T) {
 		},
 		{
 			name: "EvidenceStoreServer created with storage option",
-			args: args{opts: []service.Option[Service]{WithStorage(db)}},
+			args: args{opts: []service.Option[*Service]{WithStorage(db)}},
 			want: func(t *testing.T, got *Service) bool {
 				// Storage should be gorm (in-memory storage). Hard to check since its type is not exported
 				assert.NotNil(t, got.storage)
@@ -872,6 +873,28 @@ func TestService_GetEvidence(t *testing.T) {
 			gotRes, err := svc.GetEvidence(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 			tt.want(t, gotRes)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,22 +23,20 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"os"
+
+	"clouditor.io/clouditor/v2/server/commands"
+	"clouditor.io/clouditor/v2/server/commands/evaluation"
 )
 
-var log *logrus.Entry
+func main() {
+	cmd := evaluation.NewEvaluationCommand()
+	commands.BindPersistentFlags(cmd)
 
-func init() {
-	log = logrus.WithField("component", "service")
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
-
-type Service interface {
-	Init()
-	Shutdown()
-}
-
-// Option is a functional option type to configure services.
-type Option[T any] func(T)

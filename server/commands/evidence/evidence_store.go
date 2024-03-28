@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,22 +23,31 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package evidence
 
 import (
-	"github.com/sirupsen/logrus"
+	"clouditor.io/clouditor/v2/launcher"
+	evidences "clouditor.io/clouditor/v2/service/evidence"
+
+	"github.com/spf13/cobra"
 )
 
-var log *logrus.Entry
+func NewEvidenceCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "evidence",
+		Short: "Starts a server which contains the Clouditor Evidence Store Service",
+		Long:  "This command starts a Clouditor Evidence Store service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l, err := launcher.NewLauncher(cmd.Use,
+				evidences.DefaultServiceSpec(),
+			)
+			if err != nil {
+				return err
+			}
 
-func init() {
-	log = logrus.WithField("component", "service")
+			return l.Launch()
+		},
+	}
+
+	return cmd
 }
-
-type Service interface {
-	Init()
-	Shutdown()
-}
-
-// Option is a functional option type to configure services.
-type Option[T any] func(T)

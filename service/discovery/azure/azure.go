@@ -33,6 +33,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -189,7 +190,7 @@ type clients struct {
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureDiscovery{
-		csID:               discovery.DefaultCloudServiceID,
+		csID:               config.DefaultCloudServiceID,
 		backupMap:          make(map[string]*backup),
 		defenderProperties: make(map[string]*defenderProperties),
 	}

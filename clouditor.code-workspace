@@ -49,6 +49,7 @@
       "Equalf",
       "errgroup",
       "evaluationtest",
+      "evidencestore",
       "evidencetest",
       "gocron",
       "googleapis",

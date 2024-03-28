@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,22 +23,43 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package evaluation
 
 import (
-	"github.com/sirupsen/logrus"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/launcher"
+	"clouditor.io/clouditor/v2/service/evaluation"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var log *logrus.Entry
+func NewEvaluationCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "evaluation",
+		Short: "Starts a server which contains the Clouditor Evaluation Service",
+		Long:  "This command starts a Clouditor Evaluation service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l, err := launcher.NewLauncher(cmd.Use,
+				evaluation.DefaultServiceSpec(),
+			)
+			if err != nil {
+				return err
+			}
 
-func init() {
-	log = logrus.WithField("component", "service")
+			return l.Launch()
+		},
+	}
+
+	BindFlags(cmd)
+
+	return cmd
 }
 
-type Service interface {
-	Init()
-	Shutdown()
-}
+func BindFlags(cmd *cobra.Command) {
+	if cmd.Flag(config.OrchestratorURLFlag) != nil {
+		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
+	}
 
-// Option is a functional option type to configure services.
-type Option[T any] func(T)
+	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
+}

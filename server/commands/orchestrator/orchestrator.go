@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,22 +23,41 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package service
+package orchestrator
 
 import (
-	"github.com/sirupsen/logrus"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/launcher"
+	"clouditor.io/clouditor/v2/service/orchestrator"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var log *logrus.Entry
+func NewOrchestratorCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "orchestrator",
+		Short: "Starts a server which contains the Clouditor Orchestrator Service",
+		Long:  "This command starts a Clouditor Orchestrator service",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l, err := launcher.NewLauncher(cmd.Use,
+				orchestrator.DefaultServiceSpec(),
+			)
+			if err != nil {
+				return err
+			}
 
-func init() {
-	log = logrus.WithField("component", "service")
+			return l.Launch()
+		},
+	}
+
+	BindFlags(cmd)
+
+	return cmd
 }
 
-type Service interface {
-	Init()
-	Shutdown()
-}
+func BindFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
 
-// Option is a functional option type to configure services.
-type Option[T any] func(T)
+	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
+}
