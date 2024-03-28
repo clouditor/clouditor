@@ -70,7 +70,7 @@ var (
 	cnf restConfig
 )
 
-// config holds different configuration options for the REST gateway.
+// restConfig holds different configuration options for the REST gateway.
 type restConfig struct {
 	// cors holds the global CORS configuration.
 	cors *corsConfig
