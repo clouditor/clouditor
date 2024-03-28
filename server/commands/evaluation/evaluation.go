@@ -57,7 +57,9 @@ func NewEvaluationCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
+	if cmd.Flag(config.OrchestratorURLFlag) != nil {
+		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
+	}
 
 	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
 }
