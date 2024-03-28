@@ -174,10 +174,10 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults, activityLogging *voc.ActivityLogging, raw string) ([]voc.IsCloudResource, error) {
 	var (
-		atRestEnc           voc.IsAtRestEncryption
-		err                 error
-		list                []voc.IsCloudResource
-		isManagedByUser     bool
+		atRestEnc       voc.IsAtRestEncryption
+		err             error
+		list            []voc.IsCloudResource
+		isManagedByUser bool
 	)
 
 	// initialize Cosmos DB client
@@ -259,6 +259,11 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 }
 
 func getPublicAccessOfCosmosDB(account *armcosmos.DatabaseAccountGetResults) bool {
+	if account.Properties.PublicNetworkAccess == nil {
+		log.Warnf("PublicNetworkAccess for CosmosDB '%s' is empty. We assume that it is publicly accessible",
+			util.Deref(account.Name))
+		return true
+	}
 	if util.Deref(account.Properties.PublicNetworkAccess) == armcosmos.PublicNetworkAccessDisabled {
 		return false
 	}
@@ -337,7 +342,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	dbList, _ = d.getSqlDBs(server)
 
 	// Check if resource is public available
-	if util.Deref(server.Properties.PublicNetworkAccess) == "Enabled" {
+	if util.Deref(server.Properties.PublicNetworkAccess) == armsql.ServerNetworkAccessFlagEnabled {
 		publicNetworkAccess = true
 	}
 
