@@ -47,6 +47,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -679,6 +680,28 @@ func TestService_Start(t *testing.T) {
 
 			tt.want(t, gotRes)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -1708,6 +1709,28 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }
