@@ -141,6 +141,8 @@ func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
 func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Orchestrator URL is set to %s", target)
+
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
 	}
