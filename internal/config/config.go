@@ -30,6 +30,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 const (
@@ -145,4 +146,13 @@ func InitConfig() {
 	viper.AutomaticEnv()
 
 	_ = viper.ReadInConfig()
+}
+
+// ClientCredentials configures the OAuth 2.0 client credentials for a service
+func ClientCredentials() *clientcredentials.Config {
+	return &clientcredentials.Config{
+		ClientID:     viper.GetString(ServiceOAuth2ClientIDFlag),
+		ClientSecret: viper.GetString(ServiceOAuth2ClientSecretFlag),
+		TokenURL:     viper.GetString(ServiceOAuth2EndpointFlag),
+	}
 }

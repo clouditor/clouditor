@@ -65,6 +65,8 @@ var (
 	ErrControlNotAvailable   = errors.New("control not available")
 )
 
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
 func DefaultServiceSpec() launcher.ServiceSpec {
 	return launcher.NewServiceSpec(
 		NewService,
@@ -74,14 +76,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				server.WithEvaluation(svc),
 			}, nil
 		},
-		WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
-			},
-		),
+		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
 	)
 }

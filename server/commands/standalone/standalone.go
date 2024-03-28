@@ -34,7 +34,7 @@ import (
 	"clouditor.io/clouditor/v2/service/assessment"
 	"clouditor.io/clouditor/v2/service/discovery"
 	"clouditor.io/clouditor/v2/service/evaluation"
-	evidences "clouditor.io/clouditor/v2/service/evidence"
+	"clouditor.io/clouditor/v2/service/evidence"
 	"clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/cobra"
@@ -49,8 +49,8 @@ func NewStandaloneCommand() *cobra.Command {
 			l, err := launcher.NewLauncher(cmd.Use,
 				assessment.DefaultServiceSpec(),
 				discovery.DefaultServiceSpec(),
-				evidences.DefaultServiceSpec(),
 				evaluation.DefaultServiceSpec(),
+				evidence.DefaultServiceSpec(),
 				orchestrator.DefaultServiceSpec(),
 			)
 			if err != nil {

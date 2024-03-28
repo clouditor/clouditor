@@ -76,14 +76,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				server.WithAssessment(svc),
 			}, nil
 		},
-		WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
-			},
-		),
+		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
 		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
 	)

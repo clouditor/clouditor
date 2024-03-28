@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidences
+package evidence
 
 import (
 	"context"
@@ -49,6 +49,8 @@ import (
 
 var log *logrus.Entry
 
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
 func DefaultServiceSpec() launcher.ServiceSpec {
 	return launcher.NewServiceSpec(
 		NewService,

@@ -69,6 +69,8 @@ const (
 
 var log *logrus.Entry
 
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
 func DefaultServiceSpec() launcher.ServiceSpec {
 	var providers []string
 
@@ -88,14 +90,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				server.WithExperimentalDiscovery(svc),
 			}, nil
 		},
-		WithOAuth2Authorizer(
-			// Configure the OAuth 2.0 client credentials for this service
-			&clientcredentials.Config{
-				ClientID:     viper.GetString(config.ServiceOAuth2ClientIDFlag),
-				ClientSecret: viper.GetString(config.ServiceOAuth2ClientSecretFlag),
-				TokenURL:     viper.GetString(config.ServiceOAuth2EndpointFlag),
-			},
-		),
+		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
 		WithProviders(providers),
 		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),

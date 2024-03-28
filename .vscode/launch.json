@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/engine",
+            "program": "${workspaceFolder}/cmd/discovery",
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
