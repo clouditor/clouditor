@@ -174,12 +174,12 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults, activityLogging *voc.ActivityLogging, raw string) ([]voc.IsCloudResource, error) {
 	var (
-		atRestEnc voc.IsAtRestEncryption
-		err       error
-		list      []voc.IsCloudResource
+		atRestEnc           voc.IsAtRestEncryption
+		err                 error
+		list                []voc.IsCloudResource
+		isManagedByUser     bool
 	)
 
-	// TODO(lebogg): Initialization can be removed here, it is done in discoverCosmosDBs - or vice versa.
 	// initialize Cosmos DB client
 	if err = d.initCosmosDBClient(); err != nil {
 		return nil, err
@@ -188,6 +188,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	// Check if KeyVaultURI is set for Cosmos DB account
 	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
 	if account.Properties.KeyVaultKeyURI != nil {
+		isManagedByUser = true
 		atRestEnc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Enabled: true,
@@ -231,8 +232,9 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 					),
 				},
 			},
-			ActivityLogging: activityLogging,
-			Redundancy:      getCosmosDBRedundancy(account),
+			ActivityLogging:         activityLogging,
+			Redundancy:              getCosmosDBRedundancy(account),
+			EncryptionManagedByUser: isManagedByUser,
 		},
 		PublicAccess: getPublicAccessOfCosmosDB(account),
 	}
@@ -650,8 +652,9 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 				},
 				TransportEncryption: te,
 			},
-			Redundancy:      getStorageAccountRedundancy(account),
-			ActivityLogging: activityLogging,
+			Redundancy:              getStorageAccountRedundancy(account),
+			ActivityLogging:         activityLogging,
+			EncryptionManagedByUser: isStorageAccountEncryptionManagedByUser(account),
 		},
 
 		HttpEndpoint: &voc.HttpEndpoint{
@@ -665,6 +668,23 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 }
 
 // TODO(lebogg): Maybe just check "acc.Properties.NetworkRuleSet.DefaultAction", other things are redundant?
+func isStorageAccountEncryptionManagedByUser(acc *armstorage.Account) bool {
+	if acc.Properties.Encryption == nil || acc.Properties.Encryption.KeySource == nil {
+		log.Warnf("Key Source Type for Storage Account '%s' is empty. We assume that it is managed by Azure",
+			util.Deref(acc.Name))
+		return false
+	}
+	if util.Deref(acc.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftKeyvault {
+		return true
+	}
+	if util.Deref(acc.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
+		return false
+	}
+	log.Warnf("Key Source Type for Storage Account '%s' is unknown: '%s'. We assume that it is managed by Azure",
+		util.Deref(acc.Name), util.Deref(acc.Properties.Encryption.KeySource))
+	return false
+}
+
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
 	// TODO(lebogg): ADd check for default action allow in rule set before (this would include the special case as well, wher public network access is nil
 	// Check if Public Network Access of Storage Account is set to "enabled"

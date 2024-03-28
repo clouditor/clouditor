@@ -883,6 +883,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				},
 				&voc.ObjectStorageService{
 					StorageService: &voc.StorageService{
+						EncryptionManagedByUser: true,
 						Storage: []voc.ResourceID{
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container3",
 							"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account2/blobservices/default/containers/container4",
@@ -992,6 +993,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
+						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
@@ -2324,6 +2326,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
+						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
@@ -2510,6 +2513,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
 					StorageService: &voc.StorageService{
+						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
 								Resource: &voc.Resource{
