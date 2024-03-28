@@ -178,6 +178,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		err                 error
 		list                []voc.IsCloudResource
 		publicNetworkAccess = false
+		isManagedByUser     bool
 	)
 
 	// initialize Cosmos DB client
@@ -188,6 +189,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	// Check if KeyVaultURI is set for Cosmos DB account
 	// By default the Cosmos DB account is encrypted by Azure managed keys. Optionally, it is possible to add a second encryption layer with customer key encryption. (see https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-customer-managed-keys?tabs=azure-portal)
 	if account.Properties.KeyVaultKeyURI != nil {
+		isManagedByUser = true
 		atRestEnc = &voc.CustomerKeyEncryption{
 			AtRestEncryption: &voc.AtRestEncryption{
 				Enabled: true,
@@ -236,8 +238,9 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 					),
 				},
 			},
-			ActivityLogging: activityLogging,
-			Redundancy:      getCosmosDBRedundancy(account),
+			ActivityLogging:         activityLogging,
+			Redundancy:              getCosmosDBRedundancy(account),
+			EncryptionManagedByUser: isManagedByUser,
 		},
 		PublicAccess: publicNetworkAccess,
 	}
@@ -644,8 +647,9 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 				},
 				TransportEncryption: te,
 			},
-			Redundancy:      getStorageAccountRedundancy(account),
-			ActivityLogging: activityLogging,
+			Redundancy:              getStorageAccountRedundancy(account),
+			ActivityLogging:         activityLogging,
+			EncryptionManagedByUser: isStorageAccountEncryptionManagedByUser(account),
 		},
 
 		HttpEndpoint: &voc.HttpEndpoint{
@@ -656,6 +660,23 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	}
 
 	return storageService, nil
+}
+
+func isStorageAccountEncryptionManagedByUser(acc *armstorage.Account) bool {
+	if acc.Properties.Encryption == nil || acc.Properties.Encryption.KeySource == nil {
+		log.Warnf("Key Source Type for Storage Account '%s' is empty. We assume that it is managed by Azure",
+			util.Deref(acc.Name))
+		return false
+	}
+	if util.Deref(acc.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftKeyvault {
+		return true
+	}
+	if util.Deref(acc.Properties.Encryption.KeySource) == armstorage.KeySourceMicrosoftStorage {
+		return false
+	}
+	log.Warnf("Key Source Type for Storage Account '%s' is unknown: '%s'. We assume that it is managed by Azure",
+		util.Deref(acc.Name), util.Deref(acc.Properties.Encryption.KeySource))
+	return false
 }
 
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
