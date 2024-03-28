@@ -42,7 +42,6 @@ import (
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
-	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
@@ -84,12 +83,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 	return launcher.NewServiceSpec(
 		NewService,
 		WithStorage,
-		func(svc *Service) ([]server.StartGRPCServerOption, error) {
-			return []server.StartGRPCServerOption{
-				server.WithDiscovery(svc),
-				server.WithExperimentalDiscovery(svc),
-			}, nil
-		},
+		nil,
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
 		WithProviders(providers),

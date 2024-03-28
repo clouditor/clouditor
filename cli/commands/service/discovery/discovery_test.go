@@ -46,8 +46,7 @@ func TestMain(m *testing.M) {
 	svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
 
 	os.Exit(clitest.RunCLITest(m,
-		server.WithDiscovery(svc),
-		server.WithExperimentalDiscovery(svc),
+		server.WithServices(svc),
 	))
 }
 

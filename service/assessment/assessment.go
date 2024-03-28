@@ -72,9 +72,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
 
-			return []server.StartGRPCServerOption{
-				server.WithAssessment(svc),
-			}, nil
+			return nil, nil
 		},
 		WithOAuth2Authorizer(config.ClientCredentials()),
 		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),

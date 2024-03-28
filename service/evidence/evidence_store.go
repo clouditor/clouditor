@@ -61,9 +61,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
 
-			return []server.StartGRPCServerOption{
-				server.WithEvidenceStore(svc),
-			}, nil
+			return nil, nil
 		},
 	)
 }

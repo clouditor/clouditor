@@ -76,9 +76,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 				}
 			}
 
-			return []server.StartGRPCServerOption{
-				server.WithOrchestrator(svc),
-			}, nil
+			return nil, nil
 		},
 	)
 }
