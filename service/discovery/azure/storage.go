@@ -174,11 +174,10 @@ func (d *azureStorageDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error
 
 func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccountGetResults, activityLogging *voc.ActivityLogging, raw string) ([]voc.IsCloudResource, error) {
 	var (
-		atRestEnc           voc.IsAtRestEncryption
-		err                 error
-		list                []voc.IsCloudResource
-		publicNetworkAccess = false
-		isManagedByUser     bool
+		atRestEnc       voc.IsAtRestEncryption
+		err             error
+		list            []voc.IsCloudResource
+		isManagedByUser bool
 	)
 
 	// initialize Cosmos DB client
@@ -213,11 +212,6 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 		}
 	}
 
-	// Check if resource is public available
-	if util.Deref(account.Properties.PublicNetworkAccess) == "Enabled" {
-		publicNetworkAccess = true
-	}
-
 	// Create Cosmos DB database service voc object for the database account
 	dbService := &voc.DatabaseService{
 		StorageService: &voc.StorageService{
@@ -242,7 +236,7 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 			Redundancy:              getCosmosDBRedundancy(account),
 			EncryptionManagedByUser: isManagedByUser,
 		},
-		PublicAccess: publicNetworkAccess,
+		PublicAccess: getPublicAccessOfCosmosDB(account),
 	}
 
 	// Add Mongo DB database service
@@ -262,6 +256,22 @@ func (d *azureStorageDiscovery) handleCosmosDB(account *armcosmos.DatabaseAccoun
 	}
 
 	return list, nil
+}
+
+func getPublicAccessOfCosmosDB(account *armcosmos.DatabaseAccountGetResults) bool {
+	if account.Properties.PublicNetworkAccess == nil {
+		log.Warnf("PublicNetworkAccess for CosmosDB '%s' is empty. We assume that it is publicly accessible",
+			util.Deref(account.Name))
+		return true
+	}
+	if util.Deref(account.Properties.PublicNetworkAccess) == armcosmos.PublicNetworkAccessDisabled {
+		return false
+	}
+	if util.Deref(account.Properties.PublicNetworkAccess) == armcosmos.PublicNetworkAccessEnabled && (len(account.Properties.IPRules) > 0 || len(account.Properties.VirtualNetworkRules) > 0) {
+		return false
+	}
+	// Otherwise, we assume public network access is enabled
+	return true
 }
 
 // func getCosmosDBRedundancy(acc *armcosmos.DatabaseAccountGetResults) *voc.Redundancy {
@@ -332,7 +342,7 @@ func (d *azureStorageDiscovery) handleSqlServer(server *armsql.Server) ([]voc.Is
 	dbList, _ = d.getSqlDBs(server)
 
 	// Check if resource is public available
-	if util.Deref(server.Properties.PublicNetworkAccess) == "Enabled" {
+	if util.Deref(server.Properties.PublicNetworkAccess) == armsql.ServerNetworkAccessFlagEnabled {
 		publicNetworkAccess = true
 	}
 
@@ -662,6 +672,7 @@ func (d *azureStorageDiscovery) handleStorageAccount(account *armstorage.Account
 	return storageService, nil
 }
 
+// TODO(lebogg): Maybe just check "acc.Properties.NetworkRuleSet.DefaultAction", other things are redundant?
 func isStorageAccountEncryptionManagedByUser(acc *armstorage.Account) bool {
 	if acc.Properties.Encryption == nil || acc.Properties.Encryption.KeySource == nil {
 		log.Warnf("Key Source Type for Storage Account '%s' is empty. We assume that it is managed by Azure",
@@ -680,7 +691,18 @@ func isStorageAccountEncryptionManagedByUser(acc *armstorage.Account) bool {
 }
 
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
-	return util.Deref(acc.Properties.PublicNetworkAccess) == "Enabled"
+	// TODO(lebogg): ADd check for default action allow in rule set before (this would include the special case as well, wher public network access is nil
+	// Check if Public Network Access of Storage Account is set to "enabled"
+	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == armstorage.PublicNetworkAccessEnabled {
+		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
+		if acc.Properties.NetworkRuleSet != nil && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny && (len(acc.Properties.NetworkRuleSet.IPRules) > 0 || len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) > 0) {
+			return false
+		} else { // Option 2: Key vault is public accessible without restrictions
+			return true
+		}
+	}
+	// Public network access is set to "Disabled" or properties is not set -> we assume no access
+	return false
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem, activityLogging *voc.ActivityLogging, raw string) (*voc.FileStorage, error) {
@@ -808,9 +830,17 @@ func (d *azureStorageDiscovery) handleObjectStorage(account *armstorage.Account,
 			// Todo(lebogg): Add tests
 			Redundancy: getStorageAccountRedundancy(account),
 		},
-		ContainerPublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone, // This is not the public network access https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal, but the container public access
+		ContainerPublicAccess: getPublicAccessOfContainer(container.Properties.PublicAccess), // This is not the public network access https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-portal, but the container public access
 		IsBackup:              isBackup,
 	}, nil
+}
+
+func getPublicAccessOfContainer(publicAccess *armstorage.PublicAccess) bool {
+	pa := util.Deref(publicAccess)
+	if pa == armstorage.PublicAccessNone || pa == armstorage.PublicAccessBlob {
+		return false
+	}
+	return true // publicAccess is PublicAccessContainer
 }
 
 // isBackup checks if container is used as a backup - and metadata.  If so, it is

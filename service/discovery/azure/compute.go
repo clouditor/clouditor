@@ -299,7 +299,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 
 				// Also add function/web app slots
 				var slots []voc.IsCloudResource
-				slots, err = d.discoverSlots(site, config, isWebApp)
+				slots, err = d.discoverSlots(site, isWebApp)
 				if err != nil {
 					log.Errorf("Could not discover slots: %v", err)
 				}
@@ -315,7 +315,7 @@ func (d *azureComputeDiscovery) discoverFunctionsWebApps() ([]voc.IsCloudResourc
 	return list, nil
 }
 
-func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c armappservice.WebAppsClientGetConfigurationResponse, isWebApp bool) (list []voc.IsCloudResource, err error) {
+func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, isWebApp bool) (list []voc.IsCloudResource, err error) {
 	var (
 		page armappservice.WebAppsClientListSlotsResponse
 		s    voc.IsCompute
@@ -329,8 +329,15 @@ func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c ar
 			return
 		}
 		for _, slot := range page.Value {
+			slotConfig, err := d.clients.sitesClient.GetConfigurationSlot(context.TODO(), util.Deref(slot.Properties.ResourceGroup), util.Deref(baseSite.Name), getSlotBaseName(slot.Name), nil)
+			if err != nil {
+				log.Errorf("Could not get configuration of slot, continue with next slot: %v", err)
+				continue
+			}
 			if isWebApp {
-				s = d.handleWebApp(slot, c)
+				// Probably, would be better to just use "SiteConfigResource" in "handleWebApp" because both, webapp and
+				// slot, use it in their configs respectively.
+				s = d.handleWebApp(slot, armappservice.WebAppsClientGetConfigurationResponse(slotConfig))
 				// Change parent to actual web app the slot belongs to
 				app, ok := s.(*voc.WebApp)
 				if ok {
@@ -338,7 +345,7 @@ func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c ar
 					s = app
 				}
 			} else {
-				s = d.handleFunction(slot, c)
+				s = d.handleFunction(slot, armappservice.WebAppsClientGetConfigurationResponse(slotConfig))
 				// Change parent to actual function the slot belongs to
 				function, ok := s.(*voc.Function)
 				if ok {
@@ -350,6 +357,14 @@ func (d *azureComputeDiscovery) discoverSlots(baseSite *armappservice.Site, c ar
 		}
 	}
 	return
+}
+
+func getSlotBaseName(nameWithWebAppPrefix *string) string {
+	splitted := strings.Split(util.Deref(nameWithWebAppPrefix), "/")
+	if len(splitted) != 2 {
+		return ""
+	}
+	return splitted[1]
 }
 
 func (d *azureComputeDiscovery) handleFunction(function *armappservice.Site, config armappservice.WebAppsClientGetConfigurationResponse) voc.IsCompute {
@@ -1085,7 +1100,7 @@ func (d *azureComputeDiscovery) initBackupInstancesClient() (err error) {
 }
 
 // getActivityLogging determines if logging is activated for a given web app or function by checking the respective app setting
-// First, it is checked if Application Insights is configured. If this is not configured, it is checked if Diagnostic Settings are configured and the logs are stored in a Log Analytics Workspace.    
+// First, it is checked if Application Insights is configured. If this is not configured, it is checked if Diagnostic Settings are configured and the logs are stored in a Log Analytics Workspace.
 // The Application Insights logging is automatically forwarded to Log Analytics.
 func (d *azureComputeDiscovery) getActivityLogging(site *armappservice.Site) (*voc.ActivityLogging, string) {
 	var (

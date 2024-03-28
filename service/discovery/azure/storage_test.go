@@ -323,7 +323,7 @@ func (m mockStorageSender) Do(req *http.Request) (res *http.Response, err error)
 					"name":     "SQLServer1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"publicNetworkAccess": "enabled",
+						"publicNetworkAccess": armsql.ServerNetworkAccessFlagEnabled,
 					},
 				},
 			},
@@ -944,6 +944,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					},
 				},
 				&voc.DatabaseService{
+					PublicAccess: true,
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
@@ -958,7 +959,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 									},
 									Labels: make(map[string]string),
 									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"publicNetworkAccess\":\"enabled\"}}]}",
+									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"}}]}",
 								},
 							},
 							TransportEncryption: &voc.TransportEncryption{
@@ -992,6 +993,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 				},
 
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
@@ -1024,6 +1026,7 @@ func Test_azureStorageDiscovery_List(t *testing.T) {
 					},
 				},
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
@@ -2325,6 +2328,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
@@ -2357,6 +2361,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 					},
 				},
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
@@ -2450,6 +2455,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						NetworkService: &voc.NetworkService{
 							Networking: &voc.Networking{
@@ -2512,6 +2518,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 			},
 			want: []voc.IsCloudResource{
 				&voc.DatabaseService{
+					PublicAccess: true, // Should change mockStorageSender to provide something useful (not just nil)
 					StorageService: &voc.StorageService{
 						EncryptionManagedByUser: true,
 						NetworkService: &voc.NetworkService{
