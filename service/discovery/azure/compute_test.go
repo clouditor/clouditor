@@ -3493,3 +3493,35 @@ func Test_azureComputeDiscovery_handleVirtualMachineScaleSet(t *testing.T) {
 		})
 	}
 }
+
+func Test_getSlotBaseName(t *testing.T) {
+	type args struct {
+		nameWithWebAppPrefix *string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Happy path",
+			args: args{nameWithWebAppPrefix: util.Ref("someWebApp/someSlot")},
+			want: "someSlot",
+		},
+		{
+			name: "Invalid web app name 1 (no slash) - return empty string",
+			args: args{nameWithWebAppPrefix: util.Ref("someWebApp")},
+			want: "",
+		},
+		{
+			name: "Invalid web app name 1 (too many slashes) - return empty string",
+			args: args{nameWithWebAppPrefix: util.Ref("someWeirdStuff/WithAnother/someSlot")},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, getSlotBaseName(tt.args.nameWithWebAppPrefix), "getSlotBaseName(%v)", tt.args.nameWithWebAppPrefix)
+		})
+	}
+}
