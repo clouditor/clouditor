@@ -32,6 +32,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/server"
+	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -235,6 +236,85 @@ func TestNewLauncher(t *testing.T) {
 
 			tt.wantL(t, gotL)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestLauncher_Launch(t *testing.T) {
+	type fields struct {
+		name     string
+		srv      *server.Server
+		db       persistence.Storage
+		log      *logrus.Entry
+		grpcOpts []server.StartGRPCServerOption
+		services []service.Service
+	}
+	tests := []struct {
+		name      string
+		prepViper func()
+		fields    fields
+		wantErr   bool
+	}{
+		{
+			name: "Happy path: without embedded OAuth 2.0 server",
+			prepViper: func() {
+			},
+			fields: fields{
+				log: logrus.NewEntry(logrus.New()),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Happy path: with embedded OAuth 2.0 server",
+			prepViper: func() {
+				viper.Set(config.APIStartEmbeddedOAuth2ServerFlag, true)
+				viper.Set(config.APIKeyPathFlag, "keyPath")
+				viper.Set(config.APIKeyPasswordFlag, "passwd")
+				viper.Set(config.APIKeySaveOnCreateFlag, true)
+				viper.Set(config.DashboardURLFlag, "1.2.3.4")
+				viper.Set(config.ServiceOAuth2ClientIDFlag, "clientID")
+				viper.Set(config.APIDefaultUserFlag, "defaultUser")
+				viper.Set(config.APIDefaultPasswordFlag, "defaultPasswd")
+				viper.Set(config.APIHTTPPortFlag, 0)
+				viper.Set(config.APIgRPCPortFlag, 0)
+				viper.Set(config.LogLevelFlag, config.DefaultLogLevel)
+			},
+			fields: fields{
+				log: logrus.NewEntry(logrus.New()),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			l := &Launcher{
+				name:     tt.fields.name,
+				srv:      tt.fields.srv,
+				db:       tt.fields.db,
+				log:      tt.fields.log,
+				grpcOpts: tt.fields.grpcOpts,
+				services: tt.fields.services,
+			}
+
+			go func() {
+				err := l.Launch()
+				if (err != nil) != tt.wantErr {
+					t.Errorf("doCmd() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				if err != nil {
+					// Signal that we are ready anyway, so that we fail properly
+					rest.GetReadyChannel() <- false
+				}
+			}()
+
+			success := <-rest.GetReadyChannel()
+			if success {
+				assert.NotNil(t, l.srv)
+			}
 		})
 	}
 }
