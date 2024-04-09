@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -65,6 +66,71 @@ func TestClientCredentials(t *testing.T) {
 			got := ClientCredentials()
 
 			tt.want(t, got)
+		})
+	}
+}
+
+func TestInitConfig(t *testing.T) {
+	tests := []struct {
+		name      string
+		prepViper func()
+	}{
+		{
+			name:      "Happy path",
+			prepViper: func() {},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			InitConfig()
+
+			assert.Equal(t, EnvPrefix, viper.GetEnvPrefix())
+		})
+	}
+}
+
+func TestInitCobra(t *testing.T) {
+	type args struct {
+		engineCmd *cobra.Command
+	}
+	tests := []struct {
+		name      string
+		prepViper func()
+		args      args
+		want      assert.Want[bool]
+	}{
+		{
+			name: "Happy path: StartEmbeddedOAuth2Server set to false",
+			prepViper: func() {
+				viper.Set(APIStartEmbeddedOAuth2ServerFlag, false)
+			},
+			args: args{engineCmd: &cobra.Command{}},
+			want: func(t *testing.T, got bool) bool {
+				return assert.Equal(t, false, got)
+			},
+		},
+		{
+			name: "Happy path: StartEmbeddedOAuth2Server set to true",
+			prepViper: func() {
+				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
+			},
+			args: args{engineCmd: &cobra.Command{}},
+			want: func(t *testing.T, got bool) bool {
+				return assert.Equal(t, true, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			InitCobra(tt.args.engineCmd)
+
+			tt.want(t, viper.GetBool(APIStartEmbeddedOAuth2ServerFlag))
 		})
 	}
 }
