@@ -50,8 +50,8 @@ import (
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/go-co-op/gocron"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -108,6 +108,28 @@ func TestNewService(t *testing.T) {
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, got.authz)
+			},
+		},
+		{
+			name: "Create service with option 'WithProviders' and one provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{"azure"}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{"azure"}, got.providers)
+			},
+		},
+		{
+			name: "Create service with option 'WithProviders' and no provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{}, got.providers)
 			},
 		},
 		{
@@ -686,11 +708,23 @@ func TestService_Start(t *testing.T) {
 
 func TestDefaultServiceSpec(t *testing.T) {
 	tests := []struct {
-		name string
-		want assert.Want[launcher.ServiceSpec]
+		name      string
+		prepViper func()
+		want      assert.Want[launcher.ServiceSpec]
 	}{
 		{
-			name: "Happy path",
+			name: "Happy path: providers given",
+			prepViper: func() {
+				viper.Set(config.DiscoveryProviderFlag, "azure")
+
+			},
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+			},
+		},
+		{
+			name:      "Happy path: no providers given",
+			prepViper: func() {},
 			want: func(t *testing.T, got launcher.ServiceSpec) bool {
 				return assert.NotNil(t, got)
 
@@ -699,6 +733,9 @@ func TestDefaultServiceSpec(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
 			got := DefaultServiceSpec()
 
 			tt.want(t, got)
