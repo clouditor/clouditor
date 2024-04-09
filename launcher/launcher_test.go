@@ -34,6 +34,7 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -225,6 +226,21 @@ func TestNewLauncher(t *testing.T) {
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not create storage")
 			},
+		},
+		{
+			// We are not able to check the individual fields in the Launcher struct, because they are all unexported. We need that check only to test for a valid execution of the method.
+			name: "Happy path: without specs",
+			prepViper: func() {
+				viper.Set(config.LogLevelFlag, "info")
+				viper.Set(config.DBInMemoryFlag, true)
+			},
+			args: args{
+				name: "component",
+			},
+			wantL: func(t *testing.T, got *Launcher) bool {
+				return assert.Equal(t, &Launcher{}, got, cmpopts.IgnoreUnexported(Launcher{}))
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
