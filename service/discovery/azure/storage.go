@@ -690,19 +690,40 @@ func isStorageAccountEncryptionManagedByUser(acc *armstorage.Account) bool {
 	return false
 }
 
+// getPublicAccessOfStorageAccount checks if the storage account or its content is publicly available. Following checks
+// will be done subsequently:
+// 1. Check if access to blobs is denied by default -> If so, return false
+// 2.1 Check if public network access is set to disabled -> If so, return false
+// 2.2 If not, check if it is also enabled for exceptions in ACL, IP Rules or selected networks
 func getPublicAccessOfStorageAccount(acc *armstorage.Account) bool {
-	// TODO(lebogg): ADd check for default action allow in rule set before (this would include the special case as well, wher public network access is nil
-	// Check if Public Network Access of Storage Account is set to "enabled"
-	if acc.Properties != nil && util.Deref(acc.Properties.PublicNetworkAccess) == armstorage.PublicNetworkAccessEnabled {
+	// First check that properties is non-nil
+	if acc.Properties == nil {
+		log.Warnf("Properties of storage account '%s' is nil which shouldn't be. Assuming public access.",
+			util.Deref(acc.Name))
+		return true
+	}
+
+	// Check if public access to blobs is denied
+	if util.Deref(acc.Properties.AllowBlobPublicAccess) == false {
+		return false
+	}
+
+	// Check if public access to storage account is denied
+	if util.Deref(acc.Properties.PublicNetworkAccess) == armstorage.PublicNetworkAccessDisabled {
+		return false
+		// Check if Public Network Access of Storage Account is set to "enabled" and look for exceptions
+	} else if util.Deref(acc.Properties.PublicNetworkAccess) == armstorage.PublicNetworkAccessEnabled {
 		// Option 1: It is enabled but there are IP Rules or Virtual Networks defined which have access exclusively (Default action is deny)
-		if acc.Properties.NetworkRuleSet != nil && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny && (len(acc.Properties.NetworkRuleSet.IPRules) > 0 || len(acc.Properties.NetworkRuleSet.VirtualNetworkRules) > 0) {
+		if acc.Properties.NetworkRuleSet != nil && util.Deref(acc.Properties.NetworkRuleSet.DefaultAction) == armstorage.DefaultActionDeny {
 			return false
-		} else { // Option 2: Key vault is public accessible without restrictions
+		} else { // Option 2: Storage Account is public accessible without restrictions
 			return true
 		}
+	} else {
+		log.Warnf("Public access to storage account '%s' is neither 'Enabled' nor 'Disabled' (which should'nt"+
+			"be). Assuming public access.", util.Deref(acc.Name))
+		return true
 	}
-	// Public network access is set to "Disabled" or properties is not set -> we assume no access
-	return false
 }
 
 func (d *azureStorageDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem, activityLogging *voc.ActivityLogging, raw string) (*voc.FileStorage, error) {
