@@ -65,7 +65,7 @@ message Metric {
 
   // The interval in seconds the evidences must be collected for the respective
   // metric.
-  google.protobuf.Duration interval = 7;
+  google.protobuf.Duration interval = 7 [(tagger.tags) = "gorm:\"serializer:durationpb;type:duration\""];
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
