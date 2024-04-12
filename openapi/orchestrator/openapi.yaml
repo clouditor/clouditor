@@ -1937,12 +1937,11 @@ components:
                         - $ref: '#/components/schemas/Range'
                     description: The range of this metric. Depending on the scale.
                 interval:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
                     type: string
                     description: |-
                         The interval in seconds the evidences must be collected for the respective
-                         metric. For now, we are not able to use google.protobuf.Duration because it
-                         is converted to a custom object in OpenAPI
-                         (https://github.com/google/gnostic/issues/351)
+                         metric.
                 implementation:
                     allOf:
                         - $ref: '#/components/schemas/MetricImplementation'

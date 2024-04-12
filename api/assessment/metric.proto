@@ -28,6 +28,7 @@ syntax = "proto3";
 package clouditor.assessment.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -63,10 +64,8 @@ message Metric {
   }
 
   // The interval in seconds the evidences must be collected for the respective
-  // metric. For now, we are not able to use google.protobuf.Duration because it
-  // is converted to a custom object in OpenAPI
-  // (https://github.com/google/gnostic/issues/351)
-  int64 interval = 7;
+  // metric.
+  google.protobuf.Duration interval = 7;
 
   // The implementation of this metric. This ensures that we are modelling an
   // association between a Metric and its MetricImplementation.
