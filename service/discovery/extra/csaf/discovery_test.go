@@ -32,12 +32,62 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf/providertest"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
+
+func TestNewTrustedProviderDiscovery(t *testing.T) {
+	type args struct {
+		opts []DiscoveryOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want discovery.Discoverer
+	}{
+		{
+			name: "Happy path",
+			args: args{},
+			want: &csafDiscovery{
+				csID:   discovery.DefaultCloudServiceID,
+				domain: "wid.cert-bund.de",
+				client: http.DefaultClient,
+			},
+		},
+		{
+			name: "Happy path: with cloud service id",
+			args: args{
+				opts: []DiscoveryOption{WithCloudServiceID(testdata.MockCloudServiceID1)},
+			},
+			want: &csafDiscovery{
+				csID:   testdata.MockCloudServiceID1,
+				domain: "wid.cert-bund.de",
+				client: http.DefaultClient,
+			},
+		},
+		{
+			name: "Happy path: with domain",
+			args: args{
+				opts: []DiscoveryOption{WithProviderDomain("mock")},
+			},
+			want: &csafDiscovery{
+				csID:   discovery.DefaultCloudServiceID,
+				client: http.DefaultClient,
+				domain: "mock",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewTrustedProviderDiscovery(tt.args.opts...)
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
+		})
+	}
+}
 
 func Test_csafDiscovery_List(t *testing.T) {
 	p := providertest.NewTrustedProvider(func(pmd *csaf.ProviderMetadata) {

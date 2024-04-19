@@ -62,8 +62,9 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 	}
 }
 
-func NewCSAFDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
+		csID:   discovery.DefaultCloudServiceID,
 		domain: "wid.cert-bund.de",
 		client: http.DefaultClient,
 	}
