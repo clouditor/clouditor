@@ -19,15 +19,16 @@ func init() {
 }
 
 type csafDiscovery struct {
-	url  string
-	csID string
+	domain string
+	csID   string
+	client *http.Client
 }
 
 type DiscoveryOption func(a *csafDiscovery)
 
-func WithProviderURL(url string) DiscoveryOption {
+func WithProviderDomain(domain string) DiscoveryOption {
 	return func(a *csafDiscovery) {
-		a.url = url
+		a.domain = domain
 	}
 }
 
@@ -39,7 +40,8 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 
 func NewCSAFDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
-		url: "https://wid.cert-bund.de/.well-known/csaf/provider-metadata.json",
+		domain: "wid.cert-bund.de",
+		client: http.DefaultClient,
 	}
 
 	// Apply options
@@ -65,15 +67,15 @@ func (d *csafDiscovery) CloudServiceID() string {
 func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {
 	log.Info("Fetching CSAF documents from provider")
 
-	client := &http.Client{}
-
-	loader := csaf.NewProviderMetadataLoader(client)
-	metadata := loader.Load(d.url)
+	loader := csaf.NewProviderMetadataLoader(d.client)
+	metadata := loader.Load(d.domain)
 	_ = metadata
 
 	if !metadata.Valid() {
-		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.url)
+		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
 	}
+
+	// TODO: actually discover evidences in future PR
 
 	return nil, nil
 }
