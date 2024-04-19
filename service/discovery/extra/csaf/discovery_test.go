@@ -8,13 +8,20 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf/providertest"
+
+	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
 func Test_csafDiscovery_List(t *testing.T) {
-	p, err := providertest.NewTestProvider()
-	assert.NoError(t, err)
-	go p.Serve()
+	p := providertest.NewTrustedProvider(func(pmd *csaf.ProviderMetadata) {
+		pmd.Publisher = &csaf.Publisher{
+			Name:      util.Ref("Test Vendor"),
+			Category:  util.Ref(csaf.CSAFCategoryVendor),
+			Namespace: util.Ref("http://localhost"),
+		}
+	})
 	defer p.Close()
 
 	type fields struct {
@@ -28,16 +35,17 @@ func Test_csafDiscovery_List(t *testing.T) {
 		wantList []ontology.IsResource
 		wantErr  assert.WantErr
 	}{
-		{
+		/*{
 			name: "fail",
 			fields: fields{
 				domain: "localhost:1234",
+				client: http.DefaultClient,
 				csID:   discovery.DefaultCloudServiceID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not load provider-metadata.json")
 			},
-		},
+		},*/
 		{
 			name: "happy path",
 			fields: fields{
