@@ -83,3 +83,17 @@ func (l *waitingRequest) WaitAndHandle() {
 	// Inform our wait group, that we are done
 	l.s.wg.Done()
 }
+
+// informWaitingRequests informs any waiting requests of the arrival of a new resource ID, so that they might update
+// their waiting decision.
+func (svc *Service) informWaitingRequests(resourceId string) {
+	// Lock requests for reading
+	svc.rm.RLock()
+	// Defer unlock at the exit of the go-routine
+	defer svc.rm.RUnlock()
+	for _, l := range svc.requests {
+		if l.resourceId != resourceId {
+			l.newResources <- resourceId
+		}
+	}
+}
