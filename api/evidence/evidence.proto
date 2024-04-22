@@ -62,8 +62,10 @@ message Evidence {
     (buf.validate.field).required = true
   ];
 
-  // Related resource IDs. The assessment will wait until all evidences for
-  // related resource have arrived in the assessment and are recent enough
-  // TODO: really needed?
-  repeated string related_resource_ids = 7 [(tagger.tags) = "gorm:\"serializer:json\""];
+  // Very experimental property. Use at own risk. This property will property be deleted again.
+  //
+  // Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+  // assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+  // the resource. For now, this needs to be set manually in the evidence.
+  repeated string experimental_related_resource_ids = 999 [(tagger.tags) = "gorm:\"serializer:json\""];
 }

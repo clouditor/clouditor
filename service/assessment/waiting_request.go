@@ -41,7 +41,7 @@ func (l *waitingRequest) WaitAndHandle() {
 			// Gather our additional resources
 			additional := make(map[string]ontology.IsResource)
 
-			for _, r := range l.Evidence.RelatedResourceIds {
+			for _, r := range l.Evidence.ExperimentalRelatedResourceIds {
 				l.s.em.RLock()
 
 				e, ok := l.s.evidenceResourceMap[r]

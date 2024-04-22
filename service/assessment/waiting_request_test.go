@@ -27,13 +27,14 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "11111111-1111-1111-1111-111111111111",
 			Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-				Id:   "my-resource",
-				Name: "my resource",
+				Id:              "my-resource",
+				Name:            "my resource",
+				BlockStorageIds: []string{"my-third-resource"},
 			}),
-			CloudServiceId:     testdata.MockCloudServiceID1,
-			ToolId:             "my-tool",
-			Timestamp:          timestamppb.Now(),
-			RelatedResourceIds: []string{"my-third-resource"},
+			CloudServiceId:                 testdata.MockCloudServiceID1,
+			ToolId:                         "my-tool",
+			Timestamp:                      timestamppb.Now(),
+			ExperimentalRelatedResourceIds: []string{"my-third-resource"},
 		},
 	})
 
@@ -45,13 +46,14 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 		Evidence: &evidence.Evidence{
 			Id: "22222222-2222-2222-2222-222222222222",
 			Resource: prototest.NewAny(t, &ontology.VirtualMachine{
-				Id:   "my-other-resource",
-				Name: "my other resource",
+				Id:              "my-other-resource",
+				Name:            "my other resource",
+				BlockStorageIds: []string{"my-third-resource"},
 			}),
-			CloudServiceId:     testdata.MockCloudServiceID1,
-			ToolId:             "my-tool",
-			Timestamp:          timestamppb.Now(),
-			RelatedResourceIds: []string{"my-third-resource"},
+			CloudServiceId:                 testdata.MockCloudServiceID1,
+			ToolId:                         "my-tool",
+			Timestamp:                      timestamppb.Now(),
+			ExperimentalRelatedResourceIds: []string{"my-third-resource"},
 		},
 	})
 
@@ -67,10 +69,10 @@ func TestService_AssessEvidenceWaitFor(t *testing.T) {
 				Id:   "my-third-resource",
 				Name: "my third resource",
 			}),
-			CloudServiceId:     testdata.MockCloudServiceID1,
-			ToolId:             "my-tool",
-			Timestamp:          timestamppb.Now(),
-			RelatedResourceIds: []string{"my-resource"},
+			CloudServiceId:                 testdata.MockCloudServiceID1,
+			ToolId:                         "my-tool",
+			Timestamp:                      timestamppb.Now(),
+			ExperimentalRelatedResourceIds: []string{"my-resource"},
 		},
 	})
 

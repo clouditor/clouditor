@@ -387,7 +387,7 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					RelatedResourceIds: []string{"my-other-resource-id"},
+					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
 				},
 			},
 			wantResp: &assessment.AssessEvidenceResponse{
@@ -414,7 +414,7 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					RelatedResourceIds: []string{"my-other-resource-id"},
+					ExperimentalRelatedResourceIds: []string{"my-other-resource-id"},
 				},
 			},
 			wantResp: &assessment.AssessEvidenceResponse{

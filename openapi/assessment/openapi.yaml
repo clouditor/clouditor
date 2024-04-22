@@ -80,14 +80,15 @@ components:
                     description: |-
                         Semantic representation of the Cloud resource according to our defined
                          ontology
-                relatedResourceIds:
+                experimentalRelatedResourceIds:
                     type: array
                     items:
                         type: string
                     description: |-
-                        Related resource IDs. The assessment will wait until all evidences for
-                         related resource have arrived in the assessment and are recent enough
-                         TODO: really needed?
+                        Very experimental property. Use at own risk. This property will property be deleted again.
+
+                         Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                         assessment and are recent enough In the future we might
             description: An evidence resource
         GoogleProtobufAny:
             type: object

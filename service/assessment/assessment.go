@@ -234,7 +234,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Peek into the resource ID
+	// TODO: This is really bad, because we will also unmarshal the resource as part of handleEvidence
 	resourceId = req.Evidence.GetResourceId()
 
 	// Check, if we can immediately handle this evidence; we assume so at first
@@ -247,7 +247,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	// We need to check, if by any chance the related resource evidences have already arrived
 	//
 	// TODO(oxisto): We should also check if they are "recent" enough (which is probably determined by the metric)
-	for _, r := range req.Evidence.RelatedResourceIds {
+	for _, r := range req.Evidence.ExperimentalRelatedResourceIds {
 		// If any of the related resource is not available, we cannot handle them immediately, but we need to add it to
 		// our waitingFor slice
 		if _, ok := svc.evidenceResourceMap[r]; !ok {
