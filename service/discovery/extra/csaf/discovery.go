@@ -39,7 +39,7 @@ import (
 var log *logrus.Entry
 
 func init() {
-	log = logrus.WithField("component", "azure-discovery")
+	log = logrus.WithField("component", "csaf-discovery")
 }
 
 type csafDiscovery struct {
