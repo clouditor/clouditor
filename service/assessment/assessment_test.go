@@ -901,7 +901,6 @@ func TestService_handleEvidence(t *testing.T) {
 	}
 	type args struct {
 		evidence *evidence.Evidence
-		resource ontology.IsResource
 		related  map[string]ontology.IsResource
 	}
 	tests := []struct {
