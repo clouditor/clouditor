@@ -136,6 +136,14 @@ components:
                     description: |-
                         Semantic representation of the Cloud resource according to our defined
                          ontology
+                relatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Related resource IDs. The assessment will wait until all evidences for
+                         related resource have arrived in the assessment and are recent enough
+                         TODO: really needed?
             description: An evidence resource
         GoogleProtobufAny:
             type: object

@@ -91,10 +91,11 @@ func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
 // considered to be applicable. In order to avoid multiple unwrapping, the callee will already supply an unwrapped
 // ontology resource in r.
-func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, src MetricsSource) (data []*Result, err error) {
+func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*Result, err error) {
 	var (
 		baseDir string
-		m       map[string]interface{}
+		m       map[string]any
+		mm      map[string]any
 		types   []string
 	)
 
@@ -103,6 +104,19 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, src
 	m, err = ontology.ResourceMap(r)
 	if err != nil {
 		return nil, err
+	}
+
+	if related != nil {
+		am := make(map[string]interface{})
+		for key, value := range related {
+			mm, err = ontology.ResourceMap(value)
+			if err != nil {
+				return nil, err
+			}
+			am[key] = mm
+		}
+
+		m["related"] = am
 	}
 
 	types = ontology.ResourceTypes(r)

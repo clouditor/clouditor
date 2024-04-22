@@ -359,13 +359,13 @@ func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, erro
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status:        assessment.AssessEvidencesResponse_FAILED,
+			Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status: assessment.AssessEvidencesResponse_ASSESSED,
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF

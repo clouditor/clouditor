@@ -69,22 +69,25 @@ message AssessEvidenceRequest {
   clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
 }
 
+enum AssessmentStatus {
+  ASSESSMENT_STATUS_UNSPECIFIED = 0;
+  ASSESSMENT_STATUS_WAITING_FOR_RELATED = 1;
+  ASSESSMENT_STATUS_ASSESSED = 2;
+  ASSESSMENT_STATUS_FAILED = 3;
+}
+
 // AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
 // RPC and therefore requires a response message according to the style
 // convention. Since no return values are required, this is empty.
-message AssessEvidenceResponse {}
+message AssessEvidenceResponse {
+  AssessmentStatus status = 1;
+}
 
 // AssessEvidencesResponse belongs to AssessEvidences, which uses a custom
 // bidirectional streaming RPC and therefore requires a response message
 // according to the style convention. The bidirectional streaming needs the
 // status and its message in the response for error handling.
 message AssessEvidencesResponse {
-  enum AssessmentStatus {
-    ASSESSMENT_STATUS_UNSPECIFIED = 0;
-    WAITING_FOR_RELATED = 1;
-    ASSESSED = 2;
-    FAILED = 3;
-  }
   AssessmentStatus status = 1;
 
   string status_message = 2;
