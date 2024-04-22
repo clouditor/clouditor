@@ -34,8 +34,8 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
 	"clouditor.io/clouditor/v2/internal/util"
-	"clouditor.io/clouditor/v2/service/discovery/extra/csaf/providertest"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
