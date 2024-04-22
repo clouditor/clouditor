@@ -268,6 +268,51 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "VM: Related Evidence",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.VirtualMachine{
+					Id:              mockVM2ResourceID,
+					BlockStorageIds: []string{testdata.MockResourceStorageID},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+				related: map[string]ontology.IsResource{
+					mockBlockStorage1ID: &ontology.BlockStorage{
+						Id: mockBlockStorage1ID,
+						AtRestEncryption: &ontology.AtRestEncryption{
+							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+									Enabled:   true,
+									Algorithm: "AES256",
+								},
+							},
+						},
+					},
+				},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
+				"BootLoggingEnabled":                  false,
+				"BootLoggingOutput":                   false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingOutput":                     false,
+				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
+				"VirtualMachineDiskEncryptionEnabled": true,
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 
 	for _, tt := range tests {

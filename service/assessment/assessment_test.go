@@ -172,9 +172,10 @@ func TestNewService(t *testing.T) {
 // TestAssessEvidence tests AssessEvidence
 func TestService_AssessEvidence(t *testing.T) {
 	type fields struct {
-		authz         service.AuthorizationStrategy
-		evidenceStore *api.RPCConnection[evidence.EvidenceStoreClient]
-		orchestrator  *api.RPCConnection[orchestrator.OrchestratorClient]
+		authz               service.AuthorizationStrategy
+		evidenceStore       *api.RPCConnection[evidence.EvidenceStoreClient]
+		orchestrator        *api.RPCConnection[orchestrator.OrchestratorClient]
+		evidenceResourceMap map[string]*evidence.Evidence
 	}
 	type args struct {
 		in0      context.Context
@@ -270,9 +271,10 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -316,9 +318,10 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without resource id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -338,9 +341,10 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "No RPC connections",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -360,6 +364,64 @@ func TestService_AssessEvidence(t *testing.T) {
 				return assert.ErrorContains(t, err, "connection refused")
 			},
 		},
+		{
+			name: "Assess resource and wait existing related resources is already there",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:         servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: map[string]*evidence.Evidence{
+					"my-other-resource-id": {
+						Id: testdata.MockEvidenceID2,
+					},
+				},
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             testdata.MockEvidenceID1,
+					ToolId:         testdata.MockEvidenceToolID1,
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: testdata.MockCloudServiceID1,
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
+					RelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Assess resource and wait existing related resources is not there",
+			fields: fields{
+				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				authz:               servicetest.NewAuthorizationStrategy(true),
+				evidenceResourceMap: make(map[string]*evidence.Evidence),
+			},
+			args: args{
+				in0: context.TODO(),
+				evidence: &evidence.Evidence{
+					Id:             testdata.MockEvidenceID1,
+					ToolId:         testdata.MockEvidenceToolID1,
+					Timestamp:      timestamppb.Now(),
+					CloudServiceId: testdata.MockCloudServiceID1,
+					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+						Id:   testdata.MockResourceID1,
+						Name: testdata.MockResourceName1,
+					}),
+					RelatedResourceIds: []string{"my-other-resource-id"},
+				},
+			},
+			wantResp: &assessment.AssessEvidenceResponse{
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+			},
+			wantErr: assert.NoError,
+		},
 	}
 
 	for _, tt := range tests {
@@ -370,7 +432,8 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 				orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 				cachedConfigurations: make(map[string]cachedConfiguration),
-				evidenceResourceMap:  make(map[string]*evidence.Evidence),
+				evidenceResourceMap:  tt.fields.evidenceResourceMap,
+				requests:             make(map[string]waitingRequest),
 				pe:                   policies.NewRegoEval(policies.WithPackageName(policies.DefaultRegoPackage)),
 				authz:                tt.fields.authz,
 			}

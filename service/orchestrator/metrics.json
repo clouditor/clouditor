@@ -595,5 +595,18 @@
         ]
       }
     }
+  },
+  {
+    "id": "VirtualMachineDiskEncryptionEnabled",
+    "name": "VirtualMachine: Disk image encryption",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
   }
 ]
