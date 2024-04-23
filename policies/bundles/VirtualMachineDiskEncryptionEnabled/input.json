@@ -12,7 +12,16 @@
             "name": "myDisk1",
             "id": "/disks/disk1",
             "atRestEncryption": {
+                "enabled": false
+            }
+        },
+        "/disks/disk2": {
+            "name": "myDisk2",
+            "id": "/disks/disk2",
+            "atRestEncryption": {
+                "customerKeyEncryption": {
                 "enabled": true
+                }
             }
         }
     }
