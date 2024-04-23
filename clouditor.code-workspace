@@ -75,6 +75,7 @@
       "protojson",
       "protoreflect",
       "prototest",
+      "providertest",
       "Rego",
       "resourcegroups",
       "resourcemanager",
