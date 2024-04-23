@@ -235,7 +235,7 @@ func (d *azureDiscovery) handleWebApp(webApp *armappservice.Site, config armapps
 		return nil
 	}
 
-	return &ontology.WebApp{
+	return &ontology.Function{
 		Id:           resourceID(webApp.ID),
 		Name:         util.Deref(webApp.Name),
 		CreationTime: nil, // Only the last modified time is available.
