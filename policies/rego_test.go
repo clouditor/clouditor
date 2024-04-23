@@ -52,6 +52,7 @@ func Test_regoEval_Eval(t *testing.T) {
 	}
 	type args struct {
 		resource   ontology.IsResource
+		related    map[string]ontology.IsResource
 		evidenceID string
 		src        MetricsSource
 	}
@@ -267,6 +268,96 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "VM: Related Evidence: non-compliant VMDiskEncryptionEnabled",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.VirtualMachine{
+					Id:              mockVM2ResourceID,
+					BlockStorageIds: []string{mockBlockStorage1ID},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+				related: map[string]ontology.IsResource{
+					mockBlockStorage1ID: &ontology.BlockStorage{
+						Id: mockBlockStorage1ID,
+						AtRestEncryption: &ontology.AtRestEncryption{
+							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+									Enabled:   false,
+									Algorithm: "AES256",
+								},
+							},
+						},
+					},
+				},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
+				"BootLoggingEnabled":                  false,
+				"BootLoggingOutput":                   false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingOutput":                     false,
+				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
+				"VirtualMachineDiskEncryptionEnabled": false,
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "VM: Related Evidence",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]string)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.VirtualMachine{
+					Id:              mockVM2ResourceID,
+					BlockStorageIds: []string{mockBlockStorage1ID},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+				related: map[string]ontology.IsResource{
+					mockBlockStorage1ID: &ontology.BlockStorage{
+						Id: mockBlockStorage1ID,
+						AtRestEncryption: &ontology.AtRestEncryption{
+							Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+								CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
+									Enabled:   true,
+									Algorithm: "AES256",
+								},
+							},
+						},
+					},
+				},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":             false,
+				"AutomaticUpdatesInterval":            false,
+				"AutomaticUpdatesSecurityOnly":        false,
+				"BootLoggingEnabled":                  false,
+				"BootLoggingOutput":                   false,
+				"BootLoggingRetention":                false,
+				"MalwareProtectionEnabled":            false,
+				"OSLoggingEnabled":                    false,
+				"OSLoggingOutput":                     false,
+				"OSLoggingRetention":                  false,
+				"ResourceInventory":                   true,
+				"VirtualMachineDiskEncryptionEnabled": true,
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 
 	for _, tt := range tests {
@@ -279,7 +370,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			results, err := pe.Eval(&evidence.Evidence{
 				Id:       tt.args.evidenceID,
 				Resource: prototest.NewAny(t, tt.args.resource),
-			}, tt.args.resource, tt.args.src)
+			}, tt.args.resource, tt.args.related, tt.args.src)
 
 			tt.wantErr(t, err)
 

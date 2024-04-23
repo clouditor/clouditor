@@ -103,6 +103,18 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
+	// evidenceResourceMap is a cache which maps a resource ID (key) to its latest available evidence
+	// TODO(oxisto): replace this with storage queries
+	evidenceResourceMap map[string]*evidence.Evidence
+	em                  sync.RWMutex
+	wg                  sync.WaitGroup
+
+	// requests contains a map of our waiting requests
+	requests map[string]waitingRequest
+
+	// rm is a RWMutex for the requests property
+	rm sync.RWMutex
+
 	// pe contains the actual policy evaluation engine we use
 	pe policies.PolicyEval
 
@@ -178,6 +190,8 @@ func NewService(opts ...service.Option[Service]) *Service {
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
 		cachedConfigurations: make(map[string]cachedConfiguration),
+		requests:             make(map[string]waitingRequest),
+		evidenceResourceMap:  make(map[string]*evidence.Evidence),
 		evidenceStore:        api.NewRPCConnection(DefaultEvidenceStoreAddress, evidence.NewEvidenceStoreClient),
 		orchestrator:         api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
 	}
@@ -204,8 +218,10 @@ func NewService(opts ...service.Option[Service]) *Service {
 }
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
-func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (resp *assessment.AssessEvidenceResponse, err error) {
-	resp = &assessment.AssessEvidenceResponse{}
+func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {
+	var (
+		resourceId string
+	)
 
 	// Validate request
 	err = api.Validate(req)
@@ -218,16 +234,80 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-	_, err = svc.handleEvidence(ctx, req.Evidence)
-	if err != nil {
-		log.Error(err)
-		return nil, err
+	// TODO: This is really bad, because we will also unmarshal the resource as part of handleEvidence
+	resourceId = req.Evidence.GetResourceId()
+
+	// Check, if we can immediately handle this evidence; we assume so at first
+	var canHandle = true
+
+	var waitingFor map[string]bool = make(map[string]bool)
+
+	svc.em.Lock()
+
+	// We need to check, if by any chance the related resource evidences have already arrived
+	//
+	// TODO(oxisto): We should also check if they are "recent" enough (which is probably determined by the metric)
+	for _, r := range req.Evidence.ExperimentalRelatedResourceIds {
+		// If any of the related resource is not available, we cannot handle them immediately, but we need to add it to
+		// our waitingFor slice
+		if _, ok := svc.evidenceResourceMap[r]; !ok {
+			canHandle = false
+			waitingFor[r] = true
+		}
 	}
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	// Update our resourceID to evidence cache
+	svc.evidenceResourceMap[resourceId] = req.Evidence
+	svc.em.Unlock()
 
-	return resp, nil
+	// Inform any other left over evidences that might be waiting
+	go svc.informWaitingRequests(resourceId)
+
+	if canHandle {
+		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
+		_, err = svc.handleEvidence(ctx, req.Evidence, nil)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
+		}
+
+		logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
+	} else {
+		log.Tracef("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+
+		// Create a left-over request with all the necessary information
+		l := waitingRequest{
+			started:      time.Now(),
+			waitingFor:   waitingFor,
+			resourceId:   resourceId,
+			Evidence:     req.Evidence,
+			s:            svc,
+			newResources: make(chan string, 1000),
+			ctx:          ctx,
+		}
+
+		// Add it to our wait group
+		svc.wg.Add(1)
+
+		// Wait for evidences in the background and handle them
+		go l.WaitAndHandle()
+
+		// Lock requests for writing
+		svc.rm.Lock()
+		svc.requests[req.Evidence.Id] = l
+		// Unlock writing
+		svc.rm.Unlock()
+
+		res = &assessment.AssessEvidenceResponse{
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_WAITING_FOR_RELATED,
+		}
+	}
+
+	return res, nil
 }
 
 // AssessEvidences is a method implementation of the assessment interface: It assesses multiple evidences (stream) and responds with a stream.
@@ -259,12 +339,12 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 		if err != nil {
 			// Create response message. The AssessEvidence method does not need that message, so we have to create it here for the stream response.
 			res = &assessment.AssessEvidencesResponse{
-				Status:        assessment.AssessEvidencesResponse_FAILED,
+				Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
 				StatusMessage: err.Error(),
 			}
 		} else {
 			res = &assessment.AssessEvidencesResponse{
-				Status: assessment.AssessEvidencesResponse_ASSESSED,
+				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
 			}
 		}
 
@@ -286,7 +366,7 @@ func (svc *Service) AssessEvidences(stream assessment.Assessment_AssessEvidences
 // handleEvidence is the helper method for the actual assessment used by AssessEvidence and AssessEvidences. This will
 // also validate the resource embedded into the evidence and return an error if validation fails. In order to
 // distinguish between internal errors and validation errors, this function already returns a gRPC error.
-func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (results []*assessment.AssessmentResult, err error) {
+func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, related map[string]ontology.IsResource) (results []*assessment.AssessmentResult, err error) {
 	var (
 		types    []string
 		m        proto.Message
@@ -312,7 +392,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence) (
 	log.Debugf("Evaluating evidence %s (%s) collected by %s at %s", ev.Id, resource.GetId(), ev.ToolId, ev.Timestamp.AsTime())
 	log.Tracef("Evidence: %+v", ev)
 
-	evaluations, err := svc.pe.Eval(ev, resource, svc)
+	evaluations, err := svc.pe.Eval(ev, resource, related, svc)
 	if err != nil {
 		newError := fmt.Errorf("could not evaluate evidence: %w", err)
 

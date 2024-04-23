@@ -50,6 +50,8 @@ const (
 	mockVM1ResourceID         = "/mockresources/compute/vm1"
 	mockVM2EvidenceID         = "4"
 	mockVM2ResourceID         = "/mockresources/compute/vm2"
+	mockBlockStorage1ID       = "/mockresources/storage/storage1"
+	mockBlockStorage2ID       = "/mockresources/storage/storage2"
 )
 
 func TestMain(m *testing.M) {
