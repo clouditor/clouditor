@@ -85,10 +85,11 @@ components:
                     items:
                         type: string
                     description: |-
-                        Very experimental property. Use at own risk. This property will property be deleted again.
+                        Very experimental property. Use at own risk. This property will be deleted again.
 
                          Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
-                         assessment and are recent enough In the future we might
+                         assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                         the resource. For now, this needs to be set manually in the evidence.
             description: An evidence resource
         GoogleProtobufAny:
             type: object

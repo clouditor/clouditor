@@ -69,10 +69,11 @@ type Evidence struct {
 	// Semantic representation of the Cloud resource according to our defined
 	// ontology
 	Resource *anypb.Any `protobuf:"bytes,6,opt,name=resource,proto3" json:"resource,omitempty" gorm:"serializer:anypb;type:json"`
-	// Very experimental property. Use at own risk. This property will property be deleted again.
+	// Very experimental property. Use at own risk. This property will be deleted again.
 	//
 	// Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
-	// assessment and are recent enough In the future we might
+	// assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+	// the resource. For now, this needs to be set manually in the evidence.
 	ExperimentalRelatedResourceIds []string `protobuf:"bytes,999,rep,name=experimental_related_resource_ids,json=experimentalRelatedResourceIds,proto3" json:"experimental_related_resource_ids,omitempty" gorm:"serializer:json"`
 }
 

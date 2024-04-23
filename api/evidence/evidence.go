@@ -46,7 +46,7 @@ func (ev *Evidence) GetResourceId() string {
 		err      error
 	)
 	// TODO: find a smarter way, because now we are unmarshalling the resource twice
-	// First, try to extract the resource out of the evidence and validate it
+	// Try to extract the resource out of the evidence
 	m, err = ev.Resource.UnmarshalNew()
 	if err != nil {
 		return ""
