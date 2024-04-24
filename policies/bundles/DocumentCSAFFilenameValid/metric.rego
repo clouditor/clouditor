@@ -1,4 +1,4 @@
-package clouditor.metrics.document_csfa_filename_valid
+package clouditor.metrics.document_csaf_filename_valid
 
 import rego.v1
 import input as document
