@@ -22,9 +22,7 @@ func Test_csafDiscovery_discoverProviders(t *testing.T) {
 		args          args
 		wantProviders []ontology.IsResource
 		wantErr       bool
-	}{
-		// // TODO(lebogg)
-	}
+	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{

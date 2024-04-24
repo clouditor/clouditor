@@ -41,18 +41,30 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		},
 	}
 
-	// TODO: Add discovery of advisory documents
+	// Discover advisory documents from this provider
+	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd)
+	if err != nil {
+		return nil, fmt.Errorf("could not discover security advisories: %w", err)
+	}
 
 	var provider = &ontology.SecurityAdvisoryService{
 		Id:                          lpmd.URL + "service",
 		InternetAccessibleEndpoint:  true,
 		Name:                        util.Deref(pmd.Publisher.Name),
-		SecurityAdvisoryDocumentIds: []string{}, // TODO: When advisory documents added, get IDs from them
+		SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
 		ServiceMetadataDocumentId:   util.Ref(serviceMetadata.Id),
 		TransportEncryption:         d.transportEncryption(lpmd.URL),
 	}
 
 	providers = append(providers, serviceMetadata, provider)
+	providers = append(providers, securityAdvisoryDocuments...)
 
+	return
+}
+
+func getIDsOf(documents []ontology.IsResource) (ids []string) {
+	for _, d := range documents {
+		ids = append(ids, d.GetId())
+	}
 	return
 }
