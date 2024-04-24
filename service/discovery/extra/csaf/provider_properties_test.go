@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
 	"clouditor.io/clouditor/v2/internal/util"
-
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
@@ -69,6 +69,54 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 			if got := d.providerTransportEncryption(tt.args.url); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("providerTransportEncryption() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_providerValidationErrors(t *testing.T) {
+	type args struct {
+		messages csaf.ProviderMetadataLoadMessages
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.Want[[]*ontology.Error]
+	}{
+		{
+			name: "messages given",
+			args: args{
+				messages: csaf.ProviderMetadataLoadMessages{
+					csaf.ProviderMetadataLoadMessage{
+						Message: "message1",
+					},
+					csaf.ProviderMetadataLoadMessage{
+						Message: "message2",
+					},
+				},
+			},
+			want: func(t *testing.T, got []*ontology.Error) bool {
+				want := []*ontology.Error{
+					{
+						Message: "message1",
+					},
+					{
+						Message: "message2",
+					},
+				}
+				return assert.Equal(t, want, got)
+			},
+		},
+		{
+			name: "no messages given",
+			args: args{},
+			want: assert.Nil[[]*ontology.Error],
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotErrs := providerValidationErrors(tt.args.messages)
+
+			tt.want(t, gotErrs)
 		})
 	}
 }
