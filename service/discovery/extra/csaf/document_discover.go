@@ -85,6 +85,7 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
 					Path:                file.URL(),
 					TransportEncryption: transportEncryption(res.TLS),
+					Authenticity:        clientAuthenticity(res),
 				},
 			},
 		},
