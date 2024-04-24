@@ -233,6 +233,33 @@
     }
   },
   {
+    "id": "DocumentCSFAContentValid",
+    "name": "Document: Document content is valid regarding the CSFA standard",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": "DocumentCSFAPathValid",
+    "name": "Document: The filename of the CSFA document is valid",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+
+  {
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
