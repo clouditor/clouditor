@@ -33,7 +33,10 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 		}
 
 		te.Protocol = constants.TLS
-		te.CipherSuites = append(te.CipherSuites, cipherSuite(state.CipherSuite))
+		cs := cipherSuite(state.CipherSuite)
+		if cs != nil {
+			te.CipherSuites = append(te.CipherSuites, cs)
+		}
 	}
 
 	return te
@@ -49,8 +52,8 @@ func cipherSuite(id uint16) *ontology.CipherSuite {
 		}
 	} else if id == tls.TLS_AES_256_GCM_SHA384 {
 		return &ontology.CipherSuite{
-			SessionCipher:        "AES-256-GCM",
-			KeyExchangeAlgorithm: "SHA-384",
+			SessionCipher: "AES-256-GCM",
+			MacAlgorithm:  "SHA-384",
 		}
 	}
 	return nil
