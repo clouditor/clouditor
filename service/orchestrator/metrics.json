@@ -246,7 +246,7 @@
     }
   },
   {
-    "id": "DocumentCSFAPathValid",
+    "id": "DocumentCSFAFilenameValid",
     "name": "Document: The filename of the CSFA document is valid",
     "scale": 1,
     "range": {
