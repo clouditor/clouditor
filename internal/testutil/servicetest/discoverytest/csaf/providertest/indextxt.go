@@ -24,9 +24,10 @@ func NewGoodIndexTxtWriter() ServiceHandler {
 	return &goodIndexTxtWriter{}
 }
 
-type errIndexTxtWriter struct {
-	statusCode int
-}
+// for future tests
+//type errIndexTxtWriter struct {
+//	statusCode int
+//}
 
 type goodIndexTxtWriter struct{}
 
