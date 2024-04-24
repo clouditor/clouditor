@@ -12,7 +12,7 @@ import (
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
-func Test_csafDiscovery_checkTransportEncryption(t *testing.T) {
+func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 	p := providertest.NewTrustedProvider(nil,
 		providertest.NewGoodIndexTxtWriter(),
 		func(pmd *csaf.ProviderMetadata) {
@@ -66,8 +66,8 @@ func Test_csafDiscovery_checkTransportEncryption(t *testing.T) {
 				csID:   tt.fields.csID,
 				client: tt.fields.client,
 			}
-			if got := d.transportEncryption(tt.args.url); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("checkTransportEncryption() = %v, want %v", got, tt.want)
+			if got := d.providerTransportEncryption(tt.args.url); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("providerTransportEncryption() = %v, want %v", got, tt.want)
 			}
 		})
 	}

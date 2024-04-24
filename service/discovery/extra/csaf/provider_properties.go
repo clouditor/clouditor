@@ -5,7 +5,7 @@ import (
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
-func (d *csafDiscovery) transportEncryption(url string) *ontology.TransportEncryption {
+func (d *csafDiscovery) providerTransportEncryption(url string) *ontology.TransportEncryption {
 	res, err := d.client.Get(url)
 	if err != nil {
 		return &ontology.TransportEncryption{
