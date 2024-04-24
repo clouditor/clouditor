@@ -33,7 +33,13 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		Filetype: "JSON",
 		Id:       lpmd.URL,
 		Name:     filepath.Base(lpmd.URL),
-		Path:     lpmd.URL,
+		DocumentLocation: &ontology.DocumentLocation{
+			Type: &ontology.DocumentLocation_RemoteDocumentLocation{
+				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
+					Path: lpmd.URL,
+				},
+			},
+		},
 		SchemaValidation: &ontology.SchemaValidation{
 			Format:    "CSAF provider metadata",
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json",

@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"path/filepath"
+	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 	csafutil "github.com/csaf-poc/csaf_distribution/v3/util"
@@ -38,25 +40,15 @@ func (d *csafDiscovery) discoverSecurityAdvisories(md *csaf.LoadedProviderMetada
 }
 
 func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFile) (doc *ontology.SecurityAdvisoryDocument, err error) {
-	// Create an evidence for the document
-	doc = &ontology.SecurityAdvisoryDocument{
-		Filetype: "JSON",
-		Id:       file.URL(),
-		Labels: map[string]string{
-			"tlp": string(label),
-		},
-		Name: filepath.Base(file.URL()),
-		Path: file.URL(),
-	}
-
 	// Next, we actually need to retrieve the document to check its validity
 	res, err := d.client.Get(file.URL())
 	if err != nil {
-		// TODO: actually still need to produce an evidence that the http request was not good
+		// TODO: actually still need to produce an evidence that the http request was not good. This goes for all errors I guess?
 		return nil, err
 	}
 
 	var raw any
+	var advisory csaf.Advisory
 
 	err = json.NewDecoder(res.Body).Decode(&raw)
 	if err != nil {
@@ -65,10 +57,42 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 
 	// TODO(oxisto): Check for the hashes
 	msg, err := csaf.ValidateCSAF(raw)
-	doc.SchemaValidation = &ontology.SchemaValidation{
-		SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json",
-		Format:    "Common Security Advisory Framework",
-		Errors:    documentValidationErrors(msg),
+	if err != nil {
+		return nil, err
+	}
+
+	// ReMarshal into a struct that we can actually work with
+	err = csafutil.ReMarshalJSON(&advisory, raw)
+	if err != nil {
+		return nil, err
+	}
+
+	time, err := time.Parse(time.RFC3339, util.Deref(advisory.Document.Tracking.InitialReleaseDate))
+	if err != nil {
+		return nil, err
+	}
+
+	// Create an evidence for the document
+	doc = &ontology.SecurityAdvisoryDocument{
+		Filetype: "JSON",
+		Id:       file.URL(),
+		Labels: map[string]string{
+			"tlp": string(label),
+		},
+		Name: util.Deref(advisory.Document.Title),
+		DocumentLocation: &ontology.DocumentLocation{
+			Type: &ontology.DocumentLocation_RemoteDocumentLocation{
+				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
+					Path: file.URL(),
+				},
+			},
+		},
+		CreationTime: timestamppb.New(time),
+		SchemaValidation: &ontology.SchemaValidation{
+			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json",
+			Format:    "Common Security Advisory Framework",
+			Errors:    documentValidationErrors(msg),
+		},
 	}
 
 	return
