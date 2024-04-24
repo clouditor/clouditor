@@ -8,8 +8,17 @@ default applicable := false
 default compliant := false
 
 applicable if {
-	# the resource type should be a Document
-	"Document" in document.type
+	# check resource type
+    resourceTypeValid
+}
+
+# Check if the resource type contains "ServiceMetadataDocument" or "SecurityAdvisoryDocument"
+resourceTypeValid if {
+	"ServiceMetadataDocument" in document.type
+}
+
+resourceTypeValid if {
+	"SecurityAdvisoryDocument" in document.type
 }
 
 compliant if {
@@ -27,7 +36,6 @@ compliant if {
 	# filename is the last element in the array
 	is_valid(x[count(x) - 1])
 }
-
 # Check if filename is valid.
 # Filename is valid if
 # - lower case
@@ -41,16 +49,10 @@ is_valid(string) if {
     not regex.match(`[^+\-a-z0-9]+`, split(string, ".")[0])
 
 	# Check file extension
-	is_filextension_json(string)
+	endswith(string, ".json")
 }
 
 # Check if filename is lower case
 is_lowercase_value(string) if {
 	lower(string) == string
-}
-
-# Check if file extension is ".json"
-is_filextension_json(string) if {
-	x := split(string, ".")
-	x[1] == "json"
 }

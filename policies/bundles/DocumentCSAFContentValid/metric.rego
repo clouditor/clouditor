@@ -8,8 +8,18 @@ default applicable := false
 default compliant := false
 
 applicable if {
-	# the resource type should be a VM
-	"Document" in document.type
+	# check resource type
+    resourceTypeValid
+}
+
+
+# Check if the resource type contains "ServiceMetadataDocument" or "SecurityAdvisoryDocument"
+resourceTypeValid if {
+	"ServiceMetadataDocument" in document.type
+}
+
+resourceTypeValid if {
+	"SecurityAdvisoryDocument" in document.type
 }
 
 compliant if {
