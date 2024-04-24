@@ -36,7 +36,8 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		DocumentLocation: &ontology.DocumentLocation{
 			Type: &ontology.DocumentLocation_RemoteDocumentLocation{
 				RemoteDocumentLocation: &ontology.RemoteDocumentLocation{
-					Path: lpmd.URL,
+					Path:                lpmd.URL,
+					TransportEncryption: d.providerTransportEncryption(lpmd.URL),
 				},
 			},
 		},
@@ -59,7 +60,7 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		Name:                        util.Deref(pmd.Publisher.Name),
 		SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
 		ServiceMetadataDocumentId:   util.Ref(serviceMetadata.Id),
-		TransportEncryption:         d.providerTransportEncryption(lpmd.URL),
+		TransportEncryption:         serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
 	}
 
 	providers = append(providers, serviceMetadata, provider)
