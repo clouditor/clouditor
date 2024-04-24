@@ -97,14 +97,3 @@ compare(operator, target_values, actual_values) {
     	act_val in target_values
     }
 }
-
-# Check if filename is lower case
-is_lowercase_value(string) if {
-	lower(string) == string
-}
-
-# Check if file extension is ".json"
-is_filextension_json(string) if {
-	x := split(string, ".")
-	x[1] == "json"
-}
