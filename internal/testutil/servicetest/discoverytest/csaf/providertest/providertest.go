@@ -30,24 +30,50 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+	"slices"
+	"strings"
+
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
 type TrustedProvider struct {
 	*httptest.Server
-	pmd *csaf.ProviderMetadata
+	pmd   *csaf.ProviderMetadata
+	idxw  ServiceHandler
+	feeds map[csaf.TLPLabel][]*csaf.Advisory
 }
 
-func NewTrustedProvider(fns ...func(*csaf.ProviderMetadata)) (p *TrustedProvider) {
+// TODO: convert into functional-style options?
+func NewTrustedProvider(
+	feeds map[csaf.TLPLabel][]*csaf.Advisory,
+	idxw ServiceHandler,
+	fns ...func(*csaf.ProviderMetadata),
+) (p *TrustedProvider) {
 	mux := http.NewServeMux()
 
-	p = &TrustedProvider{}
+	p = &TrustedProvider{
+		idxw:  idxw,
+		feeds: feeds,
+	}
 	p.Server = httptest.NewTLSServer(mux)
 	p.Server.EnableHTTP2 = true
 
 	mux.HandleFunc("/.well-known/csaf/provider-metadata.json", p.handlePMD)
-	p.pmd = csaf.NewProviderMetadataDomain(fmt.Sprintf("https://%s", p.Domain()), []csaf.TLPLabel{csaf.TLPLabelWhite})
+
+	p.pmd = csaf.NewProviderMetadataDomain(fmt.Sprintf("https://%s", p.Domain()), nil)
+
+	// We need to provide one index.txt per feed. So far, we only support index.txt, no ROLIE
+	for feed := range p.feeds {
+		feedURL := fmt.Sprintf("/.well-known/csaf/%s/", strings.ToLower(string(feed)))
+		mux.HandleFunc(feedURL, p.handleFeed)
+		p.pmd.Distributions = append(p.pmd.Distributions, csaf.Distribution{
+			DirectoryURL: fmt.Sprintf("https://%s/%s", p.Domain(), feedURL),
+			Rolie:        nil,
+		})
+	}
 
 	// Apply PMD functions
 	for _, fn := range fns {
@@ -61,8 +87,48 @@ func (p *TrustedProvider) handlePMD(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, p.pmd)
 }
 
+func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
+	_, feed, ok := strings.Cut(filepath.Dir(r.URL.Path), "/.well-known/csaf/")
+	if !ok {
+		return
+	}
+
+	// make sure we don't end up with <feed>/<year>
+	before, _, ok := strings.Cut(feed, "/")
+	if ok {
+		feed = before
+	}
+
+	advisories := p.advisoriesFor(feed)
+	if advisories == nil {
+		w.WriteHeader(404)
+		return
+	}
+
+	file := filepath.Base(r.URL.Path)
+
+	if file == "index.txt" {
+		p.idxw.handleIndexTxt(w, r, advisories)
+	} else if file == "changes.csv" {
+		p.idxw.handleChangesCsv(w, r, advisories)
+	} else {
+		idx := slices.IndexFunc(advisories, func(doc *csaf.Advisory) bool {
+			return strings.ToLower(string(util.Deref(doc.Document.Tracking.ID))) == strings.TrimSuffix(file, filepath.Ext(file))
+		})
+		if idx == -1 {
+			w.WriteHeader(404)
+			return
+		}
+		p.idxw.handleAdvisory(w, r, advisories[idx])
+	}
+}
+
 func (p *TrustedProvider) Domain() string {
 	return p.Listener.Addr().String()
+}
+
+func (p *TrustedProvider) advisoriesFor(feed string) []*csaf.Advisory {
+	return p.feeds[csaf.TLPLabel(strings.ToUpper(feed))]
 }
 
 func writeJSON(w http.ResponseWriter, msg any) {
