@@ -58,7 +58,6 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 
 	var raw any
 
-	json.NewDecoder(res.Body).Decode(&raw)
 	err = json.NewDecoder(res.Body).Decode(&raw)
 	if err != nil {
 		return nil, err
