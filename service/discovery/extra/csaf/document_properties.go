@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
 )
 
 func documentValidationErrors(messages []string) (errs []*ontology.Error) {
@@ -28,6 +29,8 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 		} else if state.Version == tls.VersionTLS13 {
 			te.ProtocolVersion = 1.3
 		}
+
+		te.Protocol = constants.TLS
 	}
 
 	return te
