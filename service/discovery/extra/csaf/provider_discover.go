@@ -59,7 +59,7 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		Name:                        util.Deref(pmd.Publisher.Name),
 		SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
 		ServiceMetadataDocumentId:   util.Ref(serviceMetadata.Id),
-		TransportEncryption:         d.transportEncryption(lpmd.URL),
+		TransportEncryption:         d.providerTransportEncryption(lpmd.URL),
 	}
 
 	providers = append(providers, serviceMetadata, provider)
