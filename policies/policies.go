@@ -69,8 +69,8 @@ type Result struct {
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceID, categoryID, metricID string) (*assessment.MetricConfiguration, error)
-	MetricImplementation(lang assessment.MetricImplementation_Language, categoryID, metricID string) (*assessment.MetricImplementation, error)
+	MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)
+	MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error)
 }
 
 // ControlsSource is used to retrieve a list of controls

@@ -397,7 +397,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 	type args struct {
 		baseDir    string
 		serviceID  string
-		metricID   string
+		metric     *assessment.Metric
 		categoryID string
 		m          map[string]interface{}
 		src        MetricsSource
@@ -417,10 +417,12 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID:  testdata.MockCloudServiceID1,
-				metricID:   "AutomaticUpdatesEnabled",
-				categoryID: "EndpointSecurity",
-				baseDir:    ".",
+				serviceID: testdata.MockCloudServiceID1,
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -457,10 +459,12 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID:  testdata.MockCloudServiceID1,
-				metricID:   "AutomaticUpdatesEnabled",
-				categoryID: "EndpointSecurity",
-				baseDir:    ".",
+				serviceID: testdata.MockCloudServiceID1,
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -497,7 +501,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				mrtc: tt.fields.mrtc,
 				pkg:  tt.fields.pkg,
 			}
-			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.categoryID, tt.args.metricID, tt.args.m, tt.args.src)
+			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metric, tt.args.m, tt.args.src)
 
 			tt.wantErr(t, err)
 			tt.wantResult(t, gotResult)

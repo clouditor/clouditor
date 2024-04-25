@@ -91,9 +91,9 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceID, categoryID, metricID string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", categoryID, metricID)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", metric.CategoryID(), metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
@@ -103,21 +103,21 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, categoryID, metricID 
 	assert.NoError(m.t, err)
 
 	config.IsDefault = true
-	config.MetricId = metricID
+	config.MetricId = metric.Id
 	config.CloudServiceId = serviceID
 
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, categoryID, metricID string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", categoryID, metricID)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", metric.CategoryID(), metric.Id)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId: metricID,
+		MetricId: metric.Id,
 		Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 		Code:     string(b),
 	}
@@ -129,13 +129,13 @@ type updatedMockMetricsSource struct {
 	mockMetricsSource
 }
 
-func (*updatedMockMetricsSource) MetricConfiguration(serviceID, categoryID, metricID string) (*assessment.MetricConfiguration, error) {
+func (*updatedMockMetricsSource) MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
 		Operator:       "==",
 		TargetValue:    structpb.NewBoolValue(false),
 		IsDefault:      false,
 		UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
-		MetricId:       metricID,
+		MetricId:       metric.Id,
 		CloudServiceId: serviceID,
 	}, nil
 }
