@@ -2,7 +2,14 @@
     "filetype": "JSON",
     "id": "https://xx.yy.zz/XXX",
     "name": "ServiceMetadataDocument1",
-    "path": "https://xx.yy.zz/document/tracking/id/cisco-sa-20190513-secureboot.json",
+    "document_location": {
+        "path": "https://xx.yy.zz/document/tracking/id/cisco-sa-20190513-secureboot.json",
+        "transport_encryption": {
+            "enabled": true,
+            "protocol": "TLS",
+            "protocol_version": 1.3
+        }
+    },
     "schemaValidation": {
         "errors": [],
         "format": "CSAF provider metadata",

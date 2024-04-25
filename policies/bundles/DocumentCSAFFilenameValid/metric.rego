@@ -22,7 +22,7 @@ resourceTypeValid if {
 }
 
 compliant if {
-	path = document.path
+	path = document.documentLocation.path
 	is_string(path)
 
 	# Check if "/document/tracking/id" is lower case
