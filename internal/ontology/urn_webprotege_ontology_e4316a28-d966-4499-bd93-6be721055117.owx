@@ -138,6 +138,9 @@
         <Class IRI="http://graph.clouditor.io/classes/DocumentDatabaseService"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/EncryptionInUse"/>
     </Declaration>
     <Declaration>
@@ -231,6 +234,9 @@
         <Class IRI="http://graph.clouditor.io/classes/LoadBalancer"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/LocalRedundancy"/>
     </Declaration>
     <Declaration>
@@ -307,6 +313,9 @@
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/RelationalDatabaseService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/ResourceGroup"/>
@@ -1400,6 +1409,13 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Document"/>
         <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Document"/>
+        <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class IRI="http://graph.clouditor.io/classes/SecurityFeature"/>
         </ObjectSomeValuesFrom>
@@ -1412,15 +1428,19 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/Document"/>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentDatabaseService"/>
+        <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
         <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:path"/>
             <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/DocumentDatabaseService"/>
-        <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/EncryptionInUse"/>
@@ -1855,6 +1875,17 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/AtRestEncryption"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/LocalRedundancy"/>
         <Class IRI="http://graph.clouditor.io/classes/Redundancy"/>
     </SubClassOf>
@@ -2174,6 +2205,24 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/RelationalDatabaseService"/>
         <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
+        <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/Authenticity"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/TransportEncryption"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ResourceGroup"/>
@@ -3109,6 +3158,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/DocumentLocation</IRI>
+        <Literal>DocumentLocation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/EncryptionInUse</IRI>
         <Literal>EncryptionInUse</Literal>
     </AnnotationAssertion>
@@ -3289,6 +3343,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/LocalDocumentLocation</IRI>
+        <Literal>LocalDocumentLocation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/LocalRedundancy</IRI>
         <Literal>LocalRedundancy</Literal>
     </AnnotationAssertion>
@@ -3456,6 +3515,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/RelationalDatabaseService</IRI>
         <Literal>RelationalDatabaseService</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/RemoteDocumentLocation</IRI>
+        <Literal>RemoteDocumentLocation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

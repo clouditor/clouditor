@@ -682,6 +682,14 @@ message DocumentDatabaseService {
   UsageStatistics usage_statistics = 20;
 }
 
+// DocumentLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message DocumentLocation {
+  oneof type {
+    LocalDocumentLocation local_document_location = 1;
+    RemoteDocumentLocation remote_document_location = 2;
+  }
+}
+
 // EncryptionInUse is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message EncryptionInUse {
   option (resource_type_names) = "EncryptionInUse";
@@ -831,15 +839,17 @@ message FunctionService {
 message Functionality {
   oneof type {
     CipherSuite cipher_suite = 1;
-    Error error = 2;
-    HttpEndpoint http_endpoint = 3;
-    HttpRequestHandler http_request_handler = 4;
-    DatabaseConnect database_connect = 5;
-    DatabaseQuery database_query = 6;
-    HttpRequest http_request = 7;
-    LogOperation log_operation = 8;
-    ObjectStorageRequest object_storage_request = 9;
-    SchemaValidation schema_validation = 10;
+    LocalDocumentLocation local_document_location = 2;
+    RemoteDocumentLocation remote_document_location = 3;
+    Error error = 4;
+    HttpEndpoint http_endpoint = 5;
+    HttpRequestHandler http_request_handler = 6;
+    DatabaseConnect database_connect = 7;
+    DatabaseQuery database_query = 8;
+    HttpRequest http_request = 9;
+    LogOperation log_operation = 10;
+    ObjectStorageRequest object_storage_request = 11;
+    SchemaValidation schema_validation = 12;
   }
 }
 
@@ -855,9 +865,9 @@ message GenericDocument {
   string id = 3 [(buf.validate.field).required = true];
   map<string, string> labels = 4;
   string name = 5 [(buf.validate.field).required = true];
-  string path = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
+  string raw = 6;
+  DocumentLocation document_location = 7;
   optional string parent_id = 8;
   SchemaValidation schema_validation = 9;
   repeated SecurityFeature security_features = 10;
@@ -1183,6 +1193,16 @@ message LoadBalancer {
   optional string service_metadata_document_id = 18;
   TransportEncryption transport_encryption = 19;
   UsageStatistics usage_statistics = 20;
+}
+
+// LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message LocalDocumentLocation {
+  option (resource_type_names) = "LocalDocumentLocation";
+  option (resource_type_names) = "DocumentLocation";
+  option (resource_type_names) = "Functionality";
+
+  string path = 1;
+  AtRestEncryption at_rest_encryption = 2;
 }
 
 // LocalRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1618,6 +1638,17 @@ message RelationalDatabaseService {
   UsageStatistics usage_statistics = 20;
 }
 
+// RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message RemoteDocumentLocation {
+  option (resource_type_names) = "RemoteDocumentLocation";
+  option (resource_type_names) = "DocumentLocation";
+  option (resource_type_names) = "Functionality";
+
+  string path = 1;
+  Authenticity authenticity = 2;
+  TransportEncryption transport_encryption = 3;
+}
+
 // ResourceGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ResourceGroup {
   option (resource_type_names) = "ResourceGroup";
@@ -1720,9 +1751,9 @@ message SecurityAdvisoryDocument {
   string id = 3 [(buf.validate.field).required = true];
   map<string, string> labels = 4;
   string name = 5 [(buf.validate.field).required = true];
-  string path = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
+  string raw = 6;
+  DocumentLocation document_location = 7;
   optional string parent_id = 8;
   SchemaValidation schema_validation = 9;
   repeated SecurityFeature security_features = 10;
@@ -1804,9 +1835,9 @@ message ServiceMetadataDocument {
   string id = 3 [(buf.validate.field).required = true];
   map<string, string> labels = 4;
   string name = 5 [(buf.validate.field).required = true];
-  string path = 6;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
+  string raw = 6;
+  DocumentLocation document_location = 7;
   optional string parent_id = 8;
   SchemaValidation schema_validation = 9;
   repeated SecurityFeature security_features = 10;
