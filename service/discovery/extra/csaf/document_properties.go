@@ -62,7 +62,7 @@ func cipherSuite(id uint16) *ontology.CipherSuite {
 func clientAuthenticity(res *http.Response) *ontology.Authenticity {
 	// If we did not have any authorization header on our client and the request was successful, we have
 	// "NoAuthentication"
-	if res.Request.Header.Get("authorization") == "" && res.StatusCode != 401 {
+	if res.Request.Header.Get("authorization") == "" && res.StatusCode != http.StatusUnauthorized {
 		return &ontology.Authenticity{
 			Type: &ontology.Authenticity_NoAuthentication{},
 		}
