@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
@@ -75,8 +76,9 @@ func Test_transportEncryption(t *testing.T) {
 			},
 			want: func(t *testing.T, got *ontology.TransportEncryption) bool {
 				want := &ontology.TransportEncryption{
-					Enabled:  true,
-					Protocol: "TLS",
+					Enabled:      true,
+					Protocol:     constants.TLS,
+					CipherSuites: []*ontology.CipherSuite{},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -90,7 +92,8 @@ func Test_transportEncryption(t *testing.T) {
 				want := &ontology.TransportEncryption{
 					Enabled:         true,
 					ProtocolVersion: 1.0,
-					Protocol:        "TLS",
+					Protocol:        constants.TLS,
+					CipherSuites:    []*ontology.CipherSuite{},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -104,7 +107,8 @@ func Test_transportEncryption(t *testing.T) {
 				want := &ontology.TransportEncryption{
 					Enabled:         true,
 					ProtocolVersion: 1.1,
-					Protocol:        "TLS",
+					Protocol:        constants.TLS,
+					CipherSuites:    []*ontology.CipherSuite{},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -118,7 +122,8 @@ func Test_transportEncryption(t *testing.T) {
 				want := &ontology.TransportEncryption{
 					Enabled:         true,
 					ProtocolVersion: 1.2,
-					Protocol:        "TLS",
+					Protocol:        constants.TLS,
+					CipherSuites:    []*ontology.CipherSuite{},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -126,13 +131,22 @@ func Test_transportEncryption(t *testing.T) {
 		{
 			name: "state is TLS_1.3",
 			args: args{
-				state: &tls.ConnectionState{Version: tls.VersionTLS13},
+				state: &tls.ConnectionState{
+					Version:     tls.VersionTLS13,
+					CipherSuite: tls.TLS_AES_256_GCM_SHA384,
+				},
 			},
 			want: func(t *testing.T, got *ontology.TransportEncryption) bool {
 				want := &ontology.TransportEncryption{
 					Enabled:         true,
 					ProtocolVersion: 1.3,
-					Protocol:        "TLS",
+					Protocol:        constants.TLS,
+					CipherSuites: []*ontology.CipherSuite{
+						{
+							SessionCipher: "AES-256-GCM",
+							MacAlgorithm:  "SHA-384",
+						},
+					},
 				}
 				return assert.Equal(t, want, got)
 			},
