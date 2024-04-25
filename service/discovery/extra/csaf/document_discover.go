@@ -75,7 +75,7 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 	// Create an evidence for the document
 	doc = &ontology.SecurityAdvisoryDocument{
 		Filetype: "JSON",
-		Id:       string(*advisory.Document.Tracking.ID),
+		Id:       string(util.Deref(advisory.Document.Tracking.ID)),
 		Labels: map[string]string{
 			"tlp": string(label),
 		},
