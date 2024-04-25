@@ -42,18 +42,18 @@ func transportEncryption(state *tls.ConnectionState) (te *ontology.TransportEncr
 	return te
 }
 
-// cipherSuite builds a [ontology.CipherSuite] object out of the cipher suite identifier of the tls package, e.g.
+// cipherSuite builds an [ontology.CipherSuite] object out of the cipher suite identifier of the tls package, e.g.
 // [tls.TLS_AES_128_GCM_SHA256].
 func cipherSuite(id uint16) *ontology.CipherSuite {
 	if id == tls.TLS_AES_128_GCM_SHA256 {
 		return &ontology.CipherSuite{
-			SessionCipher: "AES-128-GCM",
-			MacAlgorithm:  "SHA-256",
+			SessionCipher: constants.AES_128_GCM,
+			MacAlgorithm:  constants.SHA_256,
 		}
 	} else if id == tls.TLS_AES_256_GCM_SHA384 {
 		return &ontology.CipherSuite{
-			SessionCipher: "AES-256-GCM",
-			MacAlgorithm:  "SHA-384",
+			SessionCipher: constants.AES_256_GCM,
+			MacAlgorithm:  constants.SHA_384,
 		}
 	}
 	return nil
