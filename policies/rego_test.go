@@ -395,12 +395,11 @@ func Test_regoEval_evalMap(t *testing.T) {
 		pkg  string
 	}
 	type args struct {
-		baseDir    string
-		serviceID  string
-		metric     *assessment.Metric
-		categoryID string
-		m          map[string]interface{}
-		src        MetricsSource
+		baseDir   string
+		serviceID string
+		metric    *assessment.Metric
+		m         map[string]interface{}
+		src       MetricsSource
 	}
 	tests := []struct {
 		name       string
