@@ -543,7 +543,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
-func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, categoryID, metricID string) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
 	if lang != assessment.MetricImplementation_LANGUAGE_REGO {
 		return nil, errors.New("unsupported language")
@@ -551,10 +551,10 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 	// Retrieve it from the orchestrator
 	impl, err = svc.orchestrator.Client.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
-		MetricId: metric,
+		MetricId: metricID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric, err)
+		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metricID, err)
 	}
 
 	return
@@ -562,7 +562,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(cloudServiceID, categoryID, metricID string) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration

@@ -91,9 +91,9 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(serviceID, categoryID, metricID string) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/data.json", metricID)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", categoryID, metricID)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
@@ -109,15 +109,15 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID, metricID string) (*as
 	return &config, nil
 }
 
-func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error) {
+func (m *mockMetricsSource) MetricImplementation(_ assessment.MetricImplementation_Language, categoryID, metricID string) (*assessment.MetricImplementation, error) {
 	// Fetch the metric implementation directly from our file
-	bundle := fmt.Sprintf("policies/bundles/%s/metric.rego", metric)
+	bundle := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", categoryID, metricID)
 
 	b, err := os.ReadFile(bundle)
 	assert.NoError(m.t, err)
 
 	var impl = &assessment.MetricImplementation{
-		MetricId: metric,
+		MetricId: metricID,
 		Lang:     assessment.MetricImplementation_LANGUAGE_REGO,
 		Code:     string(b),
 	}
@@ -129,7 +129,7 @@ type updatedMockMetricsSource struct {
 	mockMetricsSource
 }
 
-func (*updatedMockMetricsSource) MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error) {
+func (*updatedMockMetricsSource) MetricConfiguration(serviceID, categoryID, metricID string) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
 		Operator:       "==",
 		TargetValue:    structpb.NewBoolValue(false),

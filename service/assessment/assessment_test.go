@@ -1177,8 +1177,9 @@ func TestService_MetricImplementation(t *testing.T) {
 		evalPkg                 string
 	}
 	type args struct {
-		lang   assessment.MetricImplementation_Language
-		metric string
+		lang       assessment.MetricImplementation_Language
+		categoryID string
+		metricID   string
 	}
 	tests := []struct {
 		name    string
@@ -1212,7 +1213,7 @@ func TestService_MetricImplementation(t *testing.T) {
 				pe:                      tt.fields.pe,
 				evalPkg:                 tt.fields.evalPkg,
 			}
-			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.metric)
+			gotImpl, err := svc.MetricImplementation(tt.args.lang, tt.args.categoryID, tt.args.metricID)
 
 			tt.wantErr(t, err)
 			tt.want(t, gotImpl)

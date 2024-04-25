@@ -47,7 +47,7 @@ message Metric {
   string description = 3;
 
   // The reference to control catalog category or domain
-  string category = 4;
+  string category = 4 [(buf.validate.field).string.min_len = 1];
 
   // The scale of this metric, e.g. categories, ranked data or metric values.
   Scale scale = 5 [(buf.validate.field).enum.defined_only = true];

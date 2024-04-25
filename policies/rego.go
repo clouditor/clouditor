@@ -76,7 +76,7 @@ func WithPackageName(pkg string) RegoEvalOption {
 
 func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 	re := regoEval{
-		mrtc: &metricsCache{m: make(map[string][]string)},
+		mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 		qc:   newQueryCache(),
 		pkg:  DefaultRegoPackage,
 	}
@@ -139,7 +139,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
 		// start at the exactly same time.
-		cached = []string{}
+		cached = []*assessment.Metric{}
 		for _, metric := range metrics {
 			// Try to evaluate it and check, if the metric is applicable (in which case we are getting a result). We
 			// need to differentiate here between an execution error (which might be temporary) and an error if the
@@ -147,7 +147,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
 			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
 			// and continue.
-			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric.Id, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric.CategoryID(), metric.Id, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := status.FromError(err)
@@ -168,7 +168,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			}
 
 			if runMap != nil {
-				cached = append(cached, metric.Id)
+				cached = append(cached, metric)
 
 				data = append(data, runMap)
 			}
@@ -181,7 +181,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 		re.mrtc.Unlock()
 	} else {
 		for _, metric := range cached {
-			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric.CategoryID(), metric.Id, m, src)
 			if err != nil {
 				return nil, err
 			}
@@ -215,7 +215,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, serviceID, categoryID, metricID string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -224,7 +224,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(serviceID, metricID)
+	config, err := src.MetricConfiguration(serviceID, categoryID, metricID)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricID, err)
 	}
@@ -242,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, categoryID, metricID)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
@@ -268,7 +268,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		pkg = util.CamelCaseToSnakeCase(metricID)
 
 		// Fetch the metric implementation, i.e., the Rego code from the metric source
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, categoryID, metricID)
 		if err != nil {
 			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
 		}
