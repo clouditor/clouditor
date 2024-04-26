@@ -13,20 +13,14 @@ applicable if {
 }
 
 compliant if {
-	path = document.documentLocation.path
-	is_string(path)
-
-	# Check if "/document/tracking/id" is lower case
-	y := split(path, "/document/tracking/id")
-	count(y) > 1
-
-	# Split path to get filename
-	x := split(path, "/")
+	id = document.id
+	is_string(id)
 
 	# Check if filename is valid
 	# filename is the last element in the array
-	is_valid(x[count(x) - 1])
+	is_valid(id)
 }
+
 # Check if filename is valid.
 # Filename is valid if
 # - lower case
