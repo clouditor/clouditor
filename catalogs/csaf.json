@@ -1,0 +1,69 @@
+[
+    {
+        "id": "CSAFCatalog",
+        "name": "CSAF Standard Compliance",
+        "description": "A catalog that show-cases compliance to the CSAF standard",
+        "metadata": {
+            "color": "#6D829A"
+        },
+        "short_name": "CSAF",
+        "assurance_levels": [
+            "publisher",
+            "provider",
+            "trusted_provider"
+        ],
+        "all_in_scope": true,
+        "categories": [
+            {
+                "name": "Requirements",
+                "description": "Secure all communications",
+                "controls": [
+                    {
+                        "id": "Requirement-01",
+                        "name": "Valid CSAF document",
+                        "description": "The document is a valid CSAF document.",
+                        "metrics": [
+                            {
+                                "id": "DocumentCSAFContentValid"
+                            }
+                        ],
+                        "assurance_level": "publisher"
+                    },
+                    {
+                        "id": "Requirement-02",
+                        "name": "Filename",
+                        "description": "The document has a valid filename.",
+                        "metrics": [
+                            {
+                                "id": "DocumentCSAFContentValid"
+                            }
+                        ],
+                        "assurance_level": "publisher"
+                    },
+                    {
+                        "id": "Requirement-03",
+                        "name": "TLS",
+                        "description": "The document is retrievable by TLS.",
+                        "metrics": [
+                            {
+                                "id": "DocumentCSAFTransportEncryption"
+                            }
+                        ],
+                        "assurance_level": "publisher"
+                    },
+                    {
+                        "id": "Requirement-04",
+                        "name": "TLP:WHITE",
+                        "description": "Documents labeled with TLP:WHITE need to be freely accessible",
+                        "metrics": [
+                            {
+                                "id": "DocumentCSAFWhiteAccessible"
+                            }
+                        ],
+                        "assurance_level": "publisher"
+                    }
+                ]
+            }
+       ]
+    }
+]

@@ -88,7 +88,7 @@ func (d *csafDiscovery) CloudServiceID() string {
 }
 
 func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {
-	log.Info("Fetching CSAF documents from provider")
+	log.Infof("Fetching CSAF documents from domain %s", d.domain)
 
 	return d.discoverProviders()
 }
