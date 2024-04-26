@@ -76,7 +76,7 @@ func WithPackageName(pkg string) RegoEvalOption {
 
 func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 	re := regoEval{
-		mrtc: &metricsCache{m: make(map[string][]string)},
+		mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 		qc:   newQueryCache(),
 		pkg:  DefaultRegoPackage,
 	}
@@ -139,7 +139,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 		// Start with an empty list, otherwise we might copy metrics into the list
 		// that are added by a parallel execution - which might occur if both goroutines
 		// start at the exactly same time.
-		cached = []string{}
+		cached = []*assessment.Metric{}
 		for _, metric := range metrics {
 			// Try to evaluate it and check, if the metric is applicable (in which case we are getting a result). We
 			// need to differentiate here between an execution error (which might be temporary) and an error if the
@@ -147,7 +147,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			// assessed within the Clouditor toolset but we need to know that the metric exists, e.g., because it is
 			// evaluated by an external tool. In this case, we can just pretend that the metric is not applicable for us
 			// and continue.
-			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric.Id, m, src)
+			runMap, err := re.evalMap(baseDir, evidence.CloudServiceId, metric, m, src)
 			if err != nil {
 				// Try to retrieve the gRPC status from the error, to check if the metric implementation just does not exist.
 				status, ok := status.FromError(err)
@@ -168,7 +168,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 			}
 
 			if runMap != nil {
-				cached = append(cached, metric.Id)
+				cached = append(cached, metric)
 
 				data = append(data, runMap)
 			}
@@ -215,7 +215,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, serviceID string, metric *assessment.Metric, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -224,14 +224,14 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(serviceID, metricID)
+	config, err := src.MetricConfiguration(serviceID, metric)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metricID, err)
+		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric.Id, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
 	// if the metric configuration (i.e. its hash) for a particular service has changed.
-	key = fmt.Sprintf("%s-%s-%s", metricID, serviceID, config.Hash())
+	key = fmt.Sprintf("%s-%s-%s", metric.Id, serviceID, config.Hash())
 
 	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with
 	// the function specified as the second parameter
@@ -242,7 +242,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		)
 
 		// Create paths for bundle directory and utility functions file
-		bundle := fmt.Sprintf("%s/policies/bundles/%s/", baseDir, metricID)
+		bundle := fmt.Sprintf("%s/policies/bundles/%s/%s/", baseDir, metric.CategoryID(), metric.Id)
 		operators := fmt.Sprintf("%s/policies/operators.rego", baseDir)
 
 		// The contents of the data map is available as the data variable within the Rego evaluation
@@ -265,12 +265,12 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		prefix = re.pkg
 
 		// Convert camelCase metric in under_score_style for package name
-		pkg = util.CamelCaseToSnakeCase(metricID)
+		pkg = util.CamelCaseToSnakeCase(metric.Id)
 
 		// Fetch the metric implementation, i.e., the Rego code from the metric source
-		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metricID)
+		impl, err = src.MetricImplementation(assessment.MetricImplementation_LANGUAGE_REGO, metric)
 		if err != nil {
-			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metricID, err)
+			return nil, fmt.Errorf("could not fetch policy for metric %s: %w", metric.Id, err)
 		}
 
 		// Insert/Update the policy. The bundle path depends on the metric ID
@@ -297,7 +297,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 				nil),
 		).PrepareForEval(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metricID, err)
+			return nil, fmt.Errorf("could not prepare rego evaluation for metric %s: %w", metric.Id, err)
 		}
 
 		// Commit the transaction into the store
@@ -309,7 +309,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		return &query, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metricID, err)
+		return nil, fmt.Errorf("could not fetch cached query for metric %s: %w", metric.Id, err)
 	}
 
 	results, err := query.Eval(context.Background(), rego.EvalInput(m))
@@ -318,7 +318,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 	}
 
 	if len(results) == 0 {
-		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metricID)
+		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metric.Id)
 	}
 
 	result = &Result{
@@ -326,7 +326,7 @@ func (re *regoEval) evalMap(baseDir string, serviceID, metricID string, m map[st
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
 		TargetValue: results[0].Bindings["target_value"],
-		MetricID:    metricID,
+		MetricID:    metric.Id,
 	}
 
 	// A little trick to convert the map-based metric configuration back to a real object

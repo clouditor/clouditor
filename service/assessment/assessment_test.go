@@ -1178,7 +1178,7 @@ func TestService_MetricImplementation(t *testing.T) {
 	}
 	type args struct {
 		lang   assessment.MetricImplementation_Language
-		metric string
+		metric *assessment.Metric
 	}
 	tests := []struct {
 		name    string

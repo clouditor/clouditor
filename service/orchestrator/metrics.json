@@ -626,6 +626,7 @@
   {
     "id": "VirtualMachineDiskEncryptionEnabled",
     "name": "VirtualMachine: Disk image encryption",
+    "category": "Storage Encryption",
     "scale": 1,
     "range": {
       "allowedValues": {

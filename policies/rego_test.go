@@ -37,7 +37,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/persistence"
-
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -68,7 +67,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -103,7 +102,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Non-Compliant Case with no Encryption at rest",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -138,7 +137,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "ObjectStorage: Non-Compliant Case 2 with no customer managed key",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -174,7 +173,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -231,7 +230,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Non-Compliant Case",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -272,7 +271,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Related Evidence: non-compliant VMDiskEncryptionEnabled",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -317,7 +316,7 @@ func Test_regoEval_Eval(t *testing.T) {
 			name: "VM: Related Evidence",
 			fields: fields{
 				qc:      newQueryCache(),
-				mrtc:    &metricsCache{m: make(map[string][]string)},
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
 				storage: testutil.NewInMemoryStorage(t),
 				pkg:     DefaultRegoPackage,
 			},
@@ -398,7 +397,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 	type args struct {
 		baseDir   string
 		serviceID string
-		metricID  string
+		metric    *assessment.Metric
 		m         map[string]interface{}
 		src       MetricsSource
 	}
@@ -413,13 +412,16 @@ func Test_regoEval_evalMap(t *testing.T) {
 			name: "default metric configuration",
 			fields: fields{
 				qc:   newQueryCache(),
-				mrtc: &metricsCache{m: make(map[string][]string)},
+				mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
 				serviceID: testdata.MockCloudServiceID1,
-				metricID:  "AutomaticUpdatesEnabled",
-				baseDir:   ".",
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -452,13 +454,16 @@ func Test_regoEval_evalMap(t *testing.T) {
 			name: "updated metric configuration",
 			fields: fields{
 				qc:   newQueryCache(),
-				mrtc: &metricsCache{m: make(map[string][]string)},
+				mrtc: &metricsCache{m: make(map[string][]*assessment.Metric)},
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
 				serviceID: testdata.MockCloudServiceID1,
-				metricID:  "AutomaticUpdatesEnabled",
-				baseDir:   ".",
+				metric: &assessment.Metric{
+					Id:       "AutomaticUpdatesEnabled",
+					Category: "Endpoint Security",
+				},
+				baseDir: ".",
 				m: map[string]interface{}{
 					"automaticUpdates": map[string]interface{}{
 						"enabled": true,
@@ -495,7 +500,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				mrtc: tt.fields.mrtc,
 				pkg:  tt.fields.pkg,
 			}
-			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metricID, tt.args.m, tt.args.src)
+			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metric, tt.args.m, tt.args.src)
 
 			tt.wantErr(t, err)
 			tt.wantResult(t, gotResult)

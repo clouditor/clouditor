@@ -543,7 +543,7 @@ func (svc *Service) Metrics() (metrics []*assessment.Metric, err error) {
 
 // MetricImplementation implements MetricsSource by retrieving the metric implementation
 // from the orchestrator.
-func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (impl *assessment.MetricImplementation, err error) {
+func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (impl *assessment.MetricImplementation, err error) {
 	// For now, the orchestrator only supports the Rego language.
 	if lang != assessment.MetricImplementation_LANGUAGE_REGO {
 		return nil, errors.New("unsupported language")
@@ -551,10 +551,10 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 	// Retrieve it from the orchestrator
 	impl, err = svc.orchestrator.Client.GetMetricImplementation(context.Background(), &orchestrator.GetMetricImplementationRequest{
-		MetricId: metric,
+		MetricId: metric.Id,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric, err)
+		return nil, fmt.Errorf("could not retrieve metric implementation for %s from orchestrator: %w", metric.Id, err)
 	}
 
 	return
@@ -562,7 +562,7 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
 // default target cloud service
-func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config *assessment.MetricConfiguration, err error) {
+func (svc *Service) MetricConfiguration(cloudServiceID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -570,7 +570,7 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", cloudServiceID, metricID)
+	key = fmt.Sprintf("%s-%s", cloudServiceID, metric.Id)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -581,11 +581,11 @@ func (svc *Service) MetricConfiguration(cloudServiceID, metricID string) (config
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestrator.Client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
 			CloudServiceId: cloudServiceID,
-			MetricId:       metricID,
+			MetricId:       metric.Id,
 		})
 
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metricID, err)
+			return nil, fmt.Errorf("could not retrieve metric configuration for %s: %w", metric.Id, err)
 		}
 
 		cache = cachedConfiguration{
