@@ -31,6 +31,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 	"github.com/sirupsen/logrus"
@@ -93,14 +94,27 @@ func (d *csafDiscovery) List() (list []ontology.IsResource, err error) {
 	log.Info("Fetching CSAF documents from provider")
 
 	loader := csaf.NewProviderMetadataLoader(d.client)
-	metadata := loader.Load(d.domain)
-	_ = metadata
-
-	if !metadata.Valid() {
-		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
-	}
+	metadataFiles := loader.Enumerate(d.domain)
+	_ = metadataFiles
 
 	// TODO: actually discover evidences in future PR
+	for _, pmd := range metadata {
+		if !pmd.Valid() {
+			return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
+		}
+		log.Info("Found valid CSAF PMD file")
 
-	return nil, nil
+		// create resource
+		r := &ontology.ServiceMetadataDocument{
+			Id:           string(pmd.URL),
+			CreationTime: timestamppb.Now(),
+		}
+		list = append(list, r)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
