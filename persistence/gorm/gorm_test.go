@@ -122,9 +122,10 @@ func Test_storage_Create(t *testing.T) {
 	)
 
 	metric = &assessment.Metric{
-		Id:    testdata.MockMetricID1,
-		Name:  testdata.MockMetricName1,
-		Range: mockMetricRange,
+		Id:       testdata.MockMetricID1,
+		Category: testdata.MockMetricCategory1,
+		Name:     testdata.MockMetricName1,
+		Range:    mockMetricRange,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -182,9 +183,10 @@ func Test_storage_Get(t *testing.T) {
 	assert.Equal(t, service, gotService3)
 
 	var metric = &assessment.Metric{
-		Id:    testdata.MockMetricID1,
-		Name:  testdata.MockMetricName1,
-		Range: mockMetricRange,
+		Id:       testdata.MockMetricID1,
+		Category: testdata.MockMetricCategory1,
+		Name:     testdata.MockMetricName1,
+		Range:    mockMetricRange,
 	}
 	// Check if metric has all necessary fields
 	assert.NoError(t, api.Validate(metric))
@@ -412,9 +414,10 @@ func Test_storage_Update(t *testing.T) {
 		Description: testdata.MockCloudServiceDescription1,
 		ConfiguredMetrics: []*assessment.Metric{
 			{
-				Id:    testdata.MockCloudServiceID1,
-				Name:  testdata.MockMetricName1,
-				Range: mockMetricRange,
+				Id:       testdata.MockCloudServiceID1,
+				Category: testdata.MockMetricCategory1,
+				Name:     testdata.MockMetricName1,
+				Range:    mockMetricRange,
 			},
 		},
 	}

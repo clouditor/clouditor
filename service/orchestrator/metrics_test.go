@@ -75,6 +75,7 @@ var (
 
 	MockMetric1 = &assessment.Metric{
 		Id:          testdata.MockMetricID1,
+		Category:    testdata.MockMetricCategory1,
 		Name:        testdata.MockMetricName1,
 		Description: testdata.MockMetricDescription1,
 		Scale:       assessment.Metric_ORDINAL,
@@ -266,18 +267,20 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    testdata.MockMetricID1,
-						Name:  testdata.MockMetricName1,
-						Scale: assessment.Metric_ORDINAL,
-						Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
+						Id:       testdata.MockMetricID1,
+						Category: testdata.MockMetricCategory1,
+						Name:     testdata.MockMetricName1,
+						Scale:    assessment.Metric_ORDINAL,
+						Range:    &assessment.Range{Range: &assessment.Range_MinMax{}},
 					},
 				},
 			},
 			wantMetric: &assessment.Metric{
-				Id:    testdata.MockMetricID1,
-				Name:  testdata.MockMetricName1,
-				Scale: assessment.Metric_ORDINAL,
-				Range: &assessment.Range{Range: &assessment.Range_MinMax{}},
+				Id:       testdata.MockMetricID1,
+				Category: testdata.MockMetricCategory1,
+				Name:     testdata.MockMetricName1,
+				Scale:    assessment.Metric_ORDINAL,
+				Range:    &assessment.Range{Range: &assessment.Range_MinMax{}},
 			},
 			wantErr: assert.NoError,
 		},
@@ -307,8 +310,8 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TLSVersion",
+						Category:        testdata.MockMetricCategory1,
 						Name:            "TLSMetricMockName",
-						Category:        "",
 						Scale:           assessment.Metric_NOMINAL,
 						Range:           &assessment.Range{},
 						DeprecatedSince: timestamppb.Now(),
@@ -332,8 +335,8 @@ func TestService_CreateMetric(t *testing.T) {
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:       "TLSVersion",
+						Category: "Transport Encryption",
 						Name:     "TLSMetricMockName",
-						Category: "",
 						Scale:    assessment.Metric_NOMINAL,
 						Range:    &assessment.Range{},
 					},
@@ -353,10 +356,11 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    testdata.MockMetricName1,
-						Name:  testdata.MockMetricName1,
-						Scale: assessment.Metric_NOMINAL,
-						Range: &assessment.Range{},
+						Id:       testdata.MockMetricName1,
+						Category: testdata.MockMetricCategory1,
+						Name:     testdata.MockMetricName1,
+						Scale:    assessment.Metric_NOMINAL,
+						Range:    &assessment.Range{},
 					},
 				},
 			},
@@ -374,10 +378,11 @@ func TestService_CreateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.CreateMetricRequest{
 					Metric: &assessment.Metric{
-						Id:    testdata.MockMetricID1,
-						Name:  testdata.MockMetricName1,
-						Scale: assessment.Metric_NOMINAL,
-						Range: &assessment.Range{},
+						Id:       testdata.MockMetricID1,
+						Category: testdata.MockMetricCategory1,
+						Name:     testdata.MockMetricName1,
+						Scale:    assessment.Metric_NOMINAL,
+						Range:    &assessment.Range{},
 					},
 				},
 			},
@@ -431,6 +436,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
+						Category:        "Transport Encryption",
 						Name:            "A slightly updated metric",
 						Scale:           assessment.Metric_NOMINAL,
 						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
@@ -440,6 +446,7 @@ func TestService_UpdateMetric(t *testing.T) {
 			},
 			wantMetric: &assessment.Metric{
 				Id:              "TransportEncryptionEnabled",
+				Category:        "Transport Encryption",
 				Name:            "A slightly updated metric",
 				Scale:           assessment.Metric_NOMINAL,
 				Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
@@ -457,6 +464,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
+						Category:        "Transport Encryption",
 						Name:            "A slightly updated metric",
 						Scale:           assessment.Metric_NOMINAL,
 						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
@@ -477,9 +485,9 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "TransportEncryptionEnabled",
+						Category:        "Transport Encryption",
 						Name:            "TransportEncryptionEnabled",
 						Description:     testdata.MockMetricDescription1,
-						Category:        testdata.MockMetricCategory1,
 						Scale:           assessment.Metric_NOMINAL,
 						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
 						DeprecatedSince: timestamp,
@@ -499,6 +507,7 @@ func TestService_UpdateMetric(t *testing.T) {
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
 						Id:              "DoesProbablyNotExist",
+						Category:        "Something",
 						Name:            "UpdateMetricName",
 						Scale:           assessment.Metric_NOMINAL,
 						Range:           &assessment.Range{Range: &assessment.Range_AllowedValues{}},
@@ -517,7 +526,8 @@ func TestService_UpdateMetric(t *testing.T) {
 				context.TODO(),
 				&orchestrator.UpdateMetricRequest{
 					Metric: &assessment.Metric{
-						Id: "DoesProbablyNotExist",
+						Id:       "DoesProbablyNotExist",
+						Category: "Something",
 					},
 				},
 			},
@@ -587,6 +597,7 @@ func TestService_GetMetric(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          "TransportEncryptionEnabled",
+						Category:    "Transport Encryption",
 						Name:        "Transport Encryption: Enabled",
 						Description: "This metric describes, whether transport encryption is turned on or not",
 						Scale:       assessment.Metric_ORDINAL,
@@ -607,6 +618,7 @@ func TestService_GetMetric(t *testing.T) {
 			},
 			wantMetric: &assessment.Metric{
 				Id:          "TransportEncryptionEnabled",
+				Category:    "Transport Encryption",
 				Name:        "Transport Encryption: Enabled",
 				Description: "This metric describes, whether transport encryption is turned on or not",
 				Scale:       assessment.Metric_ORDINAL,
@@ -688,6 +700,7 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Category:    testdata.MockMetricCategory1,
 						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Scale:       assessment.Metric_ORDINAL,
@@ -695,6 +708,7 @@ func TestService_ListMetrics(t *testing.T) {
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
+						Category:        testdata.MockMetricCategory2,
 						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Scale:           assessment.Metric_ORDINAL,
@@ -717,6 +731,7 @@ func TestService_ListMetrics(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					_ = s.Create(&assessment.Metric{
 						Id:          testdata.MockMetricID1,
+						Category:    testdata.MockMetricCategory1,
 						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Scale:       assessment.Metric_ORDINAL,
@@ -724,6 +739,7 @@ func TestService_ListMetrics(t *testing.T) {
 					})
 					_ = s.Create(&assessment.Metric{
 						Id:              testdata.MockMetricID2,
+						Category:        testdata.MockMetricCategory2,
 						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Scale:           assessment.Metric_ORDINAL,
@@ -743,6 +759,7 @@ func TestService_ListMetrics(t *testing.T) {
 				Metrics: []*assessment.Metric{
 					{
 						Id:          testdata.MockMetricID1,
+						Category:    testdata.MockMetricCategory1,
 						Name:        testdata.MockMetricName1,
 						Description: testdata.MockMetricDescription1,
 						Scale:       assessment.Metric_ORDINAL,
@@ -750,6 +767,7 @@ func TestService_ListMetrics(t *testing.T) {
 					},
 					{
 						Id:              testdata.MockMetricID2,
+						Category:        testdata.MockMetricCategory2,
 						Name:            testdata.MockMetricName2,
 						Description:     testdata.MockMetricDescription2,
 						Scale:           assessment.Metric_ORDINAL,

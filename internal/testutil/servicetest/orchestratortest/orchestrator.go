@@ -228,6 +228,7 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
+					Category:    testdata.MockMetricCategory1,
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
@@ -255,6 +256,7 @@ var (
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
@@ -289,6 +291,7 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
+					Category:    testdata.MockMetricCategory1,
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
@@ -332,6 +335,7 @@ var (
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
@@ -356,6 +360,7 @@ var (
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
