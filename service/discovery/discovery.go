@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -394,6 +395,14 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Raw:            util.Ref(resource.GetRaw()),
 			ToolId:         discovery.EvidenceCollectorToolId,
 			Resource:       a,
+		}
+
+		// Only enabled related evidences for some specific resources for now
+		if slices.Contains(ontology.ResourceTypes(resource), "SecurityAdvisoryService") {
+			edges := ontology.Related(resource)
+			for _, edge := range edges {
+				e.ExperimentalRelatedResourceIds = append(e.ExperimentalRelatedResourceIds, edge.Value)
+			}
 		}
 
 		// Get Evidence Store stream

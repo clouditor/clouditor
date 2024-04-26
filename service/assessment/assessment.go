@@ -277,7 +277,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 
 		logging.LogRequest(log, logrus.DebugLevel, logging.Assess, req)
 	} else {
-		log.Tracef("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
+		log.Debugf("Evidence %s needs to wait for %d more resource(s) to assess evidence", req.Evidence.Id, len(waitingFor))
 
 		// Create a left-over request with all the necessary information
 		l := waitingRequest{

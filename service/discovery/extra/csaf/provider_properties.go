@@ -2,6 +2,7 @@ package csaf
 
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
+
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 

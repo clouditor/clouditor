@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
@@ -21,7 +23,7 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		// so the evidence would be created two times
 		res, err := d.handleProvider(lpmd)
 		if err != nil {
-			return nil, fmt.Errorf("could not discover security advisories: %w", err)
+			return nil, fmt.Errorf("could not discover security provider: %w", err)
 		}
 		// Add all discovered resources to the providers
 		providers = append(providers, res...)
@@ -62,21 +64,42 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json",
 			Errors:    providerValidationErrors(lpmd.Messages),
 		},
+		Raw: discovery.Raw(pmd),
+	}
+
+	keys := d.discoverKeys(pmd.PGPKeys)
+	providers = append(providers, keys...)
+
+	keyring := openpgp.EntityList{}
+
+	for _, keyinfo := range pmd.PGPKeys {
+		key, err := d.fetchKey(keyinfo)
+		if err != nil {
+			return nil, err
+		}
+		keyring = append(keyring, key)
 	}
 
 	// Discover advisory documents from this provider
-	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd)
+	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd, keyring)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover security advisories: %w", err)
 	}
 
 	var provider = &ontology.SecurityAdvisoryService{
-		Id:                          lpmd.URL + "service",
-		InternetAccessibleEndpoint:  true,
-		Name:                        util.Deref(pmd.Publisher.Name),
-		SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
-		ServiceMetadataDocumentId:   util.Ref(serviceMetadata.Id),
-		TransportEncryption:         serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
+		Id:                         lpmd.URL + "service",
+		InternetAccessibleEndpoint: true,
+		Name:                       util.Deref(pmd.Publisher.Name),
+		// TODO: actually put document in correct feed
+		SecurityAdvisoryFeeds: []*ontology.SecurityAdvisoryFeed{
+			{
+				SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
+			},
+		},
+		ServiceMetadataDocumentId: util.Ref(serviceMetadata.Id),
+		TransportEncryption:       serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
+		KeyIds:                    getIDsOf(keys),
+		Raw:                       discovery.Raw(lpmd),
 	}
 
 	providers = append(providers, serviceMetadata, provider)
