@@ -114,8 +114,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clouditor/csaf_distribution/v3 v3.0.0-20240419183418-f2920299a881 h1:DYwaBAmOpXjU4X2io9/VKK0Aib4tv8M8majEnu1KYU4=
-github.com/clouditor/csaf_distribution/v3 v3.0.0-20240419183418-f2920299a881/go.mod h1:uilCTiNKivq+6zrDvjtZaUeLk70oe21iwKivo6ILwlQ=
+github.com/csaf-poc/csaf_distribution/v3 v3.0.1-0.20240425111311-617deb4c1721 h1:gNsEpEykolY5hEa10b/RG4kWILSbLbd1VZrKPGQ8ZL4=
+github.com/csaf-poc/csaf_distribution/v3 v3.0.1-0.20240425111311-617deb4c1721/go.mod h1:l+0Cuofz8+aOWEKTgj3mVqVHWnT3JIsT+152O3R0A9c=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
