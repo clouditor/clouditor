@@ -69,9 +69,7 @@ require (
 )
 
 // runtime dependencies (extra)
-require github.com/csaf-poc/csaf_distribution/v3 v3.0.0
-
-replace github.com/csaf-poc/csaf_distribution/v3 => github.com/clouditor/csaf_distribution/v3 v3.0.0-20240419183418-f2920299a881
+require github.com/csaf-poc/csaf_distribution/v3 v3.0.1-0.20240425111311-617deb4c1721
 
 // tools dependencies
 require (

@@ -13,8 +13,24 @@ import (
 
 func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, err error) {
 	loader := csaf.NewProviderMetadataLoader(d.client)
-	lpmd := loader.Load(d.domain)
+	lpmd := loader.Enumerate(d.domain)
 
+	for _, pmd := range lpmd {
+		// Handle the single PMD files that were discovered It can happen that the PMD from
+		// the well-known URL and the first one defined in the security.txt are the same,
+		// so the evidence would be created two times
+		res, err := d.handleProvider(pmd)
+		if err != nil {
+			return nil, fmt.Errorf("could not discover security advisories: %w", err)
+		}
+		// Add all discovered resources to the providers
+		providers = append(providers, res...)
+	}
+
+	return
+}
+
+func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (providers []ontology.IsResource, err error) {
 	if !lpmd.Valid() {
 		// TODO(oxisto): Even if the PMD is invalid, we still need to create an evidence for it!
 		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
@@ -65,7 +81,6 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 
 	providers = append(providers, serviceMetadata, provider)
 	providers = append(providers, securityAdvisoryDocuments...)
-
 	return
 }
 
