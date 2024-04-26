@@ -13,9 +13,8 @@ func (d *csafDiscovery) providerTransportEncryption(url string) *ontology.Transp
 			Enabled: false,
 		}
 	}
-	return &ontology.TransportEncryption{
-		Enabled: res.TLS != nil,
-	}
+
+	return transportEncryption(res.TLS)
 }
 
 func providerValidationErrors(messages csaf.ProviderMetadataLoadMessages) (errs []*ontology.Error) {

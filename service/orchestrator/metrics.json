@@ -293,6 +293,66 @@
     }
   },
   {
+    "id": "DocumentCSAFRedRestricted",
+    "name": "CSAF Requirement 5: TLP:RED and TLP:AMBER",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 5 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#715-requirement-5-tlpamber-and-tlpred",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": "DocumentCSAFNoRedirect",
+    "name": "CSAF Requirement 6: No redirects",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 6 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#716-requirement-6-no-redirects",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": "SecurityAdvisoryServiceValidMetadata",
+    "name": "CSAF Requirement 7-10: provider-metadata.json",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 7-10 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#717-requirement-7-provider-metadatajson and the following sections.",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": "DocumentCSAFYearFolder",
+    "name": "CSAF Requirement 11: One folder per year",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 11 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#7111-requirement-11-one-folder-per-year",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
