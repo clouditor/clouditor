@@ -1,1 +1,4 @@
-{}
+{
+    "operator": "==",
+    "target_value": true
+}

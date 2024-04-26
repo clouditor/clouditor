@@ -373,6 +373,9 @@ func TestService_AssessEvidence(t *testing.T) {
 				evidenceResourceMap: map[string]*evidence.Evidence{
 					"my-other-resource-id": {
 						Id: testdata.MockEvidenceID2,
+						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
+							Id: testdata.MockResourceID2,
+						}),
 					},
 				},
 			},

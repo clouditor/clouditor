@@ -2,10 +2,10 @@ package csaf
 
 import (
 	"net/http"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -46,7 +46,15 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				client: p.Client(),
 			},
 			want: &ontology.TransportEncryption{
-				Enabled: true,
+				Enabled:         true,
+				Protocol:        constants.TLS,
+				ProtocolVersion: 1.3,
+				CipherSuites: []*ontology.CipherSuite{
+					{
+						MacAlgorithm:  constants.SHA_256,
+						SessionCipher: constants.AES_128_GCM,
+					},
+				},
 			},
 		},
 		{
@@ -67,9 +75,8 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				csID:   tt.fields.csID,
 				client: tt.fields.client,
 			}
-			if got := d.providerTransportEncryption(tt.args.url); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("providerTransportEncryption() = %v, want %v", got, tt.want)
-			}
+			got := d.providerTransportEncryption(tt.args.url)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
