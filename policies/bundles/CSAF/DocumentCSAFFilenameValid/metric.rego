@@ -9,16 +9,7 @@ default compliant := false
 
 applicable if {
 	# check resource type
-    resourceTypeValid
-}
-
-# Check if the resource type contains "ServiceMetadataDocument" or "SecurityAdvisoryDocument"
-resourceTypeValid if {
-	"ServiceMetadataDocument" in document.type
-}
-
-resourceTypeValid if {
-	"SecurityAdvisoryDocument" in document.type
+    "SecurityAdvisoryDocument" in document.type
 }
 
 compliant if {

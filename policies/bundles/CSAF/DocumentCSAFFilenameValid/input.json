@@ -1,9 +1,10 @@
 {
     "filetype": "JSON",
     "id": "https://xx.yy.zz/XXX",
-    "name": "ServiceMetadataDocument1",
+    "name": "Test Advisory",
+    "creation_time": 1640995200,
     "document_location": {
-        "path": "https://xx.yy.zz/document/tracking/id/cisco-sa-20190513-secureboot.json",
+        "path": "https://xx.yy.zz/2022/cisco-sa-20190513-secureboot.json",
         "transport_encryption": {
             "enabled": true,
             "protocol": "TLS",
@@ -12,11 +13,11 @@
     },
     "schemaValidation": {
         "errors": [],
-        "format": "CSAF provider metadata",
-        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json"
+        "format": "Common Security Advisory Framework",
+        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"
     },
     "type": [
-        "ServiceMetadataDocument",
+        "ServiceAdvisoryDocument",
         "Document",
         "Resource"
     ]

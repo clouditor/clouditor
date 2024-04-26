@@ -13,11 +13,11 @@
     },
     "schemaValidation": {
         "errors": [],
-        "format": "CSAF provider metadata",
-        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json"
+        "format": "Common Security Advisory Framework",
+        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"
     },
     "type": [
-        "ServiceMetadataDocument",
+        "ServiceAdvisoryDocument",
         "Document",
         "Resource"
     ]
