@@ -13,13 +13,13 @@ import (
 
 func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, err error) {
 	loader := csaf.NewProviderMetadataLoader(d.client)
-	lpmd := loader.Enumerate(d.domain)
+	lpmds := loader.Enumerate(d.domain)
 
-	for _, pmd := range lpmd {
+	for _, lpmd := range lpmds {
 		// Handle the single PMD files that were discovered It can happen that the PMD from
 		// the well-known URL and the first one defined in the security.txt are the same,
 		// so the evidence would be created two times
-		res, err := d.handleProvider(pmd)
+		res, err := d.handleProvider(lpmd)
 		if err != nil {
 			return nil, fmt.Errorf("could not discover security advisories: %w", err)
 		}
