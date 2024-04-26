@@ -152,7 +152,7 @@ func (x *MetricConfiguration) UnmarshalJSON(b []byte) (err error) {
 	return protojson.Unmarshal(b, x)
 }
 
-// categoryID returns an identifier for the category string, which can be used in a filename or directory
+// CategoryID returns an identifier for the category string, which can be used in a filename or directory
 func (m *Metric) CategoryID() (ID string) {
 	// replace all whitespace and non-alpha characters
 	r, _ := regexp.Compile("[^a-zA-Z0-9]+")
