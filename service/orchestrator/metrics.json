@@ -235,6 +235,7 @@
   {
     "id": "DocumentCSAFContentValid",
     "name": "Document: Document content is valid regarding the CSAF standard",
+    "category": "CSAF",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -248,6 +249,7 @@
   {
     "id": "DocumentCSAFFilenameValid",
     "name": "Document: The filename of the CSAF document is valid",
+    "category": "CSAF",
     "scale": 1,
     "range": {
       "allowedValues": {
