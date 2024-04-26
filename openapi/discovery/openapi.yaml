@@ -225,6 +225,8 @@ components:
             properties:
                 resourceGroup:
                     type: string
+                csafDomain:
+                    type: string
         StartDiscoveryResponse:
             type: object
             properties:
