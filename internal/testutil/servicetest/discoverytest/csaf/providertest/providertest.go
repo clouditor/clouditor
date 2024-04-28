@@ -43,10 +43,11 @@ import (
 
 type TrustedProvider struct {
 	*httptest.Server
-	pmd     *csaf.ProviderMetadata
-	idxw    ServiceHandler
-	feeds   map[csaf.TLPLabel][]*csaf.Advisory
-	keyring openpgp.EntityList
+	pmd   *csaf.ProviderMetadata
+	idxw  ServiceHandler
+	feeds map[csaf.TLPLabel][]*csaf.Advisory
+
+	Keyring openpgp.EntityList
 }
 
 // TODO: convert into functional-style options?
@@ -66,7 +67,7 @@ func NewTrustedProvider(
 
 	// Create a new OpenPGP key pair
 	key, _ := openpgp.NewEntity("test", "test", "test", nil)
-	p.keyring = append(p.keyring, key)
+	p.Keyring = append(p.Keyring, key)
 
 	mux.HandleFunc("/.well-known/csaf/provider-metadata.json", p.handlePMD)
 
@@ -82,7 +83,7 @@ func NewTrustedProvider(
 		})
 	}
 
-	for _, key := range p.keyring {
+	for _, key := range p.Keyring {
 		fp := hex.EncodeToString(key.PrimaryKey.Fingerprint)
 		p.pmd.PGPKeys = append(p.pmd.PGPKeys, csaf.PGPKey{
 			Fingerprint: csaf.Fingerprint(fp),
@@ -108,11 +109,11 @@ func (p *TrustedProvider) handleKey(w http.ResponseWriter, r *http.Request) {
 	file := filepath.Base(r.URL.Path)
 	fingerprint := strings.TrimSuffix(file, filepath.Ext(file))
 
-	idx := slices.IndexFunc(p.keyring, func(key *openpgp.Entity) bool {
+	idx := slices.IndexFunc(p.Keyring, func(key *openpgp.Entity) bool {
 		return hex.EncodeToString(key.PrimaryKey.Fingerprint) == fingerprint
 	})
 	if idx != -1 {
-		s, err := openpgp.WriteArmoredKey(p.keyring[idx])
+		s, err := openpgp.WriteArmoredKey(p.Keyring[idx])
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

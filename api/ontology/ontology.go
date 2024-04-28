@@ -106,3 +106,18 @@ func ResourceMap(r IsResource) (props map[string]any, err error) {
 
 	return
 }
+
+func ResourcePrettyJSON(r IsResource) (s string, err error) {
+	m, err := ResourceMap(r)
+	if err != nil {
+		return "", err
+	}
+
+	b, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	s = string(b)
+	return
+}
