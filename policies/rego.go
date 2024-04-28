@@ -176,7 +176,7 @@ func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, rel
 
 		// Set it and unlock
 		re.mrtc.m[key] = cached
-		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(re.mrtc.m[key]), re.mrtc.m[key])
+		log.Infof("Resource type %v has the following %v applicable metric(s): %v", key, len(re.mrtc.m[key]), idsOf(re.mrtc.m[key]))
 
 		re.mrtc.Unlock()
 	} else {
@@ -402,4 +402,11 @@ func (qc *queryCache) Evict(metric string) {
 			delete(qc.cache, k)
 		}
 	}
+}
+
+func idsOf(metrics []*assessment.Metric) (ids []string) {
+	for _, metric := range metrics {
+		ids = append(ids, metric.Id)
+	}
+	return
 }

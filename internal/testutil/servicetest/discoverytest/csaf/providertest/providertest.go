@@ -26,6 +26,7 @@
 package providertest
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,6 +35,7 @@ import (
 	"slices"
 	"strings"
 
+	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
@@ -41,9 +43,10 @@ import (
 
 type TrustedProvider struct {
 	*httptest.Server
-	pmd   *csaf.ProviderMetadata
-	idxw  ServiceHandler
-	feeds map[csaf.TLPLabel][]*csaf.Advisory
+	pmd     *csaf.ProviderMetadata
+	idxw    ServiceHandler
+	feeds   map[csaf.TLPLabel][]*csaf.Advisory
+	keyring openpgp.EntityList
 }
 
 // TODO: convert into functional-style options?
@@ -61,6 +64,10 @@ func NewTrustedProvider(
 	p.Server = httptest.NewTLSServer(mux)
 	p.Server.EnableHTTP2 = true
 
+	// Create a new OpenPGP key pair
+	key, _ := openpgp.NewEntity("test", "test", "test", nil)
+	p.keyring = append(p.keyring, key)
+
 	mux.HandleFunc("/.well-known/csaf/provider-metadata.json", p.handlePMD)
 
 	p.pmd = csaf.NewProviderMetadataDomain(fmt.Sprintf("https://%s", p.Domain()), nil)
@@ -75,6 +82,15 @@ func NewTrustedProvider(
 		})
 	}
 
+	for _, key := range p.keyring {
+		fp := hex.EncodeToString(key.PrimaryKey.Fingerprint)
+		p.pmd.PGPKeys = append(p.pmd.PGPKeys, csaf.PGPKey{
+			Fingerprint: csaf.Fingerprint(fp),
+			URL:         util.Ref("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
+		})
+		mux.HandleFunc("/.well-known/csaf/opengpg/"+fp+".asc", p.handleKey)
+	}
+
 	// Apply PMD functions
 	for _, fn := range fns {
 		fn(p.pmd)
@@ -85,6 +101,27 @@ func NewTrustedProvider(
 
 func (p *TrustedProvider) handlePMD(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, p.pmd)
+}
+
+func (p *TrustedProvider) handleKey(w http.ResponseWriter, r *http.Request) {
+	// Find key from fingerprint
+	file := filepath.Base(r.URL.Path)
+	fingerprint := strings.TrimSuffix(file, filepath.Ext(file))
+
+	idx := slices.IndexFunc(p.keyring, func(key *openpgp.Entity) bool {
+		return hex.EncodeToString(key.PrimaryKey.Fingerprint) == fingerprint
+	})
+	if idx != -1 {
+		s, err := openpgp.WriteArmoredKey(p.keyring[idx])
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		_, _ = w.Write([]byte(s))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
@@ -101,25 +138,44 @@ func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
 
 	advisories := p.advisoriesFor(feed)
 	if advisories == nil {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	file := filepath.Base(r.URL.Path)
 
 	if file == "index.txt" {
-		p.idxw.handleIndexTxt(w, r, advisories)
+		p.idxw.handleIndexTxt(w, r, advisories, p)
 	} else if file == "changes.csv" {
-		p.idxw.handleChangesCsv(w, r, advisories)
+		p.idxw.handleChangesCsv(w, r, advisories, p)
 	} else {
+		ext := filepath.Ext(file)
+		var id string
+		var handler func(http.ResponseWriter, *http.Request, *csaf.Advisory, *TrustedProvider)
+
+		if ext == ".sha256" {
+			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+			handler = p.idxw.handleSHA256
+		} else if ext == ".sha512" {
+			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+			handler = p.idxw.handleSHA512
+		} else if ext == ".asc" {
+			id = strings.TrimSuffix(file, ".json"+filepath.Ext(file))
+			handler = p.idxw.handleSignature
+		} else {
+			id = strings.TrimSuffix(file, filepath.Ext(file))
+			handler = p.idxw.handleAdvisory
+		}
+
+		// Find the advisory
 		idx := slices.IndexFunc(advisories, func(doc *csaf.Advisory) bool {
-			return strings.ToLower(string(util.Deref(doc.Document.Tracking.ID))) == strings.TrimSuffix(file, filepath.Ext(file))
+			return strings.ToLower(string(util.Deref(doc.Document.Tracking.ID))) == id
 		})
 		if idx == -1 {
-			w.WriteHeader(404)
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		p.idxw.handleAdvisory(w, r, advisories[idx])
+		handler(w, r, advisories[idx], p)
 	}
 }
 

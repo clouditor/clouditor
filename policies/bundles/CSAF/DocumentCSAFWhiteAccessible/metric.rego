@@ -10,13 +10,13 @@ default compliant := false
 applicable if {
 	# check resource type
 	"SecurityAdvisoryDocument" in document.type
-    
-    # check, if document is WHITE labeled
-    document.labels.tlp == "WHITE"
+
+	# check, if document is WHITE labeled
+	document.labels.tlp == "WHITE"
 }
 
 compliant if {
-    # WHITE must be freely accessible
-    auth := document.documentLocation.remoteDocumentLocation.authenticity
-    auth.noAuthentication
+	# WHITE must be freely accessible
+	auth := document.documentLocation.remoteDocumentLocation.authenticity
+	auth.noAuthentication
 }

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
@@ -21,7 +23,7 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 		// so the evidence would be created two times
 		res, err := d.handleProvider(lpmd)
 		if err != nil {
-			return nil, fmt.Errorf("could not discover security advisories: %w", err)
+			return nil, fmt.Errorf("could not discover security provider: %w", err)
 		}
 		// Add all discovered resources to the providers
 		providers = append(providers, res...)
@@ -30,7 +32,10 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 	return
 }
 
-func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (providers []ontology.IsResource, err error) {
+// handleProvider tries to convert a [csaf.LoadedProviderMetadata] into an
+// [ontology.SecurityAdvisoryService] as well as associated resources, such as
+// its metadata document and signing keys.
+func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resources []ontology.IsResource, err error) {
 	if !lpmd.Valid() {
 		// TODO(oxisto): Even if the PMD is invalid, we still need to create an evidence for it!
 		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
@@ -38,7 +43,6 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 
 	// Convert it to a csaf.ProviderMetadata struct for simpler access
 	var pmd csaf.ProviderMetadata
-
 	err = csafutil.ReMarshalJSON(&pmd, lpmd.Document)
 	if err != nil {
 		err = fmt.Errorf("could not convert provider metadata to struct: %w", err)
@@ -62,25 +66,44 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/provider_json_schema.json",
 			Errors:    providerValidationErrors(lpmd.Messages),
 		},
+		Raw: discovery.Raw(pmd),
+	}
+
+	keys := d.discoverKeys(pmd.PGPKeys)
+	keyring := openpgp.EntityList{}
+	for _, keyinfo := range pmd.PGPKeys {
+		key, err := d.fetchKey(keyinfo)
+		if err != nil {
+			return nil, err
+		}
+		keyring = append(keyring, key)
 	}
 
 	// Discover advisory documents from this provider
-	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd)
+	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd, keyring)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover security advisories: %w", err)
 	}
 
 	var provider = &ontology.SecurityAdvisoryService{
-		Id:                          lpmd.URL + "service",
-		InternetAccessibleEndpoint:  true,
-		Name:                        util.Deref(pmd.Publisher.Name),
-		SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
-		ServiceMetadataDocumentId:   util.Ref(serviceMetadata.Id),
-		TransportEncryption:         serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
+		Id:                         lpmd.URL + "service",
+		InternetAccessibleEndpoint: true,
+		Name:                       util.Deref(pmd.Publisher.Name),
+		// TODO: actually put document in correct feed
+		SecurityAdvisoryFeeds: []*ontology.SecurityAdvisoryFeed{
+			{
+				SecurityAdvisoryDocumentIds: getIDsOf(securityAdvisoryDocuments),
+			},
+		},
+		ServiceMetadataDocumentId: util.Ref(serviceMetadata.Id),
+		TransportEncryption:       serviceMetadata.DocumentLocation.GetRemoteDocumentLocation().GetTransportEncryption(),
+		KeyIds:                    getIDsOf(keys),
+		Raw:                       discovery.Raw(lpmd),
 	}
 
-	providers = append(providers, serviceMetadata, provider)
-	providers = append(providers, securityAdvisoryDocuments...)
+	resources = append(resources, serviceMetadata, provider)
+	resources = append(resources, securityAdvisoryDocuments...)
+	resources = append(resources, keys...)
 	return
 }
 

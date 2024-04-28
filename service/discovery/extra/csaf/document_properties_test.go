@@ -1,7 +1,12 @@
 package csaf
 
 import (
+	"crypto/sha256"
 	"crypto/tls"
+	"errors"
+	"hash"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -156,6 +161,82 @@ func Test_transportEncryption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := transportEncryption(tt.args.state)
 			tt.want(t, got)
+		})
+	}
+}
+
+func Test_csafDiscovery_documentChecksum(t *testing.T) {
+	var badChecksumSrv = func() *httptest.Server {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/file.json.sha256", func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte("123456 file.json"))
+		})
+		srv := httptest.NewTLSServer(mux)
+		srv.EnableHTTP2 = true
+		return srv
+	}()
+	defer badChecksumSrv.Close()
+
+	type fields struct {
+		domain string
+		csID   string
+		client *http.Client
+	}
+	type args struct {
+		checksumURL string
+		filename    string
+		body        []byte
+		algorithm   string
+		h           hash.Hash
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   *ontology.DocumentChecksum
+	}{
+		{
+			name: "checksum mismatch",
+			fields: fields{
+				client: badChecksumSrv.Client(),
+			},
+			args: args{
+				checksumURL: "https://" + badChecksumSrv.Listener.Addr().String() + "/file.json.sha256",
+				filename:    "file.json",
+				algorithm:   constants.SHA_256,
+				h:           sha256.New(),
+			},
+			want: &ontology.DocumentChecksum{
+				Errors:    fromError(errors.New("checksum mismatch")),
+				Algorithm: constants.SHA_256,
+			},
+		},
+		{
+			name: "filename mismatch",
+			fields: fields{
+				client: badChecksumSrv.Client(),
+			},
+			args: args{
+				checksumURL: "https://" + badChecksumSrv.Listener.Addr().String() + "/file.json.sha256",
+				filename:    "anotherfile.json",
+				algorithm:   constants.SHA_256,
+				h:           sha256.New(),
+			},
+			want: &ontology.DocumentChecksum{
+				Errors:    fromError(errors.New("checksum file does not contain correct filename")),
+				Algorithm: constants.SHA_256,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &csafDiscovery{
+				domain: tt.fields.domain,
+				csID:   tt.fields.csID,
+				client: tt.fields.client,
+			}
+			got := d.documentChecksum(tt.args.checksumURL, tt.args.filename, tt.args.body, tt.args.algorithm, tt.args.h)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

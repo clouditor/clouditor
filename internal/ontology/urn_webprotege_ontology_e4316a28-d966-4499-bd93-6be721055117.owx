@@ -108,6 +108,9 @@
         <Class IRI="http://graph.clouditor.io/classes/Credential"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/CryptographicHash"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/CustomerKeyEncryption"/>
     </Declaration>
     <Declaration>
@@ -336,6 +339,9 @@
         <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryDocument"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryFeed"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryService"/>
     </Declaration>
     <Declaration>
@@ -343,6 +349,9 @@
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/ServiceMetadataDocument"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/Signature"/>
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/SingleSignOn"/>
@@ -381,6 +390,9 @@
         <Class IRI="http://graph.clouditor.io/classes/ZoneRedundancy"/>
     </Declaration>
     <Declaration>
+        <ObjectProperty IRI="http://graph.clouditor.io/classes/basedOn"/>
+    </Declaration>
+    <Declaration>
         <ObjectProperty IRI="http://graph.clouditor.io/classes/bootLog"/>
     </Declaration>
     <Declaration>
@@ -397,6 +409,9 @@
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="http://graph.clouditor.io/classes/scope"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="http://graph.clouditor.io/classes/target"/>
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="http://graph.clouditor.io/classes/usedBy"/>
@@ -1315,6 +1330,24 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/CryptographicHash"/>
+        <Class IRI="http://graph.clouditor.io/classes/Integrity"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/CryptographicHash"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/Error"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/CryptographicHash"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:algorithm"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/CustomerKeyEncryption"/>
         <Class IRI="http://graph.clouditor.io/classes/AtRestEncryption"/>
     </SubClassOf>
@@ -1417,7 +1450,21 @@
         <Class IRI="http://graph.clouditor.io/classes/Document"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/CryptographicHash"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Document"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class IRI="http://graph.clouditor.io/classes/SecurityFeature"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Document"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/Signature"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -2270,6 +2317,17 @@
         <Class IRI="http://graph.clouditor.io/classes/Document"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryFeed"/>
+        <Class IRI="http://graph.clouditor.io/classes/Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryFeed"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryDocument"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryService"/>
         <Class IRI="http://graph.clouditor.io/classes/NetworkService"/>
     </SubClassOf>
@@ -2277,7 +2335,14 @@
         <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryService"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
-            <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryDocument"/>
+            <Class IRI="http://graph.clouditor.io/classes/Key"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryService"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/SecurityAdvisoryFeed"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -2287,6 +2352,24 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ServiceMetadataDocument"/>
         <Class IRI="http://graph.clouditor.io/classes/Document"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Signature"/>
+        <Class IRI="http://graph.clouditor.io/classes/Integrity"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Signature"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class IRI="http://graph.clouditor.io/classes/Error"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Signature"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:algorithm"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/SingleSignOn"/>
@@ -3093,6 +3176,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/CryptographicHash</IRI>
+        <Literal>DocumentChecksum</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/CustomerKeyEncryption</IRI>
         <Literal xml:lang="english">CustomerKeyEncryption</Literal>
     </AnnotationAssertion>
@@ -3548,6 +3636,16 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/SecurityAdvisoryFeed</IRI>
+        <Literal>SecurityAdvisoryFeed</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/SecurityAdvisoryService</IRI>
+        <Literal>This service discloses security advisories, e.g. according to the CSAF standard. It has one or more feeds that contain the actual advisories as well as multiple (public) keys that are used to sign the advisory documents.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/SecurityAdvisoryService</IRI>
         <Literal>SecurityAdvisoryService</Literal>
     </AnnotationAssertion>
@@ -3560,6 +3658,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/ServiceMetadataDocument</IRI>
         <Literal>ServiceMetadataDocument</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/Signature</IRI>
+        <Literal>DocumentSignature</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3650,6 +3753,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/authenticationMechanism</IRI>
         <Literal>authenticationMechanism</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/basedOn</IRI>
+        <Literal>basedOn</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3975,6 +4083,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/sessionCipher</IRI>
         <Literal>sessionCipher</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/target</IRI>
+        <Literal>target</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

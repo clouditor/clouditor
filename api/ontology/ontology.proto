@@ -530,6 +530,16 @@ message Credential {
   }
 }
 
+// DocumentChecksum is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message DocumentChecksum {
+  option (resource_type_names) = "DocumentChecksum";
+  option (resource_type_names) = "Integrity";
+  option (resource_type_names) = "SecurityFeature";
+
+  string algorithm = 1;
+  repeated Error errors = 2;
+}
+
 // CustomerKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message CustomerKeyEncryption {
   option (resource_type_names) = "CustomerKeyEncryption";
@@ -850,6 +860,7 @@ message Functionality {
     LogOperation log_operation = 10;
     ObjectStorageRequest object_storage_request = 11;
     SchemaValidation schema_validation = 12;
+    SecurityAdvisoryFeed security_advisory_feed = 13;
   }
 }
 
@@ -867,10 +878,12 @@ message GenericDocument {
   string name = 5 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
-  DocumentLocation document_location = 7;
-  optional string parent_id = 8;
-  SchemaValidation schema_validation = 9;
-  repeated SecurityFeature security_features = 10;
+  repeated DocumentChecksum document_checksums = 7;
+  DocumentLocation document_location = 8;
+  repeated DocumentSignature document_signatures = 9;
+  optional string parent_id = 10;
+  SchemaValidation schema_validation = 11;
+  repeated SecurityFeature security_features = 12;
 }
 
 // GenericNetworkService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1027,7 +1040,9 @@ message Immutability {
 message Integrity {
   oneof type {
     AutomaticUpdates automatic_updates = 1;
-    Immutability immutability = 2;
+    DocumentChecksum document_checksum = 2;
+    Immutability immutability = 3;
+    DocumentSignature document_signature = 4;
   }
 }
 
@@ -1753,13 +1768,24 @@ message SecurityAdvisoryDocument {
   string name = 5 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
-  DocumentLocation document_location = 7;
-  optional string parent_id = 8;
-  SchemaValidation schema_validation = 9;
-  repeated SecurityFeature security_features = 10;
+  repeated DocumentChecksum document_checksums = 7;
+  DocumentLocation document_location = 8;
+  repeated DocumentSignature document_signatures = 9;
+  optional string parent_id = 10;
+  SchemaValidation schema_validation = 11;
+  repeated SecurityFeature security_features = 12;
+}
+
+// SecurityAdvisoryFeed is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message SecurityAdvisoryFeed {
+  option (resource_type_names) = "SecurityAdvisoryFeed";
+  option (resource_type_names) = "Functionality";
+
+  repeated string security_advisory_document_ids = 1;
 }
 
 // SecurityAdvisoryService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// This service discloses security advisories, e.g. according to the CSAF standard. It has one or more feeds that contain the actual advisories as well as multiple (public) keys that are used to sign the advisory documents.
 message SecurityAdvisoryService {
   option (resource_type_names) = "SecurityAdvisoryService";
   option (resource_type_names) = "NetworkService";
@@ -1779,12 +1805,13 @@ message SecurityAdvisoryService {
   Authenticity authenticity = 9;
   optional string compute_id = 10;
   GeoLocation geo_location = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  repeated string security_advisory_document_ids = 14;
-  optional string service_metadata_document_id = 15;
-  TransportEncryption transport_encryption = 16;
-  UsageStatistics usage_statistics = 17;
+  repeated string key_ids = 12;
+  repeated Redundancy redundancies = 13;
+  optional string parent_id = 14;
+  repeated SecurityAdvisoryFeed security_advisory_feeds = 15;
+  optional string service_metadata_document_id = 16;
+  TransportEncryption transport_encryption = 17;
+  UsageStatistics usage_statistics = 18;
 }
 
 // SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1820,7 +1847,9 @@ message SecurityFeature {
     EncryptionInUse encryption_in_use = 28;
     TransportEncryption transport_encryption = 29;
     AutomaticUpdates automatic_updates = 30;
-    Immutability immutability = 31;
+    DocumentChecksum document_checksum = 31;
+    Immutability immutability = 32;
+    DocumentSignature document_signature = 33;
   }
 }
 
@@ -1837,10 +1866,22 @@ message ServiceMetadataDocument {
   string name = 5 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
-  DocumentLocation document_location = 7;
-  optional string parent_id = 8;
-  SchemaValidation schema_validation = 9;
-  repeated SecurityFeature security_features = 10;
+  repeated DocumentChecksum document_checksums = 7;
+  DocumentLocation document_location = 8;
+  repeated DocumentSignature document_signatures = 9;
+  optional string parent_id = 10;
+  SchemaValidation schema_validation = 11;
+  repeated SecurityFeature security_features = 12;
+}
+
+// DocumentSignature is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message DocumentSignature {
+  option (resource_type_names) = "DocumentSignature";
+  option (resource_type_names) = "Integrity";
+  option (resource_type_names) = "SecurityFeature";
+
+  string algorithm = 1;
+  repeated Error errors = 2;
 }
 
 // SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
