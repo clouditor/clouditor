@@ -234,8 +234,9 @@
   },
   {
     "id": "DocumentCSAFContentValid",
-    "name": "Document: Document content is valid regarding the CSAF standard",
+    "name": "CSAF Requirement 1: Valid CSAF document",
     "category": "CSAF",
+    "description": "This metric checks Requirement 1 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#711-requirement-1-valid-csaf-document",
     "scale": 1,
     "range": {
       "allowedValues": {
@@ -248,8 +249,9 @@
   },
   {
     "id": "DocumentCSAFFilenameValid",
-    "name": "Document: The filename of the CSAF document is valid",
+    "name": "CSAF Requirement 2: Valid CSAF document filename",
     "category": "CSAF",
+    "description": "This metric checks Requirement 2 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#712-requirement-2-filename",
     "scale": 1,
     "range": {
       "allowedValues": {
