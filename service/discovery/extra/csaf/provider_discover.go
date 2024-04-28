@@ -32,7 +32,10 @@ func (d *csafDiscovery) discoverProviders() (providers []ontology.IsResource, er
 	return
 }
 
-func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (providers []ontology.IsResource, err error) {
+// handleProvider tries to convert a [csaf.LoadedProviderMetadata] into an
+// [ontology.SecurityAdvisoryService] as well as associated resources, such as
+// its metadata document and signing keys.
+func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resources []ontology.IsResource, err error) {
 	if !lpmd.Valid() {
 		// TODO(oxisto): Even if the PMD is invalid, we still need to create an evidence for it!
 		return nil, fmt.Errorf("could not load provider-metadata.json from %s", d.domain)
@@ -40,7 +43,6 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 
 	// Convert it to a csaf.ProviderMetadata struct for simpler access
 	var pmd csaf.ProviderMetadata
-
 	err = csafutil.ReMarshalJSON(&pmd, lpmd.Document)
 	if err != nil {
 		err = fmt.Errorf("could not convert provider metadata to struct: %w", err)
@@ -68,10 +70,7 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 	}
 
 	keys := d.discoverKeys(pmd.PGPKeys)
-	providers = append(providers, keys...)
-
 	keyring := openpgp.EntityList{}
-
 	for _, keyinfo := range pmd.PGPKeys {
 		key, err := d.fetchKey(keyinfo)
 		if err != nil {
@@ -102,8 +101,9 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (provi
 		Raw:                       discovery.Raw(lpmd),
 	}
 
-	providers = append(providers, serviceMetadata, provider)
-	providers = append(providers, securityAdvisoryDocuments...)
+	resources = append(resources, serviceMetadata, provider)
+	resources = append(resources, securityAdvisoryDocuments...)
+	resources = append(resources, keys...)
 	return
 }
 

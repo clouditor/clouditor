@@ -1785,6 +1785,7 @@ message SecurityAdvisoryFeed {
 }
 
 // SecurityAdvisoryService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+// This service discloses security advisories, e.g. according to the CSAF standard. It has one or more feeds that contain the actual advisories as well as multiple (public) keys that are used to sign the advisory documents.
 message SecurityAdvisoryService {
   option (resource_type_names) = "SecurityAdvisoryService";
   option (resource_type_names) = "NetworkService";

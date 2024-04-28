@@ -95,8 +95,8 @@ func (d *csafDiscovery) documentChecksums(file csaf.AdvisoryFile, body []byte) (
 		constants.SHA_512: sha512.New(),
 	}
 
-	for algorithm, hash := range toHash {
-		checksum := d.documentChecksum(file.SHA256URL(), filepath.Base(file.URL()), body, algorithm, hash)
+	for algorithm, h := range toHash {
+		checksum := d.documentChecksum(file.SHA256URL(), filepath.Base(file.URL()), body, algorithm, h)
 		if checksum != nil {
 			checksums = append(checksums, checksum)
 		}

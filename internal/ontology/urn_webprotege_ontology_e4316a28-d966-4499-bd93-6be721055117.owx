@@ -3640,6 +3640,11 @@ name = metadata.name</Literal>
         <Literal>SecurityAdvisoryFeed</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://graph.clouditor.io/classes/SecurityAdvisoryService</IRI>
+        <Literal>This service discloses security advisories, e.g. according to the CSAF standard. It has one or more feeds that contain the actual advisories as well as multiple (public) keys that are used to sign the advisory documents.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/SecurityAdvisoryService</IRI>
         <Literal>SecurityAdvisoryService</Literal>
