@@ -297,6 +297,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				domain string
 				opts   []csaf.DiscoveryOption
 			)
+			domain = util.Deref(req.CsafDomain)
 			if domain != "" {
 				opts = append(opts, csaf.WithProviderDomain(domain))
 			}

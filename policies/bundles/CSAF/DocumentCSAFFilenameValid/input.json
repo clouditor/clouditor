@@ -1,21 +1,42 @@
 {
-    "filetype": "JSON",
-    "id": "CISCO-SA-20190513-SECUREboot",
-    "name": "Test Advisory",
-    "creation_time": 1640995200,
-    "document_location": {
-        "path": "https://xx.yy.zz/2022/cisco-sa-20190513-secureboot.json",
-        "transport_encryption": {
-            "enabled": true,
-            "protocol": "TLS",
-            "protocol_version": 1.3
+    "creationTime": "2020-07-01T10:09:07Z",
+    "documentLocation": {
+        "remoteDocumentLocation": {
+            "authenticity": {
+                "noAuthentication": {
+                    "contextIsChecked": false
+                }
+            },
+            "path": "https://127.0.0.1:62479/.well-known/csaf/white/2020/some-id.json",
+            "transportEncryption": {
+                "cipherSuites": [
+                    {
+                        "authenticationMechanism": "",
+                        "keyExchangeAlgorithm": "",
+                        "macAlgorithm": "SHA-256",
+                        "sessionCipher": "AES-128-GCM"
+                    }
+                ],
+                "enabled": true,
+                "enforced": false,
+                "protocol": "TLS",
+                "protocolVersion": 1.3
+            }
         }
     },
+    "filetype": "JSON",
+    "id": "some-id",
+    "labels": {
+        "tlp": "WHITE"
+    },
+    "name": "Buffer overflow in Test Product",
+    "raw": "",
     "schemaValidation": {
         "errors": [],
         "format": "Common Security Advisory Framework",
-        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"
+        "schemaUrl": "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"
     },
+    "securityFeatures": [],
     "type": [
         "SecurityAdvisoryDocument",
         "Document",

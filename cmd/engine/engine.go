@@ -165,7 +165,7 @@ func init() {
 	engineCmd.Flags().Bool(DiscoveryAutoStartFlag, DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	engineCmd.Flags().StringSliceP(DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	engineCmd.Flags().String(DiscoveryResourceGroupFlag, DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
-	engineCmd.Flags().String(DiscoveryCSAFDomainFlag, DefaultDiscoveryResourceGroup, "The domain to look for a CSAF provider, if the CSAF discovery is enabled")
+	engineCmd.Flags().String(DiscoveryCSAFDomainFlag, DefaultCSAFDomain, "The domain to look for a CSAF provider, if the CSAF discovery is enabled")
 	engineCmd.Flags().String(DashboardURLFlag, DefaultDashboardURL, "The URL of the Clouditor Dashboard. If the embedded server is used, a public OAuth 2.0 client based on this URL will be added")
 	engineCmd.Flags().String(LogLevelFlag, DefaultLogLevel, "The default log level")
 
@@ -195,6 +195,7 @@ func init() {
 	_ = viper.BindPFlag(DiscoveryAutoStartFlag, engineCmd.Flags().Lookup(DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(DiscoveryProviderFlag, engineCmd.Flags().Lookup(DiscoveryProviderFlag))
 	_ = viper.BindPFlag(DiscoveryResourceGroupFlag, engineCmd.Flags().Lookup(DiscoveryResourceGroupFlag))
+	_ = viper.BindPFlag(DiscoveryCSAFDomainFlag, engineCmd.Flags().Lookup(DiscoveryCSAFDomainFlag))
 	_ = viper.BindPFlag(DashboardURLFlag, engineCmd.Flags().Lookup(DashboardURLFlag))
 	_ = viper.BindPFlag(LogLevelFlag, engineCmd.Flags().Lookup(LogLevelFlag))
 }
