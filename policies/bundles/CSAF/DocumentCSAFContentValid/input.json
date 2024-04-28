@@ -1,0 +1,24 @@
+{
+    "filetype": "JSON",
+    "id": "CISCO-SA-20190513-SECUREboot",
+    "name": "Test Advisory",
+    "creation_time": 1640995200,
+    "documentLocation": {
+        "path": "https://xx.yy.zz/2022/cisco-sa-20190513-secureboot.json",
+        "transportEncryption": {
+            "enabled": true,
+            "protocol": "TLS",
+            "protocol_version": 1.3
+        }
+    },
+    "schemaValidation": {
+        "errors": [],
+        "format": "Common Security Advisory Framework",
+        "schemaURL": "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json"
+    },
+    "type": [
+        "SecurityAdvisoryDocument",
+        "Document",
+        "Resource"
+    ]
+}

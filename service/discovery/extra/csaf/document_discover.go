@@ -67,7 +67,7 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 		return nil, err
 	}
 
-	time, err := time.Parse(time.RFC3339, util.Deref(advisory.Document.Tracking.InitialReleaseDate))
+	t, err := time.Parse(time.RFC3339, util.Deref(advisory.Document.Tracking.InitialReleaseDate))
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 				},
 			},
 		},
-		CreationTime: timestamppb.New(time),
+		CreationTime: timestamppb.New(t),
 		SchemaValidation: &ontology.SchemaValidation{
 			SchemaUrl: "https://docs.oasis-open.org/csaf/csaf/v2.0/csaf_json_schema.json",
 			Format:    "Common Security Advisory Framework",

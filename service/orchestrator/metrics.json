@@ -233,6 +233,37 @@
     }
   },
   {
+    "id": "DocumentCSAFContentValid",
+    "name": "CSAF Requirement 1: Valid CSAF document",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 1 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#711-requirement-1-valid-csaf-document",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
+    "id": "DocumentCSAFFilenameValid",
+    "name": "CSAF Requirement 2: Valid CSAF document filename",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 2 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#712-requirement-2-filename",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+
+  {
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
