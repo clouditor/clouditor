@@ -43,6 +43,7 @@
       "cmpopts",
       "conds",
       "constants",
+      "csaf",
       "CSAF",
       "dataprotection",
       "Debugf",
