@@ -1,4 +1,4 @@
-package clouditor.metrics.document_csaf_year_folder
+package clouditor.metrics.security_advisory_document_checksum
 
 import input as document
 import rego.v1
