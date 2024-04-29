@@ -127,7 +127,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			args: args{},
 			want: &csafDiscovery{
 				csID:   discovery.DefaultCloudServiceID,
-				domain: "wid.cert-bund.de",
+				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
 		},
@@ -138,7 +138,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			},
 			want: &csafDiscovery{
 				csID:   testdata.MockCloudServiceID1,
-				domain: "wid.cert-bund.de",
+				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
 		},
