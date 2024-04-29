@@ -6,7 +6,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
@@ -72,15 +71,8 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 	// TODO(oxisto): find a sensible ID instead of this one
 	serviceId := lpmd.URL + "/service"
 
-	keys := d.discoverKeys(pmd.PGPKeys, serviceId)
-	keyring := openpgp.EntityList{}
-	for _, keyinfo := range pmd.PGPKeys {
-		key, err := d.fetchKey(keyinfo)
-		if err != nil {
-			return nil, err
-		}
-		keyring = append(keyring, key)
-	}
+	// Discover keys by looping through the keys provided in the PMD
+	keys, keyring := d.discoverKeys(pmd.PGPKeys, serviceId)
 
 	// Discover advisory documents from this provider
 	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd, keyring, serviceId)
