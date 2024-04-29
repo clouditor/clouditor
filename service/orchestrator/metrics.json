@@ -368,6 +368,21 @@
     }
   },
   {
+    "id": "DocumentCSAFSignatures",
+    "name": "CSAF Requirement 19: Signatures",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 18 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#7119-requirement-19-signatures",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
