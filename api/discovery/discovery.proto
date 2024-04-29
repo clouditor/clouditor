@@ -54,6 +54,7 @@ service Discovery {
 
 message StartDiscoveryRequest {
   optional string resource_group = 1;
+  optional string csaf_domain = 2;
 }
 
 message StartDiscoveryResponse {

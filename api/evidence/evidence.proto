@@ -61,4 +61,11 @@ message Evidence {
     (tagger.tags) = "gorm:\"serializer:anypb;type:json\"",
     (buf.validate.field).required = true
   ];
+
+  // Very experimental property. Use at own risk. This property will be deleted again.
+  //
+  // Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+  // assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+  // the resource. For now, this needs to be set manually in the evidence.
+  repeated string experimental_related_resource_ids = 999 [(tagger.tags) = "gorm:\"serializer:json\""];
 }

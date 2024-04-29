@@ -44,7 +44,7 @@ var (
 type metricsCache struct {
 	sync.RWMutex
 	// Metrics cached in a map. Key is composed of tool id and resource types concatenation
-	m map[string][]string
+	m map[string][]*assessment.Metric
 }
 
 // PolicyEval is an interface for the policy evaluation engine
@@ -52,7 +52,7 @@ type PolicyEval interface {
 	// Eval evaluates a given evidence against a metric coming from the metrics source. In order to avoid unnecessarily
 	// unwrapping, the callee of this function needs to supply the unwrapped ontology resource, since they most likely
 	// unwrapped the resource already, e.g. to check for validation.
-	Eval(evidence *evidence.Evidence, r ontology.IsResource, src MetricsSource) (data []*Result, err error)
+	Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*Result, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 
@@ -69,8 +69,8 @@ type Result struct {
 // configuration as well as implementation for a particular metric (and target service)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceID, metricID string) (*assessment.MetricConfiguration, error)
-	MetricImplementation(lang assessment.MetricImplementation_Language, metric string) (*assessment.MetricImplementation, error)
+	MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)
+	MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error)
 }
 
 // ControlsSource is used to retrieve a list of controls

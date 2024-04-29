@@ -31,10 +31,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 
 	"clouditor.io/clouditor/v2/persistence"
 
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -152,17 +152,10 @@ func (x *MetricConfiguration) UnmarshalJSON(b []byte) (err error) {
 	return protojson.Unmarshal(b, x)
 }
 
-// CheckCloudServiceID checks if serviceID is available and in the valid UUID format.
-func CheckCloudServiceID(serviceID string) error {
-	// Check if ServiceId is missing
-	if serviceID == "" {
-		return ErrCloudServiceIDIsMissing
-	}
-
-	// Check if ServiceId is valid
-	if _, err := uuid.Parse(serviceID); err != nil {
-		return ErrCloudServiceIDIsInvalid
-	}
-
-	return nil
+// CategoryID returns an identifier for the category string, which can be used in a filename or directory
+func (m *Metric) CategoryID() (ID string) {
+	// replace all whitespace and non-alpha characters
+	r, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	ID = r.ReplaceAllString(m.Category, "")
+	return
 }

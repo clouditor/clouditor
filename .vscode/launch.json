@@ -60,6 +60,25 @@
             "preLaunchTask": "go: generate"
         },
         {
+            "name": "Launch engine (in-memory, dashboard development redirect with CSAF discovery)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--dashboard-url=http://localhost:5173",
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=csaf",
+                "--discovery-csaf-domain=clouditor.io",
+                "--log-level=debug"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
             "name": "Launch engine (database, dashboard development redirect with Azure discovery)",
             "type": "go",
             "request": "launch",

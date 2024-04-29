@@ -40,7 +40,15 @@ components:
     schemas:
         AssessEvidenceResponse:
             type: object
-            properties: {}
+            properties:
+                status:
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - ASSESSMENT_STATUS_WAITING_FOR_RELATED
+                        - ASSESSMENT_STATUS_ASSESSED
+                        - ASSESSMENT_STATUS_FAILED
+                    type: string
+                    format: enum
             description: |-
                 AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
                  RPC and therefore requires a response message according to the style
@@ -72,6 +80,16 @@ components:
                     description: |-
                         Semantic representation of the Cloud resource according to our defined
                          ontology
+                experimentalRelatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Very experimental property. Use at own risk. This property will be deleted again.
+
+                         Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                         assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                         the resource. For now, this needs to be set manually in the evidence.
             description: An evidence resource
         GoogleProtobufAny:
             type: object

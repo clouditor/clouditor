@@ -33,7 +33,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/persistence"
-
 	"google.golang.org/protobuf/runtime/protoimpl"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -308,47 +307,6 @@ func TestRange_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestCheckCloudServiceID(t *testing.T) {
-	type args struct {
-		serviceID string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			name: "Missing serviceID",
-			args: args{},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCloudServiceIDIsMissing.Error())
-			},
-		},
-		{
-			name: "Invalid serviceID",
-			args: args{
-				serviceID: "00000000-0000-0000-000000000000",
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrCloudServiceIDIsInvalid.Error())
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				serviceID: testdata.MockCloudServiceID1,
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := CheckCloudServiceID(tt.args.serviceID)
-			tt.wantErr(t, err)
-		})
-	}
-}
-
 func TestMetricConfiguration_Hash(t *testing.T) {
 	type fields struct {
 		sizeCache      protoimpl.SizeCache
@@ -388,6 +346,38 @@ func TestMetricConfiguration_Hash(t *testing.T) {
 			}
 			if got := x.Hash(); got != tt.want {
 				t.Errorf("MetricConfiguration.Hash() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMetric_CategoryID(t *testing.T) {
+	type fields struct {
+		Category string
+	}
+	type args struct {
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		wantID string
+	}{
+		{
+			name: "happy path",
+			fields: fields{
+				Category: "Logging & Monitoring",
+			},
+			wantID: "LoggingMonitoring",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Metric{
+				Category: tt.fields.Category,
+			}
+			if gotID := c.CategoryID(); gotID != tt.wantID {
+				t.Errorf("Metric.CategoryID() = %v, want %v", gotID, tt.wantID)
 			}
 		})
 	}

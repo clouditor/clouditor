@@ -157,6 +157,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		sql.SetMaxOpenConns(g.maxConn)
 	}
 
+	schema.RegisterSerializer("durationpb", &DurationSerializer{})
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
