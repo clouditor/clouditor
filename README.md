@@ -40,6 +40,18 @@ In order to just build and run the Clouditor, without generating the protobuf fi
 This will start the all-in-on-engine with all discoverers enabled and launches the UI on http://localhost:5173. The
 default credentials are clouditor/clouditor.
 
+### Using the extra discoverers (e.g. CSAF)
+
+Next to the regular cloud provider discoverers, Clouditor also comes with a a set of extra discoverers for dedicated protocols, for example CSAF. The CSAF discoverer allows the conformance check of a CSAF (trusted) provider.
+
+It can be used with the following command:
+
+```
+./run-engine-with-ui.sh --discovery-provider=csaf --discovery-csaf-domain=clouditor.io
+```
+
+The domain `clouditor.io` can be replace with your actual domain.
+
 ## Build
 
 Install necessary protobuf tools, including `buf`. Please refer to the [`buf` install guide](https://buf.build/docs/installation).
