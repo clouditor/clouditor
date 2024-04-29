@@ -155,7 +155,7 @@
                                 "id": "Requirement-18-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFIntegrity"
+                                        "id": "SecurityAdvisoryDocumentChecksum"
                                     }
                                 ]
                             }
@@ -171,7 +171,7 @@
                                 "id": "Requirement-19-Implementation",
                                 "metrics": [
                                     {
-                                        "id": "DocumentCSAFSignatures"
+                                        "id": "SecurityAdvisoryDocumentSignature"
                                     }
                                 ]
                             }
