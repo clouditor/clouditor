@@ -57,11 +57,19 @@ func NewAssessmentCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	if cmd.Flag(config.OrchestratorURLFlag) != nil {
+	if cmd.Flag(config.OrchestratorURLFlag) == nil {
 		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
 	}
 	cmd.Flags().String(config.EvidenceStoreURLFlag, config.DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
+	if cmd.Flag(config.APIgRPCPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortAssessment, "Specifies the port used for the Clouditor gRPC API")
+	}
+	if cmd.Flag(config.APIHTTPPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortAssessment, "Specifies the port used for the Clouditor HTTP API")
+	}
 
 	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
 	_ = viper.BindPFlag(config.EvidenceStoreURLFlag, cmd.Flags().Lookup(config.EvidenceStoreURLFlag))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
 }

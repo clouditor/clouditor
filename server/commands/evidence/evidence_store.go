@@ -26,10 +26,12 @@
 package evidence
 
 import (
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/launcher"
 	evidences "clouditor.io/clouditor/v2/service/evidence"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func NewEvidenceCommand() *cobra.Command {
@@ -49,5 +51,20 @@ func NewEvidenceCommand() *cobra.Command {
 		},
 	}
 
+	BindFlags(cmd)
+
 	return cmd
+}
+
+func BindFlags(cmd *cobra.Command) {
+	if cmd.Flag(config.APIgRPCPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortEvidenceStore, "Specifies the port used for the Clouditor gRPC API")
+	}
+	if cmd.Flag(config.APIHTTPPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortEvidenceStore, "Specifies the port used for the Clouditor HTTP API")
+	}
+
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
+
 }
