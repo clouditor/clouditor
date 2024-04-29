@@ -17,7 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (d *csafDiscovery) discoverSecurityAdvisories(md *csaf.LoadedProviderMetadata, keyring openpgp.EntityList) (documents []ontology.IsResource, err error) {
+func (d *csafDiscovery) discoverSecurityAdvisories(md *csaf.LoadedProviderMetadata, keyring openpgp.EntityList, parentId string) (documents []ontology.IsResource, err error) {
 	baseURL, err := url.Parse(md.URL)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse base URL: %w", err)
@@ -26,7 +26,7 @@ func (d *csafDiscovery) discoverSecurityAdvisories(md *csaf.LoadedProviderMetada
 	afp := csaf.NewAdvisoryFileProcessor(d.client, csafutil.NewPathEval(), md.Document, baseURL)
 	err = afp.Process(func(label csaf.TLPLabel, files []csaf.AdvisoryFile) error {
 		for _, f := range files {
-			doc, err := d.handleAdvisory(label, f, keyring)
+			doc, err := d.handleAdvisory(label, f, keyring, parentId)
 			if err != nil {
 				return err
 			}
@@ -42,7 +42,7 @@ func (d *csafDiscovery) discoverSecurityAdvisories(md *csaf.LoadedProviderMetada
 	return
 }
 
-func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFile, keyring openpgp.EntityList) (doc *ontology.SecurityAdvisoryDocument, err error) {
+func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFile, keyring openpgp.EntityList, parentId string) (doc *ontology.SecurityAdvisoryDocument, err error) {
 	// Next, we actually need to retrieve the document to check its validity
 	res, err := d.client.Get(file.URL())
 	if err != nil {
@@ -112,7 +112,8 @@ func (d *csafDiscovery) handleAdvisory(label csaf.TLPLabel, file csaf.AdvisoryFi
 		DocumentSignatures: []*ontology.DocumentSignature{
 			d.documentPGPSignature(file.SignURL(), body, keyring),
 		},
-		Raw: discovery.Raw(doc),
+		Raw:      discovery.Raw(doc),
+		ParentId: &parentId,
 	}
 
 	return

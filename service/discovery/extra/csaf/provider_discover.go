@@ -69,7 +69,10 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 		Raw: discovery.Raw(pmd),
 	}
 
-	keys := d.discoverKeys(pmd.PGPKeys)
+	// TODO(oxisto): find a sensible ID instead of this one
+	serviceId := lpmd.URL + "/service"
+
+	keys := d.discoverKeys(pmd.PGPKeys, serviceId)
 	keyring := openpgp.EntityList{}
 	for _, keyinfo := range pmd.PGPKeys {
 		key, err := d.fetchKey(keyinfo)
@@ -80,13 +83,13 @@ func (d *csafDiscovery) handleProvider(lpmd *csaf.LoadedProviderMetadata) (resou
 	}
 
 	// Discover advisory documents from this provider
-	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd, keyring)
+	securityAdvisoryDocuments, err := d.discoverSecurityAdvisories(lpmd, keyring, serviceId)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover security advisories: %w", err)
 	}
 
 	var provider = &ontology.SecurityAdvisoryService{
-		Id:                         lpmd.URL + "service",
+		Id:                         serviceId,
 		InternetAccessibleEndpoint: true,
 		Name:                       util.Deref(pmd.Publisher.Name),
 		// TODO: actually put document in correct feed

@@ -57,7 +57,7 @@
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=csaf",
-                "--discovery-csaf-domain=intevation.de",
+                "--discovery-csaf-domain=clouditor.io",
                 "--log-level=debug"
             ],
             "env": {},

@@ -14,19 +14,20 @@ import (
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
-func (d *csafDiscovery) discoverKeys(pgpkeys []csaf.PGPKey) (keys []ontology.IsResource) {
+func (d *csafDiscovery) discoverKeys(pgpkeys []csaf.PGPKey, parentId string) (keys []ontology.IsResource) {
 	for _, pgpkey := range pgpkeys {
-		keys = append(keys, d.handleKey(pgpkey))
+		keys = append(keys, d.handleKey(pgpkey, parentId))
 	}
 
 	return
 }
 
-func (d *csafDiscovery) handleKey(pgpkey csaf.PGPKey) (key *ontology.Key) {
+func (d *csafDiscovery) handleKey(pgpkey csaf.PGPKey, parentId string) (key *ontology.Key) {
 	return &ontology.Key{
 		Algorithm: "PGP",
 		Id:        util.Deref(pgpkey.URL),
 		Raw:       discovery.Raw(pgpkey),
+		ParentId:  &parentId,
 	}
 }
 

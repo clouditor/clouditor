@@ -2,29 +2,16 @@ package csaf
 
 import (
 	"net/http"
-	"reflect"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
-	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
 func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
-	p := providertest.NewTrustedProvider(nil,
-		providertest.NewGoodIndexTxtWriter(),
-		func(pmd *csaf.ProviderMetadata) {
-			pmd.Publisher = &csaf.Publisher{
-				Name:      util.Ref("Test Vendor"),
-				Category:  util.Ref(csaf.CSAFCategoryVendor),
-				Namespace: util.Ref("http://localhost"),
-			}
-		})
-	defer p.Close()
-
 	type fields struct {
 		domain string
 		csID   string
@@ -41,17 +28,25 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 	}{
 		{
 			name: "happy path",
-			args: args{url: p.URL},
+			args: args{url: goodProvider.URL},
 			fields: fields{
-				client: p.Client(),
+				client: goodProvider.Client(),
 			},
 			want: &ontology.TransportEncryption{
-				Enabled: true,
+				Enabled:         true,
+				Protocol:        constants.TLS,
+				ProtocolVersion: 1.3,
+				CipherSuites: []*ontology.CipherSuite{
+					{
+						MacAlgorithm:  constants.SHA_256,
+						SessionCipher: constants.AES_128_GCM,
+					},
+				},
 			},
 		},
 		{
 			name: "fail - bad certificate",
-			args: args{url: p.URL},
+			args: args{url: goodProvider.URL},
 			fields: fields{
 				client: http.DefaultClient,
 			},
@@ -67,9 +62,8 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 				csID:   tt.fields.csID,
 				client: tt.fields.client,
 			}
-			if got := d.providerTransportEncryption(tt.args.url); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("providerTransportEncryption() = %v, want %v", got, tt.want)
-			}
+			got := d.providerTransportEncryption(tt.args.url)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

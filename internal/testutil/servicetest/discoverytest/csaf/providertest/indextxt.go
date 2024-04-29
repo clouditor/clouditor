@@ -113,7 +113,7 @@ func (good *goodIndexTxtWriter) handleSignature(w http.ResponseWriter, _ *http.R
 	body, _ = json.Marshal(advisory)
 
 	// Sign it
-	err = openpgp.ArmoredDetachSignText(w, p.keyring[0], bytes.NewReader(body), nil)
+	err = openpgp.ArmoredDetachSignText(w, p.Keyring[0], bytes.NewReader(body), nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}

@@ -63,7 +63,7 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
 		csID:   discovery.DefaultCloudServiceID,
-		domain: "wid.cert-bund.de",
+		domain: "clouditor.io",
 		client: http.DefaultClient,
 	}
 

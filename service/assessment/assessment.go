@@ -238,9 +238,11 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	resourceId = req.Evidence.GetResourceId()
 
 	// Check, if we can immediately handle this evidence; we assume so at first
-	var canHandle = true
-
-	var waitingFor map[string]bool = make(map[string]bool)
+	var (
+		canHandle                                 = true
+		waitingFor map[string]bool                = make(map[string]bool)
+		related    map[string]ontology.IsResource = make(map[string]ontology.IsResource)
+	)
 
 	svc.em.Lock()
 
@@ -250,7 +252,11 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 	for _, r := range req.Evidence.ExperimentalRelatedResourceIds {
 		// If any of the related resource is not available, we cannot handle them immediately, but we need to add it to
 		// our waitingFor slice
-		if _, ok := svc.evidenceResourceMap[r]; !ok {
+		if _, ok := svc.evidenceResourceMap[r]; ok {
+			ev := svc.evidenceResourceMap[r]
+
+			related[r] = ev.GetOntologyResource()
+		} else {
 			canHandle = false
 			waitingFor[r] = true
 		}
@@ -265,7 +271,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 
 	if canHandle {
 		// Assess evidence. This also validates the embedded resource and returns a gRPC error if validation fails.
-		_, err = svc.handleEvidence(ctx, req.Evidence, nil)
+		_, err = svc.handleEvidence(ctx, req.Evidence, related)
 		if err != nil {
 			log.Error(err)
 			return nil, err

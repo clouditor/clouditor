@@ -90,13 +90,16 @@ func clientAuthenticity(res *http.Response) *ontology.Authenticity {
 //
 // It uses the [documentChecksum] method to retrieve the respective checksum.
 func (d *csafDiscovery) documentChecksums(file csaf.AdvisoryFile, body []byte) (checksums []*ontology.DocumentChecksum) {
-	var toHash map[string]hash.Hash = map[string]hash.Hash{
-		constants.SHA_256: sha256.New(),
-		constants.SHA_512: sha512.New(),
+	var toHash = map[string]struct {
+		h   hash.Hash
+		alg string
+	}{
+		file.SHA256URL(): {h: sha256.New(), alg: constants.SHA_256},
+		file.SHA512URL(): {h: sha512.New(), alg: constants.SHA_512},
 	}
 
-	for algorithm, h := range toHash {
-		checksum := d.documentChecksum(file.SHA256URL(), filepath.Base(file.URL()), body, algorithm, h)
+	for url, info := range toHash {
+		checksum := d.documentChecksum(url, filepath.Base(file.URL()), body, info.alg, info.h)
 		if checksum != nil {
 			checksums = append(checksums, checksum)
 		}

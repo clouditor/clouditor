@@ -16,15 +16,20 @@
         "categories": [
             {
                 "name": "Requirements",
-                "description": "Secure all communications",
+                "description": "All requirements",
                 "controls": [
                     {
                         "id": "Requirement-01",
                         "name": "Valid CSAF document",
                         "description": "The document is a valid CSAF document.",
-                        "metrics": [
+                        "controls": [
                             {
-                                "id": "DocumentCSAFContentValid"
+                                "id": "Requirement-01-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFContentValid"
+                                    }
+                                ]
                             }
                         ],
                         "assurance_level": "publisher"
@@ -33,9 +38,14 @@
                         "id": "Requirement-02",
                         "name": "Filename",
                         "description": "The document has a valid filename.",
-                        "metrics": [
+                        "controls": [
                             {
-                                "id": "DocumentCSAFContentValid"
+                                "id": "Requirement-02-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFFilenameValid"
+                                    }
+                                ]
                             }
                         ],
                         "assurance_level": "publisher"
@@ -44,9 +54,14 @@
                         "id": "Requirement-03",
                         "name": "TLS",
                         "description": "The document is retrievable by TLS.",
-                        "metrics": [
+                        "controls": [
                             {
-                                "id": "DocumentCSAFTransportEncryption"
+                                "id": "Requirement-03-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFTransportEncryption"
+                                    }
+                                ]
                             }
                         ],
                         "assurance_level": "publisher"
@@ -55,15 +70,84 @@
                         "id": "Requirement-04",
                         "name": "TLP:WHITE",
                         "description": "Documents labeled with TLP:WHITE need to be freely accessible",
-                        "metrics": [
+                        "controls": [
                             {
-                                "id": "DocumentCSAFWhiteAccessible"
+                                "id": "Requirement-04-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFWhiteAccessible"
+                                    }
+                                ]
                             }
                         ],
                         "assurance_level": "publisher"
+                    },
+                    {
+                        "id": "Requirement-05",
+                        "name": "TLP:RED and TLP:AMBER",
+                        "description": "Documents labeled with TLP:RED and TLP:AMBER must NOT be freely accessible",
+                        "controls": [
+                            {
+                                "id": "Requirement-06-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFRedRestricted"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "provider"
+                    },
+                    {
+                        "id": "Requirement-06",
+                        "name": "No redirects",
+                        "description": "Documents should not be redirected",
+                        "controls": [
+                            {
+                                "id": "Requirement-06-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFNoRedirect"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "provider"
+                    },
+                    {
+                        "id": "Requirement-07-10",
+                        "name": "provider-metadata.json",
+                        "description": "The provider-metadata.json must be valid and on a valid location",
+                        "controls": [
+                            {
+                                "id": "Requirement-07-10-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "SecurityAdvisoryServiceValidMetadata"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "provider"
+                    },
+                    {
+                        "id": "Requirement-11",
+                        "name": "Documents in year folder",
+                        "description": "Documents must be located in a folder named after the year they were created in",
+                        "controls": [
+                            {
+                                "id": "Requirement-11-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFYearFolder"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "provider"
                     }
                 ]
             }
-       ]
+        ]
     }
 ]
