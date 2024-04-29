@@ -145,6 +145,54 @@
                             }
                         ],
                         "assurance_level": "provider"
+                    },
+                    {
+                        "id": "Requirement-18",
+                        "name": "Integrity",
+                        "description": "Documents SHALL have at least one hash file computed with a secure cryptographic hash algorithm ensure their integrity",
+                        "controls": [
+                            {
+                                "id": "Requirement-18-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFIntegrity"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted-provider"
+                    },
+                    {
+                        "id": "Requirement-19",
+                        "name": "Signatures",
+                        "description": "Documents SHALL have at least one OpenPGP signature file which is provided under the same filename which is extended by the appropriate extension",
+                        "controls": [
+                            {
+                                "id": "Requirement-19-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFSignatures"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted-provider"
+                    },
+                    {
+                        "id": "Requirement-20",
+                        "name": "Public OpenPGP Key",
+                        "description": "The public part of the OpenPGP key used to sign the CSAF documents MUST be available",
+                        "controls": [
+                            {
+                                "id": "Requirement-20-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "DocumentCSAFPublicOpenPGPKey"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted-provider"
                     }
                 ]
             }
