@@ -28,6 +28,8 @@ func (d *csafDiscovery) handleKey(pgpkey csaf.PGPKey, parentId string) (key *ont
 		Id:        util.Deref(pgpkey.URL),
 		Raw:       discovery.Raw(pgpkey),
 		ParentId:  &parentId,
+		// We can always set it to true because otherwise fetchKey would return an error and stop discovery anyway
+		InternetAccessibleEndpoint: true,
 	}
 }
 
