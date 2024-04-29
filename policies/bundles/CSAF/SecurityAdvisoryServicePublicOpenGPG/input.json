@@ -78,7 +78,7 @@
             "expirationDate": null,
             "geoLocation": null,
             "id": "https://127.0.0.1:58521/.well-known/csaf/opengpg/962f0d7ce1220ddfb40345f1524a986590bfb5d3.asc",
-            "internetAccessibleEndpoint": false,
+            "internetAccessibleEndpoint": true,
             "isManaged": false,
             "keySize": 0,
             "labels": {},
