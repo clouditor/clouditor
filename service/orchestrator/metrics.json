@@ -353,6 +353,21 @@
     }
   },
   {
+    "id": "DocumentCSAFIntegrity",
+    "name": "CSAF Requirement 18: Integrity",
+    "category": "CSAF",
+    "description": "This metric checks Requirement 18 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#7118-requirement-18-integrity",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          false,
+          true
+        ]
+      }
+    }
+  },
+  {
     "id": "IdentityPasswordPolicy",
     "name": "Identity: Password Policy",
     "description": "This metric is used to assess if a password policy is in place",
