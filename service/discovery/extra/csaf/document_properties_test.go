@@ -4,13 +4,18 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"hash"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/constants"
+	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
@@ -237,6 +242,168 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 			}
 			got := d.documentChecksum(tt.args.checksumURL, tt.args.filename, tt.args.body, tt.args.algorithm, tt.args.h)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_cipherSuite(t *testing.T) {
+	type args struct {
+		id uint16
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ontology.CipherSuite
+	}{
+		{
+			name: "happy path",
+			args: args{
+				id: tls.TLS_AES_128_GCM_SHA256,
+			},
+			want: &ontology.CipherSuite{
+				SessionCipher: constants.AES_128_GCM,
+				MacAlgorithm:  constants.SHA_256,
+			},
+		},
+		{
+			name: "unknown id",
+			args: args{
+				id: 1234,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := cipherSuite(tt.args.id)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_clientAuthenticity(t *testing.T) {
+	type args struct {
+		res *http.Response
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ontology.Authenticity
+	}{
+		{
+			name: "happy path",
+			args: args{
+				res: &http.Response{
+					Request: &http.Request{
+						Header: http.Header{},
+					},
+					Header:     http.Header{},
+					StatusCode: http.StatusOK,
+				},
+			},
+			want: &ontology.Authenticity{
+				Type: &ontology.Authenticity_NoAuthentication{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := clientAuthenticity(tt.args.res); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("clientAuthenticity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_csafDiscovery_documentPGPSignature(t *testing.T) {
+	type fields struct {
+		domain string
+		csID   string
+		client *http.Client
+	}
+	type args struct {
+		signURL string
+		body    []byte
+		keyring openpgp.EntityList
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantSig *ontology.DocumentSignature
+	}{
+		{
+			name: "happy path",
+			fields: fields{
+				domain: goodProvider.Domain(),
+				csID:   discovery.DefaultCloudServiceID,
+				client: goodProvider.Client(),
+			},
+			args: args{
+				signURL: "https://" + goodProvider.Domain() + "/.well-known/csaf/white/some-id.json.asc",
+				body: func() []byte {
+					res, _ := goodProvider.Client().Get("https://" + goodProvider.Domain() + "/.well-known/csaf/white/some-id")
+					body, _ := io.ReadAll(res.Body)
+					return body
+				}(),
+				keyring: goodProvider.Keyring,
+			},
+			wantSig: &ontology.DocumentSignature{
+				Algorithm: "PGP",
+				Errors:    nil,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &csafDiscovery{
+				domain: tt.fields.domain,
+				csID:   tt.fields.csID,
+				client: tt.fields.client,
+			}
+			if gotSig := d.documentPGPSignature(tt.args.signURL, tt.args.body, tt.args.keyring); !reflect.DeepEqual(gotSig, tt.wantSig) {
+				t.Errorf("csafDiscovery.documentPGPSignature() = %v, want %v", gotSig, tt.wantSig)
+			}
+		})
+	}
+}
+
+func Test_fromError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantErrors []*ontology.Error
+	}{
+		{
+			name: "wrapped error",
+			args: args{
+				err: fmt.Errorf("this wraps multiple errors: %w, %w, %w",
+					errors.New("first"),
+					errors.New("second"),
+					errors.New("third"),
+				),
+			},
+			wantErrors: []*ontology.Error{
+				{
+					Message: "first",
+				},
+				{
+					Message: "second",
+				},
+				{
+					Message: "third",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotErrors := fromError(tt.args.err); !reflect.DeepEqual(gotErrors, tt.wantErrors) {
+				t.Errorf("fromError() = %v, want %v", gotErrors, tt.wantErrors)
+			}
 		})
 	}
 }

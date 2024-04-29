@@ -24,7 +24,7 @@
                         "description": "The document is a valid CSAF document.",
                         "controls": [
                             {
-                                "id": "Requirement-01-Implemnation",
+                                "id": "Requirement-01-Implementation",
                                 "metrics": [
                                     {
                                         "id": "DocumentCSAFContentValid"
