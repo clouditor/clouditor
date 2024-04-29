@@ -915,6 +915,7 @@ func TestService_getAllMetricsFromControl(t *testing.T) {
 			wantMetrics: []*assessment.Metric{
 				{
 					Id:          testdata.MockMetricID1,
+					Category:    testdata.MockMetricCategory1,
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,

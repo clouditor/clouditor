@@ -129,7 +129,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					RuntimeVersion:             "1.8",
 					RuntimeLanguage:            "Java",
 				},
-				&ontology.WebApp{
+				&ontology.Function{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1",
 					Name:         "WebApp1",
 					CreationTime: nil,
@@ -157,7 +157,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 					InternetAccessibleEndpoint: true,
 					Redundancies:               []*ontology.Redundancy{},
 				},
-				&ontology.WebApp{
+				&ontology.Function{
 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2",
 					Name:         "WebApp2",
 					CreationTime: nil,
@@ -1456,7 +1456,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 					},
 				},
 			},
-			want: &ontology.WebApp{
+			want: &ontology.Function{
 				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp1",
 				Name:         "WebApp1",
 				CreationTime: nil,
@@ -1516,7 +1516,7 @@ func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
 					},
 				},
 			},
-			want: &ontology.WebApp{
+			want: &ontology.Function{
 				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.web/sites/webapp2",
 				Name:         "WebApp2",
 				CreationTime: nil,

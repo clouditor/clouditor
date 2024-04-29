@@ -29,6 +29,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -46,6 +47,7 @@ import (
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
+	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
 
 	"github.com/go-co-op/gocron"
@@ -252,7 +254,7 @@ func (svc *Service) Init() {
 			<-rest.GetReadyChannel()
 			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
-				CsafDomain:    util.Ref(viper.GetString(DiscoveryCSAFDomainFlag)),
+				CsafDomain:    util.Ref(viper.GetString(config.DiscoveryCSAFDomainFlag)),
 			})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
@@ -348,6 +350,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				domain string
 				opts   []csaf.DiscoveryOption
 			)
+			domain = util.Deref(req.CsafDomain)
 			if domain != "" {
 				opts = append(opts, csaf.WithProviderDomain(domain))
 			}
@@ -437,6 +440,14 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			Raw:            util.Ref(resource.GetRaw()),
 			ToolId:         config.EvidenceCollectorToolId,
 			Resource:       a,
+		}
+
+		// Only enabled related evidences for some specific resources for now
+		if slices.Contains(ontology.ResourceTypes(resource), "SecurityAdvisoryService") {
+			edges := ontology.Related(resource)
+			for _, edge := range edges {
+				e.ExperimentalRelatedResourceIds = append(e.ExperimentalRelatedResourceIds, edge.Value)
+			}
 		}
 
 		// Get Evidence Store stream

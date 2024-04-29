@@ -383,13 +383,13 @@ func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, erro
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status:        assessment.AssessEvidencesResponse_FAILED,
+			Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status: assessment.AssessEvidencesResponse_ASSESSED,
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF
@@ -669,6 +669,25 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{
 					ResourceGroup: util.Ref("testResourceGroup"),
+				},
+			},
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "Happy path: CSAF with domain",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderCSAF},
+				discoveryInterval: time.Duration(5 * time.Minute),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{
+					CsafDomain: util.Ref("clouditor.io"),
 				},
 			},
 			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {

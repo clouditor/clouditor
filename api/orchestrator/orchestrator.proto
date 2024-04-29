@@ -713,7 +713,7 @@ message Control {
 
   // An assurance level is not offered by every catalog, therefore it is
   // optional.
-  optional string assurance_level = 11 [(buf.validate.field).string.pattern = "^(|basic|substantial|high|low|medium)$"];
+  optional string assurance_level = 11;
 }
 
 // A Target of Evaluation binds a cloud service to a catalog, so the service is
@@ -730,7 +730,7 @@ message TargetOfEvaluation {
 
   // an assurance level is not offered by every catalog, therefore it is
   // optional
-  optional string assurance_level = 3 [(buf.validate.field).string.pattern = "^(|basic|substantial|high|low|medium)$"];
+  optional string assurance_level = 3;
 }
 
 message GetAssessmentResultRequest {

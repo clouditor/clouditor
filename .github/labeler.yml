@@ -16,6 +16,9 @@
 "service/discovery":
   - service/discovery/*
 
+"csaf":
+  - service/discovery/extra/csaf
+
 "service/assessment":
   - service/assessment/*
 
@@ -29,6 +32,7 @@
         "!service/assessment/*",
         "!service/orchestrator/*",
         "!service/discovery/*",
+        "!service/discovery/extra/csaf/*"
       ]
 
 "internal":
