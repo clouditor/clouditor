@@ -39,11 +39,12 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
+	csafutil "github.com/csaf-poc/csaf_distribution/v3/util"
 )
 
 type TrustedProvider struct {
 	*httptest.Server
-	pmd   *csaf.ProviderMetadata
+	PMD   *csaf.ProviderMetadata
 	idxw  ServiceHandler
 	feeds map[csaf.TLPLabel][]*csaf.Advisory
 
@@ -71,13 +72,13 @@ func NewTrustedProvider(
 
 	mux.HandleFunc("/.well-known/csaf/provider-metadata.json", p.handlePMD)
 
-	p.pmd = csaf.NewProviderMetadataDomain(fmt.Sprintf("https://%s", p.Domain()), nil)
+	p.PMD = csaf.NewProviderMetadataDomain(fmt.Sprintf("https://%s", p.Domain()), nil)
 
 	// We need to provide one index.txt per feed. So far, we only support index.txt, no ROLIE
 	for feed := range p.feeds {
 		feedURL := fmt.Sprintf("/.well-known/csaf/%s/", strings.ToLower(string(feed)))
 		mux.HandleFunc(feedURL, p.handleFeed)
-		p.pmd.Distributions = append(p.pmd.Distributions, csaf.Distribution{
+		p.PMD.Distributions = append(p.PMD.Distributions, csaf.Distribution{
 			DirectoryURL: fmt.Sprintf("https://%s/%s", p.Domain(), feedURL),
 			Rolie:        nil,
 		})
@@ -85,7 +86,7 @@ func NewTrustedProvider(
 
 	for _, key := range p.Keyring {
 		fp := hex.EncodeToString(key.PrimaryKey.Fingerprint)
-		p.pmd.PGPKeys = append(p.pmd.PGPKeys, csaf.PGPKey{
+		p.PMD.PGPKeys = append(p.PMD.PGPKeys, csaf.PGPKey{
 			Fingerprint: csaf.Fingerprint(fp),
 			URL:         util.Ref("https://" + p.Domain() + "/.well-known/csaf/opengpg/" + fp + ".asc"),
 		})
@@ -94,14 +95,14 @@ func NewTrustedProvider(
 
 	// Apply PMD functions
 	for _, fn := range fns {
-		fn(p.pmd)
+		fn(p.PMD)
 	}
 
 	return
 }
 
 func (p *TrustedProvider) handlePMD(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, p.pmd)
+	writeJSON(w, p.PMD)
 }
 
 func (p *TrustedProvider) handleKey(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +183,21 @@ func (p *TrustedProvider) handleFeed(w http.ResponseWriter, r *http.Request) {
 
 func (p *TrustedProvider) Domain() string {
 	return p.Listener.Addr().String()
+}
+
+// WellKnownProviderURL returns the URL of the provider-metadata.json at the well-known address.
+func (p *TrustedProvider) WellKnownProviderURL() string {
+	return "https://" + p.Domain() + "/.well-known/csaf/provider-metadata.json"
+}
+
+// DocumentAny returns the [csaf.ProviderMetadata] as "any" (actually a map[string]interface{}) so that it can be used
+// in [csaf.LoadedProviderMetadata].
+func (p *TrustedProvider) DocumentAny() (m map[string]interface{}) {
+	err := csafutil.ReMarshalJSON(&m, p.PMD)
+	if err != nil {
+		panic(err)
+	}
+	return m
 }
 
 func (p *TrustedProvider) advisoriesFor(feed string) []*csaf.Advisory {

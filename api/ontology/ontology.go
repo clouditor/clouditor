@@ -107,7 +107,7 @@ func ResourceMap(r IsResource) (props map[string]any, err error) {
 	return
 }
 
-func ResourcePrettyJSON(r IsResource) (s string, err error) {
+func ToPrettyJSON(r IsResource) (s string, err error) {
 	m, err := ResourceMap(r)
 	if err != nil {
 		return "", err

@@ -71,7 +71,7 @@
                 "Resource"
             ]
         },
-        "https://127.0.0.1:58107/.well-known/csaf/opengpg/1802844772de29c2ad3429e01b6a9c3ec7a68a12.asc": {
+        "https://127.0.0.1:58521/.well-known/csaf/opengpg/962f0d7ce1220ddfb40345f1524a986590bfb5d3.asc": {
             "algorithm": "PGP",
             "creationTime": null,
             "enabled": false,
