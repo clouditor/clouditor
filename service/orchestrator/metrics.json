@@ -383,7 +383,7 @@
     }
   },
   {
-    "id": "DocumentCSAFPublicOpenPGPKey",
+    "id": "SecurityAdvisoryServicePublicOpenPGPKey",
     "name": "CSAF Requirement 20: Public OpenPGP Key",
     "category": "CSAF",
     "description": "This metric checks Requirement 20 of the CSAF standard. See https://docs.oasis-open.org/csaf/csaf/v2.0/os/csaf-v2.0-os.html#7120-requirement-20-public-openpgp-key",
