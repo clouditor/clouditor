@@ -44,6 +44,7 @@ func (ev *Evidence) GetOntologyResource() ontology.IsResource {
 		m        proto.Message
 		resource ontology.IsResource
 		err      error
+		ok       bool
 	)
 	// TODO: find a smarter way, because now we are unmarshalling the resource twice
 	// Try to extract the resource out of the evidence
@@ -52,7 +53,7 @@ func (ev *Evidence) GetOntologyResource() ontology.IsResource {
 		return nil
 	}
 
-	resource, ok := m.(ontology.IsResource)
+	resource, ok = m.(ontology.IsResource)
 	if !ok {
 		return nil
 	}
