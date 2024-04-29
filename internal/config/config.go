@@ -64,6 +64,7 @@ const (
 	DiscoveryAutoStartFlag           = "discovery-auto-start"
 	DiscoveryProviderFlag            = "discovery-provider"
 	DiscoveryResourceGroupFlag       = "discovery-resource-group"
+	DiscoveryCSAFDomainFlag          = "discovery-csaf-domain"
 	DashboardURLFlag                 = "dashboard-url"
 	LogLevelFlag                     = "log-level"
 
@@ -97,6 +98,7 @@ const (
 	DefaultCreateDefaultTarget                 = true
 	DefaultDiscoveryAutoStart                  = false
 	DefaultDiscoveryResourceGroup              = ""
+	DefaultCSAFDomain                          = ""
 	DefaultDashboardURL                        = "http://localhost:8080"
 	DefaultLogLevel                            = "info"
 

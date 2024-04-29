@@ -64,6 +64,7 @@ const (
 	ProviderAWS   = "aws"
 	ProviderK8S   = "k8s"
 	ProviderAzure = "azure"
+	ProviderCSAF  = "csaf"
 )
 
 var log *logrus.Entry
@@ -251,6 +252,7 @@ func (svc *Service) Init() {
 			<-rest.GetReadyChannel()
 			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
 				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
+				CsafDomain:    util.Ref(viper.GetString(DiscoveryCSAFDomainFlag)),
 			})
 			if err != nil {
 				log.Errorf("Could not automatically start discovery: %v", err)
@@ -341,6 +343,15 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			svc.discoverers = append(svc.discoverers,
 				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+		case provider == ProviderCSAF:
+			var (
+				domain string
+				opts   []csaf.DiscoveryOption
+			)
+			if domain != "" {
+				opts = append(opts, csaf.WithProviderDomain(domain))
+			}
+			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

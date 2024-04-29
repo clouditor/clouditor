@@ -62,10 +62,12 @@ func BindFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(config.DiscoveryAutoStartFlag, config.DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	cmd.Flags().StringSliceP(config.DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	cmd.Flags().String(config.DiscoveryResourceGroupFlag, config.DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
+	cmd.Flags().String(config.DiscoveryCSAFDomainFlag, config.DefaultCSAFDomain, "The domain to look for a CSAF provider, if the CSAF discovery is enabled")
 
 	_ = viper.BindPFlag(config.AssessmentURLFlag, cmd.Flags().Lookup(config.AssessmentURLFlag))
 	_ = viper.BindPFlag(config.CloudServiceIDFlag, cmd.Flags().Lookup(config.CloudServiceIDFlag))
 	_ = viper.BindPFlag(config.DiscoveryAutoStartFlag, cmd.Flags().Lookup(config.DiscoveryAutoStartFlag))
 	_ = viper.BindPFlag(config.DiscoveryProviderFlag, cmd.Flags().Lookup(config.DiscoveryProviderFlag))
 	_ = viper.BindPFlag(config.DiscoveryResourceGroupFlag, cmd.Flags().Lookup(config.DiscoveryResourceGroupFlag))
+	_ = viper.BindPFlag(config.DiscoveryCSAFDomainFlag, cmd.Flags().Lookup(config.DefaultCSAFDomain))
 }
