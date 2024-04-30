@@ -1,4 +1,4 @@
-package clouditor.metrics.security_advisory_service_public_open_gpg
+package clouditor.metrics.security_advisory_service_public_open_pgp_key
 
 import input as service
 import rego.v1
