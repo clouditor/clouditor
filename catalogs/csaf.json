@@ -145,6 +145,54 @@
                             }
                         ],
                         "assurance_level": "provider"
+                    },
+                    {
+                        "id": "Requirement-18",
+                        "name": "Integrity",
+                        "description": "Documents need to have a checksum",
+                        "controls": [
+                            {
+                                "id": "Requirement-18-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "SecurityAdvisoryDocumentChecksum"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted_provider"
+                    },
+                    {
+                        "id": "Requirement-19",
+                        "name": "Signatures",
+                        "description": "Documents need to have a cryptographic signature using OpenPGP",
+                        "controls": [
+                            {
+                                "id": "Requirement-19-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "SecurityAdvisoryDocumentSignature"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted_provider"
+                    },
+                    {
+                        "id": "Requirement-20",
+                        "name": "Public OpenPGP Key",
+                        "description": "The public OpenPGP key that is used to sign the documents must be available",
+                        "controls": [
+                            {
+                                "id": "Requirement-20-Implementation",
+                                "metrics": [
+                                    {
+                                        "id": "SecurityAdvisoryServicePublicOpenPGPKey"
+                                    }
+                                ]
+                            }
+                        ],
+                        "assurance_level": "trusted_provider"
                     }
                 ]
             }
