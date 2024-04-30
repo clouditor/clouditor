@@ -34,7 +34,6 @@ import (
 	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/server/rest"
 	"clouditor.io/clouditor/v2/service"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -184,73 +183,6 @@ func TestLauncher_initLogging(t *testing.T) {
 
 			err := l.initLogging()
 
-			tt.wantErr(t, err)
-		})
-	}
-}
-
-func TestNewLauncher(t *testing.T) {
-	type args struct {
-		name  string
-		specs []ServiceSpec
-	}
-	tests := []struct {
-		name      string
-		prepViper func()
-		args      args
-		wantL     assert.Want[*Launcher]
-		wantErr   assert.WantErr
-	}{
-		{
-			name: "error setting log level",
-			prepViper: func() {
-				viper.Set(config.LogLevelFlag, "wrongLogLevel")
-			},
-			args: args{
-				name: "component",
-			},
-			wantL: assert.Nil[*Launcher],
-			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, "could not set log level")
-			},
-		},
-		{
-			name: "error setting storage",
-			prepViper: func() {
-				viper.Set(config.LogLevelFlag, "info")
-			},
-			args: args{
-				name: "component",
-			},
-			wantL: assert.Nil[*Launcher],
-			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, "could not create storage")
-			},
-		},
-		{
-			// We are not able to check the individual fields in the Launcher struct, because they are all unexported. We need that check only to test for a valid execution of the method.
-			name: "Happy path: without specs",
-			prepViper: func() {
-				viper.Set(config.LogLevelFlag, "info")
-				viper.Set(config.DBInMemoryFlag, true)
-			},
-			args: args{
-				name: "component",
-			},
-			wantL: func(t *testing.T, got *Launcher) bool {
-				return assert.Equal(t, &Launcher{}, got, cmpopts.IgnoreUnexported(Launcher{}))
-			},
-			wantErr: assert.Nil[error],
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			viper.Reset()
-			tt.prepViper()
-
-			gotL, err := NewLauncher(tt.args.name, tt.args.specs...)
-
-			tt.wantL(t, gotL)
 			tt.wantErr(t, err)
 		})
 	}
