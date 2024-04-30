@@ -33,6 +33,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
@@ -126,7 +127,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &csafDiscovery{
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
@@ -148,7 +149,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithProviderDomain("mock")},
 			},
 			want: &csafDiscovery{
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 				client: http.DefaultClient,
 				domain: "mock",
 			},
@@ -179,7 +180,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: "localhost:1234",
 				client: http.DefaultClient,
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not load provider-metadata.json")
@@ -191,7 +192,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: goodProvider.Domain(),
 				client: goodProvider.Client(),
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.NoError(t, err)

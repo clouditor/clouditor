@@ -43,6 +43,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
@@ -82,7 +83,7 @@ func TestNewService(t *testing.T) {
 	var inmem = testutil.NewInMemoryStorage(t)
 
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -92,7 +93,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithStorage",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithStorage(inmem))},
+				opts: []service.Option[*Service]{service.Option[*Service](WithStorage(inmem))},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Same(t, inmem, got.storage)
@@ -101,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOrchestratorAddress",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
+				opts: []service.Option[*Service]{service.Option[*Service](WithOrchestratorAddress(testdata.MockOrchestratorAddress))},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, testdata.MockOrchestratorAddress, got.orchestrator.Target)
@@ -110,7 +111,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithOAuth2Authorizer",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithOAuth2Authorizer(&clientcredentials.Config{}))},
+				opts: []service.Option[*Service]{service.Option[*Service](WithOAuth2Authorizer(&clientcredentials.Config{}))},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
@@ -119,7 +120,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "WithAuthorizer",
 			args: args{
-				opts: []service.Option[Service]{service.Option[Service](WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
+				opts: []service.Option[*Service]{service.Option[*Service](WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})))},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{}), got.orchestrator.Authorizer(), assert.CompareAllUnexported())
@@ -128,7 +129,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				opts: []service.Option[Service]{},
+				opts: []service.Option[*Service]{},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, DefaultOrchestratorAddress, got.orchestrator.Target)
@@ -1709,6 +1710,28 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.wantRes(t, gotRes)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

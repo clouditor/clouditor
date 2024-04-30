@@ -30,10 +30,11 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )
@@ -122,7 +123,7 @@ func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				typ: AccessCreate,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: discovery.DefaultCloudServiceID},
+				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: config.DefaultCloudServiceID},
 			},
 			want: true,
 		},

@@ -38,9 +38,9 @@ import (
 	apiruntime "clouditor.io/clouditor/v2/api/runtime"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/service"
-
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -74,7 +74,7 @@ func TestNewService(t *testing.T) {
 	assert.NoError(t, err)
 
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -84,7 +84,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with database",
 			args: args{
-				opts: []ServiceOption{WithStorage(myStorage)},
+				opts: []service.Option[*Service]{WithStorage(myStorage)},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Same(t, myStorage, got.storage)
@@ -93,7 +93,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with catalogs file",
 			args: args{
-				opts: []ServiceOption{WithCatalogsFolder("catalogsFolder.json")},
+				opts: []service.Option[*Service]{WithCatalogsFolder("catalogsFolder.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "catalogsFolder.json", got.catalogsFolder)
@@ -102,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with metrics file",
 			args: args{
-				opts: []ServiceOption{WithMetricsFile("metricsfile.json")},
+				opts: []service.Option[*Service]{WithMetricsFile("metricsfile.json")},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal(t, "metricsfile.json", got.metricsFile)
@@ -111,7 +111,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "New service with authorization strategy",
 			args: args{
-				opts: []ServiceOption{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
+				opts: []service.Option[*Service]{WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{})},
 			},
 			want: func(t *testing.T, got *Service) bool {
 				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyAllowAll{}, got.authz)
@@ -240,6 +240,28 @@ func TestService_GetRuntimeInfo(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.want(t, gotRes)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

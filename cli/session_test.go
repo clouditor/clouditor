@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
 
 func TestSession(t *testing.T) {

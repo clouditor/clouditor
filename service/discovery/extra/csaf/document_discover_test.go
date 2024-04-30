@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/crypto/openpgp"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
@@ -35,7 +35,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 				client: goodProvider.Client(),
 			},
 			args: args{
@@ -91,7 +91,7 @@ func Test_csafDiscovery_discoverSecurityAdvisories(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   discovery.DefaultCloudServiceID,
+				csID:   config.DefaultCloudServiceID,
 				client: goodProvider.Client(),
 			},
 			args: args{

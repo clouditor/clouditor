@@ -39,6 +39,7 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
@@ -46,10 +47,11 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/go-co-op/gocron"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -68,7 +70,7 @@ func TestMain(m *testing.M) {
 
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -78,7 +80,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
@@ -89,7 +91,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithCloudServiceID(testdata.MockCloudServiceID1),
 				},
 			},
@@ -100,7 +102,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAuthorizationStrategy'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
 				},
 			},
@@ -109,9 +111,31 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
+			name: "Create service with option 'WithProviders' and one provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{"azure"}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{"azure"}, got.providers)
+			},
+		},
+		{
+			name: "Create service with option 'WithProviders' and no provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{}, got.providers)
+			},
+		},
+		{
 			name: "Create service with option 'WithStorage'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithStorage(testutil.NewInMemoryStorage(t)),
 				},
 			},
@@ -122,18 +146,18 @@ func TestNewService(t *testing.T) {
 		{
 			name: "Create service with option 'WithAdditionalDiscoverers'",
 			args: args{
-				opts: []ServiceOption{
-					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID}}),
+				opts: []service.Option[*Service]{
+					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID}}),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
-				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: discovery.DefaultCloudServiceID})
+				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID})
 			},
 		},
 		{
 			name: "Create service with option 'WithDiscoveryInterval'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithDiscoveryInterval(time.Duration(8)),
 				},
 			},
@@ -165,15 +189,15 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 			checkEvidence: true,
 		},
@@ -697,6 +721,43 @@ func TestService_Start(t *testing.T) {
 
 			tt.want(t, gotRes)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name      string
+		prepViper func()
+		want      assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path: providers given",
+			prepViper: func() {
+				viper.Set(config.DiscoveryProviderFlag, "azure")
+
+			},
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+			},
+		},
+		{
+			name:      "Happy path: no providers given",
+			prepViper: func() {},
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

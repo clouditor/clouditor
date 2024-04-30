@@ -37,7 +37,9 @@ import (
 	"clouditor.io/clouditor/v2/api/assessment"
 	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
 	"clouditor.io/clouditor/v2/service"
@@ -45,6 +47,7 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -60,6 +63,18 @@ var (
 	ErrControlIdIsMissing    = errors.New("control_id is missing")
 	ErrControlNotAvailable   = errors.New("control not available")
 )
+
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		nil,
+		WithOAuth2Authorizer(config.ClientCredentials()),
+		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+	)
+}
 
 const (
 	// DefaultOrchestratorAddress specifies the default gRPC address of the orchestrator service.
@@ -93,36 +108,38 @@ func init() {
 }
 
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) service.Option[Service] {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.storage = storage
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
-func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.orchestrator.SetAuthorizer(auth)
 	}
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator service gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Orchestrator URL is set to %s", target)
+
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
 	}
 }
 
 // NewService creates a new Evaluation service
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	svc := Service{
 		orchestrator:    api.NewRPCConnection(DefaultOrchestratorAddress, orchestrator.NewOrchestratorClient),
@@ -149,6 +166,12 @@ func NewService(opts ...service.Option[Service]) *Service {
 	}
 
 	return &svc
+}
+
+func (svc *Service) Init() {}
+
+func (svc *Service) Shutdown() {
+	svc.scheduler.Stop()
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a

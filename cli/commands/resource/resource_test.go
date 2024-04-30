@@ -45,7 +45,7 @@ func TestMain(m *testing.M) {
 	svc := service_discovery.NewService()
 	svc.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2})
 
-	os.Exit(clitest.RunCLITest(m, server.WithDiscovery(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
 
 func TestAddCommands(t *testing.T) {

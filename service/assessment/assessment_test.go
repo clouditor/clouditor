@@ -49,6 +49,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/prototest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evidencetest"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
 	"clouditor.io/clouditor/v2/service"
 
@@ -83,7 +84,7 @@ func TestMain(m *testing.M) {
 // TestNewService is a simply test for NewService
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
@@ -93,7 +94,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with option rego package name",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithRegoPackageName("testPkg"),
 				},
 			},
@@ -104,7 +105,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with option authorizer",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(&clientcredentials.Config{})),
 				},
 			},
@@ -115,7 +116,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer created with options",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithEvidenceStoreAddress("localhost:9091"),
 					WithOrchestratorAddress("localhost:9092"),
 				},
@@ -128,7 +129,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer without EvidenceStore",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithoutEvidenceStore(),
 				},
 			},
@@ -139,7 +140,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer with oauth2 authorizer",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithOAuth2Authorizer(&clientcredentials.Config{ClientID: "client"}),
 				},
 			},
@@ -150,7 +151,7 @@ func TestNewService(t *testing.T) {
 		{
 			name: "AssessmentServer with authorization strategy",
 			args: args{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
 				},
 			},
@@ -1037,7 +1038,7 @@ func TestService_handleEvidence(t *testing.T) {
 
 func TestService_initOrchestratorStoreStream(t *testing.T) {
 	type fields struct {
-		opts []service.Option[Service]
+		opts []service.Option[*Service]
 	}
 	type args struct {
 		url string
@@ -1055,7 +1056,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				url: "localhost:1",
 			},
 			fields: fields{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithOrchestratorAddress("localhost:1"),
 				},
 			},
@@ -1071,7 +1072,7 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 				url: "bufnet",
 			},
 			fields: fields{
-				opts: []service.Option[Service]{
+				opts: []service.Option[*Service]{
 					WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
@@ -1219,6 +1220,28 @@ func TestService_MetricImplementation(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.want(t, gotImpl)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name string
+		want assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path",
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

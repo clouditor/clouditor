@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 
 	svc = service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
 
 func TestNewCloudCommand(t *testing.T) {
@@ -84,7 +84,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.Equal(t, "not_default", response.Name)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -113,7 +113,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.NotEmpty(t, response.Services)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -147,7 +147,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.Equal(t, target.Id, response.Id)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -181,7 +181,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 		_, err = svc.CreateDefaultTargetCloudService()
 
 		return assert.NoError(t, err)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -219,7 +219,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, target.Id, response.Id)
 		return assert.Equal(t, notDefault, response.Name)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -251,6 +251,6 @@ func TestGetMetricConfiguration(t *testing.T) {
 		err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
 		return assert.NoError(t, err)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }

@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 
 	"github.com/sirupsen/logrus"
 )
@@ -62,7 +63,7 @@ func WithCloudServiceID(csID string) DiscoveryOption {
 
 func NewTrustedProviderDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &csafDiscovery{
-		csID:   discovery.DefaultCloudServiceID,
+		csID:   config.DefaultCloudServiceID,
 		domain: "clouditor.io",
 		client: http.DefaultClient,
 	}

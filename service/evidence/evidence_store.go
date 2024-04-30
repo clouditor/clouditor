@@ -23,7 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package evidences
+package evidence
 
 import (
 	"context"
@@ -36,8 +36,10 @@ import (
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/internal/logging"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/sirupsen/logrus"
@@ -46,6 +48,23 @@ import (
 )
 
 var log *logrus.Entry
+
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the evidenceStore.
+			//  * The hook functions in evidenceStore are implemented in StoreEvidence(s)
+
+			// evidenceStoreService.RegisterEvidenceHook(func(result *evidence.Evidence, err error) {})
+
+			return nil, nil
+		},
+	)
+}
 
 // Service is an implementation of the Clouditor req service (evidenceServer)
 type Service struct {
@@ -64,13 +83,13 @@ type Service struct {
 	evidence.UnimplementedEvidenceStoreServer
 }
 
-func WithStorage(storage persistence.Storage) service.Option[Service] {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.storage = storage
 	}
 }
 
-func NewService(opts ...service.Option[Service]) (svc *Service) {
+func NewService(opts ...service.Option[*Service]) (svc *Service) {
 	var (
 		err error
 	)
@@ -98,6 +117,10 @@ func NewService(opts ...service.Option[Service]) (svc *Service) {
 func init() {
 	log = logrus.WithField("component", "Evidence Store")
 }
+
+func (svc *Service) Init() {}
+
+func (svc *Service) Shutdown() {}
 
 // StoreEvidence is a method implementation of the evidenceServer interface: It receives a req and stores it
 func (svc *Service) StoreEvidence(ctx context.Context, req *evidence.StoreEvidenceRequest) (res *evidence.StoreEvidenceResponse, err error) {
