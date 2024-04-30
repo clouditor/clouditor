@@ -84,6 +84,7 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 	// Create the services out of the service specs
 	for _, spec := range specs {
 		// Create the service and gather the gRPC server options
+
 		svc, grpcOpts, err := spec.NewService(l.db)
 		if err != nil {
 			return nil, err

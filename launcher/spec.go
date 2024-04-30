@@ -35,9 +35,14 @@ import (
 // type T, in order for the initialization and creation functions to work. But if we want to have a list of different
 // specs, we cannot mix the generics, therefore we need to have the [ServiceSpec] interface.
 type spec[T service.Service] struct {
-	nsf  NewServiceFunc[T]
-	wsf  WithStorageFunc[T]
+	// nsf is mandatory and contains the function to create the service.
+	nsf NewServiceFunc[T]
+	// wsf contains an optional [WithStorageFunc] that the service can use to use a persistance layer.
+	wsf WithStorageFunc[T]
+	// init contains an optional [ServiceInitFunc] that the service can use to initialize its self and return additional
+	// [server.StartGRPCServerOption] objects.
 	init ServiceInitFunc[T]
+	// opts contains additional [service.Option] options.
 	opts []service.Option[T]
 }
 
@@ -52,8 +57,11 @@ func (s spec[T]) newService(db persistence.Storage) (svc T, grpcOpts []server.St
 	// Create the service with the NewServiceFunc using the supplied server options
 	svc = s.nsf(opts...)
 
-	// Initialize the service using the ServiceInitFunc. This returns a possible list of StartGRPCServerOptions that we need to return
-	grpcOpts, err = s.init(svc)
+	// Initialize the service using the ServiceInitFunc (if its non-nil). This returns a possible list of
+	// StartGRPCServerOptions that we need to return
+	if s.init != nil {
+		grpcOpts, err = s.init(svc)
+	}
 	if err != nil {
 		return *new(T), nil, err
 	}
