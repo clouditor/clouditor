@@ -39,13 +39,17 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/policies"
+	"clouditor.io/clouditor/v2/server"
 	"clouditor.io/clouditor/v2/service"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,6 +61,24 @@ import (
 var (
 	log *logrus.Entry
 )
+
+func DefaultServiceSpec() launcher.ServiceSpec {
+	return launcher.NewServiceSpec(
+		NewService,
+		nil,
+		func(svc *Service) ([]server.StartGRPCServerOption, error) {
+			// It is possible to register hook functions for the assessment service.
+			//  * The hook functions in assessment are implemented in AssessEvidence(s)
+
+			// assessmentService.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {}
+
+			return nil, nil
+		},
+		WithOAuth2Authorizer(config.ClientCredentials()),
+		WithOrchestratorAddress(viper.GetString(config.OrchestratorURLFlag)),
+		WithEvidenceStoreAddress(viper.GetString(config.EvidenceStoreURLFlag)),
+	)
+}
 
 func init() {
 	log = logrus.WithField("component", "assessment")
@@ -131,30 +153,34 @@ const (
 )
 
 // WithoutEvidenceStore is a service option to discard evidences and don't send them to an evidence store
-func WithoutEvidenceStore() service.Option[Service] {
+func WithoutEvidenceStore() service.Option[*Service] {
 	return func(svc *Service) {
 		svc.isEvidenceStoreDisabled = true
 	}
 }
 
 // WithEvidenceStoreAddress is an option to configure the evidence store gRPC address.
-func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[Service] {
+func WithEvidenceStoreAddress(address string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Evidence Store URL is set to %s", address)
+
 		svc.evidenceStore.Target = address
 		svc.evidenceStore.Opts = opts
 	}
 }
 
 // WithOrchestratorAddress is an option to configure the orchestrator gRPC address.
-func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[Service] {
+func WithOrchestratorAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Orchestrator URL is set to %s", target)
+
 		svc.orchestrator.Target = target
 		svc.orchestrator.Opts = opts
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Service] {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(s *Service) {
 		auth := api.NewOAuthAuthorizerFromClientCredentials(config)
 		s.evidenceStore.SetAuthorizer(auth)
@@ -163,7 +189,7 @@ func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[Servi
 }
 
 // WithAuthorizer is an option to use a pre-created authorizer
-func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
+func WithAuthorizer(auth api.Authorizer) service.Option[*Service] {
 	return func(s *Service) {
 		s.evidenceStore.SetAuthorizer(auth)
 		s.orchestrator.SetAuthorizer(auth)
@@ -171,21 +197,21 @@ func WithAuthorizer(auth api.Authorizer) service.Option[Service] {
 }
 
 // WithRegoPackageName is an option to configure the Rego package name
-func WithRegoPackageName(pkg string) service.Option[Service] {
+func WithRegoPackageName(pkg string) service.Option[*Service] {
 	return func(s *Service) {
 		s.evalPkg = pkg
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[Service] {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.authz = authz
 	}
 }
 
 // NewService creates a new assessment service with default values.
-func NewService(opts ...service.Option[Service]) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	svc := &Service{
 		evidenceStoreStreams: api.NewStreamsOf(api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
 		orchestratorStreams:  api.NewStreamsOf(api.WithLogger[orchestrator.Orchestrator_StoreAssessmentResultsClient, *orchestrator.StoreAssessmentResultRequest](log)),
@@ -216,6 +242,8 @@ func NewService(opts ...service.Option[Service]) *Service {
 
 	return svc
 }
+
+func (svc *Service) Init() {}
 
 // AssessEvidence is a method implementation of the assessment interface: It assesses a single evidence
 func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEvidenceRequest) (res *assessment.AssessEvidenceResponse, err error) {

@@ -38,6 +38,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -1089,7 +1090,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &azureDiscovery{
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1112,7 +1113,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				rg:                 util.Ref(testdata.MockResourceGroup),
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1128,7 +1129,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 						Transport: mockSender{},
 					},
 				},
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1140,7 +1141,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				cred:               &mockAuthorizer{},
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
