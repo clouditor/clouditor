@@ -55,9 +55,6 @@ func NewOrchestratorCommand() *cobra.Command {
 
 	BindFlags(cmd)
 
-	grpc := config.APIgRPCPortFlag
-	fmt.Println("grpc: ", grpc)
-
 	return cmd
 }
 
