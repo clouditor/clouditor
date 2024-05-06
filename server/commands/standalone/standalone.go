@@ -67,8 +67,8 @@ func NewStandaloneCommand() *cobra.Command {
 	cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
 
-	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
-	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 
 	command_evidence.BindFlags(cmd)
 	command_assessment.BindFlags(cmd)
