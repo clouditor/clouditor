@@ -57,6 +57,7 @@ func NewEvaluationCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
+	// Set the OrchestratorURLFlag default value to the default orchestrator gRPC port, e.g., "localhost:9090"
 	if cmd.Flag(config.OrchestratorURLFlag) == nil {
 		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
 	}
