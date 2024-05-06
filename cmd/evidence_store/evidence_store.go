@@ -29,11 +29,11 @@ import (
 	"os"
 
 	"clouditor.io/clouditor/v2/server/commands"
-	"clouditor.io/clouditor/v2/server/commands/evaluation"
+	"clouditor.io/clouditor/v2/server/commands/evidence"
 )
 
 func main() {
-	cmd := evaluation.NewEvaluationCommand()
+	cmd := evidence.NewEvidenceCommand()
 	commands.BindPersistentFlags(cmd)
 
 	if err := cmd.Execute(); err != nil {
