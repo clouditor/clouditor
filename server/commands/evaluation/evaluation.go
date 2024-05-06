@@ -57,6 +57,7 @@ func NewEvaluationCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
+	// Set the OrchestratorURLFlag default value to the default orchestrator gRPC port, e.g., "localhost:9090"
 	if cmd.Flag(config.OrchestratorURLFlag) == nil {
 		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
 	}
@@ -68,6 +69,6 @@ func BindFlags(cmd *cobra.Command) {
 	}
 
 	_ = viper.BindPFlag(config.OrchestratorURLFlag, cmd.Flags().Lookup(config.OrchestratorURLFlag))
-	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
-	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 }

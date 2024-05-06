@@ -66,7 +66,7 @@ func BindFlags(cmd *cobra.Command) {
 	}
 
 	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
-	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
-	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 
 }

@@ -26,6 +26,8 @@
 package discovery
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service/discovery"
@@ -57,12 +59,19 @@ func NewDiscoveryCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().String(config.AssessmentURLFlag, config.DefaultAssessmentURL, "Specifies the Assessment URL")
+	// Set the AssessmentURLFlag default value to the default assessment gRPC port, e.g., "localhost:9093"
+	cmd.Flags().String(config.AssessmentURLFlag, fmt.Sprintf("localhost:%q", config.DefaultAPIgRPCPortAssessment), "Specifies the Assessment URL")
 	cmd.Flags().String(config.CloudServiceIDFlag, config.DefaultCloudServiceID, "Specifies the Cloud Service ID")
 	cmd.Flags().Bool(config.DiscoveryAutoStartFlag, config.DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	cmd.Flags().StringSliceP(config.DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")
 	cmd.Flags().String(config.DiscoveryResourceGroupFlag, config.DefaultDiscoveryResourceGroup, "Limit the scope of the discovery to a resource group (currently only used in the Azure discoverer")
 	cmd.Flags().String(config.DiscoveryCSAFDomainFlag, config.DefaultCSAFDomain, "The domain to look for a CSAF provider, if the CSAF discovery is enabled")
+	if cmd.Flag(config.APIgRPCPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortDiscovery, "Specifies the port used for the Clouditor gRPC API")
+	}
+	if cmd.Flag(config.APIHTTPPortFlag) == nil {
+		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortDiscovery, "Specifies the port used for the Clouditor HTTP API")
+	}
 
 	_ = viper.BindPFlag(config.AssessmentURLFlag, cmd.Flags().Lookup(config.AssessmentURLFlag))
 	_ = viper.BindPFlag(config.CloudServiceIDFlag, cmd.Flags().Lookup(config.CloudServiceIDFlag))
@@ -70,4 +79,6 @@ func BindFlags(cmd *cobra.Command) {
 	_ = viper.BindPFlag(config.DiscoveryProviderFlag, cmd.Flags().Lookup(config.DiscoveryProviderFlag))
 	_ = viper.BindPFlag(config.DiscoveryResourceGroupFlag, cmd.Flags().Lookup(config.DiscoveryResourceGroupFlag))
 	_ = viper.BindPFlag(config.DiscoveryCSAFDomainFlag, cmd.Flags().Lookup(config.DefaultCSAFDomain))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 }

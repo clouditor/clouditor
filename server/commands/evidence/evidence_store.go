@@ -64,7 +64,7 @@ func BindFlags(cmd *cobra.Command) {
 		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortEvidenceStore, "Specifies the port used for the Clouditor HTTP API")
 	}
 
-	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.PersistentFlags().Lookup(config.APIgRPCPortFlag))
-	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.PersistentFlags().Lookup(config.APIHTTPPortFlag))
+	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
+	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 
 }
