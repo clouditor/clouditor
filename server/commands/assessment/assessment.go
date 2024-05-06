@@ -26,6 +26,8 @@
 package assessment
 
 import (
+	"fmt"
+
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service/assessment"
@@ -57,10 +59,13 @@ func NewAssessmentCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
+	// Set the OrchestratorURLFlag default value to the default orchestrator gRPC port, e.g., "localhost:9090"
 	if cmd.Flag(config.OrchestratorURLFlag) == nil {
 		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
 	}
-	cmd.Flags().String(config.EvidenceStoreURLFlag, config.DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
+	// Set the EvidenceStoreURLFLag default value to the default evidence store gRPC port, e.g., "localhost:9092"
+	cmd.Flags().String(config.EvidenceStoreURLFlag, fmt.Sprintf("localhost:%q", config.DefaultAPIgRPCPortEvidenceStore), "Specifies the Evidence Store URL")
+
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortAssessment, "Specifies the port used for the Clouditor gRPC API")
 	}
