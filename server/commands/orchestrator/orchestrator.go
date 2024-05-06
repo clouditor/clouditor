@@ -26,8 +26,6 @@
 package orchestrator
 
 import (
-	"fmt"
-
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/service/orchestrator"
