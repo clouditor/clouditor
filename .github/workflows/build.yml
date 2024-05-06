@@ -47,7 +47,7 @@ jobs:
 
           go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tee output.json | tparse -follow || true
           tparse -format markdown -file output.json > $GITHUB_STEP_SUMMARY
-      - uses: codecov/codecov-action@v4.3.0
+      - uses: codecov/codecov-action@v4.3.1
         with:
           files: coverage.cov
           flags: unittests
