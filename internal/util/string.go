@@ -25,7 +25,11 @@
 
 package util
 
-import "unicode"
+import (
+	"unicode"
+
+	"clouditor.io/clouditor/v2/api/ontology"
+)
 
 // CamelCaseToSnakeCase converts a `camelCase` string to `snake_case`
 func CamelCaseToSnakeCase(input string) string {
@@ -66,4 +70,15 @@ func marksNewWord(i int, input []rune) bool {
 	}
 
 	return false
+}
+
+// ListResourceIDs return a list of the given resource IDs
+func ListResourceIDs(r []ontology.IsResource) []string {
+	var a = []string{}
+
+	for _, v := range r {
+		a = append(a, v.GetId())
+	}
+
+	return a
 }

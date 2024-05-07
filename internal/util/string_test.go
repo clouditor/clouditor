@@ -1,7 +1,10 @@
 package util
 
 import (
+	"reflect"
 	"testing"
+
+	"clouditor.io/clouditor/v2/api/ontology"
 )
 
 func TestCamelCaseToSnakeCase(t *testing.T) {
@@ -112,6 +115,40 @@ func Test_marksNewWord(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := marksNewWord(tt.args.i, tt.args.input); got != tt.want {
 				t.Errorf("marksNewWord() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestListResourceIDs(t *testing.T) {
+	type args struct {
+		r []ontology.IsResource
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: []string{},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				[]ontology.IsResource{
+					&ontology.Account{Id: "test"},
+					&ontology.Account{Id: "test2"},
+				},
+			},
+			want: []string{"test", "test2"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ListResourceIDs(tt.args.r); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListResourceIDs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

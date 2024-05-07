@@ -28,9 +28,11 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	v1 "k8s.io/api/core/v1"
@@ -64,14 +66,14 @@ func (d *k8sComputeDiscovery) List() ([]ontology.IsResource, error) {
 	for i := range pods.Items {
 		// Get virtual machines
 		c := d.handlePod(&pods.Items[i])
-		log.Infof("Adding container %+v", c)
+		log.Infof("Adding container %+v", c.GetId())
 		list = append(list, c)
 
 		// Get all volumes conntected to the specific pod
 		v := d.handlePodVolume(&pods.Items[i])
 
 		if len(v) != 0 {
-			log.Infof("Adding pod volume %+v", v)
+			log.Infof("Adding pod volumes %+v", strings.Join(util.ListResourceIDs(v), ","))
 			list = append(list, v...)
 		}
 	}
