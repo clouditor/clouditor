@@ -121,3 +121,14 @@ func ToPrettyJSON(r IsResource) (s string, err error) {
 	s = string(b)
 	return
 }
+
+// ResourceIDs return a list of the given resource IDs
+func ResourceIDs(r []IsResource) []string {
+	var a = []string{}
+
+	for _, v := range r {
+		a = append(a, v.GetId())
+	}
+
+	return a
+}

@@ -32,7 +32,6 @@ import (
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	v1 "k8s.io/api/core/v1"
@@ -73,7 +72,7 @@ func (d *k8sComputeDiscovery) List() ([]ontology.IsResource, error) {
 		v := d.handlePodVolume(&pods.Items[i])
 
 		if len(v) != 0 {
-			log.Infof("Adding pod volumes %+v", strings.Join(util.ListResourceIDs(v), ","))
+			log.Infof("Adding pod volumes %+v", strings.Join(ontology.ResourceIDs(v), ","))
 			list = append(list, v...)
 		}
 	}

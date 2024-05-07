@@ -1,6 +1,7 @@
 package ontology
 
 import (
+	reflect "reflect"
 	"testing"
 	"time"
 
@@ -131,6 +132,40 @@ func TestResourceMap(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.wantProps(t, gotProps)
+		})
+	}
+}
+
+func TestListResourceIDs(t *testing.T) {
+	type args struct {
+		r []IsResource
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Empty input",
+			args: args{},
+			want: []string{},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				[]IsResource{
+					&Account{Id: "test"},
+					&Account{Id: "test2"},
+				},
+			},
+			want: []string{"test", "test2"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ResourceIDs(tt.args.r); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListResourceIDs() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
