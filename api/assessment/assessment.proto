@@ -109,7 +109,7 @@ message AssessmentResult {
   string metric_id = 3 [(buf.validate.field).string.min_len = 1];
 
   // Data corresponding to the metric by the given metric id
-  MetricConfiguration metric_configuration = 4 [
+  clouditor.assessment.v1.MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (buf.validate.field).required = true
   ];
