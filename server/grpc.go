@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/v2/api/evidence"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/logging/formatter"
+	"clouditor.io/clouditor/v2/service"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -62,7 +63,7 @@ type config struct {
 }
 
 // WithServices is an option for [StartGRPCServer] to register services at start.
-func WithServices(services ...any) StartGRPCServerOption {
+func WithServices(services ...service.Service) StartGRPCServerOption {
 	return func(c *config) {
 		for _, svc := range services {
 

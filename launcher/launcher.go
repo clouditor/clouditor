@@ -113,7 +113,7 @@ func (l *Launcher) Launch() (err error) {
 	grpcOpts = []server.StartGRPCServerOption{
 		server.WithJWKS(viper.GetString(config.APIJWKSURLFlag)),
 		server.WithReflection(),
-		server.WithServices(l.services),
+		server.WithServices(l.services...),
 	}
 
 	// Append launch-specific ones
