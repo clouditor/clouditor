@@ -66,7 +66,6 @@ type config struct {
 func WithServices(services ...service.Service) StartGRPCServerOption {
 	return func(c *config) {
 		for _, svc := range services {
-
 			if s, ok := svc.(orchestrator.OrchestratorServer); ok {
 				c.services[&orchestrator.Orchestrator_ServiceDesc] = s
 			}
@@ -86,6 +85,7 @@ func WithServices(services ...service.Service) StartGRPCServerOption {
 				c.services[&evaluation.Evaluation_ServiceDesc] = s
 			}
 		}
+
 	}
 }
 

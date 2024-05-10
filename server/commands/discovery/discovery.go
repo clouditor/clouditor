@@ -27,6 +27,7 @@ package discovery
 
 import (
 	"fmt"
+	"strconv"
 
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/launcher"
@@ -60,7 +61,9 @@ func NewDiscoveryCommand() *cobra.Command {
 
 func BindFlags(cmd *cobra.Command) {
 	// Set the AssessmentURLFlag default value to the default assessment gRPC port, e.g., "localhost:9093"
-	cmd.Flags().String(config.AssessmentURLFlag, fmt.Sprintf("localhost:%q", config.DefaultAPIgRPCPortAssessment), "Specifies the Assessment URL")
+	if cmd.Flag(config.AssessmentURLFlag) == nil {
+		cmd.Flags().String(config.AssessmentURLFlag, fmt.Sprintf("localhost:%s", strconv.FormatUint(uint64(config.DefaultAPIgRPCPortAssessment), 10)), "Specifies the Assessment URL")
+	}
 	cmd.Flags().String(config.CloudServiceIDFlag, config.DefaultCloudServiceID, "Specifies the Cloud Service ID")
 	cmd.Flags().Bool(config.DiscoveryAutoStartFlag, config.DefaultDiscoveryAutoStart, "Automatically start the discovery when engine starts")
 	cmd.Flags().StringSliceP(config.DiscoveryProviderFlag, "p", []string{}, "Providers to discover, separated by comma")

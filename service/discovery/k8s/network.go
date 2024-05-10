@@ -63,7 +63,7 @@ func (d *k8sNetworkDiscovery) List() ([]ontology.IsResource, error) {
 	for i := range services.Items {
 		c := d.handleService(&services.Items[i])
 
-		log.Infof("Adding service %+v", c)
+		log.Infof("Adding service %+v", c.GetId())
 
 		list = append(list, c)
 	}
@@ -77,7 +77,7 @@ func (d *k8sNetworkDiscovery) List() ([]ontology.IsResource, error) {
 	for i := range ingresses.Items {
 		c := d.handleIngress(&ingresses.Items[i])
 
-		log.Infof("Adding ingress %+v", c)
+		log.Infof("Adding ingress %+v", c.GetId())
 
 		list = append(list, c)
 	}

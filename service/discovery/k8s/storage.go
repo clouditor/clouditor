@@ -64,7 +64,7 @@ func (d *k8sStorageDiscovery) List() ([]ontology.IsResource, error) {
 	for i := range pvc.Items {
 		p := d.handlePV(&pvc.Items[i])
 		if p != nil {
-			log.Infof("Adding volume %+v", p)
+			log.Infof("Adding volume %+v", p.GetId())
 			list = append(list, p)
 		}
 	}
