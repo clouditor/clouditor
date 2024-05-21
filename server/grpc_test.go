@@ -62,7 +62,7 @@ func TestReflectionNoAuth(t *testing.T) {
 
 	// Only use the host from the session, but not the (authentication) connection, since we want to test, whether we
 	// can access the reflection without authentication
-	conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err = grpc.NewClient(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
 
 	client = grpc_reflection_v1.NewServerReflectionClient(conn)

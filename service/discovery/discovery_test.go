@@ -337,7 +337,7 @@ func TestService_ListResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
 			s.authz = tt.fields.authz
 			s.csID = tt.fields.csID
 			s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.csID})

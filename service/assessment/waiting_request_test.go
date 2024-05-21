@@ -44,8 +44,8 @@ import (
 
 func TestService_AssessEvidenceWaitFor(t *testing.T) {
 	s := NewService()
-	s.evidenceStore = api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer))
-	s.orchestrator = api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer))
+	s.evidenceStore = api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer))
+	s.orchestrator = api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer))
 
 	// Add our first evidence
 	resp, err := s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{
