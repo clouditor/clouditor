@@ -50,7 +50,6 @@ import (
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -125,7 +124,7 @@ type Service struct {
 
 	storage persistence.Storage
 
-	scheduler *gocron.Scheduler
+	tickers map[discovery.Discoverer]*time.Ticker
 
 	authz service.AuthorizationStrategy
 
@@ -222,7 +221,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
-		scheduler:         gocron.NewScheduler(time.UTC),
+		tickers:           make(map[discovery.Discoverer]*time.Ticker),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              config.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
@@ -265,7 +264,10 @@ func (svc *Service) Init() {
 
 func (svc *Service) Shutdown() {
 	svc.assessmentStreams.CloseAll()
-	svc.scheduler.Stop()
+	for d, t := range svc.tickers {
+		t.Stop()
+		delete(svc.tickers, d)
+	}
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
@@ -308,7 +310,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	resp = &discovery.StartDiscoveryResponse{Successful: true}
 
 	log.Infof("Starting discovery...")
-	svc.scheduler.TagsUnique()
 
 	// Configure discoverers for given providers
 	for _, provider := range svc.providers {
@@ -365,20 +366,34 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	for _, v := range svc.discoverers {
 		log.Infof("Scheduling {%s} to execute every {%v} minutes...", v.Name(), svc.discoveryInterval.Minutes())
 
-		_, err = svc.scheduler.
-			Every(svc.discoveryInterval).
-			Tag(v.Name()).
-			Do(svc.StartDiscovery, v)
+		err = svc.runPeriodically(v, svc.discoveryInterval)
 		if err != nil {
-			newError := fmt.Errorf("could not schedule job for {%s}: %v", v.Name(), err)
-			log.Error(newError)
-			return nil, status.Errorf(codes.Aborted, "%s", newError)
+			log.Error(err)
+			return nil, status.Errorf(codes.InvalidArgument, "%s", err)
 		}
 	}
 
-	svc.scheduler.StartAsync()
-
 	return resp, nil
+}
+
+func (svc *Service) runPeriodically(d discovery.Discoverer, interval time.Duration) error {
+	var (
+		t *time.Ticker
+	)
+
+	if interval < 0 {
+		return errors.New("interval must be greater than zero")
+	}
+
+	// Create a new ticker for the discoverer
+	t = time.NewTicker(interval)
+	svc.tickers[d] = t
+
+	for range t.C {
+		svc.StartDiscovery(d)
+	}
+
+	return nil
 }
 
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {

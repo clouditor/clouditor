@@ -50,7 +50,6 @@ import (
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -356,8 +355,7 @@ func TestService_Shutdown(t *testing.T) {
 	service := NewService()
 	service.Shutdown()
 
-	assert.False(t, service.scheduler.IsRunning())
-
+	assert.Empty(t, service.tickers)
 }
 
 // mockAssessmentStream implements Assessment_AssessEvidencesClient interface
@@ -447,7 +445,7 @@ func TestService_Start(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
+		tickers           map[discovery.Discoverer]*time.Ticker
 		authz             service.AuthorizationStrategy
 		providers         []string
 		discoveryInterval time.Duration
@@ -485,7 +483,7 @@ func TestService_Start(t *testing.T) {
 			name: "Request with wrong provider name",
 			fields: fields{
 				authz:     servicetest.NewAuthorizationStrategy(true),
-				scheduler: gocron.NewScheduler(time.UTC),
+				tickers:   make(map[discovery.Discoverer]*time.Ticker),
 				providers: []string{"falseProvider"},
 			},
 			args: args{
@@ -501,7 +499,7 @@ func TestService_Start(t *testing.T) {
 			name: "Wrong permission",
 			fields: fields{
 				authz:     servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
-				scheduler: gocron.NewScheduler(time.UTC),
+				tickers:   make(map[discovery.Discoverer]*time.Ticker),
 				providers: []string{},
 			},
 			args: args{
@@ -517,7 +515,7 @@ func TestService_Start(t *testing.T) {
 			name: "discovery interval error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(-5 * time.Minute),
 				envVariables: []envVariable{
@@ -551,7 +549,7 @@ func TestService_Start(t *testing.T) {
 			name: "K8S authorizer error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderK8S},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -576,7 +574,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: no discovery interval error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -610,7 +608,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: Azure authorizer from ENV",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -644,7 +642,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: Azure with resource group",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -680,7 +678,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: CSAF with domain",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				scheduler:         gocron.NewScheduler(time.UTC),
+				tickers:           make(map[discovery.Discoverer]*time.Ticker),
 				providers:         []string{ProviderCSAF},
 				discoveryInterval: time.Duration(5 * time.Minute),
 			},
@@ -702,7 +700,7 @@ func TestService_Start(t *testing.T) {
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
+				tickers:           tt.fields.tickers,
 				authz:             tt.fields.authz,
 				providers:         tt.fields.providers,
 				discoveryInterval: tt.fields.discoveryInterval,

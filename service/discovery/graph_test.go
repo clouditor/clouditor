@@ -41,7 +41,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
 
-	"github.com/go-co-op/gocron"
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 )
@@ -51,7 +50,6 @@ func TestService_ListGraphEdges(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
 		authz             service.AuthorizationStrategy
 		providers         []string
 		Events            chan *DiscoveryEvent
@@ -158,7 +156,6 @@ func TestService_ListGraphEdges(t *testing.T) {
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
 				providers:         tt.fields.providers,
 				Events:            tt.fields.Events,
@@ -184,7 +181,6 @@ func TestService_UpdateResource(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		scheduler         *gocron.Scheduler
 		authz             service.AuthorizationStrategy
 		providers         []string
 		Events            chan *DiscoveryEvent
@@ -261,7 +257,6 @@ func TestService_UpdateResource(t *testing.T) {
 				assessmentStreams: tt.fields.assessmentStreams,
 				assessment:        tt.fields.assessment,
 				storage:           tt.fields.storage,
-				scheduler:         tt.fields.scheduler,
 				authz:             tt.fields.authz,
 				providers:         tt.fields.providers,
 				Events:            tt.fields.Events,
