@@ -124,7 +124,7 @@ type Service struct {
 
 	storage persistence.Storage
 
-	tickers map[discovery.Discoverer]*time.Ticker
+	tickers map[discovery.Discoverer]*discoveryTicker
 
 	authz service.AuthorizationStrategy
 
@@ -221,7 +221,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
-		tickers:           make(map[discovery.Discoverer]*time.Ticker),
+		tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              config.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
@@ -376,35 +376,62 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	return resp, nil
 }
 
+type discoveryTicker struct {
+	ticker     *time.Ticker
+	interval   time.Duration
+	done       chan bool
+	closed     bool
+	discoverer discovery.Discoverer
+	fn         func(discoverer discovery.Discoverer)
+}
+
+func (pd *discoveryTicker) Run() {
+	go func() {
+		// Run now
+		pd.fn(pd.discoverer)
+
+		for {
+			select {
+			// It's done when it's done
+			case <-pd.done:
+				pd.closed = true
+				return
+				// And every tick from the channel afterwards
+			case <-pd.ticker.C:
+				pd.fn(pd.discoverer)
+			}
+		}
+	}()
+}
+
+func (pd *discoveryTicker) Stop() {
+	pd.ticker.Stop()
+
+	go func() {
+		pd.done <- true
+	}()
+}
+
 func (svc *Service) runPeriodically(d discovery.Discoverer, interval time.Duration) error {
 	var (
-		t *time.Ticker
+		pd *discoveryTicker
 	)
 
 	if interval < 0 {
 		return errors.New("interval must be greater than zero")
 	}
 
-	// Create a new ticker for the discoverer
-	t = time.NewTicker(interval)
-	svc.tickers[d] = t
-
-	// TODO: this function leaks go routines, because this one is never closed :(
-	go func() {
-		// Run now
-		svc.StartDiscovery(d)
-
-		// And every tick from the channel afterwards
-		for {
-			select {
-			case _, ok := <-t.C:
-				if !ok {
-					break
-				}
-				svc.StartDiscovery(d)
-			}
-		}
-	}()
+	// Create a new periodicDiscovery for the discoverer
+	pd = &discoveryTicker{
+		interval:   interval,
+		ticker:     time.NewTicker(interval),
+		done:       make(chan bool),
+		closed:     false,
+		discoverer: d,
+		fn:         svc.StartDiscovery,
+	}
+	svc.tickers[d] = pd
+	pd.Run()
 
 	return nil
 }

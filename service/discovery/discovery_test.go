@@ -445,7 +445,7 @@ func TestService_Start(t *testing.T) {
 		assessmentStreams *api.StreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]
 		assessment        *api.RPCConnection[assessment.AssessmentClient]
 		storage           persistence.Storage
-		tickers           map[discovery.Discoverer]*time.Ticker
+		tickers           map[discovery.Discoverer]*discoveryTicker
 		authz             service.AuthorizationStrategy
 		providers         []string
 		discoveryInterval time.Duration
@@ -483,7 +483,7 @@ func TestService_Start(t *testing.T) {
 			name: "Request with wrong provider name",
 			fields: fields{
 				authz:     servicetest.NewAuthorizationStrategy(true),
-				tickers:   make(map[discovery.Discoverer]*time.Ticker),
+				tickers:   make(map[discovery.Discoverer]*discoveryTicker),
 				providers: []string{"falseProvider"},
 			},
 			args: args{
@@ -499,7 +499,7 @@ func TestService_Start(t *testing.T) {
 			name: "Wrong permission",
 			fields: fields{
 				authz:     servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
-				tickers:   make(map[discovery.Discoverer]*time.Ticker),
+				tickers:   make(map[discovery.Discoverer]*discoveryTicker),
 				providers: []string{},
 			},
 			args: args{
@@ -515,7 +515,7 @@ func TestService_Start(t *testing.T) {
 			name: "discovery interval error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(-5 * time.Minute),
 				envVariables: []envVariable{
@@ -549,7 +549,7 @@ func TestService_Start(t *testing.T) {
 			name: "K8S authorizer error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderK8S},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -574,7 +574,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: no discovery interval error",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -608,7 +608,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: Azure authorizer from ENV",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -642,7 +642,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: Azure with resource group",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderAzure},
 				discoveryInterval: time.Duration(5 * time.Minute),
 				envVariables: []envVariable{
@@ -678,7 +678,7 @@ func TestService_Start(t *testing.T) {
 			name: "Happy path: CSAF with domain",
 			fields: fields{
 				authz:             servicetest.NewAuthorizationStrategy(true),
-				tickers:           make(map[discovery.Discoverer]*time.Ticker),
+				tickers:           make(map[discovery.Discoverer]*discoveryTicker),
 				providers:         []string{ProviderCSAF},
 				discoveryInterval: time.Duration(5 * time.Minute),
 			},
