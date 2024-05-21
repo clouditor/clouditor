@@ -542,7 +542,7 @@ func TestService_Start(t *testing.T) {
 			},
 			want: assert.Nil[*discovery.StartDiscoveryResponse],
 			wantErr: func(t *testing.T, gotErr error) bool {
-				return assert.ErrorContains(t, gotErr, "could not schedule job for ", ".Every() interval must be greater than 0")
+				return assert.ErrorContains(t, gotErr, "interval must be greater than zero")
 			},
 		},
 		{

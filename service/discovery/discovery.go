@@ -389,9 +389,22 @@ func (svc *Service) runPeriodically(d discovery.Discoverer, interval time.Durati
 	t = time.NewTicker(interval)
 	svc.tickers[d] = t
 
-	for range t.C {
+	// TODO: this function leaks go routines, because this one is never closed :(
+	go func() {
+		// Run now
 		svc.StartDiscovery(d)
-	}
+
+		// And every tick from the channel afterwards
+		for {
+			select {
+			case _, ok := <-t.C:
+				if !ok {
+					break
+				}
+				svc.StartDiscovery(d)
+			}
+		}
+	}()
 
 	return nil
 }
@@ -401,6 +414,8 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		err  error
 		list []ontology.IsResource
 	)
+
+	fmt.Println("Inside StartDiscovery")
 
 	go func() {
 		svc.Events <- &DiscoveryEvent{
