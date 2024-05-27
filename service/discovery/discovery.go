@@ -139,7 +139,7 @@ type Service struct {
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
 
-	// collectorID is the evidence collector tool ID with is gathering the resources.
+	// collectorID is the evidence collector tool ID witch is gathering the resources.
 	collectorID string
 }
 
