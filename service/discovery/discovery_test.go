@@ -100,6 +100,17 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
+			name: "Create service with option 'WithCollectorToolID'",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithCollectorToolID(testdata.MockEvidenceToolID1),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, testdata.MockEvidenceToolID1, got.collectorID)
+			},
+		},
+		{
 			name: "Create service with option 'WithAuthorizationStrategy'",
 			args: args{
 				opts: []service.Option[*Service]{
@@ -177,8 +188,9 @@ func TestNewService(t *testing.T) {
 
 func TestService_StartDiscovery(t *testing.T) {
 	type fields struct {
-		discoverer discovery.Discoverer
-		csID       string
+		discoverer  discovery.Discoverer
+		csID        string
+		collectorID string
 	}
 
 	tests := []struct {
@@ -196,16 +208,18 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCloudServiceID},
-				csID:       config.DefaultCloudServiceID,
+				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCloudServiceID},
+				csID:        config.DefaultCloudServiceID,
+				collectorID: config.DefaultEvidenceCollectorToolID,
 			},
 			checkEvidence: true,
 		},
 		{
 			name: "No err with custom cloud service ID",
 			fields: fields{
-				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCloudServiceID1},
-				csID:       testdata.MockCloudServiceID1,
+				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCloudServiceID1},
+				csID:        testdata.MockCloudServiceID1,
+				collectorID: config.DefaultEvidenceCollectorToolID,
 			},
 			checkEvidence: true,
 		},
@@ -218,6 +232,7 @@ func TestService_StartDiscovery(t *testing.T) {
 
 			svc := NewService()
 			svc.csID = tt.fields.csID
+			svc.collectorID = tt.fields.collectorID
 			svc.assessmentStreams = api.NewStreamsOf[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest]()
 			_, _ = svc.assessmentStreams.GetStream("mock", "Assessment", func(target string, additionalOpts ...grpc.DialOption) (stream assessment.Assessment_AssessEvidencesClient, err error) {
 				return mockStream, nil

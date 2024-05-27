@@ -138,6 +138,9 @@ type Service struct {
 
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
+
+	// collectorID is the evidence collector tool ID with is gathering the resources.
+	collectorID string
 }
 
 func init() {
@@ -166,6 +169,15 @@ func WithCloudServiceID(ID string) service.Option[*Service] {
 		log.Infof("Cloud Service ID is set to %s", ID)
 
 		svc.csID = ID
+	}
+}
+
+// WithCollectorToolID is an option to configure the collector tool ID that is used to discovery resources.
+func WithCollectorToolID(ID string) service.Option[*Service] {
+	return func(svc *Service) {
+		log.Infof("Collector ID is set to %s", ID)
+
+		svc.collectorID = ID
 	}
 }
 
@@ -225,6 +237,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              config.DefaultCloudServiceID,
+		collectorID:       config.DefaultEvidenceCollectorToolID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
@@ -387,6 +400,8 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []ontology.IsResource
 	)
 
+	fmt.Println("Collector id: ", svc.collectorID)
+
 	go func() {
 		svc.Events <- &DiscoveryEvent{
 			Type:           DiscovererStart,
@@ -438,7 +453,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			CloudServiceId: svc.GetCloudServiceId(),
 			Timestamp:      timestamppb.Now(),
 			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         config.EvidenceCollectorToolId,
+			ToolId:         svc.collectorID,
 			Resource:       a,
 		}
 
