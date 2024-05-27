@@ -27,7 +27,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install buf
-        uses: bufbuild/buf-setup-action@v1.31.0
+        uses: bufbuild/buf-setup-action@v1.32.1
         with:
           github_token: ${{ github.token }}
       - name: Generate
