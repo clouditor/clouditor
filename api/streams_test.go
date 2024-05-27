@@ -66,7 +66,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			name:   "missing init function",
 			fields: fields{},
 			args: args{
-				target:    "localhost",
+				target:    testdata.MockGRPCTarget,
 				component: "mycomponent",
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -77,7 +77,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			name:   "error in init function",
 			fields: fields{},
 			args: args{
-				target:    "localhost",
+				target:    testdata.MockGRPCTarget,
 				component: "mycomponent",
 				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
 					return nil, ErrSomeError

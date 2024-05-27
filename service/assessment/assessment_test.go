@@ -213,8 +213,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess evidence without id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -232,8 +232,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without tool id",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -252,8 +252,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without timestamp",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -272,8 +272,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource",
 			fields: fields{
-				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				authz:               servicetest.NewAuthorizationStrategy(true),
 				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
@@ -319,8 +319,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource without resource id",
 			fields: fields{
-				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				authz:               servicetest.NewAuthorizationStrategy(true),
 				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
@@ -342,8 +342,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "No RPC connections",
 			fields: fields{
-				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(connectionRefusedDialer)),
 				authz:               servicetest.NewAuthorizationStrategy(true),
 				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
@@ -368,8 +368,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource and wait existing related resources is already there",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				authz:         servicetest.NewAuthorizationStrategy(true),
 				evidenceResourceMap: map[string]*evidence.Evidence{
 					"my-other-resource-id": {
@@ -402,8 +402,8 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource and wait existing related resources is not there",
 			fields: fields{
-				evidenceStore:       api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:        api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore:       api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:        api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				authz:               servicetest.NewAuthorizationStrategy(true),
 				evidenceResourceMap: make(map[string]*evidence.Evidence),
 			},
@@ -459,9 +459,9 @@ func TestService_AssessEvidence(t *testing.T) {
 func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached(t *testing.T) {
 	s := &Service{
 		evidenceStore: api.NewRPCConnection(
-			"bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+			testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 		orchestrator: api.NewRPCConnection(
-			"bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+			testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 		authz: servicetest.NewAuthorizationStrategy(true),
 		evidenceStoreStreams: api.NewStreamsOf(
 			api.WithLogger[evidence.EvidenceStore_StoreEvidencesClient, *evidence.StoreEvidenceRequest](log)),
@@ -635,8 +635,8 @@ func TestService_AssessEvidences(t *testing.T) {
 				resultHooks:          tt.fields.ResultHooks,
 				cachedConfigurations: make(map[string]cachedConfiguration),
 				evidenceStoreStreams: tt.fields.evidenceStoreStreams,
-				evidenceStore:        api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:         api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore:        api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:         api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestratorStreams:  tt.fields.orchestratorStreams,
 				evidenceResourceMap:  make(map[string]*evidence.Evidence),
 				pe:                   policies.NewRegoEval(),
@@ -737,7 +737,10 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hookCallCounter = 0
-			s := NewService(WithEvidenceStoreAddress("", grpc.WithContextDialer(bufConnDialer)), WithOrchestratorAddress("", grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(
+				WithEvidenceStoreAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
+				WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
+			)
 
 			for i, hookFunction := range tt.args.resultHooks {
 				s.RegisterAssessmentResultHook(hookFunction)
@@ -917,8 +920,8 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "correct evidence",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -948,8 +951,8 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "broken Any message",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -968,8 +971,8 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "not an ontology resource",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -988,8 +991,8 @@ func TestService_handleEvidence(t *testing.T) {
 		{
 			name: "evidence store stream error",
 			fields: fields{
-				evidenceStore: api.NewRPCConnection("bufnet", evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
-				orchestrator:  api.NewRPCConnection("bufnet", orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(connectionRefusedDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
 			},
 			args: args{
 				evidence: &evidence.Evidence{
@@ -1069,11 +1072,11 @@ func TestService_initOrchestratorStoreStream(t *testing.T) {
 		{
 			name: "Authenticated RPC connection with invalid user",
 			args: args{
-				url: "bufnet",
+				url: testdata.MockGRPCTarget,
 			},
 			fields: fields{
 				opts: []service.Option[*Service]{
-					WithOrchestratorAddress("bufnet", grpc.WithContextDialer(bufConnDialer)),
+					WithOrchestratorAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)),
 					WithOAuth2Authorizer(testutil.AuthClientConfig(authPort)),
 				},
 			},
