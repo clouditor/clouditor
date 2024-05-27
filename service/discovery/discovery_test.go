@@ -103,7 +103,7 @@ func TestNewService(t *testing.T) {
 			name: "Create service with option 'WithCollectorToolID'",
 			args: args{
 				opts: []service.Option[*Service]{
-					WithCollectorToolID(testdata.MockEvidenceToolID1),
+					WithEvidenceCollectorToolID(testdata.MockEvidenceToolID1),
 				},
 			},
 			want: func(t *testing.T, got *Service) bool {
