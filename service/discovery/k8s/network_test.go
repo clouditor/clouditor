@@ -27,14 +27,13 @@ package k8s
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 
-	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,10 +74,7 @@ func TestNewKubernetesNetworkDiscovery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewKubernetesNetworkDiscovery(tt.args.intf, tt.args.cloudServiceID)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewKubernetesNetworkDiscovery() = %v, want %v", got, tt.want)
-			}
-
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 			assert.Equal(t, "Kubernetes Network", got.Name())
 		})
 	}
@@ -140,26 +136,20 @@ func TestListIngresses(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, list)
 
-	service, ok := list[0].(*voc.NetworkService)
-
-	assert.True(t, ok)
+	service := assert.Is[*ontology.GenericNetworkService](t, list[0])
 	assert.Equal(t, "my-service", service.Name)
-	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.ID))
-	assert.Equal(t, []uint16{80}, service.Ports)
+	assert.Equal(t, "/namespaces/my-namespace/services/my-service", string(service.Id))
+	assert.Equal(t, []uint32{80}, service.Ports)
 	assert.Equal(t, []string{"127.0.0.1"}, service.Ips)
 
-	lb, ok := list[1].(*voc.LoadBalancer)
-
-	assert.True(t, ok)
+	lb := assert.Is[*ontology.LoadBalancer](t, list[1])
 	assert.Equal(t, "my-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.ID))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-ingress", string(lb.Id))
 	assert.Equal(t, "http://myhost/test", lb.HttpEndpoints[0].Url)
 
-	lb, ok = list[2].(*voc.LoadBalancer)
-
-	assert.True(t, ok)
+	lb = assert.Is[*ontology.LoadBalancer](t, list[2])
 	assert.Equal(t, "my-other-ingress", lb.Name)
-	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.ID))
+	assert.Equal(t, "/namespaces/my-namespace/ingresses/my-other-ingress", string(lb.Id))
 	assert.Equal(t, "https://myhost/test", lb.HttpEndpoints[0].Url)
 	assert.NotNil(t, (lb.HttpEndpoints)[0].TransportEncryption)
 }

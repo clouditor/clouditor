@@ -34,26 +34,27 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/servicetest"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/voc"
-
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest"
+	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/service"
 	"github.com/go-co-op/gocron"
-	"github.com/stretchr/testify/assert"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestMain(m *testing.M) {
@@ -69,71 +70,99 @@ func TestMain(m *testing.M) {
 
 func TestNewService(t *testing.T) {
 	type args struct {
-		opts []ServiceOption
+		opts []service.Option[*Service]
 	}
 	tests := []struct {
 		name string
 		args args
-		want assert.ValueAssertionFunc
+		want assert.Want[*Service]
 	}{
 		{
 			name: "Create service with option 'WithAssessmentAddress'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAssessmentAddress("localhost:9091"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, "localhost:9091", s.assessment.Target)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, "localhost:9091", got.assessment.Target)
 			},
 		},
 		{
 			name: "Create service with option 'WithDefaultCloudServiceID'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithCloudServiceID(testdata.MockCloudServiceID1),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, testdata.MockCloudServiceID1, s.csID)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, testdata.MockCloudServiceID1, got.csID)
 			},
 		},
 		{
 			name: "Create service with option 'WithAuthorizationStrategy'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithAuthorizationStrategy(&service.AuthorizationStrategyJWT{AllowAllKey: "test"}),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, s.authz)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal[service.AuthorizationStrategy](t, &service.AuthorizationStrategyJWT{AllowAllKey: "test"}, got.authz)
+			},
+		},
+		{
+			name: "Create service with option 'WithProviders' and one provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{"azure"}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{"azure"}, got.providers)
+			},
+		},
+		{
+			name: "Create service with option 'WithProviders' and no provider given",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithProviders([]string{}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, []string{}, got.providers)
 			},
 		},
 		{
 			name: "Create service with option 'WithStorage'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithStorage(testutil.NewInMemoryStorage(t)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.NotNil(t, s.storage)
+			want: func(t *testing.T, got *Service) bool {
+				return assert.NotNil(t, got.storage)
+			},
+		},
+		{
+			name: "Create service with option 'WithAdditionalDiscoverers'",
+			args: args{
+				opts: []service.Option[*Service]{
+					WithAdditionalDiscoverers([]discovery.Discoverer{&discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID}}),
+				},
+			},
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Contains(t, got.discoverers, &discoverytest.TestDiscoverer{ServiceId: config.DefaultCloudServiceID})
 			},
 		},
 		{
 			name: "Create service with option 'WithDiscoveryInterval'",
 			args: args{
-				opts: []ServiceOption{
+				opts: []service.Option[*Service]{
 					WithDiscoveryInterval(time.Duration(8)),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*Service)
-				return assert.Equal(t, s.discoveryInterval, time.Duration(8))
+			want: func(t *testing.T, got *Service) bool {
+				return assert.Equal(t, time.Duration(8), got.discoveryInterval)
 			},
 		},
 	}
@@ -160,29 +189,22 @@ func TestService_StartDiscovery(t *testing.T) {
 		{
 			name: "Err in discoverer",
 			fields: fields{
-				discoverer: &mockDiscoverer{testCase: 0, csID: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
-			},
-		},
-		{
-			name: "Err in marshaling the resource containing circular dependencies",
-			fields: fields{
-				discoverer: &mockDiscoverer{testCase: 1, csID: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 0, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 		},
 		{
 			name: "No err with default cloud service ID",
 			fields: fields{
-				discoverer: &mockDiscoverer{testCase: 2, csID: discovery.DefaultCloudServiceID},
-				csID:       discovery.DefaultCloudServiceID,
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCloudServiceID},
+				csID:       config.DefaultCloudServiceID,
 			},
 			checkEvidence: true,
 		},
 		{
 			name: "No err with custom cloud service ID",
 			fields: fields{
-				discoverer: &mockDiscoverer{testCase: 2, csID: testdata.MockCloudServiceID1},
+				discoverer: &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCloudServiceID1},
 				csID:       testdata.MockCloudServiceID1,
 			},
 			checkEvidence: true,
@@ -217,12 +239,15 @@ func TestService_StartDiscovery(t *testing.T) {
 				assert.NotNil(t, eGot)
 				assert.NoError(t, err)
 
+				m, err := eGot.Resource.UnmarshalNew()
+				assert.NoError(t, err)
+				or := m.(ontology.IsResource)
+
 				// Only the last element sent can be checked
-				assert.Equal(t, string(eWant.GetID()), eGot.Resource.GetStructValue().AsMap()["id"].(string))
+				assert.Equal(t, string(eWant.GetId()), or.GetId())
 
 				// Assert cloud service ID
 				assert.Equal(t, tt.fields.csID, eGot.CloudServiceId)
-				assert.Equal(t, tt.fields.csID, eGot.Resource.GetStructValue().AsMap()["serviceId"].(string))
 			}
 		})
 	}
@@ -241,7 +266,7 @@ func TestService_ListResources(t *testing.T) {
 		fields                   fields
 		args                     args
 		numberOfQueriedResources int
-		wantErr                  assert.ErrorAssertionFunc
+		wantErr                  assert.WantErr
 	}{
 		{
 			name: "Filter type, allow all",
@@ -251,11 +276,12 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args: args{req: &discovery.ListResourcesRequest{
 				Filter: &discovery.ListResourcesRequest_Filter{
+					// TODO(oxisto): This is a problem now, since we are only persisting the leaf node type, so we cannot "see" the inherited resource types anymore
 					Type: util.Ref("Storage"),
 				},
 			}},
 			numberOfQueriedResources: 1,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, allow",
@@ -269,7 +295,7 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "Filter cloud service, not allowed",
@@ -283,8 +309,8 @@ func TestService_ListResources(t *testing.T) {
 				},
 			}},
 			numberOfQueriedResources: 0,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
 			},
 		},
 		{
@@ -295,7 +321,7 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 2,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 		{
 			name: "No filtering, allow different cloud service, empty result",
@@ -305,16 +331,16 @@ func TestService_ListResources(t *testing.T) {
 			},
 			args:                     args{req: &discovery.ListResourcesRequest{}},
 			numberOfQueriedResources: 0,
-			wantErr:                  assert.NoError,
+			wantErr:                  assert.Nil[error],
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(WithAssessmentAddress("bufnet", grpc.WithContextDialer(bufConnDialer)))
+			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
 			s.authz = tt.fields.authz
 			s.csID = tt.fields.csID
-			s.StartDiscovery(&mockDiscoverer{testCase: 2, csID: tt.fields.csID})
+			s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.csID})
 
 			response, err := s.ListResources(context.TODO(), tt.args.req)
 			tt.wantErr(t, err)
@@ -332,63 +358,6 @@ func TestService_Shutdown(t *testing.T) {
 
 	assert.False(t, service.scheduler.IsRunning())
 
-}
-
-// mockDiscoverer implements Discoverer and mocks the API to cloud resources
-type mockDiscoverer struct {
-	// testCase allows for different implementations for table tests in TestStartDiscovery
-	testCase int
-	csID     string
-}
-
-func (*mockDiscoverer) Name() string { return "just mocking" }
-
-func (m *mockDiscoverer) List() ([]voc.IsCloudResource, error) {
-	switch m.testCase {
-	case 0:
-		return nil, fmt.Errorf("mock error in List()")
-	case 1:
-		return []voc.IsCloudResource{wrongFormattedResource()}, nil
-	case 2:
-		return []voc.IsCloudResource{
-			&voc.ObjectStorage{
-				Storage: &voc.Storage{
-					Resource: discovery.NewResource(m, "some-id", "some-name", nil, voc.GeoLocation{}, nil, "", []string{"ObjectStorage", "Storage", "Resource"}, map[string][]interface{}{"raw": {"raw"}}),
-				},
-			},
-			&voc.ObjectStorageService{
-				StorageService: &voc.StorageService{
-					Storage: []voc.ResourceID{"some-id"},
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: discovery.NewResource(m, "some-storage-account-id", "some-storage-account-name", nil, voc.GeoLocation{}, nil, "", []string{"StorageService", "NetworkService", "Networking", "Resource"}, map[string][]interface{}{"raw": {"raw"}}),
-						},
-					},
-				},
-				HttpEndpoint: &voc.HttpEndpoint{
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   false,
-						Enabled:    true,
-						TlsVersion: "TLS1_2",
-					},
-				},
-			},
-		}, nil
-	default:
-		return nil, nil
-	}
-}
-
-// CloudServiceID is an implementation for discovery.Discoverer
-func (d *mockDiscoverer) CloudServiceID() string {
-	return d.csID
-}
-
-func wrongFormattedResource() voc.IsCloudResource {
-	res1 := mockIsCloudResource{Another: nil}
-	res2 := mockIsCloudResource{Another: &res1}
-	res1.Another = &res2
-	return res1
 }
 
 // mockAssessmentStream implements Assessment_AssessEvidencesClient interface
@@ -414,13 +383,13 @@ func (m *mockAssessmentStream) Recv() (*assessment.AssessEvidencesResponse, erro
 	if m.counter == 0 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status:        assessment.AssessEvidencesResponse_FAILED,
+			Status:        assessment.AssessmentStatus_ASSESSMENT_STATUS_FAILED,
 			StatusMessage: "mockError1",
 		}, nil
 	} else if m.counter == 1 {
 		m.counter++
 		return &assessment.AssessEvidencesResponse{
-			Status: assessment.AssessEvidencesResponse_ASSESSED,
+			Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
 		}, nil
 	} else {
 		return nil, io.EOF
@@ -468,164 +437,6 @@ func (*mockAssessmentStream) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-// mockIsCloudResource implements mockIsCloudResource interface.
-// It is used for json.marshal to fail since it contains circular dependency
-type mockIsCloudResource struct {
-	Another *mockIsCloudResource `json:"Another"`
-}
-
-func (mockIsCloudResource) GetID() voc.ResourceID {
-	return "MockResourceId"
-}
-
-func (mockIsCloudResource) GetServiceID() string {
-	return "MockServiceId"
-}
-
-func (mockIsCloudResource) SetServiceID(_ string) {
-
-}
-
-func (mockIsCloudResource) GetName() string {
-	return ""
-}
-
-func (mockIsCloudResource) GetType() []string {
-	return nil
-}
-
-func (mockIsCloudResource) HasType(_ string) bool {
-	return false
-}
-
-func (mockIsCloudResource) GetCreationTime() *time.Time {
-	return nil
-}
-
-func (mockIsCloudResource) GetRaw() string {
-	return ""
-}
-
-func (mockIsCloudResource) SetRaw(_ string) {
-}
-
-func (mockIsCloudResource) Related() []string {
-	return []string{}
-}
-
-func Test_toDiscoveryResource(t *testing.T) {
-	type args struct {
-		resource voc.IsCloudResource
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantR   *discovery.Resource
-		wantV   *structpb.Value
-		wantErr bool
-	}{
-		{
-			name: "happy path",
-			args: args{
-				resource: &voc.VirtualMachine{
-					Compute: &voc.Compute{
-						Resource: &voc.Resource{
-							ID:   "my-resource-id",
-							Name: "my-resource-name",
-							Type: voc.VirtualMachineType,
-						},
-					},
-				},
-			},
-			wantV: &structpb.Value{
-				Kind: &structpb.Value_StructValue{
-					StructValue: &structpb.Struct{
-						Fields: map[string]*structpb.Value{
-							"activityLogging":  structpb.NewNullValue(),
-							"automaticUpdates": structpb.NewNullValue(),
-							"blockStorage":     structpb.NewNullValue(),
-							"bootLogging":      structpb.NewNullValue(),
-							"creationTime":     structpb.NewNumberValue(0),
-							"geoLocation": structpb.NewStructValue(&structpb.Struct{
-								Fields: map[string]*structpb.Value{
-									"region": structpb.NewStringValue(""),
-								}}),
-							"id":                structpb.NewStringValue("my-resource-id"),
-							"labels":            structpb.NewNullValue(),
-							"malwareProtection": structpb.NewNullValue(),
-							"name":              structpb.NewStringValue("my-resource-name"),
-							"networkInterfaces": structpb.NewNullValue(),
-							"osLogging":         structpb.NewNullValue(),
-							"parent":            structpb.NewStringValue(""),
-							"raw":               structpb.NewStringValue(""),
-							"resourceLogging":   structpb.NewNullValue(),
-							"serviceId":         structpb.NewStringValue(""),
-							"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
-								structpb.NewStringValue("VirtualMachine"),
-								structpb.NewStringValue("Compute"),
-								structpb.NewStringValue("Resource"),
-							}}),
-						},
-					},
-				},
-			},
-			wantR: &discovery.Resource{
-				Id:           "my-resource-id",
-				ResourceType: "VirtualMachine,Compute,Resource",
-				Properties: &structpb.Value{
-					Kind: &structpb.Value_StructValue{
-						StructValue: &structpb.Struct{
-							Fields: map[string]*structpb.Value{
-								"activityLogging":  structpb.NewNullValue(),
-								"automaticUpdates": structpb.NewNullValue(),
-								"blockStorage":     structpb.NewNullValue(),
-								"bootLogging":      structpb.NewNullValue(),
-								"creationTime":     structpb.NewNumberValue(0),
-								"geoLocation": structpb.NewStructValue(&structpb.Struct{
-									Fields: map[string]*structpb.Value{
-										"region": structpb.NewStringValue(""),
-									}}),
-								"id":                structpb.NewStringValue("my-resource-id"),
-								"labels":            structpb.NewNullValue(),
-								"malwareProtection": structpb.NewNullValue(),
-								"name":              structpb.NewStringValue("my-resource-name"),
-								"networkInterfaces": structpb.NewNullValue(),
-								"osLogging":         structpb.NewNullValue(),
-								"parent":            structpb.NewStringValue(""),
-								"raw":               structpb.NewStringValue(""),
-								"resourceLogging":   structpb.NewNullValue(),
-								"serviceId":         structpb.NewStringValue(""),
-								"type": structpb.NewListValue(&structpb.ListValue{Values: []*structpb.Value{
-									structpb.NewStringValue("VirtualMachine"),
-									structpb.NewStringValue("Compute"),
-									structpb.NewStringValue("Resource"),
-								}}),
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotR, gotV, err := toDiscoveryResource(tt.args.resource)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("toDiscoveryResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !proto.Equal(gotR, tt.wantR) {
-				t.Errorf("toDiscoveryResource() r = %v, want %v", gotR, tt.wantR)
-			}
-
-			if !proto.Equal(gotV, tt.wantV) {
-				t.Errorf("toDiscoveryResource() v = %v, want %v", gotV, tt.wantV)
-			}
-		})
-	}
-}
-
 func TestService_Start(t *testing.T) {
 	type envVariable struct {
 		hasEnvVariable   bool
@@ -652,8 +463,8 @@ func TestService_Start(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[*discovery.StartDiscoveryResponse]
+		wantErr assert.WantErr
 	}{
 		// TODO(all): How to test for Azure and AWS authorizer failures and K8S authorizer without failure?
 		{
@@ -665,9 +476,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: nil,
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, api.ErrEmptyRequest.Error())
 			},
 		},
 		{
@@ -681,9 +492,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "provider falseProvider not known")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "provider falseProvider not known")
 			},
 		},
 		{
@@ -697,9 +508,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "access denied")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "access denied")
 			},
 		},
 		{
@@ -731,9 +542,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not schedule job for ", ".Every() interval must be greater than 0")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not schedule job for ", ".Every() interval must be greater than 0")
 			},
 		},
 		{
@@ -756,9 +567,9 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: assert.Nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not authenticate to Kubernetes")
+			want: assert.Nil[*discovery.StartDiscoveryResponse],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorContains(t, gotErr, "could not authenticate to Kubernetes")
 			},
 		},
 		{
@@ -790,12 +601,10 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure authorizer from ENV",
@@ -826,12 +635,10 @@ func TestService_Start(t *testing.T) {
 				ctx: context.Background(),
 				req: &discovery.StartDiscoveryRequest{},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Happy path: Azure with resource group",
@@ -864,12 +671,29 @@ func TestService_Start(t *testing.T) {
 					ResourceGroup: util.Ref("testResourceGroup"),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				resp, ok := i1.(*discovery.StartDiscoveryResponse)
-				assert.True(t, ok)
-				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, resp)
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
 			},
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "Happy path: CSAF with domain",
+			fields: fields{
+				authz:             servicetest.NewAuthorizationStrategy(true),
+				scheduler:         gocron.NewScheduler(time.UTC),
+				providers:         []string{ProviderCSAF},
+				discoveryInterval: time.Duration(5 * time.Minute),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &discovery.StartDiscoveryRequest{
+					CsafDomain: util.Ref("clouditor.io"),
+				},
+			},
+			want: func(t *testing.T, got *discovery.StartDiscoveryResponse) bool {
+				return assert.Equal(t, &discovery.StartDiscoveryResponse{Successful: true}, got)
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
@@ -893,10 +717,47 @@ func TestService_Start(t *testing.T) {
 				}
 			}
 
-			gotResp, err := svc.Start(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.Start(tt.args.ctx, tt.args.req)
 
-			tt.want(t, gotResp)
+			tt.want(t, gotRes)
 			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestDefaultServiceSpec(t *testing.T) {
+	tests := []struct {
+		name      string
+		prepViper func()
+		want      assert.Want[launcher.ServiceSpec]
+	}{
+		{
+			name: "Happy path: providers given",
+			prepViper: func() {
+				viper.Set(config.DiscoveryProviderFlag, "azure")
+
+			},
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+			},
+		},
+		{
+			name:      "Happy path: no providers given",
+			prepViper: func() {},
+			want: func(t *testing.T, got launcher.ServiceSpec) bool {
+				return assert.NotNil(t, got)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			got := DefaultServiceSpec()
+
+			tt.want(t, got)
 		})
 	}
 }

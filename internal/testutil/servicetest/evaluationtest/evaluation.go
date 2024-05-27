@@ -3,9 +3,9 @@ package evaluationtest
 import (
 	"time"
 
-	"clouditor.io/clouditor/api/evaluation"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/evaluation"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

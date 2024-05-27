@@ -30,9 +30,10 @@ import (
 	"errors"
 	"fmt"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
@@ -40,15 +41,14 @@ import (
 )
 
 var (
-	ErrEmptyStorageAccount        = errors.New("storage account is empty")
-	ErrMissingDiskEncryptionSetID = errors.New("no disk encryption set ID was specified")
-	ErrBackupStorageNotAvailable  = errors.New("backup storages not available")
+	ErrEmptyStorageAccount       = errors.New("storage account is empty")
+	ErrBackupStorageNotAvailable = errors.New("backup storages not available")
 )
 
 // discoverCosmosDB discovers Cosmos DB accounts
-func (d *azureDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverCosmosDB() ([]ontology.IsResource, error) {
 	var (
-		list []voc.IsCloudResource
+		list []ontology.IsResource
 		err  error
 	)
 
@@ -85,16 +85,15 @@ func (d *azureDiscovery) discoverCosmosDB() ([]voc.IsCloudResource, error) {
 }
 
 // discoverMongoDBDatabases returns a list of Mongo DB databases for a specific Mongo DB account
-func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAccountGetResults, atRestEnc voc.IsAtRestEncryption) []voc.IsCloudResource {
+func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAccountGetResults, atRestEnc *ontology.AtRestEncryption) []ontology.IsResource {
 	var (
-		list []voc.IsCloudResource
+		list []ontology.IsResource
 		err  error
 	)
 
 	// initialize Mongo DB resources client
 	if err = d.initMongoDResourcesBClient(); err != nil {
-		log.Errorf("error initializing Mongo DB resource client: %v", err)
-		return list
+		return nil
 	}
 
 	// Discover Mongo DB databases
@@ -108,23 +107,15 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 
 		for _, value := range pageResponse.Value {
 			// Create Cosmos DB database storage voc object
-			mongoDB := &voc.DatabaseStorage{
-				Storage: &voc.Storage{
-					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
-						util.Deref(value.Name),
-						nil, // creation time of database not available
-						voc.GeoLocation{
-							Region: *value.Location,
-						},
-						labels(value.Tags),
-						voc.ResourceID(*account.ID),
-						voc.DatabaseStorageType,
-						account,
-						value),
-
-					AtRestEncryption: atRestEnc,
-				},
+			mongoDB := &ontology.DatabaseStorage{
+				Id:               resourceID(value.ID),
+				Name:             util.Deref(value.Name),
+				CreationTime:     nil, // creation time of database not available
+				GeoLocation:      location(value.Location),
+				Labels:           labels(value.Tags),
+				ParentId:         resourceID2(account.ID),
+				Raw:              discovery.Raw(account, value),
+				AtRestEncryption: atRestEnc,
 			}
 			list = append(list, mongoDB)
 		}
@@ -134,9 +125,9 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 }
 
 // discoverSqlServers discovers the sql server and databases
-func (d *azureDiscovery) discoverSqlServers() ([]voc.IsCloudResource, error) {
+func (d *azureDiscovery) discoverSqlServers() ([]ontology.IsResource, error) {
 	var (
-		list []voc.IsCloudResource
+		list []ontology.IsResource
 		err  error
 	)
 
@@ -173,17 +164,16 @@ func (d *azureDiscovery) discoverSqlServers() ([]voc.IsCloudResource, error) {
 }
 
 // getSqlDBs returns a list of SQL databases for a specific SQL account
-func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudResource, []voc.IsAnomalyDetection) {
+func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource, []*ontology.AnomalyDetection) {
 	var (
-		list                 []voc.IsCloudResource
-		anomalyDetectionList []voc.IsAnomalyDetection
+		list                 []ontology.IsResource
+		anomalyDetectionList []*ontology.AnomalyDetection
 		err                  error
 	)
 
 	// initialize SQL databases client
 	if err = d.initDatabasesClient(); err != nil {
-		log.Errorf("error initializing database client: %v", err)
-		return list, anomalyDetectionList
+		return list, nil
 	}
 
 	// Get databases for given server
@@ -203,33 +193,31 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudResource
 				log.Errorf("error getting anomaly detection info for database '%s': %v", *value.Name, err)
 			}
 
-			a := &voc.AnomalyDetection{
-				Scope:   voc.ResourceID(*value.ID),
+			a := &ontology.AnomalyDetection{
+				Scope:   util.Deref(value.ID),
 				Enabled: anomalyDetectionEnabled,
 			}
 
 			anomalyDetectionList = append(anomalyDetectionList, a)
 
 			// Create database storage voc object
-			sqlDB := &voc.DatabaseStorage{
-				Storage: &voc.Storage{
-					Resource: discovery.NewResource(d,
-						voc.ResourceID(*value.ID),
-						*value.Name,
-						value.Properties.CreationDate,
-						voc.GeoLocation{
-							Region: *value.Location,
+			sqlDB := &ontology.DatabaseStorage{
+				Id:           resourceID(value.ID),
+				Name:         util.Deref(value.Name),
+				CreationTime: creationTime(value.Properties.CreationDate),
+				GeoLocation:  location(value.Location),
+				Labels:       labels(value.Tags),
+				ParentId:     resourceID2(server.ID),
+				Raw:          discovery.Raw(value),
+				AtRestEncryption: &ontology.AtRestEncryption{
+					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+							Enabled:   *value.Properties.IsInfraEncryptionEnabled,
+							Algorithm: constants.AES256,
 						},
-						labels(value.Tags),
-						voc.ResourceID(*server.ID),
-						voc.DatabaseStorageType,
-						value),
-					AtRestEncryption: &voc.AtRestEncryption{
-						Enabled:   *value.Properties.IsInfraEncryptionEnabled,
-						Algorithm: AES256,
 					},
-					// TODO(all): Backups
 				},
+				// TODO(all): Backups
 			}
 			list = append(list, sqlDB)
 		}
@@ -238,8 +226,8 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]voc.IsCloudResource
 	return list, anomalyDetectionList
 }
 
-func (d *azureDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error) {
-	var storageResourcesList []voc.IsCloudResource
+func (d *azureDiscovery) discoverStorageAccounts() ([]ontology.IsResource, error) {
+	var storageResourcesList []ontology.IsResource
 
 	// initialize backup policies client
 	if err := d.initBackupPoliciesClient(); err != nil {
@@ -325,8 +313,8 @@ func (d *azureDiscovery) discoverStorageAccounts() ([]voc.IsCloudResource, error
 	return storageResourcesList, nil
 }
 
-func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// List all file shares in the specified resource group
 	listPager := d.clients.fileStorageClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.FileSharesClientListOptions{})
@@ -352,8 +340,8 @@ func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]vo
 	return list, nil
 }
 
-func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account) ([]voc.IsCloudResource, error) {
-	var list []voc.IsCloudResource
+func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account) ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
 
 	// List all blob containers in the specified resource group
 	listPager := d.clients.blobContainerClient.NewListPager(resourceGroupName(util.Deref(account.ID)), util.Deref(account.Name), &armstorage.BlobContainersClientListOptions{})

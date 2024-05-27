@@ -28,8 +28,8 @@ package orchestrator
 import (
 	"testing"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/internal/testdata"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/internal/testdata"
 )
 
 func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {

@@ -26,9 +26,11 @@
 package formatter
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestCapitalizeFormatter_Format(t *testing.T) {

@@ -33,8 +33,8 @@ import (
 	"io"
 	"os"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/orchestrator"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/orchestrator"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -94,7 +94,7 @@ func NewSession(url string, config *oauth2.Config, token *oauth2.Token) (session
 		Config:     config,
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(url, session)...); err != nil {
+	if session.ClientConn, err = grpc.NewClient(session.URL, api.DefaultGrpcDialOptions(url, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 
@@ -130,7 +130,7 @@ func ContinueSession() (session *Session, err error) {
 		_ = session.Save()
 	}
 
-	if session.ClientConn, err = grpc.Dial(session.URL, api.DefaultGrpcDialOptions(session.URL, session)...); err != nil {
+	if session.ClientConn, err = grpc.NewClient(session.URL, api.DefaultGrpcDialOptions(session.URL, session)...); err != nil {
 		return nil, fmt.Errorf("could not connect: %w", err)
 	}
 

@@ -31,31 +31,25 @@ import (
 	"fmt"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
+	oauth2 "github.com/oxisto/oauth2go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
-	oauth2 "github.com/oxisto/oauth2go"
-	"github.com/stretchr/testify/assert"
 )
 
-func ValidClaimAssertion(tt assert.TestingT, i1 interface{}, _ ...interface{}) bool {
-	ctx, ok := i1.(context.Context)
-	if !ok {
-		tt.Errorf("Return value is not a context")
-		return false
-	}
-
+func ValidClaimAssertion(t *testing.T, ctx context.Context) bool {
 	claims, ok := ctx.Value(AuthContextKey).(*OpenIDConnectClaim)
 	if !ok {
-		tt.Errorf("Token value in context not a JWT claims object")
+		t.Errorf("Token value in context not a JWT claims object")
 		return false
 	}
 
 	if claims.Subject != testdata.MockAuthClientID {
-		tt.Errorf("Subject is not correct")
+		t.Errorf("Subject is not correct")
 		return true
 	}
 
@@ -92,7 +86,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 		fields   fields
 		args     args
 		wantJWKS bool
-		wantCtx  assert.ValueAssertionFunc
+		wantCtx  assert.Want[context.Context]
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		{
@@ -173,9 +167,7 @@ func TestAuthConfig_AuthFunc(t *testing.T) {
 				tt.wantErr(t, err, tt.args.ctx)
 			}
 
-			if tt.wantCtx != nil {
-				tt.wantCtx(t, got, tt.args.ctx)
-			}
+			assert.Optional(t, tt.wantCtx, got)
 		})
 	}
 }

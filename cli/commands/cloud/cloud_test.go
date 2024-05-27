@@ -32,15 +32,14 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/server"
-
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -54,7 +53,7 @@ func TestMain(m *testing.M) {
 
 	svc = service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
 
 func TestNewCloudCommand(t *testing.T) {
@@ -85,7 +84,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.Equal(t, "not_default", response.Name)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -114,7 +113,7 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.NotEmpty(t, response.Services)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -148,7 +147,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 		assert.NoError(t, err)
 		return assert.Equal(t, target.Id, response.Id)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -182,7 +181,7 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 		_, err = svc.CreateDefaultTargetCloudService()
 
 		return assert.NoError(t, err)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -220,7 +219,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, target.Id, response.Id)
 		return assert.Equal(t, notDefault, response.Name)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
@@ -252,6 +251,6 @@ func TestGetMetricConfiguration(t *testing.T) {
 		err = cmd.RunE(nil, []string{target.Id, "TransportEncryptionEnabled"})
 
 		return assert.NoError(t, err)
-	}, server.WithOrchestrator(svc))
+	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }

@@ -1,8 +1,8 @@
 package inmemory
 
 import (
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/gorm"
 	"gorm.io/gorm/logger"
 )
 

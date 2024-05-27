@@ -28,7 +28,9 @@ paths:
                     type: string
                 - name: interval
                   in: query
-                  description: The interval time in minutes the evaluation executes periodically. The default interval is set to 5 minutes.
+                  description: |-
+                    The interval time in minutes the evaluation executes periodically. The
+                     default interval is set to 5 minutes.
                   schema:
                     type: integer
                     format: int32
@@ -104,7 +106,10 @@ paths:
                     type: string
                 - name: filter.subControls
                   in: query
-                  description: Optional. Lists all evaluation results for the given initial control id substring, e.g., if the substring 'CMK-01.' is given it returns the controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
+                  description: |-
+                    Optional. Lists all evaluation results for the given initial control id
+                     substring, e.g., if the substring 'CMK-01.' is given it returns the
+                     controls CMK-01.1B, CMK-01.1S, CMK-01.1H.
                   schema:
                     type: string
                 - name: filter.parentsOnly
@@ -218,14 +223,22 @@ components:
                     type: array
                     items:
                         type: string
-                    description: List of assessment results because of which the evaluation status is not 'compliant'
+                    description: |-
+                        List of assessment results because of which the evaluation status is not
+                         'compliant'
                 comment:
                     type: string
                 validUntil:
                     type: string
-                    description: Optional, but required if the status is one of the "manually" ones. This denotes how long the (manual) created evaluation result is valid. During this time, no automatic results are generated for the specific control.
+                    description: |-
+                        Optional, but required if the status is one of the "manually" ones. This
+                         denotes how long the (manual) created evaluation result is valid. During
+                         this time, no automatic results are generated for the specific control.
                     format: date-time
-            description: A evaluation result resource, representing the result after evaluating the cloud service with a specific control cloud_service_id, category_name and catalog_id are necessary to get the corresponding TargetOfEvaluation
+            description: |-
+                A evaluation result resource, representing the result after evaluating the
+                 cloud service with a specific control cloud_service_id, category_name and
+                 catalog_id are necessary to get the corresponding TargetOfEvaluation
         GoogleProtobufAny:
             type: object
             properties:

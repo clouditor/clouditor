@@ -26,14 +26,14 @@
 package service
 
 import (
-	"reflect"
 	"testing"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testutil"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testutil"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 func TestPaginateSlice(t *testing.T) {
@@ -45,9 +45,9 @@ func TestPaginateSlice(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantPage []int
-		wantNbt  string
-		wantErr  bool
+		wantPage assert.Want[[]int]
+		wantNbt  assert.Want[string]
+		wantErr  assert.WantErr
 	}{
 		{
 			name: "first page",
@@ -59,8 +59,13 @@ func TestPaginateSlice(t *testing.T) {
 				values: []int{1, 2, 3, 4, 5},
 				opts:   PaginationOpts{10, 10},
 			},
-			wantPage: []int{1, 2},
-			wantNbt:  "CAIQAg==",
+			wantPage: func(t *testing.T, got []int) bool {
+				return assert.Equal(t, []int{1, 2}, got)
+			},
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "CAIQAg==", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "next page",
@@ -72,8 +77,13 @@ func TestPaginateSlice(t *testing.T) {
 				values: []int{1, 2, 3, 4, 5},
 				opts:   PaginationOpts{10, 10},
 			},
-			wantPage: []int{3, 4},
-			wantNbt:  "CAQQAg==",
+			wantPage: func(t *testing.T, got []int) bool {
+				return assert.Equal(t, []int{3, 4}, got)
+			},
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "CAQQAg==", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "last page",
@@ -85,24 +95,23 @@ func TestPaginateSlice(t *testing.T) {
 				values: []int{1, 2, 3, 4, 5},
 				opts:   PaginationOpts{10, 10},
 			},
-			wantPage: []int{5},
-			wantNbt:  "",
+			wantPage: func(t *testing.T, got []int) bool {
+				return assert.Equal(t, []int{5}, got)
+			},
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotPage, gotNbt, err := PaginateSlice(tt.args.req, tt.args.values, func(a int, b int) bool { return a < b }, tt.args.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("PaginateSlice() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotPage, tt.wantPage) {
-				t.Errorf("PaginateSlice() gotPage = %v, want %v", gotPage, tt.wantPage)
-			}
-			if gotNbt != tt.wantNbt {
-				t.Errorf("PaginateSlice() gotNbt = %v, want %v", gotNbt, tt.wantNbt)
-			}
+
+			tt.wantErr(t, err)
+			tt.wantNbt(t, gotNbt)
+			tt.wantPage(t, gotPage)
 		})
 	}
 }
@@ -117,9 +126,9 @@ func TestPaginateStorage(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantPage []orchestrator.CloudService
-		wantNbt  string
-		wantErr  bool
+		wantPage assert.Want[[]orchestrator.CloudService]
+		wantNbt  assert.Want[string]
+		wantErr  assert.WantErr
 	}{
 		{
 			name: "first page",
@@ -137,11 +146,17 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{
-				{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-				{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
+				want := []orchestrator.CloudService{
+					{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+					{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				}
+				return assert.Equal(t, want, got)
 			},
-			wantNbt: "CAIQAg==",
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "CAIQAg==", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "next page",
@@ -159,11 +174,17 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{
-				{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-				{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
+				want := []orchestrator.CloudService{
+					{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+					{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+				}
+				return assert.Equal(t, want, got)
 			},
-			wantNbt: "CAQQAg==",
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "CAQQAg==", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 		{
 			name: "last page",
@@ -181,8 +202,15 @@ func TestPaginateStorage(t *testing.T) {
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}},
-			wantNbt:  "",
+			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
+				want := []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}}
+
+				return assert.Equal(t, want, got)
+			},
+			wantNbt: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "", got)
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 
@@ -190,16 +218,10 @@ func TestPaginateStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage,
 				tt.args.opts, tt.args.conds...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("PaginateStorage() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotPage, tt.wantPage) {
-				t.Errorf("PaginateStorage() gotPage = %v, want %v", gotPage, tt.wantPage)
-			}
-			if gotNbt != tt.wantNbt {
-				t.Errorf("PaginateStorage() gotNbt = %v, want %v", gotNbt, tt.wantNbt)
-			}
+
+			tt.wantErr(t, err)
+			tt.wantNbt(t, gotNbt)
+			tt.wantPage(t, gotPage)
 		})
 	}
 }

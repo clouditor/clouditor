@@ -32,15 +32,15 @@ import (
 	sync "sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/testdata"
 )
 
 var ErrSomeError = errors.New("some error")
@@ -66,7 +66,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			name:   "missing init function",
 			fields: fields{},
 			args: args{
-				target:    "localhost",
+				target:    testdata.MockGRPCTarget,
 				component: "mycomponent",
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -77,7 +77,7 @@ func TestStreamsOf_GetStream(t *testing.T) {
 			name:   "error in init function",
 			fields: fields{},
 			args: args{
-				target:    "localhost",
+				target:    testdata.MockGRPCTarget,
 				component: "mycomponent",
 				init: func(target string, additionalOpts ...grpc.DialOption) (m *recordedClientStream, err error) {
 					return nil, ErrSomeError
@@ -168,7 +168,7 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 		name   string
 		args   args
 		fields fields
-		want   assert.ValueAssertionFunc
+		want   assert.Want[*StreamsOf[*mockClientStream, proto.Message]]
 	}{
 		{
 			name: "send error",
@@ -186,11 +186,9 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 					log: defaultLog(),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*StreamsOf[*mockClientStream, proto.Message])
-
+			want: func(t *testing.T, got *StreamsOf[*mockClientStream, protoreflect.ProtoMessage]) bool {
 				// sendLoop should declare the channel dead
-				return assert.True(t, s.channels["test"].dead)
+				return assert.True(t, got.channels["test"].dead)
 			},
 		},
 		{
@@ -209,11 +207,9 @@ func Test_StreamChannelOf_sendLoop(t *testing.T) {
 					log: defaultLog(),
 				},
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				s := i1.(*StreamsOf[*mockClientStream, proto.Message])
-
+			want: func(t *testing.T, got *StreamsOf[*mockClientStream, protoreflect.ProtoMessage]) bool {
 				// sendLoop should declare the channel dead
-				return assert.True(t, s.channels["test"].dead)
+				return assert.True(t, got.channels["test"].dead)
 			},
 		},
 	}

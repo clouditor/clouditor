@@ -30,12 +30,12 @@ import (
 	"fmt"
 	"strings"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evaluation"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evaluation"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/persistence"
 
 	"github.com/glebarez/sqlite"
 	"github.com/sirupsen/logrus"
@@ -157,6 +157,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 		sql.SetMaxOpenConns(g.maxConn)
 	}
 
+	schema.RegisterSerializer("durationpb", &DurationSerializer{})
 	schema.RegisterSerializer("timestamppb", &TimestampSerializer{})
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})

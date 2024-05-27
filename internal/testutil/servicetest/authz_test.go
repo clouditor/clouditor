@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/api"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/api"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/service"
 )
 
 func TestAuthorizationStrategyMock_CheckAccess(t *testing.T) {

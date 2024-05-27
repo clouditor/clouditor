@@ -31,6 +31,11 @@ import (
 	"fmt"
 	"time"
 
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -46,12 +51,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-
 	"github.com/sirupsen/logrus"
-
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
 )
 
 const (
@@ -70,7 +70,7 @@ const (
 
 	AES256 = "AES256"
 
-	RetentionPeriod90Days = 90
+	RetentionPeriod90Days = 90 * time.Hour * 24
 )
 
 var (
@@ -143,10 +143,10 @@ type defenderProperties struct {
 }
 
 type backup struct {
-	// backup is a list of all voc.Backup objects
-	backup map[string][]*voc.Backup
-	// backupStorages is a list of all backed up voc.Storage (ObjectStorage, BlockStorage) objects
-	backupStorages []voc.IsCloudResource
+	// backup is a list of all ontology.Backup objects
+	backup map[string][]*ontology.Backup
+	// backupStorages is a list of all backed up ontology.Storage (ObjectStorage, BlockStorage) objects
+	backupStorages []ontology.IsResource
 }
 
 type clients struct {
@@ -190,7 +190,7 @@ type clients struct {
 
 func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &azureDiscovery{
-		csID:               discovery.DefaultCloudServiceID,
+		csID:               config.DefaultCloudServiceID,
 		backupMap:          make(map[string]*backup),
 		defenderProperties: make(map[string]*defenderProperties),
 	}
@@ -208,7 +208,7 @@ func NewAzureDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 // - Storage resource
 // - Compute resource
 // - Network resource
-func (d *azureDiscovery) List() (list []voc.IsCloudResource, err error) {
+func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 	if err = d.authorize(); err != nil {
 		return nil, fmt.Errorf("%s: %w", ErrCouldNotAuthenticate, err)
 	}
@@ -387,7 +387,7 @@ func (d *azureDiscovery) discoverDefender() (map[string]*defenderProperties, err
 
 	// initialize defender client
 	if err := d.initDefenderClient(); err != nil {
-		return nil, fmt.Errorf("could not initialize defender client: %w", err)
+		return nil, err
 	}
 
 	// List all pricings to get the enabled Defender for X

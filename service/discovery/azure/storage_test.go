@@ -30,14 +30,16 @@ import (
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/internal/constants"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_accountName(t *testing.T) {
@@ -78,7 +80,7 @@ func Test_azureStorageDiscovery_discoverStorageAccounts(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -129,7 +131,7 @@ func Test_storageAtRestEncryption(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    voc.IsAtRestEncryption
+		want    *ontology.AtRestEncryption
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -165,10 +167,12 @@ func Test_storageAtRestEncryption(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.ManagedKeyEncryption{
-				AtRestEncryption: &voc.AtRestEncryption{
-					Algorithm: "AES256",
-					Enabled:   true,
+			want: &ontology.AtRestEncryption{
+				Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+					ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+						Algorithm: "AES256",
+						Enabled:   true,
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -204,7 +208,7 @@ func Test_handleFileStorage(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *voc.FileStorage
+		want    *ontology.FileStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -263,34 +267,28 @@ func Test_handleFileStorage(t *testing.T) {
 					Name: &fileShareName,
 				},
 			},
-			want: &voc.FileStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:           voc.ResourceID(fileShareID),
-						ServiceID:    testdata.MockCloudServiceID1,
-						Name:         fileShareName,
-						CreationTime: util.SafeTimestamp(&creationTime),
-						GeoLocation: voc.GeoLocation{
-							Region: accountRegion,
-						},
-						Labels: map[string]string{},
-						Type:   voc.FileStorageType,
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
-					},
-					AtRestEncryption: &voc.ManagedKeyEncryption{
-						AtRestEncryption: &voc.AtRestEncryption{
+			want: &ontology.FileStorage{
+				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
+				Name:         fileShareName,
+				CreationTime: timestamppb.New(creationTime),
+				GeoLocation: &ontology.GeoLocation{
+					Region: accountRegion,
+				},
+				Labels:   map[string]string{},
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+				Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileShare1\"}]}",
+				AtRestEncryption: &ontology.AtRestEncryption{
+					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
 						},
 					},
-					ResourceLogging: &voc.ResourceLogging{
-						Logging: &voc.Logging{
-							Enabled:                  false,
-							MonitoringLogDataEnabled: false,
-							SecurityAlertsEnabled:    false,
-						},
-					},
+				},
+				ResourceLogging: &ontology.ResourceLogging{
+					Enabled:               false,
+					MonitoringEnabled:     false,
+					SecurityAlertsEnabled: false,
 				},
 			},
 			wantErr: assert.NoError,
@@ -304,7 +302,7 @@ func Test_handleFileStorage(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "handleFileStorage(%v, %v)", tt.args.account, tt.args.fileshare)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -352,13 +350,13 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 	}
 	type args struct {
 		account      *armstorage.Account
-		storagesList []voc.IsCloudResource
+		storagesList []ontology.IsResource
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *voc.ObjectStorageService
+		want    *ontology.ObjectStorageService
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -391,39 +389,29 @@ func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: &voc.ObjectStorageService{
-				StorageService: &voc.StorageService{
-					NetworkService: &voc.NetworkService{
-						Networking: &voc.Networking{
-							Resource: &voc.Resource{
-								ID:           voc.ResourceID(accountID),
-								ServiceID:    testdata.MockCloudServiceID1,
-								Name:         accountName,
-								CreationTime: util.SafeTimestamp(&creationTime),
-								Type:         voc.ObjectStorageServiceType,
-								GeoLocation: voc.GeoLocation{
-									Region: accountRegion,
-								},
-								Labels: map[string]string{},
-								Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-								Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true}}]}",
-							},
-						},
-						TransportEncryption: &voc.TransportEncryption{
-							Enforced:   true,
-							Enabled:    true,
-							TlsVersion: constants.TLS1_2,
-							Algorithm:  constants.TLS,
-						},
-					},
+			want: &ontology.ObjectStorageService{
+				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1",
+				Name:         accountName,
+				CreationTime: timestamppb.New(creationTime),
+				GeoLocation: &ontology.GeoLocation{
+					Region: accountRegion,
 				},
-				HttpEndpoint: &voc.HttpEndpoint{
+				Labels:   map[string]string{},
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true}}]}",
+				TransportEncryption: &ontology.TransportEncryption{
+					Enforced:        true,
+					Enabled:         true,
+					Protocol:        constants.TLS,
+					ProtocolVersion: 1.2,
+				},
+				HttpEndpoint: &ontology.HttpEndpoint{
 					Url: "https://account1.[file,blob].core.windows.net",
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: constants.TLS1_2,
-						Algorithm:  constants.TLS,
+					TransportEncryption: &ontology.TransportEncryption{
+						Enforced:        true,
+						Enabled:         true,
+						Protocol:        constants.TLS,
+						ProtocolVersion: 1.2,
 					},
 				},
 			},
@@ -464,7 +452,7 @@ func Test_handleObjectStorage(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *voc.ObjectStorage
+		want    *ontology.ObjectStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -526,40 +514,34 @@ func Test_handleObjectStorage(t *testing.T) {
 					},
 				},
 			},
-			want: &voc.ObjectStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:           voc.ResourceID(containerID),
-						ServiceID:    testdata.MockCloudServiceID1,
-						Name:         containerName,
-						CreationTime: util.SafeTimestamp(&creationTime),
-						GeoLocation: voc.GeoLocation{
-							Region: accountRegion,
-						},
-						Labels: map[string]string{},
-						Type:   voc.ObjectStorageType,
-						Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-						Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
-					},
-					AtRestEncryption: &voc.ManagedKeyEncryption{
-						AtRestEncryption: &voc.AtRestEncryption{
+			want: &ontology.ObjectStorage{
+				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
+				Name:         containerName,
+				CreationTime: timestamppb.New(creationTime),
+				GeoLocation: &ontology.GeoLocation{
+					Region: accountRegion,
+				},
+				Labels:   map[string]string{},
+				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+				Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
+				AtRestEncryption: &ontology.AtRestEncryption{
+					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 							Algorithm: "AES256",
 							Enabled:   true,
 						},
 					},
-					Immutability: &voc.Immutability{Enabled: false},
-					ResourceLogging: &voc.ResourceLogging{
-						Logging: &voc.Logging{
-							MonitoringLogDataEnabled: false,
-							SecurityAlertsEnabled:    false,
-						},
-					},
-					Backups: []*voc.Backup{
-						{
-							Enabled:         false,
-							RetentionPeriod: -1,
-							Interval:        -1,
-						},
+				},
+				Immutability: &ontology.Immutability{Enabled: false},
+				ResourceLogging: &ontology.ResourceLogging{
+					MonitoringEnabled:     false,
+					SecurityAlertsEnabled: false,
+				},
+				Backups: []*ontology.Backup{
+					{
+						Enabled:         false,
+						RetentionPeriod: nil,
+						Interval:        nil,
 					},
 				},
 				PublicAccess: false,
@@ -575,7 +557,7 @@ func Test_handleObjectStorage(t *testing.T) {
 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -597,7 +579,7 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -635,63 +617,51 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.FileStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1",
-							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "fileshare1",
-							Type:         voc.FileStorageType,
-							CreationTime: util.SafeTimestamp(&creationTime),
-							Labels:       map[string]string{},
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+			want: []ontology.IsResource{
+				&ontology.FileStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
+					Name:         "fileshare1",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
-							},
-						},
-						ResourceLogging: &voc.ResourceLogging{
-							Logging: &voc.Logging{
-								MonitoringLogDataEnabled: false,
-								SecurityAlertsEnabled:    false,
 							},
 						},
 					},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringEnabled:     false,
+						SecurityAlertsEnabled: false,
+					},
 				},
-				&voc.FileStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2",
-							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "fileshare2",
-							Type:         voc.FileStorageType,
-							CreationTime: util.SafeTimestamp(&creationTime),
-							Labels:       map[string]string{},
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.FileStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
+					Name:         "fileshare2",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
 						},
-						ResourceLogging: &voc.ResourceLogging{
-							Logging: &voc.Logging{
-								MonitoringLogDataEnabled: false,
-								SecurityAlertsEnabled:    false,
-							},
-						},
+					},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringEnabled:     false,
+						SecurityAlertsEnabled: false,
 					},
 				},
 			},
@@ -731,7 +701,7 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -769,79 +739,67 @@ func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 					Location: &accountRegion,
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.ObjectStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1",
-							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "container1",
-							Type:         voc.ObjectStorageType,
-							CreationTime: util.SafeTimestamp(&creationTime),
-							Labels:       map[string]string{},
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+			want: []ontology.IsResource{
+				&ontology.ObjectStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
+					Name:         "container1",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
 						},
-						Immutability: &voc.Immutability{Enabled: false},
-						ResourceLogging: &voc.ResourceLogging{
-							Logging: &voc.Logging{
-								MonitoringLogDataEnabled: false,
-								SecurityAlertsEnabled:    false,
-							},
-						},
-						Backups: []*voc.Backup{
-							{
-								Enabled:         false,
-								RetentionPeriod: -1,
-								Interval:        -1,
-							},
+					},
+					Immutability: &ontology.Immutability{Enabled: false},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringEnabled:     false,
+						SecurityAlertsEnabled: false,
+					},
+					Backups: []*ontology.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: nil,
+							Interval:        nil,
 						},
 					},
 					PublicAccess: true,
 				},
-				&voc.ObjectStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2",
-							ServiceID:    testdata.MockCloudServiceID1,
-							Name:         "container2",
-							Type:         voc.ObjectStorageType,
-							CreationTime: util.SafeTimestamp(&creationTime),
-							Labels:       map[string]string{},
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
-							},
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
-							Raw:    "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.ObjectStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
+					Name:         "container2",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Algorithm: "AES256",
 								Enabled:   true,
 							},
 						},
-						Immutability: &voc.Immutability{Enabled: false},
-						ResourceLogging: &voc.ResourceLogging{
-							Logging: &voc.Logging{
-								MonitoringLogDataEnabled: false,
-								SecurityAlertsEnabled:    false,
-							},
-						},
-						Backups: []*voc.Backup{
-							{
-								Enabled:         false,
-								RetentionPeriod: -1,
-								Interval:        -1,
-							},
+					},
+					Immutability: &ontology.Immutability{Enabled: false},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringEnabled:     false,
+						SecurityAlertsEnabled: false,
+					},
+					Backups: []*ontology.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: nil,
+							Interval:        nil,
 						},
 					},
 					PublicAccess: true,
@@ -877,7 +835,7 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		// {
@@ -914,57 +872,46 @@ func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									Name:         "SQLServer1",
-									CreationTime: 0,
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: "eastus",
-									},
-									Labels: make(map[string]string),
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"minimalTlsVersion\":\"1.2\"}}]}",
-								},
-							},
-							TransportEncryption: &voc.TransportEncryption{
-								Enabled:    true,
-								Enforced:   true,
-								TlsVersion: constants.TLS1_2,
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.RelationalDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1",
+					Name:         "SQLServer1",
+					CreationTime: nil,
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
-					AnomalyDetection: []voc.IsAnomalyDetection{
-						&voc.AnomalyDetection{
+					Labels:   make(map[string]string),
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armsql.Server\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1\",\"location\":\"eastus\",\"name\":\"SQLServer1\",\"properties\":{\"minimalTlsVersion\":\"1.2\"}}]}",
+					TransportEncryption: &ontology.TransportEncryption{
+						Enabled:         true,
+						Enforced:        true,
+						Protocol:        constants.TLS,
+						ProtocolVersion: 1.2,
+					},
+					AnomalyDetections: []*ontology.AnomalyDetection{
+						{
 							Enabled: true,
-							Scope:   voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1"),
+							Scope:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
 						},
 					},
 				},
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1",
-							Name:         "SqlDatabase1",
-							ServiceID:    testdata.MockCloudServiceID1,
-							CreationTime: 0,
-							Type:         voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: "eastus",
+				&ontology.DatabaseStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1/databases/sqldatabase1",
+					Name:         "SqlDatabase1",
+					CreationTime: nil,
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					Labels:   make(map[string]string),
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.sql/servers/sqlserver1"),
+					Raw:      "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
 							},
-							Labels: make(map[string]string),
-							Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1"),
-							Raw:    "{\"*armsql.Database\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Sql/servers/SQLServer1/databases/SqlDatabase1\",\"location\":\"eastus\",\"name\":\"SqlDatabase1\",\"properties\":{\"isInfraEncryptionEnabled\":true}}]}",
-						},
-						AtRestEncryption: &voc.AtRestEncryption{
-							Enabled:   true,
-							Algorithm: AES256,
 						},
 					},
 				},
@@ -1096,7 +1043,7 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1114,107 +1061,78 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-									Name:         "DBAccount1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&creationTime),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationEastUs,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1",
+					Name:         "DBAccount1",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationEastUs,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 				},
-
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1",
-							Name:      "mongoDB1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationWestEurope,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.CustomerKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb1",
+					Name: "mongoDB1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								Enabled:   true,
 								Algorithm: "",
+								KeyUrl:    "https://testvault.vault.azure.net/keys/testkey/123456",
 							},
-							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 					},
 				},
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2",
-							Name:      "mongoDB2",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationEastUs,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.CustomerKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb2",
+					Name: "mongoDB2",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationEastUs,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount1\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_CustomerKeyEncryption{
+							CustomerKeyEncryption: &ontology.CustomerKeyEncryption{
 								Enabled:   true,
 								Algorithm: "",
+								KeyUrl:    "https://testvault.vault.azure.net/keys/testkey/123456",
 							},
-							KeyUrl: "https://testvault.vault.azure.net/keys/testkey/123456",
 						},
 					},
 				},
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
-									Name:         "DBAccount2",
-									ServiceID:    testdata.MockCloudServiceID1,
-									Type:         voc.DatabaseServiceType,
-									CreationTime: util.SafeTimestamp(&creationTime),
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationEastUs,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.4540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
-								},
-							},
-						},
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount2",
+					Name:         "DBAccount2",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationEastUs,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount2\",\"properties\":{},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"},\"type\":\"Microsoft.DocumentDB/databaseAccounts\"}]}",
 				},
 			},
 			wantErr: assert.NoError,
@@ -1234,6 +1152,8 @@ func Test_azureStorageDiscovery_discoverCosmosDB(t *testing.T) {
 }
 
 func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+
 	type fields struct {
 		azureDiscovery *azureDiscovery
 	}
@@ -1244,7 +1164,7 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []voc.IsCloudResource
+		want    []ontology.IsResource
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1265,34 +1185,24 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
 					},
 					SystemData: &armcosmos.SystemData{
-						CreatedAt: &time.Time{},
+						CreatedAt: &creationTime,
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-									Name:         "DBAccount1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&time.Time{}),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationWestEurope,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1",
+					Name:         "DBAccount1",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 				},
 			},
 			wantErr: assert.NoError,
@@ -1316,34 +1226,24 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
 					},
 					SystemData: &armcosmos.SystemData{
-						CreatedAt: &time.Time{},
+						CreatedAt: &creationTime,
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-									Name:         "DBAccount1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&time.Time{}),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationWestEurope,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"GlobalDocumentDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1",
+					Name:         "DBAccount1",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"GlobalDocumentDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 				},
 			},
 			wantErr: assert.NoError,
@@ -1367,34 +1267,24 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
 					},
 					SystemData: &armcosmos.SystemData{
-						CreatedAt: &time.Time{},
+						CreatedAt: &creationTime,
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-									Name:         "DBAccount1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&time.Time{}),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationWestEurope,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"Parse\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1",
+					Name:         "DBAccount1",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"Parse\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 				},
 			},
 			wantErr: assert.NoError,
@@ -1418,79 +1308,61 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						PublicNetworkAccess: util.Ref(armcosmos.PublicNetworkAccessEnabled),
 					},
 					SystemData: &armcosmos.SystemData{
-						CreatedAt: &time.Time{},
+						CreatedAt: &creationTime,
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-									Name:         "DBAccount1",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&time.Time{}),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: testdata.MockLocationWestEurope,
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1",
+					Name:         "DBAccount1",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 				},
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1",
-							Name:      "mongoDB1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationWestEurope,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb1",
+					Name: "mongoDB1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Enabled:   true,
 								Algorithm: AES256,
 							},
 						},
 					},
 				},
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2",
-							Name:      "mongoDB2",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationEastUs,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb2",
+					Name: "mongoDB2",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationEastUs,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\",\"properties\":{\"publicNetworkAccess\":\"Enabled\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Enabled:   true,
 								Algorithm: AES256,
 							},
@@ -1519,34 +1391,24 @@ func Test_azureStorageDiscovery_handleCosmosDB(t *testing.T) {
 						KeyVaultKeyURI: util.Ref("https://testvault.vault.azure.net/keys/testkey/123456"),
 					},
 					SystemData: &armcosmos.SystemData{
-						CreatedAt: &time.Time{},
+						CreatedAt: &creationTime,
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseService{
-					StorageService: &voc.StorageService{
-						NetworkService: &voc.NetworkService{
-							Networking: &voc.Networking{
-								Resource: &voc.Resource{
-									ID:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2",
-									Name:         "DBAccount2",
-									ServiceID:    testdata.MockCloudServiceID1,
-									CreationTime: util.SafeTimestamp(&time.Time{}),
-									Type:         voc.DatabaseServiceType,
-									GeoLocation: voc.GeoLocation{
-										Region: "eastus",
-									},
-									Labels: map[string]string{
-										"testKey1": "testTag1",
-										"testKey2": "testTag2",
-									},
-									Parent: voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-									Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount2\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"0001-01-01T00:00:00Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-								},
-							},
-						},
+			want: []ontology.IsResource{
+				&ontology.DocumentDatabaseService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount2",
+					Name:         "DBAccount2",
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
 					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount2\",\"kind\":\"MongoDB\",\"location\":\"eastus\",\"name\":\"DBAccount2\",\"properties\":{\"keyVaultKeyUri\":\"https://testvault.vault.azure.net/keys/testkey/123456\"},\"systemData\":{\"createdAt\":\"2017-05-24T13:28:53.004540398Z\"},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
 				},
 			},
 			wantErr: assert.NoError,
@@ -1574,13 +1436,13 @@ func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 	}
 	type args struct {
 		account   *armcosmos.DatabaseAccountGetResults
-		atRestEnc voc.IsAtRestEncryption
+		atRestEnc *ontology.AtRestEncryption
 	}
 	tests := []struct {
 		name   string
 		fields fields
 		args   args
-		want   []voc.IsCloudResource
+		want   []ontology.IsResource
 	}{
 		{
 			name: "Happy path",
@@ -1595,58 +1457,52 @@ func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 					Kind:     util.Ref(armcosmos.DatabaseAccountKindMongoDB),
 					Location: util.Ref(testdata.MockLocationWestEurope),
 				},
-				atRestEnc: &voc.ManagedKeyEncryption{
-					AtRestEncryption: &voc.AtRestEncryption{
-						Enabled:   true,
-						Algorithm: AES256,
+				atRestEnc: &ontology.AtRestEncryption{
+					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+							Enabled:   true,
+							Algorithm: AES256,
+						},
 					},
 				},
 			},
-			want: []voc.IsCloudResource{
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1",
-							Name:      "mongoDB1",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationWestEurope,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+			want: []ontology.IsResource{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb1",
+					Name: "mongoDB1",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationWestEurope,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB1\",\"location\":\"West Europe\",\"name\":\"mongoDB1\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Enabled:   true,
 								Algorithm: AES256,
 							},
 						},
 					},
 				},
-				&voc.DatabaseStorage{
-					Storage: &voc.Storage{
-						Resource: &voc.Resource{
-							ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2",
-							Name:      "mongoDB2",
-							ServiceID: testdata.MockCloudServiceID1,
-							Type:      voc.DatabaseStorageType,
-							GeoLocation: voc.GeoLocation{
-								Region: testdata.MockLocationEastUs,
-							},
-							Labels: map[string]string{
-								"testKey1": "testTag1",
-								"testKey2": "testTag2",
-							},
-							Parent: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1",
-							Raw:    "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
-						},
-						AtRestEncryption: &voc.ManagedKeyEncryption{
-							AtRestEncryption: &voc.AtRestEncryption{
+				&ontology.DatabaseStorage{
+					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1/mongodbdatabases/mongodb2",
+					Name: "mongoDB2",
+					GeoLocation: &ontology.GeoLocation{
+						Region: testdata.MockLocationEastUs,
+					},
+					Labels: map[string]string{
+						"testKey1": "testTag1",
+						"testKey2": "testTag2",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.documentdb/databaseaccounts/dbaccount1"),
+					Raw:      "{\"*armcosmos.DatabaseAccountGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1\",\"kind\":\"MongoDB\",\"location\":\"West Europe\",\"name\":\"DBAccount1\"}],\"*armcosmos.MongoDBDatabaseGetResults\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DocumentDB/databaseAccounts/DBAccount1/mongodbDatabases/mongoDB2\",\"location\":\"eastus\",\"name\":\"mongoDB2\",\"properties\":{},\"tags\":{\"testKey1\":\"testTag1\",\"testKey2\":\"testTag2\"}}]}",
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
 								Enabled:   true,
 								Algorithm: AES256,
 							},
@@ -1675,40 +1531,40 @@ func Test_azureStorageDiscovery_discoverMongoDBDatabases(t *testing.T) {
 
 func Test_checkTlsVersion(t *testing.T) {
 	type args struct {
-		version string
+		version *string
 	}
 	tests := []struct {
 		name string
 		args args
-		want string
+		want float32
 	}{
 		{
 			name: "TLS version not implemented",
 			args: args{
-				version: "TLS version 1.0",
+				version: util.Ref("TLS version 1.0"),
 			},
-			want: "",
+			want: 0,
 		},
 		{
 			name: "Happy path:TLS1_0",
 			args: args{
-				version: "1.0",
+				version: util.Ref("1.0"),
 			},
-			want: constants.TLS1_0,
+			want: 1.0,
 		},
 		{
 			name: "Happy path:TLS1_1",
 			args: args{
-				version: "1.1",
+				version: util.Ref("1.1"),
 			},
-			want: constants.TLS1_1,
+			want: 1.1,
 		},
 		{
 			name: "Happy path:TLS1_2",
 			args: args{
-				version: "1.2",
+				version: util.Ref("1.2"),
 			},
-			want: constants.TLS1_2,
+			want: 1.2,
 		},
 	}
 	for _, tt := range tests {

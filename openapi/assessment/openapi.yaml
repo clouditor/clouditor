@@ -40,8 +40,19 @@ components:
     schemas:
         AssessEvidenceResponse:
             type: object
-            properties: {}
-            description: AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+            properties:
+                status:
+                    enum:
+                        - ASSESSMENT_STATUS_UNSPECIFIED
+                        - ASSESSMENT_STATUS_WAITING_FOR_RELATED
+                        - ASSESSMENT_STATUS_ASSESSED
+                        - ASSESSMENT_STATUS_FAILED
+                    type: string
+                    format: enum
+            description: |-
+                AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
+                 RPC and therefore requires a response message according to the style
+                 convention. Since no return values are required, this is empty.
         Evidence:
             type: object
             properties:
@@ -60,9 +71,25 @@ components:
                     description: Reference to the tool which provided the evidence
                 raw:
                     type: string
-                    description: Optional. Contains the evidence in its original form without following a defined schema, e.g. the raw JSON
+                    description: |-
+                        Optional. Contains the evidence in its original form without following a
+                         defined schema, e.g. the raw JSON
                 resource:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: |-
+                        Semantic representation of the Cloud resource according to our defined
+                         ontology
+                experimentalRelatedResourceIds:
+                    type: array
+                    items:
+                        type: string
+                    description: |-
+                        Very experimental property. Use at own risk. This property will be deleted again.
+
+                         Related resource IDs. The assessment will wait until all evidences for related resource have arrived in the
+                         assessment and are recent enough. In the future, this will be replaced with information in the "related" edges in
+                         the resource. For now, this needs to be set manually in the evidence.
             description: An evidence resource
         GoogleProtobufAny:
             type: object
@@ -72,8 +99,6 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        GoogleProtobufValue:
-            description: Represents a dynamically typed value which can be either null, a number, a string, a boolean, a recursive struct value, or a list of values.
         Status:
             type: object
             properties:

@@ -30,12 +30,12 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/server"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1"
@@ -44,7 +44,7 @@ import (
 func TestMain(m *testing.M) {
 	svc := service_orchestrator.NewService()
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc), server.WithReflection()))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc), server.WithReflection()))
 }
 
 func TestReflectionNoAuth(t *testing.T) {
@@ -62,7 +62,7 @@ func TestReflectionNoAuth(t *testing.T) {
 
 	// Only use the host from the session, but not the (authentication) connection, since we want to test, whether we
 	// can access the reflection without authentication
-	conn, err = grpc.Dial(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err = grpc.NewClient(session.URL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
 
 	client = grpc_reflection_v1.NewServerReflectionClient(conn)

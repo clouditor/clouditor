@@ -33,21 +33,23 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type mockSender struct {
@@ -122,7 +124,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "account1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"creationTime": "2017-05-24T13:28:53.004540398Z",
 						"primaryEndpoints": map[string]interface{}{
 							"blob": "https://account1.blob.core.windows.net/",
 							"file": "https://account1.file.core.windows.net/",
@@ -152,7 +154,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "account2",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"creationTime": "2017-05-24T13:28:53.4540398Z",
+						"creationTime": "2017-05-24T13:28:53.004540398Z",
 						"primaryEndpoints": map[string]interface{}{
 							"blob": "https://account1.blob.core.windows.net/",
 							"file": "https://account1.file.core.windows.net/",
@@ -189,7 +191,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 				"name":     "account3",
 				"location": "westus",
 				"properties": map[string]interface{}{
-					"creationTime": "2017-05-24T13:28:53.4540398Z",
+					"creationTime": "2017-05-24T13:28:53.004540398Z",
 					"primaryEndpoints": map[string]interface{}{
 						"blob": "https://account3.blob.core.windows.net/",
 						"file": "https://account3.file.core.windows.net/",
@@ -406,7 +408,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -423,7 +425,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -443,7 +445,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -460,7 +462,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"kind": "MongoDB",
 					"type": "Microsoft.DocumentDB/databaseAccounts",
 					"systemData": map[string]interface{}{
-						"createdAt": "2017-05-24T13:28:53.4540398Z",
+						"createdAt": "2017-05-24T13:28:53.004540398Z",
 					},
 					"location": "eastus",
 					"tags": map[string]interface{}{
@@ -504,7 +506,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"name":     "vm1",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"storageProfile": map[string]interface{}{
 							"osDisk": map[string]interface{}{
 								"managedDisk": map[string]interface{}{
@@ -630,7 +632,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -643,7 +645,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1",
 							"type":                "EncryptionAtRestWithCustomerKey",
@@ -656,7 +658,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -674,7 +676,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 					"type":     "Microsoft.Compute/disks",
 					"location": "eastus",
 					"properties": map[string]interface{}{
-						"timeCreated": "2017-05-24T13:28:53.4540398Z",
+						"timeCreated": "2017-05-24T13:28:53.004540398Z",
 						"encryption": map[string]interface{}{
 							"diskEncryptionSetId": "",
 							"type":                "EncryptionAtRestWithPlatformKey",
@@ -1088,7 +1090,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &azureDiscovery{
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1111,7 +1113,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				rg:                 util.Ref(testdata.MockResourceGroup),
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1127,7 +1129,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 						Transport: mockSender{},
 					},
 				},
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1139,7 +1141,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				cred:               &mockAuthorizer{},
-				csID:               discovery.DefaultCloudServiceID,
+				csID:               config.DefaultCloudServiceID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1148,7 +1150,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewAzureDiscovery(tt.args.opts...)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 		})
 	}
 }
@@ -1160,19 +1162,18 @@ func Test_azureDiscovery_List(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
-		wantErr assert.ErrorAssertionFunc
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.WantErr
 	}{
 		{
 			name: "Authorize error: no credentials configured",
 			fields: fields{
 				&azureDiscovery{},
 			},
-			want: assert.Empty,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.ErrorContains(t, err, ErrNoCredentialsConfigured.Error())
-
-				return assert.ErrorContains(t, err, ErrCouldNotAuthenticate.Error())
+			want: assert.Empty[[]ontology.IsResource],
+			wantErr: func(t *testing.T, gotErr error) bool {
+				assert.ErrorContains(t, gotErr, ErrNoCredentialsConfigured.Error())
+				return assert.ErrorContains(t, gotErr, ErrCouldNotAuthenticate.Error())
 			},
 		},
 		{
@@ -1180,16 +1181,10 @@ func Test_azureDiscovery_List(t *testing.T) {
 			fields: fields{
 				NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.([]voc.IsCloudResource)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				return assert.Greater(t, len(got), 31)
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.True(t, len(got) > 31)
 			},
-
-			wantErr: assert.NoError,
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
@@ -1198,7 +1193,6 @@ func Test_azureDiscovery_List(t *testing.T) {
 			gotList, err := d.List()
 
 			tt.wantErr(t, err)
-
 			tt.want(t, gotList)
 		})
 	}
@@ -1334,28 +1328,27 @@ func Test_resourceGroupID(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want voc.ResourceID
+		want *string
 	}{
 		{
 			name: "invalid",
 			args: args{
 				ID: util.Ref("this is not a resource ID but it should not crash the Clouditor"),
 			},
-			want: "",
+			want: nil,
 		},
 		{
 			name: "happy path",
 			args: args{
 				ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
 			},
-			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1",
+			want: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := resourceGroupID(tt.args.ID); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("resourceGroupID() = %v, want %v", got, tt.want)
-			}
+			got := resourceGroupID(tt.args.ID)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1437,7 +1430,7 @@ func Test_labels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, labels(tt.args.tags), "labels(%v)", tt.args.tags)
+			assert.Equal(t, tt.want, labels(tt.args.tags))
 		})
 	}
 }
@@ -1457,7 +1450,7 @@ func Test_initClient(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantClient assert.ValueAssertionFunc
+		wantClient assert.Want[*armstorage.AccountsClient]
 		wantErr    assert.ErrorAssertionFunc
 	}{
 		{
@@ -1477,7 +1470,7 @@ func Test_initClient(t *testing.T) {
 				},
 				fun: armstorage.NewAccountsClient,
 			},
-			wantClient: assert.NotEmpty,
+			wantClient: assert.NotNil[*armstorage.AccountsClient],
 			wantErr:    assert.NoError,
 		},
 		{
@@ -1499,7 +1492,7 @@ func Test_initClient(t *testing.T) {
 					return nil, someError
 				},
 			},
-			wantClient: assert.Empty,
+			wantClient: assert.Nil[*armstorage.AccountsClient],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorIs(t, err, someError)
 			},
@@ -1521,8 +1514,8 @@ func Test_initClient(t *testing.T) {
 				},
 				fun: armstorage.NewAccountsClient,
 			},
-			wantClient: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				return assert.Same(t, i1, someClient)
+			wantClient: func(t *testing.T, got *armstorage.AccountsClient) bool {
+				return assert.Same(t, someClient, got)
 			},
 			wantErr: assert.NoError,
 		},
@@ -1584,35 +1577,35 @@ func Test_retentionDuration(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want time.Duration
+		want *durationpb.Duration
 	}{
 		{
 			name: "Missing input",
 			args: args{
 				retention: "",
 			},
-			want: time.Duration(0),
+			want: durationpb.New(time.Duration(0)),
 		},
 		{
 			name: "Wrong input",
 			args: args{
 				retention: "TEST",
 			},
-			want: time.Duration(0),
+			want: durationpb.New(time.Duration(0)),
 		},
 		{
 			name: "Happy path",
 			args: args{
 				retention: "P30D",
 			},
-			want: Duration30Days,
+			want: durationpb.New(Duration30Days),
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := retentionDuration(tt.args.retention); got != tt.want {
-				t.Errorf("retentionDuration() = %v, want %v", got, tt.want)
-			}
+			got := retentionDuration(tt.args.retention)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1624,7 +1617,7 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
+		want    assert.Want[map[string]*defenderProperties]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -1632,18 +1625,13 @@ func Test_azureDiscovery_discoverDefender(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				got, ok := i1.(map[string]*defenderProperties)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
+			want: func(t *testing.T, got map[string]*defenderProperties) bool {
 				want := &defenderProperties{
 					monitoringLogDataEnabled: true,
 					securityAlertsEnabled:    true,
 				}
 
-				return assert.Equal(t, want, got[DefenderStorageType])
+				return assert.Equal(t, want, got[DefenderStorageType], assert.CompareAllUnexported())
 			},
 			wantErr: assert.NoError,
 		},

@@ -3,7 +3,6 @@ name: buf.build/clouditor/api
 deps:
   - buf.build/googleapis/googleapis
   - buf.build/srikrsna/protoc-gen-gotag
-  - buf.build/envoyproxy/protoc-gen-validate
   - buf.build/bufbuild/protovalidate
 breaking:
   use:

@@ -33,13 +33,13 @@ import (
 	"io"
 	"os"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/logging"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/gorm"
-	"clouditor.io/clouditor/service"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/logging"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/gorm"
+	"clouditor.io/clouditor/v2/service"
 	"github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc/codes"
@@ -112,14 +112,14 @@ func prepareMetric(m *assessment.Metric) (err error) {
 	)
 
 	// Load the Rego file
-	file := fmt.Sprintf("policies/bundles/%s/metric.rego", m.Id)
+	file := fmt.Sprintf("policies/bundles/%s/%s/metric.rego", m.CategoryID(), m.Id)
 	m.Implementation, err = loadMetricImplementation(m.Id, file)
 	if err != nil {
 		return fmt.Errorf("could not load metric implementation: %w", err)
 	}
 
 	// Look for the data.json to include default metric configurations
-	fileName := fmt.Sprintf("policies/bundles/%s/data.json", m.Id)
+	fileName := fmt.Sprintf("policies/bundles/%s/%s/data.json", m.CategoryID(), m.Id)
 
 	// Load the default configuration file
 	b, err := os.ReadFile(fileName)

@@ -29,9 +29,10 @@ import (
 	"bytes"
 	"testing"
 
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/cli"
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -60,7 +61,7 @@ func TestNewUpdateResourceCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewUpdateResourceCommand()
-	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"id:": "MyApplication", "name": "MyApplication"}}`})
+	err = cmd.RunE(nil, []string{`{"id": "MyApplication", "cloudServiceId": "00000000-0000-0000-0000-000000000000", "resourceType": "Application,Resource", "properties":{"@type":"type.googleapis.com/clouditor.ontology.v1.Application", "id": "MyApplication", "name": "MyApplication"}}`})
 	assert.NoError(t, err)
 
 	var response = &discovery.Resource{}

@@ -28,7 +28,7 @@ package util
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
 )
 
 type myStruct struct {

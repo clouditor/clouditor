@@ -26,18 +26,20 @@
 package azure
 
 import (
-	"reflect"
 	"testing"
+	"time"
 
-	"clouditor.io/clouditor/internal/constants"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/constants"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
-	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
@@ -47,7 +49,7 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.ValueAssertionFunc
+		want    assert.Want[*azureDiscovery]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -56,13 +58,13 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 				azureDiscovery: &azureDiscovery{
 					backupMap: map[string]*backup{
 						"testBackup": {
-							backup:         make(map[string][]*voc.Backup),
-							backupStorages: []voc.IsCloudResource{},
+							backup:         make(map[string][]*ontology.Backup),
+							backupStorages: []ontology.IsResource{},
 						},
 					},
 				},
 			},
-			want:    nil,
+			want:    assert.NotNil[*azureDiscovery],
 			wantErr: assert.NoError,
 		},
 		{
@@ -70,26 +72,22 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*voc.Backup{{
-					RetentionPeriod: Duration7Days,
-					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: constants.TLS1_2,
-						Algorithm:  constants.TLS,
+			want: func(t *testing.T, got *azureDiscovery) bool {
+				want := []*ontology.Backup{
+					{
+						RetentionPeriod: durationpb.New(Duration7Days),
+						Enabled:         true,
+						StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222"),
+						TransportEncryption: &ontology.TransportEncryption{
+							Enforced:        true,
+							Enabled:         true,
+							ProtocolVersion: 1.2,
+							Protocol:        constants.TLS,
+						},
 					},
-				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
+				return assert.Equal(t, want, got.backupMap[DataSourceTypeStorageAccountObject].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"])
 			},
 			wantErr: assert.NoError,
 		},
@@ -98,26 +96,22 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			fields: fields{
 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(tt assert.TestingT, i1 interface{}, i2 ...interface{}) bool {
-				d, ok := i1.(*azureDiscovery)
-				if !assert.True(tt, ok) {
-					return false
-				}
-
-				want := []*voc.Backup{{
-					RetentionPeriod: Duration30Days,
-					Enabled:         true,
-					Storage:         voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
-					TransportEncryption: &voc.TransportEncryption{
-						Enforced:   true,
-						Enabled:    true,
-						TlsVersion: constants.TLS1_2,
-						Algorithm:  constants.TLS,
+			want: func(t *testing.T, got *azureDiscovery) bool {
+				want := []*ontology.Backup{
+					{
+						RetentionPeriod: durationpb.New(Duration30Days),
+						Enabled:         true,
+						StorageId:       util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222"),
+						TransportEncryption: &ontology.TransportEncryption{
+							Enforced:        true,
+							Enabled:         true,
+							ProtocolVersion: 1.2,
+							Protocol:        constants.TLS,
+						},
 					},
-				},
 				}
 
-				return assert.Equal(t, want, d.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
+				return assert.Equal(t, want, got.backupMap[DataSourceTypeDisc].backup["/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"])
 			},
 			wantErr: assert.NoError,
 		},
@@ -127,12 +121,8 @@ func Test_azureDiscovery_discoverBackupVaults(t *testing.T) {
 			d := tt.fields.azureDiscovery
 
 			err := d.discoverBackupVaults()
-
 			tt.wantErr(t, err)
-
-			if tt.want != nil {
-				tt.want(t, d)
-			}
+			tt.want(t, d)
 		})
 	}
 }
@@ -228,10 +218,7 @@ func Test_azureDiscovery_discoverBackupInstances(t *testing.T) {
 			got, err := d.discoverBackupInstances(tt.args.resourceGroup, tt.args.vaultName)
 
 			tt.wantErr(t, err)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("azureDiscovery.discoverBackupInstances() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -256,7 +243,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		name         string
 		fields       fields
 		args         args
-		wantResource voc.IsCloudResource
+		wantResource ontology.IsResource
 		wantErr      assert.ErrorAssertionFunc
 	}{
 		{
@@ -286,22 +273,16 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 					},
 				},
 			},
-			wantResource: &voc.ObjectStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222",
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "account1-account1-22222222-2222-2222-2222-222222222222",
-						GeoLocation: voc.GeoLocation{
-							Region: "westeurope",
-						},
-						CreationTime: 0,
-						Type:         voc.ObjectStorageType,
-						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
-					},
+			wantResource: &ontology.ObjectStorage{
+				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/account1-account1-22222222-2222-2222-2222-222222222222",
+				Name: "account1-account1-22222222-2222-2222-2222-222222222222",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "westeurope",
 				},
+				CreationTime: nil,
+				Labels:       nil,
+				ParentId:     util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Storage/storageAccounts/blobServices\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/account1-account1-22222222-2222-2222-2222-222222222222\",\"name\":\"account1-account1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 			},
 			wantErr: assert.NoError,
 		},
@@ -326,22 +307,16 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 					},
 				},
 			},
-			wantResource: &voc.BlockStorage{
-				Storage: &voc.Storage{
-					Resource: &voc.Resource{
-						ID:        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
-						ServiceID: testdata.MockCloudServiceID1,
-						Name:      "disk1-disk1-22222222-2222-2222-2222-222222222222",
-						GeoLocation: voc.GeoLocation{
-							Region: "westeurope",
-						},
-						CreationTime: 0,
-						Type:         voc.BlockStorageType,
-						Labels:       nil,
-						Parent:       voc.ResourceID("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1"),
-						Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
-					},
+			wantResource: &ontology.BlockStorage{
+				Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.dataprotection/backupvaults/backupaccount1/backupinstances/disk1-disk1-22222222-2222-2222-2222-222222222222",
+				Name: "disk1-disk1-22222222-2222-2222-2222-222222222222",
+				GeoLocation: &ontology.GeoLocation{
+					Region: "westeurope",
 				},
+				CreationTime: nil,
+				Labels:       nil,
+				ParentId:     util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+				Raw:          "{\"*armdataprotection.BackupInstanceResource\":[{\"properties\":{\"dataSourceInfo\":{\"datasourceType\":\"Microsoft.Compute/disks\"}},\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1/backupInstances/disk1-disk1-22222222-2222-2222-2222-222222222222\",\"name\":\"disk1-disk1-22222222-2222-2222-2222-222222222222\"}],\"*armdataprotection.BackupVaultResource\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.DataProtection/backupVaults/backupAccount1\",\"location\":\"westeurope\",\"name\":\"backupAccount1\"}]}",
 			},
 			wantErr: assert.NoError,
 		},
@@ -369,49 +344,48 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 
 func Test_backupsEmptyCheck(t *testing.T) {
 	type args struct {
-		backups []*voc.Backup
+		backups []*ontology.Backup
 	}
 	tests := []struct {
 		name string
 		args args
-		want []*voc.Backup
+		want []*ontology.Backup
 	}{
 		{
 			name: "Happy path",
 			args: args{
-				backups: []*voc.Backup{
+				backups: []*ontology.Backup{
 					{
 						Enabled:         true,
-						Interval:        90,
-						RetentionPeriod: 100,
+						Interval:        durationpb.New(90 * time.Hour * 24),
+						RetentionPeriod: durationpb.New(100 * time.Hour * 24),
 					},
 				},
 			},
-			want: []*voc.Backup{
+			want: []*ontology.Backup{
 				{
 					Enabled:         true,
-					Interval:        90,
-					RetentionPeriod: 100,
+					Interval:        durationpb.New(90 * time.Hour * 24),
+					RetentionPeriod: durationpb.New(100 * time.Hour * 24),
 				},
 			},
 		},
 		{
 			name: "Happy path: empty input",
 			args: args{},
-			want: []*voc.Backup{
+			want: []*ontology.Backup{
 				{
 					Enabled:         false,
-					RetentionPeriod: -1,
-					Interval:        -1,
+					RetentionPeriod: nil,
+					Interval:        nil,
 				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := backupsEmptyCheck(tt.args.backups); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("backupsEmptyCheck() = %v, want %v", got, tt.want)
-			}
+			got := backupsEmptyCheck(tt.args.backups)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

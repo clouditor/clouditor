@@ -1,29 +1,28 @@
-/*
- * Copyright 2016-2022 Fraunhofer AISEC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *           $$\                           $$\ $$\   $$\
- *           $$ |                          $$ |\__|  $$ |
- *  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
- * $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
- * $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
- * $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
- * \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
- *  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
- *
- * This file is part of Clouditor Community Edition.
- */
+// Copyright 2016-2022 Fraunhofer AISEC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+//           $$\                           $$\ $$\   $$\
+//           $$ |                          $$ |\__|  $$ |
+//  $$$$$$$\ $$ | $$$$$$\  $$\   $$\  $$$$$$$ |$$\ $$$$$$\    $$$$$$\   $$$$$$\
+// $$  _____|$$ |$$  __$$\ $$ |  $$ |$$  __$$ |$$ |\_$$  _|  $$  __$$\ $$  __$$\
+// $$ /      $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |  $$ |    $$ /  $$ |$$ | \__|
+// $$ |      $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |  $$ |$$ |
+// \$$$$$$\  $$ |\$$$$$   |\$$$$$   |\$$$$$$  |$$ |  \$$$   |\$$$$$   |$$ |
+//  \_______|\__| \______/  \______/  \_______|\__|   \____/  \______/ \__|
+//
+// This file is part of Clouditor Community Edition.
+
 syntax = "proto3";
 
 package clouditor.assessment.v1;
@@ -36,7 +35,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
-option go_package = "clouditor.io/clouditor/api/assessment";
+option go_package = "clouditor.io/clouditor/v2/api/assessment";
 
 // Representing the link between orchestrator and discovery: Assessing evidences
 // from discovery and sending results to orchestrator
@@ -70,22 +69,25 @@ message AssessEvidenceRequest {
   clouditor.evidence.v1.Evidence evidence = 1 [(buf.validate.field).required = true];
 }
 
+enum AssessmentStatus {
+  ASSESSMENT_STATUS_UNSPECIFIED = 0;
+  ASSESSMENT_STATUS_WAITING_FOR_RELATED = 1;
+  ASSESSMENT_STATUS_ASSESSED = 2;
+  ASSESSMENT_STATUS_FAILED = 3;
+}
+
 // AssessEvidenceResponse belongs to AssessEvidence, which uses a custom unary
 // RPC and therefore requires a response message according to the style
 // convention. Since no return values are required, this is empty.
-message AssessEvidenceResponse {}
+message AssessEvidenceResponse {
+  AssessmentStatus status = 1;
+}
 
 // AssessEvidencesResponse belongs to AssessEvidences, which uses a custom
 // bidirectional streaming RPC and therefore requires a response message
 // according to the style convention. The bidirectional streaming needs the
 // status and its message in the response for error handling.
 message AssessEvidencesResponse {
-  enum AssessmentStatus {
-    ASSESSMENT_STATUS_UNSPECIFIED = 0;
-    WAITING_FOR_RELATED = 1;
-    ASSESSED = 2;
-    FAILED = 3;
-  }
   AssessmentStatus status = 1;
 
   string status_message = 2;
@@ -107,7 +109,7 @@ message AssessmentResult {
   string metric_id = 3 [(buf.validate.field).string.min_len = 1];
 
   // Data corresponding to the metric by the given metric id
-  MetricConfiguration metric_configuration = 4 [
+  clouditor.assessment.v1.MetricConfiguration metric_configuration = 4 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (buf.validate.field).required = true
   ];

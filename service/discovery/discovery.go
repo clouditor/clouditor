@@ -29,30 +29,36 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/persistence"
-	"clouditor.io/clouditor/persistence/inmemory"
-	"clouditor.io/clouditor/service"
-	"clouditor.io/clouditor/service/discovery/aws"
-	"clouditor.io/clouditor/service/discovery/azure"
-	"clouditor.io/clouditor/service/discovery/k8s"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/launcher"
+	"clouditor.io/clouditor/v2/persistence"
+	"clouditor.io/clouditor/v2/persistence/inmemory"
+	"clouditor.io/clouditor/v2/server/rest"
+	"clouditor.io/clouditor/v2/service"
+	"clouditor.io/clouditor/v2/service/discovery/aws"
+	"clouditor.io/clouditor/v2/service/discovery/azure"
+	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
+	"clouditor.io/clouditor/v2/service/discovery/k8s"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -60,17 +66,41 @@ const (
 	ProviderAWS   = "aws"
 	ProviderK8S   = "k8s"
 	ProviderAzure = "azure"
+	ProviderCSAF  = "csaf"
 )
 
 var log *logrus.Entry
+
+// DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
+// config system.
+func DefaultServiceSpec() launcher.ServiceSpec {
+	var providers []string
+
+	// If no CSPs for discovering are given, take all implemented discoverers
+	if len(viper.GetStringSlice(config.DiscoveryProviderFlag)) == 0 {
+		providers = []string{ProviderAWS, ProviderAzure, ProviderK8S}
+	} else {
+		providers = viper.GetStringSlice(config.DiscoveryProviderFlag)
+	}
+
+	return launcher.NewServiceSpec(
+		NewService,
+		WithStorage,
+		nil,
+		WithOAuth2Authorizer(config.ClientCredentials()),
+		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
+		WithProviders(providers),
+		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
+	)
+}
 
 // DiscoveryEventType defines the event types for [DiscoveryEvent].
 type DiscoveryEventType int
 
 const (
-	// DiscovererStart is emmited at the start of a discovery run.
+	// DiscovererStart is emitted at the start of a discovery run.
 	DiscovererStart DiscoveryEventType = iota
-	// DiscovererFinished is emmited at the end of a discovery run.
+	// DiscovererFinished is emitted at the end of a discovery run.
 	DiscovererFinished
 )
 
@@ -99,7 +129,8 @@ type Service struct {
 
 	authz service.AuthorizationStrategy
 
-	providers []string
+	providers   []string
+	discoverers []discovery.Discoverer
 
 	discoveryInterval time.Duration
 
@@ -118,33 +149,35 @@ const (
 	DefaultAssessmentAddress = "localhost:9090"
 )
 
-// ServiceOption is a functional option type to configure the discovery service.
-type ServiceOption func(*Service)
-
 // WithAssessmentAddress is an option to configure the assessment service gRPC address.
-func WithAssessmentAddress(target string, opts ...grpc.DialOption) ServiceOption {
+func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Option[*Service] {
+
 	return func(s *Service) {
+		log.Infof("Assessment URL is set to %s", target)
+
 		s.assessment.Target = target
 		s.assessment.Opts = opts
 	}
 }
 
 // WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
-func WithCloudServiceID(ID string) ServiceOption {
+func WithCloudServiceID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
+		log.Infof("Cloud Service ID is set to %s", ID)
+
 		svc.csID = ID
 	}
 }
 
 // WithOAuth2Authorizer is an option to use an OAuth 2.0 authorizer
-func WithOAuth2Authorizer(config *clientcredentials.Config) ServiceOption {
+func WithOAuth2Authorizer(config *clientcredentials.Config) service.Option[*Service] {
 	return func(svc *Service) {
 		svc.assessment.SetAuthorizer(api.NewOAuthAuthorizerFromClientCredentials(config))
 	}
 }
 
 // WithProviders is an option to set providers for discovering
-func WithProviders(providersList []string) ServiceOption {
+func WithProviders(providersList []string) service.Option[*Service] {
 	if len(providersList) == 0 {
 		newError := errors.New("no providers given")
 		log.Error(newError)
@@ -155,35 +188,43 @@ func WithProviders(providersList []string) ServiceOption {
 	}
 }
 
+// WithAdditionalDiscoverers is an option to add additional discoverers for discovering. Note: These are added in
+// addition to the ones created by [WithProviders].
+func WithAdditionalDiscoverers(discoverers []discovery.Discoverer) service.Option[*Service] {
+	return func(s *Service) {
+		s.discoverers = append(s.discoverers, discoverers...)
+	}
+}
+
 // WithStorage is an option to set the storage. If not set, NewService will use inmemory storage.
-func WithStorage(storage persistence.Storage) ServiceOption {
+func WithStorage(storage persistence.Storage) service.Option[*Service] {
 	return func(s *Service) {
 		s.storage = storage
 	}
 }
 
 // WithDiscoveryInterval is an option to set the discovery interval. If not set, the discovery is set to 5 minutes.
-func WithDiscoveryInterval(interval time.Duration) ServiceOption {
+func WithDiscoveryInterval(interval time.Duration) service.Option[*Service] {
 	return func(s *Service) {
 		s.discoveryInterval = interval
 	}
 }
 
 // WithAuthorizationStrategy is an option that configures an authorization strategy to be used with this service.
-func WithAuthorizationStrategy(authz service.AuthorizationStrategy) ServiceOption {
+func WithAuthorizationStrategy(authz service.AuthorizationStrategy) service.Option[*Service] {
 	return func(s *Service) {
 		s.authz = authz
 	}
 }
 
-func NewService(opts ...ServiceOption) *Service {
+func NewService(opts ...service.Option[*Service]) *Service {
 	var err error
 	s := &Service{
 		assessmentStreams: api.NewStreamsOf(api.WithLogger[assessment.Assessment_AssessEvidencesClient, *assessment.AssessEvidenceRequest](log)),
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
-		csID:              discovery.DefaultCloudServiceID,
+		csID:              config.DefaultCloudServiceID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
@@ -202,6 +243,29 @@ func NewService(opts ...ServiceOption) *Service {
 	}
 
 	return s
+}
+
+func (svc *Service) Init() {
+	var err error
+
+	// Automatically start the discovery, if we have this flag enabled
+	if viper.GetBool(config.DiscoveryAutoStartFlag) {
+		go func() {
+			<-rest.GetReadyChannel()
+			_, err = svc.Start(context.Background(), &discovery.StartDiscoveryRequest{
+				ResourceGroup: util.Ref(viper.GetString(config.DiscoveryResourceGroupFlag)),
+				CsafDomain:    util.Ref(viper.GetString(config.DiscoveryCSAFDomainFlag)),
+			})
+			if err != nil {
+				log.Errorf("Could not automatically start discovery: %v", err)
+			}
+		}()
+	}
+}
+
+func (svc *Service) Shutdown() {
+	svc.assessmentStreams.CloseAll()
+	svc.scheduler.Stop()
 }
 
 // initAssessmentStream initializes the stream that is used to send evidences to the assessment service.
@@ -226,7 +290,10 @@ func (svc *Service) initAssessmentStream(target string, _ ...grpc.DialOption) (s
 
 // Start starts discovery
 func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequest) (resp *discovery.StartDiscoveryResponse, err error) {
-	var opts = []azure.DiscoveryOption{}
+	var (
+		opts = []azure.DiscoveryOption{}
+	)
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -243,8 +310,6 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	log.Infof("Starting discovery...")
 	svc.scheduler.TagsUnique()
 
-	var discoverer []discovery.Discoverer
-
 	// Configure discoverers for given providers
 	for _, provider := range svc.providers {
 		switch {
@@ -254,23 +319,20 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
-
 			// Add authorizer and cloudServiceID
 			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
-
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
 				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
 			}
-
-			discoverer = append(discoverer, azure.NewAzureDiscovery(opts...))
+			svc.discoverers = append(svc.discoverers, azure.NewAzureDiscovery(opts...))
 		case provider == ProviderK8S:
 			k8sClient, err := k8s.AuthFromKubeConfig()
 			if err != nil {
 				log.Errorf("Could not authenticate to Kubernetes: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
-			discoverer = append(discoverer,
+			svc.discoverers = append(svc.discoverers,
 				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
 				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
 				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
@@ -280,9 +342,19 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to AWS: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
-			discoverer = append(discoverer,
+			svc.discoverers = append(svc.discoverers,
 				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+		case provider == ProviderCSAF:
+			var (
+				domain string
+				opts   []csaf.DiscoveryOption
+			)
+			domain = util.Deref(req.CsafDomain)
+			if domain != "" {
+				opts = append(opts, csaf.WithProviderDomain(domain))
+			}
+			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)
@@ -290,7 +362,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		}
 	}
 
-	for _, v := range discoverer {
+	for _, v := range svc.discoverers {
 		log.Infof("Scheduling {%s} to execute every {%v} minutes...", v.Name(), svc.discoveryInterval.Minutes())
 
 		_, err = svc.scheduler.
@@ -309,17 +381,10 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 	return resp, nil
 }
 
-func (svc *Service) Shutdown() {
-	log.Info("Shutting down discovery service")
-
-	svc.assessmentStreams.CloseAll()
-	svc.scheduler.Stop()
-}
-
 func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	var (
 		err  error
-		list []voc.IsCloudResource
+		list []ontology.IsResource
 	)
 
 	go func() {
@@ -350,7 +415,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, v, err := toDiscoveryResource(resource)
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -362,14 +427,27 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			log.Errorf("Could not save resource with ID '%s' to storage: %v", r.Id, err)
 		}
 
-		// TODO(all): What is the raw type in our case?
+		a, err := anypb.New(resource)
+		if err != nil {
+			log.Errorf("Could not wrap resource message into Any protobuf object: %v", err)
+			continue
+		}
+
 		e := &evidence.Evidence{
 			Id:             uuid.New().String(),
-			CloudServiceId: resource.GetServiceID(),
+			CloudServiceId: svc.GetCloudServiceId(),
 			Timestamp:      timestamppb.Now(),
 			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         discovery.EvidenceCollectorToolId,
-			Resource:       v,
+			ToolId:         config.EvidenceCollectorToolId,
+			Resource:       a,
+		}
+
+		// Only enabled related evidences for some specific resources for now
+		if slices.Contains(ontology.ResourceTypes(resource), "SecurityAdvisoryService") {
+			edges := ontology.Related(resource)
+			for _, edge := range edges {
+				e.ExperimentalRelatedResourceIds = append(e.ExperimentalRelatedResourceIds, edge.Value)
+			}
 		}
 
 		// Get Evidence Store stream
@@ -442,24 +520,4 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 // cloud service ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCloudServiceId() string {
 	return svc.csID
-}
-
-// toDiscoveryResource converts a [voc.IsCloudResource] into a resource that can be persisted in our database
-// ([discovery.Resource]). In the future we want to merge those two structs
-func toDiscoveryResource(resource voc.IsCloudResource) (r *discovery.Resource, v *structpb.Value, err error) {
-	v, err = voc.ToStruct(resource)
-	if err != nil {
-		return nil, nil, fmt.Errorf("could not convert protobuf structure: %w", err)
-	}
-
-	// Build a resource struct. This will hold the latest sync state of the
-	// resource for our storage layer.
-	r = &discovery.Resource{
-		Id:             string(resource.GetID()),
-		ResourceType:   strings.Join(resource.GetType(), ","),
-		CloudServiceId: resource.GetServiceID(),
-		Properties:     v,
-	}
-
-	return
 }

@@ -3,10 +3,10 @@ package orchestratortest
 import (
 	"time"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/util"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/util"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -228,6 +228,7 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
+					Category:    testdata.MockMetricCategory1,
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
@@ -255,6 +256,7 @@ var (
 		ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
@@ -289,6 +291,7 @@ var (
 				ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
 				Metrics: []*assessment.Metric{{
 					Id:          testdata.MockMetricID1,
+					Category:    testdata.MockMetricCategory1,
 					Name:        testdata.MockMetricName1,
 					Description: testdata.MockMetricDescription1,
 					Scale:       assessment.Metric_ORDINAL,
@@ -332,6 +335,7 @@ var (
 		AssuranceLevel:    &testdata.AssuranceLevelHigh,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,
@@ -356,6 +360,7 @@ var (
 		AssuranceLevel:    nil,
 		Metrics: []*assessment.Metric{{
 			Id:          testdata.MockMetricID1,
+			Category:    testdata.MockMetricCategory1,
 			Name:        testdata.MockMetricName1,
 			Description: testdata.MockMetricDescription1,
 			Scale:       assessment.Metric_ORDINAL,

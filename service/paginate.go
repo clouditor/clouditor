@@ -29,12 +29,12 @@ import (
 	"fmt"
 	"sort"
 
-	"clouditor.io/clouditor/api"
-	"clouditor.io/clouditor/persistence"
+	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/persistence"
 )
 
 // PaginationOpts can be used to fine-tune the pagination, especially with regards to the page sizes. This can be important
-// if the messages within a page are extremly large and thus the page size needs to be decreased.
+// if the messages within a page are extremely large and thus the page size needs to be decreased.
 type PaginationOpts struct {
 	// DefaultPageSize is the page size that is used as a default if the request does not specify one
 	DefaultPageSize int32

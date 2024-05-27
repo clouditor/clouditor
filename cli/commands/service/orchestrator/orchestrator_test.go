@@ -32,18 +32,18 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/internal/testdata"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/internal/testutil/servicetest/orchestratortest"
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/server"
+	"clouditor.io/clouditor/v2/internal/testdata"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/v2/internal/util"
+	"clouditor.io/clouditor/v2/server"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -88,7 +88,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(svc)))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(svc)))
 }
 
 func TestAddCommands(t *testing.T) {

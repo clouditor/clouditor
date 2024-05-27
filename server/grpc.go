@@ -30,12 +30,13 @@ import (
 	"fmt"
 	"net"
 
-	"clouditor.io/clouditor/api/assessment"
-	"clouditor.io/clouditor/api/discovery"
-	"clouditor.io/clouditor/api/evaluation"
-	"clouditor.io/clouditor/api/evidence"
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/logging/formatter"
+	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/evaluation"
+	"clouditor.io/clouditor/v2/api/evidence"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/logging/formatter"
+	"clouditor.io/clouditor/v2/service"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -61,46 +62,30 @@ type config struct {
 	reflection      bool
 }
 
-// WithOrchestrator is an option for [StartGRPCServer] to register a [orchestrator.OrchestratorServer] at start.
-func WithOrchestrator(svc orchestrator.OrchestratorServer) StartGRPCServerOption {
+// WithServices is an option for [StartGRPCServer] to register services at start.
+func WithServices(services ...service.Service) StartGRPCServerOption {
 	return func(c *config) {
-		c.services[&orchestrator.Orchestrator_ServiceDesc] = svc
-	}
-}
+		for _, svc := range services {
+			if s, ok := svc.(orchestrator.OrchestratorServer); ok {
+				c.services[&orchestrator.Orchestrator_ServiceDesc] = s
+			}
+			if s, ok := svc.(assessment.AssessmentServer); ok {
+				c.services[&assessment.Assessment_ServiceDesc] = s
+			}
+			if s, ok := svc.(evidence.EvidenceStoreServer); ok {
+				c.services[&evidence.EvidenceStore_ServiceDesc] = s
+			}
+			if s, ok := svc.(discovery.DiscoveryServer); ok {
+				c.services[&discovery.Discovery_ServiceDesc] = s
+			}
+			if s, ok := svc.(discovery.ExperimentalDiscoveryServer); ok {
+				c.services[&discovery.ExperimentalDiscovery_ServiceDesc] = s
+			}
+			if s, ok := svc.(evaluation.EvaluationServer); ok {
+				c.services[&evaluation.Evaluation_ServiceDesc] = s
+			}
+		}
 
-// WithAssessment is an option for [StartGRPCServer] to register a [assessment.AssessmentServer] at start.
-func WithAssessment(svc assessment.AssessmentServer) StartGRPCServerOption {
-	return func(c *config) {
-		c.services[&assessment.Assessment_ServiceDesc] = svc
-	}
-}
-
-// WithEvidenceStore is an option for [StartGRPCServer] to register a [evidence.EvidenceStoreServer] at start.
-func WithEvidenceStore(svc evidence.EvidenceStoreServer) StartGRPCServerOption {
-	return func(c *config) {
-		c.services[&evidence.EvidenceStore_ServiceDesc] = svc
-	}
-}
-
-// WithDiscovery is an option for [StartGRPCServer] to register a [discovery.DiscoveryServer] at start.
-func WithDiscovery(svc discovery.DiscoveryServer) StartGRPCServerOption {
-	return func(c *config) {
-		c.services[&discovery.Discovery_ServiceDesc] = svc
-	}
-}
-
-// WithExperimentalDiscovery is an option for [StartGRPCServer] to register a [discovery.ExperimentalDiscoveryServer] at
-// start.
-func WithExperimentalDiscovery(svc discovery.ExperimentalDiscoveryServer) StartGRPCServerOption {
-	return func(c *config) {
-		c.services[&discovery.ExperimentalDiscovery_ServiceDesc] = svc
-	}
-}
-
-// WithEvaluation is an option for [StartGRPCServer] to register a [evaluation.EvaluationServer] at start.
-func WithEvaluation(svc evaluation.EvaluationServer) StartGRPCServerOption {
-	return func(c *config) {
-		c.services[&evaluation.Evaluation_ServiceDesc] = svc
 	}
 }
 

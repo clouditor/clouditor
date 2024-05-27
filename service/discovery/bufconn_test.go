@@ -29,8 +29,8 @@ import (
 	"context"
 	"net"
 
-	"clouditor.io/clouditor/api/assessment"
-	service_assessment "clouditor.io/clouditor/service/assessment"
+	"clouditor.io/clouditor/v2/api/assessment"
+	service_assessment "clouditor.io/clouditor/v2/service/assessment"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"

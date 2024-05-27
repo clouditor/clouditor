@@ -30,20 +30,20 @@ import (
 	"os"
 	"testing"
 
-	"clouditor.io/clouditor/api/orchestrator"
-	"clouditor.io/clouditor/cli"
-	"clouditor.io/clouditor/internal/testutil/clitest"
-	"clouditor.io/clouditor/server"
-	service_orchestrator "clouditor.io/clouditor/service/orchestrator"
+	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/cli"
+	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/server"
+	service_orchestrator "clouditor.io/clouditor/v2/service/orchestrator"
 
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
-	os.Exit(clitest.RunCLITest(m, server.WithOrchestrator(service_orchestrator.NewService())))
+	os.Exit(clitest.RunCLITest(m, server.WithServices(service_orchestrator.NewService())))
 }
 
 func TestListMetrics(t *testing.T) {

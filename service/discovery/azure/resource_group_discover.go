@@ -28,14 +28,16 @@ package azure
 import (
 	"context"
 	"fmt"
+	"strings"
 
-	"clouditor.io/clouditor/internal/util"
-	"clouditor.io/clouditor/voc"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
 // discoverResourceGroups discovers resource groups and cloud account
-func (d *azureDiscovery) discoverResourceGroups() (list []voc.IsCloudResource, err error) {
+func (d *azureDiscovery) discoverResourceGroups() (list []ontology.IsResource, err error) {
 	// initialize client
 	if err := d.initResourceGroupsClient(); err != nil {
 		return nil, err
@@ -55,8 +57,9 @@ func (d *azureDiscovery) discoverResourceGroups() (list []voc.IsCloudResource, e
 		}
 
 		for _, rg := range page.Value {
-			// If we are scoped to one resource group, we can skip the rest of the groups
-			if d.rg != nil && util.Deref(rg.Name) != util.Deref(d.rg) {
+			// If we are scoped to one resource group, we can skip the rest of the groups. Resource group names are
+			// case-insensitive
+			if d.rg != nil && !strings.EqualFold(util.Deref(rg.Name), util.Deref(d.rg)) {
 				continue
 			}
 

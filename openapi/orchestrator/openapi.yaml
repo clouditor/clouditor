@@ -434,6 +434,64 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls:
+        get:
+            tags:
+                - Orchestrator
+            description: |-
+                If no additional parameters are specified, this lists all controls. If a
+                 catalog ID and a category name is specified, then only controls containing
+                 in this category are returned.
+            operationId: Orchestrator_ListControls
+            parameters:
+                - name: catalogId
+                  in: path
+                  description: return either all controls or only the controls of the specified category
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: filter.assuranceLevels
+                  in: query
+                  description: Optional. Lists only controls with the specified assurance levels.
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListControlsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/catalogs/{catalogId}/categories/{categoryName}/controls/{controlId}:
         get:
             tags:
@@ -500,6 +558,60 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Category'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/toes:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all Targets of Evaluation
+            operationId: Orchestrator_ListTargetsOfEvaluation
+            parameters:
+                - name: catalogId
+                  in: path
+                  description: |-
+                    when the catalog is specified, return all Targets of Evaluation that
+                     evaluate the given catalog for any service
+                  required: true
+                  schema:
+                    type: string
+                - name: cloudServiceId
+                  in: query
+                  description: |-
+                    We cannot create additional bindings when the parameter is optional so we
+                     check for != "" in the method to see if it is set when the service is
+                     specified, return all Targets of Evaluation that evaluate the given service
+                     for any catalog
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
                 default:
                     description: Default error response
                     content:
@@ -865,6 +977,60 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/MetricConfiguration'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/cloud_services/{cloudServiceId}/toes:
+        get:
+            tags:
+                - Orchestrator
+            description: Lists all Targets of Evaluation
+            operationId: Orchestrator_ListTargetsOfEvaluation
+            parameters:
+                - name: cloudServiceId
+                  in: path
+                  description: |-
+                    We cannot create additional bindings when the parameter is optional so we
+                     check for != "" in the method to see if it is set when the service is
+                     specified, return all Targets of Evaluation that evaluate the given service
+                     for any catalog
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: query
+                  description: |-
+                    when the catalog is specified, return all Targets of Evaluation that
+                     evaluate the given catalog for any service
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
                 default:
                     description: Default error response
                     content:
@@ -1313,12 +1479,18 @@ paths:
             parameters:
                 - name: cloudServiceId
                   in: query
-                  description: We cannot create additional bindings when the parameter is optional so we check for != "" in the method to see if it is set when the service is specified, return all Targets of Evaluation that evaluate the given service for any catalog
+                  description: |-
+                    We cannot create additional bindings when the parameter is optional so we
+                     check for != "" in the method to see if it is set when the service is
+                     specified, return all Targets of Evaluation that evaluate the given service
+                     for any catalog
                   schema:
                     type: string
                 - name: catalogId
                   in: query
-                  description: when the catalog is specified, return all Targets of Evaluation that evaluate the given catalog for any service
+                  description: |-
+                    when the catalog is specified, return all Targets of Evaluation that
+                     evaluate the given catalog for any service
                   schema:
                     type: string
                 - name: pageSize
@@ -1399,7 +1571,9 @@ components:
                     type: string
                     description: Reference to the metric the assessment was based on
                 metricConfiguration:
-                    $ref: '#/components/schemas/MetricConfiguration'
+                    allOf:
+                        - $ref: '#/components/schemas/MetricConfiguration'
+                    description: Data corresponding to the metric by the given metric id
                 compliant:
                     type: boolean
                     description: 'Compliant case: true or false'
@@ -1423,7 +1597,9 @@ components:
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result
-            description: A result resource, representing the result after assessing the cloud resource with id resource_id.
+            description: |-
+                A result resource, representing the result after assessing the cloud resource
+                 with id resource_id.
         AssessmentTool:
             type: object
             properties:
@@ -1438,7 +1614,9 @@ components:
                     items:
                         type: string
                     description: a list of metrics that this tool can assess, referred by their ids
-            description: Represents an external tool or service that offers assessments according to certain metrics.
+            description: |-
+                Represents an external tool or service that offers assessments according to
+                 certain metrics.
         Catalog:
             type: object
             properties:
@@ -1454,17 +1632,24 @@ components:
                         $ref: '#/components/schemas/Category'
                 allInScope:
                     type: boolean
-                    description: Certain security catalogs do not allow to select the scope of the controls, but all controls are automatically "in scope", however they can be set to a DELEGATED status.
+                    description: |-
+                        Certain security catalogs do not allow to select the scope of the controls,
+                         but all controls are automatically "in scope", however they can be set to a
+                         DELEGATED status.
                 assuranceLevels:
                     type: array
                     items:
                         type: string
-                    description: A list of the assurance levels, e.g., basic, substantial and high for the EUCS catalog.
+                    description: |-
+                        A list of the assurance levels, e.g., basic, substantial and high for the
+                         EUCS catalog.
                 shortName:
                     type: string
                     description: Catalogs short name, e.g. EUCS
                 metadata:
-                    $ref: '#/components/schemas/Catalog_Metadata'
+                    allOf:
+                        - $ref: '#/components/schemas/Catalog_Metadata'
+                    description: metadata of the catalog
         Catalog_Metadata:
             type: object
             properties:
@@ -1538,7 +1723,9 @@ components:
                     description: last update time of the cloud_service
                     format: date-time
                 metadata:
-                    $ref: '#/components/schemas/CloudService_Metadata'
+                    allOf:
+                        - $ref: '#/components/schemas/CloudService_Metadata'
+                    description: additional metadata of the cloud service, mostly used for the UI
         CloudService_Metadata:
             type: object
             properties:
@@ -1555,7 +1742,9 @@ components:
             properties:
                 id:
                     type: string
-                    description: A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a unique ID!
+                    description: |-
+                        A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a
+                         unique ID!
                 categoryName:
                     type: string
                 categoryCatalogId:
@@ -1570,12 +1759,17 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Control'
-                    description: List of sub - controls -     this is in accordance with the OSCAL model.
+                    description: |-
+                        List of sub - controls -
+                             this is in accordance with the OSCAL model.
                 metrics:
                     type: array
                     items:
                         $ref: '#/components/schemas/Metric'
-                    description: metrics contains either a list of reference to metrics - in this case only the id field of the metric is populated - or a list of populated metric meta-data, most likely returned by the database.
+                    description: |-
+                        metrics contains either a list of reference to metrics - in this case only
+                         the id field of the metric is populated - or a list of populated metric
+                         meta-data, most likely returned by the database.
                 parentControlId:
                     type: string
                     description: Reference to the parent category this control belongs to.
@@ -1585,8 +1779,14 @@ components:
                     type: string
                 assuranceLevel:
                     type: string
-                    description: An assurance level is not offered by every catalog, therefore it is optional.
-            description: Control represents a certain Control that needs to be fulfilled. It could be a Control in a certification catalog. It follows the OSCAL model. A requirement in the EUCS terminology, e.g., is represented as the lowest sub-control.
+                    description: |-
+                        An assurance level is not offered by every catalog, therefore it is
+                         optional.
+            description: |-
+                Control represents a certain Control that needs to be fulfilled. It could be
+                 a Control in a certification catalog. It follows the OSCAL model. A
+                 requirement in the EUCS terminology, e.g., is represented as the lowest
+                 sub-control.
         Dependency:
             type: object
             properties:
@@ -1598,21 +1798,17 @@ components:
             type: object
             properties:
                 numberOfDiscoveredResources:
-                    type: integer
+                    type: string
                     description: number of discovered resources per cloud service
-                    format: int64
                 numberOfAssessmentResults:
-                    type: integer
+                    type: string
                     description: number of assessment results per cloud service
-                    format: int64
                 numberOfEvidences:
-                    type: integer
+                    type: string
                     description: number of evidences per cloud service
-                    format: int64
                 numberOfSelectedCatalogs:
-                    type: integer
+                    type: string
                     description: number of selected catalogs per cloud service
-                    format: int64
         GoogleProtobufAny:
             type: object
             properties:
@@ -1737,16 +1933,26 @@ components:
                     description: The scale of this metric, e.g. categories, ranked data or metric values.
                     format: enum
                 range:
-                    $ref: '#/components/schemas/Range'
+                    allOf:
+                        - $ref: '#/components/schemas/Range'
+                    description: The range of this metric. Depending on the scale.
                 interval:
-                    type: integer
-                    description: The interval in seconds the evidences must be collected for the respective metric. For now, we are not able to use google.protobuf.Duration because it is converted to a custom object in OpenAPI (https://github.com/google/gnostic/issues/351)
-                    format: int64
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: |-
+                        The interval in seconds the evidences must be collected for the respective
+                         metric.
                 implementation:
-                    $ref: '#/components/schemas/MetricImplementation'
+                    allOf:
+                        - $ref: '#/components/schemas/MetricImplementation'
+                    description: |-
+                        The implementation of this metric. This ensures that we are modelling an
+                         association between a Metric and its MetricImplementation.
                 deprecatedSince:
                     type: string
-                    description: Optional, but required if the metric is removed. The metric is not deleted for backward compatibility and the timestamp is set to the time of removal.
+                    description: |-
+                        Optional, but required if the metric is removed. The metric is not deleted
+                         for backward compatibility and the timestamp is set to the time of removal.
                     format: date-time
             description: A metric resource
         MetricConfiguration:
@@ -1756,7 +1962,9 @@ components:
                     type: string
                     description: The operator to compare the metric, such as == or >
                 targetValue:
-                    $ref: '#/components/schemas/GoogleProtobufValue'
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufValue'
+                    description: The target value
                 isDefault:
                     type: boolean
                     description: Whether this configuration is a default configuration
@@ -1796,13 +2004,11 @@ components:
             type: object
             properties:
                 min:
-                    type: integer
+                    type: string
                     description: Required.
-                    format: int64
                 max:
-                    type: integer
+                    type: string
                     description: Required.
-                    format: int64
             description: Defines a range of values through a (inclusive) minimum and a maximum
         Order:
             type: object
@@ -1811,16 +2017,24 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/GoogleProtobufValue'
-            description: Defines a range of values in a pre-defined order from the lowest to the highest.
+            description: |-
+                Defines a range of values in a pre-defined order from the lowest to the
+                 highest.
         Range:
             type: object
             properties:
                 allowedValues:
-                    $ref: '#/components/schemas/AllowedValues'
+                    allOf:
+                        - $ref: '#/components/schemas/AllowedValues'
+                    description: used for nominal scale
                 order:
-                    $ref: '#/components/schemas/Order'
+                    allOf:
+                        - $ref: '#/components/schemas/Order'
+                    description: used for ordinal scale
                 minMax:
-                    $ref: '#/components/schemas/MinMax'
+                    allOf:
+                        - $ref: '#/components/schemas/MinMax'
+                    description: used for metric scale
             description: A range resource representing the range of values
         Runtime:
             type: object
@@ -1881,7 +2095,10 @@ components:
         StoreAssessmentResultResponse:
             type: object
             properties: {}
-            description: StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a custom unary RPC and therefore requires a response message according to the style convention. Since no return values are required, this is empty.
+            description: |-
+                StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a
+                 custom unary RPC and therefore requires a response message according to the
+                 style convention. Since no return values are required, this is empty.
         TargetOfEvaluation:
             type: object
             properties:
@@ -1891,7 +2108,11 @@ components:
                     type: string
                 assuranceLevel:
                     type: string
-                    description: an assurance level is not offered by every catalog, therefore it is optional
-            description: A Target of Evaluation binds a cloud service to a catalog, so the service is evaluated regarding this catalog's controls
+                    description: |-
+                        an assurance level is not offered by every catalog, therefore it is
+                         optional
+            description: |-
+                A Target of Evaluation binds a cloud service to a catalog, so the service is
+                 evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator
