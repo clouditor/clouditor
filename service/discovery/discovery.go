@@ -172,7 +172,7 @@ func WithCloudServiceID(ID string) service.Option[*Service] {
 	}
 }
 
-// WithEvidenceCollectorToolID is an option to configure the collector tool ID that is used to discovery resources.
+// WithEvidenceCollectorToolID is an option to configure the collector tool ID that is used to discover resources.
 func WithEvidenceCollectorToolID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
 		log.Infof("Evidence Collector Tool ID is set to %s", ID)
