@@ -207,7 +207,6 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
 	golang.org/x/time v0.5.0 // indirect
-
 )
 
 // testing dependencies (core)
@@ -217,7 +216,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-
 )
 
 // tools dependencies
@@ -227,6 +225,5 @@ require (
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.1.4
-	github.com/srikrsna/protoc-gen-gotag v0.6.2
-
+	github.com/srikrsna/protoc-gen-gotag v1.0.0
 )

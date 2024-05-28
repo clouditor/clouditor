@@ -1963,14 +1963,14 @@ type CloudService struct {
 	Id                string               `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name              string               `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description       string               `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	CatalogsInScope   []*Catalog           `protobuf:"bytes,4,rep,name=catalogs_in_scope,json=catalogsInScope,proto3" json:"catalogs_in_scope,omitempty" gorm:"many2many:target_of_evaluations"`
-	ConfiguredMetrics []*assessment.Metric `protobuf:"bytes,5,rep,name=configured_metrics,json=configuredMetrics,proto3" json:"configured_metrics,omitempty" gorm:"many2many:metric_configurations"`
+	CatalogsInScope   []*Catalog           `protobuf:"bytes,4,rep,name=catalogs_in_scope,json=catalogsInScope,proto3" json:"catalogs_in_scope,omitempty"`
+	ConfiguredMetrics []*assessment.Metric `protobuf:"bytes,5,rep,name=configured_metrics,json=configuredMetrics,proto3" json:"configured_metrics,omitempty"`
 	// creation time of the cloud_service
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`
 	// last update time of the cloud_service
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`
 	// additional metadata of the cloud service, mostly used for the UI
-	Metadata *CloudService_Metadata `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty" gorm:"serializer:json"`
+	Metadata *CloudService_Metadata `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 }
 
 func (x *CloudService) Reset() {
@@ -2069,18 +2069,18 @@ type Catalog struct {
 	Id          string      `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name        string      `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description string      `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Categories  []*Category `protobuf:"bytes,4,rep,name=categories,proto3" json:"categories,omitempty" gorm:"constraint:OnDelete:CASCADE"`
+	Categories  []*Category `protobuf:"bytes,4,rep,name=categories,proto3" json:"categories,omitempty"`
 	// Certain security catalogs do not allow to select the scope of the controls,
 	// but all controls are automatically "in scope", however they can be set to a
 	// DELEGATED status.
 	AllInScope bool `protobuf:"varint,5,opt,name=all_in_scope,json=allInScope,proto3" json:"all_in_scope,omitempty"`
 	// A list of the assurance levels, e.g., basic, substantial and high for the
 	// EUCS catalog.
-	AssuranceLevels []string `protobuf:"bytes,7,rep,name=assurance_levels,json=assuranceLevels,proto3" json:"assurance_levels,omitempty" gorm:"serializer:json"`
+	AssuranceLevels []string `protobuf:"bytes,7,rep,name=assurance_levels,json=assuranceLevels,proto3" json:"assurance_levels,omitempty"`
 	// Catalogs short name, e.g. EUCS
 	ShortName string `protobuf:"bytes,9,opt,name=short_name,json=shortName,proto3" json:"short_name,omitempty"`
 	// metadata of the catalog
-	Metadata *Catalog_Metadata `protobuf:"bytes,6,opt,name=metadata,proto3,oneof" json:"metadata,omitempty" gorm:"serializer:json"`
+	Metadata *Catalog_Metadata `protobuf:"bytes,6,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 }
 
 func (x *Catalog) Reset() {
@@ -2176,11 +2176,11 @@ type Category struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" gorm:"primaryKey"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Reference to the catalog this category belongs to.
-	CatalogId   string     `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty" gorm:"primaryKey"`
+	CatalogId   string     `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
 	Description string     `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Controls    []*Control `protobuf:"bytes,4,rep,name=controls,proto3" json:"controls,omitempty" gorm:"foreignKey:category_name,category_catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE"`
+	Controls    []*Control `protobuf:"bytes,4,rep,name=controls,proto3" json:"controls,omitempty"`
 }
 
 func (x *Category) Reset() {
@@ -2254,9 +2254,9 @@ type Control struct {
 
 	// A short name of the control, e.g. OPS-01, as used in OSCAL; it is not a
 	// unique ID!
-	Id                string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey"`
-	CategoryName      string `protobuf:"bytes,2,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty" gorm:"primaryKey"`
-	CategoryCatalogId string `protobuf:"bytes,3,opt,name=category_catalog_id,json=categoryCatalogId,proto3" json:"category_catalog_id,omitempty" gorm:"primaryKey"`
+	Id                string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	CategoryName      string `protobuf:"bytes,2,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	CategoryCatalogId string `protobuf:"bytes,3,opt,name=category_catalog_id,json=categoryCatalogId,proto3" json:"category_catalog_id,omitempty"`
 	// Human-readable name of the control
 	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	// Description of the control
@@ -2264,11 +2264,11 @@ type Control struct {
 	// List of sub - controls -
 	//
 	//	this is in accordance with the OSCAL model.
-	Controls []*Control `protobuf:"bytes,6,rep,name=controls,proto3" json:"controls,omitempty" gorm:"foreignKey:parent_control_id,parent_control_category_name,parent_control_category_catalog_id;references=id,category_name;category_catalog_id"`
+	Controls []*Control `protobuf:"bytes,6,rep,name=controls,proto3" json:"controls,omitempty"`
 	// metrics contains either a list of reference to metrics - in this case only
 	// the id field of the metric is populated - or a list of populated metric
 	// meta-data, most likely returned by the database.
-	Metrics []*assessment.Metric `protobuf:"bytes,7,rep,name=metrics,proto3" json:"metrics,omitempty" gorm:"many2many:control_metrics;constraint:OnDelete:CASCADE"`
+	Metrics []*assessment.Metric `protobuf:"bytes,7,rep,name=metrics,proto3" json:"metrics,omitempty"`
 	// Reference to the parent category this control belongs to.
 	ParentControlId                *string `protobuf:"bytes,8,opt,name=parent_control_id,json=parentControlId,proto3,oneof" json:"parent_control_id,omitempty"`
 	ParentControlCategoryName      *string `protobuf:"bytes,9,opt,name=parent_control_category_name,json=parentControlCategoryName,proto3,oneof" json:"parent_control_category_name,omitempty"`
@@ -2394,8 +2394,8 @@ type TargetOfEvaluation struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CloudServiceId string `protobuf:"bytes,1,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty" gorm:"primaryKey"`
-	CatalogId      string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty" gorm:"primaryKey"`
+	CloudServiceId string `protobuf:"bytes,1,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty"`
+	CatalogId      string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3" json:"catalog_id,omitempty"`
 	// an assurance level is not offered by every catalog, therefore it is
 	// optional
 	AssuranceLevel *string `protobuf:"bytes,3,opt,name=assurance_level,json=assuranceLevel,proto3,oneof" json:"assurance_level,omitempty"`
@@ -4035,7 +4035,7 @@ type Certificate struct {
 	Cab            string `protobuf:"bytes,8,opt,name=cab,proto3" json:"cab,omitempty"`
 	Description    string `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
 	// A list of states at specific times
-	States []*State `protobuf:"bytes,10,rep,name=states,proto3" json:"states,omitempty" gorm:"constraint:OnDelete:CASCADE"`
+	States []*State `protobuf:"bytes,10,rep,name=states,proto3" json:"states,omitempty"`
 }
 
 func (x *Certificate) Reset() {

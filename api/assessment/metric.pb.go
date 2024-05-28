@@ -169,13 +169,13 @@ type Metric struct {
 	Range *Range `protobuf:"bytes,6,opt,name=range,proto3" json:"range,omitempty"`
 	// The interval in seconds the evidences must be collected for the respective
 	// metric.
-	Interval *durationpb.Duration `protobuf:"bytes,7,opt,name=interval,proto3" json:"interval,omitempty" gorm:"serializer:durationpb;type:duration"`
+	Interval *durationpb.Duration `protobuf:"bytes,7,opt,name=interval,proto3" json:"interval,omitempty"`
 	// The implementation of this metric. This ensures that we are modelling an
 	// association between a Metric and its MetricImplementation.
 	Implementation *MetricImplementation `protobuf:"bytes,8,opt,name=implementation,proto3,oneof" json:"implementation,omitempty"`
 	// Optional, but required if the metric is removed. The metric is not deleted
 	// for backward compatibility and the timestamp is set to the time of removal.
-	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	DeprecatedSince *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=deprecated_since,json=deprecatedSince,proto3,oneof" json:"deprecated_since,omitempty"`
 }
 
 func (x *Metric) Reset() {
@@ -538,15 +538,15 @@ type MetricConfiguration struct {
 	// The operator to compare the metric, such as == or >
 	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
 	// The target value
-	TargetValue *structpb.Value `protobuf:"bytes,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty" gorm:"serializer:json"`
+	TargetValue *structpb.Value `protobuf:"bytes,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
 	// Whether this configuration is a default configuration
 	IsDefault bool `protobuf:"varint,3,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
 	// The last time of update
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	// The metric this configuration belongs to
-	MetricId string `protobuf:"bytes,5,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty" gorm:"primaryKey"`
+	MetricId string `protobuf:"bytes,5,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// The service this configuration belongs to
-	CloudServiceId string `protobuf:"bytes,6,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty" gorm:"primaryKey"`
+	CloudServiceId string `protobuf:"bytes,6,opt,name=cloud_service_id,json=cloudServiceId,proto3" json:"cloud_service_id,omitempty"`
 }
 
 func (x *MetricConfiguration) Reset() {
@@ -630,13 +630,13 @@ type MetricImplementation struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The metric which is implemented
-	MetricId string `protobuf:"bytes,1,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty" gorm:"primaryKey"`
+	MetricId string `protobuf:"bytes,1,opt,name=metric_id,json=metricId,proto3" json:"metric_id,omitempty"`
 	// The language this metric is implemented in
 	Lang MetricImplementation_Language `protobuf:"varint,2,opt,name=lang,proto3,enum=clouditor.assessment.v1.MetricImplementation_Language" json:"lang,omitempty"`
 	// The actual implementation
 	Code string `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
 	// The last time of update
-	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 }
 
 func (x *MetricImplementation) Reset() {

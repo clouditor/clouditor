@@ -526,15 +526,15 @@ type EvaluationResult struct {
 	// Evaluation status
 	Status EvaluationStatus `protobuf:"varint,7,opt,name=status,proto3,enum=clouditor.evaluation.v1.EvaluationStatus" json:"status,omitempty"`
 	// Time of evaluation
-	Timestamp *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=timestamp,proto3" json:"timestamp,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	Timestamp *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	// List of assessment results because of which the evaluation status is not
 	// 'compliant'
-	FailingAssessmentResultIds []string `protobuf:"bytes,9,rep,name=failing_assessment_result_ids,json=failingAssessmentResultIds,proto3" json:"failing_assessment_result_ids,omitempty" gorm:"serializer:json"`
+	FailingAssessmentResultIds []string `protobuf:"bytes,9,rep,name=failing_assessment_result_ids,json=failingAssessmentResultIds,proto3" json:"failing_assessment_result_ids,omitempty"`
 	Comment                    *string  `protobuf:"bytes,10,opt,name=comment,proto3,oneof" json:"comment,omitempty"`
 	// Optional, but required if the status is one of the "manually" ones. This
 	// denotes how long the (manual) created evaluation result is valid. During
 	// this time, no automatic results are generated for the specific control.
-	ValidUntil *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=valid_until,json=validUntil,proto3,oneof" json:"valid_until,omitempty" gorm:"serializer:timestamppb;type:datetime"`
+	ValidUntil *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=valid_until,json=validUntil,proto3,oneof" json:"valid_until,omitempty"`
 }
 
 func (x *EvaluationResult) Reset() {
