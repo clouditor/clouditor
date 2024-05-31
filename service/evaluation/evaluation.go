@@ -715,7 +715,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		// * cloud service id
 		// * metric ids
 		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
-			Filter: &orchestrator.Filter{
+			Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 				CloudServiceId: &toe.CloudServiceId,
 				MetricIds:      getMetricIds(metrics),
 			},

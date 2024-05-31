@@ -133,32 +133,6 @@ paths:
                  passed metric id
             operationId: Orchestrator_ListAssessmentTools
             parameters:
-                - name: filter.cloudServiceId
-                  in: query
-                  description: Optional. List only assessment results of a specific cloud service.
-                  schema:
-                    type: string
-                - name: filter.compliant
-                  in: query
-                  description: Optional. List only compliant assessment results.
-                  schema:
-                    type: boolean
-                - name: filter.metricIds
-                  in: query
-                  description: Optional. List only assessment results of a specific metric id.
-                  schema:
-                    type: array
-                    items:
-                        type: string
-                - name: filter.metricId
-                  in: query
-                  schema:
-                    type: string
-                - name: filter.toolId
-                  in: query
-                  description: Optional. List only assessment result from a specific assessment tool.
-                  schema:
-                    type: string
                 - name: pageSize
                   in: query
                   schema:
