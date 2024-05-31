@@ -510,7 +510,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
 		}
 		if req.Filter.ToolId != nil {
-			query = append(query, "(tool_id = ?)")
+			query = append(query, "tool_id = ?")
 			args = append(args, req.Filter.GetToolId())
 		}
 	}
