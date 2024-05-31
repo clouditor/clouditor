@@ -430,7 +430,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId(), svc.collectorID)
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -507,6 +507,10 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		if req.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
 			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
+		}
+		if req.Filter.ToolId != nil {
+			query = append(query, "(tool_id = ?)")
+			args = append(args, req.Filter.GetToolId())
 		}
 	}
 
