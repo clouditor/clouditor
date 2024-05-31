@@ -400,8 +400,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []ontology.IsResource
 	)
 
-	fmt.Println("Collector id: ", svc.collectorID)
-
 	go func() {
 		svc.Events <- &DiscoveryEvent{
 			Type:           DiscovererStart,
