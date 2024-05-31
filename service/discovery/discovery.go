@@ -494,6 +494,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
+	// * tool ID
 	if req.Filter != nil {
 		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
