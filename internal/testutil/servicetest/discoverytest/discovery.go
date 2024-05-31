@@ -2,6 +2,8 @@ package discoverytest
 
 import (
 	"fmt"
+	"math/rand/v2"
+	"strconv"
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
@@ -18,19 +20,21 @@ type TestDiscoverer struct {
 func (TestDiscoverer) Name() string { return "just mocking" }
 
 func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
+	// random number is used to get different resource IDs if more than one discoverer is used in the tests
+	rand := strconv.Itoa(rand.IntN(100))
 	switch m.TestCase {
 	case 0:
 		return nil, fmt.Errorf("mock error in List()")
 	case 2:
 		return []ontology.IsResource{
 			&ontology.ObjectStorage{
-				Id:       "some-id",
+				Id:       "some-id-" + rand,
 				Name:     "some-name",
 				ParentId: util.Ref("some-storage-account-id"),
 				Raw:      "{}",
 			},
 			&ontology.ObjectStorageService{
-				Id:         "some-storage-account-id",
+				Id:         "some-storage-account-id-" + rand,
 				Name:       "some-storage-account-name",
 				StorageIds: []string{"some-id"},
 				Raw:        "{}",
