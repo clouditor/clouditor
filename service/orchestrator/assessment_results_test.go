@@ -279,7 +279,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
 					},
 				},
@@ -301,7 +301,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
 				},
@@ -324,7 +324,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 						Compliant:      util.Ref(true),
 					},
@@ -348,7 +348,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 						Compliant:      util.Ref(false),
 					},
@@ -372,7 +372,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						Compliant: util.Ref(true),
 					},
 				},
@@ -396,7 +396,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						ToolId: util.Ref(testdata.MockAssessmentResultToolID),
 					},
 				},
@@ -420,7 +420,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						Compliant: util.Ref(false),
 					},
 				},
@@ -444,7 +444,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 						MetricIds:      []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
@@ -469,7 +469,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 						MetricIds:      []string{testdata.MockMetricID1, testdata.MockMetricID2},
 					},
@@ -494,7 +494,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						MetricIds: []string{testdata.MockMetricID1},
 					},
 				},
@@ -518,7 +518,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				ctx: context.TODO(),
 				req: &orchestrator.ListAssessmentResultsRequest{
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref("No Valid UUID"),
 					},
 				},
@@ -561,7 +561,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			args: args{
 				req: &orchestrator.ListAssessmentResultsRequest{
 					LatestByResourceId: util.Ref(true),
-					Filter: &orchestrator.Filter{
+					Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
 						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
 					},
 				},

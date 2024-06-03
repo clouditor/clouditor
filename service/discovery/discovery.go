@@ -138,6 +138,9 @@ type Service struct {
 
 	// csID is the cloud service ID for which we are gathering resources.
 	csID string
+
+	// collectorID is the evidence collector tool ID which is gathering the resources.
+	collectorID string
 }
 
 func init() {
@@ -166,6 +169,15 @@ func WithCloudServiceID(ID string) service.Option[*Service] {
 		log.Infof("Cloud Service ID is set to %s", ID)
 
 		svc.csID = ID
+	}
+}
+
+// WithEvidenceCollectorToolID is an option to configure the collector tool ID that is used to discover resources.
+func WithEvidenceCollectorToolID(ID string) service.Option[*Service] {
+	return func(svc *Service) {
+		log.Infof("Evidence Collector Tool ID is set to %s", ID)
+
+		svc.collectorID = ID
 	}
 }
 
@@ -225,6 +237,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
 		csID:              config.DefaultCloudServiceID,
+		collectorID:       config.DefaultEvidenceCollectorToolID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
 	}
@@ -415,7 +428,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId(), svc.collectorID)
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -438,7 +451,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 			CloudServiceId: svc.GetCloudServiceId(),
 			Timestamp:      timestamppb.Now(),
 			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         config.EvidenceCollectorToolId,
+			ToolId:         svc.collectorID,
 			Resource:       a,
 		}
 
@@ -479,6 +492,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
+	// * tool ID
 	if req.Filter != nil {
 		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
@@ -492,6 +506,10 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		if req.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
 			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
+		}
+		if req.Filter.ToolId != nil {
+			query = append(query, "tool_id = ?")
+			args = append(args, req.Filter.GetToolId())
 		}
 	}
 
