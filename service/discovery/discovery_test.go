@@ -259,7 +259,8 @@ func TestService_StartDiscovery(t *testing.T) {
 				or := m.(ontology.IsResource)
 
 				// Only the last element sent can be checked
-				assert.Equal(t, string(eWant.GetId()), or.GetId())
+				// The TestDiscoverer adds a random number to the ID, so we have to delete the last 3 characters as we do not know which random number will be added.
+				assert.Equal(t, eWant.GetId()[:len(eWant.GetId())-3], or.GetId()[:len(or.GetId())-3])
 
 				// Assert cloud service ID
 				assert.Equal(t, tt.fields.csID, eGot.CloudServiceId)
@@ -270,8 +271,9 @@ func TestService_StartDiscovery(t *testing.T) {
 
 func TestService_ListResources(t *testing.T) {
 	type fields struct {
-		authz service.AuthorizationStrategy
-		csID  string
+		authz       service.AuthorizationStrategy
+		csID        string
+		collectorID string
 	}
 	type args struct {
 		req *discovery.ListResourcesRequest
@@ -281,6 +283,7 @@ func TestService_ListResources(t *testing.T) {
 		fields                   fields
 		args                     args
 		numberOfQueriedResources int
+		secondDiscoverer         bool
 		wantErr                  assert.WantErr
 	}{
 		{
@@ -329,6 +332,40 @@ func TestService_ListResources(t *testing.T) {
 			},
 		},
 		{
+			name: "Filter toolID, allow",
+			fields: fields{
+				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				csID:        testdata.MockCloudServiceID1,
+				collectorID: testdata.MockEvidenceToolID1,
+			},
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.ListResourcesRequest_Filter{
+					CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
+					ToolId:         util.Ref(testdata.MockEvidenceToolID1),
+				},
+			}},
+			numberOfQueriedResources: 2,
+			secondDiscoverer:         true,
+			wantErr:                  assert.Nil[error],
+		},
+		{
+			name: "Filter toolID, not allowed",
+			fields: fields{
+				authz:       servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				csID:        testdata.MockCloudServiceID1,
+				collectorID: testdata.MockEvidenceToolID1,
+			},
+			args: args{req: &discovery.ListResourcesRequest{
+				Filter: &discovery.ListResourcesRequest_Filter{
+					ToolId: util.Ref(testdata.MockEvidenceToolID1),
+				},
+			}},
+			numberOfQueriedResources: 0,
+			wantErr: func(t *testing.T, gotErr error) bool {
+				return assert.ErrorIs(t, gotErr, service.ErrPermissionDenied)
+			},
+		},
+		{
 			name: "No filtering, allow all",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -355,7 +392,14 @@ func TestService_ListResources(t *testing.T) {
 			s := NewService(WithAssessmentAddress(testdata.MockGRPCTarget, grpc.WithContextDialer(bufConnDialer)))
 			s.authz = tt.fields.authz
 			s.csID = tt.fields.csID
+			s.collectorID = tt.fields.collectorID
 			s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.csID})
+
+			// We start a second discoverer for the 2 tests "Filter toolID, allow". For this tests we want resources with different toolIDs. One discoverer has only one toolID, so we have to start a second discoverer for resources with a different toolID.
+			if tt.secondDiscoverer {
+				s.collectorID = "second discoverer for a different toolID"
+				s.StartDiscovery(&discoverytest.TestDiscoverer{TestCase: 2, ServiceId: tt.fields.csID})
+			}
 
 			response, err := s.ListResources(context.TODO(), tt.args.req)
 			tt.wantErr(t, err)

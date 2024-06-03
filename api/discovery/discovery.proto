@@ -65,6 +65,7 @@ message ListResourcesRequest {
   message Filter {
     optional string type = 1;
     optional string cloud_service_id = 2;
+    optional string tool_id = 3;
   }
 
   optional Filter filter = 1;
@@ -93,6 +94,8 @@ message Resource {
   // ResourceType contains a comma separated string of resource types according
   // to our ontology.
   string resource_type = 3 [(buf.validate.field).string.min_len = 1];
+  // Reference to the tool which provided the resource
+  string tool_id = 4 [(buf.validate.field).string.min_len = 1];
 
   // Properties contains a protobuf message that describe the resource in the
   // terms of our Clouditor ontology.

@@ -21,6 +21,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: filter.toolId
+                  in: query
+                  schema:
+                    type: string
                 - name: pageSize
                   in: query
                   schema:
@@ -211,6 +215,9 @@ components:
                     description: |-
                         ResourceType contains a comma separated string of resource types according
                          to our ontology.
+                toolId:
+                    type: string
+                    description: Reference to the tool which provided the resource
                 properties:
                     allOf:
                         - $ref: '#/components/schemas/GoogleProtobufAny'
