@@ -227,6 +227,6 @@ require (
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.1.4
-	github.com/srikrsna/protoc-gen-gotag v0.6.2
+	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
