@@ -400,8 +400,6 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		list []ontology.IsResource
 	)
 
-	fmt.Println("Collector id: ", svc.collectorID)
-
 	go func() {
 		svc.Events <- &DiscoveryEvent{
 			Type:           DiscovererStart,
@@ -430,7 +428,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId())
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId(), svc.collectorID)
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -494,6 +492,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	// Filtering the resources by
 	// * cloud service ID
 	// * resource type
+	// * tool ID
 	if req.Filter != nil {
 		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
@@ -507,6 +506,10 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		if req.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
 			args = append(args, req.Filter.GetType()+",%", "%,"+req.Filter.GetType()+",%", "%,"+req.Filter.GetType())
+		}
+		if req.Filter.ToolId != nil {
+			query = append(query, "tool_id = ?")
+			args = append(args, req.Filter.GetToolId())
 		}
 	}
 

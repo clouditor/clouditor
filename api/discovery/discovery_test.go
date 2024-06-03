@@ -101,8 +101,9 @@ func TestResource_ToOntologyResource(t *testing.T) {
 
 func TestToDiscoveryResource(t *testing.T) {
 	type args struct {
-		resource ontology.IsResource
-		csID     string
+		resource    ontology.IsResource
+		csID        string
+		collectorID string
 	}
 	tests := []struct {
 		name    string
@@ -123,11 +124,13 @@ func TestToDiscoveryResource(t *testing.T) {
 						},
 					},
 				},
-				csID: testdata.MockCloudServiceID1,
+				csID:        testdata.MockCloudServiceID1,
+				collectorID: testdata.MockEvidenceToolID1,
 			},
 			want: &Resource{
 				Id:             "my-block-storage",
 				CloudServiceId: testdata.MockCloudServiceID1,
+				ToolId:         testdata.MockEvidenceToolID1,
 				ResourceType:   "BlockStorage,Storage,CloudResource,Resource",
 				Properties: prototest.NewAny(t, &ontology.BlockStorage{
 					Id:   "my-block-storage",
@@ -146,7 +149,7 @@ func TestToDiscoveryResource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.csID)
+			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.csID, tt.args.collectorID)
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, gotR)
