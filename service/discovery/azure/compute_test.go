@@ -202,7 +202,7 @@ func Test_azureComputeDiscovery_discoverFunctionsWebApps(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
+func Test_azureDiscovery_handleFunction(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
 		clientWebApps  bool
@@ -369,7 +369,7 @@ func Test_azureComputeDiscovery_handleFunction(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
+func Test_azureDiscovery_discoverVirtualMachines(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
@@ -514,7 +514,7 @@ func Test_azureComputeDiscovery_discoverVirtualMachines(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_handleVirtualMachines(t *testing.T) {
+func Test_azureDiscovery_handleVirtualMachines(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
@@ -731,13 +731,6 @@ func Test_isBootDiagnosticEnabled(t *testing.T) {
 }
 
 func Test_bootLogOutput(t *testing.T) {
-	ID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1"
-	name := "vm1"
-	enabledTrue := true
-	enabledFalse := false
-	storageUri := "https://logstoragevm1.blob.core.windows.net/"
-	emptyStorageUri := ""
-
 	type args struct {
 		vm *armcompute.VirtualMachine
 	}
@@ -757,13 +750,10 @@ func Test_bootLogOutput(t *testing.T) {
 			name: "StorageURI is nil",
 			args: args{
 				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
 					Properties: &armcompute.VirtualMachineProperties{
 						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
 							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledFalse,
-								StorageURI: nil,
+								Enabled: util.Ref(true),
 							},
 						},
 					},
@@ -775,13 +765,10 @@ func Test_bootLogOutput(t *testing.T) {
 			name: "BootDiagnostics disabled",
 			args: args{
 				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
 					Properties: &armcompute.VirtualMachineProperties{
 						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
 							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledFalse,
-								StorageURI: &emptyStorageUri,
+								Enabled: util.Ref(false),
 							},
 						},
 					},
@@ -793,29 +780,29 @@ func Test_bootLogOutput(t *testing.T) {
 			name: "BootDiagnostics enabled",
 			args: args{
 				vm: &armcompute.VirtualMachine{
-					ID:   &ID,
-					Name: &name,
 					Properties: &armcompute.VirtualMachineProperties{
 						DiagnosticsProfile: &armcompute.DiagnosticsProfile{
 							BootDiagnostics: &armcompute.BootDiagnostics{
-								Enabled:    &enabledTrue,
-								StorageURI: &storageUri,
+								StorageURI: util.Ref("https://testDiagnostics.blob.core.windows.net/"),
+								Enabled:    util.Ref(true),
 							},
 						},
 					},
+					ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1"),
 				},
 			},
-			//want: storageUri,
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/testDiagnostics",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, bootLogOutput(tt.args.vm))
+			d := NewMockAzureDiscovery(newMockSender())
+			assert.Equal(t, tt.want, d.bootLogOutput(tt.args.vm))
 		})
 	}
 }
 
-func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
+func Test_azureDiscovery_discoverBlockStorage(t *testing.T) {
 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
 
 	type fields struct {
@@ -942,7 +929,7 @@ func Test_azureComputeDiscovery_discoverBlockStorage(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
+func Test_azureDiscovery_handleBlockStorage(t *testing.T) {
 	encType := armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey
 	diskID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"
 	diskName := "disk1"
@@ -1073,7 +1060,7 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
+func Test_azureDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 	encType := armcompute.EncryptionTypeEncryptionAtRestWithCustomerKey
 	diskID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk1"
 	diskName := "disk1"
@@ -1168,7 +1155,7 @@ func Test_azureComputeDiscovery_blockStorageAtRestEncryption(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_keyURL(t *testing.T) {
+func Test_azureDiscovery_keyURL(t *testing.T) {
 	encSetID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault1"
 	encSetID2 := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/diskEncryptionSets/encryptionkeyvault2"
 
@@ -1400,7 +1387,7 @@ func Test_automaticUpdates(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_handleWebApp(t *testing.T) {
+func Test_azureDiscovery_handleWebApp(t *testing.T) {
 	type fields struct {
 		azureDiscovery *azureDiscovery
 		clientWebApps  bool
@@ -1685,7 +1672,7 @@ func Test_getTransportEncryption(t *testing.T) {
 	}
 }
 
-func Test_azureComputeDiscovery_getResourceLoggingWebApp(t *testing.T) {
+func Test_azureDiscovery_getResourceLoggingWebApp(t *testing.T) {
 	type fields struct {
 		azureDiscovery     *azureDiscovery
 		defenderProperties map[string]*defenderProperties
@@ -1919,6 +1906,53 @@ func Test_getVirtualNetworkSubnetId(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := getVirtualNetworkSubnetId(tt.args.site)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_azureDiscovery_getResourceId(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		uri string
+		rg  string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "input empty",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				uri: "testResourceGroup",
+			},
+			want: "",
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				uri: "https://testDiagnostics.blob.core.windows.net/",
+				rg:  "testResourceGroup",
+			},
+			want: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/testResourceGroup/providers/Microsoft.Storage/storageAccounts/testDiagnostics",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+
+			if got := d.getResourceId(tt.args.uri, tt.args.rg); got != tt.want {
+				t.Errorf("azureDiscovery.getResourceId() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
