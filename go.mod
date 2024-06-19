@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/sync v0.7.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -229,4 +229,15 @@ require (
 	github.com/oxisto/owl2proto v0.1.4
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
+)
+
+require (
+	github.com/Fraunhofer-AISEC/cmc v0.6.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
+	github.com/google/go-tpm v0.9.0 // indirect
+	github.com/robertkrimen/otto v0.2.1 // indirect
+	github.com/veraison/go-cose v1.1.0 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
