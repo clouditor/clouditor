@@ -232,7 +232,7 @@ require (
 )
 
 require (
-	github.com/Fraunhofer-AISEC/cmc v0.6.0 // indirect
+	github.com/Fraunhofer-AISEC/cmc v0.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
 	github.com/google/go-tpm v0.9.0 // indirect
 	github.com/robertkrimen/otto v0.2.1 // indirect

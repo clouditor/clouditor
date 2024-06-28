@@ -44,6 +44,8 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2/go.mod h1:wP83
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Fraunhofer-AISEC/cmc v0.6.0 h1:NLRkSRTflQ6S892cTUkL20jKW+fsmk8u6zDHe6YfTPY=
 github.com/Fraunhofer-AISEC/cmc v0.6.0/go.mod h1:IqXis/y6JQfmSVI3Ll8/26A4+dbgBhpOSkEuhLdvm38=
+github.com/Fraunhofer-AISEC/cmc v0.7.0 h1:BHY+TghDRj1ofiglK4Otm7leDfejrsK0w/n6OH4Xkz8=
+github.com/Fraunhofer-AISEC/cmc v0.7.0/go.mod h1:+R2lAqLUi6fOVcF9WM2uHLk32zQiuAmFFyA4TACafq4=
 github.com/Intevation/gval v1.3.0 h1:+Ze5sft5MmGbZrHj06NVUbcxCb67l9RaPTLMNr37mjw=
 github.com/Intevation/gval v1.3.0/go.mod h1:xmGyGpP5be12EL0P12h+dqiYG8qn2j3PJxIgkoOHO5o=
 github.com/Intevation/jsonpath v0.2.1 h1:rINNQJ0Pts5XTFEG+zamtdL7l9uuE1z0FBA+r55Sw+A=

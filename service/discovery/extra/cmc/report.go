@@ -35,7 +35,8 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 
 	"github.com/Fraunhofer-AISEC/cmc/attestationreport"
-	ci "github.com/Fraunhofer-AISEC/cmc/cmcinterface" // TODO: What do we need here? I think that changed.
+	"github.com/Fraunhofer-AISEC/cmc/grpcapi"
+	"github.com/Fraunhofer-AISEC/cmc/verify"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -48,8 +49,8 @@ const (
 // discoverReports discovers the attestation reports from the CMC
 func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	var (
-		list []ontology.IsResource
-		// capem = []byte(rawConfig.Certificate)
+		list  []ontology.IsResource
+		capem = []byte(rawConfig.Certificate) // TODO(anatheka): Read certificate from filesystem
 	)
 
 	// Collecting integrity information from external service requires nonce
@@ -69,9 +70,9 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 		return nil, nil
 	}
 
-	client := ci.NewCMCServiceClient(conn)
+	client := grpcapi.NewCMCServiceClient(conn)
 
-	request := ci.AttestationRequest{
+	request := grpcapi.AttestationRequest{
 		Nonce: nonce,
 	}
 
@@ -80,12 +81,12 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("gRPC Attest call failed: %w", err)
 	}
-	if response.GetStatus() != ci.Status_OK {
+	if response.GetStatus() != grpcapi.Status_OK {
 		return nil, fmt.Errorf("gRPC Attest call returned status %w", response.GetStatus())
 	}
 
 	// Verify attestation report
-	result, err := verifyAttestationReport(response.AttestationReport, nonce, capem) //TODO: What capem do we need here?
+	result, err := verifyAttestationReport(response.AttestationReport, nonce, capem)
 	if err != nil {
 		err = fmt.Errorf("verification failed: %v", err)
 		log.Error(err)
@@ -103,7 +104,7 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 
 func verifyAttestationReport(ar, nonce, capem []byte) (attestationreport.VerificationResult, error) {
 
-	result := attestationreport.Verify(string(ar), nonce, capem, nil)
+	result := verify.Verify(ar, nonce, capem, nil, verify.PolicyEngineSelect_None, "")
 	if !result.Success {
 		return result, fmt.Errorf("verification of attestation report failed")
 	}
@@ -112,18 +113,20 @@ func verifyAttestationReport(ar, nonce, capem []byte) (attestationreport.Verific
 }
 
 func handleReport(result attestationreport.VerificationResult) (ontology.IsResource, error) {
-	rawEvidence, err := json.Marshal(result)
+	raw, err := json.Marshal(result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
 	}
 
+	// TODO(anatheka): Add Resource to Ontology
 	resource := &ontology.VirtualMachine{
 		// Id:   requestId, //TODO: Is there any ID? IP or something else?
 		// Name: requestId, //TODO: Is there any name? IP or something else?
 		// CreationTime: , // TODO: TBD
 		// GeoLocation: ,// TODO: TBD
 
-		Raw: string(rawEvidence),
+		Raw: string(raw),
+
 		// TargetService:  req.ServiceId,
 		// TargetResource: result.PlainAttReport.DeviceDescription.Fqdn,
 		// ToolId:         ComponentID,
