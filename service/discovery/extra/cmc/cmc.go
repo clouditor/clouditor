@@ -39,8 +39,6 @@ func init() {
 }
 
 type cmcDiscovery struct {
-	CmcAddr string // TODO: What is the CmcAddr we need here?
-
 	// CloudServiceID
 	csID string
 
