@@ -41,14 +41,11 @@ func init() {
 type cmcDiscovery struct {
 	CmcAddr string // TODO: What is the CmcAddr we need here?
 
-	// TODO(all): What is the domain for?
-	domain string
-
-	// serviceId is the id we are trying to get the attestation for
-	serviceId string
-
 	// CloudServiceID
 	csID string
+
+	// CMC Addr
+	cmcAddr string
 }
 
 type DiscoveryOption func(a *cmcDiscovery)
@@ -61,9 +58,10 @@ func (*cmcDiscovery) Description() string {
 	return "Discovery attestation reports from CMC"
 }
 
-func NewCMCDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
 	d := &cmcDiscovery{
-		csID: config.DefaultCloudServiceID,
+		csID:    config.DefaultCloudServiceID,
+		cmcAddr: addr,
 	}
 
 	// Apply options
@@ -79,7 +77,7 @@ func (a *cmcDiscovery) CloudServiceID() string {
 }
 
 func (d *cmcDiscovery) List() (list []ontology.IsResource, err error) {
-	log.Infof("Fetching attestation reports from CMC %s for resource %s", d.CmcAddr) //TODO: How do we know the resource for which we get the attestation report?
+	log.Infof("Fetching attestation reports from CMC %s", d.cmcAddr)
 
 	return d.discoverReports()
 }

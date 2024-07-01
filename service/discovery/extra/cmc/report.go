@@ -26,93 +26,146 @@
 package cmc
 
 import (
-	"context"
-	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/Fraunhofer-AISEC/cmc/attestationreport"
-	"github.com/Fraunhofer-AISEC/cmc/grpcapi"
-	"github.com/Fraunhofer-AISEC/cmc/verify"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	ar "github.com/Fraunhofer-AISEC/cmc/attestationreport"
+	atls "github.com/Fraunhofer-AISEC/cmc/attestedtls"
+	"github.com/Fraunhofer-AISEC/cmc/cmc"
 )
 
 const (
 	timeoutSec = 10
+	capemPath  = "local/certificate_remote_attestation.pem"
 )
 
 // discoverReports discovers the attestation reports from the CMC
 func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	var (
-		list  []ontology.IsResource
-		capem = []byte(rawConfig.Certificate) // TODO(anatheka): Read certificate from filesystem
+		list []ontology.IsResource
+		ca   = []byte{}
 	)
 
-	// Collecting integrity information from external service requires nonce
-	// to avoid replay attacks
-	nonce := make([]byte, 8)
-	_, err := rand.Read(nonce)
+	// Read CA from filesystem
+	// TODO(all): Should be removed in future, just for testing
+	ca, err := os.ReadFile(capemPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate nonce: %w", err)
+		return nil, fmt.Errorf("could not read certificate from path '%s': %w", capemPath, err)
 	}
+	log.Debugf("Certificate read from path: %s", capemPath)
 
-	// Connection to CMC
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutSec*time.Second)
-	conn, err := grpc.NewClient(d.CmcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	log.Debug("Initializing CMC")
+	cmc, err := cmc.NewCmc(&cmc.Config{
+		Api: "libapi",
+	})
 	if err != nil {
-		log.Errorf("failed to connect: %w", err)
-		cancel()
-		return nil, nil
+		return nil, fmt.Errorf("could not create CMC config: %v", err)
 	}
 
-	client := grpcapi.NewCMCServiceClient(conn)
-
-	request := grpcapi.AttestationRequest{
-		Nonce: nonce,
+	// Add root CA
+	log.Debug("Adding CA")
+	roots := x509.NewCertPool()
+	success := roots.AppendCertsFromPEM(ca)
+	if !success {
+		return nil, fmt.Errorf("could not add cert '%s' to root CAs", ca)
 	}
 
-	// Collect attestation report from CMC
-	response, err := client.Attest(ctx, &request)
+	// Create TLS config with root CA only
+	tlsConf := &tls.Config{
+		RootCAs:       roots,
+		Renegotiation: tls.RenegotiateNever,
+	}
+
+	conn, err := atls.Dial("tcp", d.cmcAddr, tlsConf,
+		atls.WithCmcCa(ca),
+		atls.WithCmcApi(atls.CmcApi_Lib),
+		atls.WithMtls(false),
+		atls.WithAttest("server"),
+		atls.WithResultCb(func(result *ar.VerificationResult) {
+			// TODO (anatheka): Return error
+			r, err := handleReport(*result)
+			if err != nil {
+				log.Errorf("could not handle attestation report: %v", err)
+			}
+
+			log.Debug("attestation report: ", result)
+			list = append(list, r)
+		}),
+		atls.WithCmc(cmc))
 	if err != nil {
-		return nil, fmt.Errorf("gRPC Attest call failed: %w", err)
+		return nil, fmt.Errorf("could not get attestation report: %v", err)
 	}
-	if response.GetStatus() != grpcapi.Status_OK {
-		return nil, fmt.Errorf("gRPC Attest call returned status %w", response.GetStatus())
-	}
+	defer conn.Close()
 
-	// Verify attestation report
-	result, err := verifyAttestationReport(response.AttestationReport, nonce, capem)
-	if err != nil {
-		err = fmt.Errorf("verification failed: %v", err)
-		log.Error(err)
-	}
+	// Deprecated
 
-	r, err := handleReport(result)
-	if err != nil {
-		return nil, fmt.Errorf("could not handle attestation report: %w", err)
-	}
+	// Maybe complete outdated
+	// // Collecting integrity information from external service requires nonce
+	// // to avoid replay attacks
+	// nonce := make([]byte, 8)
+	// _, err = rand.Read(nonce)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to generate nonce: %w", err)
+	// }
 
-	list = append(list, r)
+	// // Connection to CMC
+	// ctx, cancel := context.WithTimeout(context.Background(), timeoutSec*time.Second)
+	// conn, err := grpc.NewClient(d.CmcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// if err != nil {
+	// 	log.Errorf("failed to connect: %w", err)
+	// 	cancel()
+	// 	return nil, nil
+	// }
+
+	// client := grpcapi.NewCMCServiceClient(conn)
+
+	// request := grpcapi.AttestationRequest{
+	// 	Nonce: nonce,
+	// }
+
+	// // Collect attestation report from CMC
+	// response, err := client.Attest(ctx, &request)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("gRPC Attest call failed: %w", err)
+	// }
+	// if response.GetStatus() != grpcapi.Status_OK {
+	// 	return nil, fmt.Errorf("gRPC Attest call returned status %w", response.GetStatus())
+	// }
+
+	// // Verify attestation report
+	// result, err := verifyAttestationReport(response.AttestationReport, nonce, capem)
+	// if err != nil {
+	// 	err = fmt.Errorf("verification failed: %v", err)
+	// 	log.Error(err)
+	// }
+
+	// r, err := handleReport(result)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("could not handle attestation report: %w", err)
+	// }
 
 	return list, nil
 }
 
-func verifyAttestationReport(ar, nonce, capem []byte) (attestationreport.VerificationResult, error) {
+// Deprecated
+// func verifyAttestationReport(ar, nonce, capem []byte) (ar.VerificationResult, error) {
 
-	result := verify.Verify(ar, nonce, capem, nil, verify.PolicyEngineSelect_None, "")
-	if !result.Success {
-		return result, fmt.Errorf("verification of attestation report failed")
-	}
+// 	result := verify.Verify(ar, nonce, capem, nil, verify.PolicyEngineSelect_None, "")
+// 	if !result.Success {
+// 		return result, fmt.Errorf("verification of attestation report failed")
+// 	}
 
-	return result, nil
-}
+// 	return result, nil
+// }
 
-func handleReport(result attestationreport.VerificationResult) (ontology.IsResource, error) {
+func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 	raw, err := json.Marshal(result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
@@ -120,20 +173,27 @@ func handleReport(result attestationreport.VerificationResult) (ontology.IsResou
 
 	// TODO(anatheka): Add Resource to Ontology
 	resource := &ontology.VirtualMachine{
-		// Id:   requestId, //TODO: Is there any ID? IP or something else?
-		// Name: requestId, //TODO: Is there any name? IP or something else?
+		Id:   result.Prover,
+		Name: result.Prover,
 		// CreationTime: , // TODO: TBD
 		// GeoLocation: ,// TODO: TBD
-
 		Raw: string(raw),
-
-		// TargetService:  req.ServiceId,
-		// TargetResource: result.PlainAttReport.DeviceDescription.Fqdn,
-		// ToolId:         ComponentID,
-		// GatheredAt:     timestamppb.Now(),
-		// Value:          evidenceValue,
-		// RawEvidence:    string(rawEvidence),
+		RemoteAttestation: &ontology.RemoteAttestation{
+			Enabled:      true,
+			Status:       result.Success,
+			CreationTime: timestamp(result.Created),
+		},
 	}
 
 	return resource, nil
+}
+
+func timestamp(t string) *timestamppb.Timestamp {
+	time, err := time.Parse(time.RFC3339, t)
+	if err != nil {
+		log.Errorf("could not convert time string to timestamppb: w", err)
+		return &timestamppb.Timestamp{}
+	}
+
+	return timestamppb.New(time)
 }

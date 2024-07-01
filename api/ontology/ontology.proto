@@ -143,6 +143,13 @@ message AtRestEncryption {
   }
 }
 
+// Attestation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Attestation {
+  oneof type {
+    RemoteAttestation remote_attestation = 1;
+  }
+}
+
 // Auditing is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Auditing {
   oneof type {
@@ -1039,10 +1046,11 @@ message Immutability {
 // Integrity is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Integrity {
   oneof type {
-    AutomaticUpdates automatic_updates = 1;
-    DocumentChecksum document_checksum = 2;
-    Immutability immutability = 3;
-    DocumentSignature document_signature = 4;
+    RemoteAttestation remote_attestation = 1;
+    AutomaticUpdates automatic_updates = 2;
+    DocumentChecksum document_checksum = 3;
+    Immutability immutability = 4;
+    DocumentSignature document_signature = 5;
   }
 }
 
@@ -1653,6 +1661,18 @@ message RelationalDatabaseService {
   UsageStatistics usage_statistics = 20;
 }
 
+// RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message RemoteAttestation {
+  option (resource_type_names) = "RemoteAttestation";
+  option (resource_type_names) = "Attestation";
+  option (resource_type_names) = "Integrity";
+  option (resource_type_names) = "SecurityFeature";
+
+  google.protobuf.Timestamp creation_time = 1;
+  bool enabled = 2;
+  bool status = 3;
+}
+
 // RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RemoteDocumentLocation {
   option (resource_type_names) = "RemoteDocumentLocation";
@@ -1846,10 +1866,11 @@ message SecurityFeature {
     ManagedKeyEncryption managed_key_encryption = 27;
     EncryptionInUse encryption_in_use = 28;
     TransportEncryption transport_encryption = 29;
-    AutomaticUpdates automatic_updates = 30;
-    DocumentChecksum document_checksum = 31;
-    Immutability immutability = 32;
-    DocumentSignature document_signature = 33;
+    RemoteAttestation remote_attestation = 30;
+    AutomaticUpdates automatic_updates = 31;
+    DocumentChecksum document_checksum = 32;
+    Immutability immutability = 33;
+    DocumentSignature document_signature = 34;
   }
 }
 
@@ -1985,9 +2006,10 @@ message VirtualMachine {
   repeated string network_interface_ids = 14;
   OSLogging os_logging = 15;
   repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  ResourceLogging resource_logging = 18;
-  UsageStatistics usage_statistics = 19;
+  RemoteAttestation remote_attestation = 17;
+  optional string parent_id = 18;
+  ResourceLogging resource_logging = 19;
+  UsageStatistics usage_statistics = 20;
 }
 
 // VirtualNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
