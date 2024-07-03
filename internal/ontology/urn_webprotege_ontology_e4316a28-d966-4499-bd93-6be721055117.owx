@@ -42,6 +42,9 @@
         <Class IRI="http://graph.clouditor.io/classes/AtRestEncryption"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/Auditing"/>
     </Declaration>
     <Declaration>
@@ -237,6 +240,9 @@
         <Class IRI="http://graph.clouditor.io/classes/LoadBalancer"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/LocalAttestation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
     </Declaration>
     <Declaration>
@@ -316,6 +322,9 @@
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/RelationalDatabaseService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
     </Declaration>
     <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
@@ -616,6 +625,9 @@
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/sessionCipher"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="http://graph.clouditor.io/classes/status"/>
     </Declaration>
     <Declaration>
         <DataProperty IRI="http://graph.clouditor.io/classes/zone"/>
@@ -990,6 +1002,17 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Integrity"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:enabled"/>
+            <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Auditing"/>
         <Class IRI="http://graph.clouditor.io/classes/SecurityFeature"/>
     </SubClassOf>
@@ -1233,6 +1256,13 @@
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/EncryptionInUse"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Compute"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -1922,6 +1952,10 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/LocalAttestation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
         <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
     </SubClassOf>
@@ -2254,6 +2288,24 @@
         <Class IRI="http://graph.clouditor.io/classes/DatabaseService"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/creation_time"/>
+            <Datatype abbreviatedIRI="xsd:dateTime"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://graph.clouditor.io/classes/status"/>
+            <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/RemoteDocumentLocation"/>
         <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
     </SubClassOf>
@@ -2405,13 +2457,6 @@
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/Immutability"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/Storage"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:offers"/>
-            <Class IRI="http://graph.clouditor.io/classes/Redundancy"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -3046,6 +3091,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/Attestation</IRI>
+        <Literal>Attestation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/Auditing</IRI>
         <Literal xml:lang="english">Auditing</Literal>
     </AnnotationAssertion>
@@ -3428,6 +3478,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/LoadBalancer</IRI>
         <Literal>LoadBalancer</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/LocalAttestation</IRI>
+        <Literal>LocalAttestation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4086,6 +4141,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/status</IRI>
+        <Literal>status</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/target</IRI>
         <Literal>target</Literal>
     </AnnotationAssertion>
@@ -4634,3 +4694,4 @@ name = metadata.name</Literal>
 
 
 <!-- Generated by the OWL API (version 4.5.13) https://github.com/owlcs/owlapi -->
+
