@@ -7,9 +7,10 @@
     "httpEndpoint": {
         "url": "clouditor.io",
         "transportEncryption": {
+            "protocolVersion": 1.2,
             "enabled": true,
-            "algorithm": "TLS",
-            "tlsVersion": "TLS1_2"
+            "enforced": true,
+            "protocol": "TLS"
         }
     }
 }
