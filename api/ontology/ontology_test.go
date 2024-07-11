@@ -117,8 +117,9 @@ func TestResourceMap(t *testing.T) {
 						"interval":     "172800s",
 						"securityOnly": false,
 					},
-					"type":            []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
-					"usageStatistics": nil,
+					"type":              []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+					"usageStatistics":   nil,
+					"remoteAttestation": nil,
 				}
 
 				return assert.Equal(t, want, got)

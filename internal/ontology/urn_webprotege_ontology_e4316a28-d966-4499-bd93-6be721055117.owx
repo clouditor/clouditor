@@ -240,6 +240,9 @@
         <Class IRI="http://graph.clouditor.io/classes/LoadBalancer"/>
     </Declaration>
     <Declaration>
+        <Class IRI="http://graph.clouditor.io/classes/LocalAttestation"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
     </Declaration>
     <Declaration>
@@ -1259,6 +1262,13 @@
         <Class IRI="http://graph.clouditor.io/classes/Compute"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/Compute"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/ResourceLogging"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
@@ -1942,6 +1952,10 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/LocalAttestation"/>
+        <Class IRI="http://graph.clouditor.io/classes/Attestation"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/LocalDocumentLocation"/>
         <Class IRI="http://graph.clouditor.io/classes/DocumentLocation"/>
     </SubClassOf>
@@ -2449,13 +2463,6 @@
         <Class IRI="http://graph.clouditor.io/classes/Storage"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
-            <Class IRI="http://graph.clouditor.io/classes/Redundancy"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/Storage"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/ResourceLogging"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
@@ -2568,13 +2575,6 @@
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class IRI="http://graph.clouditor.io/classes/OSLog"/>
-        </ObjectSomeValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/VirtualMachine"/>
-        <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:offers"/>
-            <Class IRI="http://graph.clouditor.io/classes/RemoteAttestation"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -3478,6 +3478,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <IRI>http://graph.clouditor.io/classes/LoadBalancer</IRI>
         <Literal>LoadBalancer</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>http://graph.clouditor.io/classes/LocalAttestation</IRI>
+        <Literal>LocalAttestation</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
