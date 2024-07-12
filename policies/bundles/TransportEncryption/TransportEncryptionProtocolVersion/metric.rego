@@ -1,4 +1,4 @@
-package clouditor.metrics.transport_encryption_protocol
+package clouditor.metrics.transport_encryption_protocol_version
 
 import data.clouditor.compare
 import input.transportEncryption as enc
@@ -12,5 +12,5 @@ applicable {
 }
 
 compliant {
-	compare(data.operator, data.target_value, enc.protocol)
+	compare(data.operator, data.target_value, enc.protocolVersion)
 }
