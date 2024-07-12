@@ -1,4 +1,4 @@
 {
-  "operator" : "==",
+  "operator" : ">=",
   "target_value" : 1.2
 }
