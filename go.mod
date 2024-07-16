@@ -7,14 +7,14 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-co-op/gocron v1.37.0
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/open-policy-agent/opa v0.65.0
+	github.com/open-policy-agent/opa v0.66.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -64,9 +64,9 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/stoewer/go-strcase v1.3.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8 // indirect
-	google.golang.org/grpc v1.64.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
+	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.1
 
 )
@@ -106,7 +106,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -141,26 +141,26 @@ require (
 
 // runtime dependencies (AWS)
 require (
-	github.com/aws/aws-sdk-go-v2 v1.30.0
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.30.3
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.27.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.15.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.12 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.15 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.15 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.165.1
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.14 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.14 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.55.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.56.1
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.13 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.170.0
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.15 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.13 // indirect
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.56.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.0
 	github.com/aws/aws-sdk-go-v2/service/sso v1.19.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.22.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.29.1
-	github.com/aws/smithy-go v1.20.2
+	github.com/aws/aws-sdk-go-v2/service/sts v1.30.1
+	github.com/aws/smithy-go v1.20.3
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 
 )
