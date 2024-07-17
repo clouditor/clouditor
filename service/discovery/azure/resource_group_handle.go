@@ -26,6 +26,7 @@
 package azure
 
 import (
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
@@ -41,6 +42,7 @@ func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) ont
 		GeoLocation: location(rg.Location),
 		Labels:      labels(rg.Tags),
 		ParentId:    d.sub.ID,
+		Raw:         discovery.Raw(rg),
 	}
 }
 
@@ -53,5 +55,6 @@ func (d *azureDiscovery) handleSubscription(s *armsubscription.Subscription) *on
 		GeoLocation:  nil, // subscriptions are global
 		Labels:       nil, // subscriptions do not have labels,
 		ParentId:     nil, // subscriptions are the top-most item and have no parent,
+		Raw:          discovery.Raw(s),
 	}
 }
