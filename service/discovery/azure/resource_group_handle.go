@@ -34,7 +34,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
 )
 
-// handleResourceGroup returns a [voc.Account] out of an existing [armsubscription.Subscription].
+// handleResourceGroup returns a [ontology.ResourceGroup] out of an existing [armresources.ResourceGroup].
 func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) ontology.IsResource {
 	return &ontology.ResourceGroup{
 		Id:          resourceID(rg.ID),
@@ -46,7 +46,7 @@ func (d *azureDiscovery) handleResourceGroup(rg *armresources.ResourceGroup) ont
 	}
 }
 
-// handleSubscription returns a [voc.Account] out of an existing [armsubscription.Subscription].
+// handleSubscription returns a [ontology.Account] out of an existing [armsubscription.Subscription].
 func (d *azureDiscovery) handleSubscription(s *armsubscription.Subscription) *ontology.Account {
 	return &ontology.Account{
 		Id:           resourceID(s.ID),
