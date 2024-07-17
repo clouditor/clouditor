@@ -104,66 +104,8 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	}
 	defer conn.Close()
 
-	// Deprecated
-
-	// Maybe complete outdated
-	// // Collecting integrity information from external service requires nonce
-	// // to avoid replay attacks
-	// nonce := make([]byte, 8)
-	// _, err = rand.Read(nonce)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to generate nonce: %w", err)
-	// }
-
-	// // Connection to CMC
-	// ctx, cancel := context.WithTimeout(context.Background(), timeoutSec*time.Second)
-	// conn, err := grpc.NewClient(d.CmcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	// if err != nil {
-	// 	log.Errorf("failed to connect: %w", err)
-	// 	cancel()
-	// 	return nil, nil
-	// }
-
-	// client := grpcapi.NewCMCServiceClient(conn)
-
-	// request := grpcapi.AttestationRequest{
-	// 	Nonce: nonce,
-	// }
-
-	// // Collect attestation report from CMC
-	// response, err := client.Attest(ctx, &request)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("gRPC Attest call failed: %w", err)
-	// }
-	// if response.GetStatus() != grpcapi.Status_OK {
-	// 	return nil, fmt.Errorf("gRPC Attest call returned status %w", response.GetStatus())
-	// }
-
-	// // Verify attestation report
-	// result, err := verifyAttestationReport(response.AttestationReport, nonce, capem)
-	// if err != nil {
-	// 	err = fmt.Errorf("verification failed: %v", err)
-	// 	log.Error(err)
-	// }
-
-	// r, err := handleReport(result)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("could not handle attestation report: %w", err)
-	// }
-
 	return list, nil
 }
-
-// Deprecated
-// func verifyAttestationReport(ar, nonce, capem []byte) (ar.VerificationResult, error) {
-
-// 	result := verify.Verify(ar, nonce, capem, nil, verify.PolicyEngineSelect_None, "")
-// 	if !result.Success {
-// 		return result, fmt.Errorf("verification of attestation report failed")
-// 	}
-
-// 	return result, nil
-// }
 
 func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 	raw, err := json.Marshal(result)
