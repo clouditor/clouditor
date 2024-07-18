@@ -650,16 +650,28 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 	var nonCompliantAssessmentResults = []string{}
 
 	for _, r := range results {
-		if (r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT ||
-			r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY) &&
-			(status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT &&
-				status != evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY) {
-			status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
-		} else if r.Status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING &&
-			status == evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING {
-			status = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
-		} else {
-			status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+		// status is the current evaluation status, r.Status is the current assessment result status
+		switch status {
+		case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
+			switch r.Status {
+			case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
+				// Evaluation status does not change
+			case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
+			case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
+			}
+		case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
+			switch r.Status {
+			case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
+				// valuation status does not change
+			case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
+				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
+			}
+		case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
+			// Evaluation status does not change if it is already not_compliant
 			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 		}
 	}
