@@ -65,6 +65,7 @@ func Test_azureResourceGroupDiscovery_handleSubscription(t *testing.T) {
 			want: &ontology.Account{
 				Id:   testdata.MockSubscriptionResourceID,
 				Name: "Wonderful Subscription",
+				Raw:  string(`{"*armsubscription.Subscription":[{"displayName":"Wonderful Subscription","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`),
 			},
 		},
 	}
@@ -118,6 +119,7 @@ func Test_azureResourceGroupDiscovery_handleResourceGroup(t *testing.T) {
 					"tag1Key": "tag1",
 				},
 				ParentId: util.Ref(testdata.MockSubscriptionResourceID),
+				Raw:      string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1","location":"westus","name":"res1","tags":{"tag1Key":"tag1","tag2Key":"tag2"}}]}`),
 			},
 		},
 	}
@@ -166,6 +168,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 				&ontology.Account{
 					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000",
 					Name: "displayName",
+					Raw:  string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`),
 				},
 				&ontology.ResourceGroup{
 					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
@@ -178,6 +181,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						"testKey2": "testTag2",
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`),
 				},
 				&ontology.ResourceGroup{
 					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res2",
@@ -190,6 +194,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						"testKey2": "testTag2",
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2","location":"eastus","name":"res2","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`),
 				},
 			},
 			wantErr: assert.NoError,
@@ -209,6 +214,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 				&ontology.Account{
 					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000",
 					Name: "displayName",
+					Raw:  string(`{"*armsubscription.Subscription":[{"displayName":"displayName","id":"/subscriptions/00000000-0000-0000-0000-000000000000","subscriptionId":"00000000-0000-0000-0000-000000000000"}]}`),
 				},
 				&ontology.ResourceGroup{
 					Id:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1",
@@ -221,6 +227,7 @@ func Test_azureResourceGroupDiscovery_discoverResourceGroups(t *testing.T) {
 						"testKey2": "testTag2",
 					},
 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000"),
+					Raw:      string(`{"*armresources.ResourceGroup":[{"id":"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1","location":"westus","name":"res1","tags":{"testKey1":"testTag1","testKey2":"testTag2"}}]}`),
 				},
 			},
 			wantErr: assert.NoError,
