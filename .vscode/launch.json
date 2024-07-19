@@ -60,7 +60,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine CCIT (in-memory, dashboard development redirect with Azure discovery)",
+            "name": "Launch engine CCIT Azure Discovery (in-memory, dashboard development redirect with Azure discovery)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -72,7 +72,23 @@
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
-                // "--discovery-resource-group=iais-cct4p1"
+            ],
+            "env": {},
+            "preLaunchTask": "go: generate"
+        },
+        {
+            "name": "Launch engine CCIT CMC Discovery (in-memory, dashboard development redirect with Azure discovery)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/engine",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--db-in-memory",
+                "--dashboard-url=http://localhost:5173",
+                "--api-cors-allowed-origins=http://localhost:5173",
+                "--discovery-auto-start",
+                "--discovery-provider=cmc",
             ],
             "env": {},
             "preLaunchTask": "go: generate"
