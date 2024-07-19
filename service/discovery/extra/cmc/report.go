@@ -107,13 +107,13 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	return list, nil
 }
 
+// TODO(anatheka): Maybe we should call this out of the handleVirtualMachine method.
 func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 	raw, err := json.Marshal(result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
 	}
 
-	// TODO(anatheka): Add Resource to Ontology
 	resource := &ontology.VirtualMachine{
 		Id:   result.Prover,
 		Name: result.Prover,
