@@ -967,10 +967,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Application"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:translationUnits"/>
-            <Literal>xsd:java.util.List&lt;de.fraunhofer.aisec.cpg.graph.declarations.TranslationUnitDeclaration&gt;</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:listString"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ApplicationLog"/>
@@ -1409,10 +1409,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/DatabaseOperation"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty IRI="http://graph.clouditor.io/classes/calls"/>
-            <Literal>xsd:java.util.List&lt;de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression&gt;</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:listString"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/DatabaseQuery"/>
@@ -1659,6 +1659,13 @@
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
         <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:handler"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:method"/>
             <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
@@ -1678,13 +1685,6 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://graph.clouditor.io/classes/HttpEndpoint"/>
-        <DataHasValue>
-            <DataProperty abbreviatedIRI="prop:handler"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.declarations.FunctionDeclaration</Literal>
-        </DataHasValue>
-    </SubClassOf>
-    <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/HttpRequest"/>
         <Class IRI="http://graph.clouditor.io/classes/Operation"/>
     </SubClassOf>
@@ -1697,17 +1697,17 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/HttpRequest"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty IRI="http://graph.clouditor.io/classes/reqBody"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/HttpRequest"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:call"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/HttpRequestHandler"/>
@@ -1983,17 +1983,17 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/LogOutput"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:call"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.statements.expressions.CallExpression</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/LogOutput"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:value"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.statements.expressions.Expression</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/Logger"/>
@@ -2219,10 +2219,10 @@
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ObjectStorageRequest"/>
-        <DataHasValue>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:source"/>
-            <Literal>xsd:de.fraunhofer.aisec.cpg.graph.Node</Literal>
-        </DataHasValue>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://graph.clouditor.io/classes/ObjectStorageService"/>

@@ -37,7 +37,7 @@ require (
 
 // runtime dependencies (logging)
 require (
-	github.com/lmittmann/tint v1.0.3 // indirect
+	github.com/lmittmann/tint v1.0.5 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.21.0 // indirect
@@ -56,18 +56,18 @@ require (
 
 // runtime dependencies (rpc)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240508200655-46a4cf4ba109.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
-	github.com/bufbuild/protovalidate-go v0.6.0
+	github.com/bufbuild/protovalidate-go v0.6.3
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.20.0 // indirect
+	github.com/google/cel-go v0.20.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 
 )
 
@@ -111,7 +111,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/text v0.16.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 
@@ -226,7 +226,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
-	github.com/oxisto/owl2proto v0.1.4
+	github.com/oxisto/owl2proto v0.2.0
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
@@ -235,6 +235,7 @@ require github.com/Fraunhofer-AISEC/cmc v0.7.0
 
 require (
 	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
+	github.com/alecthomas/kong v0.9.0 // indirect
 	github.com/dsnet/golib/memfile v1.0.0 // indirect
 	github.com/edgelesssys/ego v1.4.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
