@@ -650,27 +650,16 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 	var nonCompliantAssessmentResults = []string{}
 
 	for _, r := range results {
-		// status is the current evaluation status, r.Status is the current assessment result status
+		// status is the current evaluation status, r.Status is the status of the evaluation result of the subcontrol
+		// Note: Status should only contain the evaluation status without _MANUALLY!
 		switch status {
 		case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
-			switch r.Status {
-			case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
-				// Evaluation status does not change
-			case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
-				status = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
-			case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
-				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
-			}
-		case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
-			switch r.Status {
-			case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT:
-				// valuation status does not change
-			case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
-				status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-				nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
-			}
-		case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT:
+			// check the given evaluation result for the current evaluation status PENDING
+			status, nonCompliantAssessmentResults = handlePending(r)
+		case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY:
+			// check the given evaluation results for the current evaluation status COMPLIANT
+			status, nonCompliantAssessmentResults = handleCompliant(r)
+		case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 			// Evaluation status does not change if it is already not_compliant
 			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
 		}
@@ -906,6 +895,46 @@ func (svc *Service) getControl(catalogId, categoryName, controlId string) (contr
 	}
 
 	return
+}
+
+// handlePending evaluates the given evaluation result when the current control evaluation status is PENDING
+func handlePending(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus, []string) {
+	var (
+		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
+		failingAssessmentResult []string
+	)
+
+	switch er.Status {
+	case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING:
+		// Evaluation status does not change
+	case evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+		evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY:
+		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
+	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
+		evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
+		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
+	}
+
+	return evalStatus, failingAssessmentResult
+}
+
+// handleCompliant evaluates the given evaluation result when the current control evaluation status is COMPLIANT
+func handleCompliant(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus, []string) {
+	var (
+		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
+		failingAssessmentResult []string
+	)
+
+	switch er.Status {
+	case evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY:
+		// valuation status does not change
+	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
+		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
+		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
+	}
+
+	return evalStatus, failingAssessmentResult
 }
 
 // TODO(oxisto): We can remove it with maps.Values in Go 1.22+
