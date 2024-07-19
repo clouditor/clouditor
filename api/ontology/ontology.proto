@@ -37,7 +37,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "clouditor.io/clouditor/v2/api/ontology";
 
 extend google.protobuf.MessageOptions {
-  repeated string resource_type_names = 50000;
+  repeated string resource_type_names = 60000;
 }
 
 // ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
