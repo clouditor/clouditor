@@ -37,7 +37,7 @@ require (
 
 // runtime dependencies (logging)
 require (
-	github.com/lmittmann/tint v1.0.3 // indirect
+	github.com/lmittmann/tint v1.0.5 // indirect
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.21.0 // indirect
@@ -56,7 +56,7 @@ require (
 
 // runtime dependencies (rpc)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240717164558-a6c49f84cc0f.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/bufbuild/protovalidate-go v0.6.0
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -67,7 +67,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 
 )
 
@@ -226,7 +226,9 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
-	github.com/oxisto/owl2proto v0.1.4
+	github.com/oxisto/owl2proto v0.2.0
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
+
+require github.com/alecthomas/kong v0.9.0 // indirect
