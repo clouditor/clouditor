@@ -1,5 +1,5 @@
-buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240508200655-46a4cf4ba109.1 h1:kRV9TZNBU0FZwtpEMXNRTTLSPDgCMmI0CedJ2z4OM+A=
-buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240508200655-46a4cf4ba109.1/go.mod h1:bA3yUO1NvxekGLbOgvUaCBCATnJHy4UDBAygCPD7z/w=
+buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240717164558-a6c49f84cc0f.1 h1:YI2etUoG+vVBIwF06apmmPSJuOH0EasKkBmgxKnlMwQ=
+buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.0-20240717164558-a6c49f84cc0f.1/go.mod h1:bA3yUO1NvxekGLbOgvUaCBCATnJHy4UDBAygCPD7z/w=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.112.1 h1:uJSeirPke5UNZHIb4SxfZklVSiWWVqW4oXlETwZziwM=
 cloud.google.com/go/compute v1.24.0 h1:phWcR2eWzRJaL/kOiJwfFsPs4BaKq1j6vnpZrc1YlVg=
