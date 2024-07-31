@@ -37,7 +37,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "clouditor.io/clouditor/v2/api/ontology";
 
 extend google.protobuf.MessageOptions {
-  repeated string resource_type_names = 50000;
+  repeated string resource_type_names = 60000;
 }
 
 // ABAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -83,7 +83,7 @@ message ActivityLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  bool monitoring_enabled = 2;
+  bool monitoring_log_data_enabled = 2;
   google.protobuf.Duration retention_period = 3;
   bool security_alerts_enabled = 4;
   repeated string logging_service_ids = 5;
@@ -129,7 +129,7 @@ message ApplicationLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  bool monitoring_enabled = 2;
+  bool monitoring_log_data_enabled = 2;
   google.protobuf.Duration retention_period = 3;
   bool security_alerts_enabled = 4;
   repeated string logging_service_ids = 5;
@@ -140,6 +140,14 @@ message AtRestEncryption {
   oneof type {
     CustomerKeyEncryption customer_key_encryption = 1;
     ManagedKeyEncryption managed_key_encryption = 2;
+  }
+}
+
+// Attestation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Attestation {
+  oneof type {
+    LocalAttestation local_attestation = 1;
+    RemoteAttestation remote_attestation = 2;
   }
 }
 
@@ -188,7 +196,6 @@ message AutomaticUpdates {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 2;
   bool security_only = 3;
 }
@@ -213,7 +220,6 @@ message Backup {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 2;
   google.protobuf.Duration retention_period = 3;
   optional string storage_id = 4;
@@ -287,11 +293,10 @@ message BlockStorage {
   repeated Backup backups = 8;
   GeoLocation geo_location = 9;
   Immutability immutability = 10;
-  Redundancy redundancy = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  ResourceLogging resource_logging = 14;
-  UsageStatistics usage_statistics = 15;
+  repeated Redundancy redundancies = 11;
+  optional string parent_id = 12;
+  ResourceLogging resource_logging = 13;
+  UsageStatistics usage_statistics = 14;
 }
 
 // BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -302,7 +307,7 @@ message BootLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  bool monitoring_enabled = 2;
+  bool monitoring_log_data_enabled = 2;
   google.protobuf.Duration retention_period = 3;
   bool security_alerts_enabled = 4;
   repeated string logging_service_ids = 5;
@@ -454,9 +459,10 @@ message Container {
   optional string image_id = 9;
   repeated string network_interface_ids = 10;
   repeated Redundancy redundancies = 11;
-  optional string parent_id = 12;
-  ResourceLogging resource_logging = 13;
-  UsageStatistics usage_statistics = 14;
+  RemoteAttestation remote_attestation = 12;
+  optional string parent_id = 13;
+  ResourceLogging resource_logging = 14;
+  UsageStatistics usage_statistics = 15;
 }
 
 // ContainerImage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -622,11 +628,10 @@ message DatabaseStorage {
   repeated Backup backups = 8;
   GeoLocation geo_location = 9;
   Immutability immutability = 10;
-  Redundancy redundancy = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  ResourceLogging resource_logging = 14;
-  UsageStatistics usage_statistics = 15;
+  repeated Redundancy redundancies = 11;
+  optional string parent_id = 12;
+  ResourceLogging resource_logging = 13;
+  UsageStatistics usage_statistics = 14;
 }
 
 // DeviceProvisioningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -736,11 +741,10 @@ message FileStorage {
   repeated Backup backups = 9;
   GeoLocation geo_location = 10;
   Immutability immutability = 11;
-  Redundancy redundancy = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  ResourceLogging resource_logging = 15;
-  UsageStatistics usage_statistics = 16;
+  repeated Redundancy redundancies = 12;
+  optional string parent_id = 13;
+  ResourceLogging resource_logging = 14;
+  UsageStatistics usage_statistics = 15;
 }
 
 // FileStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -812,9 +816,10 @@ message Function {
   GeoLocation geo_location = 10;
   repeated string network_interface_ids = 11;
   repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  ResourceLogging resource_logging = 14;
-  UsageStatistics usage_statistics = 15;
+  RemoteAttestation remote_attestation = 13;
+  optional string parent_id = 14;
+  ResourceLogging resource_logging = 15;
+  UsageStatistics usage_statistics = 16;
 }
 
 // FunctionService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1039,10 +1044,12 @@ message Immutability {
 // Integrity is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Integrity {
   oneof type {
-    AutomaticUpdates automatic_updates = 1;
-    DocumentChecksum document_checksum = 2;
-    Immutability immutability = 3;
-    DocumentSignature document_signature = 4;
+    LocalAttestation local_attestation = 1;
+    RemoteAttestation remote_attestation = 2;
+    AutomaticUpdates automatic_updates = 3;
+    DocumentChecksum document_checksum = 4;
+    Immutability immutability = 5;
+    DocumentSignature document_signature = 6;
   }
 }
 
@@ -1210,6 +1217,16 @@ message LoadBalancer {
   UsageStatistics usage_statistics = 20;
 }
 
+// LocalAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message LocalAttestation {
+  option (resource_type_names) = "LocalAttestation";
+  option (resource_type_names) = "Attestation";
+  option (resource_type_names) = "Integrity";
+  option (resource_type_names) = "SecurityFeature";
+
+  bool enabled = 1;
+}
+
 // LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message LocalDocumentLocation {
   option (resource_type_names) = "LocalDocumentLocation";
@@ -1295,7 +1312,7 @@ message MalwareProtection {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  google.protobuf.Duration days_since_active = 1;
+  google.protobuf.Duration duration_since_active = 1;
   bool enabled = 2;
   int32 number_of_threats_found = 3;
   ApplicationLogging application_logging = 4;
@@ -1476,7 +1493,7 @@ message OSLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  bool monitoring_enabled = 2;
+  bool monitoring_log_data_enabled = 2;
   google.protobuf.Duration retention_period = 3;
   bool security_alerts_enabled = 4;
   repeated string logging_service_ids = 5;
@@ -1511,11 +1528,10 @@ message ObjectStorage {
   repeated Backup backups = 9;
   GeoLocation geo_location = 10;
   Immutability immutability = 11;
-  Redundancy redundancy = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  ResourceLogging resource_logging = 15;
-  UsageStatistics usage_statistics = 16;
+  repeated Redundancy redundancies = 12;
+  optional string parent_id = 13;
+  ResourceLogging resource_logging = 14;
+  UsageStatistics usage_statistics = 15;
 }
 
 // ObjectStorageRequest is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1653,6 +1669,18 @@ message RelationalDatabaseService {
   UsageStatistics usage_statistics = 20;
 }
 
+// RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message RemoteAttestation {
+  option (resource_type_names) = "RemoteAttestation";
+  option (resource_type_names) = "Attestation";
+  option (resource_type_names) = "Integrity";
+  option (resource_type_names) = "SecurityFeature";
+
+  google.protobuf.Timestamp creation_time = 1;
+  bool enabled = 2;
+  bool status = 3;
+}
+
 // RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RemoteDocumentLocation {
   option (resource_type_names) = "RemoteDocumentLocation";
@@ -1691,7 +1719,7 @@ message ResourceLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
-  bool monitoring_enabled = 2;
+  bool monitoring_log_data_enabled = 2;
   google.protobuf.Duration retention_period = 3;
   bool security_alerts_enabled = 4;
   repeated string logging_service_ids = 5;
@@ -1846,10 +1874,12 @@ message SecurityFeature {
     ManagedKeyEncryption managed_key_encryption = 27;
     EncryptionInUse encryption_in_use = 28;
     TransportEncryption transport_encryption = 29;
-    AutomaticUpdates automatic_updates = 30;
-    DocumentChecksum document_checksum = 31;
-    Immutability immutability = 32;
-    DocumentSignature document_signature = 33;
+    LocalAttestation local_attestation = 30;
+    RemoteAttestation remote_attestation = 31;
+    AutomaticUpdates automatic_updates = 32;
+    DocumentChecksum document_checksum = 33;
+    Immutability immutability = 34;
+    DocumentSignature document_signature = 35;
   }
 }
 
@@ -1985,9 +2015,10 @@ message VirtualMachine {
   repeated string network_interface_ids = 14;
   OSLogging os_logging = 15;
   repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  ResourceLogging resource_logging = 18;
-  UsageStatistics usage_statistics = 19;
+  RemoteAttestation remote_attestation = 17;
+  optional string parent_id = 18;
+  ResourceLogging resource_logging = 19;
+  UsageStatistics usage_statistics = 20;
 }
 
 // VirtualNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
