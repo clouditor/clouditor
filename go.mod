@@ -95,6 +95,7 @@ require (
 
 // runtime dependencies (config, cli)
 require (
+	github.com/alecthomas/kong v0.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -210,6 +211,13 @@ require (
 
 )
 
+// runtime dependencies (extra-cmc)
+require (
+	github.com/Fraunhofer-AISEC/cmc v0.7.1
+	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
+
+)
+
 // testing dependencies (core)
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -232,12 +240,6 @@ require (
 )
 
 require (
-	github.com/Fraunhofer-AISEC/cmc v0.7.1
-	github.com/alecthomas/kong v0.9.0 // indirect
-)
-
-require (
-	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
 	github.com/dsnet/golib/memfile v1.0.0 // indirect
 	github.com/edgelesssys/ego v1.4.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect

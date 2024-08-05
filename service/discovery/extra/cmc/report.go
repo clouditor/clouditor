@@ -50,7 +50,6 @@ const (
 func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	var (
 		list []ontology.IsResource
-		ca   = []byte{}
 	)
 
 	// Read CA from filesystem
@@ -133,7 +132,7 @@ func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 func timestamp(t string) *timestamppb.Timestamp {
 	time, err := time.Parse(time.RFC3339, t)
 	if err != nil {
-		log.Errorf("could not convert time string to timestamppb: w", err)
+		log.Errorf("could not convert time string to timestamppb: v", err)
 		return &timestamppb.Timestamp{}
 	}
 
