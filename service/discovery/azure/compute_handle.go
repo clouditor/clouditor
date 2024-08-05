@@ -89,18 +89,18 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
-			Enabled:               isBootDiagnosticEnabled(vm),
-			LoggingServiceIds:     bootLogging,
-			RetentionPeriod:       durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: securityAlertsEnabled,
+			Enabled:                  isBootDiagnosticEnabled(vm),
+			LoggingServiceIds:        bootLogging,
+			RetentionPeriod:          durationpb.New(0), // Currently, configuring the retention period for Managed Boot Diagnostics is not available. The logs will be overwritten after 1gb of space according to https://github.com/MicrosoftDocs/azure-docs/issues/69953
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
 		OsLogging: &ontology.OSLogging{
-			Enabled:               osLoggingEnabled,
-			RetentionPeriod:       durationpb.New(0),
-			LoggingServiceIds:     []string{}, // TODO(all): TBD
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: monitoringLogDataEnabled,
+			Enabled:                  osLoggingEnabled,
+			RetentionPeriod:          durationpb.New(0),
+			LoggingServiceIds:        []string{}, // TODO(all): TBD
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    monitoringLogDataEnabled,
 		},
 		ActivityLogging: &ontology.ActivityLogging{
 			Enabled:           true, // is always enabled

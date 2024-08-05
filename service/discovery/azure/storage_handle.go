@@ -225,8 +225,8 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 		ParentId:     resourceID2(account.ID),                       // the storage account is our parent
 		Raw:          discovery.Raw(account, fileshare),
 		ResourceLogging: &ontology.ResourceLogging{
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: securityAlertsEnabled,
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
 		AtRestEncryption: enc,
 	}, nil
@@ -276,8 +276,8 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 			Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),
 		},
 		ResourceLogging: &ontology.ResourceLogging{
-			MonitoringEnabled:     monitoringLogDataEnabled,
-			SecurityAlertsEnabled: securityAlertsEnabled,
+			MonitoringLogDataEnabled: monitoringLogDataEnabled,
+			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
 		Backups:      backups,
 		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,

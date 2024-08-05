@@ -111,6 +111,7 @@ func TestResourceMap(t *testing.T) {
 					"osLogging":                  nil,
 					"raw":                        "",
 					"redundancies":               []any{},
+					"remoteAttestation":          nil,
 					"resourceLogging":            nil,
 					"automaticUpdates": map[string]any{
 						"enabled":      false,
