@@ -316,10 +316,6 @@ github.com/open-policy-agent/opa v0.67.0/go.mod h1:aqKlHc8E2VAAylYE9x09zJYr/fYzG
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/oxisto/oauth2go v0.14.0 h1:VjMJCBC3TxnXPEANWWsZudKlGYh06YgBl49fb5JhavM=
 github.com/oxisto/oauth2go v0.14.0/go.mod h1:8mUk9Gsrh4xgzrVLsliSGi/X3+ZQkXztfK+dpdAkRZM=
-github.com/oxisto/owl2proto v0.2.0 h1:nkYfc1spE6P6HGbd9Jg0E1Jyx84svrOnAM/PFxaKhSs=
-github.com/oxisto/owl2proto v0.2.0/go.mod h1:U1q1xFOfqagvgSn9SuTVPcnubnNUd0VG0qn/1WG8370=
-github.com/oxisto/owl2proto v0.2.1-0.20240731143500-294278808520 h1:y4oN0LHoiv0VDYCc0OaFNSd9nDz/ExZLoZTS9t38KcA=
-github.com/oxisto/owl2proto v0.2.1-0.20240731143500-294278808520/go.mod h1:U1q1xFOfqagvgSn9SuTVPcnubnNUd0VG0qn/1WG8370=
 github.com/oxisto/owl2proto v0.2.1 h1:/ZRvY/jqezC8JprKhP/XRYhgIvOVhu2F3AVWqrWllNc=
 github.com/oxisto/owl2proto v0.2.1/go.mod h1:U1q1xFOfqagvgSn9SuTVPcnubnNUd0VG0qn/1WG8370=
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=
