@@ -226,7 +226,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
-	github.com/oxisto/owl2proto v0.2.1-0.20240731143500-294278808520
+	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
