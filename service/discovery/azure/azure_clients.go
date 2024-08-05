@@ -36,6 +36,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -208,6 +209,13 @@ func (d *azureDiscovery) initVirtualMachinesClient() (err error) {
 // initWebAppsClient creates the client if not already exists
 func (d *azureDiscovery) initWebAppsClient() (err error) {
 	d.clients.webAppsClient, err = initClient(d.clients.webAppsClient, d, armappservice.NewWebAppsClient)
+
+	return
+}
+
+// initMachineLearningClient creates the client if not already exists
+func (d *azureDiscovery) initMachineLearningClient() (err error) {
+	d.clients.mlWorkspaceClient, err = initClient(d.clients.mlWorkspaceClient, d, armmachinelearning.NewWorkspacesClient)
 
 	return
 }
