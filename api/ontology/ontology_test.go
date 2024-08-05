@@ -111,15 +111,15 @@ func TestResourceMap(t *testing.T) {
 					"osLogging":                  nil,
 					"raw":                        "",
 					"redundancies":               []any{},
+					"remoteAttestation":          nil,
 					"resourceLogging":            nil,
 					"automaticUpdates": map[string]any{
 						"enabled":      false,
 						"interval":     "172800s",
 						"securityOnly": false,
 					},
-					"type":              []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
-					"usageStatistics":   nil,
-					"remoteAttestation": nil,
+					"type":            []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+					"usageStatistics": nil,
 				}
 
 				return assert.Equal(t, want, got)
