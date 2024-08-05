@@ -198,7 +198,7 @@ func Test_regoEval_Eval(t *testing.T) {
 					},
 					MalwareProtection: &ontology.MalwareProtection{
 						Enabled:              true,
-						DaysSinceActive:      durationpb.New(time.Hour * 24 * 5),
+						DurationSinceActive:  durationpb.New(time.Hour * 24 * 5),
 						NumberOfThreatsFound: 5,
 						ApplicationLogging: &ontology.ApplicationLogging{
 							Enabled:           true,
