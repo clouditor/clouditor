@@ -234,6 +234,7 @@ require (
 require github.com/Fraunhofer-AISEC/cmc v0.7.0
 
 require (
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0
 	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
 	github.com/alecthomas/kong v0.9.0 // indirect
 	github.com/dsnet/golib/memfile v1.0.0 // indirect
