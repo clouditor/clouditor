@@ -25,7 +25,11 @@
 
 package util
 
-import "time"
+import (
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
 
 // SafeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
 func SafeTimestamp(t *time.Time) int64 {
@@ -38,4 +42,14 @@ func SafeTimestamp(t *time.Time) int64 {
 	}
 
 	return t.Unix()
+}
+
+// Timestamp converts a Timestamp string to a timestamppb.Timestamp
+func Timestamp(t string) *timestamppb.Timestamp {
+	time, err := time.Parse(time.RFC3339, t)
+	if err != nil {
+		return &timestamppb.Timestamp{}
+	}
+
+	return timestamppb.New(time)
 }
