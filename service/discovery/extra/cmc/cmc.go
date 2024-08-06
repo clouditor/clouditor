@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,33 +23,63 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package cmc
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/config"
+	"github.com/sirupsen/logrus"
 )
 
-// SafeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
-func SafeTimestamp(t *time.Time) int64 {
-	if t == nil {
-		return 0
-	}
+var log *logrus.Entry
 
-	if t.IsZero() {
-		return 0
-	}
-
-	return t.Unix()
+func init() {
+	log = logrus.WithField("component", "cmc-discovery")
 }
 
-// Timestamp converts a Timestamp string to a timestamppb.Timestamp
-func Timestamp(t string) *timestamppb.Timestamp {
-	time, err := time.Parse(time.RFC3339, t)
-	if err != nil {
-		return &timestamppb.Timestamp{}
+type cmcDiscovery struct {
+	// CloudServiceID
+	csID string
+
+	// CMC Addr
+	cmcAddr string
+
+	// ca pem path, should be removed or changed in future, just for testing
+	capemPath string
+}
+
+type DiscoveryOption func(a *cmcDiscovery)
+
+func (*cmcDiscovery) Name() string {
+	return "CMC Discovery"
+}
+
+func (*cmcDiscovery) Description() string {
+	return "Discovery attestation reports from CMC"
+}
+
+func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
+	d := &cmcDiscovery{
+		csID:      config.DefaultCloudServiceID,
+		cmcAddr:   addr,
+		capemPath: "local/certificate_remote_attestation.pem",
 	}
 
-	return timestamppb.New(time)
+	// Apply options
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	return d
+}
+
+func (a *cmcDiscovery) CloudServiceID() string {
+	return a.csID
+}
+
+func (d *cmcDiscovery) List() (list []ontology.IsResource, err error) {
+	log.Infof("Fetching attestation reports from CMC %s", d.cmcAddr)
+
+	return d.discoverReports()
 }

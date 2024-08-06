@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_SafeTimestamp(t *testing.T) {
@@ -68,6 +69,44 @@ func Test_SafeTimestamp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, SafeTimestamp(tt.args.t))
+		})
+	}
+}
+
+func TestTimestamp(t *testing.T) {
+	type args struct {
+		t string
+	}
+	tests := []struct {
+		name string
+		args args
+		want assert.Want[*timestamppb.Timestamp]
+	}{
+		{
+			name: "empty input",
+			args: args{},
+			want: func(t *testing.T, got *timestamppb.Timestamp) bool {
+				return assert.Equal(t, &timestamppb.Timestamp{}, got)
+			},
+		},
+		{
+			name: "Happy path",
+			args: args{
+				t: "2024-08-06T09:39:25Z",
+			},
+			want: func(t *testing.T, got *timestamppb.Timestamp) bool {
+				time, err := time.Parse(time.RFC3339, "2024-08-06T09:39:25Z")
+				assert.NoError(t, err)
+
+				return assert.Equal(t, timestamppb.New(time), got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Timestamp(tt.args.t)
+
+			tt.want(t, got)
 		})
 	}
 }
