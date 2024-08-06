@@ -44,6 +44,9 @@ type cmcDiscovery struct {
 
 	// CMC Addr
 	cmcAddr string
+
+	// ca pem path, should be removed or changed in future, just for testing
+	capemPath string
 }
 
 type DiscoveryOption func(a *cmcDiscovery)
@@ -58,8 +61,9 @@ func (*cmcDiscovery) Description() string {
 
 func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
 	d := &cmcDiscovery{
-		csID:    config.DefaultCloudServiceID,
-		cmcAddr: addr,
+		csID:      config.DefaultCloudServiceID,
+		cmcAddr:   addr,
+		capemPath: "local/certificate_remote_attestation.pem",
 	}
 
 	// Apply options
