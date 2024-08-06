@@ -31,6 +31,8 @@ import (
 
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/util"
+	ar "github.com/Fraunhofer-AISEC/cmc/attestationreport"
 )
 
 func Test_cmcDiscovery_discoverReports(t *testing.T) {
@@ -90,6 +92,57 @@ func Test_cmcDiscovery_discoverReports(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("cmcDiscovery.discoverReports() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_handleReport(t *testing.T) {
+	timestamp := "2024-08-06T09:39:25Z"
+	prover := "testProver"
+
+	type args struct {
+		result ar.VerificationResult
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    assert.Want[*ontology.VirtualMachine]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "empty input",
+			args: args{
+				result: ar.VerificationResult{
+					Prover:  prover,
+					Created: timestamp,
+					Success: true,
+				},
+			},
+			want: func(t *testing.T, got *ontology.VirtualMachine) bool {
+				// We only check if the raw field is not empty and delete it for further testing.
+				assert.NotEmpty(t, got.Raw)
+				got.Raw = ""
+
+				want := &ontology.VirtualMachine{
+					Id:   prover,
+					Name: prover,
+					RemoteAttestation: &ontology.RemoteAttestation{
+						Enabled:      true,
+						Status:       true,
+						CreationTime: util.Timestamp(timestamp),
+					},
+				}
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := handleReport(tt.args.result)
+
+			tt.wantErr(t, err)
+			tt.want(t, got)
 		})
 	}
 }
