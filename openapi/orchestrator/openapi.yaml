@@ -1592,6 +1592,10 @@ components:
                 Represents an external tool or service that offers assessments according to
                  certain metrics.
         Catalog:
+            required:
+                - id
+                - name
+                - shortName
             type: object
             properties:
                 id:
@@ -1631,6 +1635,9 @@ components:
                     type: string
                     description: a color for the cloud service used by the UI
         Category:
+            required:
+                - name
+                - catalogId
             type: object
             properties:
                 name:
@@ -1672,6 +1679,9 @@ components:
                     description: A list of states at specific times
             description: An ISO17021-based certificate
         CloudService:
+            required:
+                - id
+                - name
             type: object
             properties:
                 id:
@@ -1712,6 +1722,11 @@ components:
                     type: string
                     description: an icon for the cloud service used by the UI
         Control:
+            required:
+                - id
+                - categoryName
+                - categoryCatalogId
+                - name
             type: object
             properties:
                 id:
@@ -1830,6 +1845,8 @@ components:
                 nextPageToken:
                     type: string
         ListCloudServicesResponse:
+            required:
+                - services
             type: object
             properties:
                 services:
@@ -2074,6 +2091,9 @@ components:
                  custom unary RPC and therefore requires a response message according to the
                  style convention. Since no return values are required, this is empty.
         TargetOfEvaluation:
+            required:
+                - cloudServiceId
+                - catalogId
             type: object
             properties:
                 cloudServiceId:

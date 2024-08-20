@@ -31,6 +31,7 @@ import "api/assessment/metric.proto";
 import "api/runtime/runtime.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -291,7 +292,7 @@ service Orchestrator {
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/controls"
-      additional_bindings {get:
+      additional_bindings: {get:
           "/v1/orchestrator/catalogs/{catalog_id}/categories/"
           "{category_name}/controls"
 }
@@ -329,8 +330,8 @@ service Orchestrator {
   rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/toes"
-      additional_bindings {get: "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"}
-      additional_bindings {get: "/v1/orchestrator/catalogs/{catalog_id}/toes"}
+      additional_bindings: {get: "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"}
+      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/toes"}
     };
   }
 
@@ -466,7 +467,7 @@ message ListCloudServicesRequest {
   bool asc = 13;
 }
 message ListCloudServicesResponse {
-  repeated CloudService services = 1;
+  repeated CloudService services = 1 [(google.api.field_behavior) = REQUIRED];
   string next_page_token = 2;
 }
 
@@ -560,10 +561,14 @@ message AssessmentTool {
 message CloudService {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
+    (buf.validate.field).ignore_empty = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
-  string name = 2 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   string description = 3;
 
@@ -596,9 +601,15 @@ message CloudService {
 }
 
 message Catalog {
-  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string id = 1 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
-  string name = 2 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   string description = 3;
 
@@ -617,7 +628,7 @@ message Catalog {
   repeated string assurance_levels = 7 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // Catalogs short name, e.g. EUCS
-  string short_name = 9;
+  string short_name = 9 [(google.api.field_behavior) = REQUIRED];
 
   message Metadata {
     // a color for the cloud service used by the UI
@@ -631,13 +642,15 @@ message Catalog {
 message Category {
   string name = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // Reference to the catalog this category belongs to.
   string catalog_id = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   string description = 3;
@@ -660,19 +673,25 @@ message Control {
   // unique ID!
   string id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
   string category_name = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
   string category_catalog_id = 3 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // Human-readable name of the control
-  string name = 4 [(buf.validate.field).string.min_len = 1];
+  string name = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Description of the control
   string description = 5;
@@ -711,11 +730,13 @@ message Control {
 message TargetOfEvaluation {
   string cloud_service_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.uuid = true
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
   ];
   string catalog_id = 2 [
     (tagger.tags) = "gorm:\"primaryKey\"",
-    (buf.validate.field).string.min_len = 1
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // an assurance level is not offered by every catalog, therefore it is
