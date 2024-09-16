@@ -67,7 +67,7 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Check if cloud_service_id in assessment_result is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in assessment_result is within allowed or one can access *all* the cloud services
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
@@ -112,7 +112,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * tool ID
 	if req.Filter != nil {
 		if req.Filter.CertificationTargetId != nil {
-			query = append(query, "cloud_service_id = ?")
+			query = append(query, "certification_target_id = ?")
 			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Compliant != nil {
@@ -132,7 +132,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// In any case, we need to make sure that we only select assessment results of cloud services that we have access to
 	// (if we do not have access to all)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 

@@ -86,7 +86,7 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 	}
 
 	response = new(orchestrator.TargetOfEvaluation)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "cloud_service_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
+	err = svc.storage.Get(response, gorm.WithoutPreload(), "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {
@@ -110,9 +110,9 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Either the cloud_service_id or the catalog_id is set and the conds are added accordingly.
+	// Either the certification_target_id or the catalog_id is set and the conds are added accordingly.
 	if req.GetCertificationTargetId() != "" {
-		conds = append(conds, "cloud_service_id = ?", req.CertificationTargetId)
+		conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
 	} else if req.GetCatalogId() != "" {
 		conds = append(conds, "catalog_id = ?", req.CatalogId)
 	}
@@ -140,7 +140,7 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 
 	res = req.TargetOfEvaluation
 
-	err = svc.storage.Update(res, "cloud_service_id = ? AND catalog_id = ?", req.TargetOfEvaluation.GetCertificationTargetId(), req.TargetOfEvaluation.GetCatalogId())
+	err = svc.storage.Update(res, "certification_target_id = ? AND catalog_id = ?", req.TargetOfEvaluation.GetCertificationTargetId(), req.TargetOfEvaluation.GetCatalogId())
 
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Error(codes.NotFound, "ToE not found")
@@ -170,7 +170,7 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "cloud_service_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
+	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "ToE not found")
 	} else if err != nil {

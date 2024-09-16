@@ -313,7 +313,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		return nil, err
 	}
 
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the cloud services
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -494,13 +494,13 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	// * resource type
 	// * tool ID
 	if req.Filter != nil {
-		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		// Check if certification_target_id in filter is within allowed or one can access *all* the cloud services
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
 		if req.Filter.CertificationTargetId != nil {
-			query = append(query, "cloud_service_id = ?")
+			query = append(query, "certification_target_id = ?")
 			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Type != nil {
@@ -519,7 +519,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	//  and once above in CheckAccess.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 

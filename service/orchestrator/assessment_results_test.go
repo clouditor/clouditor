@@ -84,7 +84,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			},
 		},
 		{
-			name: "permission denied because of non authorized cloud_service_id",
+			name: "permission denied because of non authorized certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
@@ -151,7 +151,7 @@ func TestService_GetAssessmentResult(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path with allowed cloud_service_id",
+			name: "Happy path with allowed certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))

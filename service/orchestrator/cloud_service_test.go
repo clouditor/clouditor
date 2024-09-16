@@ -68,7 +68,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 			req:  &orchestrator.RegisterCertificationTargetRequest{},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service: value is required") &&
+				return assert.ErrorContains(t, err, "certification_target: value is required") &&
 					assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
 		},
@@ -77,7 +77,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 			req:  &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{}},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service.name: value length must be at least 1 characters") &&
+				return assert.ErrorContains(t, err, "certification_target.name: value length must be at least 1 characters") &&
 					assert.Equal(t, codes.InvalidArgument, status.Code(err))
 			},
 		},

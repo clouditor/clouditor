@@ -38,7 +38,7 @@ type PayloadRequest = api.PayloadRequest
 // reference to a cloud service.
 //
 // Note: GetCertificationTargetId() is already implemented by the generated protobuf
-// code for the following messages because they directly have a cloud_service id
+// code for the following messages because they directly have a certification_target id
 // field:
 //   - orchestrator.RemoveControlFromScopeRequest
 //   - orchestrator.ListControlsInScopeRequest

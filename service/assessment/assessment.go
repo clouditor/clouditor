@@ -258,7 +258,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the cloud services
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		log.Error(service.ErrPermissionDenied)
 		return nil, service.ErrPermissionDenied

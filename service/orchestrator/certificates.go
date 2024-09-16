@@ -93,7 +93,7 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -202,7 +202,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 func (svc *Service) checkAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND cloud_service_id IN ?",
+		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
 			req.CertificateId, allowed)
 		if err != nil {
 			return status.Errorf(codes.Internal, "database error: %v", err)

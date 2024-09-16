@@ -1403,7 +1403,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUI")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUI")
 			},
 		},
 		{
@@ -1426,7 +1426,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1487,7 +1487,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "configuration.cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "configuration.certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -1510,7 +1510,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			},
 			want: assert.Nil[*assessment.MetricConfiguration],
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value must be a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value must be a valid UUID")
 			},
 		},
 		{
@@ -1585,7 +1585,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			wantErr: assert.NoError,
 			wantSvc: func(t *testing.T, got *Service) bool {
 				var config *assessment.MetricConfiguration
-				err := got.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCertificationTargetID1, testdata.MockMetricID1)
+				err := got.storage.Get(&config, persistence_gorm.WithoutPreload(), "certification_target_id = ? AND metric_id = ?", testdata.MockCertificationTargetID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -1627,7 +1627,7 @@ func TestService_UpdateMetricConfiguration(t *testing.T) {
 			wantErr: assert.NoError,
 			wantSvc: func(t *testing.T, got *Service) bool {
 				var config *assessment.MetricConfiguration
-				err := got.storage.Get(&config, persistence_gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", testdata.MockCertificationTargetID1, testdata.MockMetricID1)
+				err := got.storage.Get(&config, persistence_gorm.WithoutPreload(), "certification_target_id = ? AND metric_id = ?", testdata.MockCertificationTargetID1, testdata.MockMetricID1)
 				if !assert.NoError(t, err) {
 					return false
 				}

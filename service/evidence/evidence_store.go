@@ -230,7 +230,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
 		if CertificationTargetId := filter.GetCertificationTargetId(); CertificationTargetId != "" {
-			query = append(query, "cloud_service_id = ?")
+			query = append(query, "certification_target_id = ?")
 			args = append(args, CertificationTargetId)
 		}
 		if toolId := filter.GetToolId(); toolId != "" {
@@ -241,7 +241,7 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// In any case, we need to make sure that we only select evidences of cloud services that we have access to
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -274,7 +274,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 	// conditions to our storage request, if we are allowed to see all cloud services.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		conds = []any{"id = ? AND cloud_service_id IN ?", req.EvidenceId, allowed}
+		conds = []any{"id = ? AND certification_target_id IN ?", req.EvidenceId, allowed}
 	} else {
 		conds = []any{"id = ?", req.EvidenceId}
 	}

@@ -231,7 +231,7 @@ func TestService_StoreEvidences(t *testing.T) {
 			wantErr: false,
 			wantResMessage: &evidence.StoreEvidencesResponse{
 				Status:        false,
-				StatusMessage: "evidence.cloud_service_id: value must be a valid UUID",
+				StatusMessage: "evidence.certification_target_id: value must be a valid UUID",
 			},
 		},
 		{
@@ -345,7 +345,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Only Cloud_Service_Id filter applied, when Tool_Id filter off",
+			name: "Only certification_target_Id filter applied, when Tool_Id filter off",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -376,7 +376,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Only Tool_Id filter applied, when Cloud_Service_Id filter off",
+			name: "Only Tool_Id filter applied, when certification_target_Id filter off",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(true),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -460,7 +460,7 @@ func TestService_ListEvidences(t *testing.T) {
 			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
 		},
 		{
-			name: "Wrong Input handled correctly (cloud_service_id not UUID)",
+			name: "Wrong Input handled correctly (certification_target_id not UUID)",
 			args: args{
 				in0: nil,
 				req: &evidence.ListEvidencesRequest{

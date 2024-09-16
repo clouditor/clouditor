@@ -243,7 +243,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUID ")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID ")
 			},
 		},
 		{
@@ -365,7 +365,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-	assert.ErrorContains(t, err, "target_of_evaluation.cloud_service_id: value is empty, which is not a valid UUID")
+	assert.ErrorContains(t, err, "target_of_evaluation.certification_target_id: value is empty, which is not a valid UUID")
 
 	// 3rd case: ToE not found since there are no ToEs
 	_, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{

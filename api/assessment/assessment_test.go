@@ -200,7 +200,7 @@ func Test_ValidateAssessmentResult(t *testing.T) {
 			},
 			wantResp: "",
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "metric_configuration.cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "metric_configuration.certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{

@@ -180,7 +180,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Filter latest_by_control_id, control_id, sub_controls, cloud_service_id",
+			name: "Filter latest_by_control_id, control_id, sub_controls, certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -328,7 +328,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter cloud_service_id",
+			name: "Filter certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -571,7 +571,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -685,7 +685,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
