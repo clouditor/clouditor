@@ -125,40 +125,40 @@ service Orchestrator {
     option (google.api.http) = {delete: "/v1/orchestrator/metrics/{metric_id}"};
   }
 
-  // Registers a new target cloud service
-  rpc RegisterCloudService(RegisterCloudServiceRequest) returns (CloudService) {
+  // Registers a new target certification target
+  rpc RegisterCertificationTarget(RegisterCertificationTargetRequest) returns (CertificationTarget) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/cloud_services"
-      body: "cloud_service"
+      post: "/v1/orchestrator/certification_targets"
+      body: "certification_target"
     };
   }
 
-  // Registers a new target cloud service
-  rpc UpdateCloudService(UpdateCloudServiceRequest) returns (CloudService) {
+  // Registers a new target certification target
+  rpc UpdateCertificationTarget(UpdateCertificationTargetRequest) returns (CertificationTarget) {
     option (google.api.http) = {
-      put: "/v1/orchestrator/cloud_services/{cloud_service.id}"
-      body: "cloud_service"
+      put: "/v1/orchestrator/certification_targets/{certification_target.id}"
+      body: "certification_target"
     };
   }
 
-  // Retrieves a target cloud service
-  rpc GetCloudService(GetCloudServiceRequest) returns (CloudService) {
-    option (google.api.http) = {get: "/v1/orchestrator/cloud_services/{cloud_service_id}"};
+  // Retrieves a target certification target
+  rpc GetCertificationTarget(GetCertificationTargetRequest) returns (CertificationTarget) {
+    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
-  // Lists all target cloud services
-  rpc ListCloudServices(ListCloudServicesRequest) returns (ListCloudServicesResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/cloud_services"};
+  // Lists all target certification targets
+  rpc ListCertificationTargets(ListCertificationTargetsRequest) returns (ListCertificationTargetsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/certification_targets"};
   }
 
-  // Removes a target cloud service
-  rpc RemoveCloudService(RemoveCloudServiceRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/cloud_services/{cloud_service_id}"};
+  // Removes a target certification target
+  rpc RemoveCertificationTarget(RemoveCertificationTargetRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}"};
   }
 
-  // Retrieves target cloud service statistics
-  rpc GetCloudServiceStatistics(GetCloudServiceStatisticsRequest) returns (GetCloudServiceStatisticsResponse) {
-    option (google.api.http) = {get: "/v1/orchestrator/cloud_services/statistics"};
+  // Retrieves target certification target statistics
+  rpc GetCertificationTargetStatistics(GetCertificationTargetStatisticsRequest) returns (GetCertificationTargetStatisticsResponse) {
+    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/statistics"};
   }
 
   // Updates a metric configuration (target value and operator) for a specific
@@ -166,7 +166,7 @@ service Orchestrator {
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/"
         "metric_configurations/"
         "{metric_id}"
       body: "configuration"
@@ -177,7 +177,7 @@ service Orchestrator {
   // service and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/"
         "metric_configurations/"
         "{metric_id}"
 };
@@ -187,7 +187,7 @@ service Orchestrator {
   // specific service ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/cloud_services/{cloud_service_id}/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/"
         "metric_configurations"
 };
   }
@@ -320,7 +320,7 @@ service Orchestrator {
   // Retrieves a Target of Evaluation
   rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/toes/"
         "{catalog_id}"
 };
   }
@@ -329,7 +329,7 @@ service Orchestrator {
   rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/toes"
-      additional_bindings {get: "/v1/orchestrator/cloud_services/{cloud_service_id}/toes"}
+      additional_bindings {get: "/v1/orchestrator/certification_targets/{certification_target_id}/toes"}
       additional_bindings {get: "/v1/orchestrator/catalogs/{catalog_id}/toes"}
     };
   }
@@ -338,8 +338,8 @@ service Orchestrator {
   rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
     option (google.api.http) = {
       put:
-        "/v1/orchestrator/cloud_services/"
-        "{target_of_evaluation.cloud_service_id}/toes/"
+        "/v1/orchestrator/certification_targets/"
+        "{target_of_evaluation.certification_target_id}/toes/"
         "{target_of_evaluation.catalog_id}"
       body: "target_of_evaluation"
     };
@@ -348,7 +348,7 @@ service Orchestrator {
   // Removes a Target of Evaluation
   rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete:
-        "/v1/orchestrator/cloud_services/{cloud_service_id}/toes/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/toes/"
         "{catalog_id}"
 };
   }
@@ -443,53 +443,53 @@ message ListMetricsResponse {
   string next_page_token = 2;
 }
 
-message GetCloudServiceRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+message GetCertificationTargetRequest {
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 }
 
-message RegisterCloudServiceRequest {
-  CloudService cloud_service = 1 [(buf.validate.field).required = true];
+message RegisterCertificationTargetRequest {
+  CertificationTarget certification_target = 1 [(buf.validate.field).required = true];
 }
 
-message UpdateCloudServiceRequest {
-  CloudService cloud_service = 1 [(buf.validate.field).required = true];
+message UpdateCertificationTargetRequest {
+  CertificationTarget certification_target = 1 [(buf.validate.field).required = true];
 }
 
-message RemoveCloudServiceRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+message RemoveCertificationTargetRequest {
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 }
 
-message ListCloudServicesRequest {
+message ListCertificationTargetsRequest {
   int32 page_size = 10;
   string page_token = 11;
   string order_by = 12;
   bool asc = 13;
 }
-message ListCloudServicesResponse {
-  repeated CloudService services = 1;
+message ListCertificationTargetsResponse {
+  repeated CertificationTarget services = 1;
   string next_page_token = 2;
 }
 
-message GetCloudServiceStatisticsRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+message GetCertificationTargetStatisticsRequest {
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 }
 
-message GetCloudServiceStatisticsResponse {
-  // number of discovered resources per cloud service
+message GetCertificationTargetStatisticsResponse {
+  // number of discovered resources per certification target
   int64 number_of_discovered_resources = 1;
 
-  // number of assessment results per cloud service
+  // number of assessment results per certification target
   int64 number_of_assessment_results = 2;
 
-  // number of evidences per cloud service
+  // number of evidences per certification target
   int64 number_of_evidences = 3;
 
-  // number of selected catalogs per cloud service
+  // number of selected catalogs per certification target
   int64 number_of_selected_catalogs = 4;
 }
 
 message UpdateMetricConfigurationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
   string metric_id = 2 [(buf.validate.field).string.min_len = 1];
 
@@ -497,13 +497,13 @@ message UpdateMetricConfigurationRequest {
 }
 
 message GetMetricConfigurationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
   string metric_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message ListMetricConfigurationRequest {
-  string cloud_service_id = 10 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 10 [(buf.validate.field).string.uuid = true];
 }
 
 message ListMetricConfigurationResponse {
@@ -536,9 +536,9 @@ message MetricChangeEvent {
   // The metric that is changing.
   string metric_id = 2 [(buf.validate.field).string.min_len = 1];
 
-  // The cloud service id that is affected by this change. Primarily
+  // The certification target id that is affected by this change. Primarily
   // concerns metric configuration changes.
-  string cloud_service_id = 3 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
 }
 
 // Represents an external tool or service that offers assessments according to
@@ -557,7 +557,7 @@ message AssessmentTool {
   repeated string available_metrics = 4 [(buf.validate.field).repeated.items.string.min_len = 1];
 }
 
-message CloudService {
+message CertificationTarget {
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
     (buf.validate.field).ignore_empty = true
@@ -581,17 +581,17 @@ message CloudService {
     // a map of key/value pairs, e.g., env:prod
     map<string, string> labels = 1;
 
-    // an icon for the cloud service used by the UI
+    // an icon for the certification target used by the UI
     optional string icon = 2;
   }
 
-  // creation time of the cloud_service
+  // creation time of the certification_target
   optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
 
-  // last update time of the cloud_service
+  // last update time of the certification_target
   optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
 
-  // additional metadata of the cloud service, mostly used for the UI
+  // additional metadata of the certification target, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 }
 
@@ -620,7 +620,7 @@ message Catalog {
   string short_name = 9;
 
   message Metadata {
-    // a color for the cloud service used by the UI
+    // a color for the certification target used by the UI
     optional string color = 3;
   }
 
@@ -706,10 +706,10 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Target of Evaluation binds a cloud service to a catalog, so the service is
+// A Target of Evaluation binds a certification target to a catalog, so the service is
 // evaluated regarding this catalog's controls
 message TargetOfEvaluation {
-  string cloud_service_id = 1 [
+  string certification_target_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true
   ];
@@ -729,8 +729,8 @@ message GetAssessmentResultRequest {
 
 message ListAssessmentResultsRequest {
   message Filter {
-    // Optional. List only assessment results of a specific cloud service.
-    optional string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+    // Optional. List only assessment results of a specific certification target.
+    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
     // Optional. List only compliant assessment results.
     optional bool compliant = 2;
     // Optional. List only assessment results of a specific metric id.
@@ -759,12 +759,12 @@ message CreateTargetOfEvaluationRequest {
 }
 
 message RemoveTargetOfEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message GetTargetOfEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
@@ -773,7 +773,7 @@ message ListTargetsOfEvaluationRequest {
   // check for != "" in the method to see if it is set when the service is
   // specified, return all Targets of Evaluation that evaluate the given service
   // for any catalog
-  string cloud_service_id = 1;
+  string certification_target_id = 1;
   // when the catalog is specified, return all Targets of Evaluation that
   // evaluate the given catalog for any service
   string catalog_id = 2;
@@ -898,7 +898,7 @@ message RemoveCertificateRequest {
 message Certificate {
   string id = 1 [(buf.validate.field).string.min_len = 1];
   string name = 2 [(buf.validate.field).string.min_len = 1];
-  string cloud_service_id = 3 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 3 [(buf.validate.field).string.uuid = true];
   string issue_date = 4;
   string expiration_date = 5;
   string standard = 6;
