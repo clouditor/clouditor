@@ -54,15 +54,15 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	catalogWithoutAssuranceLevelList.AssuranceLevels = []string{}
 
 	type fields struct {
-		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		AssessmentResultHooks []assessment.ResultHookFunc
-		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFolder        string
-		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
-		events                chan *orchestrator.MetricChangeEvent
-		authz                 service.AuthorizationStrategy
+		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
+		AssessmentResultHooks    []assessment.ResultHookFunc
+		storage                  persistence.Storage
+		metricsFile              string
+		loadMetricsFunc          func() ([]*assessment.Metric, error)
+		catalogsFolder           string
+		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
+		events                   chan *orchestrator.MetricChangeEvent
+		authz                    service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
@@ -107,7 +107,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "valid and assurance level not set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 					assert.NoError(t, err)
 
 					err = s.Create(catalogWithoutAssuranceLevelList)
@@ -130,8 +130,8 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					return false
 				}
 
-				var service orchestrator.CloudService
-				err = got.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
+				var service orchestrator.CertificationTarget
+				err = got.storage.Get(&service, "id = ?", testdata.MockCertificationTargetID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -146,7 +146,7 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 			name: "valid and assurance level set",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -169,8 +169,8 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 					return false
 				}
 
-				var service orchestrator.CloudService
-				err = got.storage.Get(&service, "id = ?", testdata.MockCloudServiceID1)
+				var service orchestrator.CertificationTarget
+				err = got.storage.Get(&service, "id = ?", testdata.MockCertificationTargetID1)
 				if !assert.NoError(t, err) {
 					return false
 				}
@@ -185,15 +185,15 @@ func TestService_CreateTargetOfEvaluation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := &Service{
-				cloudServiceHooks:     tt.fields.cloudServiceHooks,
-				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
-				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFolder:        tt.fields.catalogsFolder,
-				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
-				events:                tt.fields.events,
-				authz:                 tt.fields.authz,
+				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
+				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
+				storage:                  tt.fields.storage,
+				metricsFile:              tt.fields.metricsFile,
+				loadMetricsFunc:          tt.fields.loadMetricsFunc,
+				catalogsFolder:           tt.fields.catalogsFolder,
+				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
+				events:                   tt.fields.events,
+				authz:                    tt.fields.authz,
 			}
 
 			gotRes, err := svc.CreateTargetOfEvaluation(tt.args.ctx, tt.args.req)
@@ -238,7 +238,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: "",
+				CertificationTargetId: "",
 			}},
 			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -250,7 +250,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "toe not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -262,8 +262,8 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: testdata.MockCloudServiceID2,
-				CatalogId:      testdata.MockCatalogID,
+				CertificationTargetId: testdata.MockCertificationTargetID2,
+				CatalogId:             testdata.MockCatalogID,
 			}},
 			wantResponse: assert.Nil[*orchestrator.TargetOfEvaluation],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -275,7 +275,7 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 			name: "valid toe",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 					assert.NoError(t, err)
 
 					err = s.Create(orchestratortest.NewCatalog())
@@ -287,14 +287,14 @@ func TestService_GetTargetOfEvaluation(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.GetTargetOfEvaluationRequest{
-				CloudServiceId: testdata.MockCloudServiceID1,
-				CatalogId:      testdata.MockCatalogID,
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				CatalogId:             testdata.MockCatalogID,
 			}},
 			wantResponse: func(t *testing.T, got *orchestrator.TargetOfEvaluation) bool {
 				want := orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)
 
 				return assert.NoError(t, api.Validate(got)) &&
-					assert.Equal(t, want.CloudServiceId, got.CloudServiceId) &&
+					assert.Equal(t, want.CertificationTargetId, got.CertificationTargetId) &&
 					assert.Equal(t, want.CatalogId, got.CatalogId)
 			},
 			wantErr: assert.NoError,
@@ -320,7 +320,7 @@ func TestService_ListTargetsOfEvaluation(t *testing.T) {
 	)
 
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -349,7 +349,7 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 		err error
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
@@ -380,9 +380,9 @@ func TestService_UpdateTargetOfEvaluation(t *testing.T) {
 	// update the toe's assurance level and send the update request
 	toe, err = orchestratorService.UpdateTargetOfEvaluation(context.Background(), &orchestrator.UpdateTargetOfEvaluationRequest{
 		TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-			CloudServiceId: testdata.MockCloudServiceID1,
-			CatalogId:      testdata.MockCatalogID,
-			AssuranceLevel: &testdata.AssuranceLevelBasic,
+			CertificationTargetId: testdata.MockCertificationTargetID1,
+			CatalogId:             testdata.MockCatalogID,
+			AssuranceLevel:        &testdata.AssuranceLevelBasic,
 		},
 	})
 	assert.NoError(t, err)
@@ -397,23 +397,23 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 		listTargetsOfEvaluationResponse *orchestrator.ListTargetsOfEvaluationResponse
 	)
 	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 	assert.NoError(t, err)
 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
 	assert.NoError(t, err)
 
 	// 1st case: Empty ID error
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: "",
-		CatalogId:      "",
+		CertificationTargetId: "",
+		CatalogId:             "",
 	})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: testdata.MockCloudServiceID1,
-		CatalogId:      "0000",
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		CatalogId:             "0000",
 	})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
@@ -431,8 +431,8 @@ func TestService_RemoveTargetOfEvaluation(t *testing.T) {
 
 	// Remove record
 	_, err = orchestratorService.RemoveTargetOfEvaluation(context.Background(), &orchestrator.RemoveTargetOfEvaluationRequest{
-		CloudServiceId: testdata.MockCloudServiceID1,
-		CatalogId:      testdata.MockCatalogID,
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		CatalogId:             testdata.MockCatalogID,
 	})
 	assert.NoError(t, err)
 
@@ -499,17 +499,17 @@ func TestToeHook(t *testing.T) {
 				ctx: context.TODO(),
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID1,
-						CatalogId:      testdata.MockCatalogID,
-						AssuranceLevel: &testdata.AssuranceLevelSubstantial,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID,
+						AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
 					},
 				},
 			},
 			wantErr: assert.Nil[error],
 			wantRes: &orchestrator.TargetOfEvaluation{
-				CloudServiceId: testdata.MockCloudServiceID1,
-				CatalogId:      testdata.MockCatalogID,
-				AssuranceLevel: &testdata.AssuranceLevelSubstantial,
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				CatalogId:             testdata.MockCatalogID,
+				AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
 			},
 		},
 	}
@@ -519,7 +519,7 @@ func TestToeHook(t *testing.T) {
 
 			// Create service
 			s := svc
-			err := s.storage.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1})
+			err := s.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
 			assert.NoError(t, err)
 
 			// Create catalog

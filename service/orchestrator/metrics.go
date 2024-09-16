@@ -403,18 +403,18 @@ func (svc *Service) GetMetricConfiguration(ctx context.Context, req *orchestrato
 
 	res = new(assessment.MetricConfiguration)
 
-	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CloudServiceId, req.MetricId)
+	err = svc.storage.Get(res, gorm.WithoutPreload(), "cloud_service_id = ? AND metric_id = ?", req.CertificationTargetId, req.MetricId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		// Otherwise, fall back to our default configuration
 		if config, ok := defaultMetricConfigurations[req.MetricId]; ok {
 			// Copy the metric configuration and set the cloud service id
 			newConfig := &assessment.MetricConfiguration{
-				Operator:       config.GetOperator(),
-				TargetValue:    config.GetTargetValue(),
-				IsDefault:      config.GetIsDefault(),
-				UpdatedAt:      config.GetUpdatedAt(),
-				MetricId:       config.GetMetricId(),
-				CloudServiceId: req.GetCloudServiceId(),
+				Operator:              config.GetOperator(),
+				TargetValue:           config.GetTargetValue(),
+				IsDefault:             config.GetIsDefault(),
+				UpdatedAt:             config.GetUpdatedAt(),
+				MetricId:              config.GetMetricId(),
+				CertificationTargetId: req.GetCertificationTargetId(),
 			}
 
 			return newConfig, nil
@@ -445,7 +445,7 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	req.Configuration.UpdatedAt = timestamppb.Now()
 	req.Configuration.IsDefault = false
 
-	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND cloud_service_id = ?", req.GetMetricId(), req.GetCloudServiceId())
+	err = svc.storage.Save(&req.Configuration, "metric_id = ? AND cloud_service_id = ?", req.GetMetricId(), req.GetCertificationTargetId())
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.NotFound, "metric or service does not exist")
 	} else if err != nil {
@@ -455,9 +455,9 @@ func (svc *Service) UpdateMetricConfiguration(ctx context.Context, req *orchestr
 	// Notify event listeners
 	go func() {
 		svc.events <- &orchestrator.MetricChangeEvent{
-			Type:           orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
-			CloudServiceId: req.CloudServiceId,
-			MetricId:       req.MetricId,
+			Type:                  orchestrator.MetricChangeEvent_TYPE_CONFIG_CHANGED,
+			CertificationTargetId: req.CertificationTargetId,
+			MetricId:              req.MetricId,
 		}
 	}()
 
@@ -499,7 +499,7 @@ func (svc *Service) ListMetricConfigurations(ctx context.Context, req *orchestra
 
 	// TODO(oxisto): This is not very efficient, we should do this once at startup so that we can just return the map
 	for _, metric := range metrics {
-		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CloudServiceId: req.CloudServiceId, MetricId: metric.Id})
+		config, err := svc.GetMetricConfiguration(ctx, &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: req.CertificationTargetId, MetricId: metric.Id})
 		if err == nil {
 			response.Configurations[metric.Id] = config
 		}

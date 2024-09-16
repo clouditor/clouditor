@@ -7,7 +7,7 @@ info:
     description: Manages the evaluation of Clouditor's assessment results
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/start:
+    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/start:
         post:
             tags:
                 - Evaluation
@@ -16,7 +16,7 @@ paths:
                  on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
-                - name: cloudServiceId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -47,7 +47,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/stop:
+    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/stop:
         post:
             tags:
                 - Evaluation
@@ -56,7 +56,7 @@ paths:
                  Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
-                - name: cloudServiceId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -89,7 +89,7 @@ paths:
                  exposed as REST.
             operationId: Evaluation_ListEvaluationResults
             parameters:
-                - name: filter.cloudServiceId
+                - name: filter.certificationTargetId
                   in: query
                   description: Optional. Lists only evaluation results for a specific cloud service.
                   schema:
@@ -189,7 +189,7 @@ components:
                 id:
                     type: string
                     description: Evaluation result id
-                cloudServiceId:
+                certificationTargetId:
                     type: string
                     description: The Cloud Service ID the evaluation belongs to
                 controlId:
@@ -237,7 +237,7 @@ components:
                     format: date-time
             description: |-
                 A evaluation result resource, representing the result after evaluating the
-                 cloud service with a specific control cloud_service_id, category_name and
+                 cloud service with a specific control certification_target_id, category_name and
                  catalog_id are necessary to get the corresponding TargetOfEvaluation
         GoogleProtobufAny:
             type: object

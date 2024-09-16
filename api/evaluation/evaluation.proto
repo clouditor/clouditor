@@ -40,13 +40,13 @@ service Evaluation {
   // Evaluates periodically all assessment results of a cloud service id based
   // on the given catalog id. Part of the public API, also exposed as REST.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
-    option (google.api.http) = {post: "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/start"};
+    option (google.api.http) = {post: "/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/start"};
   }
 
   // StopEvaluation stops the evaluation for the given target of evaluation.
   // Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
-    option (google.api.http) = {post: "/v1/evaluation/evaluate/{cloud_service_id}/{catalog_id}/stop"};
+    option (google.api.http) = {post: "/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/stop"};
   }
 
   // List all evaluation results that the user can access. It can further be
@@ -66,7 +66,7 @@ service Evaluation {
 }
 
 message StartEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 
   // The interval time in minutes the evaluation executes periodically. The
@@ -83,7 +83,7 @@ message CreateEvaluationResultRequest {
 }
 
 message StopEvaluationRequest {
-  string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
@@ -93,7 +93,7 @@ message StopEvaluationResponse {}
 message ListEvaluationResultsRequest {
   message Filter {
     // Optional. Lists only evaluation results for a specific cloud service.
-    optional string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+    optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
     optional string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
@@ -130,7 +130,7 @@ message ListEvaluationResultsResponse {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// cloud service with a specific control cloud_service_id, category_name and
+// cloud service with a specific control certification_target_id, category_name and
 // catalog_id are necessary to get the corresponding TargetOfEvaluation
 message EvaluationResult {
   // Evaluation result id
@@ -140,7 +140,7 @@ message EvaluationResult {
   ];
 
   // The Cloud Service ID the evaluation belongs to
-  string cloud_service_id = 2 [
+  string certification_target_id = 2 [
     (buf.validate.field).string = {uuid: true},
     (buf.validate.field).ignore_empty = true
   ];

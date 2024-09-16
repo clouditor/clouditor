@@ -216,8 +216,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 
 	// Get Target of Evaluation
 	toe, err = svc.orchestrator.Client.GetTargetOfEvaluation(context.Background(), &orchestrator.GetTargetOfEvaluationRequest{
-		CloudServiceId: req.CloudServiceId,
-		CatalogId:      req.CatalogId,
+		CertificationTargetId: req.CertificationTargetId,
+		CatalogId:             req.CatalogId,
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get target of evaluation: %w", err)
@@ -236,13 +236,13 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check, if a previous job exists and/or is running
-	jobs, err = svc.scheduler.FindJobsByTag(req.CloudServiceId, req.CatalogId)
+	jobs, err = svc.scheduler.FindJobsByTag(req.CertificationTargetId, req.CatalogId)
 	if err != nil && !errors.Is(err, gocron.ErrJobNotFoundWithTag) {
 		err = fmt.Errorf("error while retrieving existing scheduler job: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Cloud Service '%s' and Catalog ID '%s' already started", toe.GetCloudServiceId(), toe.GetCatalogId())
+		err = fmt.Errorf("evaluation for Cloud Service '%s' and Catalog ID '%s' already started", toe.GetCertificationTargetId(), toe.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -258,7 +258,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 
 	log.Infof("Scheduled to evaluate catalog ID '%s' for cloud service '%s' every %d minutes...",
 		catalog.GetId(),
-		toe.GetCloudServiceId(),
+		toe.GetCertificationTargetId(),
 		interval,
 	)
 
@@ -282,11 +282,11 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 	}
 
 	// Stop jobs(s) for given cloud service and catalog
-	err = svc.scheduler.RemoveByTags(req.CloudServiceId, req.CatalogId)
+	err = svc.scheduler.RemoveByTags(req.CertificationTargetId, req.CatalogId)
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for cloud service '%s' and catalog '%s' not running", req.CloudServiceId, req.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for cloud service '%s' and catalog '%s' not running", req.CertificationTargetId, req.CatalogId)
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for cloud service '%s' and catalog '%s': %w", req.CloudServiceId, req.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for cloud service '%s' and catalog '%s': %w", req.CertificationTargetId, req.CatalogId, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -315,7 +315,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
 	// to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// Filtering evaluation results by
 	// * cloud service ID
@@ -327,9 +327,9 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CloudServiceId != nil {
+		if req.Filter.CertificationTargetId != nil {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 
 		if req.Filter.CatalogId != nil {
@@ -466,15 +466,15 @@ func (svc *Service) addJobToScheduler(ctx context.Context, toe *orchestrator.Tar
 	_, err = svc.scheduler.
 		Every(interval).
 		Minute().
-		Tag(toe.GetCloudServiceId(), toe.GetCatalogId()).
+		Tag(toe.GetCertificationTargetId(), toe.GetCatalogId()).
 		Do(svc.evaluateCatalog, ctx, toe, catalog, interval)
 	if err != nil {
-		err = fmt.Errorf("evaluation for cloud service '%s' and catalog ID '%s' cannot be scheduled: %w", toe.GetCloudServiceId(), catalog.GetId(), err)
+		err = fmt.Errorf("evaluation for cloud service '%s' and catalog ID '%s' cannot be scheduled: %w", toe.GetCertificationTargetId(), catalog.GetId(), err)
 		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", err)
 	}
 
-	log.Debugf("cloud service '%s' with catalog ID '%s' added to scheduler", toe.GetCloudServiceId(), catalog.GetId())
+	log.Debugf("cloud service '%s' with catalog ID '%s' added to scheduler", toe.GetCertificationTargetId(), catalog.GetId())
 
 	return
 }
@@ -505,9 +505,9 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 	// might time out at some point
 	results, err := api.ListAllPaginated(&evaluation.ListEvaluationResultsRequest{
 		Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-			CloudServiceId:  &toe.CloudServiceId,
-			CatalogId:       &toe.CatalogId,
-			ValidManualOnly: util.Ref(true),
+			CertificationTargetId: &toe.CertificationTargetId,
+			CatalogId:             &toe.CatalogId,
+			ValidManualOnly:       util.Ref(true),
 		},
 		LatestByControlId: util.Ref(true),
 	},
@@ -551,7 +551,7 @@ func (svc *Service) evaluateCatalog(ctx context.Context, toe *orchestrator.Targe
 	}
 
 	log.Infof("Starting catalog evaluation for Cloud Service '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
-		toe.CloudServiceId,
+		toe.CertificationTargetId,
 		toe.CatalogId,
 		len(relevant),
 	)
@@ -614,7 +614,7 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 	}
 
 	log.Infof("Starting control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
-		toe.CloudServiceId,
+		toe.CertificationTargetId,
 		toe.CatalogId,
 		control.Id,
 		len(relevant),
@@ -671,7 +671,7 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 		Timestamp:                  timestamppb.Now(),
 		ControlCategoryName:        control.CategoryName,
 		ControlId:                  control.Id,
-		CloudServiceId:             toe.CloudServiceId,
+		CertificationTargetId:      toe.CertificationTargetId,
 		ControlCatalogId:           toe.CatalogId,
 		Status:                     status,
 		FailingAssessmentResultIds: nonCompliantAssessmentResults,
@@ -681,12 +681,12 @@ func (svc *Service) evaluateControl(ctx context.Context, toe *orchestrator.Targe
 	if err != nil {
 		log.Errorf("error storing evaluation result for control ID '%s' (in cloud service %s) in database: %v",
 			control.Id,
-			toe.CloudServiceId,
+			toe.CertificationTargetId,
 			err)
 		return
 	}
 
-	log.Infof("Evaluation result for control ID '%s' (in cloud service %s) was %s", control.Id, toe.CloudServiceId, result.Status.String())
+	log.Infof("Evaluation result for control ID '%s' (in cloud service %s) was %s", control.Id, toe.CertificationTargetId, result.Status.String())
 
 	return
 }
@@ -707,7 +707,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 	// Get metrics from control and sub-controls
 	metrics, err := svc.getAllMetricsFromControl(toe.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, toe.GetCloudServiceId(), err)
+		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, toe.GetCertificationTargetId(), err)
 		return
 	}
 
@@ -717,8 +717,8 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		// * metric ids
 		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
 			Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
-				CloudServiceId: &toe.CloudServiceId,
-				MetricIds:      getMetricIds(metrics),
+				CertificationTargetId: &toe.CertificationTargetId,
+				MetricIds:             getMetricIds(metrics),
 			},
 			LatestByResourceId: util.Ref(true),
 		}, svc.orchestrator.Client.ListAssessmentResults, func(res *orchestrator.ListAssessmentResultsResponse) []*assessment.AssessmentResult {
@@ -728,11 +728,11 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		if err != nil {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", toe.GetCloudServiceId(), getMetricIds(metrics), err)
+			log.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", toe.GetCertificationTargetId(), getMetricIds(metrics), err)
 		} else if len(assessments) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Debugf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", toe.GetCloudServiceId(), getMetricIds(metrics))
+			log.Debugf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", toe.GetCertificationTargetId(), getMetricIds(metrics))
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")
@@ -762,7 +762,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		ControlCategoryName:        control.CategoryName,
 		ControlId:                  control.Id,
 		ParentControlId:            control.ParentControlId,
-		CloudServiceId:             toe.GetCloudServiceId(),
+		CertificationTargetId:      toe.GetCertificationTargetId(),
 		ControlCatalogId:           toe.GetCatalogId(),
 		Status:                     status,
 		FailingAssessmentResultIds: nonCompliantAssessmentResults,
@@ -774,7 +774,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, toe *orchestrator.Targ
 		return nil, err
 	}
 
-	log.Infof("Evaluation result for %s (in cloud service %s) was %s", control.Id, toe.GetCloudServiceId(), eval.Status.String())
+	log.Infof("Evaluation result for %s (in cloud service %s) was %s", control.Id, toe.GetCertificationTargetId(), eval.Status.String())
 
 	return
 }

@@ -238,10 +238,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
+					Id:                    testdata.MockEvidenceID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{}),
 				},
 			},
 			wantResp: nil,
@@ -258,10 +258,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 				},
 			},
 			wantResp: nil,
@@ -287,7 +287,7 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					CloudServiceId: testdata.MockCloudServiceID1},
+					CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			wantResp: &assessment.AssessEvidenceResponse{
 				Status: assessment.AssessmentStatus_ASSESSMENT_STATUS_ASSESSED,
@@ -297,7 +297,7 @@ func TestService_AssessEvidence(t *testing.T) {
 		{
 			name: "Assess resource of wrong could service",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
 			},
 			args: args{
 				in0: context.TODO(),
@@ -309,7 +309,7 @@ func TestService_AssessEvidence(t *testing.T) {
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
 					}),
-					CloudServiceId: testdata.MockCloudServiceID1},
+					CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			wantResp: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -327,11 +327,11 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					Resource:       prototest.NewAny(t, &ontology.VirtualMachine{}),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					Resource:              prototest.NewAny(t, &ontology.VirtualMachine{}),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantResp: nil,
@@ -350,10 +350,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -383,10 +383,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -410,10 +410,10 @@ func TestService_AssessEvidence(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -491,9 +491,9 @@ func TestService_AssessEvidence_DetectMisconfiguredEvidenceEvenWhenAlreadyCached
 
 	assert.NoError(t, err)
 	_, err = s.AssessEvidence(context.Background(), &assessment.AssessEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:             uuid.NewString(),
-		Timestamp:      timestamppb.Now(),
-		CloudServiceId: testdata.MockCloudServiceID1,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		CertificationTargetId: testdata.MockCertificationTargetID1,
 		// Make sure both evidences have the same tool id (for caching key)
 		ToolId:   e.ToolId,
 		Raw:      nil,
@@ -526,10 +526,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						Timestamp:      timestamppb.Now(),
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Id:                    testdata.MockEvidenceID1,
+						Timestamp:             timestamppb.Now(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -544,10 +544,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -567,10 +567,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServer: createMockAssessmentServerStream(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
@@ -592,10 +592,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToClientWithSendErr: createMockAssessmentServerStreamWithSendErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -612,10 +612,10 @@ func TestService_AssessEvidences(t *testing.T) {
 			args: args{
 				streamToServerWithRecvErr: createMockAssessmentServerStreamWithRecvErr(&assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Timestamp:      timestamppb.Now(),
-						ToolId:         testdata.MockEvidenceToolID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Resource:       prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+						Timestamp:             timestamppb.Now(),
+						ToolId:                testdata.MockEvidenceToolID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Resource:              prototest.NewAny(t, &ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 					},
 				}),
 			},
@@ -696,10 +696,10 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 				in0: context.TODO(),
 				evidence: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						ToolId:         testdata.MockEvidenceToolID1,
-						Timestamp:      timestamppb.Now(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						ToolId:                testdata.MockEvidenceToolID1,
+						Timestamp:             timestamppb.Now(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id:   testdata.MockResourceID1,
 							Name: testdata.MockResourceName1,
@@ -925,10 +925,10 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,
@@ -956,11 +956,11 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       &anypb.Any{TypeUrl: "does-not-exist"},
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              &anypb.Any{TypeUrl: "does-not-exist"},
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -976,11 +976,11 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
-					Resource:       prototest.NewAny(t, &emptypb.Empty{}),
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource:              prototest.NewAny(t, &emptypb.Empty{}),
 				},
 			},
 			want: assert.Nil[[]*assessment.AssessmentResult],
@@ -996,10 +996,10 @@ func TestService_handleEvidence(t *testing.T) {
 			},
 			args: args{
 				evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					ToolId:         testdata.MockEvidenceToolID1,
-					Timestamp:      timestamppb.Now(),
-					CloudServiceId: testdata.MockCloudServiceID1,
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id:   testdata.MockResourceID1,
 						Name: testdata.MockResourceName1,

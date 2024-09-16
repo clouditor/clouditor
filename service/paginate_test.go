@@ -126,28 +126,28 @@ func TestPaginateStorage(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantPage assert.Want[[]orchestrator.CloudService]
+		wantPage assert.Want[[]orchestrator.CertificationTarget]
 		wantNbt  assert.Want[string]
 		wantErr  assert.WantErr
 	}{
 		{
 			name: "first page",
 			args: args{
-				req: &orchestrator.ListCloudServicesRequest{
+				req: &orchestrator.ListCertificationTargetsRequest{
 					PageSize:  2,
 					PageToken: "",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CloudService{Id: "1"})
-					_ = s.Save(&orchestrator.CloudService{Id: "2"})
-					_ = s.Save(&orchestrator.CloudService{Id: "3"})
-					_ = s.Save(&orchestrator.CloudService{Id: "4"})
-					_ = s.Save(&orchestrator.CloudService{Id: "5"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
-				want := []orchestrator.CloudService{
+			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
+				want := []orchestrator.CertificationTarget{
 					{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 					{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 				}
@@ -161,21 +161,21 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "next page",
 			args: args{
-				req: &orchestrator.ListCloudServicesRequest{
+				req: &orchestrator.ListCertificationTargetsRequest{
 					PageSize:  2,
 					PageToken: "CAIQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CloudService{Id: "1"})
-					_ = s.Save(&orchestrator.CloudService{Id: "2"})
-					_ = s.Save(&orchestrator.CloudService{Id: "3"})
-					_ = s.Save(&orchestrator.CloudService{Id: "4"})
-					_ = s.Save(&orchestrator.CloudService{Id: "5"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
-				want := []orchestrator.CloudService{
+			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
+				want := []orchestrator.CertificationTarget{
 					{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 					{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
 				}
@@ -189,21 +189,21 @@ func TestPaginateStorage(t *testing.T) {
 		{
 			name: "last page",
 			args: args{
-				req: &orchestrator.ListCloudServicesRequest{
+				req: &orchestrator.ListCertificationTargetsRequest{
 					PageSize:  2,
 					PageToken: "CAQQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CloudService{Id: "1"})
-					_ = s.Save(&orchestrator.CloudService{Id: "2"})
-					_ = s.Save(&orchestrator.CloudService{Id: "3"})
-					_ = s.Save(&orchestrator.CloudService{Id: "4"})
-					_ = s.Save(&orchestrator.CloudService{Id: "5"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
+					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
 				}),
 				opts: PaginationOpts{10, 10},
 			},
-			wantPage: func(t *testing.T, got []orchestrator.CloudService) bool {
-				want := []orchestrator.CloudService{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}}
+			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
+				want := []orchestrator.CertificationTarget{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}}
 
 				return assert.Equal(t, want, got)
 			},
@@ -216,7 +216,7 @@ func TestPaginateStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPage, gotNbt, err := PaginateStorage[orchestrator.CloudService](tt.args.req, tt.args.storage,
+			gotPage, gotNbt, err := PaginateStorage[orchestrator.CertificationTarget](tt.args.req, tt.args.storage,
 				tt.args.opts, tt.args.conds...)
 
 			tt.wantErr(t, err)

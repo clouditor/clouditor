@@ -70,7 +70,7 @@ var DefaultTypes = []any{
 	&assessment.AssessmentResult{},
 	&discovery.Resource{},
 	&evidence.Evidence{},
-	&orchestrator.CloudService{},
+	&orchestrator.CertificationTarget{},
 	&orchestrator.Certificate{},
 	&orchestrator.State{},
 	&orchestrator.Catalog{},
@@ -162,12 +162,12 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
-	if err = g.db.SetupJoinTable(&orchestrator.CloudService{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
+	if err = g.db.SetupJoinTable(&orchestrator.CertificationTarget{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}
 
-	if err = g.db.SetupJoinTable(orchestrator.CloudService{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
+	if err = g.db.SetupJoinTable(orchestrator.CertificationTarget{}, "ConfiguredMetrics", assessment.MetricConfiguration{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

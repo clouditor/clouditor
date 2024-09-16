@@ -52,7 +52,7 @@ func (svc *Service) ListGraphEdges(ctx context.Context, req *discovery.ListGraph
 		return nil, err
 	}
 
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		query = append(query, "cloud_service_id IN ?")
 		args = append(args, allowed)

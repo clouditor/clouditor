@@ -127,7 +127,7 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-func TestCloudServiceHooks(t *testing.T) {
+func TestCertificationTargetHooks(t *testing.T) {
 	var (
 		hookCallCounter = 0
 		wg              sync.WaitGroup
@@ -136,44 +136,44 @@ func TestCloudServiceHooks(t *testing.T) {
 
 	wg.Add(hookCounts)
 
-	firstHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
+	firstHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the firstHookFunction")
 		wg.Done()
 	}
 
-	secondHookFunction := func(_ context.Context, cloudService *orchestrator.CloudService, err error) {
+	secondHookFunction := func(_ context.Context, CertificationTarget *orchestrator.CertificationTarget, err error) {
 		hookCallCounter++
 		log.Println("Hello from inside the secondHookFunction")
 		wg.Done()
 	}
 
 	type args struct {
-		in0               context.Context
-		serviceUpdate     *orchestrator.UpdateCloudServiceRequest
-		cloudServiceHooks []orchestrator.CloudServiceHookFunc
+		in0                      context.Context
+		serviceUpdate            *orchestrator.UpdateCertificationTargetRequest
+		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 	}
 	tests := []struct {
 		name    string
 		args    args
-		wantRes assert.Want[*orchestrator.CloudService]
+		wantRes assert.Want[*orchestrator.CertificationTarget]
 		wantErr assert.WantErr
 	}{
 		{
 			name: "Update Cloud Service",
 			args: args{
 				in0: context.TODO(),
-				serviceUpdate: &orchestrator.UpdateCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{
+				serviceUpdate: &orchestrator.UpdateCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{
 						Id:          "00000000-0000-0000-0000-000000000000",
 						Name:        "test service",
 						Description: "test service",
 					},
 				},
-				cloudServiceHooks: []orchestrator.CloudServiceHookFunc{firstHookFunction, secondHookFunction},
+				CertificationTargetHooks: []orchestrator.CertificationTargetHookFunc{firstHookFunction, secondHookFunction},
 			},
 			wantErr: assert.Nil[error],
-			wantRes: func(t *testing.T, got *orchestrator.CloudService) bool {
+			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
 				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
 					assert.Equal(t, "test service", got.Name) && assert.Equal(t, "test service", got.Description)
 			},
@@ -185,22 +185,22 @@ func TestCloudServiceHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			_, err := s.CreateDefaultTargetCloudService()
+			_, err := s.CreateDefaultTargetCertificationTarget()
 			if err != nil {
-				t.Errorf("CreateCloudService() error = %v", err)
+				t.Errorf("CreateCertificationTarget() error = %v", err)
 			}
 
-			for i, hookFunction := range tt.args.cloudServiceHooks {
-				s.RegisterCloudServiceHook(hookFunction)
+			for i, hookFunction := range tt.args.CertificationTargetHooks {
+				s.RegisterCertificationTargetHook(hookFunction)
 
 				// Check if hook is registered
-				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.cloudServiceHooks[i]).Pointer()).Name()
+				funcName1 := runtime.FuncForPC(reflect.ValueOf(s.CertificationTargetHooks[i]).Pointer()).Name()
 				funcName2 := runtime.FuncForPC(reflect.ValueOf(hookFunction).Pointer()).Name()
 				assert.Equal(t, funcName1, funcName2)
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotRes, err := s.UpdateCloudService(tt.args.in0, tt.args.serviceUpdate)
+			gotRes, err := s.UpdateCertificationTarget(tt.args.in0, tt.args.serviceUpdate)
 
 			// wait for all hooks (2 services * 2 hooks)
 			wg.Wait()

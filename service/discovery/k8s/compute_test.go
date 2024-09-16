@@ -43,8 +43,8 @@ import (
 
 func TestNewKubernetesComputeDiscovery(t *testing.T) {
 	type args struct {
-		intf           kubernetes.Interface
-		cloudServiceID string
+		intf                  kubernetes.Interface
+		CertificationTargetID string
 	}
 	tests := []struct {
 		name string
@@ -60,20 +60,20 @@ func TestNewKubernetesComputeDiscovery(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				intf:           &fake.Clientset{},
-				cloudServiceID: testdata.MockCloudServiceID1,
+				intf:                  &fake.Clientset{},
+				CertificationTargetID: testdata.MockCertificationTargetID1,
 			},
 			want: &k8sComputeDiscovery{
 				k8sDiscovery: k8sDiscovery{
 					intf: &fake.Clientset{},
-					csID: testdata.MockCloudServiceID1,
+					csID: testdata.MockCertificationTargetID1,
 				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewKubernetesComputeDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			got := NewKubernetesComputeDiscovery(tt.args.intf, tt.args.CertificationTargetID)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 			assert.Equal(t, "Kubernetes Compute", got.Name())
 		})
@@ -130,7 +130,7 @@ func Test_k8sComputeDiscovery_List(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				NewKubernetesComputeDiscovery(client, testdata.MockCloudServiceID1),
+				NewKubernetesComputeDiscovery(client, testdata.MockCertificationTargetID1),
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				container, ok := got[0].(*ontology.Container)

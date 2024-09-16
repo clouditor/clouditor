@@ -134,7 +134,7 @@ message MetricConfiguration {
   ];
 
   // The service this configuration belongs to
-  string cloud_service_id = 6 [
+  string certification_target_id = 6 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true
   ];

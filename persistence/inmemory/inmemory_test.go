@@ -16,13 +16,13 @@ func TestNewStorage(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test to create new cloud service
-	userInput := orchestratortest.NewCloudService()
+	userInput := orchestratortest.NewCertificationTarget()
 	err = s.Create(userInput)
 	assert.NoError(t, err)
 
 	// Test if we get same user via its name
-	userOutput := &orchestrator.CloudService{}
-	err = s.Get(userOutput, "name = ?", testdata.MockCloudServiceName1)
+	userOutput := &orchestrator.CertificationTarget{}
+	err = s.Get(userOutput, "name = ?", testdata.MockCertificationTargetName1)
 	assert.NoError(t, err)
 	assert.NoError(t, api.Validate(userOutput))
 	assert.Equal(t, userInput, userOutput)

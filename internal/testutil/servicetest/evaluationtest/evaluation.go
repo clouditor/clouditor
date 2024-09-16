@@ -13,7 +13,7 @@ var (
 	MockEvaluationResult1 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult1ID,
 		Timestamp:                  timestamppb.New(time.Unix(5, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
@@ -23,7 +23,7 @@ var (
 	MockEvaluationResult2 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult2ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
@@ -34,7 +34,7 @@ var (
 	MockEvaluationResult22 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult9ID,
 		Timestamp:                  timestamppb.New(time.Unix(5, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
@@ -45,7 +45,7 @@ var (
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult3ID,
 		Timestamp:                  timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
@@ -56,7 +56,7 @@ var (
 	MockEvaluationResult4 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult4ID,
 		Timestamp:                  timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
@@ -66,7 +66,7 @@ var (
 	MockEvaluationResult5 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult5ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
@@ -77,7 +77,7 @@ var (
 	MockEvaluationResult6 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult6ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
-		CloudServiceId:             testdata.MockCloudServiceID1,
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID,
 		Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,

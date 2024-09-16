@@ -73,10 +73,10 @@ func TestMetricConfiguration_Validate(t *testing.T) {
 			name: "Successful Validation",
 			fields: fields{
 				MetricConfiguration: &MetricConfiguration{
-					TargetValue:    testdata.MockMetricConfigurationTargetValueString,
-					Operator:       "==",
-					MetricId:       testdata.MockMetricID1,
-					CloudServiceId: testdata.MockCloudServiceID1,
+					TargetValue:           testdata.MockMetricConfigurationTargetValueString,
+					Operator:              "==",
+					MetricId:              testdata.MockMetricID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantErr: assert.NoError,
@@ -309,14 +309,14 @@ func TestRange_UnmarshalJSON(t *testing.T) {
 
 func TestMetricConfiguration_Hash(t *testing.T) {
 	type fields struct {
-		sizeCache      protoimpl.SizeCache
-		unknownFields  protoimpl.UnknownFields
-		Operator       string
-		TargetValue    *structpb.Value
-		IsDefault      bool
-		UpdatedAt      *timestamppb.Timestamp
-		MetricId       string
-		CloudServiceId string
+		sizeCache             protoimpl.SizeCache
+		unknownFields         protoimpl.UnknownFields
+		Operator              string
+		TargetValue           *structpb.Value
+		IsDefault             bool
+		UpdatedAt             *timestamppb.Timestamp
+		MetricId              string
+		CertificationTargetId string
 	}
 	tests := []struct {
 		name   string
@@ -335,14 +335,14 @@ func TestMetricConfiguration_Hash(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			x := &MetricConfiguration{
-				sizeCache:      tt.fields.sizeCache,
-				unknownFields:  tt.fields.unknownFields,
-				Operator:       tt.fields.Operator,
-				TargetValue:    tt.fields.TargetValue,
-				IsDefault:      tt.fields.IsDefault,
-				UpdatedAt:      tt.fields.UpdatedAt,
-				MetricId:       tt.fields.MetricId,
-				CloudServiceId: tt.fields.CloudServiceId,
+				sizeCache:             tt.fields.sizeCache,
+				unknownFields:         tt.fields.unknownFields,
+				Operator:              tt.fields.Operator,
+				TargetValue:           tt.fields.TargetValue,
+				IsDefault:             tt.fields.IsDefault,
+				UpdatedAt:             tt.fields.UpdatedAt,
+				MetricId:              tt.fields.MetricId,
+				CertificationTargetId: tt.fields.CertificationTargetId,
 			}
 			if got := x.Hash(); got != tt.want {
 				t.Errorf("MetricConfiguration.Hash() = %v, want %v", got, tt.want)

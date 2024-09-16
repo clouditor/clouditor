@@ -21,12 +21,12 @@ const (
 	MockAuthClientSecret = "secret"
 
 	// Cloud Service
-	MockCloudServiceID1          = "11111111-1111-1111-1111-111111111111"
-	MockCloudServiceName1        = "Mock Cloud Service"
-	MockCloudServiceDescription1 = "This is a mock cloud service"
-	MockCloudServiceID2          = "22222222-2222-2222-2222-222222222222"
-	MockCloudServiceName2        = "Another Mock Cloud Service"
-	MockCloudServiceDescription2 = "This is another mock cloud service"
+	MockCertificationTargetID1          = "11111111-1111-1111-1111-111111111111"
+	MockCertificationTargetName1        = "Mock Cloud Service"
+	MockCertificationTargetDescription1 = "This is a mock cloud service"
+	MockCertificationTargetID2          = "22222222-2222-2222-2222-222222222222"
+	MockCertificationTargetName2        = "Another Mock Cloud Service"
+	MockCertificationTargetDescription2 = "This is another mock cloud service"
 
 	// Catalog
 	MockCatalogID             = "Cat1234"

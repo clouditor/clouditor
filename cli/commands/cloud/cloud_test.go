@@ -63,9 +63,9 @@ func TestNewCloudCommand(t *testing.T) {
 	assert.True(t, cmd.HasSubCommands())
 }
 
-func TestRegisterCloudServiceCommand(t *testing.T) {
+func TestRegisterCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CloudService
+		response orchestrator.CertificationTarget
 		svc      *service_orchestrator.Service
 		err      error
 		b        bytes.Buffer
@@ -75,7 +75,7 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 	_, err = clitest.RunCLITestFunc(func() bool {
 		cli.Output = &b
 
-		cmd := NewRegisterCloudServiceCommand()
+		cmd := NewRegisterCertificationTargetCommand()
 		err = cmd.RunE(nil, []string{"not_default"})
 
 		assert.NoError(t, err)
@@ -88,9 +88,9 @@ func TestRegisterCloudServiceCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestListCloudServicesCommand(t *testing.T) {
+func TestListCertificationTargetsCommand(t *testing.T) {
 	var (
-		response orchestrator.ListCloudServicesResponse
+		response orchestrator.ListCertificationTargetsResponse
 		svc      *service_orchestrator.Service
 
 		err error
@@ -99,12 +99,12 @@ func TestListCloudServicesCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		_, err = svc.CreateDefaultTargetCloudService()
+		_, err = svc.CreateDefaultTargetCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
 
-		cmd := NewListCloudServicesCommand()
+		cmd := NewListCertificationTargetsCommand()
 		err = cmd.RunE(nil, []string{})
 
 		assert.NoError(t, err)
@@ -117,10 +117,10 @@ func TestListCloudServicesCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestGetCloudServiceCommand(t *testing.T) {
+func TestGetCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CloudService
-		target   *orchestrator.CloudService
+		response orchestrator.CertificationTarget
+		target   *orchestrator.CertificationTarget
 		svc      *service_orchestrator.Service
 
 		err error
@@ -129,7 +129,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCloudService()
+		target, err = svc.CreateDefaultTargetCertificationTarget()
 
 		fmt.Println("target:", target)
 		// target should be non-nil since it has been newly created
@@ -138,7 +138,7 @@ func TestGetCloudServiceCommand(t *testing.T) {
 
 		cli.Output = &b
 
-		cmd := NewGetCloudServiceCommand()
+		cmd := NewGetCertificationTargetCommand()
 		err = cmd.RunE(nil, []string{target.Id})
 
 		assert.NoError(t, err)
@@ -151,10 +151,10 @@ func TestGetCloudServiceCommand(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestRemoveCloudServicesCommand(t *testing.T) {
+func TestRemoveCertificationTargetsCommand(t *testing.T) {
 	var (
 		response emptypb.Empty
-		target   *orchestrator.CloudService
+		target   *orchestrator.CertificationTarget
 		svc      *service_orchestrator.Service
 
 		err error
@@ -163,12 +163,12 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCloudService()
+		target, err = svc.CreateDefaultTargetCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
 
-		cmd := NewRemoveCloudServiceComand()
+		cmd := NewRemoveCertificationTargetComand()
 		err = cmd.RunE(nil, []string{target.Id})
 
 		assert.NoError(t, err)
@@ -178,17 +178,17 @@ func TestRemoveCloudServicesCommand(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Re-create default service
-		_, err = svc.CreateDefaultTargetCloudService()
+		_, err = svc.CreateDefaultTargetCertificationTarget()
 
 		return assert.NoError(t, err)
 	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
 
-func TestUpdateCloudServiceCommand(t *testing.T) {
+func TestUpdateCertificationTargetCommand(t *testing.T) {
 	var (
-		response orchestrator.CloudService
-		target   *orchestrator.CloudService
+		response orchestrator.CertificationTarget
+		target   *orchestrator.CertificationTarget
 		svc      *service_orchestrator.Service
 
 		err error
@@ -201,7 +201,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCloudService()
+		target, err = svc.CreateDefaultTargetCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
@@ -209,7 +209,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 		viper.Set("id", target.Id)
 		viper.Set("name", notDefault)
 
-		cmd := NewUpdateCloudServiceCommand()
+		cmd := NewUpdateCertificationTargetCommand()
 		err = cmd.RunE(nil, []string{})
 
 		assert.NoError(t, err)
@@ -225,7 +225,7 @@ func TestUpdateCloudServiceCommand(t *testing.T) {
 
 func TestGetMetricConfiguration(t *testing.T) {
 	var (
-		target *orchestrator.CloudService
+		target *orchestrator.CertificationTarget
 		svc    *service_orchestrator.Service
 
 		err error
@@ -234,7 +234,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCloudService()
+		target, err = svc.CreateDefaultTargetCertificationTarget()
 		assert.NoError(t, err)
 		// target should be not nil since there are no stored cloud services yet
 		assert.NotNil(t, target)
@@ -242,7 +242,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.RegisterCloudService(context.TODO(), &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{Name: "myservice"}})
+		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myservice"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)

@@ -126,11 +126,11 @@ func TestLogRequest(t *testing.T) {
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{},
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{},
 				},
 			},
-			want: "level=debug msg=CloudService registered.\n",
+			want: "level=debug msg=CertificationTarget registered.\n",
 		},
 
 		{
@@ -138,11 +138,11 @@ func TestLogRequest(t *testing.T) {
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID1},
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1},
 				},
 			},
-			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+			want: "level=debug msg=CertificationTarget with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 		{
 			name: "Create TargetOfEvaluation",
@@ -151,8 +151,8 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID1,
-						CatalogId:      testdata.MockCatalogID,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 			},
@@ -165,8 +165,8 @@ func TestLogRequest(t *testing.T) {
 				reqType: Update,
 				req: &orchestrator.UpdateTargetOfEvaluationRequest{
 					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID1,
-						CatalogId:      testdata.MockCatalogID,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
@@ -180,8 +180,8 @@ func TestLogRequest(t *testing.T) {
 				reqType: Store,
 				req: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
 				},
 				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},

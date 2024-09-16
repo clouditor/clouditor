@@ -34,49 +34,49 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
+type CertificationTargetHookFunc func(ctx context.Context, cld *CertificationTarget, err error)
 type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
-	return req.GetResult().GetCloudServiceId()
+func (req *StoreAssessmentResultRequest) GetCertificationTargetId() string {
+	return req.GetResult().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *CreateCertificateRequest) GetCloudServiceId() string {
-	return req.GetCertificate().GetCloudServiceId()
+func (req *CreateCertificateRequest) GetCertificationTargetId() string {
+	return req.GetCertificate().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateCertificateRequest) GetCloudServiceId() string {
-	return req.GetCertificate().GetCloudServiceId()
+func (req *UpdateCertificateRequest) GetCertificationTargetId() string {
+	return req.GetCertificate().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
-	return req.GetCloudService().GetId()
+func (req *RegisterCertificationTargetRequest) GetCertificationTargetId() string {
+	return req.GetCertificationTarget().GetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
-	return req.CloudService.GetId()
+func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
+	return req.CertificationTarget.GetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
-	return req.GetTargetOfEvaluation().GetCloudServiceId()
+func (req *CreateTargetOfEvaluationRequest) GetCertificationTargetId() string {
+	return req.GetTargetOfEvaluation().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
-	return req.GetTargetOfEvaluation().GetCloudServiceId()
+func (req *UpdateTargetOfEvaluationRequest) GetCertificationTargetId() string {
+	return req.GetTargetOfEvaluation().GetCertificationTargetId()
 }
 
 func (req *StoreAssessmentResultRequest) GetPayload() proto.Message {
@@ -119,16 +119,16 @@ func (req *RemoveCertificateRequest) GetPayload() proto.Message {
 	return &Certificate{Id: req.CertificateId}
 }
 
-func (req *RegisterCloudServiceRequest) GetPayload() proto.Message {
-	return req.CloudService
+func (req *RegisterCertificationTargetRequest) GetPayload() proto.Message {
+	return req.CertificationTarget
 }
 
-func (req *UpdateCloudServiceRequest) GetPayload() proto.Message {
-	return req.CloudService
+func (req *UpdateCertificationTargetRequest) GetPayload() proto.Message {
+	return req.CertificationTarget
 }
 
-func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
-	return &CloudService{Id: req.CloudServiceId}
+func (req *RemoveCertificationTargetRequest) GetPayload() proto.Message {
+	return &CertificationTarget{Id: req.CertificationTargetId}
 }
 
 func (req *CreateMetricRequest) GetPayload() proto.Message {
@@ -160,7 +160,7 @@ func (req *UpdateTargetOfEvaluationRequest) GetPayload() proto.Message {
 }
 
 func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return &TargetOfEvaluation{CloudServiceId: req.CloudServiceId, CatalogId: req.CatalogId}
+	return &TargetOfEvaluation{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
 }
 
 // IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly

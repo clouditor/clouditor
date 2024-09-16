@@ -49,7 +49,7 @@ const (
 	ServiceOAuth2EndpointFlag        = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag        = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag    = "service-oauth2-client-secret"
-	CloudServiceIDFlag               = "cloud-service-id"
+	CertificationTargetIDFlag        = "cloud-service-id"
 	AssessmentURLFlag                = "assessment-url"
 	OrchestratorURLFlag              = "orchestrator-url"
 	EvidenceStoreURLFlag             = "evidence-store-url"
@@ -122,10 +122,10 @@ var (
 )
 
 const (
-	// DefaultCloudServiceID is the default service ID. Currently, our discoverers have no way to differentiate between different
+	// DefaultCertificationTargetID is the default service ID. Currently, our discoverers have no way to differentiate between different
 	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
 	// structures for this feature.
-	DefaultCloudServiceID = "00000000-0000-0000-0000-000000000000"
+	DefaultCertificationTargetID = "00000000-0000-0000-0000-000000000000"
 
 	// DefaultEvidenceCollectorToolID is the default evidence collector tool ID.
 	DefaultEvidenceCollectorToolID = "Clouditor Evidences Collection"

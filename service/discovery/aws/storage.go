@@ -168,7 +168,7 @@ func (d *awsS3Discovery) List() (resources []ontology.IsResource, err error) {
 	return
 }
 
-func (d *awsS3Discovery) CloudServiceID() string {
+func (d *awsS3Discovery) CertificationTargetID() string {
 	return d.csID
 }
 
@@ -177,12 +177,12 @@ func (b *bucket) String() string {
 }
 
 // NewAwsStorageDiscovery constructs a new awsS3Discovery initializing the s3-api and isDiscovering with true
-func NewAwsStorageDiscovery(client *Client, cloudServiceID string) discovery.Discoverer {
+func NewAwsStorageDiscovery(client *Client, CertificationTargetID string) discovery.Discoverer {
 	return &awsS3Discovery{
 		storageAPI:    s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 		awsConfig:     client,
-		csID:          cloudServiceID,
+		csID:          CertificationTargetID,
 	}
 }
 

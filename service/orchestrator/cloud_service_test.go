@@ -47,11 +47,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestService_RegisterCloudService(t *testing.T) {
+func TestService_RegisterCertificationTarget(t *testing.T) {
 	tests := []struct {
 		name    string
-		req     *orchestrator.RegisterCloudServiceRequest
-		res     *orchestrator.CloudService
+		req     *orchestrator.RegisterCertificationTargetRequest
+		res     *orchestrator.CertificationTarget
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -65,7 +65,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 		},
 		{
 			name: "missing service",
-			req:  &orchestrator.RegisterCloudServiceRequest{},
+			req:  &orchestrator.RegisterCertificationTargetRequest{},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "cloud_service: value is required") &&
@@ -74,7 +74,7 @@ func TestService_RegisterCloudService(t *testing.T) {
 		},
 		{
 			name: "missing service name",
-			req:  &orchestrator.RegisterCloudServiceRequest{CloudService: &orchestrator.CloudService{}},
+			req:  &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{}},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "cloud_service.name: value length must be at least 1 characters") &&
@@ -83,26 +83,26 @@ func TestService_RegisterCloudService(t *testing.T) {
 		},
 		{
 			name: "Happy path: without metadata as input",
-			req: &orchestrator.RegisterCloudServiceRequest{
-				CloudService: &orchestrator.CloudService{
+			req: &orchestrator.RegisterCertificationTargetRequest{
+				CertificationTarget: &orchestrator.CertificationTarget{
 					Name:        "test",
 					Description: "some",
 				},
 			},
-			res: &orchestrator.CloudService{
+			res: &orchestrator.CertificationTarget{
 				Name:        "test",
 				Description: "some",
-				Metadata:    &orchestrator.CloudService_Metadata{},
+				Metadata:    &orchestrator.CertificationTarget_Metadata{},
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "Happy path: with metadata as input",
-			req: &orchestrator.RegisterCloudServiceRequest{
-				CloudService: &orchestrator.CloudService{
+			req: &orchestrator.RegisterCertificationTargetRequest{
+				CertificationTarget: &orchestrator.CertificationTarget{
 					Name:        "test",
 					Description: "some",
-					Metadata: &orchestrator.CloudService_Metadata{
+					Metadata: &orchestrator.CertificationTarget_Metadata{
 						Labels: map[string]string{
 							"owner": "testOwner",
 							"env":   "prod",
@@ -110,10 +110,10 @@ func TestService_RegisterCloudService(t *testing.T) {
 					},
 				},
 			},
-			res: &orchestrator.CloudService{
+			res: &orchestrator.CertificationTarget{
 				Name:        "test",
 				Description: "some",
-				Metadata: &orchestrator.CloudService_Metadata{
+				Metadata: &orchestrator.CertificationTarget_Metadata{
 					Labels: map[string]string{
 						"owner": "testOwner",
 						"env":   "prod",
@@ -124,14 +124,14 @@ func TestService_RegisterCloudService(t *testing.T) {
 		},
 	}
 	orchestratorService := NewService()
-	cloudService, err := orchestratorService.CreateDefaultTargetCloudService()
+	CertificationTarget, err := orchestratorService.CreateDefaultTargetCertificationTarget()
 	assert.NoError(t, err)
-	assert.NotNil(t, cloudService)
-	assert.NoError(t, api.Validate(cloudService))
+	assert.NotNil(t, CertificationTarget)
+	assert.NoError(t, api.Validate(CertificationTarget))
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := orchestratorService.RegisterCloudService(context.Background(), tt.req)
+			res, err := orchestratorService.RegisterCertificationTarget(context.Background(), tt.req)
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
@@ -159,13 +159,13 @@ func TestService_RegisterCloudService(t *testing.T) {
 	}
 }
 
-func TestService_GetCloudService(t *testing.T) {
+func TestService_GetCertificationTarget(t *testing.T) {
 	tests := []struct {
 		name    string
 		svc     *Service
 		ctx     context.Context
-		req     *orchestrator.GetCloudServiceRequest
-		res     *orchestrator.CloudService
+		req     *orchestrator.GetCertificationTargetRequest
+		res     *orchestrator.CertificationTarget
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -183,7 +183,7 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "cloud service not found",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, "service not found") &&
@@ -194,19 +194,19 @@ func TestService_GetCloudService(t *testing.T) {
 			name: "valid",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
-			res: &orchestrator.CloudService{
-				Id:          DefaultTargetCloudServiceId,
-				Name:        DefaultTargetCloudServiceName,
-				Description: DefaultTargetCloudServiceDescription,
+			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId},
+			res: &orchestrator.CertificationTarget{
+				Id:          DefaultTargetCertificationTargetId,
+				Name:        DefaultTargetCertificationTargetName,
+				Description: DefaultTargetCertificationTargetDescription,
 			},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "permission denied",
-			svc:  NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1))),
+			svc:  NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1))),
 			ctx:  context.TODO(),
-			req:  &orchestrator.GetCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId},
+			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
@@ -215,18 +215,18 @@ func TestService_GetCloudService(t *testing.T) {
 		},
 		{
 			name: "permission granted",
-			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-				_ = s.Create(&orchestrator.CloudService{
-					Id:        testdata.MockCloudServiceID1,
+			svc: NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)), WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+				_ = s.Create(&orchestrator.CertificationTarget{
+					Id:        testdata.MockCertificationTargetID1,
 					Name:      "service1",
 					CreatedAt: timestamppb.Now(),
 					UpdatedAt: timestamppb.Now(),
 				})
 			}))),
 			ctx: context.TODO(),
-			req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
-			res: &orchestrator.CloudService{
-				Id:   testdata.MockCloudServiceID1,
+			req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
+			res: &orchestrator.CertificationTarget{
+				Id:   testdata.MockCertificationTargetID1,
 				Name: "service1",
 			},
 			wantErr: assert.NoError,
@@ -235,10 +235,10 @@ func TestService_GetCloudService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.svc.CreateDefaultTargetCloudService()
+			_, err := tt.svc.CreateDefaultTargetCertificationTarget()
 			assert.NoError(t, err)
 
-			res, err := tt.svc.GetCloudService(tt.ctx, tt.req)
+			res, err := tt.svc.GetCertificationTarget(tt.ctx, tt.req)
 			tt.wantErr(t, err)
 
 			if tt.res != nil {
@@ -256,130 +256,130 @@ func TestService_GetCloudService(t *testing.T) {
 	}
 }
 
-func TestService_UpdateCloudService(t *testing.T) {
+func TestService_UpdateCertificationTarget(t *testing.T) {
 	var (
-		cloudService *orchestrator.CloudService
-		err          error
+		CertificationTarget *orchestrator.CertificationTarget
+		err                 error
 	)
-	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1)))
+	orchestratorService := NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)))
 
 	// 1st case: Service is nil
-	_, err = orchestratorService.UpdateCloudService(context.TODO(), &orchestrator.UpdateCloudServiceRequest{})
+	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 2nd case: Service ID is nil
-	_, err = orchestratorService.UpdateCloudService(context.TODO(), &orchestrator.UpdateCloudServiceRequest{
-		CloudService: &orchestrator.CloudService{},
+	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+		CertificationTarget: &orchestrator.CertificationTarget{},
 	})
 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	// 3rd case: Service not found since there are no services yet
-	_, err = orchestratorService.UpdateCloudService(context.TODO(), &orchestrator.UpdateCloudServiceRequest{
-		CloudService: &orchestrator.CloudService{
-			Id:          testdata.MockCloudServiceID1,
-			Name:        DefaultTargetCloudServiceName,
-			Description: DefaultTargetCloudServiceDescription,
+	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+		CertificationTarget: &orchestrator.CertificationTarget{
+			Id:          testdata.MockCertificationTargetID1,
+			Name:        DefaultTargetCertificationTargetName,
+			Description: DefaultTargetCertificationTargetDescription,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Service updated successfully
-	err = orchestratorService.storage.Create(&orchestrator.CloudService{
-		Id:          testdata.MockCloudServiceID1,
-		Name:        DefaultTargetCloudServiceName,
-		Description: DefaultTargetCloudServiceDescription,
+	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{
+		Id:          testdata.MockCertificationTargetID1,
+		Name:        DefaultTargetCertificationTargetName,
+		Description: DefaultTargetCertificationTargetDescription,
 	})
 	assert.NoError(t, err)
 	if err != nil {
 		return
 	}
-	cloudService, err = orchestratorService.UpdateCloudService(context.TODO(), &orchestrator.UpdateCloudServiceRequest{
-		CloudService: &orchestrator.CloudService{
-			Id:          testdata.MockCloudServiceID1,
+	CertificationTarget, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
+		CertificationTarget: &orchestrator.CertificationTarget{
+			Id:          testdata.MockCertificationTargetID1,
 			Name:        "NewName",
 			Description: "",
 		},
 	})
 	assert.NoError(t, err)
-	assert.NotNil(t, cloudService)
-	assert.NoError(t, api.Validate(cloudService))
-	assert.Equal(t, "NewName", cloudService.Name)
+	assert.NotNil(t, CertificationTarget)
+	assert.NoError(t, api.Validate(CertificationTarget))
+	assert.Equal(t, "NewName", CertificationTarget.Name)
 	// Description should be overwritten with empty string
-	assert.Equal(t, "", cloudService.Description)
+	assert.Equal(t, "", CertificationTarget.Description)
 }
 
-func TestService_RemoveCloudService(t *testing.T) {
+func TestService_RemoveCertificationTarget(t *testing.T) {
 	var (
-		cloudServiceResponse      *orchestrator.CloudService
-		err                       error
-		listCloudServicesResponse *orchestrator.ListCloudServicesResponse
+		CertificationTargetResponse      *orchestrator.CertificationTarget
+		err                              error
+		listCertificationTargetsResponse *orchestrator.ListCertificationTargetsResponse
 	)
 	orchestratorService := NewService()
 
 	// 1st case: Empty service ID error
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: ""})
+	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: ""})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId})
+	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
 	assert.NoError(t, err)
-	assert.NotNil(t, cloudServiceResponse)
+	assert.NotNil(t, CertificationTargetResponse)
 
 	// There is a record for cloud services in the DB (default one)
-	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.NotEmpty(t, listCloudServicesResponse.Services)
+	assert.NotNil(t, listCertificationTargetsResponse.Services)
+	assert.NotEmpty(t, listCertificationTargetsResponse.Services)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: DefaultTargetCloudServiceId})
+	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId})
 	assert.NoError(t, err)
 
 	// There is a record for cloud services in the DB (default one)
-	listCloudServicesResponse, err = orchestratorService.ListCloudServices(context.Background(), &orchestrator.ListCloudServicesRequest{})
+	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listCloudServicesResponse.Services)
-	assert.Empty(t, listCloudServicesResponse.Services)
+	assert.NotNil(t, listCertificationTargetsResponse.Services)
+	assert.Empty(t, listCertificationTargetsResponse.Services)
 }
 
-func TestService_CreateDefaultTargetCloudService(t *testing.T) {
+func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
 	var (
-		cloudServiceResponse *orchestrator.CloudService
-		err                  error
+		CertificationTargetResponse *orchestrator.CertificationTarget
+		err                         error
 	)
 	orchestratorService := NewService()
 
 	// 1st case: No records for cloud services -> Default target service is created
-	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
 	assert.NoError(t, err)
 	// Check timestamps and delete it for further tests
-	assert.NotEmpty(t, cloudServiceResponse.CreatedAt)
-	assert.NotEmpty(t, cloudServiceResponse.UpdatedAt)
-	cloudServiceResponse.CreatedAt = nil
-	cloudServiceResponse.UpdatedAt = nil
+	assert.NotEmpty(t, CertificationTargetResponse.CreatedAt)
+	assert.NotEmpty(t, CertificationTargetResponse.UpdatedAt)
+	CertificationTargetResponse.CreatedAt = nil
+	CertificationTargetResponse.UpdatedAt = nil
 
-	assert.Equal(t, &orchestrator.CloudService{
-		Id:          DefaultTargetCloudServiceId,
-		Name:        DefaultTargetCloudServiceName,
-		Description: DefaultTargetCloudServiceDescription,
-	}, cloudServiceResponse)
+	assert.Equal(t, &orchestrator.CertificationTarget{
+		Id:          DefaultTargetCertificationTargetId,
+		Name:        DefaultTargetCertificationTargetName,
+		Description: DefaultTargetCertificationTargetDescription,
+	}, CertificationTargetResponse)
 
-	// Check if CloudService is valid
-	assert.NoError(t, api.Validate(cloudServiceResponse))
+	// Check if CertificationTarget is valid
+	assert.NoError(t, api.Validate(CertificationTargetResponse))
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
-	cloudServiceResponse, err = orchestratorService.CreateDefaultTargetCloudService()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
 	assert.NoError(t, err)
-	assert.Nil(t, cloudServiceResponse)
+	assert.Nil(t, CertificationTargetResponse)
 }
 
-func TestService_ListCloudServices(t *testing.T) {
+func TestService_ListCertificationTargets(t *testing.T) {
 	type fields struct {
 		AssessmentResultHooks []assessment.ResultHookFunc
 		storage               persistence.Storage
@@ -392,46 +392,46 @@ func TestService_ListCloudServices(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.ListCloudServicesRequest
+		req *orchestrator.ListCertificationTargetsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.ListCloudServicesResponse
+		wantRes *orchestrator.ListCertificationTargetsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "retrieve empty list",
-			args: args{req: &orchestrator.ListCloudServicesRequest{}},
+			args: args{req: &orchestrator.ListCertificationTargetsRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListCloudServicesResponse{},
+			wantRes: &orchestrator.ListCertificationTargetsResponse{},
 			wantErr: assert.NoError,
 		},
 		{
 			name: "list with one item",
-			args: args{req: &orchestrator.ListCloudServicesRequest{}},
+			args: args{req: &orchestrator.ListCertificationTargetsRequest{}},
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					service := &orchestrator.CloudService{
-						Id:          DefaultTargetCloudServiceId,
-						Name:        DefaultTargetCloudServiceName,
-						Description: DefaultTargetCloudServiceDescription,
+					service := &orchestrator.CertificationTarget{
+						Id:          DefaultTargetCertificationTargetId,
+						Name:        DefaultTargetCertificationTargetName,
+						Description: DefaultTargetCertificationTargetDescription,
 					}
 
 					_ = s.Create(service)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
-			wantRes: &orchestrator.ListCloudServicesResponse{
-				Services: []*orchestrator.CloudService{
+			wantRes: &orchestrator.ListCertificationTargetsResponse{
+				Services: []*orchestrator.CertificationTarget{
 					{
-						Id:          DefaultTargetCloudServiceId,
-						Name:        DefaultTargetCloudServiceName,
-						Description: DefaultTargetCloudServiceDescription,
+						Id:          DefaultTargetCertificationTargetId,
+						Name:        DefaultTargetCertificationTargetName,
+						Description: DefaultTargetCertificationTargetDescription,
 					},
 				},
 			},
@@ -442,26 +442,26 @@ func TestService_ListCloudServices(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two cloud services, of which none we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CloudService{
-						Id:   testdata.MockCloudServiceID1,
-						Name: testdata.MockCloudServiceName1,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:   testdata.MockCertificationTargetID1,
+						Name: testdata.MockCertificationTargetName1,
 					})
-					_ = s.Create(&orchestrator.CloudService{
-						Id:   testdata.MockCloudServiceID2,
-						Name: testdata.MockCloudServiceName2,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:   testdata.MockCertificationTargetID2,
+						Name: testdata.MockCertificationTargetName2,
 					})
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListCloudServicesRequest{},
+				req: &orchestrator.ListCertificationTargetsRequest{},
 			},
-			wantRes: &orchestrator.ListCloudServicesResponse{
-				Services: []*orchestrator.CloudService{
+			wantRes: &orchestrator.ListCertificationTargetsResponse{
+				Services: []*orchestrator.CertificationTarget{
 					{
-						Id:   testdata.MockCloudServiceID1,
-						Name: testdata.MockCloudServiceName1,
+						Id:   testdata.MockCertificationTargetID1,
+						Name: testdata.MockCertificationTargetName1,
 					},
 				},
 			},
@@ -472,26 +472,26 @@ func TestService_ListCloudServices(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store two cloud services, of which only one we are allowed to retrieve in the test
-					_ = s.Create(&orchestrator.CloudService{
-						Id:   testdata.MockCloudServiceID1,
-						Name: testdata.MockCloudServiceName1,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:   testdata.MockCertificationTargetID1,
+						Name: testdata.MockCertificationTargetName1,
 					})
-					_ = s.Create(&orchestrator.CloudService{
-						Id:   testdata.MockCloudServiceID2,
-						Name: testdata.MockCloudServiceName1,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:   testdata.MockCertificationTargetID2,
+						Name: testdata.MockCertificationTargetName1,
 					})
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.ListCloudServicesRequest{},
+				req: &orchestrator.ListCertificationTargetsRequest{},
 			},
-			wantRes: &orchestrator.ListCloudServicesResponse{
-				Services: []*orchestrator.CloudService{
+			wantRes: &orchestrator.ListCertificationTargetsResponse{
+				Services: []*orchestrator.CertificationTarget{
 					{
-						Id:   testdata.MockCloudServiceID1,
-						Name: testdata.MockCloudServiceName1,
+						Id:   testdata.MockCertificationTargetID1,
+						Name: testdata.MockCertificationTargetName1,
 					},
 				},
 			},
@@ -512,7 +512,7 @@ func TestService_ListCloudServices(t *testing.T) {
 				authz:                 tt.fields.authz,
 			}
 
-			gotRes, err := svc.ListCloudServices(tt.args.ctx, tt.args.req)
+			gotRes, err := svc.ListCertificationTargets(tt.args.ctx, tt.args.req)
 			assert.NoError(t, api.Validate(gotRes))
 
 			tt.wantErr(t, err, tt.args)
@@ -521,28 +521,28 @@ func TestService_ListCloudServices(t *testing.T) {
 	}
 }
 
-func TestService_GetCloudServiceStatistics(t *testing.T) {
+func TestService_GetCertificationTargetStatistics(t *testing.T) {
 	type fields struct {
-		cloudServiceHooks     []orchestrator.CloudServiceHookFunc
-		toeHooks              []orchestrator.TargetOfEvaluationHookFunc
-		AssessmentResultHooks []assessment.ResultHookFunc
-		storage               persistence.Storage
-		metricsFile           string
-		loadMetricsFunc       func() ([]*assessment.Metric, error)
-		catalogsFolder        string
-		loadCatalogsFunc      func() ([]*orchestrator.Catalog, error)
-		events                chan *orchestrator.MetricChangeEvent
-		authz                 service.AuthorizationStrategy
+		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
+		toeHooks                 []orchestrator.TargetOfEvaluationHookFunc
+		AssessmentResultHooks    []assessment.ResultHookFunc
+		storage                  persistence.Storage
+		metricsFile              string
+		loadMetricsFunc          func() ([]*assessment.Metric, error)
+		catalogsFolder           string
+		loadCatalogsFunc         func() ([]*orchestrator.Catalog, error)
+		events                   chan *orchestrator.MetricChangeEvent
+		authz                    service.AuthorizationStrategy
 	}
 	type args struct {
 		ctx context.Context
-		req *orchestrator.GetCloudServiceStatisticsRequest
+		req *orchestrator.GetCertificationTargetStatisticsRequest
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		wantRes *orchestrator.GetCloudServiceStatisticsResponse
+		wantRes *orchestrator.GetCertificationTargetStatisticsResponse
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -558,12 +558,12 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 		{
 			name: "Permission denied",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID2),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCloudServiceStatisticsRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
+				req: &orchestrator.GetCertificationTargetStatisticsRequest{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantRes: nil,
@@ -573,15 +573,15 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 			},
 		},
 		{
-			name: "Storage error: Get CloudService 'service not found'",
+			name: "Storage error: Get CertificationTarget 'service not found'",
 			fields: fields{
-				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCloudServiceStatisticsRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
+				req: &orchestrator.GetCertificationTargetStatisticsRequest{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantRes: nil,
@@ -591,15 +591,15 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 			},
 		},
 		{
-			name: "Storage error: Get CloudService",
+			name: "Storage error: Get CertificationTarget",
 			fields: fields{
-				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCloudServiceStatisticsRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
+				req: &orchestrator.GetCertificationTargetStatisticsRequest{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
 			wantRes: nil,
@@ -613,10 +613,10 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					// Store one cloud services
-					_ = s.Create(&orchestrator.CloudService{
-						Id:          testdata.MockCloudServiceID1,
-						Name:        testdata.MockCloudServiceName1,
-						Description: testdata.MockCloudServiceDescription1,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:          testdata.MockCertificationTargetID1,
+						Name:        testdata.MockCertificationTargetName1,
+						Description: testdata.MockCertificationTargetDescription1,
 						CatalogsInScope: []*orchestrator.Catalog{
 							{
 								Id:          testdata.MockCatalogID,
@@ -625,48 +625,48 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 							},
 						},
 					})
-					_ = s.Create(&orchestrator.CloudService{
-						Id:   testdata.MockCloudServiceID2,
-						Name: testdata.MockCloudServiceName2,
+					_ = s.Create(&orchestrator.CertificationTarget{
+						Id:   testdata.MockCertificationTargetID2,
+						Name: testdata.MockCertificationTargetName2,
 					})
 					_ = s.Create(&evidence.Evidence{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&evidence.Evidence{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID2,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID2,
 					})
 					_ = s.Create(&assessment.AssessmentResult{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&assessment.AssessmentResult{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&assessment.AssessmentResult{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID2,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID2,
 					})
 					_ = s.Create(&discovery.Resource{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					})
 					_ = s.Create(&discovery.Resource{
-						Id:             uuid.NewString(),
-						CloudServiceId: testdata.MockCloudServiceID2,
+						Id:                    uuid.NewString(),
+						CertificationTargetId: testdata.MockCertificationTargetID2,
 					})
 				}),
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
 			args: args{
 				ctx: context.TODO(),
-				req: &orchestrator.GetCloudServiceStatisticsRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
+				req: &orchestrator.GetCertificationTargetStatisticsRequest{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			wantRes: &orchestrator.GetCloudServiceStatisticsResponse{
+			wantRes: &orchestrator.GetCertificationTargetStatisticsResponse{
 				NumberOfDiscoveredResources: 1,
 				NumberOfAssessmentResults:   2,
 				NumberOfEvidences:           1,
@@ -678,18 +678,18 @@ func TestService_GetCloudServiceStatistics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
-				cloudServiceHooks:     tt.fields.cloudServiceHooks,
-				toeHooks:              tt.fields.toeHooks,
-				AssessmentResultHooks: tt.fields.AssessmentResultHooks,
-				storage:               tt.fields.storage,
-				metricsFile:           tt.fields.metricsFile,
-				loadMetricsFunc:       tt.fields.loadMetricsFunc,
-				catalogsFolder:        tt.fields.catalogsFolder,
-				loadCatalogsFunc:      tt.fields.loadCatalogsFunc,
-				events:                tt.fields.events,
-				authz:                 tt.fields.authz,
+				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
+				toeHooks:                 tt.fields.toeHooks,
+				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
+				storage:                  tt.fields.storage,
+				metricsFile:              tt.fields.metricsFile,
+				loadMetricsFunc:          tt.fields.loadMetricsFunc,
+				catalogsFolder:           tt.fields.catalogsFolder,
+				loadCatalogsFunc:         tt.fields.loadCatalogsFunc,
+				events:                   tt.fields.events,
+				authz:                    tt.fields.authz,
 			}
-			gotRes, err := s.GetCloudServiceStatistics(tt.args.ctx, tt.args.req)
+			gotRes, err := s.GetCertificationTargetStatistics(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.wantRes, gotRes)
 		})

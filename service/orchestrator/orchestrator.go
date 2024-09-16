@@ -70,7 +70,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// Create default target Cloud Service
 			if viper.GetBool(config.CreateDefaultTargetFlag) {
-				_, err := svc.CreateDefaultTargetCloudService()
+				_, err := svc.CreateDefaultTargetCertificationTarget()
 				if err != nil {
 					return nil, fmt.Errorf("could not register default target cloud service: %v", err)
 				}
@@ -85,9 +85,9 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 type Service struct {
 	orchestrator.UnimplementedOrchestratorServer
 
-	// cloudServiceHooks is a list of hook functions that can be used to inform
-	// about updated CloudServices
-	cloudServiceHooks []orchestrator.CloudServiceHookFunc
+	// CertificationTargetHooks is a list of hook functions that can be used to inform
+	// about updated CertificationTargets
+	CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 
 	// toeHooks is a list of hook functions that can be used to inform about updated Target of Evaluations
 	toeHooks []orchestrator.TargetOfEvaluationHookFunc
@@ -161,7 +161,7 @@ func WithStorage(storage persistence.Storage) service.Option[*Service] {
 // WithAuthorizationStrategyJWT is an option that configures an JWT-based authorization strategy using a specific claim key.
 func WithAuthorizationStrategyJWT(key string, allowAllKey string) service.Option[*Service] {
 	return func(s *Service) {
-		s.authz = &service.AuthorizationStrategyJWT{CloudServicesKey: key, AllowAllKey: allowAllKey}
+		s.authz = &service.AuthorizationStrategyJWT{CertificationTargetsKey: key, AllowAllKey: allowAllKey}
 	}
 }
 
@@ -214,9 +214,9 @@ func (svc *Service) Init() {}
 func (svc *Service) Shutdown() {}
 
 // informHooks informs the registered hook functions
-func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudService, err error) {
+func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CertificationTarget, err error) {
 	s.hookMutex.RLock()
-	hooks := s.cloudServiceHooks
+	hooks := s.CertificationTargetHooks
 	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
@@ -228,10 +228,10 @@ func (s *Service) informHooks(ctx context.Context, cld *orchestrator.CloudServic
 	}
 }
 
-func (s *Service) RegisterCloudServiceHook(hook orchestrator.CloudServiceHookFunc) {
+func (s *Service) RegisterCertificationTargetHook(hook orchestrator.CertificationTargetHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
-	s.cloudServiceHooks = append(s.cloudServiceHooks, hook)
+	s.CertificationTargetHooks = append(s.CertificationTargetHooks, hook)
 }
 
 // GetRuntimeInfo implements a method to retrieve runtime information

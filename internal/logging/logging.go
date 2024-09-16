@@ -123,9 +123,9 @@ func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req 
 	// Check, if it is a cloud service request. In this case we can append the
 	// information about the target cloud service. However, we only want to do
 	// that, if the payload type is not a cloud service itself.
-	csreq, ok := req.(api.CloudServiceRequest)
-	if name != "CloudService" && ok {
-		buffer.WriteString(fmt.Sprintf(" for Cloud Service '%s'", csreq.GetCloudServiceId()))
+	csreq, ok := req.(api.CertificationTargetRequest)
+	if name != "CertificationTarget" && ok {
+		buffer.WriteString(fmt.Sprintf(" for Cloud Service '%s'", csreq.GetCertificationTargetId()))
 	}
 
 	// If params is not empty, the elements are joined and added to the message

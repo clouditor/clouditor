@@ -117,11 +117,11 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						ToolId:         testdata.MockEvidenceToolID1,
-						Timestamp:      timestamppb.Now(),
-						Raw:            nil,
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						ToolId:                testdata.MockEvidenceToolID1,
+						Timestamp:             timestamppb.Now(),
+						Raw:                   nil,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id: "mock-id",
 						}),
@@ -144,10 +144,10 @@ func TestService_StoreEvidence(t *testing.T) {
 				in0: context.TODO(),
 				req: &evidence.StoreEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						Timestamp:      timestamppb.Now(),
-						Raw:            nil,
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						Timestamp:             timestamppb.Now(),
+						Raw:                   nil,
 						Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 							Id: "mock-id-1",
 						}),
@@ -218,10 +218,10 @@ func TestService_StoreEvidences(t *testing.T) {
 				streamToServer: createMockStream([]*evidence.StoreEvidenceRequest{
 					{
 						Evidence: &evidence.Evidence{
-							Id:             uuid.NewString(),
-							CloudServiceId: "MockCloudServiceId",
-							Timestamp:      timestamppb.Now(),
-							Raw:            nil,
+							Id:                    uuid.NewString(),
+							CertificationTargetId: "MockCertificationTargetId",
+							Timestamp:             timestamppb.Now(),
+							Raw:                   nil,
 							Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 								Id: "mock-id-1",
 							}),
@@ -304,7 +304,7 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Successful List Of Evidences (with allowed cloud service)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId, evidencetest.MockEvidence2.CloudServiceId),
+				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CertificationTargetId, evidencetest.MockEvidence2.CertificationTargetId),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
@@ -317,14 +317,14 @@ func TestService_ListEvidences(t *testing.T) {
 			wantErr: assert.NoError,
 			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
 				return assert.Equal(t, len(got.Evidences), 2) &&
-					assert.Equal(t, evidencetest.MockEvidence1.CloudServiceId, got.Evidences[0].CloudServiceId) &&
-					assert.Equal(t, evidencetest.MockEvidence2.CloudServiceId, got.Evidences[1].CloudServiceId)
+					assert.Equal(t, evidencetest.MockEvidence1.CertificationTargetId, got.Evidences[0].CertificationTargetId) &&
+					assert.Equal(t, evidencetest.MockEvidence2.CertificationTargetId, got.Evidences[1].CertificationTargetId)
 			},
 		},
 		{
 			name: "Successful Filter Of Evidences (with allowed cloud service)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CloudServiceId),
+				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CertificationTargetId),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence1))
 					assert.NoError(t, s.Create(&evidencetest.MockEvidence2))
@@ -337,7 +337,7 @@ func TestService_ListEvidences(t *testing.T) {
 			wantErr: assert.NoError,
 			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
 				for _, e := range got.Evidences {
-					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, e.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CertificationTargetId, e.CertificationTargetId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, e.ToolId)
 				}
 
@@ -361,14 +361,14 @@ func TestService_ListEvidences(t *testing.T) {
 					OrderBy:   evidencetest.MockListEvidenceRequest1.OrderBy,
 					Asc:       evidencetest.MockListEvidenceRequest1.Asc,
 					Filter: &evidence.Filter{
-						CloudServiceId: evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId,
+						CertificationTargetId: evidencetest.MockListEvidenceRequest1.Filter.CertificationTargetId,
 					},
 				},
 			},
 			wantErr: assert.NoError,
 			wantRes: func(t *testing.T, got *evidence.ListEvidencesResponse) bool {
 				for _, r := range got.Evidences {
-					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.CertificationTargetId, r.CertificationTargetId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest1.Filter.ToolId, r.ToolId)
 				}
 
@@ -402,7 +402,7 @@ func TestService_ListEvidences(t *testing.T) {
 
 				// Loop through all received evidences and check whether tool and service ids are correct.
 				for _, r := range got.Evidences {
-					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.CloudServiceId, r.CloudServiceId)
+					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.CertificationTargetId, r.CertificationTargetId)
 					assert.Equal(t, *evidencetest.MockListEvidenceRequest2.Filter.ToolId, r.ToolId)
 				}
 
@@ -412,18 +412,18 @@ func TestService_ListEvidences(t *testing.T) {
 		{
 			name: "Permission denied (cloud service id not allowed)",
 			fields: fields{
-				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCloudServiceID1), // allow only MockCloudServiceID
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1), // allow only MockCertificationTargetID
 			},
 			args: args{
 				in0: context.TODO(),
 				req: &evidence.ListEvidencesRequest{
 					Filter: &evidence.Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID2),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID2),
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCloudServiceID2 is not allowed
+				assert.Equal(t, status.Code(err), codes.PermissionDenied) // MockCertificationTargetID2 is not allowed
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 			wantRes: assert.Nil[*evidence.ListEvidencesResponse],
@@ -469,7 +469,7 @@ func TestService_ListEvidences(t *testing.T) {
 					OrderBy:   evidencetest.MockListEvidenceRequest2.OrderBy,
 					Asc:       evidencetest.MockListEvidenceRequest2.Asc,
 					Filter: &evidence.Filter{
-						CloudServiceId: util.Ref("No UUID Format"),
+						CertificationTargetId: util.Ref("No UUID Format"),
 					},
 				},
 			},
@@ -567,11 +567,11 @@ func TestService_EvidenceHook(t *testing.T) {
 			args: args{
 				in0: context.TODO(),
 				evidence: &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-					Id:             testdata.MockEvidenceID1,
-					CloudServiceId: testdata.MockCloudServiceID2,
-					Timestamp:      timestamppb.Now(),
-					Raw:            nil,
-					ToolId:         "mockToolId-1",
+					Id:                    testdata.MockEvidenceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID2,
+					Timestamp:             timestamppb.Now(),
+					Raw:                   nil,
+					ToolId:                "mockToolId-1",
 					Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 						Id: "mock-id-1",
 					}),
@@ -612,11 +612,11 @@ func createStoreEvidenceRequestMocks(t *testing.T, count int) []*evidence.StoreE
 	for i := 0; i < count; i++ {
 		evidenceRequest := &evidence.StoreEvidenceRequest{
 			Evidence: &evidence.Evidence{
-				Id:             uuid.NewString(),
-				ToolId:         fmt.Sprintf("MockToolId-%d", i),
-				CloudServiceId: testdata.MockCloudServiceID1,
-				Timestamp:      timestamppb.Now(),
-				Raw:            nil,
+				Id:                    uuid.NewString(),
+				ToolId:                fmt.Sprintf("MockToolId-%d", i),
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				Timestamp:             timestamppb.Now(),
+				Raw:                   nil,
 				Resource: prototest.NewAny(t, &ontology.VirtualMachine{
 					Id: "mock-id-1",
 				}),
@@ -783,11 +783,11 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID2,
-						ToolId:         testdata.MockEvidenceToolID1,
-						Resource:       nil,
-						Timestamp:      timestamppb.Now(),
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID2,
+						ToolId:                testdata.MockEvidenceToolID1,
+						Resource:              nil,
+						Timestamp:             timestamppb.Now(),
 					}))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false),
@@ -809,11 +809,11 @@ func TestService_GetEvidence(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
-						ToolId:         testdata.MockEvidenceToolID1,
-						Resource:       nil,
-						Timestamp:      timestamppb.Now(),
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						ToolId:                testdata.MockEvidenceToolID1,
+						Resource:              nil,
+						Timestamp:             timestamppb.Now(),
 					}))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),

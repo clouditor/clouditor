@@ -46,8 +46,8 @@ func (req *AssessEvidenceRequest) GetPayload() proto.Message {
 	return req.Evidence
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns the cloud service ID of the inner
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns the cloud service ID of the inner
 // object.
-func (req *AssessEvidenceRequest) GetCloudServiceId() string {
-	return req.GetEvidence().GetCloudServiceId()
+func (req *AssessEvidenceRequest) GetCertificationTargetId() string {
+	return req.GetEvidence().GetCertificationTargetId()
 }

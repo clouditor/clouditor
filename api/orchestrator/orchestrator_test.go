@@ -32,9 +32,9 @@ import (
 	"clouditor.io/clouditor/v2/internal/testdata"
 )
 
-func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {
+func TestUpdateCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		CloudService *CloudService
+		CertificationTarget *CertificationTarget
 	}
 	tests := []struct {
 		name   string
@@ -44,26 +44,26 @@ func TestUpdateCloudServiceRequest_GetCloudServiceId(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				&CloudService{
-					Id: testdata.MockCloudServiceID1,
+				&CertificationTarget{
+					Id: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &UpdateCloudServiceRequest{
-				CloudService: tt.fields.CloudService,
+			req := &UpdateCertificationTargetRequest{
+				CertificationTarget: tt.fields.CertificationTarget,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("UpdateCloudServiceRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("UpdateCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestStoreAssessmentResultRequest_GetCloudServiceId(t *testing.T) {
+func TestStoreAssessmentResultRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		Result *assessment.AssessmentResult
 	}
@@ -76,10 +76,10 @@ func TestStoreAssessmentResultRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Result: &assessment.AssessmentResult{
-					CloudServiceId: testdata.MockCloudServiceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -87,14 +87,14 @@ func TestStoreAssessmentResultRequest_GetCloudServiceId(t *testing.T) {
 			req := &StoreAssessmentResultRequest{
 				Result: tt.fields.Result,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("StoreAssessmentResultRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("StoreAssessmentResultRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
+func TestCreateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		TargetOfEvaluation *TargetOfEvaluation
 	}
@@ -107,10 +107,10 @@ func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				&TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -118,14 +118,14 @@ func TestCreateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			req := &CreateTargetOfEvaluationRequest{
 				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("CreateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("CreateTargetOfEvaluationRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
+func TestCreateCertificateRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		Certificate *Certificate
 	}
@@ -138,10 +138,10 @@ func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Certificate: &Certificate{
-					CloudServiceId: testdata.MockCloudServiceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -149,14 +149,14 @@ func TestCreateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			req := &CreateCertificateRequest{
 				Certificate: tt.fields.Certificate,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("CreateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("CreateCertificateRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
+func TestUpdateCertificateRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		Certificate *Certificate
 	}
@@ -169,10 +169,10 @@ func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				Certificate: &Certificate{
-					CloudServiceId: testdata.MockCloudServiceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -180,16 +180,16 @@ func TestUpdateCertificateRequest_GetCloudServiceId(t *testing.T) {
 			req := &UpdateCertificateRequest{
 				Certificate: tt.fields.Certificate,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("UpdateCertificateRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("UpdateCertificateRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestRegisterCloudServiceRequest_GetCloudServiceId(t *testing.T) {
+func TestRegisterCertificationTargetRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		CloudService *CloudService
+		CertificationTarget *CertificationTarget
 	}
 	tests := []struct {
 		name   string
@@ -199,24 +199,24 @@ func TestRegisterCloudServiceRequest_GetCloudServiceId(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				CloudService: &CloudService{},
+				CertificationTarget: &CertificationTarget{},
 			},
 			want: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &RegisterCloudServiceRequest{
-				CloudService: tt.fields.CloudService,
+			req := &RegisterCertificationTargetRequest{
+				CertificationTarget: tt.fields.CertificationTarget,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("RegisterCloudServiceRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("RegisterCertificationTargetRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
+func TestUpdateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
 		TargetOfEvaluation *TargetOfEvaluation
 	}
@@ -229,10 +229,10 @@ func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				TargetOfEvaluation: &TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
-			want: testdata.MockCloudServiceID1,
+			want: testdata.MockCertificationTargetID1,
 		},
 	}
 	for _, tt := range tests {
@@ -240,8 +240,8 @@ func TestUpdateTargetOfEvaluationRequest_GetCloudServiceId(t *testing.T) {
 			req := &UpdateTargetOfEvaluationRequest{
 				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
 			}
-			if got := req.GetCloudServiceId(); got != tt.want {
-				t.Errorf("UpdateTargetOfEvaluationRequest.GetCloudServiceId() = %v, want %v", got, tt.want)
+			if got := req.GetCertificationTargetId(); got != tt.want {
+				t.Errorf("UpdateTargetOfEvaluationRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}

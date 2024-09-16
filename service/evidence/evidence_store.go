@@ -220,8 +220,8 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
-	if !all && req.GetFilter().GetCloudServiceId() != "" && !slices.Contains(allowed, req.GetFilter().GetCloudServiceId()) {
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+	if !all && req.GetFilter().GetCertificationTargetId() != "" && !slices.Contains(allowed, req.GetFilter().GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -229,9 +229,9 @@ func (svc *Service) ListEvidences(ctx context.Context, req *evidence.ListEvidenc
 
 	// Apply filter options
 	if filter := req.GetFilter(); filter != nil {
-		if cloudServiceId := filter.GetCloudServiceId(); cloudServiceId != "" {
+		if CertificationTargetId := filter.GetCertificationTargetId(); CertificationTargetId != "" {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, cloudServiceId)
+			args = append(args, CertificationTargetId)
 		}
 		if toolId := filter.GetToolId(); toolId != "" {
 			query = append(query, "tool_id = ?")
@@ -272,7 +272,7 @@ func (svc *Service) GetEvidence(ctx context.Context, req *evidence.GetEvidenceRe
 
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any additional
 	// conditions to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		conds = []any{"id = ? AND cloud_service_id IN ?", req.EvidenceId, allowed}
 	} else {

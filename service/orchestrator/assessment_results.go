@@ -68,11 +68,11 @@ func (svc *Service) GetAssessmentResult(ctx context.Context, req *orchestrator.G
 	}
 
 	// Check if cloud_service_id in assessment_result is within allowed or one can access *all* the cloud services
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && !slices.Contains(allowed, res.GetCloudServiceId()) {
+	if !all && !slices.Contains(allowed, res.GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -92,11 +92,11 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 
 	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
 	// to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// The content of the filtered cloud service ID must be in the list of allowed cloud service IDs,
 	// unless one can access *all* the cloud services.
-	if !all && req.Filter != nil && req.Filter.CloudServiceId != nil && !slices.Contains(allowed, req.Filter.GetCloudServiceId()) {
+	if !all && req.Filter != nil && req.Filter.CertificationTargetId != nil && !slices.Contains(allowed, req.Filter.GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -111,9 +111,9 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * metric ID
 	// * tool ID
 	if req.Filter != nil {
-		if req.Filter.CloudServiceId != nil {
+		if req.Filter.CertificationTargetId != nil {
 			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Compliant != nil {
 			query = append(query, "compliant = ?")
