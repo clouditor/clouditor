@@ -18,7 +18,7 @@ popd
 
 # Run engine with parameters optimized for the UI and an in-memory database.
 ./engine --db-in-memory \
-    --dashboard-url=http://localhost:5173 \
+    --dashboard-callback-url=http://localhost:5173/callback \
     --api-cors-allowed-origins=http://localhost:5173  \
     --discovery-auto-start \
     $*

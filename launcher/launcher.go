@@ -148,7 +148,7 @@ func (l *Launcher) Launch() (err error) {
 				oauth2.WithClient(
 					"dashboard",
 					"",
-					fmt.Sprintf("%s/callback", viper.GetString(config.DashboardURLFlag)),
+					viper.GetString(config.DashboardCallbackURLFlag),
 				),
 				// Create a confidential client with default credentials for our services
 				oauth2.WithClient(
