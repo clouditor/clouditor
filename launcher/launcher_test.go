@@ -219,7 +219,7 @@ func TestLauncher_Launch(t *testing.T) {
 				viper.Set(config.APIKeyPathFlag, "keyPath")
 				viper.Set(config.APIKeyPasswordFlag, "passwd")
 				viper.Set(config.APIKeySaveOnCreateFlag, true)
-				viper.Set(config.DashboardURLFlag, "1.2.3.4")
+				viper.Set(config.DashboardCallbackURLFlag, "1.2.3.4")
 				viper.Set(config.ServiceOAuth2ClientIDFlag, "clientID")
 				viper.Set(config.APIDefaultUserFlag, "defaultUser")
 				viper.Set(config.APIDefaultPasswordFlag, "defaultPasswd")
