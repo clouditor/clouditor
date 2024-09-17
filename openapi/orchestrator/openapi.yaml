@@ -1575,6 +1575,9 @@ components:
                 A result resource, representing the result after assessing the cloud resource
                  with id resource_id.
         AssessmentTool:
+            required:
+                - name
+                - availableMetrics
             type: object
             properties:
                 id:
@@ -1592,6 +1595,11 @@ components:
                 Represents an external tool or service that offers assessments according to
                  certain metrics.
         Catalog:
+            required:
+                - id
+                - name
+                - categories
+                - shortName
             type: object
             properties:
                 id:
@@ -1631,6 +1639,10 @@ components:
                     type: string
                     description: a color for the cloud service used by the UI
         Category:
+            required:
+                - name
+                - catalogId
+                - controls
             type: object
             properties:
                 name:
@@ -1645,6 +1657,10 @@ components:
                     items:
                         $ref: '#/components/schemas/Control'
         Certificate:
+            required:
+                - id
+                - name
+                - cloudServiceId
             type: object
             properties:
                 id:
@@ -1672,6 +1688,11 @@ components:
                     description: A list of states at specific times
             description: An ISO17021-based certificate
         CloudService:
+            required:
+                - id
+                - name
+                - catalogsInScope
+                - configuredMetrics
             type: object
             properties:
                 id:
@@ -1712,6 +1733,13 @@ components:
                     type: string
                     description: an icon for the cloud service used by the UI
         Control:
+            required:
+                - id
+                - categoryName
+                - categoryCatalogId
+                - name
+                - controls
+                - metrics
             type: object
             properties:
                 id:
@@ -1830,6 +1858,9 @@ components:
                 nextPageToken:
                     type: string
         ListCloudServicesResponse:
+            required:
+                - services
+                - services
             type: object
             properties:
                 services:
@@ -1856,6 +1887,8 @@ components:
                         $ref: '#/components/schemas/MetricConfiguration'
                     description: A map of metric configurations associated by their metric ID
         ListMetricsResponse:
+            required:
+                - metrics
             type: object
             properties:
                 metrics:
@@ -2074,6 +2107,9 @@ components:
                  custom unary RPC and therefore requires a response message according to the
                  style convention. Since no return values are required, this is empty.
         TargetOfEvaluation:
+            required:
+                - cloudServiceId
+                - catalogId
             type: object
             properties:
                 cloudServiceId:
