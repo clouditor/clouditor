@@ -1575,6 +1575,9 @@ components:
                 A result resource, representing the result after assessing the cloud resource
                  with id resource_id.
         AssessmentTool:
+            required:
+                - name
+                - availableMetrics
             type: object
             properties:
                 id:
@@ -1595,6 +1598,7 @@ components:
             required:
                 - id
                 - name
+                - categories
                 - shortName
             type: object
             properties:
@@ -1638,6 +1642,7 @@ components:
             required:
                 - name
                 - catalogId
+                - controls
             type: object
             properties:
                 name:
@@ -1652,6 +1657,10 @@ components:
                     items:
                         $ref: '#/components/schemas/Control'
         Certificate:
+            required:
+                - id
+                - name
+                - cloudServiceId
             type: object
             properties:
                 id:
@@ -1682,6 +1691,8 @@ components:
             required:
                 - id
                 - name
+                - catalogsInScope
+                - configuredMetrics
             type: object
             properties:
                 id:
@@ -1727,6 +1738,8 @@ components:
                 - categoryName
                 - categoryCatalogId
                 - name
+                - controls
+                - metrics
             type: object
             properties:
                 id:
@@ -1847,6 +1860,7 @@ components:
         ListCloudServicesResponse:
             required:
                 - services
+                - services
             type: object
             properties:
                 services:
@@ -1873,6 +1887,8 @@ components:
                         $ref: '#/components/schemas/MetricConfiguration'
                     description: A map of metric configurations associated by their metric ID
         ListMetricsResponse:
+            required:
+                - metrics
             type: object
             properties:
                 metrics:
