@@ -145,33 +145,33 @@ func TestLogRequest(t *testing.T) {
 			want: "level=debug msg=CertificationTarget with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 		{
-			name: "Create TargetOfEvaluation",
+			name: "Create AuditScope",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Update,
-				req: &orchestrator.UpdateTargetOfEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 			},
-			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111'.\n",
+			want: "level=debug msg=AuditScope updated for Cloud Service '11111111-1111-1111-1111-111111111111'.\n",
 		},
 		{
-			name: "Create TargetOfEvaluation with params",
+			name: "Create AuditScope with params",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Update,
-				req: &orchestrator.UpdateTargetOfEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
 			},
-			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
+			want: "level=debug msg=AuditScope updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
 		},
 		{
 			name: "Send Evidence to queue",

@@ -76,7 +76,7 @@ var DefaultTypes = []any{
 	&orchestrator.Catalog{},
 	&orchestrator.Category{},
 	&orchestrator.Control{},
-	&orchestrator.TargetOfEvaluation{},
+	&orchestrator.AuditScope{},
 	&evaluation.EvaluationResult{},
 }
 
@@ -162,7 +162,7 @@ func NewStorage(opts ...StorageOption) (s persistence.Storage, err error) {
 	schema.RegisterSerializer("valuepb", &ValueSerializer{})
 	schema.RegisterSerializer("anypb", &AnySerializer{})
 
-	if err = g.db.SetupJoinTable(&orchestrator.CertificationTarget{}, "CatalogsInScope", &orchestrator.TargetOfEvaluation{}); err != nil {
+	if err = g.db.SetupJoinTable(&orchestrator.CertificationTarget{}, "CatalogsInScope", &orchestrator.AuditScope{}); err != nil {
 		err = fmt.Errorf("error during join-table: %w", err)
 		return
 	}

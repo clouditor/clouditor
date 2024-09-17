@@ -33,7 +33,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	var nilReq *orchestrator.CreateTargetOfEvaluationRequest = nil
+	var nilReq *orchestrator.CreateAuditScopeRequest = nil
 
 	type args struct {
 		req IncomingRequest
@@ -64,7 +64,7 @@ func TestValidate(t *testing.T) {
 		{
 			name: "Invalid request",
 			args: args{
-				req: &orchestrator.CreateTargetOfEvaluationRequest{},
+				req: &orchestrator.CreateAuditScopeRequest{},
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.Contains(t, err.Error(), "invalid request")
@@ -73,8 +73,8 @@ func TestValidate(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				req: &orchestrator.CreateTargetOfEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
+				req: &orchestrator.CreateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
 						CertificationTargetId: "11111111-1111-1111-1111-111111111111",
 						CatalogId:             "0000",
 					},

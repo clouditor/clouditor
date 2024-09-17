@@ -309,18 +309,18 @@ service Orchestrator {
 };
   }
 
-  // Creates a new Target of Evaluation
-  rpc CreateTargetOfEvaluation(CreateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  // Creates a new Audit Scope
+  rpc CreateAuditScope(CreateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/toes"
-      body: "target_of_evaluation"
+      post: "/v1/orchestrator/auditScopes"
+      body: "audit_scope"
     };
   }
 
-  // Retrieves a Target of Evaluation
-  rpc GetTargetOfEvaluation(GetTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  // Retrieves a Audit Scope
+  rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {get:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/toes/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/"
         "{catalog_id}"
 };
   }
@@ -328,27 +328,27 @@ service Orchestrator {
   // Lists all Targets of Evaluation
   rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
     option (google.api.http) = {
-      get: "/v1/orchestrator/toes"
-      additional_bindings {get: "/v1/orchestrator/certification_targets/{certification_target_id}/toes"}
-      additional_bindings {get: "/v1/orchestrator/catalogs/{catalog_id}/toes"}
+      get: "/v1/orchestrator/auditScopes"
+      additional_bindings {get: "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes"}
+      additional_bindings {get: "/v1/orchestrator/catalogs/{catalog_id}/auditScopes"}
     };
   }
 
-  // Updates an existing Target of Evaluation
-  rpc UpdateTargetOfEvaluation(UpdateTargetOfEvaluationRequest) returns (TargetOfEvaluation) {
+  // Updates an existing Audit Scope
+  rpc UpdateAuditScope(UpdateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
       put:
         "/v1/orchestrator/certification_targets/"
-        "{target_of_evaluation.certification_target_id}/toes/"
-        "{target_of_evaluation.catalog_id}"
-      body: "target_of_evaluation"
+        "{audit_scope.certification_target_id}/auditScopes/"
+        "{audit_scope.catalog_id}"
+      body: "audit_scope"
     };
   }
 
-  // Removes a Target of Evaluation
-  rpc RemoveTargetOfEvaluation(RemoveTargetOfEvaluationRequest) returns (google.protobuf.Empty) {
+  // Removes a Audit Scope
+  rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete:
-        "/v1/orchestrator/certification_targets/{certification_target_id}/toes/"
+        "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/"
         "{catalog_id}"
 };
   }
@@ -568,7 +568,7 @@ message CertificationTarget {
   string description = 3;
 
   repeated Catalog catalogs_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
+    (tagger.tags) = "gorm:\"many2many:audit_scopes\"",
     (buf.validate.field).repeated.items.required = true
   ];
 
@@ -706,9 +706,9 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Target of Evaluation binds a certification target to a catalog, so the service is
+// A Audit Scope binds a certification target to a catalog, so the service is
 // evaluated regarding this catalog's controls
-message TargetOfEvaluation {
+message AuditScope {
   string certification_target_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true
@@ -754,16 +754,16 @@ message ListAssessmentResultsResponse {
   string next_page_token = 2;
 }
 
-message CreateTargetOfEvaluationRequest {
-  TargetOfEvaluation target_of_evaluation = 1 [(buf.validate.field).required = true];
+message CreateAuditScopeRequest {
+  AuditScope audit_scope = 1 [(buf.validate.field).required = true];
 }
 
-message RemoveTargetOfEvaluationRequest {
+message RemoveAuditScopeRequest {
   string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
-message GetTargetOfEvaluationRequest {
+message GetAuditScopeRequest {
   string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
 }
@@ -785,12 +785,12 @@ message ListTargetsOfEvaluationRequest {
 }
 
 message ListTargetsOfEvaluationResponse {
-  repeated TargetOfEvaluation target_of_evaluation = 1;
+  repeated AuditScope audit_scope = 1;
   string next_page_token = 2;
 }
 
-message UpdateTargetOfEvaluationRequest {
-  TargetOfEvaluation target_of_evaluation = 3 [(buf.validate.field).required = true];
+message UpdateAuditScopeRequest {
+  AuditScope audit_scope = 3 [(buf.validate.field).required = true];
 }
 
 message GetCertificateRequest {
@@ -920,23 +920,23 @@ message State {
   string certificate_id = 5;
 }
 
-// TargetOfEvaluationChangeEvent represents a change of either a Target of
-// Evaluation or Control Monitoring Status and the TargetOfEvaluation hook
+// AuditScopeChangeEvent represents a change of either a Target of
+// Evaluation or Control Monitoring Status and the AuditScope hook
 // function can be informed about the reason of its call.
-message TargetOfEvaluationChangeEvent {
+message AuditScopeChangeEvent {
   // Type represents the type of the change event. Type can be a change event
-  // regarding the Target of Evaluation or the Control Monitoring Status.
+  // regarding the Audit Scope or the Control Monitoring Status.
   enum Type {
     TYPE_UNSPECIFIED = 0;
 
-    TYPE_TARGET_OF_EVALUATION_CREATED = 1;
-    TYPE_TARGET_OF_EVALUATION_UPDATED = 2;
-    TYPE_TARGET_OF_EVALUATION_REMOVED = 3;
+    TYPE_AUDIT_SCOPE_CREATED = 1;
+    TYPE_AUDIT_SCOPE_UPDATED = 2;
+    TYPE_AUDIT_SCOPE_REMOVED = 3;
   }
 
   Type type = 1 [(buf.validate.field).enum.defined_only = true];
 
-  // Optional. If the type is a TARGET_OF_EVALUATION_* the target_of_evaluation
+  // Optional. If the type is a AUDIT_SCOPE_* the audit_scope
   // field must be set
-  optional TargetOfEvaluation target_of_evaluation = 2 [(buf.validate.field).required = true];
+  optional AuditScope audit_scope = 2 [(buf.validate.field).required = true];
 }

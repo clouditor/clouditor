@@ -538,7 +538,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/catalogs/{catalogId}/toes:
+    /v1/orchestrator/catalogs/{catalogId}/auditScopes:
         get:
             tags:
                 - Orchestrator
@@ -957,7 +957,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}/toes:
+    /v1/orchestrator/certification_targets/{certificationTargetId}/auditScopes:
         get:
             tags:
                 - Orchestrator
@@ -1011,12 +1011,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}/toes/{catalogId}:
+    /v1/orchestrator/certification_targets/{certificationTargetId}/auditScopes/{catalogId}:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Target of Evaluation
-            operationId: Orchestrator_GetTargetOfEvaluation
+            description: Retrieves a Audit Scope
+            operationId: Orchestrator_GetAuditScope
             parameters:
                 - name: certificationTargetId
                   in: path
@@ -1034,7 +1034,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
+                                $ref: '#/components/schemas/AuditScope'
                 default:
                     description: Default error response
                     content:
@@ -1044,8 +1044,8 @@ paths:
         delete:
             tags:
                 - Orchestrator
-            description: Removes a Target of Evaluation
-            operationId: Orchestrator_RemoveTargetOfEvaluation
+            description: Removes a Audit Scope
+            operationId: Orchestrator_RemoveAuditScope
             parameters:
                 - name: certificationTargetId
                   in: path
@@ -1098,19 +1098,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{target_of_evaluation.certification_target_id}/toes/{target_of_evaluation.catalog_id}:
+    /v1/orchestrator/certification_targets/{audit_scope.certification_target_id}/auditScopes/{audit_scope.catalog_id}:
         put:
             tags:
                 - Orchestrator
-            description: Updates an existing Target of Evaluation
-            operationId: Orchestrator_UpdateTargetOfEvaluation
+            description: Updates an existing Audit Scope
+            operationId: Orchestrator_UpdateAuditScope
             parameters:
-                - name: target_of_evaluation.certification_target_id
+                - name: audit_scope.certification_target_id
                   in: path
                   required: true
                   schema:
                     type: string
-                - name: target_of_evaluation.catalog_id
+                - name: audit_scope.catalog_id
                   in: path
                   required: true
                   schema:
@@ -1119,7 +1119,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
+                            $ref: '#/components/schemas/AuditScope'
                 required: true
             responses:
                 "200":
@@ -1127,7 +1127,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
+                                $ref: '#/components/schemas/AuditScope'
                 default:
                     description: Default error response
                     content:
@@ -1444,7 +1444,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/orchestrator/toes:
+    /v1/orchestrator/auditScopes:
         get:
             tags:
                 - Orchestrator
@@ -1500,13 +1500,13 @@ paths:
         post:
             tags:
                 - Orchestrator
-            description: Creates a new Target of Evaluation
-            operationId: Orchestrator_CreateTargetOfEvaluation
+            description: Creates a new Audit Scope
+            operationId: Orchestrator_CreateAuditScope
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/TargetOfEvaluation'
+                            $ref: '#/components/schemas/AuditScope'
                 required: true
             responses:
                 "200":
@@ -1514,7 +1514,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/TargetOfEvaluation'
+                                $ref: '#/components/schemas/AuditScope'
                 default:
                     description: Default error response
                     content:
@@ -1876,10 +1876,10 @@ components:
         ListTargetsOfEvaluationResponse:
             type: object
             properties:
-                targetOfEvaluation:
+                auditScope:
                     type: array
                     items:
-                        $ref: '#/components/schemas/TargetOfEvaluation'
+                        $ref: '#/components/schemas/AuditScope'
                 nextPageToken:
                     type: string
         Metric:
@@ -2073,7 +2073,7 @@ components:
                 StoreAssessmentResultReponse belongs to StoreAssessmentResult, which uses a
                  custom unary RPC and therefore requires a response message according to the
                  style convention. Since no return values are required, this is empty.
-        TargetOfEvaluation:
+        AuditScope:
             type: object
             properties:
                 certificationTargetId:
@@ -2086,7 +2086,7 @@ components:
                         an assurance level is not offered by every catalog, therefore it is
                          optional
             description: |-
-                A Target of Evaluation binds a certification target to a catalog, so the service is
+                A Audit Scope binds a certification target to a catalog, so the service is
                  evaluated regarding this catalog's controls
 tags:
     - name: Orchestrator

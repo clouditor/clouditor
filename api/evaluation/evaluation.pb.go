@@ -505,7 +505,7 @@ func (x *ListEvaluationResultsResponse) GetNextPageToken() string {
 
 // A evaluation result resource, representing the result after evaluating the
 // cloud service with a specific control certification_target_id, category_name and
-// catalog_id are necessary to get the corresponding TargetOfEvaluation
+// catalog_id are necessary to get the corresponding AuditScope
 type EvaluationResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

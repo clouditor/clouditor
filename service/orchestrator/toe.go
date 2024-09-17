@@ -42,7 +42,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestrator.CreateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -54,8 +54,8 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Create the ToE
-	err = svc.storage.Create(&req.TargetOfEvaluation)
+	// Create the Audit Scope
+	err = svc.storage.Create(&req.AuditScope)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or cloud service")
 	}
@@ -63,17 +63,17 @@ func (svc *Service) CreateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_CREATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_CREATED, AuditScope: req.AuditScope}, nil)
 
-	res = req.TargetOfEvaluation
+	res = req.AuditScope
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req, fmt.Sprintf("and Catalog '%s'", req.TargetOfEvaluation.GetCatalogId()))
+	logging.LogRequest(log, logrus.DebugLevel, logging.Create, req, fmt.Sprintf("and Catalog '%s'", req.AuditScope.GetCatalogId()))
 
 	return
 }
 
-// GetTargetOfEvaluation implements method for getting a TargetOfEvaluation, e.g. to show its state in the UI
-func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator.GetTargetOfEvaluationRequest) (response *orchestrator.TargetOfEvaluation, err error) {
+// GetAuditScope implements method for getting a AuditScope, e.g. to show its state in the UI
+func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (response *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -85,17 +85,17 @@ func (svc *Service) GetTargetOfEvaluation(ctx context.Context, req *orchestrator
 		return nil, service.ErrPermissionDenied
 	}
 
-	response = new(orchestrator.TargetOfEvaluation)
+	response = new(orchestrator.AuditScope)
 	err = svc.storage.Get(response, gorm.WithoutPreload(), "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "ToE not found")
+		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 	return response, nil
 }
 
-// ListTargetsOfEvaluation implements method for getting a TargetOfEvaluation
+// ListTargetsOfEvaluation implements method for getting a AuditScope
 func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListTargetsOfEvaluationRequest) (res *orchestrator.ListTargetsOfEvaluationResponse, err error) {
 	var conds = []any{gorm.WithoutPreload()}
 
@@ -118,15 +118,15 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 	}
 
 	res = new(orchestrator.ListTargetsOfEvaluationResponse)
-	res.TargetOfEvaluation, res.NextPageToken, err = service.PaginateStorage[*orchestrator.TargetOfEvaluation](req, svc.storage, service.DefaultPaginationOpts, conds...)
+	res.AuditScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}
 	return
 }
 
-// UpdateTargetOfEvaluation implements method for updating an existing TargetOfEvaluation
-func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestrator.UpdateTargetOfEvaluationRequest) (res *orchestrator.TargetOfEvaluation, err error) {
+// UpdateAuditScope implements method for updating an existing AuditScope
+func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.UpdateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -138,27 +138,27 @@ func (svc *Service) UpdateTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, service.ErrPermissionDenied
 	}
 
-	res = req.TargetOfEvaluation
+	res = req.AuditScope
 
-	err = svc.storage.Update(res, "certification_target_id = ? AND catalog_id = ?", req.TargetOfEvaluation.GetCertificationTargetId(), req.TargetOfEvaluation.GetCatalogId())
+	err = svc.storage.Update(res, "certification_target_id = ? AND catalog_id = ?", req.AuditScope.GetCertificationTargetId(), req.AuditScope.GetCatalogId())
 
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
+		return nil, status.Error(codes.NotFound, "Audit Scope not found")
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Error(codes.NotFound, "ToE not found")
+		return nil, status.Error(codes.NotFound, "Audit Scope not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_UPDATED, TargetOfEvaluation: req.TargetOfEvaluation}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_UPDATED, AuditScope: req.AuditScope}, nil)
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("and Catalog '%s'", req.TargetOfEvaluation.GetCatalogId()))
+	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req, fmt.Sprintf("and Catalog '%s'", req.AuditScope.GetCatalogId()))
 
 	return
 }
 
-// RemoveTargetOfEvaluation implements method for removing a TargetOfEvaluation
-func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestrator.RemoveTargetOfEvaluationRequest) (response *emptypb.Empty, err error) {
+// RemoveAuditScope implements method for removing a AuditScope
+func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -170,29 +170,29 @@ func (svc *Service) RemoveTargetOfEvaluation(ctx context.Context, req *orchestra
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = svc.storage.Delete(&orchestrator.TargetOfEvaluation{}, "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
+	err = svc.storage.Delete(&orchestrator.AuditScope{}, "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "ToE not found")
+		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Since we don't have a TargetOfEvaluation object, we create one to be able to inform the hook about the deleted TargetOfEvaluation.
-	toe := &orchestrator.TargetOfEvaluation{
+	// Since we don't have a AuditScope object, we create one to be able to inform the hook about the deleted AuditScope.
+	auditScope := &orchestrator.AuditScope{
 		CertificationTargetId: req.GetCertificationTargetId(),
 		CatalogId:             req.GetCatalogId(),
 	}
-	go svc.informToeHooks(ctx, &orchestrator.TargetOfEvaluationChangeEvent{Type: orchestrator.TargetOfEvaluationChangeEvent_TYPE_TARGET_OF_EVALUATION_REMOVED, TargetOfEvaluation: toe}, nil)
+	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
 
 	return &emptypb.Empty{}, nil
 }
 
-// informToeHooks informs the registered hook function either of a event change for the Target of Evaluation or Control Monitoring Status
-func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.TargetOfEvaluationChangeEvent, err error) {
+// informToeHooks informs the registered hook function either of a event change for the Audit Scope or Control Monitoring Status
+func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.AuditScopeChangeEvent, err error) {
 	s.hookMutex.RLock()
-	hooks := s.toeHooks
+	hooks := s.auditScopeHooks
 	defer s.hookMutex.RUnlock()
 
 	// Inform our hook, if we have any
@@ -204,9 +204,9 @@ func (s *Service) informToeHooks(ctx context.Context, event *orchestrator.Target
 	}
 }
 
-// RegisterToeHook registers the Target of Evaluation hook function
-func (s *Service) RegisterToeHook(hook orchestrator.TargetOfEvaluationHookFunc) {
+// RegisterToeHook registers the Audit Scope hook function
+func (s *Service) RegisterToeHook(hook orchestrator.AuditScopeHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
-	s.toeHooks = append(s.toeHooks, hook)
+	s.auditScopeHooks = append(s.auditScopeHooks, hook)
 }

@@ -89,8 +89,8 @@ type Service struct {
 	// about updated CertificationTargets
 	CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 
-	// toeHooks is a list of hook functions that can be used to inform about updated Target of Evaluations
-	toeHooks []orchestrator.TargetOfEvaluationHookFunc
+	// auditScopeHooks is a list of hook functions that can be used to inform about updated Audit Scopes
+	auditScopeHooks []orchestrator.AuditScopeHookFunc
 
 	// hookMutex is used for (un)locking hook calls
 	hookMutex sync.RWMutex

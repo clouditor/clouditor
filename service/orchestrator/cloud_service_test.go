@@ -524,7 +524,7 @@ func TestService_ListCertificationTargets(t *testing.T) {
 func TestService_GetCertificationTargetStatistics(t *testing.T) {
 	type fields struct {
 		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
-		toeHooks                 []orchestrator.TargetOfEvaluationHookFunc
+		auditScopeHooks          []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks    []assessment.ResultHookFunc
 		storage                  persistence.Storage
 		metricsFile              string
@@ -679,7 +679,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				CertificationTargetHooks: tt.fields.CertificationTargetHooks,
-				toeHooks:                 tt.fields.toeHooks,
+				auditScopeHooks:          tt.fields.auditScopeHooks,
 				AssessmentResultHooks:    tt.fields.AssessmentResultHooks,
 				storage:                  tt.fields.storage,
 				metricsFile:              tt.fields.metricsFile,

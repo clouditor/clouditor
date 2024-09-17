@@ -131,7 +131,7 @@ message ListEvaluationResultsResponse {
 
 // A evaluation result resource, representing the result after evaluating the
 // cloud service with a specific control certification_target_id, category_name and
-// catalog_id are necessary to get the corresponding TargetOfEvaluation
+// catalog_id are necessary to get the corresponding AuditScope
 message EvaluationResult {
   // Evaluation result id
   string id = 1 [

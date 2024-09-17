@@ -89,7 +89,7 @@ func (r RequestType) String() string {
 //
 // or
 //
-//	"*orchestrator.TargetOfEvaluation created with ID 'ToE1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
+//	"*orchestrator.AuditScope created with ID 'Audit Scope1234' for Cloud Service '00000000-0000-0000-0000-000000000000' and Catalog 'EUCS'."
 func LogRequest(log *logrus.Entry, level logrus.Level, reqType RequestType, req api.PayloadRequest, params ...string) {
 	var (
 		buffer bytes.Buffer

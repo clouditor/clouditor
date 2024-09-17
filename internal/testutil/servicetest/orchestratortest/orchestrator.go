@@ -94,18 +94,18 @@ func NewCatalog() *orchestrator.Catalog {
 	return mockCatalog
 }
 
-// NewTargetOfEvaluation creates a new Target of Evaluation. The assurance level is set if available.
-func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluation {
-	var toe = &orchestrator.TargetOfEvaluation{
+// NewAuditScope creates a new Audit Scope. The assurance level is set if available.
+func NewAuditScope(assuranceLevel string) *orchestrator.AuditScope {
+	var auditScope = &orchestrator.AuditScope{
 		CertificationTargetId: testdata.MockCertificationTargetID1,
 		CatalogId:             testdata.MockCatalogID,
 	}
 
 	if assuranceLevel != "" {
-		toe.AssuranceLevel = &assuranceLevel
+		auditScope.AssuranceLevel = &assuranceLevel
 	}
 
-	return toe
+	return auditScope
 }
 
 func NewCertificationTarget() *orchestrator.CertificationTarget {

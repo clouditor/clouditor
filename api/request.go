@@ -48,9 +48,9 @@ type PayloadRequest = api.PayloadRequest
 //   - orchestrator.GetMetricConfigurationRequest
 //   - orchestrator.ListMetricConfigurationRequest
 //   - orchestrator.MetricChangeEvent
-//   - orchestrator.TargetOfEvaluation
-//   - orchestrator.RemoveTargetOfEvaluationRequest
-//   - orchestrator.GetTargetOfEvaluationRequest
+//   - orchestrator.AuditScope
+//   - orchestrator.RemoveAuditScopeRequest
+//   - orchestrator.GetAuditScopeRequest
 //   - orchestrator.ListTargetsOfEvaluationRequest
 //   - orchestrator.Certificate
 //

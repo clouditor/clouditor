@@ -87,11 +87,11 @@ const (
 	Orchestrator_GetCategory_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
 	Orchestrator_ListControls_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
 	Orchestrator_GetControl_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
-	Orchestrator_CreateTargetOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/CreateTargetOfEvaluation"
-	Orchestrator_GetTargetOfEvaluation_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/GetTargetOfEvaluation"
+	Orchestrator_CreateAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
+	Orchestrator_GetAuditScope_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
 	Orchestrator_ListTargetsOfEvaluation_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
-	Orchestrator_UpdateTargetOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/UpdateTargetOfEvaluation"
-	Orchestrator_RemoveTargetOfEvaluation_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/RemoveTargetOfEvaluation"
+	Orchestrator_UpdateAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
+	Orchestrator_RemoveAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
 	Orchestrator_GetRuntimeInfo_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
 )
 
@@ -195,16 +195,16 @@ type OrchestratorClient interface {
 	// sub-controls if present or a list of metrics if no sub-controls but metrics
 	// are present.
 	GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error)
-	// Creates a new Target of Evaluation
-	CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Retrieves a Target of Evaluation
-	GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
+	// Creates a new Audit Scope
+	CreateAuditScope(ctx context.Context, in *CreateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
+	// Retrieves a Audit Scope
+	GetAuditScope(ctx context.Context, in *GetAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
-	// Updates an existing Target of Evaluation
-	UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error)
-	// Removes a Target of Evaluation
-	RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Updates an existing Audit Scope
+	UpdateAuditScope(ctx context.Context, in *UpdateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
+	// Removes a Audit Scope
+	RemoveAuditScope(ctx context.Context, in *RemoveAuditScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Get Runtime Information
 	GetRuntimeInfo(ctx context.Context, in *runtime.GetRuntimeInfoRequest, opts ...grpc.CallOption) (*runtime.Runtime, error)
 }
@@ -629,20 +629,20 @@ func (c *orchestratorClient) GetControl(ctx context.Context, in *GetControlReque
 	return out, nil
 }
 
-func (c *orchestratorClient) CreateTargetOfEvaluation(ctx context.Context, in *CreateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) CreateAuditScope(ctx context.Context, in *CreateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_CreateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
+	out := new(AuditScope)
+	err := c.cc.Invoke(ctx, Orchestrator_CreateAuditScope_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) GetTargetOfEvaluation(ctx context.Context, in *GetTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) GetAuditScope(ctx context.Context, in *GetAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_GetTargetOfEvaluation_FullMethodName, in, out, cOpts...)
+	out := new(AuditScope)
+	err := c.cc.Invoke(ctx, Orchestrator_GetAuditScope_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -659,20 +659,20 @@ func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *Li
 	return out, nil
 }
 
-func (c *orchestratorClient) UpdateTargetOfEvaluation(ctx context.Context, in *UpdateTargetOfEvaluationRequest, opts ...grpc.CallOption) (*TargetOfEvaluation, error) {
+func (c *orchestratorClient) UpdateAuditScope(ctx context.Context, in *UpdateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TargetOfEvaluation)
-	err := c.cc.Invoke(ctx, Orchestrator_UpdateTargetOfEvaluation_FullMethodName, in, out, cOpts...)
+	out := new(AuditScope)
+	err := c.cc.Invoke(ctx, Orchestrator_UpdateAuditScope_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *orchestratorClient) RemoveTargetOfEvaluation(ctx context.Context, in *RemoveTargetOfEvaluationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *orchestratorClient) RemoveAuditScope(ctx context.Context, in *RemoveAuditScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Orchestrator_RemoveTargetOfEvaluation_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Orchestrator_RemoveAuditScope_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -789,16 +789,16 @@ type OrchestratorServer interface {
 	// sub-controls if present or a list of metrics if no sub-controls but metrics
 	// are present.
 	GetControl(context.Context, *GetControlRequest) (*Control, error)
-	// Creates a new Target of Evaluation
-	CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Retrieves a Target of Evaluation
-	GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
+	// Creates a new Audit Scope
+	CreateAuditScope(context.Context, *CreateAuditScopeRequest) (*AuditScope, error)
+	// Retrieves a Audit Scope
+	GetAuditScope(context.Context, *GetAuditScopeRequest) (*AuditScope, error)
 	// Lists all Targets of Evaluation
 	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
-	// Updates an existing Target of Evaluation
-	UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error)
-	// Removes a Target of Evaluation
-	RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error)
+	// Updates an existing Audit Scope
+	UpdateAuditScope(context.Context, *UpdateAuditScopeRequest) (*AuditScope, error)
+	// Removes a Audit Scope
+	RemoveAuditScope(context.Context, *RemoveAuditScopeRequest) (*emptypb.Empty, error)
 	// Get Runtime Information
 	GetRuntimeInfo(context.Context, *runtime.GetRuntimeInfoRequest) (*runtime.Runtime, error)
 	mustEmbedUnimplementedOrchestratorServer()
@@ -931,20 +931,20 @@ func (UnimplementedOrchestratorServer) ListControls(context.Context, *ListContro
 func (UnimplementedOrchestratorServer) GetControl(context.Context, *GetControlRequest) (*Control, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetControl not implemented")
 }
-func (UnimplementedOrchestratorServer) CreateTargetOfEvaluation(context.Context, *CreateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateTargetOfEvaluation not implemented")
+func (UnimplementedOrchestratorServer) CreateAuditScope(context.Context, *CreateAuditScopeRequest) (*AuditScope, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAuditScope not implemented")
 }
-func (UnimplementedOrchestratorServer) GetTargetOfEvaluation(context.Context, *GetTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTargetOfEvaluation not implemented")
+func (UnimplementedOrchestratorServer) GetAuditScope(context.Context, *GetAuditScopeRequest) (*AuditScope, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuditScope not implemented")
 }
 func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
 }
-func (UnimplementedOrchestratorServer) UpdateTargetOfEvaluation(context.Context, *UpdateTargetOfEvaluationRequest) (*TargetOfEvaluation, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateTargetOfEvaluation not implemented")
+func (UnimplementedOrchestratorServer) UpdateAuditScope(context.Context, *UpdateAuditScopeRequest) (*AuditScope, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAuditScope not implemented")
 }
-func (UnimplementedOrchestratorServer) RemoveTargetOfEvaluation(context.Context, *RemoveTargetOfEvaluationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveTargetOfEvaluation not implemented")
+func (UnimplementedOrchestratorServer) RemoveAuditScope(context.Context, *RemoveAuditScopeRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAuditScope not implemented")
 }
 func (UnimplementedOrchestratorServer) GetRuntimeInfo(context.Context, *runtime.GetRuntimeInfoRequest) (*runtime.Runtime, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRuntimeInfo not implemented")
@@ -1672,38 +1672,38 @@ func _Orchestrator_GetControl_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_CreateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateTargetOfEvaluationRequest)
+func _Orchestrator_CreateAuditScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAuditScopeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, in)
+		return srv.(OrchestratorServer).CreateAuditScope(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_CreateTargetOfEvaluation_FullMethodName,
+		FullMethod: Orchestrator_CreateAuditScope_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).CreateTargetOfEvaluation(ctx, req.(*CreateTargetOfEvaluationRequest))
+		return srv.(OrchestratorServer).CreateAuditScope(ctx, req.(*CreateAuditScopeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_GetTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTargetOfEvaluationRequest)
+func _Orchestrator_GetAuditScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuditScopeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, in)
+		return srv.(OrchestratorServer).GetAuditScope(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_GetTargetOfEvaluation_FullMethodName,
+		FullMethod: Orchestrator_GetAuditScope_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).GetTargetOfEvaluation(ctx, req.(*GetTargetOfEvaluationRequest))
+		return srv.(OrchestratorServer).GetAuditScope(ctx, req.(*GetAuditScopeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1726,38 +1726,38 @@ func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_UpdateTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateTargetOfEvaluationRequest)
+func _Orchestrator_UpdateAuditScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAuditScopeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, in)
+		return srv.(OrchestratorServer).UpdateAuditScope(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_UpdateTargetOfEvaluation_FullMethodName,
+		FullMethod: Orchestrator_UpdateAuditScope_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).UpdateTargetOfEvaluation(ctx, req.(*UpdateTargetOfEvaluationRequest))
+		return srv.(OrchestratorServer).UpdateAuditScope(ctx, req.(*UpdateAuditScopeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_RemoveTargetOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveTargetOfEvaluationRequest)
+func _Orchestrator_RemoveAuditScope_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAuditScopeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, in)
+		return srv.(OrchestratorServer).RemoveAuditScope(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_RemoveTargetOfEvaluation_FullMethodName,
+		FullMethod: Orchestrator_RemoveAuditScope_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).RemoveTargetOfEvaluation(ctx, req.(*RemoveTargetOfEvaluationRequest))
+		return srv.(OrchestratorServer).RemoveAuditScope(ctx, req.(*RemoveAuditScopeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1940,24 +1940,24 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_GetControl_Handler,
 		},
 		{
-			MethodName: "CreateTargetOfEvaluation",
-			Handler:    _Orchestrator_CreateTargetOfEvaluation_Handler,
+			MethodName: "CreateAuditScope",
+			Handler:    _Orchestrator_CreateAuditScope_Handler,
 		},
 		{
-			MethodName: "GetTargetOfEvaluation",
-			Handler:    _Orchestrator_GetTargetOfEvaluation_Handler,
+			MethodName: "GetAuditScope",
+			Handler:    _Orchestrator_GetAuditScope_Handler,
 		},
 		{
 			MethodName: "ListTargetsOfEvaluation",
 			Handler:    _Orchestrator_ListTargetsOfEvaluation_Handler,
 		},
 		{
-			MethodName: "UpdateTargetOfEvaluation",
-			Handler:    _Orchestrator_UpdateTargetOfEvaluation_Handler,
+			MethodName: "UpdateAuditScope",
+			Handler:    _Orchestrator_UpdateAuditScope_Handler,
 		},
 		{
-			MethodName: "RemoveTargetOfEvaluation",
-			Handler:    _Orchestrator_RemoveTargetOfEvaluation_Handler,
+			MethodName: "RemoveAuditScope",
+			Handler:    _Orchestrator_RemoveAuditScope_Handler,
 		},
 		{
 			MethodName: "GetRuntimeInfo",

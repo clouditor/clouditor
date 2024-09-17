@@ -367,7 +367,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 	type fields struct {
 		UnimplementedOrchestratorServer orchestrator.UnimplementedOrchestratorServer
 		CertificationTargetHooks        []orchestrator.CertificationTargetHookFunc
-		toeHooks                        []orchestrator.TargetOfEvaluationHookFunc
+		auditScopeHooks                 []orchestrator.AuditScopeHookFunc
 		AssessmentResultHooks           []assessment.ResultHookFunc
 		storage                         persistence.Storage
 		metricsFile                     string
@@ -448,7 +448,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			svc := &Service{
 				UnimplementedOrchestratorServer: tt.fields.UnimplementedOrchestratorServer,
 				CertificationTargetHooks:        tt.fields.CertificationTargetHooks,
-				toeHooks:                        tt.fields.toeHooks,
+				auditScopeHooks:                 tt.fields.auditScopeHooks,
 				AssessmentResultHooks:           tt.fields.AssessmentResultHooks,
 				storage:                         tt.fields.storage,
 				metricsFile:                     tt.fields.metricsFile,

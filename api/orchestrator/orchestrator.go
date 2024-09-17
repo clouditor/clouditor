@@ -35,7 +35,7 @@ import (
 )
 
 type CertificationTargetHookFunc func(ctx context.Context, cld *CertificationTarget, err error)
-type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
+type AuditScopeHookFunc func(ctx context.Context, event *AuditScopeChangeEvent, err error)
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
@@ -69,14 +69,14 @@ func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *CreateTargetOfEvaluationRequest) GetCertificationTargetId() string {
-	return req.GetTargetOfEvaluation().GetCertificationTargetId()
+func (req *CreateAuditScopeRequest) GetCertificationTargetId() string {
+	return req.GetAuditScope().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
 // the cloud service ID of the inner object.
-func (req *UpdateTargetOfEvaluationRequest) GetCertificationTargetId() string {
-	return req.GetTargetOfEvaluation().GetCertificationTargetId()
+func (req *UpdateAuditScopeRequest) GetCertificationTargetId() string {
+	return req.GetAuditScope().GetCertificationTargetId()
 }
 
 func (req *StoreAssessmentResultRequest) GetPayload() proto.Message {
@@ -151,36 +151,36 @@ func (req *UpdateMetricImplementationRequest) GetPayload() proto.Message {
 	return req.Implementation
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return req.TargetOfEvaluation
+func (req *CreateAuditScopeRequest) GetPayload() proto.Message {
+	return req.AuditScope
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return req.TargetOfEvaluation
+func (req *UpdateAuditScopeRequest) GetPayload() proto.Message {
+	return req.AuditScope
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return &TargetOfEvaluation{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
+func (req *RemoveAuditScopeRequest) GetPayload() proto.Message {
+	return &AuditScope{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
 }
 
 // IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly
-// checks, whether the assurance level matches, if the ToE has one. In the future, this could also include checks, if
+// checks, whether the assurance level matches, if the Audit Scope has one. In the future, this could also include checks, if
 // the control is somehow out of scope.
-func (c *Control) IsRelevantFor(toe *TargetOfEvaluation, catalog *Catalog) bool {
+func (c *Control) IsRelevantFor(auditScope *AuditScope, catalog *Catalog) bool {
 	// If the catalog does not have an assurance level, we are good to go
 	if len(catalog.AssuranceLevels) == 0 {
 		return true
 	}
 
 	// If the control does not explicitly specify an assurance level, we are also ok
-	if c.AssuranceLevel == nil || toe.AssuranceLevel == nil {
+	if c.AssuranceLevel == nil || auditScope.AssuranceLevel == nil {
 		return true
 	}
 
 	// Otherwise, we need to retrieve the possible assurance levels (in order) from the catalogs and compare the
 	// indices
 	idxControl := slices.Index(catalog.AssuranceLevels, *c.AssuranceLevel)
-	idxToe := slices.Index(catalog.AssuranceLevels, *toe.AssuranceLevel)
+	idxToe := slices.Index(catalog.AssuranceLevels, *auditScope.AssuranceLevel)
 
 	return idxControl <= idxToe
 }

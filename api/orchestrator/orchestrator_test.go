@@ -94,9 +94,9 @@ func TestStoreAssessmentResultRequest_GetCertificationTargetId(t *testing.T) {
 	}
 }
 
-func TestCreateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) {
+func TestCreateAuditScopeRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		TargetOfEvaluation *TargetOfEvaluation
+		AuditScope *AuditScope
 	}
 	tests := []struct {
 		name   string
@@ -106,7 +106,7 @@ func TestCreateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) 
 		{
 			name: "Happy path",
 			fields: fields{
-				&TargetOfEvaluation{
+				&AuditScope{
 					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
@@ -115,11 +115,11 @@ func TestCreateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &CreateTargetOfEvaluationRequest{
-				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
+			req := &CreateAuditScopeRequest{
+				AuditScope: tt.fields.AuditScope,
 			}
 			if got := req.GetCertificationTargetId(); got != tt.want {
-				t.Errorf("CreateTargetOfEvaluationRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
+				t.Errorf("CreateAuditScopeRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -216,9 +216,9 @@ func TestRegisterCertificationTargetRequest_GetCertificationTargetId(t *testing.
 	}
 }
 
-func TestUpdateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) {
+func TestUpdateAuditScopeRequest_GetCertificationTargetId(t *testing.T) {
 	type fields struct {
-		TargetOfEvaluation *TargetOfEvaluation
+		AuditScope *AuditScope
 	}
 	tests := []struct {
 		name   string
@@ -228,7 +228,7 @@ func TestUpdateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) 
 		{
 			name: "Happy path",
 			fields: fields{
-				TargetOfEvaluation: &TargetOfEvaluation{
+				AuditScope: &AuditScope{
 					CertificationTargetId: testdata.MockCertificationTargetID1,
 				},
 			},
@@ -237,11 +237,11 @@ func TestUpdateTargetOfEvaluationRequest_GetCertificationTargetId(t *testing.T) 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &UpdateTargetOfEvaluationRequest{
-				TargetOfEvaluation: tt.fields.TargetOfEvaluation,
+			req := &UpdateAuditScopeRequest{
+				AuditScope: tt.fields.AuditScope,
 			}
 			if got := req.GetCertificationTargetId(); got != tt.want {
-				t.Errorf("UpdateTargetOfEvaluationRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
+				t.Errorf("UpdateAuditScopeRequest.GetCertificationTargetId() = %v, want %v", got, tt.want)
 			}
 		})
 	}
