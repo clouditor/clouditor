@@ -407,7 +407,7 @@ type AssessmentResult struct {
 	ResourceTypes []string `protobuf:"bytes,8,rep,name=resource_types,json=resourceTypes,proto3" json:"resource_types,omitempty" gorm:"serializer:json"`
 	// Some comments on the reason for non-compliance
 	NonComplianceComments string `protobuf:"bytes,9,opt,name=non_compliance_comments,json=nonComplianceComments,proto3" json:"non_compliance_comments,omitempty"`
-	// The cloud service which this assessment result belongs to
+	// The certification target which this assessment result belongs to
 	CertificationTargetId string `protobuf:"bytes,10,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// Reference to the tool which provided the assessment result
 	ToolId *string `protobuf:"bytes,11,opt,name=tool_id,json=toolId,proto3,oneof" json:"tool_id,omitempty"`

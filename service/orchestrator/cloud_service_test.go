@@ -180,7 +180,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			},
 		},
 		{
-			name: "cloud service not found",
+			name: "certification target not found",
 			svc:  NewService(),
 			ctx:  context.Background(),
 			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
@@ -331,7 +331,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, CertificationTargetResponse)
 
-	// There is a record for cloud services in the DB (default one)
+	// There is a record for certification targets in the DB (default one)
 	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCertificationTargetsResponse.Services)
@@ -341,7 +341,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId})
 	assert.NoError(t, err)
 
-	// There is a record for cloud services in the DB (default one)
+	// There is a record for certification targets in the DB (default one)
 	listCertificationTargetsResponse, err = orchestratorService.ListCertificationTargets(context.Background(), &orchestrator.ListCertificationTargetsRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, listCertificationTargetsResponse.Services)
@@ -355,7 +355,7 @@ func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
 	)
 	orchestratorService := NewService()
 
-	// 1st case: No records for cloud services -> Default target service is created
+	// 1st case: No records for certification targets -> Default target service is created
 	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
 	assert.NoError(t, err)
 	// Check timestamps and delete it for further tests
@@ -438,10 +438,10 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "retrieve only allowed cloud services: no cloud service is allowed",
+			name: "retrieve only allowed certification targets: no certification target is allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store two cloud services, of which none we are allowed to retrieve in the test
+					// Store two certification targets, of which none we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.CertificationTarget{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
@@ -468,10 +468,10 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "retrieve only allowed cloud services",
+			name: "retrieve only allowed certification targets",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store two cloud services, of which only one we are allowed to retrieve in the test
+					// Store two certification targets, of which only one we are allowed to retrieve in the test
 					_ = s.Create(&orchestrator.CertificationTarget{
 						Id:   testdata.MockCertificationTargetID1,
 						Name: testdata.MockCertificationTargetName1,
@@ -604,7 +604,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "database error getting cloud service: some error") &&
+				return assert.ErrorContains(t, err, "database error getting certification target: some error") &&
 					assert.Equal(t, codes.Internal, status.Code(err))
 			},
 		},
@@ -612,7 +612,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			name: "Happy path",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store one cloud services
+					// Store one certification targets
 					_ = s.Create(&orchestrator.CertificationTarget{
 						Id:          testdata.MockCertificationTargetID1,
 						Name:        testdata.MockCertificationTargetName1,

@@ -136,7 +136,7 @@ type Service struct {
 
 	Events chan *DiscoveryEvent
 
-	// csID is the cloud service ID for which we are gathering resources.
+	// csID is the certification target ID for which we are gathering resources.
 	csID string
 
 	// collectorID is the evidence collector tool ID which is gathering the resources.
@@ -163,10 +163,10 @@ func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Optio
 	}
 }
 
-// WithCertificationTargetID is an option to configure the cloud service ID for which resources will be discovered.
+// WithCertificationTargetID is an option to configure the certification target ID for which resources will be discovered.
 func WithCertificationTargetID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
-		log.Infof("Cloud Service ID is set to %s", ID)
+		log.Infof("Certification Target ID is set to %s", ID)
 
 		svc.csID = ID
 	}
@@ -313,7 +313,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		return nil, err
 	}
 
-	// Check if certification_target_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -490,11 +490,11 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	}
 
 	// Filtering the resources by
-	// * cloud service ID
+	// * certification target ID
 	// * resource type
 	// * tool ID
 	if req.Filter != nil {
-		// Check if certification_target_id in filter is within allowed or one can access *all* the cloud services
+		// Check if certification_target_id in filter is within allowed or one can access *all* the certification targets
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
@@ -513,7 +513,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		}
 	}
 
-	// We need to further restrict our query according to the cloud service we are allowed to "see".
+	// We need to further restrict our query according to the certification target we are allowed to "see".
 	//
 	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCertificationTargets twice. Once here
 	//  and once above in CheckAccess.
@@ -535,7 +535,7 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 
 // GetCertificationTargetId implements CertificationTargetRequest for this service. This is a little trick, so that we can call
 // CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
-// cloud service ID, instead of the individual requests that are made against the service.
+// certification target ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCertificationTargetId() string {
 	return svc.csID
 }

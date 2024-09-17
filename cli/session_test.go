@@ -339,7 +339,7 @@ func TestValidArgsGetCertificationTargets(t *testing.T) {
 		want1 cobra.ShellCompDirective
 	}{
 		{
-			name: "some cloud services",
+			name: "some certification targets",
 			args: args{
 				toComplete: "",
 			},

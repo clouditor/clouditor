@@ -12,7 +12,7 @@ paths:
             tags:
                 - Evaluation
             description: |-
-                Evaluates periodically all assessment results of a cloud service id based
+                Evaluates periodically all assessment results of a certification target id based
                  on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
@@ -52,7 +52,7 @@ paths:
             tags:
                 - Evaluation
             description: |-
-                StopEvaluation stops the evaluation for the given target of evaluation.
+                StopEvaluation stops the evaluation for the given audit scope.
                  Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
@@ -91,7 +91,7 @@ paths:
             parameters:
                 - name: filter.certificationTargetId
                   in: query
-                  description: Optional. Lists only evaluation results for a specific cloud service.
+                  description: Optional. Lists only evaluation results for a specific certification target.
                   schema:
                     type: string
                 - name: filter.catalogId
@@ -191,7 +191,7 @@ components:
                     description: Evaluation result id
                 certificationTargetId:
                     type: string
-                    description: The Cloud Service ID the evaluation belongs to
+                    description: The Certification Target ID the evaluation belongs to
                 controlId:
                     type: string
                     description: The control id the evaluation was based on
@@ -237,7 +237,7 @@ components:
                     format: date-time
             description: |-
                 A evaluation result resource, representing the result after evaluating the
-                 cloud service with a specific control certification_target_id, category_name and
+                 certification target with a specific control certification_target_id, category_name and
                  catalog_id are necessary to get the corresponding AuditScope
         GoogleProtobufAny:
             type: object

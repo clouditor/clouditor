@@ -94,7 +94,7 @@ func TestStorageOptions(t *testing.T) {
 			assert.NotNil(t, gorm)
 			assert.Equal(t, tt.wantDialectorType, fmt.Sprintf("%T", gorm.dialector))
 
-			// Test to create a new cloud service and get it again with
+			// Test to create a new certification target and get it again with
 			// respective 'Create' and 'Get' Create record via DB call
 			serviceInput := &orchestrator.CertificationTarget{
 				Name:      "SomeName",
@@ -406,8 +406,8 @@ func Test_storage_Update(t *testing.T) {
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Testing cloud service
-	// Create cloud service
+	// Testing certification target
+	// Create certification target
 	CertificationTarget := &orchestrator.CertificationTarget{
 		Id:          testdata.MockCertificationTargetID1,
 		Name:        testdata.MockCertificationTargetName1,
@@ -421,7 +421,7 @@ func Test_storage_Update(t *testing.T) {
 			},
 		},
 	}
-	// Check if cloud service has all necessary fields
+	// Check if certification target has all necessary fields
 	assert.NoError(t, api.Validate(CertificationTarget))
 	err = s.Create(&CertificationTarget)
 	assert.NoError(t, err)

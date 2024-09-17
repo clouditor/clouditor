@@ -37,13 +37,13 @@ option go_package = "clouditor.io/clouditor/v2/api/evaluation";
 
 // Manages the evaluation of Clouditor's assessment results
 service Evaluation {
-  // Evaluates periodically all assessment results of a cloud service id based
+  // Evaluates periodically all assessment results of a certification target id based
   // on the given catalog id. Part of the public API, also exposed as REST.
   rpc StartEvaluation(StartEvaluationRequest) returns (StartEvaluationResponse) {
     option (google.api.http) = {post: "/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/start"};
   }
 
-  // StopEvaluation stops the evaluation for the given target of evaluation.
+  // StopEvaluation stops the evaluation for the given audit scope.
   // Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
     option (google.api.http) = {post: "/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/stop"};
@@ -92,7 +92,7 @@ message StopEvaluationResponse {}
 
 message ListEvaluationResultsRequest {
   message Filter {
-    // Optional. Lists only evaluation results for a specific cloud service.
+    // Optional. Lists only evaluation results for a specific certification target.
     optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
 
     // Optional. Lists only evaluation results for a specific catalog.
@@ -130,7 +130,7 @@ message ListEvaluationResultsResponse {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// cloud service with a specific control certification_target_id, category_name and
+// certification target with a specific control certification_target_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 message EvaluationResult {
   // Evaluation result id
@@ -139,7 +139,7 @@ message EvaluationResult {
     (buf.validate.field).ignore_empty = true
   ];
 
-  // The Cloud Service ID the evaluation belongs to
+  // The Certification Target ID the evaluation belongs to
   string certification_target_id = 2 [
     (buf.validate.field).string = {uuid: true},
     (buf.validate.field).ignore_empty = true

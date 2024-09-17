@@ -1567,7 +1567,7 @@ components:
                     description: Some comments on the reason for non-compliance
                 certificationTargetId:
                     type: string
-                    description: The cloud service which this assessment result belongs to
+                    description: The certification target which this assessment result belongs to
                 toolId:
                     type: string
                     description: Reference to the tool which provided the assessment result

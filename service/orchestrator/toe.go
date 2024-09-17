@@ -49,7 +49,7 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -57,7 +57,7 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 	// Create the Audit Scope
 	err = svc.storage.Create(&req.AuditScope)
 	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or cloud service")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or certification target")
 	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
@@ -80,7 +80,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -105,7 +105,7 @@ func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -133,7 +133,7 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -165,7 +165,7 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}

@@ -38,43 +38,43 @@ type CertificationTargetHookFunc func(ctx context.Context, cld *CertificationTar
 type AuditScopeHookFunc func(ctx context.Context, event *AuditScopeChangeEvent, err error)
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *StoreAssessmentResultRequest) GetCertificationTargetId() string {
 	return req.GetResult().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *CreateCertificateRequest) GetCertificationTargetId() string {
 	return req.GetCertificate().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *UpdateCertificateRequest) GetCertificationTargetId() string {
 	return req.GetCertificate().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *RegisterCertificationTargetRequest) GetCertificationTargetId() string {
 	return req.GetCertificationTarget().GetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
 	return req.CertificationTarget.GetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *CreateAuditScopeRequest) GetCertificationTargetId() string {
 	return req.GetAuditScope().GetCertificationTargetId()
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *UpdateAuditScopeRequest) GetCertificationTargetId() string {
 	return req.GetAuditScope().GetCertificationTargetId()
 }
@@ -163,7 +163,7 @@ func (req *RemoveAuditScopeRequest) GetPayload() proto.Message {
 	return &AuditScope{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
 }
 
-// IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly
+// IsRelevantFor checks, whether this control is relevant for the given audit scope. For now this mainly
 // checks, whether the assurance level matches, if the Audit Scope has one. In the future, this could also include checks, if
 // the control is somehow out of scope.
 func (c *Control) IsRelevantFor(auditScope *AuditScope, catalog *Catalog) bool {

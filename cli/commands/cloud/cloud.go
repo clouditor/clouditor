@@ -42,7 +42,7 @@ import (
 func NewRegisterCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
-		Short: "Registers a new target cloud service",
+		Short: "Registers a new target certification target",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -81,7 +81,7 @@ func NewRegisterCertificationTargetCommand() *cobra.Command {
 func NewListCertificationTargetsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all target cloud services",
+		Short: "Lists all target certification targets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err      error
@@ -121,7 +121,7 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 func NewGetCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
-		Short: "Retrieves a target cloud service by its ID",
+		Short: "Retrieves a target certification target by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -154,7 +154,7 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 func NewRemoveCertificationTargetComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
-		Short: "Removes a target cloud service by its ID",
+		Short: "Removes a target certification target by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -187,7 +187,7 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 func NewUpdateCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Updates a target cloud service",
+		Short: "Updates a target certification target",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
@@ -216,7 +216,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
-	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
+	cmd.PersistentFlags().String("id", "", "the certification target id to update")
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 
@@ -275,7 +275,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 func NewCloudCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cloud",
-		Short: "Target cloud services commands",
+		Short: "Target certification targets commands",
 	}
 
 	AddCommands(cmd)

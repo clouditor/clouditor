@@ -57,7 +57,7 @@ func NewOrchestratorCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target certification target if it does not exist")
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Clouditor gRPC API")
 	}

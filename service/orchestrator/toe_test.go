@@ -100,7 +100,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 			want: assert.Nil[*orchestrator.AuditScope],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "invalid catalog or cloud service")
+				return assert.ErrorContains(t, err, "invalid catalog or certification target")
 			},
 		},
 		{

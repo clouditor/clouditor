@@ -302,7 +302,7 @@ func TestService_ListEvidences(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Successful List Of Evidences (with allowed cloud service)",
+			name: "Successful List Of Evidences (with allowed certification target)",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CertificationTargetId, evidencetest.MockEvidence2.CertificationTargetId),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -322,7 +322,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Successful Filter Of Evidences (with allowed cloud service)",
+			name: "Successful Filter Of Evidences (with allowed certification target)",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, evidencetest.MockEvidence1.CertificationTargetId),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -410,7 +410,7 @@ func TestService_ListEvidences(t *testing.T) {
 			},
 		},
 		{
-			name: "Permission denied (cloud service id not allowed)",
+			name: "Permission denied (certification target id not allowed)",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1), // allow only MockCertificationTargetID
 			},

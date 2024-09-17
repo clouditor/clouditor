@@ -68,11 +68,11 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
-			// Create default target Cloud Service
+			// Create default target Certification Target
 			if viper.GetBool(config.CreateDefaultTargetFlag) {
 				_, err := svc.CreateDefaultTargetCertificationTarget()
 				if err != nil {
-					return nil, fmt.Errorf("could not register default target cloud service: %v", err)
+					return nil, fmt.Errorf("could not register default target certification target: %v", err)
 				}
 			}
 
@@ -114,7 +114,7 @@ type Service struct {
 
 	events chan *orchestrator.MetricChangeEvent
 
-	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
 	// resources, such as evidences and assessment results.
 	authz service.AuthorizationStrategy
 }

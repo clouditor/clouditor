@@ -160,7 +160,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "Update Cloud Service",
+			name: "Update Certification Target",
 			args: args{
 				in0: context.TODO(),
 				serviceUpdate: &orchestrator.UpdateCertificationTargetRequest{

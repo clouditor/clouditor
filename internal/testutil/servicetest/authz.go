@@ -9,7 +9,7 @@ import (
 )
 
 // NewAuthorizationStrategy contains a mock for a
-// [service.AuthorizationStrategy] that either allows all cloud services or the
+// [service.AuthorizationStrategy] that either allows all certification targets or the
 // ones that are specified in the ID list.
 func NewAuthorizationStrategy(all bool, CertificationTargetIDs ...string) service.AuthorizationStrategy {
 	return &AuthorizationStrategyMock{

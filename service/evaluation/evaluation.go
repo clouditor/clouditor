@@ -92,7 +92,7 @@ type Service struct {
 
 	scheduler *gocron.Scheduler
 
-	// authz defines our authorization strategy, e.g., which user can access which cloud service and associated
+	// authz defines our authorization strategy, e.g., which user can access which certification target and associated
 	// resources, such as evaluation results.
 	authz service.AuthorizationStrategy
 
@@ -175,7 +175,7 @@ func (svc *Service) Shutdown() {
 }
 
 // StartEvaluation is a method implementation of the evaluation interface: It periodically starts the evaluation of a
-// cloud service and the given catalog in the audit_scope. If no interval time is given, the default value is
+// certification target and the given catalog in the audit_scope. If no interval time is given, the default value is
 // used.
 func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEvaluationRequest) (resp *evaluation.StartEvaluationResponse, err error) {
 	var (
@@ -191,7 +191,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -220,7 +220,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		CatalogId:             req.CatalogId,
 	})
 	if err != nil {
-		err = fmt.Errorf("could not get target of evaluation: %w", err)
+		err = fmt.Errorf("could not get audit scope: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -242,7 +242,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Cloud Service '%s' and Catalog ID '%s' already started", auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+		err = fmt.Errorf("evaluation for Certification Target '%s' and Catalog ID '%s' already started", auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -256,7 +256,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	log.Infof("Scheduled to evaluate catalog ID '%s' for cloud service '%s' every %d minutes...",
+	log.Infof("Scheduled to evaluate catalog ID '%s' for certification target '%s' every %d minutes...",
 		catalog.GetId(),
 		auditScope.GetCertificationTargetId(),
 		interval,
@@ -276,17 +276,17 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Stop jobs(s) for given cloud service and catalog
+	// Stop jobs(s) for given certification target and catalog
 	err = svc.scheduler.RemoveByTags(req.CertificationTargetId, req.CatalogId)
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for cloud service '%s' and catalog '%s' not running", req.CertificationTargetId, req.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for certification target '%s' and catalog '%s' not running", req.CertificationTargetId, req.CatalogId)
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for cloud service '%s' and catalog '%s': %w", req.CertificationTargetId, req.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for certification target '%s' and catalog '%s': %w", req.CertificationTargetId, req.CatalogId, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -313,16 +313,16 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		return nil, err
 	}
 
-	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all cloud services.
+	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 
 	// Filtering evaluation results by
-	// * cloud service ID
+	// * certification target ID
 	// * control ID
 	// * sub-controls
 	if req.Filter != nil {
-		// Check if certification_target_id in filter is within allowed or one can access *all* the cloud services
+		// Check if certification_target_id in filter is within allowed or one can access *all* the certification targets
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
@@ -364,7 +364,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		}
 	}
 
-	// In any case, we need to make sure that we only select evaluation results of cloud services that we have access to
+	// In any case, we need to make sure that we only select evaluation results of certification targets that we have access to
 	// (if we do not have access to all)
 	if !all {
 		query = append(query, "certification_target_id IN ?")
@@ -434,7 +434,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 		return nil, status.Errorf(codes.InvalidArgument, "validity must be set")
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -453,7 +453,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 func (svc *Service) addJobToScheduler(ctx context.Context, auditScope *orchestrator.AuditScope, catalog *orchestrator.Catalog, interval int) (err error) {
 	// Check inputs and log error
 	if auditScope == nil {
-		err = errors.New("target of evaluation is invalid")
+		err = errors.New("audit scope is invalid")
 	}
 	if interval == 0 {
 		err = errors.New("interval is invalid")
@@ -469,12 +469,12 @@ func (svc *Service) addJobToScheduler(ctx context.Context, auditScope *orchestra
 		Tag(auditScope.GetCertificationTargetId(), auditScope.GetCatalogId()).
 		Do(svc.evaluateCatalog, ctx, auditScope, catalog, interval)
 	if err != nil {
-		err = fmt.Errorf("evaluation for cloud service '%s' and catalog ID '%s' cannot be scheduled: %w", auditScope.GetCertificationTargetId(), catalog.GetId(), err)
+		err = fmt.Errorf("evaluation for certification target '%s' and catalog ID '%s' cannot be scheduled: %w", auditScope.GetCertificationTargetId(), catalog.GetId(), err)
 		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", err)
 	}
 
-	log.Debugf("cloud service '%s' with catalog ID '%s' added to scheduler", auditScope.GetCertificationTargetId(), catalog.GetId())
+	log.Debugf("certification target '%s' with catalog ID '%s' added to scheduler", auditScope.GetCertificationTargetId(), catalog.GetId())
 
 	return
 }
@@ -550,7 +550,7 @@ func (svc *Service) evaluateCatalog(ctx context.Context, auditScope *orchestrato
 		}
 	}
 
-	log.Infof("Starting catalog evaluation for Cloud Service '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
+	log.Infof("Starting catalog evaluation for Certification Target '%s', Catalog ID '%s'. Waiting for the evaluation of %d control(s)",
 		auditScope.CertificationTargetId,
 		auditScope.CatalogId,
 		len(relevant),
@@ -613,7 +613,7 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 		}
 	}
 
-	log.Infof("Starting control evaluation for Cloud Service '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
+	log.Infof("Starting control evaluation for Certification Target '%s', Catalog ID '%s' and Control '%s'. Waiting for the evaluation of %d sub-control(s)",
 		auditScope.CertificationTargetId,
 		auditScope.CatalogId,
 		control.Id,
@@ -679,14 +679,14 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 
 	err = svc.storage.Create(result)
 	if err != nil {
-		log.Errorf("error storing evaluation result for control ID '%s' (in cloud service %s) in database: %v",
+		log.Errorf("error storing evaluation result for control ID '%s' (in certification target %s) in database: %v",
 			control.Id,
 			auditScope.CertificationTargetId,
 			err)
 		return
 	}
 
-	log.Infof("Evaluation result for control ID '%s' (in cloud service %s) was %s", control.Id, auditScope.CertificationTargetId, result.Status.String())
+	log.Infof("Evaluation result for control ID '%s' (in certification target %s) was %s", control.Id, auditScope.CertificationTargetId, result.Status.String())
 
 	return
 }
@@ -707,13 +707,13 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 	// Get metrics from control and sub-controls
 	metrics, err := svc.getAllMetricsFromControl(auditScope.GetCatalogId(), control.CategoryName, control.Id)
 	if err != nil {
-		log.Errorf("could not get metrics for controlID '%s' and Cloud Service '%s' from Orchestrator: %v", control.Id, auditScope.GetCertificationTargetId(), err)
+		log.Errorf("could not get metrics for controlID '%s' and Certification Target '%s' from Orchestrator: %v", control.Id, auditScope.GetCertificationTargetId(), err)
 		return
 	}
 
 	if len(metrics) != 0 {
 		// Get latest assessment_results by resource_id filtered by
-		// * cloud service id
+		// * certification target id
 		// * metric ids
 		assessments, err = api.ListAllPaginated(&orchestrator.ListAssessmentResultsRequest{
 			Filter: &orchestrator.ListAssessmentResultsRequest_Filter{
@@ -728,11 +728,11 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		if err != nil {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Errorf("could not get assessment results for Cloud Service ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetCertificationTargetId(), getMetricIds(metrics), err)
+			log.Errorf("could not get assessment results for Certification Target ID '%s' and MetricIds '%s' from Orchestrator: %v", auditScope.GetCertificationTargetId(), getMetricIds(metrics), err)
 		} else if len(assessments) == 0 {
 			// We let the scheduler running if we do not get the assessment results from the orchestrator, maybe it is
 			// only a temporary network problem
-			log.Debugf("no assessment results for Cloud Service ID '%s' and MetricIds '%s' available", auditScope.GetCertificationTargetId(), getMetricIds(metrics))
+			log.Debugf("no assessment results for Certification Target ID '%s' and MetricIds '%s' available", auditScope.GetCertificationTargetId(), getMetricIds(metrics))
 		}
 	} else {
 		log.Debugf("no metrics are available for the given control")
@@ -774,7 +774,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		return nil, err
 	}
 
-	log.Infof("Evaluation result for %s (in cloud service %s) was %s", control.Id, auditScope.GetCertificationTargetId(), eval.Status.String())
+	log.Infof("Evaluation result for %s (in certification target %s) was %s", control.Id, auditScope.GetCertificationTargetId(), eval.Status.String())
 
 	return
 }

@@ -236,7 +236,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 	_, err = clitest.RunCLITestFunc(func() bool {
 		target, err = svc.CreateDefaultTargetCertificationTarget()
 		assert.NoError(t, err)
-		// target should be not nil since there are no stored cloud services yet
+		// target should be not nil since there are no stored certification targets yet
 		assert.NotNil(t, target)
 
 		cli.Output = &b

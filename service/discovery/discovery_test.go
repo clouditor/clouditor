@@ -206,7 +206,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "No err with default cloud service ID",
+			name: "No err with default certification target ID",
 			fields: fields{
 				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: config.DefaultCertificationTargetID},
 				csID:        config.DefaultCertificationTargetID,
@@ -215,7 +215,7 @@ func TestService_StartDiscovery(t *testing.T) {
 			checkEvidence: true,
 		},
 		{
-			name: "No err with custom cloud service ID",
+			name: "No err with custom certification target ID",
 			fields: fields{
 				discoverer:  &discoverytest.TestDiscoverer{TestCase: 2, ServiceId: testdata.MockCertificationTargetID1},
 				csID:        testdata.MockCertificationTargetID1,
@@ -262,7 +262,7 @@ func TestService_StartDiscovery(t *testing.T) {
 				// The TestDiscoverer adds a random number to the ID, so we have to delete the last 3 characters as we do not know which random number will be added.
 				assert.Equal(t, eWant.GetId()[:len(eWant.GetId())-3], or.GetId()[:len(or.GetId())-3])
 
-				// Assert cloud service ID
+				// Assert certification target ID
 				assert.Equal(t, tt.fields.csID, eGot.CertificationTargetId)
 			}
 		})
@@ -302,7 +302,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "Filter cloud service, allow",
+			name: "Filter certification target, allow",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				csID:  testdata.MockCertificationTargetID1,
@@ -316,7 +316,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "Filter cloud service, not allowed",
+			name: "Filter certification target, not allowed",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				csID:  testdata.MockCertificationTargetID1,
@@ -376,7 +376,7 @@ func TestService_ListResources(t *testing.T) {
 			wantErr:                  assert.Nil[error],
 		},
 		{
-			name: "No filtering, allow different cloud service, empty result",
+			name: "No filtering, allow different certification target, empty result",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
 				csID:  testdata.MockCertificationTargetID1,

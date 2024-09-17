@@ -133,7 +133,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path: with cloud service id",
+			name: "Happy path: with certification target id",
 			args: args{
 				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
 			},

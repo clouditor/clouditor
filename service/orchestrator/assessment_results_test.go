@@ -248,7 +248,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "list all only with allowed cloud service",
+			name: "list all only with allowed certification target",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
@@ -268,7 +268,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "specify filtered cloud service ID which is not allowed",
+			name: "specify filtered certification target ID which is not allowed",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
@@ -290,7 +290,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			},
 		},
 		{
-			name: "return filtered cloud service ID",
+			name: "return filtered certification target ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(&orchestratortest.MockAssessmentResult1))
@@ -314,7 +314,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and filtered compliant assessment results",
+			name: "return filtered certification target ID and filtered compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -338,7 +338,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and filtered non-compliant assessment results",
+			name: "return filtered certification target ID and filtered non-compliant assessment results",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -434,7 +434,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and one filtered metric ID",
+			name: "return filtered certification target ID and one filtered metric ID",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -459,7 +459,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "return filtered cloud service ID and two filtered metric IDs",
+			name: "return filtered certification target ID and two filtered metric IDs",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
@@ -508,7 +508,7 @@ func TestService_ListAssessmentResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Invalid cloud service id request",
+			name: "Invalid certification target id request",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))

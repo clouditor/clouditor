@@ -50,7 +50,7 @@ import (
 const (
 	DefaultTargetCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
 	DefaultTargetCertificationTargetName        = "default"
-	DefaultTargetCertificationTargetDescription = "The default target cloud service"
+	DefaultTargetCertificationTargetDescription = "The default target certification target"
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
@@ -81,7 +81,7 @@ func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestr
 	// Persist the service in our database
 	err = s.storage.Create(res)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not add certification target to the database: %v", err)
 	}
 
 	go s.informHooks(ctx, res, nil)
@@ -91,7 +91,7 @@ func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestr
 	return
 }
 
-// ListCertificationTargets implements method for OrchestratorServer interface for listing all cloud services
+// ListCertificationTargets implements method for OrchestratorServer interface for listing all certification targets
 func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestrator.ListCertificationTargetsRequest) (
 	res *orchestrator.ListCertificationTargetsResponse, err error) {
 	var conds []any
@@ -106,14 +106,14 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 
 	res = new(orchestrator.ListCertificationTargetsResponse)
 
-	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all cloud services.
+	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all certification targets.
 	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		conds = append(conds, allowed)
 	}
 
-	// Paginate the cloud services according to the request
+	// Paginate the certification targets according to the request
 	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CertificationTarget](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
 	if err != nil {
@@ -123,7 +123,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 	return
 }
 
-// GetCertificationTarget implements method for OrchestratorServer interface for getting a cloud service with provided id
+// GetCertificationTarget implements method for OrchestratorServer interface for getting a certification target with provided id
 func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.GetCertificationTargetRequest) (response *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -131,7 +131,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -148,7 +148,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 	return response, nil
 }
 
-// UpdateCertificationTarget implements method for OrchestratorServer interface for updating a cloud service
+// UpdateCertificationTarget implements method for OrchestratorServer interface for updating a certification target
 func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrator.UpdateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -156,7 +156,7 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -187,7 +187,7 @@ func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrat
 	return
 }
 
-// RemoveCertificationTarget implements method for OrchestratorServer interface for removing a cloud service
+// RemoveCertificationTarget implements method for OrchestratorServer interface for removing a certification target
 func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrator.RemoveCertificationTargetRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -195,7 +195,7 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -214,7 +214,7 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 	return &emptypb.Empty{}, nil
 }
 
-// GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving cloud service statistics
+// GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving certification target statistics
 func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orchestrator.GetCertificationTargetStatisticsRequest) (response *orchestrator.GetCertificationTargetStatisticsResponse, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -222,7 +222,7 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -235,7 +235,7 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error getting cloud service: %s", err)
+		return nil, status.Errorf(codes.Internal, "database error getting certification target: %s", err)
 	}
 	response.NumberOfSelectedCatalogs = int64(len(CertificationTarget.CatalogsInScope))
 
@@ -266,12 +266,12 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	return response, nil
 }
 
-// CreateDefaultTargetCertificationTarget creates a new "default" target cloud services,
+// CreateDefaultTargetCertificationTarget creates a new "default" target certification targets,
 // if no target service exists in the database.
 //
-// If a new target cloud service was created, it will be returned.
+// If a new target certification target was created, it will be returned.
 func (s *Service) CreateDefaultTargetCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
-	log.Infof("Trying to create new default target cloud service...")
+	log.Infof("Trying to create new default target certification target...")
 
 	count, err := s.storage.Count(service)
 	if err != nil {
@@ -281,7 +281,7 @@ func (s *Service) CreateDefaultTargetCertificationTarget() (service *orchestrato
 	if count == 0 {
 		now := timestamppb.Now()
 
-		// Create a default target cloud service
+		// Create a default target certification target
 		service =
 			&orchestrator.CertificationTarget{
 				Id:          DefaultTargetCertificationTargetId,
@@ -296,10 +296,10 @@ func (s *Service) CreateDefaultTargetCertificationTarget() (service *orchestrato
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target cloud service: %s", service.Id)
+			log.Infof("Created new default target certification target: %s", service.Id)
 		}
 	} else {
-		log.Infof("Default target cloud service already exist.")
+		log.Infof("Default target certification target already exist.")
 	}
 
 	return

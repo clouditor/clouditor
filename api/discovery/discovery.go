@@ -108,7 +108,7 @@ func ToDiscoveryResource(resource ontology.IsResource, csID, collectorID string)
 }
 
 // GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
-// the cloud service ID of the inner object.
+// the certification target ID of the inner object.
 func (req *UpdateResourceRequest) GetCertificationTargetId() string {
 	return req.Resource.GetCertificationTargetId()
 }

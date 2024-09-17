@@ -87,11 +87,11 @@ const (
 	Orchestrator_GetCategory_FullMethodName                      = "/clouditor.orchestrator.v1.Orchestrator/GetCategory"
 	Orchestrator_ListControls_FullMethodName                     = "/clouditor.orchestrator.v1.Orchestrator/ListControls"
 	Orchestrator_GetControl_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
-	Orchestrator_CreateAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
-	Orchestrator_GetAuditScope_FullMethodName            = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
+	Orchestrator_CreateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
+	Orchestrator_GetAuditScope_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
 	Orchestrator_ListTargetsOfEvaluation_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
-	Orchestrator_UpdateAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
-	Orchestrator_RemoveAuditScope_FullMethodName         = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
+	Orchestrator_UpdateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
+	Orchestrator_RemoveAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
 	Orchestrator_GetRuntimeInfo_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
 )
 

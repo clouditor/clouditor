@@ -130,7 +130,7 @@ func Test_CreateCertificate(t *testing.T) {
 			args: args{
 				context.Background(),
 				&orchestrator.CreateCertificateRequest{
-					// mockCertificate's corresponding cloud service ID is MockCertificationTargetID (authorization succeeds)
+					// mockCertificate's corresponding certification target ID is MockCertificationTargetID (authorization succeeds)
 					Certificate: mockCertificate,
 				},
 			},
@@ -311,7 +311,7 @@ func Test_ListCertificates(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path - all cloud services are allowed",
+			name: "Happy path - all certification targets are allowed",
 			fields: fields{
 				svc: &Service{
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -331,7 +331,7 @@ func Test_ListCertificates(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - one cloud services is allowed",
+			name: "Happy path - one certification targets is allowed",
 			fields: fields{
 				svc: &Service{
 					storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
@@ -765,7 +765,7 @@ func Test_RemoveCertificate(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain cloud service",
+			name: "Happy path - with authorization for one certain certification target",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
@@ -873,7 +873,7 @@ func TestService_checkAuthorization(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Happy path - with authorization for one certain cloud service",
+			name: "Happy path - with authorization for one certain certification target",
 			fields: fields{
 				svc: NewService(
 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(

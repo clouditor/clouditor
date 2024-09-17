@@ -77,7 +77,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 			},
 		},
 		{
-			name: "only allowed cloud service",
+			name: "only allowed certification target",
 			fields: fields{
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {

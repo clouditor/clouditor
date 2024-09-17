@@ -296,7 +296,7 @@ type Resource struct {
 	// provider this resource was gathered for and can for example be a resource
 	// URL.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// CertificationTargetId is the UUID for the cloud service to which this resource
+	// CertificationTargetId is the UUID for the certification target to which this resource
 	// belongs to.
 	CertificationTargetId string `protobuf:"bytes,2,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// ResourceType contains a comma separated string of resource types according

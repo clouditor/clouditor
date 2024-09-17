@@ -15,7 +15,7 @@ func TestNewStorage(t *testing.T) {
 	s, err := NewStorage()
 	assert.NoError(t, err)
 
-	// Test to create new cloud service
+	// Test to create new certification target
 	userInput := orchestratortest.NewCertificationTarget()
 	err = s.Create(userInput)
 	assert.NoError(t, err)

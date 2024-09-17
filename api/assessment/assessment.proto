@@ -132,7 +132,7 @@ message AssessmentResult {
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
 
-  // The cloud service which this assessment result belongs to
+  // The certification target which this assessment result belongs to
   string certification_target_id = 10 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the assessment result

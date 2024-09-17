@@ -504,7 +504,7 @@ func (x *ListEvaluationResultsResponse) GetNextPageToken() string {
 }
 
 // A evaluation result resource, representing the result after evaluating the
-// cloud service with a specific control certification_target_id, category_name and
+// certification target with a specific control certification_target_id, category_name and
 // catalog_id are necessary to get the corresponding AuditScope
 type EvaluationResult struct {
 	state         protoimpl.MessageState
@@ -513,7 +513,7 @@ type EvaluationResult struct {
 
 	// Evaluation result id
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The Cloud Service ID the evaluation belongs to
+	// The Certification Target ID the evaluation belongs to
 	CertificationTargetId string `protobuf:"bytes,2,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`
 	// The control id the evaluation was based on
 	ControlId string `protobuf:"bytes,3,opt,name=control_id,json=controlId,proto3" json:"control_id,omitempty"`
@@ -651,7 +651,7 @@ type ListEvaluationResultsRequest_Filter struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Optional. Lists only evaluation results for a specific cloud service.
+	// Optional. Lists only evaluation results for a specific certification target.
 	CertificationTargetId *string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3,oneof" json:"certification_target_id,omitempty"`
 	// Optional. Lists only evaluation results for a specific catalog.
 	CatalogId *string `protobuf:"bytes,2,opt,name=catalog_id,json=catalogId,proto3,oneof" json:"catalog_id,omitempty"`
