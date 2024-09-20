@@ -266,11 +266,11 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	return response, nil
 }
 
-// CreateDefaultTargetCertificationTarget creates a new "default" target certification targets,
+// CreateDefaultCertificationTarget creates a new "default" target certification targets,
 // if no target service exists in the database.
 //
 // If a new target certification target was created, it will be returned.
-func (s *Service) CreateDefaultTargetCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
 	log.Infof("Trying to create new default target certification target...")
 
 	count, err := s.storage.Count(service)

@@ -99,7 +99,7 @@ func TestListCertificationTargetsCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		_, err = svc.CreateDefaultTargetCertificationTarget()
+		_, err = svc.CreateDefaultCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
@@ -129,7 +129,7 @@ func TestGetCertificationTargetCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCertificationTarget()
+		target, err = svc.CreateDefaultCertificationTarget()
 
 		fmt.Println("target:", target)
 		// target should be non-nil since it has been newly created
@@ -163,7 +163,7 @@ func TestRemoveCertificationTargetsCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCertificationTarget()
+		target, err = svc.CreateDefaultCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
@@ -178,7 +178,7 @@ func TestRemoveCertificationTargetsCommand(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Re-create default service
-		_, err = svc.CreateDefaultTargetCertificationTarget()
+		_, err = svc.CreateDefaultCertificationTarget()
 
 		return assert.NoError(t, err)
 	}, server.WithServices(svc))
@@ -201,7 +201,7 @@ func TestUpdateCertificationTargetCommand(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCertificationTarget()
+		target, err = svc.CreateDefaultCertificationTarget()
 		assert.NoError(t, err)
 
 		cli.Output = &b
@@ -234,7 +234,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 
 	svc = service_orchestrator.NewService()
 	_, err = clitest.RunCLITestFunc(func() bool {
-		target, err = svc.CreateDefaultTargetCertificationTarget()
+		target, err = svc.CreateDefaultCertificationTarget()
 		assert.NoError(t, err)
 		// target should be not nil since there are no stored certification targets yet
 		assert.NotNil(t, target)

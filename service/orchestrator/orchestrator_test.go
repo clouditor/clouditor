@@ -185,7 +185,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 			hookCallCounter = 0
 			s := NewService()
 
-			_, err := s.CreateDefaultTargetCertificationTarget()
+			_, err := s.CreateDefaultCertificationTarget()
 			if err != nil {
 				t.Errorf("CreateCertificationTarget() error = %v", err)
 			}

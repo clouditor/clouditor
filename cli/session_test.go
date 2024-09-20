@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 	clitest.AutoChdir()
 
 	svc = service_orchestrator.NewService()
-	_, err = svc.CreateDefaultTargetCertificationTarget()
+	_, err = svc.CreateDefaultCertificationTarget()
 	if err != nil {
 		panic(err)
 	}

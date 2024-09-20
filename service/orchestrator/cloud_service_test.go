@@ -124,7 +124,7 @@ func TestService_RegisterCertificationTarget(t *testing.T) {
 		},
 	}
 	orchestratorService := NewService()
-	CertificationTarget, err := orchestratorService.CreateDefaultTargetCertificationTarget()
+	CertificationTarget, err := orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	assert.NotNil(t, CertificationTarget)
 	assert.NoError(t, api.Validate(CertificationTarget))
@@ -235,7 +235,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.svc.CreateDefaultTargetCertificationTarget()
+			_, err := tt.svc.CreateDefaultCertificationTarget()
 			assert.NoError(t, err)
 
 			res, err := tt.svc.GetCertificationTarget(tt.ctx, tt.req)
@@ -327,7 +327,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	assert.NotNil(t, CertificationTargetResponse)
 
@@ -356,7 +356,7 @@ func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
 	orchestratorService := NewService()
 
 	// 1st case: No records for certification targets -> Default target service is created
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	// Check timestamps and delete it for further tests
 	assert.NotEmpty(t, CertificationTargetResponse.CreatedAt)
@@ -374,7 +374,7 @@ func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
 	assert.NoError(t, api.Validate(CertificationTargetResponse))
 
 	// 2nd case: There is already a record for service (the default target service) -> Nothing added and no error
-	CertificationTargetResponse, err = orchestratorService.CreateDefaultTargetCertificationTarget()
+	CertificationTargetResponse, err = orchestratorService.CreateDefaultCertificationTarget()
 	assert.NoError(t, err)
 	assert.Nil(t, CertificationTargetResponse)
 }

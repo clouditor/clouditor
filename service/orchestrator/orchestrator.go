@@ -70,7 +70,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// Create default target Certification Target
 			if viper.GetBool(config.CreateDefaultTargetFlag) {
-				_, err := svc.CreateDefaultTargetCertificationTarget()
+				_, err := svc.CreateDefaultCertificationTarget()
 				if err != nil {
 					return nil, fmt.Errorf("could not register default target certification target: %v", err)
 				}
