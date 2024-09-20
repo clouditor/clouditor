@@ -51,6 +51,7 @@ const (
 	DefaultCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
 	DefaultCertificationTargetName        = "default"
 	DefaultCertificationTargetDescription = "The default certification target"
+	DefaultCertificationTargetType        = orchestrator.CertificationTarget_TARGET_TYPE_CLOUD
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
@@ -289,7 +290,7 @@ func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.Cert
 				Description: DefaultCertificationTargetDescription,
 				CreatedAt:   now,
 				UpdatedAt:   now,
-				TargetType:  orchestrator.CertificationTarget_TARGET_TYPE_CLOUD,
+				TargetType:  DefaultCertificationTargetType,
 			}
 
 		// Save it in the database

@@ -199,6 +199,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 				Id:          DefaultCertificationTargetId,
 				Name:        DefaultCertificationTargetName,
 				Description: DefaultCertificationTargetDescription,
+				TargetType:  DefaultCertificationTargetType,
 			},
 			wantErr: assert.NoError,
 		},
@@ -368,6 +369,7 @@ func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 		Id:          DefaultCertificationTargetId,
 		Name:        DefaultCertificationTargetName,
 		Description: DefaultCertificationTargetDescription,
+		TargetType:  DefaultCertificationTargetType,
 	}, CertificationTargetResponse)
 
 	// Check if CertificationTarget is valid
