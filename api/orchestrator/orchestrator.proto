@@ -672,6 +672,21 @@ message CertificationTarget {
 
   // additional metadata of the certification target, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
+
+  // TargetType represents the type of the certification target.
+  enum TargetType {
+    TARGET_TYPE_UNSPECIFIED = 0;
+
+    TARGET_TYPE_CLOUD = 1;
+    TARGET_TYPE_PRODUCT = 2;
+    TARGET_TYPE_ORGANIZATION = 3;
+  }
+
+  // type of the target to be evaluated: cloud, product or organization
+  TargetType target_type = 11 [
+    (buf.validate.field).enum.defined_only = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message Catalog {

@@ -1712,6 +1712,7 @@ components:
                 - name
                 - catalogsInScope
                 - configuredMetrics
+                - targetType
             type: object
             properties:
                 id:
@@ -1740,6 +1741,15 @@ components:
                     allOf:
                         - $ref: '#/components/schemas/CertificationTarget_Metadata'
                     description: additional metadata of the certification target, mostly used for the UI
+                targetType:
+                    enum:
+                        - TARGET_TYPE_UNSPECIFIED
+                        - TARGET_TYPE_CLOUD
+                        - TARGET_TYPE_PRODUCT
+                        - TARGET_TYPE_ORGANIZATION
+                    type: string
+                    description: 'type of the target to be evaluated: cloud, product or organization'
+                    format: enum
         CertificationTarget_Metadata:
             type: object
             properties:
