@@ -3538,7 +3538,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/{catalog_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{certification_target_id}/toes/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4617,7 +4617,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/{catalog_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/cloud_services/{certification_target_id}/toes/{catalog_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4749,7 +4749,7 @@ var (
 
 	pattern_Orchestrator_UpdateAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "audit_scope.certification_target_id", "auditScopes", "audit_scope.catalog_id"}, ""))
 
-	pattern_Orchestrator_RemoveAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "certification_target_id", "auditScopes", "catalog_id"}, ""))
+	pattern_Orchestrator_RemoveAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "cloud_services", "certification_target_id", "toes", "catalog_id"}, ""))
 
 	pattern_Orchestrator_GetRuntimeInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
 )

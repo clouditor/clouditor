@@ -65,7 +65,7 @@ const (
 	DiscoveryProviderFlag            = "discovery-provider"
 	DiscoveryResourceGroupFlag       = "discovery-resource-group"
 	DiscoveryCSAFDomainFlag          = "discovery-csaf-domain"
-	DashboardURLFlag                 = "dashboard-url"
+	DashboardCallbackURLFlag         = "dashboard-callback-url"
 	LogLevelFlag                     = "log-level"
 
 	DefaultAPIDefaultUser                      = "clouditor"
@@ -99,7 +99,7 @@ const (
 	DefaultDiscoveryAutoStart                  = false
 	DefaultDiscoveryResourceGroup              = ""
 	DefaultCSAFDomain                          = ""
-	DefaultDashboardURL                        = "http://localhost:8080"
+	DefaultDashboardCallbackURL                = "http://localhost:8080/callback"
 	DefaultLogLevel                            = "info"
 
 	EnvPrefix = "CLOUDITOR"

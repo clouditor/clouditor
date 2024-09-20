@@ -51,7 +51,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
@@ -68,7 +68,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=csaf",
@@ -86,7 +86,7 @@
             "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "args": [
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure"
