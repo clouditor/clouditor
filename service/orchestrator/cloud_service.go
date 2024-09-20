@@ -48,9 +48,9 @@ import (
 )
 
 const (
-	DefaultTargetCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
-	DefaultTargetCertificationTargetName        = "default"
-	DefaultTargetCertificationTargetDescription = "The default target certification target"
+	DefaultCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
+	DefaultCertificationTargetName        = "default"
+	DefaultCertificationTargetDescription = "The default certification target"
 )
 
 func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
@@ -266,12 +266,12 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	return response, nil
 }
 
-// CreateDefaultCertificationTarget creates a new "default" target certification targets,
-// if no target service exists in the database.
+// CreateDefaultCertificationTarget creates a new "default" certification target,
+// if no certification target exists in the database.
 //
-// If a new target certification target was created, it will be returned.
+// If a new certification target was created, it will be returned.
 func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
-	log.Infof("Trying to create new default target certification target...")
+	log.Infof("Trying to create new default certification target...")
 
 	count, err := s.storage.Count(service)
 	if err != nil {
@@ -281,14 +281,15 @@ func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.Cert
 	if count == 0 {
 		now := timestamppb.Now()
 
-		// Create a default target certification target
+		// Create a default certification target
 		service =
 			&orchestrator.CertificationTarget{
-				Id:          DefaultTargetCertificationTargetId,
-				Name:        DefaultTargetCertificationTargetName,
-				Description: DefaultTargetCertificationTargetDescription,
+				Id:          DefaultCertificationTargetId,
+				Name:        DefaultCertificationTargetName,
+				Description: DefaultCertificationTargetDescription,
 				CreatedAt:   now,
 				UpdatedAt:   now,
+				TargetType:  orchestrator.CertificationTarget_TARGET_TYPE_CLOUD,
 			}
 
 		// Save it in the database

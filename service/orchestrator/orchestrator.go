@@ -68,8 +68,8 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 
 			// svc.RegisterAssessmentResultHook(func(result *assessment.AssessmentResult, err error) {})
 
-			// Create default target Certification Target
-			if viper.GetBool(config.CreateDefaultTargetFlag) {
+			// Create default Certification Target
+			if viper.GetBool(config.CreateDefaultCertificationTargetFlag) {
 				_, err := svc.CreateDefaultCertificationTarget()
 				if err != nil {
 					return nil, fmt.Errorf("could not register default target certification target: %v", err)

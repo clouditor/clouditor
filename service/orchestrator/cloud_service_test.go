@@ -194,11 +194,11 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			name: "valid",
 			svc:  NewService(),
 			ctx:  context.Background(),
-			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId},
+			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
 			res: &orchestrator.CertificationTarget{
-				Id:          DefaultTargetCertificationTargetId,
-				Name:        DefaultTargetCertificationTargetName,
-				Description: DefaultTargetCertificationTargetDescription,
+				Id:          DefaultCertificationTargetId,
+				Name:        DefaultCertificationTargetName,
+				Description: DefaultCertificationTargetDescription,
 			},
 			wantErr: assert.NoError,
 		},
@@ -206,7 +206,7 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			name: "permission denied",
 			svc:  NewService(WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1))),
 			ctx:  context.TODO(),
-			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId},
+			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
 			res:  nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error()) &&
@@ -277,8 +277,8 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
 		CertificationTarget: &orchestrator.CertificationTarget{
 			Id:          testdata.MockCertificationTargetID1,
-			Name:        DefaultTargetCertificationTargetName,
-			Description: DefaultTargetCertificationTargetDescription,
+			Name:        DefaultCertificationTargetName,
+			Description: DefaultCertificationTargetDescription,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -286,8 +286,8 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	// 4th case: Service updated successfully
 	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{
 		Id:          testdata.MockCertificationTargetID1,
-		Name:        DefaultTargetCertificationTargetName,
-		Description: DefaultTargetCertificationTargetDescription,
+		Name:        DefaultCertificationTargetName,
+		Description: DefaultCertificationTargetDescription,
 	})
 	assert.NoError(t, err)
 	if err != nil {
@@ -322,7 +322,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.InvalidArgument)
 
 	// 2nd case: ErrRecordNotFound
-	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId})
+	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId})
 	assert.Error(t, err)
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
@@ -338,7 +338,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	assert.NotEmpty(t, listCertificationTargetsResponse.Services)
 
 	// Remove record
-	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultTargetCertificationTargetId})
+	_, err = orchestratorService.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId})
 	assert.NoError(t, err)
 
 	// There is a record for certification targets in the DB (default one)
@@ -348,7 +348,7 @@ func TestService_RemoveCertificationTarget(t *testing.T) {
 	assert.Empty(t, listCertificationTargetsResponse.Services)
 }
 
-func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
+func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 	var (
 		CertificationTargetResponse *orchestrator.CertificationTarget
 		err                         error
@@ -365,9 +365,9 @@ func TestService_CreateDefaultTargetCertificationTarget(t *testing.T) {
 	CertificationTargetResponse.UpdatedAt = nil
 
 	assert.Equal(t, &orchestrator.CertificationTarget{
-		Id:          DefaultTargetCertificationTargetId,
-		Name:        DefaultTargetCertificationTargetName,
-		Description: DefaultTargetCertificationTargetDescription,
+		Id:          DefaultCertificationTargetId,
+		Name:        DefaultCertificationTargetName,
+		Description: DefaultCertificationTargetDescription,
 	}, CertificationTargetResponse)
 
 	// Check if CertificationTarget is valid
@@ -417,9 +417,9 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					service := &orchestrator.CertificationTarget{
-						Id:          DefaultTargetCertificationTargetId,
-						Name:        DefaultTargetCertificationTargetName,
-						Description: DefaultTargetCertificationTargetDescription,
+						Id:          DefaultCertificationTargetId,
+						Name:        DefaultCertificationTargetName,
+						Description: DefaultCertificationTargetDescription,
 					}
 
 					_ = s.Create(service)
@@ -429,9 +429,9 @@ func TestService_ListCertificationTargets(t *testing.T) {
 			wantRes: &orchestrator.ListCertificationTargetsResponse{
 				Services: []*orchestrator.CertificationTarget{
 					{
-						Id:          DefaultTargetCertificationTargetId,
-						Name:        DefaultTargetCertificationTargetName,
-						Description: DefaultTargetCertificationTargetDescription,
+						Id:          DefaultCertificationTargetId,
+						Name:        DefaultCertificationTargetName,
+						Description: DefaultCertificationTargetDescription,
 					},
 				},
 			},
