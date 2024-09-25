@@ -131,6 +131,7 @@ func local_request_ExperimentalDiscovery_ListGraphEdges_0(ctx context.Context, m
 // UnaryRPC     :call ExperimentalDiscoveryServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterExperimentalDiscoveryHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterExperimentalDiscoveryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ExperimentalDiscoveryServer) error {
 
 	mux.Handle("POST", pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -221,7 +222,7 @@ func RegisterExperimentalDiscoveryHandler(ctx context.Context, mux *runtime.Serv
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ExperimentalDiscoveryClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ExperimentalDiscoveryClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ExperimentalDiscoveryClient" to call the correct interceptors.
+// "ExperimentalDiscoveryClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterExperimentalDiscoveryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ExperimentalDiscoveryClient) error {
 
 	mux.Handle("POST", pattern_ExperimentalDiscovery_UpdateResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

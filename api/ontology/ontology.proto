@@ -62,7 +62,7 @@ message Account {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 6825;
+  google.protobuf.Timestamp creation_time = 7092;
   string id = 14986 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 7908;
   map<string, string> labels = 18850;
@@ -83,7 +83,7 @@ message ActivityLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 18133;
-  bool monitoring_enabled = 4719;
+  bool monitoring_log_data_enabled = 13626;
   google.protobuf.Duration retention_period = 10788;
   bool security_alerts_enabled = 17680;
   repeated string logging_service_ids = 589;
@@ -108,7 +108,7 @@ message Application {
   option (resource_type_names) = "Application";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 5733;
+  google.protobuf.Timestamp creation_time = 13667;
   string id = 16577 [(buf.validate.field).required = true];
   map<string, string> labels = 18754;
   string name = 338 [(buf.validate.field).required = true];
@@ -129,7 +129,7 @@ message ApplicationLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 13571;
-  bool monitoring_enabled = 15226;
+  bool monitoring_log_data_enabled = 4205;
   google.protobuf.Duration retention_period = 6319;
   bool security_alerts_enabled = 17870;
   repeated string logging_service_ids = 3793;
@@ -196,7 +196,6 @@ message AutomaticUpdates {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 2283;
-  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 2309;
   bool security_only = 1034;
 }
@@ -221,7 +220,6 @@ message Backup {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 2815;
-  // The interval refers to the update interval in days.
   google.protobuf.Duration interval = 7186;
   google.protobuf.Duration retention_period = 6795;
   optional string storage_id = 7061;
@@ -250,6 +248,7 @@ message Resource {
     DeviceProvisioningService device_provisioning_service = 9517;
     MessagingHub messaging_hub = 13990;
     KeyVault key_vault = 10449;
+    Workspace workspace = 16617;
     NetworkInterface network_interface = 5016;
     NetworkSecurityGroup network_security_group = 13367;
     FunctionService function_service = 4702;
@@ -284,7 +283,7 @@ message BlockStorage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 131;
+  google.protobuf.Timestamp creation_time = 13965;
   string id = 18268 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 3681;
   map<string, string> labels = 3996;
@@ -309,7 +308,7 @@ message BootLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 17321;
-  bool monitoring_enabled = 17358;
+  bool monitoring_log_data_enabled = 9135;
   google.protobuf.Duration retention_period = 2338;
   bool security_alerts_enabled = 3133;
   repeated string logging_service_ids = 15790;
@@ -330,7 +329,7 @@ message Certificate {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 4215;
+  google.protobuf.Timestamp creation_time = 9853;
   bool enabled = 12175;
   google.protobuf.Timestamp expiration_date = 12194;
   string id = 2793 [(buf.validate.field).required = true];
@@ -393,6 +392,7 @@ message CloudResource {
     DeviceProvisioningService device_provisioning_service = 9517;
     MessagingHub messaging_hub = 13990;
     KeyVault key_vault = 10449;
+    Workspace workspace = 16617;
     NetworkInterface network_interface = 5016;
     NetworkSecurityGroup network_security_group = 13367;
     FunctionService function_service = 4702;
@@ -449,7 +449,7 @@ message Container {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 13131;
+  google.protobuf.Timestamp creation_time = 10331;
   string id = 3838 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 1246;
   map<string, string> labels = 16192;
@@ -474,7 +474,7 @@ message ContainerImage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 16638;
+  google.protobuf.Timestamp creation_time = 13628;
   string id = 11254 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 12311;
   map<string, string> labels = 1165;
@@ -494,7 +494,7 @@ message ContainerOrchestration {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 7733;
+  google.protobuf.Timestamp creation_time = 8707;
   string id = 4734 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 12793;
   map<string, string> labels = 17989;
@@ -516,7 +516,7 @@ message ContainerRegistry {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 15453;
+  google.protobuf.Timestamp creation_time = 14288;
   string id = 11167 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 3229;
   map<string, string> labels = 17626;
@@ -619,7 +619,7 @@ message DatabaseStorage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 4193;
+  google.protobuf.Timestamp creation_time = 3373;
   string id = 17278 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 2642;
   map<string, string> labels = 307;
@@ -643,7 +643,7 @@ message DeviceProvisioningService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 7824;
+  google.protobuf.Timestamp creation_time = 6351;
   string id = 18289 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 1039;
   map<string, string> labels = 14958;
@@ -676,7 +676,7 @@ message DocumentDatabaseService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 10107;
+  google.protobuf.Timestamp creation_time = 10393;
   string id = 18752 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 14449;
   repeated string ips = 2939;
@@ -731,7 +731,7 @@ message FileStorage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1508;
+  google.protobuf.Timestamp creation_time = 17100;
   string id = 11922 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 14761;
   map<string, string> labels = 12349;
@@ -759,7 +759,7 @@ message FileStorageService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 3921;
+  google.protobuf.Timestamp creation_time = 9911;
   string id = 14877 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 9936;
   repeated string ips = 17906;
@@ -805,7 +805,7 @@ message Function {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 3068;
+  google.protobuf.Timestamp creation_time = 10954;
   string id = 5623 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 14103;
   map<string, string> labels = 13050;
@@ -832,7 +832,7 @@ message FunctionService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 14264;
+  google.protobuf.Timestamp creation_time = 16586;
   string id = 2255 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 9619;
   repeated string ips = 18904;
@@ -878,7 +878,7 @@ message GenericDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 16377;
+  google.protobuf.Timestamp creation_time = 11055;
   string filetype = 4013;
   string id = 11297 [(buf.validate.field).required = true];
   map<string, string> labels = 9013;
@@ -902,7 +902,7 @@ message GenericNetworkService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 17126;
+  google.protobuf.Timestamp creation_time = 4666;
   string id = 16446 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 6477;
   repeated string ips = 10719;
@@ -1006,7 +1006,7 @@ message Identity {
   option (resource_type_names) = "Resource";
 
   bool activated = 6238;
-  google.protobuf.Timestamp creation_time = 3559;
+  google.protobuf.Timestamp creation_time = 10648;
   bool disable_password_policy = 15260;
   bool enforce_mfa = 15546;
   string id = 1772 [(buf.validate.field).required = true];
@@ -1070,7 +1070,7 @@ message Job {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 13826;
+  google.protobuf.Timestamp creation_time = 9295;
   string id = 10331 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 13034;
   map<string, string> labels = 14984;
@@ -1102,7 +1102,7 @@ message Key {
   option (resource_type_names) = "Resource";
 
   string algorithm = 4231;
-  google.protobuf.Timestamp creation_time = 5508;
+  google.protobuf.Timestamp creation_time = 3669;
   bool enabled = 14125;
   google.protobuf.Timestamp expiration_date = 738;
   string id = 15178 [(buf.validate.field).required = true];
@@ -1131,7 +1131,7 @@ message KeyValueDatabaseService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 11114;
+  google.protobuf.Timestamp creation_time = 14330;
   string id = 11525 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 14156;
   repeated string ips = 7691;
@@ -1160,7 +1160,7 @@ message KeyVault {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 12872;
+  google.protobuf.Timestamp creation_time = 4986;
   string id = 11422 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 16240;
   map<string, string> labels = 18399;
@@ -1196,7 +1196,7 @@ message LoadBalancer {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 5223;
+  google.protobuf.Timestamp creation_time = 14747;
   string id = 11571 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 17456;
   repeated string ips = 5649;
@@ -1287,7 +1287,7 @@ message LoggingService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 7374;
+  google.protobuf.Timestamp creation_time = 7970;
   string id = 5915 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 13509;
   repeated string ips = 11852;
@@ -1307,6 +1307,13 @@ message LoggingService {
   UsageStatistics usage_statistics = 5443;
 }
 
+// MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message MachineLearning {
+  oneof type {
+    Workspace workspace = 16617;
+  }
+}
+
 // MalwareProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 // analyzes the activity within a Compute resource
 message MalwareProtection {
@@ -1314,7 +1321,7 @@ message MalwareProtection {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  google.protobuf.Duration days_since_active = 16905;
+  google.protobuf.Duration duration_since_active = 18754;
   bool enabled = 18004;
   int32 number_of_threats_found = 11973;
   ApplicationLogging application_logging = 8181;
@@ -1339,7 +1346,7 @@ message MessagingHub {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 18570;
+  google.protobuf.Timestamp creation_time = 7042;
   string id = 2653 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 7321;
   map<string, string> labels = 10843;
@@ -1373,7 +1380,7 @@ message MultiModalDatabaseService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 13628;
+  google.protobuf.Timestamp creation_time = 8494;
   string id = 9603 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 2909;
   repeated string ips = 11563;
@@ -1403,7 +1410,7 @@ message NetworkInterface {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 12325;
+  google.protobuf.Timestamp creation_time = 8612;
   string id = 6736 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 18092;
   map<string, string> labels = 12198;
@@ -1425,7 +1432,7 @@ message NetworkSecurityGroup {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 6429;
+  google.protobuf.Timestamp creation_time = 7773;
   string id = 494 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 6113;
   map<string, string> labels = 7675;
@@ -1495,7 +1502,7 @@ message OSLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 207;
-  bool monitoring_enabled = 8059;
+  bool monitoring_log_data_enabled = 12434;
   google.protobuf.Duration retention_period = 11358;
   bool security_alerts_enabled = 7453;
   repeated string logging_service_ids = 10850;
@@ -1518,7 +1525,7 @@ message ObjectStorage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 16895;
+  google.protobuf.Timestamp creation_time = 18733;
   string id = 18600 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 13767;
   map<string, string> labels = 15615;
@@ -1556,7 +1563,7 @@ message ObjectStorageService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 14420;
+  google.protobuf.Timestamp creation_time = 1606;
   string id = 2866 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 15453;
   repeated string ips = 13718;
@@ -1604,7 +1611,7 @@ message PasswordPolicy {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 16510;
+  google.protobuf.Timestamp creation_time = 7612;
   string id = 10994 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 12677;
   map<string, string> labels = 10695;
@@ -1648,7 +1655,7 @@ message RelationalDatabaseService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 15882;
+  google.protobuf.Timestamp creation_time = 2641;
   string id = 2807 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 927;
   repeated string ips = 11162;
@@ -1678,7 +1685,7 @@ message RemoteAttestation {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  google.protobuf.Timestamp creation_time = 12271;
+  google.protobuf.Timestamp creation_time = 7501;
   bool enabled = 1238;
   bool status = 9341;
 }
@@ -1700,7 +1707,7 @@ message ResourceGroup {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 17513;
+  google.protobuf.Timestamp creation_time = 7407;
   string id = 10958 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 15317;
   map<string, string> labels = 10108;
@@ -1721,7 +1728,7 @@ message ResourceLogging {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1509;
-  bool monitoring_enabled = 10410;
+  bool monitoring_log_data_enabled = 6804;
   google.protobuf.Duration retention_period = 6776;
   bool security_alerts_enabled = 6099;
   repeated string logging_service_ids = 15310;
@@ -1735,7 +1742,7 @@ message RoleAssignment {
   option (resource_type_names) = "Resource";
 
   bool activated = 9376;
-  google.protobuf.Timestamp creation_time = 8083;
+  google.protobuf.Timestamp creation_time = 1871;
   string id = 17304 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 12914;
   map<string, string> labels = 11081;
@@ -1767,7 +1774,7 @@ message Secret {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 14748;
+  google.protobuf.Timestamp creation_time = 17935;
   bool enabled = 11399;
   google.protobuf.Timestamp expiration_date = 12683;
   string id = 9780 [(buf.validate.field).required = true];
@@ -1791,7 +1798,7 @@ message SecurityAdvisoryDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 10468;
+  google.protobuf.Timestamp creation_time = 12215;
   string filetype = 13221;
   string id = 10862 [(buf.validate.field).required = true];
   map<string, string> labels = 8011;
@@ -1823,7 +1830,7 @@ message SecurityAdvisoryService {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 5129;
+  google.protobuf.Timestamp creation_time = 10263;
   string id = 11278 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 4168;
   repeated string ips = 14147;
@@ -1891,7 +1898,7 @@ message ServiceMetadataDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 9925;
+  google.protobuf.Timestamp creation_time = 7335;
   string filetype = 16847;
   string id = 8568 [(buf.validate.field).required = true];
   map<string, string> labels = 555;
@@ -1979,7 +1986,7 @@ message VMImage {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 8681;
+  google.protobuf.Timestamp creation_time = 11908;
   string id = 2792 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 17657;
   map<string, string> labels = 15409;
@@ -2000,7 +2007,7 @@ message VirtualMachine {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 2132;
+  google.protobuf.Timestamp creation_time = 7616;
   string id = 15888 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 11229;
   map<string, string> labels = 12634;
@@ -2030,7 +2037,7 @@ message VirtualNetwork {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 14911;
+  google.protobuf.Timestamp creation_time = 886;
   string id = 3775 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 13840;
   map<string, string> labels = 10621;
@@ -2050,7 +2057,7 @@ message VirtualSubNetwork {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 11652;
+  google.protobuf.Timestamp creation_time = 8230;
   string id = 3268 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 17773;
   map<string, string> labels = 11025;
@@ -2082,7 +2089,7 @@ message Workflow {
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 2150;
+  google.protobuf.Timestamp creation_time = 16086;
   string id = 3473 [(buf.validate.field).required = true];
   bool internet_accessible_endpoint = 6875;
   map<string, string> labels = 14015;
@@ -2093,6 +2100,29 @@ message Workflow {
   repeated Redundancy redundancies = 150;
   optional string parent_id = 11244;
   UsageStatistics usage_statistics = 16884;
+}
+
+// Workspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Workspace {
+  option (resource_type_names) = "Workspace";
+  option (resource_type_names) = "MachineLearning";
+  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 17735;
+  string id = 5830 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 8166;
+  map<string, string> labels = 13074;
+  string name = 11995 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 4937;
+  AtRestEncryption at_rest_encryption = 3673;
+  GeoLocation geo_location = 8617;
+  repeated Redundancy redundancies = 14611;
+  optional string parent_id = 951;
+  ResourceLogging resource_logging = 3414;
+  optional string storage_id = 5518;
+  UsageStatistics usage_statistics = 18094;
 }
 
 // ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
