@@ -53,6 +53,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 		}
 
 		// TODO(anatheka): New Resource to Cloud Ontology, but where?
+		// Add storage, atRestEncryption (keyVault), applicationInsights, PublicNetworkAccess...?
 		for _, value := range pageResponse.Value {
 			workspace := &ontology.VirtualMachine{
 				Id:           resourceID(value.ID),
@@ -62,6 +63,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 				Labels:       labels(value.Tags),
 				// ParentId:     resourceID2(account.ID),
 				Raw: discovery.Raw(value),
+				// InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess), // TODO(anatheka): continue here
 			}
 
 			list = append(list, workspace)
