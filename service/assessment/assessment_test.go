@@ -716,7 +716,7 @@ func TestService_AssessmentResultHooks(t *testing.T) {
 							MalwareProtection: &ontology.MalwareProtection{
 								Enabled:              true,
 								NumberOfThreatsFound: 5,
-								DaysSinceActive:      durationpb.New(time.Hour * 24 * 20),
+								DurationSinceActive:  durationpb.New(time.Hour * 24 * 20),
 								ApplicationLogging: &ontology.ApplicationLogging{
 									Enabled:           true,
 									LoggingServiceIds: []string{"SomeAnalyticsService?"},

@@ -1834,9 +1834,9 @@ func Test_getRedundancies(t *testing.T) {
 	}
 }
 
-func Test_getInternetAccessibleEndpoint(t *testing.T) {
+func Test_publicNetworkAccessStatus(t *testing.T) {
 	type args struct {
-		site *armappservice.Site
+		status *string
 	}
 	tests := []struct {
 		name string
@@ -1851,30 +1851,22 @@ func Test_getInternetAccessibleEndpoint(t *testing.T) {
 		{
 			name: "Happy path: Enabled",
 			args: args{
-				site: &armappservice.Site{
-					Properties: &armappservice.SiteProperties{
-						PublicNetworkAccess: util.Ref("Enabled"),
-					},
-				},
+				status: util.Ref("Enabled"),
 			},
 			want: true,
 		},
 		{
 			name: "Happy path: Empty String",
 			args: args{
-				site: &armappservice.Site{
-					Properties: &armappservice.SiteProperties{
-						PublicNetworkAccess: util.Ref(""),
-					},
-				},
+				status: util.Ref(""),
 			},
 			want: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getInternetAccessibleEndpoint(tt.args.site); got != tt.want {
-				t.Errorf("getInternetAccessibleEndpoint() = %v, want %v", got, tt.want)
+			if got := publicNetworkAccessStatus(tt.args.status); got != tt.want {
+				t.Errorf("publicNetworkAccessStatus() = %v, want %v", got, tt.want)
 			}
 		})
 	}
