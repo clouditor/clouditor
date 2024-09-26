@@ -26,45 +26,26 @@
 package azure
 
 import (
-	"context"
-	"fmt"
-
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
 
-// Discover machine learning workspace
-func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
-	var list []ontology.IsResource
+func handleMLWorkspace(value *armmachinelearning.Workspace) (*ontology.MLWorkspace, error) {
+	atRestEnc := getAtRestEncryption(value.Properties.Encryption)
 
-	// initialize machine learning client
-	if err := d.initMachineLearningClient(); err != nil {
-		return nil, err
-	}
-
-	// List all ML workspaces
-	serverListPager := d.clients.mlWorkspaceClient.NewListBySubscriptionPager(&armmachinelearning.WorkspacesClientListBySubscriptionOptions{})
-	for serverListPager.More() {
-		pageResponse, err := serverListPager.NextPage(context.TODO())
-		if err != nil {
-			log.Errorf("%s: %v", ErrGettingNextPage, err)
-			return list, err
-		}
-
-		// TODO(anatheka): New Resource to Cloud Ontology, but where?
-		// Add storage, atRestEncryption (keyVault), ...?
-		for _, value := range pageResponse.Value {
-			workspace, err := handleMLWorkspace(value)
-
-			if err != nil {
-				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
-			}
-
-			log.Infof("Adding ML workspace '%s'", workspace.GetName())
-
-			list = append(list, workspace)
-		}
-	}
-
-	return list, nil
+	return &ontology.MLWorkspace{
+		Id:                         resourceID(value.ID),
+		Name:                       util.Deref(value.Name),
+		CreationTime:               creationTime(value.SystemData.CreatedAt),
+		GeoLocation:                location(value.Location),
+		Labels:                     labels(value.Tags),
+		ParentId:                   resourceGroupID(value.ID),
+		Raw:                        discovery.Raw(value),
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
+		ResourceLogging:            getResourceLogging(value.Properties.ApplicationInsights),
+		AtRestEncryption:           atRestEnc,
+		StorageId:                  util.Ref(resourceID(value.Properties.StorageAccount)),
+	}, nil
 }
