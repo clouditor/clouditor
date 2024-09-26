@@ -248,7 +248,7 @@ message Resource {
     DeviceProvisioningService device_provisioning_service = 17;
     MessagingHub messaging_hub = 18;
     KeyVault key_vault = 19;
-    Workspace workspace = 20;
+    MLWorkspace ml_workspace = 20;
     NetworkInterface network_interface = 21;
     NetworkSecurityGroup network_security_group = 22;
     FunctionService function_service = 23;
@@ -392,7 +392,7 @@ message CloudResource {
     DeviceProvisioningService device_provisioning_service = 16;
     MessagingHub messaging_hub = 17;
     KeyVault key_vault = 18;
-    Workspace workspace = 19;
+    MLWorkspace ml_workspace = 19;
     NetworkInterface network_interface = 20;
     NetworkSecurityGroup network_security_group = 21;
     FunctionService function_service = 22;
@@ -1310,7 +1310,7 @@ message LoggingService {
 // MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message MachineLearning {
   oneof type {
-    Workspace workspace = 1;
+    MLWorkspace ml_workspace = 1;
   }
 }
 
@@ -2102,9 +2102,9 @@ message Workflow {
   UsageStatistics usage_statistics = 10;
 }
 
-// Workspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
-message Workspace {
-  option (resource_type_names) = "Workspace";
+// MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message MLWorkspace {
+  option (resource_type_names) = "MLWorkspace";
   option (resource_type_names) = "MachineLearning";
   option (resource_type_names) = "CloudResource";
   option (resource_type_names) = "Resource";
