@@ -50,7 +50,6 @@ const (
 func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 	var (
 		list []ontology.IsResource
-		ca   = []byte{}
 	)
 
 	// Read CA from filesystem
