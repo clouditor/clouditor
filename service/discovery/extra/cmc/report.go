@@ -31,20 +31,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	ar "github.com/Fraunhofer-AISEC/cmc/attestationreport"
 	atls "github.com/Fraunhofer-AISEC/cmc/attestedtls"
 	"github.com/Fraunhofer-AISEC/cmc/cmc"
 )
 
-const (
-	timeoutSec = 10
-	capemPath  = "local/certificate_remote_attestation.pem"
-)
+const ()
 
 // discoverReports discovers the attestation reports from the CMC
 func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
@@ -54,11 +50,11 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 
 	// Read CA from filesystem
 	// TODO(all): Should be removed in future, just for testing
-	ca, err := os.ReadFile(capemPath)
+	ca, err := os.ReadFile(d.capemPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not read certificate from path '%s': %w", capemPath, err)
+		return nil, fmt.Errorf("could not read certificate from path '%s': %w", d.capemPath, err)
 	}
-	log.Debugf("Certificate read from path: %s", capemPath)
+	log.Debugf("Certificate read from path: %s", d.capemPath)
 
 	log.Debug("Initializing CMC")
 	cmc, err := cmc.NewCmc(&cmc.Config{
@@ -107,7 +103,7 @@ func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
 }
 
 // TODO(anatheka): Maybe we should call this out of the handleVirtualMachine method.
-func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
+func handleReport(result ar.VerificationResult) (*ontology.VirtualMachine, error) {
 	raw, err := json.Marshal(result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
@@ -122,7 +118,7 @@ func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 		RemoteAttestation: &ontology.RemoteAttestation{
 			Enabled:      true,
 			Status:       result.Success,
-			CreationTime: timestamp(result.Created),
+			CreationTime: util.Timestamp(result.Created),
 		},
 	}
 
@@ -132,7 +128,7 @@ func handleReport(result ar.VerificationResult) (ontology.IsResource, error) {
 func timestamp(t string) *timestamppb.Timestamp {
 	time, err := time.Parse(time.RFC3339, t)
 	if err != nil {
-		log.Errorf("could not convert time string to timestamppb: %v", err)
+		log.Errorf("could not convert time string to timestamppb: w", err)
 		return &timestamppb.Timestamp{}
 	}
 

@@ -230,18 +230,13 @@ require (
 
 )
 
-require (
-	github.com/alecthomas/kong v0.9.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/x448/float16 v0.8.4 // indirect
-	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
-)
-
+<<<<<<<<< Temporary merge branch 1
 require github.com/Fraunhofer-AISEC/cmc v0.7.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0
 	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
+	github.com/alecthomas/kong v0.9.0 // indirect
 	github.com/dsnet/golib/memfile v1.0.0 // indirect
 	github.com/edgelesssys/ego v1.4.1 // indirect
 	github.com/google/certificate-transparency-go v1.1.6 // indirect
