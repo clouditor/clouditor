@@ -230,8 +230,13 @@ require (
 
 )
 
-<<<<<<<<< Temporary merge branch 1
 require github.com/Fraunhofer-AISEC/cmc v0.7.0
+
+require (
+	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
+	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
+)
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0

@@ -51,7 +51,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
@@ -68,13 +68,13 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
+                // "--dashboard-url=http://localhost:5173",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
             ],
             "env": {},
-            "preLaunchTask": "go: generate"
+            // "preLaunchTask": "go: generate"
         },
         {
             "name": "Launch engine CCIT CMC Discovery (in-memory, dashboard development redirect with Azure discovery)",
@@ -102,7 +102,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=csaf",
@@ -120,7 +120,7 @@
             "program": "${workspaceFolder}/cmd/engine",
             "cwd": "${workspaceFolder}",
             "args": [
-                "--dashboard-url=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:5173/callback",
                 "--api-cors-allowed-origins=http://localhost:5173",
                 "--discovery-auto-start",
                 "--discovery-provider=azure"

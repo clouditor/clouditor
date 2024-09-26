@@ -124,13 +124,3 @@ func handleReport(result ar.VerificationResult) (*ontology.VirtualMachine, error
 
 	return resource, nil
 }
-
-func timestamp(t string) *timestamppb.Timestamp {
-	time, err := time.Parse(time.RFC3339, t)
-	if err != nil {
-		log.Errorf("could not convert time string to timestamppb: w", err)
-		return &timestamppb.Timestamp{}
-	}
-
-	return timestamppb.New(time)
-}

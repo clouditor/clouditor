@@ -229,49 +229,50 @@ message Backup {
 // Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Resource {
   oneof type {
-    Application application = 9463;
-    Account account = 17437;
-    Job job = 7413;
-    Workflow workflow = 6742;
-    Container container = 3283;
-    Function function = 14517;
-    VirtualMachine virtual_machine = 8578;
-    ContainerOrchestration container_orchestration = 11038;
-    ContainerRegistry container_registry = 14766;
-    Certificate certificate = 9607;
-    Key key = 3816;
-    Secret secret = 2689;
-    Identity identity = 6150;
-    RoleAssignment role_assignment = 8031;
-    ContainerImage container_image = 14207;
-    VMImage vm_image = 8383;
-    DeviceProvisioningService device_provisioning_service = 9517;
-    MessagingHub messaging_hub = 13990;
-    KeyVault key_vault = 10449;
-    NetworkInterface network_interface = 5016;
-    NetworkSecurityGroup network_security_group = 13367;
-    FunctionService function_service = 4702;
-    GenericNetworkService generic_network_service = 566;
-    LoadBalancer load_balancer = 2870;
-    LoggingService logging_service = 18789;
-    SecurityAdvisoryService security_advisory_service = 5331;
-    DocumentDatabaseService document_database_service = 12515;
-    KeyValueDatabaseService key_value_database_service = 1496;
-    MultiModalDatabaseService multi_modal_database_service = 3152;
-    RelationalDatabaseService relational_database_service = 15823;
-    FileStorageService file_storage_service = 12635;
-    ObjectStorageService object_storage_service = 10175;
-    VirtualNetwork virtual_network = 9531;
-    VirtualSubNetwork virtual_sub_network = 16126;
-    PasswordPolicy password_policy = 6125;
-    ResourceGroup resource_group = 3664;
-    BlockStorage block_storage = 9808;
-    DatabaseStorage database_storage = 10098;
-    FileStorage file_storage = 18252;
-    ObjectStorage object_storage = 7943;
-    GenericDocument generic_document = 5702;
-    SecurityAdvisoryDocument security_advisory_document = 8513;
-    ServiceMetadataDocument service_metadata_document = 13959;
+    Application application = 1;
+    Account account = 2;
+    Job job = 3;
+    Workflow workflow = 4;
+    Container container = 5;
+    Function function = 6;
+    VirtualMachine virtual_machine = 7;
+    ContainerOrchestration container_orchestration = 8;
+    ContainerRegistry container_registry = 9;
+    Certificate certificate = 10;
+    Key key = 11;
+    Secret secret = 12;
+    Identity identity = 13;
+    RoleAssignment role_assignment = 14;
+    ContainerImage container_image = 15;
+    VMImage vm_image = 16;
+    DeviceProvisioningService device_provisioning_service = 17;
+    MessagingHub messaging_hub = 18;
+    KeyVault key_vault = 19;
+    MLWorkspace ml_workspace = 20;
+    NetworkInterface network_interface = 21;
+    NetworkSecurityGroup network_security_group = 22;
+    FunctionService function_service = 23;
+    GenericNetworkService generic_network_service = 24;
+    LoadBalancer load_balancer = 25;
+    LoggingService logging_service = 26;
+    SecurityAdvisoryService security_advisory_service = 27;
+    DocumentDatabaseService document_database_service = 28;
+    KeyValueDatabaseService key_value_database_service = 29;
+    MultiModalDatabaseService multi_modal_database_service = 30;
+    RelationalDatabaseService relational_database_service = 31;
+    FileStorageService file_storage_service = 32;
+    ObjectStorageService object_storage_service = 33;
+    VirtualNetwork virtual_network = 34;
+    VirtualSubNetwork virtual_sub_network = 35;
+    PasswordPolicy password_policy = 36;
+    ResourceGroup resource_group = 37;
+    BlockStorage block_storage = 38;
+    DatabaseStorage database_storage = 39;
+    FileStorage file_storage = 40;
+    ObjectStorage object_storage = 41;
+    GenericDocument generic_document = 42;
+    SecurityAdvisoryDocument security_advisory_document = 43;
+    ServiceMetadataDocument service_metadata_document = 44;
   }
 }
 
@@ -373,45 +374,46 @@ message CipherSuite {
 // CloudResource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message CloudResource {
   oneof type {
-    Account account = 17437;
-    Job job = 7413;
-    Workflow workflow = 6742;
-    Container container = 3283;
-    Function function = 14517;
-    VirtualMachine virtual_machine = 8578;
-    ContainerOrchestration container_orchestration = 11038;
-    ContainerRegistry container_registry = 14766;
-    Certificate certificate = 9607;
-    Key key = 3816;
-    Secret secret = 2689;
-    Identity identity = 6150;
-    RoleAssignment role_assignment = 8031;
-    ContainerImage container_image = 14207;
-    VMImage vm_image = 8383;
-    DeviceProvisioningService device_provisioning_service = 9517;
-    MessagingHub messaging_hub = 13990;
-    KeyVault key_vault = 10449;
-    NetworkInterface network_interface = 5016;
-    NetworkSecurityGroup network_security_group = 13367;
-    FunctionService function_service = 4702;
-    GenericNetworkService generic_network_service = 566;
-    LoadBalancer load_balancer = 2870;
-    LoggingService logging_service = 18789;
-    SecurityAdvisoryService security_advisory_service = 5331;
-    DocumentDatabaseService document_database_service = 12515;
-    KeyValueDatabaseService key_value_database_service = 1496;
-    MultiModalDatabaseService multi_modal_database_service = 3152;
-    RelationalDatabaseService relational_database_service = 15823;
-    FileStorageService file_storage_service = 12635;
-    ObjectStorageService object_storage_service = 10175;
-    VirtualNetwork virtual_network = 9531;
-    VirtualSubNetwork virtual_sub_network = 16126;
-    PasswordPolicy password_policy = 6125;
-    ResourceGroup resource_group = 3664;
-    BlockStorage block_storage = 9808;
-    DatabaseStorage database_storage = 10098;
-    FileStorage file_storage = 18252;
-    ObjectStorage object_storage = 7943;
+    Account account = 1;
+    Job job = 2;
+    Workflow workflow = 3;
+    Container container = 4;
+    Function function = 5;
+    VirtualMachine virtual_machine = 6;
+    ContainerOrchestration container_orchestration = 7;
+    ContainerRegistry container_registry = 8;
+    Certificate certificate = 9;
+    Key key = 10;
+    Secret secret = 11;
+    Identity identity = 12;
+    RoleAssignment role_assignment = 13;
+    ContainerImage container_image = 14;
+    VMImage vm_image = 15;
+    DeviceProvisioningService device_provisioning_service = 16;
+    MessagingHub messaging_hub = 17;
+    KeyVault key_vault = 18;
+    MLWorkspace ml_workspace = 19;
+    NetworkInterface network_interface = 20;
+    NetworkSecurityGroup network_security_group = 21;
+    FunctionService function_service = 22;
+    GenericNetworkService generic_network_service = 23;
+    LoadBalancer load_balancer = 24;
+    LoggingService logging_service = 25;
+    SecurityAdvisoryService security_advisory_service = 26;
+    DocumentDatabaseService document_database_service = 27;
+    KeyValueDatabaseService key_value_database_service = 28;
+    MultiModalDatabaseService multi_modal_database_service = 29;
+    RelationalDatabaseService relational_database_service = 30;
+    FileStorageService file_storage_service = 31;
+    ObjectStorageService object_storage_service = 32;
+    VirtualNetwork virtual_network = 33;
+    VirtualSubNetwork virtual_sub_network = 34;
+    PasswordPolicy password_policy = 35;
+    ResourceGroup resource_group = 36;
+    BlockStorage block_storage = 37;
+    DatabaseStorage database_storage = 38;
+    FileStorage file_storage = 39;
+    ObjectStorage object_storage = 40;
   }
 }
 
@@ -1293,16 +1295,23 @@ message LoggingService {
   string name = 6 [(buf.validate.field).required = true];
   repeated uint32 ports = 7;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 4987;
-  Authenticity authenticity = 14232;
-  optional string compute_id = 9165;
-  GeoLocation geo_location = 12153;
-  repeated Redundancy redundancies = 3473;
-  optional string parent_id = 12905;
-  optional string service_metadata_document_id = 17927;
-  repeated string storage_ids = 13225;
-  TransportEncryption transport_encryption = 11141;
-  UsageStatistics usage_statistics = 5443;
+  string raw = 8;
+  Authenticity authenticity = 9;
+  optional string compute_id = 10;
+  GeoLocation geo_location = 11;
+  repeated Redundancy redundancies = 12;
+  optional string parent_id = 13;
+  optional string service_metadata_document_id = 14;
+  repeated string storage_ids = 15;
+  TransportEncryption transport_encryption = 16;
+  UsageStatistics usage_statistics = 17;
+}
+
+// MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message MachineLearning {
+  oneof type {
+    MLWorkspace ml_workspace = 1;
+  }
 }
 
 // MalwareProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2086,11 +2095,34 @@ message Workflow {
   map<string, string> labels = 4;
   string name = 5 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8396;
-  GeoLocation geo_location = 7652;
-  repeated Redundancy redundancies = 150;
-  optional string parent_id = 11244;
-  UsageStatistics usage_statistics = 16884;
+  string raw = 6;
+  GeoLocation geo_location = 7;
+  repeated Redundancy redundancies = 8;
+  optional string parent_id = 9;
+  UsageStatistics usage_statistics = 10;
+}
+
+// MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message MLWorkspace {
+  option (resource_type_names) = "MLWorkspace";
+  option (resource_type_names) = "MachineLearning";
+  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 1;
+  string id = 2 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 3;
+  map<string, string> labels = 4;
+  string name = 5 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 6;
+  AtRestEncryption at_rest_encryption = 7;
+  GeoLocation geo_location = 8;
+  repeated Redundancy redundancies = 9;
+  optional string parent_id = 10;
+  ResourceLogging resource_logging = 11;
+  optional string storage_id = 12;
+  UsageStatistics usage_statistics = 13;
 }
 
 // ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.

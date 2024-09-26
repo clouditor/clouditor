@@ -82,6 +82,7 @@ var (
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
 	ErrGettingNextPage          = errors.New("error getting next page")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
+	ErrSubsciptionNotFound      = errors.New("SubscriptionNotFound")
 )
 
 func (*azureDiscovery) Name() string {
