@@ -56,11 +56,11 @@ require (
 
 // runtime dependencies (rpc)
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240920164238-5a7b106cbb87.2
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
-	github.com/bufbuild/protovalidate-go v0.6.0
+	github.com/bufbuild/protovalidate-go v0.7.0
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.20.0 // indirect
+	github.com/google/cel-go v0.21.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/stoewer/go-strcase v1.3.0 // indirect
@@ -111,7 +111,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/text v0.18.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 
