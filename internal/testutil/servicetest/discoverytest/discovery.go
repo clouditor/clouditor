@@ -53,6 +53,6 @@ func (m *TestDiscoverer) List() ([]ontology.IsResource, error) {
 	}
 }
 
-func (TestDiscoverer) CloudServiceID() string {
-	return testdata.MockCloudServiceID1
+func (TestDiscoverer) CertificationTargetID() string {
+	return testdata.MockCertificationTargetID1
 }

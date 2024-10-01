@@ -34,49 +34,49 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type CloudServiceHookFunc func(ctx context.Context, cld *CloudService, err error)
-type TargetOfEvaluationHookFunc func(ctx context.Context, event *TargetOfEvaluationChangeEvent, err error)
+type CertificationTargetHookFunc func(ctx context.Context, cld *CertificationTarget, err error)
+type AuditScopeHookFunc func(ctx context.Context, event *AuditScopeChangeEvent, err error)
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *StoreAssessmentResultRequest) GetCloudServiceId() string {
-	return req.GetResult().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *StoreAssessmentResultRequest) GetCertificationTargetId() string {
+	return req.GetResult().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *CreateCertificateRequest) GetCloudServiceId() string {
-	return req.GetCertificate().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *CreateCertificateRequest) GetCertificationTargetId() string {
+	return req.GetCertificate().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateCertificateRequest) GetCloudServiceId() string {
-	return req.GetCertificate().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *UpdateCertificateRequest) GetCertificationTargetId() string {
+	return req.GetCertificate().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *RegisterCloudServiceRequest) GetCloudServiceId() string {
-	return req.GetCloudService().GetId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *RegisterCertificationTargetRequest) GetCertificationTargetId() string {
+	return req.GetCertificationTarget().GetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateCloudServiceRequest) GetCloudServiceId() string {
-	return req.CloudService.GetId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *UpdateCertificationTargetRequest) GetCertificationTargetId() string {
+	return req.CertificationTarget.GetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *CreateTargetOfEvaluationRequest) GetCloudServiceId() string {
-	return req.GetTargetOfEvaluation().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *CreateAuditScopeRequest) GetCertificationTargetId() string {
+	return req.GetAuditScope().GetCertificationTargetId()
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateTargetOfEvaluationRequest) GetCloudServiceId() string {
-	return req.GetTargetOfEvaluation().GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *UpdateAuditScopeRequest) GetCertificationTargetId() string {
+	return req.GetAuditScope().GetCertificationTargetId()
 }
 
 func (req *StoreAssessmentResultRequest) GetPayload() proto.Message {
@@ -119,16 +119,16 @@ func (req *RemoveCertificateRequest) GetPayload() proto.Message {
 	return &Certificate{Id: req.CertificateId}
 }
 
-func (req *RegisterCloudServiceRequest) GetPayload() proto.Message {
-	return req.CloudService
+func (req *RegisterCertificationTargetRequest) GetPayload() proto.Message {
+	return req.CertificationTarget
 }
 
-func (req *UpdateCloudServiceRequest) GetPayload() proto.Message {
-	return req.CloudService
+func (req *UpdateCertificationTargetRequest) GetPayload() proto.Message {
+	return req.CertificationTarget
 }
 
-func (req *RemoveCloudServiceRequest) GetPayload() proto.Message {
-	return &CloudService{Id: req.CloudServiceId}
+func (req *RemoveCertificationTargetRequest) GetPayload() proto.Message {
+	return &CertificationTarget{Id: req.CertificationTargetId}
 }
 
 func (req *CreateMetricRequest) GetPayload() proto.Message {
@@ -151,36 +151,36 @@ func (req *UpdateMetricImplementationRequest) GetPayload() proto.Message {
 	return req.Implementation
 }
 
-func (req *CreateTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return req.TargetOfEvaluation
+func (req *CreateAuditScopeRequest) GetPayload() proto.Message {
+	return req.AuditScope
 }
 
-func (req *UpdateTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return req.TargetOfEvaluation
+func (req *UpdateAuditScopeRequest) GetPayload() proto.Message {
+	return req.AuditScope
 }
 
-func (req *RemoveTargetOfEvaluationRequest) GetPayload() proto.Message {
-	return &TargetOfEvaluation{CloudServiceId: req.CloudServiceId, CatalogId: req.CatalogId}
+func (req *RemoveAuditScopeRequest) GetPayload() proto.Message {
+	return &AuditScope{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
 }
 
-// IsRelevantFor checks, whether this control is relevant for the given target of evaluation. For now this mainly
-// checks, whether the assurance level matches, if the ToE has one. In the future, this could also include checks, if
+// IsRelevantFor checks, whether this control is relevant for the given audit scope. For now this mainly
+// checks, whether the assurance level matches, if the Audit Scope has one. In the future, this could also include checks, if
 // the control is somehow out of scope.
-func (c *Control) IsRelevantFor(toe *TargetOfEvaluation, catalog *Catalog) bool {
+func (c *Control) IsRelevantFor(auditScope *AuditScope, catalog *Catalog) bool {
 	// If the catalog does not have an assurance level, we are good to go
 	if len(catalog.AssuranceLevels) == 0 {
 		return true
 	}
 
 	// If the control does not explicitly specify an assurance level, we are also ok
-	if c.AssuranceLevel == nil || toe.AssuranceLevel == nil {
+	if c.AssuranceLevel == nil || auditScope.AssuranceLevel == nil {
 		return true
 	}
 
 	// Otherwise, we need to retrieve the possible assurance levels (in order) from the catalogs and compare the
 	// indices
 	idxControl := slices.Index(catalog.AssuranceLevels, *c.AssuranceLevel)
-	idxToe := slices.Index(catalog.AssuranceLevels, *toe.AssuranceLevel)
+	idxToe := slices.Index(catalog.AssuranceLevels, *auditScope.AssuranceLevel)
 
 	return idxControl <= idxToe
 }

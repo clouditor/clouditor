@@ -104,7 +104,7 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID string, metric *assess
 
 	config.IsDefault = true
 	config.MetricId = metric.Id
-	config.CloudServiceId = serviceID
+	config.CertificationTargetId = serviceID
 
 	return &config, nil
 }
@@ -131,11 +131,11 @@ type updatedMockMetricsSource struct {
 
 func (*updatedMockMetricsSource) MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
-		Operator:       "==",
-		TargetValue:    structpb.NewBoolValue(false),
-		IsDefault:      false,
-		UpdatedAt:      timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
-		MetricId:       metric.Id,
-		CloudServiceId: serviceID,
+		Operator:              "==",
+		TargetValue:           structpb.NewBoolValue(false),
+		IsDefault:             false,
+		UpdatedAt:             timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
+		MetricId:              metric.Id,
+		CertificationTargetId: serviceID,
 	}, nil
 }

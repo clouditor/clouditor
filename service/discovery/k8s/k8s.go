@@ -47,7 +47,7 @@ type k8sDiscovery struct {
 	csID string
 }
 
-func (d *k8sDiscovery) CloudServiceID() string {
+func (d *k8sDiscovery) CertificationTargetID() string {
 	return d.csID
 }
 

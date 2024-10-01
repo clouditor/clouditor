@@ -122,56 +122,56 @@ func TestLogRequest(t *testing.T) {
 			want: "",
 		},
 		{
-			name: "Register cloud service",
+			name: "Register certification target",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{},
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{},
 				},
 			},
-			want: "level=debug msg=CloudService registered.\n",
+			want: "level=debug msg=CertificationTarget registered.\n",
 		},
 
 		{
-			name: "Register cloud service",
+			name: "Register certification target",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Register,
-				req: &orchestrator.RegisterCloudServiceRequest{
-					CloudService: &orchestrator.CloudService{Id: testdata.MockCloudServiceID1},
+				req: &orchestrator.RegisterCertificationTargetRequest{
+					CertificationTarget: &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1},
 				},
 			},
-			want: "level=debug msg=CloudService with ID '11111111-1111-1111-1111-111111111111' registered.\n",
+			want: "level=debug msg=CertificationTarget with ID '11111111-1111-1111-1111-111111111111' registered.\n",
 		},
 		{
-			name: "Create TargetOfEvaluation",
+			name: "Create AuditScope",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Update,
-				req: &orchestrator.UpdateTargetOfEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID1,
-						CatalogId:      testdata.MockCatalogID,
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 			},
-			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111'.\n",
+			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111'.\n",
 		},
 		{
-			name: "Create TargetOfEvaluation with params",
+			name: "Create AuditScope with params",
 			args: args{
 				level:   logrus.DebugLevel,
 				reqType: Update,
-				req: &orchestrator.UpdateTargetOfEvaluationRequest{
-					TargetOfEvaluation: &orchestrator.TargetOfEvaluation{
-						CloudServiceId: testdata.MockCloudServiceID1,
-						CatalogId:      testdata.MockCatalogID,
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID,
 					},
 				},
 				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
 			},
-			want: "level=debug msg=TargetOfEvaluation updated for Cloud Service '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
+			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
 		},
 		{
 			name: "Send Evidence to queue",
@@ -180,13 +180,13 @@ func TestLogRequest(t *testing.T) {
 				reqType: Store,
 				req: &assessment.AssessEvidenceRequest{
 					Evidence: &evidence.Evidence{
-						Id:             testdata.MockEvidenceID1,
-						CloudServiceId: testdata.MockCloudServiceID1,
+						Id:                    testdata.MockEvidenceID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
 				},
 				params: []string{fmt.Sprintf("back into queue for %s (%s)", "orchestrator", "localhost")},
 			},
-			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Cloud Service '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
+			want: "level=debug msg=Evidence with ID '11111111-1111-1111-1111-111111111111' stored for Certification Target '11111111-1111-1111-1111-111111111111' back into queue for orchestrator (localhost).\n",
 		},
 	}
 	for _, tt := range tests {

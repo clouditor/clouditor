@@ -43,8 +43,8 @@ import (
 
 func TestNewKubernetesNetworkDiscovery(t *testing.T) {
 	type args struct {
-		intf           kubernetes.Interface
-		cloudServiceID string
+		intf                  kubernetes.Interface
+		CertificationTargetID string
 	}
 	tests := []struct {
 		name string
@@ -60,20 +60,20 @@ func TestNewKubernetesNetworkDiscovery(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				intf:           &fake.Clientset{},
-				cloudServiceID: testdata.MockCloudServiceID1,
+				intf:                  &fake.Clientset{},
+				CertificationTargetID: testdata.MockCertificationTargetID1,
 			},
 			want: &k8sNetworkDiscovery{
 				k8sDiscovery: k8sDiscovery{
 					intf: &fake.Clientset{},
-					csID: testdata.MockCloudServiceID1,
+					csID: testdata.MockCertificationTargetID1,
 				},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewKubernetesNetworkDiscovery(tt.args.intf, tt.args.cloudServiceID)
+			got := NewKubernetesNetworkDiscovery(tt.args.intf, tt.args.CertificationTargetID)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 			assert.Equal(t, "Kubernetes Network", got.Name())
 		})
@@ -129,7 +129,7 @@ func TestListIngresses(t *testing.T) {
 		t.Fatalf("error injecting service add: %v", err)
 	}
 
-	d := NewKubernetesNetworkDiscovery(client, testdata.MockCloudServiceID1)
+	d := NewKubernetesNetworkDiscovery(client, testdata.MockCertificationTargetID1)
 
 	list, err := d.List()
 

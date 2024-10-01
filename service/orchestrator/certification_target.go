@@ -48,40 +48,41 @@ import (
 )
 
 const (
-	DefaultTargetCloudServiceId          = "00000000-0000-0000-0000-000000000000"
-	DefaultTargetCloudServiceName        = "default"
-	DefaultTargetCloudServiceDescription = "The default target cloud service"
+	DefaultCertificationTargetId          = "00000000-0000-0000-0000-000000000000"
+	DefaultCertificationTargetName        = "default"
+	DefaultCertificationTargetDescription = "The default certification target"
+	DefaultCertificationTargetType        = orchestrator.CertificationTarget_TARGET_TYPE_CLOUD
 )
 
-func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.RegisterCloudServiceRequest) (res *orchestrator.CloudService, err error) {
+func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestrator.RegisterCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	res = new(orchestrator.CloudService)
+	res = new(orchestrator.CertificationTarget)
 
 	// Generate a new ID
 	res.Id = uuid.NewString()
-	res.Name = req.CloudService.Name
-	res.Description = req.CloudService.Description
+	res.Name = req.CertificationTarget.Name
+	res.Description = req.CertificationTarget.Description
 
 	now := timestamppb.Now()
 
 	res.CreatedAt = now
 	res.UpdatedAt = now
 
-	res.Metadata = &orchestrator.CloudService_Metadata{}
-	if req.CloudService.Metadata != nil {
-		res.Metadata.Labels = req.CloudService.Metadata.Labels
-		res.Metadata.Icon = req.CloudService.Metadata.Icon
+	res.Metadata = &orchestrator.CertificationTarget_Metadata{}
+	if req.CertificationTarget.Metadata != nil {
+		res.Metadata.Labels = req.CertificationTarget.Metadata.Labels
+		res.Metadata.Icon = req.CertificationTarget.Metadata.Icon
 	}
 
 	// Persist the service in our database
 	err = s.storage.Create(res)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not add cloud service to the database: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not add certification target to the database: %v", err)
 	}
 
 	go s.informHooks(ctx, res, nil)
@@ -91,9 +92,9 @@ func (s *Service) RegisterCloudService(ctx context.Context, req *orchestrator.Re
 	return
 }
 
-// ListCloudServices implements method for OrchestratorServer interface for listing all cloud services
-func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.ListCloudServicesRequest) (
-	res *orchestrator.ListCloudServicesResponse, err error) {
+// ListCertificationTargets implements method for OrchestratorServer interface for listing all certification targets
+func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestrator.ListCertificationTargetsRequest) (
+	res *orchestrator.ListCertificationTargetsResponse, err error) {
 	var conds []any
 	var allowed []string
 	var all bool
@@ -104,17 +105,17 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 		return nil, err
 	}
 
-	res = new(orchestrator.ListCloudServicesResponse)
+	res = new(orchestrator.ListCertificationTargetsResponse)
 
-	// Retrieve list of allowed cloud service according to our authorization strategy. No need to specify any conditions
-	// to our storage request, if we are allowed to see all cloud services.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	// Retrieve list of allowed certification target according to our authorization strategy. No need to specify any conditions
+	// to our storage request, if we are allowed to see all certification targets.
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		conds = append(conds, allowed)
 	}
 
-	// Paginate the cloud services according to the request
-	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CloudService](req, svc.storage,
+	// Paginate the certification targets according to the request
+	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CertificationTarget](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
@@ -123,22 +124,22 @@ func (svc *Service) ListCloudServices(ctx context.Context, req *orchestrator.Lis
 	return
 }
 
-// GetCloudService implements method for OrchestratorServer interface for getting a cloud service with provided id
-func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetCloudServiceRequest) (response *orchestrator.CloudService, err error) {
+// GetCertificationTarget implements method for OrchestratorServer interface for getting a certification target with provided id
+func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.GetCertificationTargetRequest) (response *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	response = new(orchestrator.CloudService)
+	response = new(orchestrator.CertificationTarget)
 
-	err = s.storage.Get(response, "Id = ?", req.CloudServiceId)
+	err = s.storage.Get(response, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -148,20 +149,20 @@ func (s *Service) GetCloudService(ctx context.Context, req *orchestrator.GetClou
 	return response, nil
 }
 
-// UpdateCloudService implements method for OrchestratorServer interface for updating a cloud service
-func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.UpdateCloudServiceRequest) (res *orchestrator.CloudService, err error) {
+// UpdateCertificationTarget implements method for OrchestratorServer interface for updating a certification target
+func (s *Service) UpdateCertificationTarget(ctx context.Context, req *orchestrator.UpdateCertificationTargetRequest) (res *orchestrator.CertificationTarget, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	count, err := s.storage.Count(req.CloudService, "id = ?", req.CloudService.Id)
+	count, err := s.storage.Count(req.CertificationTarget, "id = ?", req.CertificationTarget.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -171,11 +172,11 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	}
 
 	// Add id to response because otherwise it will overwrite ID with empty string
-	res = req.CloudService
+	res = req.CertificationTarget
 	res.UpdatedAt = timestamppb.Now()
 
-	// Since UpdateCloudService is a PUT method, we use storage.Save
-	err = s.storage.Save(res, "Id = ?", req.CloudService.Id)
+	// Since UpdateCertificationTarget is a PUT method, we use storage.Save
+	err = s.storage.Save(res, "Id = ?", req.CertificationTarget.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
@@ -187,20 +188,20 @@ func (s *Service) UpdateCloudService(ctx context.Context, req *orchestrator.Upda
 	return
 }
 
-// RemoveCloudService implements method for OrchestratorServer interface for removing a cloud service
-func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.RemoveCloudServiceRequest) (response *emptypb.Empty, err error) {
+// RemoveCertificationTarget implements method for OrchestratorServer interface for removing a certification target
+func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrator.RemoveCertificationTargetRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessDelete, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	err = s.storage.Delete(&orchestrator.CloudService{Id: req.CloudServiceId})
+	err = s.storage.Delete(&orchestrator.CertificationTarget{Id: req.CertificationTargetId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
@@ -214,34 +215,34 @@ func (s *Service) RemoveCloudService(ctx context.Context, req *orchestrator.Remo
 	return &emptypb.Empty{}, nil
 }
 
-// GetCloudServiceStatistics implements method for OrchestratorServer interface for retrieving cloud service statistics
-func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrator.GetCloudServiceStatisticsRequest) (response *orchestrator.GetCloudServiceStatisticsResponse, err error) {
+// GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving certification target statistics
+func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orchestrator.GetCertificationTargetStatisticsRequest) (response *orchestrator.GetCertificationTargetStatisticsResponse, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the cloud service according to our authorization strategy.
+	// Check, if this request has access to the certification target according to our authorization strategy.
 	if !s.authz.CheckAccess(ctx, service.AccessRead, req) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	response = &orchestrator.GetCloudServiceStatisticsResponse{}
+	response = &orchestrator.GetCertificationTargetStatisticsResponse{}
 
 	// Get number of selected catalogs
-	cloudService := new(orchestrator.CloudService)
-	err = s.storage.Get(cloudService, "Id = ?", req.CloudServiceId)
+	CertificationTarget := new(orchestrator.CertificationTarget)
+	err = s.storage.Get(CertificationTarget, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "service not found")
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error getting cloud service: %s", err)
+		return nil, status.Errorf(codes.Internal, "database error getting certification target: %s", err)
 	}
-	response.NumberOfSelectedCatalogs = int64(len(cloudService.CatalogsInScope))
+	response.NumberOfSelectedCatalogs = int64(len(CertificationTarget.CatalogsInScope))
 
 	// Get number of discovered resources
 	resources := new(discovery.Resource)
-	count, err := s.storage.Count(resources, "cloud_service_id = ?", req.CloudServiceId)
+	count, err := s.storage.Count(resources, "certification_target_id = ?", req.CertificationTargetId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting resources: %s", err)
 	}
@@ -249,7 +250,7 @@ func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrat
 
 	// Get number of evidences
 	ev := new(evidence.Evidence)
-	count, err = s.storage.Count(ev, "cloud_service_id = ?", req.CloudServiceId)
+	count, err = s.storage.Count(ev, "certification_target_id = ?", req.CertificationTargetId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting evidences: %s", err)
 	}
@@ -257,7 +258,7 @@ func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrat
 
 	// Get number of assessment results
 	res := new(assessment.AssessmentResult)
-	count, err = s.storage.Count(res, "cloud_service_id = ?", req.CloudServiceId)
+	count, err = s.storage.Count(res, "certification_target_id = ?", req.CertificationTargetId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error counting assessment results: %s", err)
 	}
@@ -266,12 +267,12 @@ func (s *Service) GetCloudServiceStatistics(ctx context.Context, req *orchestrat
 	return response, nil
 }
 
-// CreateDefaultTargetCloudService creates a new "default" target cloud services,
-// if no target service exists in the database.
+// CreateDefaultCertificationTarget creates a new "default" certification target,
+// if no certification target exists in the database.
 //
-// If a new target cloud service was created, it will be returned.
-func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.CloudService, err error) {
-	log.Infof("Trying to create new default target cloud service...")
+// If a new certification target was created, it will be returned.
+func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
+	log.Infof("Trying to create new default certification target...")
 
 	count, err := s.storage.Count(service)
 	if err != nil {
@@ -281,14 +282,15 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 	if count == 0 {
 		now := timestamppb.Now()
 
-		// Create a default target cloud service
+		// Create a default certification target
 		service =
-			&orchestrator.CloudService{
-				Id:          DefaultTargetCloudServiceId,
-				Name:        DefaultTargetCloudServiceName,
-				Description: DefaultTargetCloudServiceDescription,
+			&orchestrator.CertificationTarget{
+				Id:          DefaultCertificationTargetId,
+				Name:        DefaultCertificationTargetName,
+				Description: DefaultCertificationTargetDescription,
 				CreatedAt:   now,
 				UpdatedAt:   now,
+				TargetType:  DefaultCertificationTargetType,
 			}
 
 		// Save it in the database
@@ -296,10 +298,10 @@ func (s *Service) CreateDefaultTargetCloudService() (service *orchestrator.Cloud
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target cloud service: %s", service.Id)
+			log.Infof("Created new default target certification target: %s", service.Id)
 		}
 	} else {
-		log.Infof("Default target cloud service already exist.")
+		log.Infof("Default target certification target already exist.")
 	}
 
 	return

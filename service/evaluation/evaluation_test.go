@@ -180,7 +180,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Filter latest_by_control_id, control_id, sub_controls, cloud_service_id",
+			name: "Filter latest_by_control_id, control_id, sub_controls, certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -192,9 +192,9 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				req: &evaluation.ListEvaluationResultsRequest{
 					LatestByControlId: util.Ref(true),
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						ControlId:      util.Ref(testdata.MockSubControlID11),
-						SubControls:    util.Ref(testdata.MockControlID1),
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
+						ControlId:             util.Ref(testdata.MockSubControlID11),
+						SubControls:           util.Ref(testdata.MockControlID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
 					},
 				},
 			},
@@ -328,7 +328,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
-			name: "Filter cloud_service_id",
+			name: "Filter certification_target_id",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
@@ -339,7 +339,7 @@ func TestService_ListEvaluationResults(t *testing.T) {
 				in0: context.Background(),
 				req: &evaluation.ListEvaluationResultsRequest{
 					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
-						CloudServiceId: util.Ref(testdata.MockCloudServiceID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
 					},
 				},
 			},
@@ -549,7 +549,7 @@ func TestService_StopEvaluation(t *testing.T) {
 		scheduler                     *gocron.Scheduler
 		storage                       persistence.Storage
 		authz                         service.AuthorizationStrategy
-		toeTag                        string
+		auditScopeTag                 string
 	}
 	type args struct {
 		in0              context.Context
@@ -571,7 +571,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -582,8 +582,8 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
 				},
 			},
 			wantRes: nil,
@@ -596,19 +596,19 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
 				},
 				schedulerRunning: false,
 			},
 			fields: fields{
-				scheduler: gocron.NewScheduler(time.Local),
-				authz:     &service.AuthorizationStrategyAllowAll{},
-				toeTag:    fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
+				scheduler:     gocron.NewScheduler(time.Local),
+				authz:         &service.AuthorizationStrategyAllowAll{},
+				auditScopeTag: fmt.Sprintf("%s-%s", testdata.MockCertificationTargetID1, testdata.MockCatalogID),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("job for cloud service '%s' and catalog '%s' not running", testdata.MockCloudServiceID1, testdata.MockCatalogID))
+				return assert.ErrorContains(t, err, fmt.Sprintf("job for certification target '%s' and catalog '%s' not running", testdata.MockCertificationTargetID1, testdata.MockCatalogID))
 			},
 		},
 		{
@@ -616,8 +616,8 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
 				},
 				schedulerRunning: true,
 			},
@@ -626,14 +626,14 @@ func TestService_StopEvaluation(t *testing.T) {
 					s := gocron.NewScheduler(time.UTC)
 					_, err := s.Every(1).
 						Day().
-						Tag(testdata.MockCloudServiceID1, testdata.MockCatalogID).
+						Tag(testdata.MockCertificationTargetID1, testdata.MockCatalogID).
 						Do(func() { fmt.Println("Scheduler") })
 					assert.NoError(t, err)
 
 					return s
 				}(),
-				authz:  &service.AuthorizationStrategyAllowAll{},
-				toeTag: fmt.Sprintf("%s-%s", testdata.MockCloudServiceID1, testdata.MockCatalogID),
+				authz:         &service.AuthorizationStrategyAllowAll{},
+				auditScopeTag: fmt.Sprintf("%s-%s", testdata.MockCertificationTargetID1, testdata.MockCatalogID),
 			},
 			wantRes: &evaluation.StopEvaluationResponse{},
 			wantErr: assert.NoError,
@@ -685,7 +685,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "cloud_service_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
@@ -696,9 +696,9 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID2,
-					CatalogId:      testdata.MockCatalogID,
-					Interval:       proto.Int32(5),
+					CertificationTargetId: testdata.MockCertificationTargetID2,
+					CatalogId:             testdata.MockCatalogID,
+					Interval:              proto.Int32(5),
 				},
 			},
 			want: nil,
@@ -716,9 +716,9 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID2,
-					CatalogId:      testdata.MockCatalogID,
-					Interval:       proto.Int32(5),
+					CertificationTargetId: testdata.MockCertificationTargetID2,
+					CatalogId:             testdata.MockCatalogID,
+					Interval:              proto.Int32(5),
 				},
 			},
 			want: nil,
@@ -737,9 +737,9 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					Interval:       proto.Int32(5),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					Interval:              proto.Int32(5),
 				},
 			},
 			want: nil,
@@ -748,7 +748,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 		},
 		{
-			name: "error get ToE",
+			name: "error get Audit Scope",
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
@@ -760,14 +760,14 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID2,
-					CatalogId:      testdata.MockCatalogID,
-					Interval:       proto.Int32(5),
+					CertificationTargetId: testdata.MockCertificationTargetID2,
+					CatalogId:             testdata.MockCatalogID,
+					Interval:              proto.Int32(5),
 				},
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get target of evaluation:")
+				return assert.ErrorContains(t, err, "could not get audit scope:")
 			},
 		},
 		{
@@ -775,14 +775,14 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
-					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic)))
 				})))),
 				scheduler: func() *gocron.Scheduler {
 					s := gocron.NewScheduler(time.Local)
 					_, err := s.Every(1).
 						Day().
-						Tag(testdata.MockCloudServiceID1, testdata.MockCatalogID).
+						Tag(testdata.MockCertificationTargetID1, testdata.MockCatalogID).
 						Do(func() { fmt.Println("Scheduler") })
 					assert.NoError(t, err)
 
@@ -794,14 +794,14 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					Interval:       proto.Int32(5),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					Interval:              proto.Int32(5),
 				},
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Cloud Service")
+				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Certification Target")
 			},
 		},
 		{
@@ -809,8 +809,8 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CloudService{Id: testdata.MockCloudServiceID1}))
-					assert.NoError(t, s.Create(orchestratortest.NewTargetOfEvaluation(testdata.AssuranceLevelBasic)))
+					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic)))
 					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				})))),
 				scheduler:       gocron.NewScheduler(time.Local),
@@ -821,8 +821,8 @@ func TestService_StartEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StartEvaluationRequest{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
 				},
 			},
 			want: func(t *testing.T, got *evaluation.StartEvaluationResponse) bool {
@@ -1124,10 +1124,10 @@ func TestService_addJobToScheduler(t *testing.T) {
 		storage                       persistence.Storage
 	}
 	type args struct {
-		ctx      context.Context
-		toe      *orchestrator.TargetOfEvaluation
-		catalog  *orchestrator.Catalog
-		interval int
+		ctx        context.Context
+		auditScope *orchestrator.AuditScope
+		catalog    *orchestrator.Catalog
+		interval   int
 	}
 	tests := []struct {
 		name    string
@@ -1149,10 +1149,10 @@ func TestService_addJobToScheduler(t *testing.T) {
 				scheduler: gocron.NewScheduler(time.Local),
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog:  orchestratortest.NewCatalog(),
 				interval: 0,
@@ -1162,12 +1162,12 @@ func TestService_addJobToScheduler(t *testing.T) {
 			},
 		},
 		{
-			name: "ToE input empty",
+			name: "Audit Scope input empty",
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog: orchestratortest.NewCatalog(),
 			},
@@ -1181,10 +1181,10 @@ func TestService_addJobToScheduler(t *testing.T) {
 				scheduler: gocron.NewScheduler(time.Local),
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog:  orchestratortest.NewCatalog(),
 				interval: 2,
@@ -1200,7 +1200,7 @@ func TestService_addJobToScheduler(t *testing.T) {
 				scheduler:                     tt.fields.scheduler,
 				storage:                       tt.fields.storage,
 			}
-			err := s.addJobToScheduler(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.interval)
+			err := s.addJobToScheduler(tt.args.ctx, tt.args.auditScope, tt.args.catalog, tt.args.interval)
 			tt.wantErr(t, err)
 		})
 	}
@@ -1215,11 +1215,11 @@ func TestService_evaluateControl(t *testing.T) {
 		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
-		ctx     context.Context
-		toe     *orchestrator.TargetOfEvaluation
-		catalog *orchestrator.Catalog
-		control *orchestrator.Control
-		manual  []*evaluation.EvaluationResult
+		ctx        context.Context
+		auditScope *orchestrator.AuditScope
+		catalog    *orchestrator.Catalog
+		control    *orchestrator.Control
+		manual     []*evaluation.EvaluationResult
 	}
 	tests := []struct {
 		name                 string
@@ -1238,10 +1238,10 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog: orchestratortest.NewCatalog(),
 				control: orchestratortest.MockControl1,
@@ -1268,10 +1268,10 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog: orchestratortest.NewCatalog(),
 				control: orchestratortest.MockControl1,
@@ -1303,10 +1303,10 @@ func TestService_evaluateControl(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				catalog: orchestratortest.NewCatalog(),
 				control: orchestratortest.MockControl1,
@@ -1343,7 +1343,7 @@ func TestService_evaluateControl(t *testing.T) {
 				catalogControls: tt.fields.catalogControls,
 			}
 
-			_ = s.evaluateControl(tt.args.ctx, tt.args.toe, tt.args.catalog, tt.args.control, tt.args.manual)
+			_ = s.evaluateControl(tt.args.ctx, tt.args.auditScope, tt.args.catalog, tt.args.control, tt.args.manual)
 
 			tt.want(t, s, tt.newEvaluationResults)
 		})
@@ -1360,9 +1360,9 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		catalogControls map[string]map[string]*orchestrator.Control
 	}
 	type args struct {
-		ctx     context.Context
-		toe     *orchestrator.TargetOfEvaluation
-		control *orchestrator.Control
+		ctx        context.Context
+		auditScope *orchestrator.AuditScope
+		control    *orchestrator.Control
 	}
 	tests := []struct {
 		name    string
@@ -1372,7 +1372,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 		wantSvc assert.Want[*Service]
 	}{
 		{
-			name: "ToE input empty", // we do not check the other input parameters
+			name: "Audit Scope input empty", // we do not check the other input parameters
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
@@ -1405,10 +1405,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				})))),
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				control: &orchestrator.Control{
 					Id:           testdata.MockControlID1,
@@ -1430,10 +1430,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t)))),
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				control: &orchestrator.Control{
 					Id:           testdata.MockSubControlID11,
@@ -1458,7 +1458,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				})))),
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
+				auditScope: &orchestrator.AuditScope{
 					CatalogId:      testdata.MockCatalogID,
 					AssuranceLevel: &testdata.AssuranceLevelHigh,
 				},
@@ -1491,10 +1491,10 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				},
 			},
 			args: args{
-				toe: &orchestrator.TargetOfEvaluation{
-					CloudServiceId: testdata.MockCloudServiceID1,
-					CatalogId:      testdata.MockCatalogID,
-					AssuranceLevel: &testdata.AssuranceLevelHigh,
+				auditScope: &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
 				control: &orchestrator.Control{
 					Id:           testdata.MockSubControlID11,
@@ -1521,7 +1521,7 @@ func TestService_evaluateSubcontrol(t *testing.T) {
 				catalogControls: tt.fields.catalogControls,
 			}
 
-			got, _ := svc.evaluateSubcontrol(tt.args.ctx, tt.args.toe, tt.args.control)
+			got, _ := svc.evaluateSubcontrol(tt.args.ctx, tt.args.auditScope, tt.args.control)
 			assert.Optional(t, tt.want, got)
 			assert.Optional(t, tt.wantSvc, svc)
 		})

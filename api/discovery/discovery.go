@@ -45,7 +45,7 @@ var ErrNotOntologyResource = errors.New("protobuf message is not a valid ontolog
 type Discoverer interface {
 	Name() string
 	List() ([]ontology.IsResource, error)
-	CloudServiceID() string
+	CertificationTargetID() string
 }
 
 // ToOntologyResource converts the content of the "properties" (which is an [*anypb.Any]) into an [ontology.IsResource].
@@ -97,18 +97,18 @@ func ToDiscoveryResource(resource ontology.IsResource, csID, collectorID string)
 	// Build a resource struct. This will hold the latest sync state of the
 	// resource for our storage layer.
 	r = &Resource{
-		Id:             string(resource.GetId()),
-		ResourceType:   strings.Join(ontology.ResourceTypes(resource), ","),
-		CloudServiceId: csID,
-		ToolId:         collectorID,
-		Properties:     a,
+		Id:                    string(resource.GetId()),
+		ResourceType:          strings.Join(ontology.ResourceTypes(resource), ","),
+		CertificationTargetId: csID,
+		ToolId:                collectorID,
+		Properties:            a,
 	}
 
 	return
 }
 
-// GetCloudServiceId is a shortcut to implement CloudServiceRequest. It returns
-// the cloud service ID of the inner object.
-func (req *UpdateResourceRequest) GetCloudServiceId() string {
-	return req.Resource.GetCloudServiceId()
+// GetCertificationTargetId is a shortcut to implement CertificationTargetRequest. It returns
+// the certification target ID of the inner object.
+func (req *UpdateResourceRequest) GetCertificationTargetId() string {
+	return req.Resource.GetCertificationTargetId()
 }

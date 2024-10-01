@@ -255,7 +255,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		{
 			name: "Happy path: ObjectStorage",
 			fields: fields{
-				csID: testdata.MockCloudServiceID1,
+				csID: testdata.MockCertificationTargetID1,
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{
@@ -289,7 +289,7 @@ func Test_azureDiscovery_handleInstances(t *testing.T) {
 		{
 			name: "Happy path: BlockStorage",
 			fields: fields{
-				csID: testdata.MockCloudServiceID1,
+				csID: testdata.MockCertificationTargetID1,
 			},
 			args: args{
 				vault: &armdataprotection.BackupVaultResource{

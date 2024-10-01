@@ -40,16 +40,16 @@ import (
 )
 
 const (
-	TestCustomClaims   = "cloudserviceid"
+	TestCustomClaims   = "CertificationTargetid"
 	TestAllowAllClaims = "cladmin"
 )
 
 var (
-	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to cloud service ID
+	// TestContextOnlyService1 is an incoming context with a JWT that only allows access to certification target ID
 	// 11111111-1111-1111-1111-111111111111
 	TestContextOnlyService1 context.Context
 
-	// TestContextOnlyService1 is an incoming context with a JWT that allows access to all cloud services
+	// TestContextOnlyService1 is an incoming context with a JWT that allows access to all certification targets
 	TestContextAllowAll context.Context
 
 	// TestBrokenContext contains an invalid JWT
@@ -57,17 +57,17 @@ var (
 		"authorization": "bearer what",
 	}))
 
-	// TestClaimsOnlyService1 contains claims that authorize the user for the cloud service
+	// TestClaimsOnlyService1 contains claims that authorize the user for the certification target
 	// 11111111-1111-1111-1111-111111111111.
 	TestClaimsOnlyService1 = jwt.MapClaims{
 		"sub": "me",
-		"cloudserviceid": []string{
-			testdata.MockCloudServiceID1,
+		"CertificationTargetid": []string{
+			testdata.MockCertificationTargetID1,
 		},
 		"other": []int{1, 2},
 	}
 
-	// TestClaimsOnlyService1 contains claims that authorize the user for all cloud services.
+	// TestClaimsOnlyService1 contains claims that authorize the user for all certification targets.
 	TestClaimsAllowAll = jwt.MapClaims{
 		"sub":     "me",
 		"cladmin": true,
@@ -109,7 +109,7 @@ func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		typ RequestType
-		req api.CloudServiceRequest
+		req api.CertificationTargetRequest
 	}
 	tests := []struct {
 		name string
@@ -123,7 +123,7 @@ func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				typ: AccessCreate,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: config.DefaultCloudServiceID},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: config.DefaultCertificationTargetID},
 			},
 			want: true,
 		},
@@ -138,7 +138,7 @@ func TestAuthorizationStrategyAllowAll_CheckAccess(t *testing.T) {
 	}
 }
 
-func TestAuthorizationStrategyAllowAll_AllowedCloudServices(t *testing.T) {
+func TestAuthorizationStrategyAllowAll_AllowedCertificationTargets(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
@@ -160,7 +160,7 @@ func TestAuthorizationStrategyAllowAll_AllowedCloudServices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyAllowAll{}
-			gotAll, gotList := a.AllowedCloudServices(tt.args.ctx)
+			gotAll, gotList := a.AllowedCertificationTargets(tt.args.ctx)
 			assert.Equal(t, tt.wantAll, gotAll)
 			assert.Equal(t, tt.wantList, gotList)
 		})
@@ -169,13 +169,13 @@ func TestAuthorizationStrategyAllowAll_AllowedCloudServices(t *testing.T) {
 
 func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 	type fields struct {
-		CloudServicesKey string
-		AllowAllKey      string
+		CertificationTargetsKey string
+		AllowAllKey             string
 	}
 	type args struct {
 		ctx context.Context
 		typ RequestType
-		req api.CloudServiceRequest
+		req api.CertificationTargetRequest
 	}
 	tests := []struct {
 		name   string
@@ -186,12 +186,12 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 		{
 			name: "valid context",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: true,
 		},
@@ -203,55 +203,55 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 			args: args{
 				ctx: TestContextAllowAll,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: true,
 		},
 		{
 			name: "valid context, wrong claim",
 			fields: fields{
-				CloudServicesKey: "sub",
+				CertificationTargetsKey: "sub",
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: false,
 		},
 		{
 			name: "valid context, ignore non-string",
 			fields: fields{
-				CloudServicesKey: "other",
+				CertificationTargetsKey: "other",
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: false,
 		},
 		{
 			name: "missing token",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: context.Background(),
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: false,
 		},
 		{
 			name: "broken token",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: TestBrokenContext,
 				typ: AccessRead,
-				req: &orchestrator.GetCloudServiceRequest{CloudServiceId: testdata.MockCloudServiceID1},
+				req: &orchestrator.GetCertificationTargetRequest{CertificationTargetId: testdata.MockCertificationTargetID1},
 			},
 			want: false,
 		},
@@ -260,8 +260,8 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyJWT{
-				CloudServicesKey: tt.fields.CloudServicesKey,
-				AllowAllKey:      tt.fields.AllowAllKey,
+				CertificationTargetsKey: tt.fields.CertificationTargetsKey,
+				AllowAllKey:             tt.fields.AllowAllKey,
 			}
 			if got := a.CheckAccess(tt.args.ctx, tt.args.typ, tt.args.req); got != tt.want {
 				t.Errorf("AuthorizationStrategyJWT.CheckAccess() = %v, want %v", got, tt.want)
@@ -270,10 +270,10 @@ func TestAuthorizationStrategyJWT_CheckAccess(t *testing.T) {
 	}
 }
 
-func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
+func TestAuthorizationStrategyJWT_AllowedCertificationTargets(t *testing.T) {
 	type fields struct {
-		CloudServicesKey string
-		AllowAllKey      string
+		CertificationTargetsKey string
+		AllowAllKey             string
 	}
 	type args struct {
 		ctx context.Context
@@ -288,13 +288,13 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "valid context",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
 			},
 			wantAll:  false,
-			wantList: []string{testdata.MockCloudServiceID1},
+			wantList: []string{testdata.MockCertificationTargetID1},
 		},
 		{
 			name: "valid context, allow all",
@@ -310,7 +310,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "valid context, wrong claim",
 			fields: fields{
-				CloudServicesKey: "sub",
+				CertificationTargetsKey: "sub",
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
@@ -321,7 +321,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "valid context, ignore non-string",
 			fields: fields{
-				CloudServicesKey: "other",
+				CertificationTargetsKey: "other",
 			},
 			args: args{
 				ctx: TestContextOnlyService1,
@@ -332,7 +332,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "missing token",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -343,7 +343,7 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 		{
 			name: "broken token",
 			fields: fields{
-				CloudServicesKey: TestCustomClaims,
+				CertificationTargetsKey: TestCustomClaims,
 			},
 			args: args{
 				ctx: TestBrokenContext,
@@ -362,10 +362,10 @@ func TestAuthorizationStrategyJWT_AllowedCloudServices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AuthorizationStrategyJWT{
-				CloudServicesKey: tt.fields.CloudServicesKey,
-				AllowAllKey:      tt.fields.AllowAllKey,
+				CertificationTargetsKey: tt.fields.CertificationTargetsKey,
+				AllowAllKey:             tt.fields.AllowAllKey,
 			}
-			gotAll, gotList := a.AllowedCloudServices(tt.args.ctx)
+			gotAll, gotList := a.AllowedCertificationTargets(tt.args.ctx)
 			assert.Equal(t, tt.wantAll, gotAll)
 			assert.Equal(t, tt.wantList, gotList)
 		})

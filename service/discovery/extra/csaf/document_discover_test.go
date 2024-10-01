@@ -35,7 +35,7 @@ func Test_csafDiscovery_handleAdvisory(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   config.DefaultCloudServiceID,
+				csID:   config.DefaultCertificationTargetID,
 				client: goodProvider.Client(),
 			},
 			args: args{
@@ -91,7 +91,7 @@ func Test_csafDiscovery_discoverSecurityAdvisories(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   config.DefaultCloudServiceID,
+				csID:   config.DefaultCertificationTargetID,
 				client: goodProvider.Client(),
 			},
 			args: args{

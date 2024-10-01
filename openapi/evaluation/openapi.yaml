@@ -7,16 +7,16 @@ info:
     description: Manages the evaluation of Clouditor's assessment results
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/start:
+    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/start:
         post:
             tags:
                 - Evaluation
             description: |-
-                Evaluates periodically all assessment results of a cloud service id based
+                Evaluates periodically all assessment results of a certification target id based
                  on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
-                - name: cloudServiceId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -47,16 +47,16 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/evaluation/evaluate/{cloudServiceId}/{catalogId}/stop:
+    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/stop:
         post:
             tags:
                 - Evaluation
             description: |-
-                StopEvaluation stops the evaluation for the given target of evaluation.
+                StopEvaluation stops the evaluation for the given audit scope.
                  Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
-                - name: cloudServiceId
+                - name: certificationTargetId
                   in: path
                   required: true
                   schema:
@@ -89,9 +89,9 @@ paths:
                  exposed as REST.
             operationId: Evaluation_ListEvaluationResults
             parameters:
-                - name: filter.cloudServiceId
+                - name: filter.certificationTargetId
                   in: query
-                  description: Optional. Lists only evaluation results for a specific cloud service.
+                  description: Optional. Lists only evaluation results for a specific certification target.
                   schema:
                     type: string
                 - name: filter.catalogId
@@ -189,9 +189,9 @@ components:
                 id:
                     type: string
                     description: Evaluation result id
-                cloudServiceId:
+                certificationTargetId:
                     type: string
-                    description: The Cloud Service ID the evaluation belongs to
+                    description: The Certification Target ID the evaluation belongs to
                 controlId:
                     type: string
                     description: The control id the evaluation was based on
@@ -237,8 +237,8 @@ components:
                     format: date-time
             description: |-
                 A evaluation result resource, representing the result after evaluating the
-                 cloud service with a specific control cloud_service_id, category_name and
-                 catalog_id are necessary to get the corresponding TargetOfEvaluation
+                 certification target with a specific control certification_target_id, category_name and
+                 catalog_id are necessary to get the corresponding AuditScope
         GoogleProtobufAny:
             type: object
             properties:
