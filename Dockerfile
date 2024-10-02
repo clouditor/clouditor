@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine as builder
+FROM golang:1.22-alpine3.18 AS builder
 
 WORKDIR /build
 
@@ -13,15 +13,16 @@ RUN go install \
     github.com/oxisto/owl2proto/cmd/owl2proto \
     github.com/srikrsna/protoc-gen-gotag
 
+RUN go install github.com/mattn/go-sqlite3
 RUN go install github.com/bufbuild/buf/cmd/buf@latest
 
 ADD . .
 
-RUN go generate ./...
+# RUN go generate ./...
 RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/engine ./cmd/engine
 RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/cl ./cmd/cli
 
-FROM golang:1.22-alpine
+FROM alpine
 
 WORKDIR /app
 
