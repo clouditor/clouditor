@@ -1,4 +1,4 @@
-FROM amd64/golang:1.22-alpine as builder
+FROM golang:1.22-alpine as builder
 
 WORKDIR /build
 
@@ -21,7 +21,7 @@ RUN go generate ./...
 RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/engine ./cmd/engine
 RUN go build -ldflags="-X clouditor.io/clouditor/v2/service.version=$(git describe --exact-match --tags --abbrev=0)" -o /build/cl ./cmd/cli
 
-FROM alpine
+FROM golang:1.22-alpine
 
 WORKDIR /app
 
