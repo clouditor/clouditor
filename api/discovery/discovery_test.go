@@ -55,7 +55,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 			name: "happy path VM",
 			fields: fields{
 				Id:                    "vm1",
-				CertificationTargetId: "service1",
+				CertificationTargetId: "target1",
 				ResourceType:          "VirtualMachine",
 				Properties: prototest.NewAny(t, &ontology.VirtualMachine{
 					Id:              "vm1",
@@ -72,7 +72,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 			name: "not an ontology resource",
 			fields: fields{
 				Id:                    "vm1",
-				CertificationTargetId: "service1",
+				CertificationTargetId: "target1",
 				ResourceType:          "Something",
 				Properties:            prototest.NewAny(t, &emptypb.Empty{}),
 			},

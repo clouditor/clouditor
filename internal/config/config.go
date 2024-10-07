@@ -49,7 +49,7 @@ const (
 	ServiceOAuth2EndpointFlag            = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag            = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag        = "service-oauth2-client-secret"
-	CertificationTargetIDFlag            = "cloud-service-id"
+	CertificationTargetIDFlag            = "certification-target-id"
 	AssessmentURLFlag                    = "assessment-url"
 	OrchestratorURLFlag                  = "orchestrator-url"
 	EvidenceStoreURLFlag                 = "evidence-store-url"

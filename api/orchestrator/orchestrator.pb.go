@@ -2366,7 +2366,7 @@ func (x *Control) GetAssuranceLevel() string {
 	return ""
 }
 
-// A Audit Scope binds a certification target to a catalog, so the service is
+// A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 type AuditScope struct {
 	state         protoimpl.MessageState
@@ -2786,7 +2786,7 @@ type ListAuditScopesRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// We cannot create additional bindings when the parameter is optional so we
-	// check for != "" in the method to see if it is set when the service is
+	// check for != "" in the method to see if it is set when the certification target is
 	// specified, return all Audit Scopes that evaluate the given certification target
 	// for any catalog
 	CertificationTargetId string `protobuf:"bytes,1,opt,name=certification_target_id,json=certificationTargetId,proto3" json:"certification_target_id,omitempty"`

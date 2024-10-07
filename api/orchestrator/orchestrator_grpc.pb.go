@@ -145,13 +145,13 @@ type OrchestratorClient interface {
 	// Retrieves target certification target statistics
 	GetCertificationTargetStatistics(ctx context.Context, in *GetCertificationTargetStatisticsRequest, opts ...grpc.CallOption) (*GetCertificationTargetStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// service and metric ID
+	// certification target and metric ID
 	UpdateMetricConfiguration(ctx context.Context, in *UpdateMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// service and metric ID.
+	// certification target and metric ID.
 	GetMetricConfiguration(ctx context.Context, in *GetMetricConfigurationRequest, opts ...grpc.CallOption) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations (target value and operator) for a
-	// specific service ID
+	// Lists all metric configurations (target value and operator) for a
+	// specific certification target ID
 	ListMetricConfigurations(ctx context.Context, in *ListMetricConfigurationRequest, opts ...grpc.CallOption) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(ctx context.Context, in *UpdateMetricImplementationRequest, opts ...grpc.CallOption) (*assessment.MetricImplementation, error)
@@ -739,13 +739,13 @@ type OrchestratorServer interface {
 	// Retrieves target certification target statistics
 	GetCertificationTargetStatistics(context.Context, *GetCertificationTargetStatisticsRequest) (*GetCertificationTargetStatisticsResponse, error)
 	// Updates a metric configuration (target value and operator) for a specific
-	// service and metric ID
+	// certification target and metric ID
 	UpdateMetricConfiguration(context.Context, *UpdateMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
 	// Retrieves a metric configuration (target value and operator) for a specific
-	// service and metric ID.
+	// certification target and metric ID.
 	GetMetricConfiguration(context.Context, *GetMetricConfigurationRequest) (*assessment.MetricConfiguration, error)
-	// Lists all a metric configurations (target value and operator) for a
-	// specific service ID
+	// Lists all metric configurations (target value and operator) for a
+	// specific certification target ID
 	ListMetricConfigurations(context.Context, *ListMetricConfigurationRequest) (*ListMetricConfigurationResponse, error)
 	// Updates an existing metric implementation
 	UpdateMetricImplementation(context.Context, *UpdateMetricImplementationRequest) (*assessment.MetricImplementation, error)
