@@ -63,9 +63,9 @@ components:
                     type: string
                     description: time of evidence creation
                     format: date-time
-                cloudServiceId:
+                certificationTargetId:
                     type: string
-                    description: Reference to a service this evidence was gathered from
+                    description: Reference to a certification target (e.g., service, organization) this evidence was gathered from
                 toolId:
                     type: string
                     description: Reference to the tool which provided the evidence

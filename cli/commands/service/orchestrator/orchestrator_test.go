@@ -62,19 +62,19 @@ func TestMain(m *testing.M) {
 	// Store an assessment result so that output of CMD 'list' is not empty
 	_, err = svc.StoreAssessmentResult(context.TODO(), &orchestrator.StoreAssessmentResultRequest{
 		Result: &assessment.AssessmentResult{
-			Id:             testdata.MockCloudServiceID1,
-			MetricId:       testdata.MockMetricID1,
-			EvidenceId:     testdata.MockCloudServiceID1,
-			CloudServiceId: testdata.MockCloudServiceID1,
-			Timestamp:      timestamppb.Now(),
-			ResourceId:     string(testdata.MockResourceID1),
-			ResourceTypes:  []string{"ResourceType"},
+			Id:                    testdata.MockCertificationTargetID1,
+			MetricId:              testdata.MockMetricID1,
+			EvidenceId:            testdata.MockCertificationTargetID1,
+			CertificationTargetId: testdata.MockCertificationTargetID1,
+			Timestamp:             timestamppb.Now(),
+			ResourceId:            string(testdata.MockResourceID1),
+			ResourceTypes:         []string{"ResourceType"},
 			MetricConfiguration: &assessment.MetricConfiguration{
-				TargetValue:    toStruct(1.0),
-				Operator:       "<",
-				IsDefault:      true,
-				MetricId:       testdata.MockMetricID1,
-				CloudServiceId: testdata.MockCloudServiceID1,
+				TargetValue:           toStruct(1.0),
+				Operator:              "<",
+				IsDefault:             true,
+				MetricId:              testdata.MockMetricID1,
+				CertificationTargetId: testdata.MockCertificationTargetID1,
 			},
 			ToolId: util.Ref(assessment.AssessmentToolId),
 		}})

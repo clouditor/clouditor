@@ -29,7 +29,7 @@ func (svc *Service) CreateCertificate(ctx context.Context, req *orchestrator.Cre
 		return
 	}
 
-	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
+	// Check if client is allowed to access the corresponding certification target (targeted in the certificate)
 	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
 		err = service.ErrPermissionDenied
 		return
@@ -66,9 +66,9 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Check if client is allowed to access the corresponding cloud service (targeted in the certificate)
-	all, allowed := svc.authz.AllowedCloudServices(ctx)
-	if !all && !slices.Contains(allowed, res.CloudServiceId) {
+	// Check if client is allowed to access the corresponding certification target (targeted in the certificate)
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
 		// Important to nil the response since it is set already
 		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
 	}
@@ -85,15 +85,15 @@ func (svc *Service) ListCertificates(ctx context.Context, req *orchestrator.List
 		return nil, err
 	}
 
-	// We only list certificates the user is authorized to see (w.r.t. the cloud service)
+	// We only list certificates the user is authorized to see (w.r.t. the certification target)
 	var (
 		query []string
 		args  []any
 	)
 
-	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -178,7 +178,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 		return
 	}
 	// 2) Check if client is authorized to remove certificate.
-	// Only remove certificate if user is authorized for the corresponding cloud service.
+	// Only remove certificate if user is authorized for the corresponding certification target.
 	if err = svc.checkAuthorization(ctx, req); err != nil {
 		return
 	}
@@ -196,13 +196,13 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 
 // checkAuthorization checks if client is authorized to remove certificate by
 // 1) checking admin flag: If it is enabled (`all`) the client is authorized
-// 2) querying the DB within the range of cloud services (`allowed`) the client is allowed to access
+// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
 // Error is returned if not authorized or internal DB error occurred.
 // Note: Use the checkExistence before to ensure that the entry is in the DB!
 func (svc *Service) checkAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
-	all, allowed := svc.authz.AllowedCloudServices(ctx)
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND cloud_service_id IN ?",
+		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
 			req.CertificateId, allowed)
 		if err != nil {
 			return status.Errorf(codes.Internal, "database error: %v", err)

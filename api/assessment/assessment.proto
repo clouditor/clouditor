@@ -132,8 +132,8 @@ message AssessmentResult {
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
 
-  // The cloud service which this assessment result belongs to
-  string cloud_service_id = 10 [(buf.validate.field).string.uuid = true];
+  // The certification target which this assessment result belongs to
+  string certification_target_id = 10 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the assessment result
   optional string tool_id = 11 [(buf.validate.field).string.min_len = 1];
@@ -158,7 +158,7 @@ message AssessmentResult {
 
      string control_id = 4;
 
-     string cloud_service_id = 5;
+     string certification_target_id = 5;
 
      repeated AssessmentResult results = 6;
    }*/

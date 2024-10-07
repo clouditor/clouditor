@@ -50,39 +50,39 @@ const (
 var ErrPermissionDenied = status.Errorf(codes.PermissionDenied, "access denied")
 
 // AuthorizationStrategy is an interface that implements a function which
-// checkers whether the current cloud service request can be fulfilled using the
+// checkers whether the current certification target request can be fulfilled using the
 // supplied context (e.g., based on the authenticated user).
 type AuthorizationStrategy interface {
-	CheckAccess(ctx context.Context, typ RequestType, req api.CloudServiceRequest) bool
-	AllowedCloudServices(ctx context.Context) (all bool, IDs []string)
+	CheckAccess(ctx context.Context, typ RequestType, req api.CertificationTargetRequest) bool
+	AllowedCertificationTargets(ctx context.Context) (all bool, IDs []string)
 }
 
-// AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of cloud service IDs to be in a specific JWT
+// AuthorizationStrategyJWT is an AuthorizationStrategy that expects a list of certification target IDs to be in a specific JWT
 // claim key.
 type AuthorizationStrategyJWT struct {
-	CloudServicesKey string
-	AllowAllKey      string
+	CertificationTargetsKey string
+	AllowAllKey             string
 }
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy.
-func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CloudServiceRequest) bool {
+func (a *AuthorizationStrategyJWT) CheckAccess(ctx context.Context, _ RequestType, req api.CertificationTargetRequest) bool {
 	var (
 		list []string
 		all  bool
 	)
 
-	// Retrieve the list of allowed cloud services.
-	all, list = a.AllowedCloudServices(ctx)
+	// Retrieve the list of allowed certification targets.
+	all, list = a.AllowedCertificationTargets(ctx)
 
 	if all {
 		return true
 	}
 
-	return slices.Contains(list, req.GetCloudServiceId())
+	return slices.Contains(list, req.GetCertificationTargetId())
 }
 
-// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy.
-func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (all bool, list []string) {
+// AllowedCertificationTargets retrieves a list of allowed certification target IDs according to the current access strategy.
+func (a *AuthorizationStrategyJWT) AllowedCertificationTargets(ctx context.Context) (all bool, list []string) {
 	var (
 		err    error
 		ok     bool
@@ -94,14 +94,14 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 
 	// Check, if the context is nil
 	if ctx == nil {
-		log.Debugf("Retrieving allowed cloud services failed because of an empty context")
+		log.Debugf("Retrieving allowed certification targets failed because of an empty context")
 		return false, nil
 	}
 
 	// Retrieve the raw token from the context
 	token, err = grpc_auth.AuthFromMD(ctx, "bearer")
 	if err != nil {
-		log.Debugf("Retrieving allowed cloud services from token failed: %v", err)
+		log.Debugf("Retrieving allowed certification targets from token failed: %v", err)
 		return false, nil
 	}
 
@@ -109,7 +109,7 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	parser := jwt.NewParser()
 	_, _, err = parser.ParseUnverified(token, &claims)
 	if err != nil {
-		log.Debugf("Retrieving allowed cloud services from token failed: %v", err)
+		log.Debugf("Retrieving allowed certification targets from token failed: %v", err)
 		return false, nil
 	}
 
@@ -119,8 +119,8 @@ func (a *AuthorizationStrategyJWT) AllowedCloudServices(ctx context.Context) (al
 	}
 
 	// We are looking for an array claim
-	if l, ok = claims[a.CloudServicesKey].([]interface{}); !ok {
-		log.Debug("Retrieving allowed cloud services from token failed: specified claims key is not an array", err)
+	if l, ok = claims[a.CertificationTargetsKey].([]interface{}); !ok {
+		log.Debug("Retrieving allowed certification targets from token failed: specified claims key is not an array", err)
 		return false, nil
 	}
 
@@ -141,12 +141,12 @@ type AuthorizationStrategyAllowAll struct{}
 
 // CheckAccess checks whether the current request can be fulfilled using the current access strategy. Returns true since
 // strategy is `AuthorizationStrategyAllowAll`
-func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ api.CloudServiceRequest) bool {
+func (*AuthorizationStrategyAllowAll) CheckAccess(_ context.Context, _ RequestType, _ api.CertificationTargetRequest) bool {
 	return true
 }
 
-// AllowedCloudServices retrieves a list of allowed cloud service IDs according to the current access strategy. Returns
+// AllowedCertificationTargets retrieves a list of allowed certification target IDs according to the current access strategy. Returns
 // `all = true` since strategy is `AuthorizationStrategyAllowAll`
-func (*AuthorizationStrategyAllowAll) AllowedCloudServices(_ context.Context) (all bool, list []string) {
+func (*AuthorizationStrategyAllowAll) AllowedCertificationTargets(_ context.Context) (all bool, list []string) {
 	return true, nil
 }

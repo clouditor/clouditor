@@ -85,7 +85,7 @@ message ListEvidencesRequest {
 
 // Allows specifying Filters for ListEvidencesRequest
 message Filter {
-  optional string cloud_service_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
   optional string tool_id = 2 [(buf.validate.field).string.uuid = true];
 }
 

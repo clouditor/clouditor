@@ -38,18 +38,18 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// NewRegisterCloudServiceCommand returns a cobra command for the `discover` subcommand
-func NewRegisterCloudServiceCommand() *cobra.Command {
+// NewRegisterCertificationTargetCommand returns a cobra command for the `discover` subcommand
+func NewRegisterCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "register [name]",
-		Short: "Registers a new target cloud service",
+		Short: "Registers a new target certification target",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CloudService
+				res     *orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -61,8 +61,8 @@ func NewRegisterCloudServiceCommand() *cobra.Command {
 
 			name := args[0]
 
-			res, err = client.RegisterCloudService(context.Background(), &orchestrator.RegisterCloudServiceRequest{
-				CloudService: &orchestrator.CloudService{
+			res, err = client.RegisterCertificationTarget(context.Background(), &orchestrator.RegisterCertificationTargetRequest{
+				CertificationTarget: &orchestrator.CertificationTarget{
 					Name: name,
 				},
 			})
@@ -77,18 +77,18 @@ func NewRegisterCloudServiceCommand() *cobra.Command {
 	return cmd
 }
 
-// NewListCloudServicesCommand returns a cobra command for the `list` subcommand
-func NewListCloudServicesCommand() *cobra.Command {
+// NewListCertificationTargetsCommand returns a cobra command for the `list` subcommand
+func NewListCertificationTargetsCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Lists all target cloud services",
+		Short: "Lists all target certification targets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err      error
 				session  *cli.Session
 				client   orchestrator.OrchestratorClient
-				res      *orchestrator.ListCloudServicesResponse
-				services []*orchestrator.CloudService
+				res      *orchestrator.ListCertificationTargetsResponse
+				services []*orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -98,12 +98,12 @@ func NewListCloudServicesCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			services, err = api.ListAllPaginated(&orchestrator.ListCloudServicesRequest{}, client.ListCloudServices, func(res *orchestrator.ListCloudServicesResponse) []*orchestrator.CloudService {
+			services, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
 				return res.Services
 			})
 
 			// Build a response with all services
-			res = &orchestrator.ListCloudServicesResponse{
+			res = &orchestrator.ListCertificationTargetsResponse{
 				Services: services,
 			}
 
@@ -117,18 +117,18 @@ func NewListCloudServicesCommand() *cobra.Command {
 	return cmd
 }
 
-// NewGetCloudServiceCommand returns a cobra command for the `get` subcommand
-func NewGetCloudServiceCommand() *cobra.Command {
+// NewGetCertificationTargetCommand returns a cobra command for the `get` subcommand
+func NewGetCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [id]",
-		Short: "Retrieves a target cloud service by its ID",
+		Short: "Retrieves a target certification target by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CloudService
+				res     *orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -140,7 +140,7 @@ func NewGetCloudServiceCommand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.GetCloudService(context.Background(), &orchestrator.GetCloudServiceRequest{CloudServiceId: serviceID})
+			res, err = client.GetCertificationTarget(context.Background(), &orchestrator.GetCertificationTargetRequest{CertificationTargetId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -150,11 +150,11 @@ func NewGetCloudServiceCommand() *cobra.Command {
 	return cmd
 }
 
-// NewRemoveCloudServiceComand returns a cobra command for the `get` subcommand
-func NewRemoveCloudServiceComand() *cobra.Command {
+// NewRemoveCertificationTargetComand returns a cobra command for the `get` subcommand
+func NewRemoveCertificationTargetComand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove [id]",
-		Short: "Removes a target cloud service by its ID",
+		Short: "Removes a target certification target by its ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -173,7 +173,7 @@ func NewRemoveCloudServiceComand() *cobra.Command {
 
 			serviceID := args[0]
 
-			res, err = client.RemoveCloudService(context.Background(), &orchestrator.RemoveCloudServiceRequest{CloudServiceId: serviceID})
+			res, err = client.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: serviceID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -183,17 +183,17 @@ func NewRemoveCloudServiceComand() *cobra.Command {
 	return cmd
 }
 
-// NewUpdateCloudServiceCommand returns a cobra command for the `update` subcommand
-func NewUpdateCloudServiceCommand() *cobra.Command {
+// NewUpdateCertificationTargetCommand returns a cobra command for the `update` subcommand
+func NewUpdateCertificationTargetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Updates a target cloud service",
+		Short: "Updates a target certification target",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
 				err     error
 				session *cli.Session
 				client  orchestrator.OrchestratorClient
-				res     *orchestrator.CloudService
+				res     *orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -203,8 +203,8 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			res, err = client.UpdateCloudService(context.Background(), &orchestrator.UpdateCloudServiceRequest{
-				CloudService: &orchestrator.CloudService{
+			res, err = client.UpdateCertificationTarget(context.Background(), &orchestrator.UpdateCertificationTargetRequest{
+				CertificationTarget: &orchestrator.CertificationTarget{
 					Id:          viper.GetString("id"),
 					Name:        viper.GetString("name"),
 					Description: viper.GetString("description"),
@@ -216,7 +216,7 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 		ValidArgsFunction: cli.DefaultArgsShellComp,
 	}
 
-	cmd.PersistentFlags().String("id", "", "the cloud service id to update")
+	cmd.PersistentFlags().String("id", "", "the certification target id to update")
 	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 
@@ -227,7 +227,7 @@ func NewUpdateCloudServiceCommand() *cobra.Command {
 	_ = viper.BindPFlag("description", cmd.PersistentFlags().Lookup("description"))
 	_ = viper.BindPFlag("control-ids", cmd.PersistentFlags().Lookup("control-ids"))
 
-	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCloudServices)
+	_ = cmd.RegisterFlagCompletionFunc("id", cli.ValidArgsGetCertificationTargets)
 	_ = cmd.RegisterFlagCompletionFunc("name", cli.DefaultArgsShellComp)
 	_ = cmd.RegisterFlagCompletionFunc("description", cli.DefaultArgsShellComp)
 
@@ -259,7 +259,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 			serviceID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CloudServiceId: serviceID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: serviceID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -275,7 +275,7 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 func NewCloudCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cloud",
-		Short: "Target cloud services commands",
+		Short: "Target certification targets commands",
 	}
 
 	AddCommands(cmd)
@@ -286,11 +286,11 @@ func NewCloudCommand() *cobra.Command {
 // AddCommands adds all subcommands
 func AddCommands(cmd *cobra.Command) {
 	cmd.AddCommand(
-		NewRegisterCloudServiceCommand(),
-		NewListCloudServicesCommand(),
-		NewGetCloudServiceCommand(),
-		NewUpdateCloudServiceCommand(),
-		NewRemoveCloudServiceComand(),
+		NewRegisterCertificationTargetCommand(),
+		NewListCertificationTargetsCommand(),
+		NewGetCertificationTargetCommand(),
+		NewUpdateCertificationTargetCommand(),
+		NewRemoveCertificationTargetComand(),
 		NewGetMetricConfigurationCommand(),
 	)
 }

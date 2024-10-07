@@ -57,7 +57,7 @@ func NewOrchestratorCommand() *cobra.Command {
 }
 
 func BindFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(config.CreateDefaultTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target cloud service if it does not exist")
+	cmd.Flags().Bool(config.CreateDefaultCertificationTargetFlag, config.DefaultCreateDefaultTarget, "Creates a default target certification target if it does not exist")
 	if cmd.Flag(config.APIgRPCPortFlag) == nil {
 		cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPortOrchestrator, "Specifies the port used for the Clouditor gRPC API")
 	}
@@ -65,7 +65,7 @@ func BindFlags(cmd *cobra.Command) {
 		cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPortOrchestrator, "Specifies the port used for the Clouditor HTTP API")
 	}
 
-	_ = viper.BindPFlag(config.CreateDefaultTargetFlag, cmd.Flags().Lookup(config.CreateDefaultTargetFlag))
+	_ = viper.BindPFlag(config.CreateDefaultCertificationTargetFlag, cmd.Flags().Lookup(config.CreateDefaultCertificationTargetFlag))
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))
 

@@ -54,11 +54,11 @@ func TestMain(m *testing.M) {
 	svc = service_evidence.NewService()
 
 	_, err = svc.StoreEvidence(context.TODO(), &evidence.StoreEvidenceRequest{Evidence: &evidence.Evidence{
-		Id:             testdata.MockCloudServiceID1,
-		CloudServiceId: testdata.MockCloudServiceID1,
-		ToolId:         testdata.MockEvidenceToolID1,
-		Timestamp:      timestamppb.Now(),
-		Resource:       prototest.NewAnyWithPanic(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
+		Id:                    testdata.MockCertificationTargetID1,
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		ToolId:                testdata.MockEvidenceToolID1,
+		Timestamp:             timestamppb.Now(),
+		Resource:              prototest.NewAnyWithPanic(&ontology.VirtualMachine{Id: testdata.MockResourceID1}),
 	}})
 	if err != nil {
 		panic(err)

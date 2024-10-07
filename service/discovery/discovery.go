@@ -90,7 +90,7 @@ func DefaultServiceSpec() launcher.ServiceSpec {
 		WithStorage,
 		nil,
 		WithOAuth2Authorizer(config.ClientCredentials()),
-		WithCloudServiceID(viper.GetString(config.CloudServiceIDFlag)),
+		WithCertificationTargetID(viper.GetString(config.CertificationTargetIDFlag)),
 		WithProviders(providers),
 		WithAssessmentAddress(viper.GetString(config.AssessmentURLFlag)),
 	)
@@ -138,7 +138,7 @@ type Service struct {
 
 	Events chan *DiscoveryEvent
 
-	// csID is the cloud service ID for which we are gathering resources.
+	// csID is the certification target ID for which we are gathering resources.
 	csID string
 
 	// collectorID is the evidence collector tool ID which is gathering the resources.
@@ -165,10 +165,10 @@ func WithAssessmentAddress(target string, opts ...grpc.DialOption) service.Optio
 	}
 }
 
-// WithCloudServiceID is an option to configure the cloud service ID for which resources will be discovered.
-func WithCloudServiceID(ID string) service.Option[*Service] {
+// WithCertificationTargetID is an option to configure the certification target ID for which resources will be discovered.
+func WithCertificationTargetID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
-		log.Infof("Cloud Service ID is set to %s", ID)
+		log.Infof("Certification Target ID is set to %s", ID)
 
 		svc.csID = ID
 	}
@@ -238,7 +238,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
-		csID:              config.DefaultCloudServiceID,
+		csID:              config.DefaultCertificationTargetID,
 		collectorID:       config.DefaultEvidenceCollectorToolID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
@@ -315,7 +315,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		return nil, err
 	}
 
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, svc) {
 		return nil, service.ErrPermissionDenied
 	}
@@ -334,8 +334,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				log.Errorf("Could not authenticate to Azure: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
-			// Add authorizer and cloudServiceID
-			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCloudServiceID(svc.csID))
+			// Add authorizer and CertificationTargetID
+			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.csID))
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
 				opts = append(opts, azure.WithResourceGroup(req.GetResourceGroup()))
@@ -434,7 +434,7 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 	for _, resource := range list {
 		// Build a resource struct. This will hold the latest sync state of the
 		// resource for our storage layer.
-		r, err := discovery.ToDiscoveryResource(resource, svc.GetCloudServiceId(), svc.collectorID)
+		r, err := discovery.ToDiscoveryResource(resource, svc.GetCertificationTargetId(), svc.collectorID)
 		if err != nil {
 			log.Errorf("Could not convert resource: %v", err)
 			continue
@@ -453,12 +453,12 @@ func (svc *Service) StartDiscovery(discoverer discovery.Discoverer) {
 		}
 
 		e := &evidence.Evidence{
-			Id:             uuid.New().String(),
-			CloudServiceId: svc.GetCloudServiceId(),
-			Timestamp:      timestamppb.Now(),
-			Raw:            util.Ref(resource.GetRaw()),
-			ToolId:         svc.collectorID,
-			Resource:       a,
+			Id:                    uuid.New().String(),
+			CertificationTargetId: svc.GetCertificationTargetId(),
+			Timestamp:             timestamppb.Now(),
+			Raw:                   util.Ref(resource.GetRaw()),
+			ToolId:                svc.collectorID,
+			Resource:              a,
 		}
 
 		// Only enabled related evidences for some specific resources for now
@@ -496,18 +496,18 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	}
 
 	// Filtering the resources by
-	// * cloud service ID
+	// * certification target ID
 	// * resource type
 	// * tool ID
 	if req.Filter != nil {
-		// Check if cloud_service_id in filter is within allowed or one can access *all* the cloud services
+		// Check if certification_target_id in filter is within allowed or one can access *all* the certification targets
 		if !svc.authz.CheckAccess(ctx, service.AccessRead, req.Filter) {
 			return nil, service.ErrPermissionDenied
 		}
 
-		if req.Filter.CloudServiceId != nil {
-			query = append(query, "cloud_service_id = ?")
-			args = append(args, req.Filter.GetCloudServiceId())
+		if req.Filter.CertificationTargetId != nil {
+			query = append(query, "certification_target_id = ?")
+			args = append(args, req.Filter.GetCertificationTargetId())
 		}
 		if req.Filter.Type != nil {
 			query = append(query, "(resource_type LIKE ? OR resource_type LIKE ? OR resource_type LIKE ?)")
@@ -519,13 +519,13 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 		}
 	}
 
-	// We need to further restrict our query according to the cloud service we are allowed to "see".
+	// We need to further restrict our query according to the certification target we are allowed to "see".
 	//
-	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCloudServices twice. Once here
+	// TODO(oxisto): This is suboptimal, since we are now calling AllowedCertificationTargets twice. Once here
 	//  and once above in CheckAccess.
-	all, allowed = svc.authz.AllowedCloudServices(ctx)
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
-		query = append(query, "cloud_service_id IN ?")
+		query = append(query, "certification_target_id IN ?")
 		args = append(args, allowed)
 	}
 
@@ -539,9 +539,9 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 	return
 }
 
-// GetCloudServiceId implements CloudServiceRequest for this service. This is a little trick, so that we can call
+// GetCertificationTargetId implements CertificationTargetRequest for this service. This is a little trick, so that we can call
 // CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
-// cloud service ID, instead of the individual requests that are made against the service.
-func (svc *Service) GetCloudServiceId() string {
+// certification target ID, instead of the individual requests that are made against the service.
+func (svc *Service) GetCertificationTargetId() string {
 	return svc.csID
 }

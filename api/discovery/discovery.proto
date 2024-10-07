@@ -64,7 +64,7 @@ message StartDiscoveryResponse {
 message ListResourcesRequest {
   message Filter {
     optional string type = 1;
-    optional string cloud_service_id = 2;
+    optional string certification_target_id = 2;
     optional string tool_id = 3;
   }
 
@@ -88,9 +88,9 @@ message Resource {
   // provider this resource was gathered for and can for example be a resource
   // URL.
   string id = 1 [(buf.validate.field).string.min_len = 1];
-  // CloudServiceId is the UUID for the cloud service to which this resource
+  // CertificationTargetId is the UUID for the certification target to which this resource
   // belongs to.
-  string cloud_service_id = 2 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 2 [(buf.validate.field).string.uuid = true];
   // ResourceType contains a comma separated string of resource types according
   // to our ontology.
   string resource_type = 3 [(buf.validate.field).string.min_len = 1];

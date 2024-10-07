@@ -258,7 +258,7 @@ func (svc *Service) AssessEvidence(ctx context.Context, req *assessment.AssessEv
 		return nil, err
 	}
 
-	// Check if cloud_service_id in the service is within allowed or one can access *all* the cloud services
+	// Check if certification_target_id in the service is within allowed or one can access *all* the certification targets
 	if !svc.authz.CheckAccess(ctx, service.AccessUpdate, req) {
 		log.Error(service.ErrPermissionDenied)
 		return nil, service.ErrPermissionDenied
@@ -477,7 +477,7 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 		result := &assessment.AssessmentResult{
 			Id:                    uuid.NewString(),
 			Timestamp:             timestamppb.Now(),
-			CloudServiceId:        ev.GetCloudServiceId(),
+			CertificationTargetId: ev.GetCertificationTargetId(),
 			MetricId:              metricID,
 			MetricConfiguration:   data.Config,
 			Compliant:             data.Compliant,
@@ -597,8 +597,8 @@ func (svc *Service) MetricImplementation(lang assessment.MetricImplementation_La
 }
 
 // MetricConfiguration implements MetricsSource by getting the corresponding metric configuration for the
-// default target cloud service
-func (svc *Service) MetricConfiguration(cloudServiceID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
+// default target certification target
+func (svc *Service) MetricConfiguration(CertificationTargetID string, metric *assessment.Metric) (config *assessment.MetricConfiguration, err error) {
 	var (
 		ok    bool
 		cache cachedConfiguration
@@ -606,7 +606,7 @@ func (svc *Service) MetricConfiguration(cloudServiceID string, metric *assessmen
 	)
 
 	// Calculate the cache key
-	key = fmt.Sprintf("%s-%s", cloudServiceID, metric.Id)
+	key = fmt.Sprintf("%s-%s", CertificationTargetID, metric.Id)
 
 	// Retrieve our cached entry
 	svc.confMutex.Lock()
@@ -616,8 +616,8 @@ func (svc *Service) MetricConfiguration(cloudServiceID string, metric *assessmen
 	// Check if entry is not there or is expired
 	if !ok || cache.cachedAt.After(time.Now().Add(EvictionTime)) {
 		config, err = svc.orchestrator.Client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{
-			CloudServiceId: cloudServiceID,
-			MetricId:       metric.Id,
+			CertificationTargetId: CertificationTargetID,
+			MetricId:              metric.Id,
 		})
 
 		if err != nil {
@@ -677,7 +677,7 @@ func (svc *Service) handleMetricEvent(event *orchestrator.MetricChangeEvent) {
 		svc.confMutex.Lock()
 
 		// Calculate the cache key
-		key = fmt.Sprintf("%s-%s", event.CloudServiceId, event.MetricId)
+		key = fmt.Sprintf("%s-%s", event.CertificationTargetId, event.MetricId)
 
 		delete(svc.cachedConfigurations, key)
 		svc.confMutex.Unlock()

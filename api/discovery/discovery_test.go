@@ -40,10 +40,10 @@ import (
 
 func TestResource_ToOntologyResource(t *testing.T) {
 	type fields struct {
-		Id             string
-		CloudServiceId string
-		ResourceType   string
-		Properties     *anypb.Any
+		Id                    string
+		CertificationTargetId string
+		ResourceType          string
+		Properties            *anypb.Any
 	}
 	tests := []struct {
 		name    string
@@ -54,9 +54,9 @@ func TestResource_ToOntologyResource(t *testing.T) {
 		{
 			name: "happy path VM",
 			fields: fields{
-				Id:             "vm1",
-				CloudServiceId: "service1",
-				ResourceType:   "VirtualMachine",
+				Id:                    "vm1",
+				CertificationTargetId: "service1",
+				ResourceType:          "VirtualMachine",
 				Properties: prototest.NewAny(t, &ontology.VirtualMachine{
 					Id:              "vm1",
 					BlockStorageIds: []string{"bs1"},
@@ -71,10 +71,10 @@ func TestResource_ToOntologyResource(t *testing.T) {
 		{
 			name: "not an ontology resource",
 			fields: fields{
-				Id:             "vm1",
-				CloudServiceId: "service1",
-				ResourceType:   "Something",
-				Properties:     prototest.NewAny(t, &emptypb.Empty{}),
+				Id:                    "vm1",
+				CertificationTargetId: "service1",
+				ResourceType:          "Something",
+				Properties:            prototest.NewAny(t, &emptypb.Empty{}),
 			},
 			want: nil,
 			wantErr: func(t *testing.T, err error) bool {
@@ -86,10 +86,10 @@ func TestResource_ToOntologyResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Resource{
-				Id:             tt.fields.Id,
-				CloudServiceId: tt.fields.CloudServiceId,
-				ResourceType:   tt.fields.ResourceType,
-				Properties:     tt.fields.Properties,
+				Id:                    tt.fields.Id,
+				CertificationTargetId: tt.fields.CertificationTargetId,
+				ResourceType:          tt.fields.ResourceType,
+				Properties:            tt.fields.Properties,
 			}
 			got, err := r.ToOntologyResource()
 
@@ -124,14 +124,14 @@ func TestToDiscoveryResource(t *testing.T) {
 						},
 					},
 				},
-				csID:        testdata.MockCloudServiceID1,
+				csID:        testdata.MockCertificationTargetID1,
 				collectorID: testdata.MockEvidenceToolID1,
 			},
 			want: &Resource{
-				Id:             "my-block-storage",
-				CloudServiceId: testdata.MockCloudServiceID1,
-				ToolId:         testdata.MockEvidenceToolID1,
-				ResourceType:   "BlockStorage,Storage,CloudResource,Resource",
+				Id:                    "my-block-storage",
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				ToolId:                testdata.MockEvidenceToolID1,
+				ResourceType:          "BlockStorage,Storage,CloudResource,Resource",
 				Properties: prototest.NewAny(t, &ontology.BlockStorage{
 					Id:   "my-block-storage",
 					Name: "My Block Storage",

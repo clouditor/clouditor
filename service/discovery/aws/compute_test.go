@@ -404,7 +404,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
-				csID:        testdata.MockCloudServiceID1,
+				csID:        testdata.MockCertificationTargetID1,
 			},
 			//args: args{client: mockClient},
 			[]*ontology.Function{
@@ -488,13 +488,13 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, csID: testdata.MockCloudServiceID1},
+			args: args{client: mockClient, csID: testdata.MockCertificationTargetID1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				csID:              testdata.MockCloudServiceID1,
+				csID:              testdata.MockCertificationTargetID1,
 			},
 		},
 	}

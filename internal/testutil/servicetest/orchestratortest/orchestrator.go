@@ -24,15 +24,15 @@ func WithDescription(description string) NewCertificateOption {
 func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 	timeStamp := time.Date(2011, 7, 1, 0, 0, 0, 0, time.UTC)
 	var mockCertificate = &orchestrator.Certificate{
-		Id:             testdata.MockCertificateID,
-		Name:           testdata.MockCertificateName,
-		CloudServiceId: testdata.MockCloudServiceID1,
-		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
-		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
-		Standard:       testdata.MockCertificateName,
-		AssuranceLevel: testdata.AssuranceLevelHigh,
-		Cab:            testdata.MockCertificateCab,
-		Description:    testdata.MockCertificateDescription,
+		Id:                    testdata.MockCertificateID,
+		Name:                  testdata.MockCertificateName,
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		IssueDate:             timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate:        timeStamp.AddDate(5, 0, 0).String(),
+		Standard:              testdata.MockCertificateName,
+		AssuranceLevel:        testdata.AssuranceLevelHigh,
+		Cab:                   testdata.MockCertificateCab,
+		Description:           testdata.MockCertificateDescription,
 		States: []*orchestrator.State{{
 			State:         testdata.MockStateState,
 			TreeId:        testdata.MockStateTreeID,
@@ -53,15 +53,15 @@ func NewCertificate(opts ...NewCertificateOption) *orchestrator.Certificate {
 func NewCertificate2() *orchestrator.Certificate {
 	timeStamp := time.Date(2014, 12, 1, 0, 0, 0, 0, time.UTC)
 	var mockCertificate = &orchestrator.Certificate{
-		Id:             testdata.MockCertificateID2,
-		Name:           testdata.MockCertificateName2,
-		CloudServiceId: testdata.MockCloudServiceID2,
-		IssueDate:      timeStamp.AddDate(-5, 0, 0).String(),
-		ExpirationDate: timeStamp.AddDate(5, 0, 0).String(),
-		Standard:       testdata.MockCertificateName2,
-		AssuranceLevel: testdata.AssuranceLevelHigh,
-		Cab:            testdata.MockCertificateCab2,
-		Description:    testdata.MockCertificateDescription2,
+		Id:                    testdata.MockCertificateID2,
+		Name:                  testdata.MockCertificateName2,
+		CertificationTargetId: testdata.MockCertificationTargetID2,
+		IssueDate:             timeStamp.AddDate(-5, 0, 0).String(),
+		ExpirationDate:        timeStamp.AddDate(5, 0, 0).String(),
+		Standard:              testdata.MockCertificateName2,
+		AssuranceLevel:        testdata.AssuranceLevelHigh,
+		Cab:                   testdata.MockCertificateCab2,
+		Description:           testdata.MockCertificateDescription2,
 		States: []*orchestrator.State{{
 			State:         testdata.MockStateState2,
 			TreeId:        testdata.MockStateTreeID2,
@@ -94,35 +94,35 @@ func NewCatalog() *orchestrator.Catalog {
 	return mockCatalog
 }
 
-// NewTargetOfEvaluation creates a new Target of Evaluation. The assurance level is set if available.
-func NewTargetOfEvaluation(assuranceLevel string) *orchestrator.TargetOfEvaluation {
-	var toe = &orchestrator.TargetOfEvaluation{
-		CloudServiceId: testdata.MockCloudServiceID1,
-		CatalogId:      testdata.MockCatalogID,
+// NewAuditScope creates a new Audit Scope. The assurance level is set if available.
+func NewAuditScope(assuranceLevel string) *orchestrator.AuditScope {
+	var auditScope = &orchestrator.AuditScope{
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		CatalogId:             testdata.MockCatalogID,
 	}
 
 	if assuranceLevel != "" {
-		toe.AssuranceLevel = &assuranceLevel
+		auditScope.AssuranceLevel = &assuranceLevel
 	}
 
-	return toe
+	return auditScope
 }
 
-func NewCloudService() *orchestrator.CloudService {
-	return &orchestrator.CloudService{
-		Id:                testdata.MockCloudServiceID1,
-		Name:              testdata.MockCloudServiceName1,
-		Description:       testdata.MockCloudServiceDescription1,
+func NewCertificationTarget() *orchestrator.CertificationTarget {
+	return &orchestrator.CertificationTarget{
+		Id:                testdata.MockCertificationTargetID1,
+		Name:              testdata.MockCertificationTargetName1,
+		Description:       testdata.MockCertificationTargetDescription1,
 		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
 }
 
-func NewAnotherCloudService() *orchestrator.CloudService {
-	return &orchestrator.CloudService{
-		Id:                testdata.MockCloudServiceID2,
-		Name:              testdata.MockCloudServiceName2,
-		Description:       testdata.MockCloudServiceDescription2,
+func NewAnotherCertificationTarget() *orchestrator.CertificationTarget {
+	return &orchestrator.CertificationTarget{
+		Id:                testdata.MockCertificationTargetID2,
+		Name:              testdata.MockCertificationTargetName2,
+		Description:       testdata.MockCertificationTargetDescription2,
 		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
@@ -136,74 +136,74 @@ var (
 		Id: testdata.MockAssessmentResult2ID,
 	}
 	MockAssessmentResult1 = &assessment.AssessmentResult{
-		Id:             testdata.MockAssessmentResult1ID,
-		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID1,
-		MetricId:       testdata.MockMetricID1,
-		Compliant:      true,
-		EvidenceId:     testdata.MockEvidenceID1,
-		ResourceId:     testdata.MockResourceID1,
-		ResourceTypes:  []string{"Resource"},
+		Id:                    testdata.MockAssessmentResult1ID,
+		Timestamp:             timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		MetricId:              testdata.MockMetricID1,
+		Compliant:             true,
+		EvidenceId:            testdata.MockEvidenceID1,
+		ResourceId:            testdata.MockResourceID1,
+		ResourceTypes:         []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:       "==",
-			TargetValue:    structpb.NewBoolValue(true),
-			IsDefault:      true,
-			MetricId:       testdata.MockMetricID1,
-			CloudServiceId: testdata.MockCloudServiceID1,
+			Operator:              "==",
+			TargetValue:           structpb.NewBoolValue(true),
+			IsDefault:             true,
+			MetricId:              testdata.MockMetricID1,
+			CertificationTargetId: testdata.MockCertificationTargetID1,
 		},
 		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult2 = &assessment.AssessmentResult{
-		Id:             testdata.MockAssessmentResult2ID,
-		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID2,
-		MetricId:       testdata.MockMetricID1,
-		Compliant:      true,
-		EvidenceId:     testdata.MockEvidenceID1,
-		ResourceId:     testdata.MockResourceID1,
-		ResourceTypes:  []string{"Resource"},
+		Id:                    testdata.MockAssessmentResult2ID,
+		Timestamp:             timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId: testdata.MockCertificationTargetID2,
+		MetricId:              testdata.MockMetricID1,
+		Compliant:             true,
+		EvidenceId:            testdata.MockEvidenceID1,
+		ResourceId:            testdata.MockResourceID1,
+		ResourceTypes:         []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:       "==",
-			TargetValue:    structpb.NewBoolValue(true),
-			IsDefault:      true,
-			MetricId:       testdata.MockMetricID1,
-			CloudServiceId: testdata.MockCloudServiceID2,
+			Operator:              "==",
+			TargetValue:           structpb.NewBoolValue(true),
+			IsDefault:             true,
+			MetricId:              testdata.MockMetricID1,
+			CertificationTargetId: testdata.MockCertificationTargetID2,
 		},
 		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult3 = &assessment.AssessmentResult{
-		Id:             testdata.MockAssessmentResult3ID,
-		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID1,
-		MetricId:       testdata.MockMetricID2,
-		Compliant:      false,
-		EvidenceId:     testdata.MockEvidenceID1,
-		ResourceId:     testdata.MockResourceID1,
-		ResourceTypes:  []string{"Resource"},
+		Id:                    testdata.MockAssessmentResult3ID,
+		Timestamp:             timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId: testdata.MockCertificationTargetID1,
+		MetricId:              testdata.MockMetricID2,
+		Compliant:             false,
+		EvidenceId:            testdata.MockEvidenceID1,
+		ResourceId:            testdata.MockResourceID1,
+		ResourceTypes:         []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:       "==",
-			TargetValue:    structpb.NewBoolValue(true),
-			IsDefault:      true,
-			MetricId:       testdata.MockMetricID2,
-			CloudServiceId: testdata.MockCloudServiceID1,
+			Operator:              "==",
+			TargetValue:           structpb.NewBoolValue(true),
+			IsDefault:             true,
+			MetricId:              testdata.MockMetricID2,
+			CertificationTargetId: testdata.MockCertificationTargetID1,
 		},
 		ToolId: util.Ref(assessment.AssessmentToolId),
 	}
 	MockAssessmentResult4 = &assessment.AssessmentResult{
-		Id:             testdata.MockAssessmentResult4ID,
-		Timestamp:      timestamppb.New(time.Unix(1, 0)),
-		CloudServiceId: testdata.MockCloudServiceID2,
-		MetricId:       testdata.MockMetricID2,
-		Compliant:      false,
-		EvidenceId:     testdata.MockEvidenceID1,
-		ResourceId:     testdata.MockResourceID2,
-		ResourceTypes:  []string{"Resource"},
+		Id:                    testdata.MockAssessmentResult4ID,
+		Timestamp:             timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId: testdata.MockCertificationTargetID2,
+		MetricId:              testdata.MockMetricID2,
+		Compliant:             false,
+		EvidenceId:            testdata.MockEvidenceID1,
+		ResourceId:            testdata.MockResourceID2,
+		ResourceTypes:         []string{"Resource"},
 		MetricConfiguration: &assessment.MetricConfiguration{
-			Operator:       "==",
-			TargetValue:    structpb.NewBoolValue(true),
-			IsDefault:      true,
-			MetricId:       testdata.MockMetricID2,
-			CloudServiceId: testdata.MockCloudServiceID2,
+			Operator:              "==",
+			TargetValue:           structpb.NewBoolValue(true),
+			IsDefault:             true,
+			MetricId:              testdata.MockMetricID2,
+			CertificationTargetId: testdata.MockCertificationTargetID2,
 		},
 		ToolId: util.Ref(testdata.MockAssessmentResultToolID),
 	}

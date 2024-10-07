@@ -17,7 +17,7 @@ paths:
                   in: query
                   schema:
                     type: string
-                - name: filter.cloudServiceId
+                - name: filter.certificationTargetId
                   in: query
                   schema:
                     type: string
@@ -205,10 +205,10 @@ components:
                         Id contains a unique ID for each resource. This is specific for the cloud
                          provider this resource was gathered for and can for example be a resource
                          URL.
-                cloudServiceId:
+                certificationTargetId:
                     type: string
                     description: |-
-                        CloudServiceId is the UUID for the cloud service to which this resource
+                        CertificationTargetId is the UUID for the certification target to which this resource
                          belongs to.
                 resourceType:
                     type: string

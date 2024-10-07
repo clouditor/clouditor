@@ -160,7 +160,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.io",
 				method:    "POST",
-				url:       "v1/orchestrator/cloud_services",
+				url:       "v1/orchestrator/certification_targets",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
@@ -176,7 +176,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
-				url:       "v1/orchestrator/cloud_services",
+				url:       "v1/orchestrator/certification_targets",
 				preflight: true,
 			},
 			statusCode: 501,
@@ -190,7 +190,7 @@ func TestREST(t *testing.T) {
 			args: args{
 				origin:    "clouditor.com",
 				method:    "POST",
-				url:       "v1/orchestrator/cloud_services",
+				url:       "v1/orchestrator/certification_targets",
 				preflight: false,
 			},
 			statusCode: 401, // because we are not supplying an actual login request
