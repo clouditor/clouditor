@@ -247,7 +247,7 @@ func TestAnySerializer_Value(t *testing.T) {
 				dst:   reflect.Value{},
 				fieldValue: func() *anypb.Any {
 					a, _ := anypb.New(&orchestrator.CertificationTarget{
-						Id: "my-service",
+						Id: "my-target",
 					})
 					return a
 				}(),
@@ -268,7 +268,7 @@ func TestAnySerializer_Value(t *testing.T) {
 
 				return assert.Equal(t, m, map[string]interface{}{
 					"@type": "type.googleapis.com/clouditor.orchestrator.v1.CertificationTarget",
-					"id":    "my-service",
+					"id":    "my-target",
 				})
 			},
 			wantErr: assert.NoError,

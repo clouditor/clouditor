@@ -163,7 +163,7 @@ service Orchestrator {
   }
 
   // Updates a metric configuration (target value and operator) for a specific
-  // service and metric ID
+  // certification target and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
@@ -175,7 +175,7 @@ service Orchestrator {
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
-  // service and metric ID.
+  // certification target and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -184,8 +184,8 @@ service Orchestrator {
 };
   }
 
-  // Lists all a metric configurations (target value and operator) for a
-  // specific service ID
+  // Lists all metric configurations (target value and operator) for a
+  // specific certification target ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -819,7 +819,7 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Audit Scope binds a certification target to a catalog, so the service is
+// A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 message AuditScope {
   string certification_target_id = 1 [
@@ -900,7 +900,7 @@ message GetAuditScopeRequest {
 
 message ListAuditScopesRequest {
   // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the service is
+  // check for != "" in the method to see if it is set when the certification target is
   // specified, return all Audit Scopes that evaluate the given certification target
   // for any catalog
   string certification_target_id = 1;

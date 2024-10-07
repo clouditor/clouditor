@@ -277,7 +277,7 @@ paths:
                   in: query
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the service is
+                     check for != "" in the method to see if it is set when the certification target is
                      specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   schema:
@@ -504,7 +504,7 @@ paths:
                   in: query
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the service is
+                     check for != "" in the method to see if it is set when the certification target is
                      specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   schema:
@@ -985,7 +985,7 @@ paths:
                   in: path
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the service is
+                     check for != "" in the method to see if it is set when the certification target is
                      specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   required: true
@@ -1090,8 +1090,8 @@ paths:
             tags:
                 - Orchestrator
             description: |-
-                Lists all a metric configurations (target value and operator) for a
-                 specific service ID
+                Lists all metric configurations (target value and operator) for a
+                 specific certification target ID
             operationId: Orchestrator_ListMetricConfigurations
             parameters:
                 - name: certificationTargetId
@@ -1118,7 +1118,7 @@ paths:
                 - Orchestrator
             description: |-
                 Retrieves a metric configuration (target value and operator) for a specific
-                 service and metric ID.
+                 certification target and metric ID.
             operationId: Orchestrator_GetMetricConfiguration
             parameters:
                 - name: certificationTargetId
@@ -1149,7 +1149,7 @@ paths:
                 - Orchestrator
             description: |-
                 Updates a metric configuration (target value and operator) for a specific
-                 service and metric ID
+                 certification target and metric ID
             operationId: Orchestrator_UpdateMetricConfiguration
             parameters:
                 - name: certificationTargetId
@@ -1611,7 +1611,7 @@ components:
                         an assurance level is not offered by every catalog, therefore it is
                          optional
             description: |-
-                A Audit Scope binds a certification target to a catalog, so the service is
+                A Audit Scope binds a certification target to a catalog, so the certification target is
                  evaluated regarding this catalog's controls
         Catalog:
             required:
@@ -2013,7 +2013,7 @@ components:
                     description: The metric this configuration belongs to
                 certificationTargetId:
                     type: string
-                    description: The service this configuration belongs to
+                    description: The certification target this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
             type: object

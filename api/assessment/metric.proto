@@ -133,7 +133,7 @@ message MetricConfiguration {
     (buf.validate.field).string.min_len = 1
   ];
 
-  // The service this configuration belongs to
+  // The certification target this configuration belongs to
   string certification_target_id = 6 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true
