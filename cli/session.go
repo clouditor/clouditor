@@ -451,7 +451,7 @@ func getCertificationTargets(_ string) []string {
 	}
 
 	var metrics []string
-	for _, v := range res.Services {
+	for _, v := range res.Targets {
 		metrics = append(metrics, fmt.Sprintf("%s\t%s: %s", v.Id, v.Name, v.Description))
 	}
 

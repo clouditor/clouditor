@@ -163,7 +163,7 @@ service Orchestrator {
   }
 
   // Updates a metric configuration (target value and operator) for a specific
-  // service and metric ID
+  // certification target and metric ID
   rpc UpdateMetricConfiguration(UpdateMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {
       put:
@@ -175,7 +175,7 @@ service Orchestrator {
   }
 
   // Retrieves a metric configuration (target value and operator) for a specific
-  // service and metric ID.
+  // certification target and metric ID.
   rpc GetMetricConfiguration(GetMetricConfigurationRequest) returns (clouditor.assessment.v1.MetricConfiguration) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -184,8 +184,8 @@ service Orchestrator {
 };
   }
 
-  // Lists all a metric configurations (target value and operator) for a
-  // specific service ID
+  // Lists all metric configurations (target value and operator) for a
+  // specific certification target ID
   rpc ListMetricConfigurations(ListMetricConfigurationRequest) returns (ListMetricConfigurationResponse) {
     option (google.api.http) = {get:
         "/v1/orchestrator/certification_targets/{certification_target_id}/"
@@ -317,8 +317,8 @@ service Orchestrator {
     option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/{catalog_id}"};
   }
 
-  // Lists all Targets of Evaluation
-  rpc ListTargetsOfEvaluation(ListTargetsOfEvaluationRequest) returns (ListTargetsOfEvaluationResponse) {
+  // Lists all Audit Scopes
+  rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/auditScopes"
       additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes"}
@@ -339,7 +339,7 @@ service Orchestrator {
 
   // Removes a Audit Scope
   rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/cloud_services/{certification_target_id}/toes/{catalog_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
   }
 
   // Get Runtime Information
@@ -493,8 +493,9 @@ message ListCertificationTargetsRequest {
   string order_by = 12;
   bool asc = 13;
 }
+
 message ListCertificationTargetsResponse {
-  repeated CertificationTarget services = 1 [
+  repeated CertificationTarget targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -645,7 +646,7 @@ message CertificationTarget {
   string description = 3;
 
   repeated Catalog catalogs_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:target_of_evaluations\"",
+    (tagger.tags) = "gorm:\"many2many:audit_scopes\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -818,7 +819,7 @@ message Control {
   optional string assurance_level = 11;
 }
 
-// A Audit Scope binds a certification target to a catalog, so the service is
+// A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 message AuditScope {
   string certification_target_id = 1 [
@@ -897,14 +898,14 @@ message GetAuditScopeRequest {
   ];
 }
 
-message ListTargetsOfEvaluationRequest {
+message ListAuditScopesRequest {
   // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the service is
-  // specified, return all Targets of Evaluation that evaluate the given service
+  // check for != "" in the method to see if it is set when the certification target is
+  // specified, return all Audit Scopes that evaluate the given certification target
   // for any catalog
   string certification_target_id = 1;
-  // when the catalog is specified, return all Targets of Evaluation that
-  // evaluate the given catalog for any service
+  // when the catalog is specified, return all Audit Scopes that
+  // evaluate the given catalog for any certificationtarget
   string catalog_id = 2;
 
   int32 page_size = 10;
@@ -913,7 +914,7 @@ message ListTargetsOfEvaluationRequest {
   bool asc = 13;
 }
 
-message ListTargetsOfEvaluationResponse {
+message ListAuditScopesResponse {
   repeated AuditScope audit_scope = 1;
   string next_page_token = 2;
 }
@@ -1100,8 +1101,8 @@ message State {
   string certificate_id = 5;
 }
 
-// AuditScopeChangeEvent represents a change of either a Target of
-// Evaluation or Control Monitoring Status and the AuditScope hook
+// AuditScopeChangeEvent represents a change of either a Audit Scope
+// or Control Monitoring Status and the AuditScope hook
 // function can be informed about the reason of its call.
 message AuditScopeChangeEvent {
   // Type represents the type of the change event. Type can be a change event
