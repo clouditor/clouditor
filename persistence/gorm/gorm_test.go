@@ -96,20 +96,20 @@ func TestStorageOptions(t *testing.T) {
 
 			// Test to create a new certification target and get it again with
 			// respective 'Create' and 'Get' Create record via DB call
-			serviceInput := &orchestrator.CertificationTarget{
+			targetInput := &orchestrator.CertificationTarget{
 				Name:      "SomeName",
 				CreatedAt: timestamppb.Now(),
 				UpdatedAt: timestamppb.Now(),
 			}
-			assert.NoError(t, api.Validate(serviceInput))
-			err = s.Create(serviceInput)
+			assert.NoError(t, api.Validate(targetInput))
+			err = s.Create(targetInput)
 			assert.NoError(t, err)
 
 			// Get record via DB call
-			serviceOutput := &orchestrator.CertificationTarget{}
-			err = s.Get(&serviceOutput, "name = ?", "SomeName")
+			targetOutput := &orchestrator.CertificationTarget{}
+			err = s.Get(&targetOutput, "name = ?", "SomeName")
 			assert.NoError(t, err)
-			assert.Equal(t, serviceInput, serviceOutput)
+			assert.Equal(t, targetInput, targetOutput)
 		})
 	}
 }
@@ -143,13 +143,13 @@ func Test_storage_Create(t *testing.T) {
 
 func Test_storage_Get(t *testing.T) {
 	var (
-		err     error
-		s       persistence.Storage
-		service *orchestrator.CertificationTarget
+		err    error
+		s      persistence.Storage
+		target *orchestrator.CertificationTarget
 	)
 
-	service = orchestratortest.NewCertificationTarget()
-	assert.NoError(t, api.Validate(service))
+	target = orchestratortest.NewCertificationTarget()
+	assert.NoError(t, api.Validate(target))
 
 	// Create storage
 	s, err = NewStorage()
@@ -159,28 +159,28 @@ func Test_storage_Get(t *testing.T) {
 	err = s.Get(&orchestrator.CertificationTarget{})
 	assert.ErrorIs(t, err, persistence.ErrRecordNotFound)
 
-	// Create service
-	err = s.Create(service)
+	// Create certification target
+	err = s.Create(target)
 	assert.NoError(t, err)
 
-	// Get service via passing entire record
-	gotService := &orchestrator.CertificationTarget{}
-	err = s.Get(&gotService)
+	// Get certification target via passing entire record
+	gotTarget := &orchestrator.CertificationTarget{}
+	err = s.Get(&gotTarget)
 	assert.NoError(t, err)
-	assert.Equal(t, service, gotService)
+	assert.Equal(t, target, gotTarget)
 
-	// Get service via name
-	gotService2 := &orchestrator.CertificationTarget{}
-	err = s.Get(&gotService2, "name = ?", service.Name)
+	// Get certification target via name
+	gotTarget2 := &orchestrator.CertificationTarget{}
+	err = s.Get(&gotTarget2, "name = ?", target.Name)
 	assert.NoError(t, err)
-	assert.Equal(t, service, gotService2)
+	assert.Equal(t, target, gotTarget2)
 
-	// Get service via description
-	gotService3 := &orchestrator.CertificationTarget{}
-	err = s.Get(&gotService3, "description = ?", service.Description)
+	// Get certification target via description
+	gotTarget3 := &orchestrator.CertificationTarget{}
+	err = s.Get(&gotTarget3, "description = ?", target.Description)
 	assert.NoError(t, err)
-	assert.NoError(t, api.Validate(gotService3))
-	assert.Equal(t, service, gotService3)
+	assert.NoError(t, api.Validate(gotTarget3))
+	assert.Equal(t, target, gotTarget3)
 
 	var metric = &assessment.Metric{
 		Id:       testdata.MockMetricID1,
@@ -224,36 +224,36 @@ func Test_storage_Get(t *testing.T) {
 
 func Test_storage_List(t *testing.T) {
 	var (
-		err      error
-		s        persistence.Storage
-		service1 *orchestrator.CertificationTarget
-		service2 *orchestrator.CertificationTarget
-		services []*orchestrator.CertificationTarget
+		err     error
+		s       persistence.Storage
+		target1 *orchestrator.CertificationTarget
+		target2 *orchestrator.CertificationTarget
+		targets []*orchestrator.CertificationTarget
 	)
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Test service
-	service1 = &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1, Name: testdata.MockCertificationTargetName1}
-	service2 = &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID2, Name: testdata.MockCertificationTargetName2}
+	// Test certification target
+	target1 = &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1, Name: testdata.MockCertificationTargetName1}
+	target2 = &orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID2, Name: testdata.MockCertificationTargetName2}
 
-	// List should return empty list since no services are in DB yet
-	err = s.List(&services, "", true, 0, -1)
+	// List should return empty list since no certification targets are in DB yet
+	err = s.List(&targets, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Empty(t, services)
+	assert.Empty(t, targets)
 
-	// List should return list of 2 services (service1 and service2)
-	err = s.Create(service1)
+	// List should return list of 2 certification targets (target1 and target2)
+	err = s.Create(target1)
 	assert.NoError(t, err)
-	err = s.Create(service2)
+	err = s.Create(target2)
 	assert.NoError(t, err)
-	err = s.List(&services, "", true, 0, -1)
+	err = s.List(&targets, "", true, 0, -1)
 	assert.ErrorIs(t, err, nil)
-	assert.Equal(t, 2, len(services))
-	// We only check one service and assume the others are also correct
-	assert.NoError(t, api.Validate(services[0]))
+	assert.Equal(t, 2, len(targets))
+	// We only check one certification target and assume the others are also correct
+	assert.NoError(t, api.Validate(targets[0]))
 
 	// Test with certificates (associations included via states)
 	var (
@@ -303,38 +303,38 @@ func Test_storage_List(t *testing.T) {
 
 func Test_storage_Count(t *testing.T) {
 	var (
-		count    int64
-		err      error
-		s        persistence.Storage
-		service1 *orchestrator.CertificationTarget
-		service2 *orchestrator.CertificationTarget
+		count   int64
+		err     error
+		s       persistence.Storage
+		target1 *orchestrator.CertificationTarget
+		target2 *orchestrator.CertificationTarget
 	)
 
-	service1 = orchestratortest.NewCertificationTarget()
-	service2 = orchestratortest.NewAnotherCertificationTarget()
+	target1 = orchestratortest.NewCertificationTarget()
+	target2 = orchestratortest.NewAnotherCertificationTarget()
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Since no records in DB yet, count of services should be 0
+	// Since no records in DB yet, count of certification targets should be 0
 	count, err = s.Count(&orchestrator.CertificationTarget{})
 	assert.NoError(t, err)
 	assert.Equal(t, int(count), 0)
 
-	// Create one service -> count of services should be 1
-	assert.ErrorIs(t, s.Create(service1), nil)
+	// Create one certification target -> count of certification targets should be 1
+	assert.ErrorIs(t, s.Create(target1), nil)
 	count, err = s.Count(&orchestrator.CertificationTarget{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, int(count))
 
-	// Add another one -> count of services should be 2
-	assert.ErrorIs(t, s.Create(service2), nil)
+	// Add another one -> count of certification targets should be 2
+	assert.ErrorIs(t, s.Create(target2), nil)
 	count, err = s.Count(&orchestrator.CertificationTarget{})
 	assert.NoError(t, err)
 	assert.Equal(t, 2, int(count))
 
-	// Count of services with ID "SomeName2" should be 1
+	// Count of certification targets with ID "SomeName2" should be 1
 	count, err = s.Count(&orchestrator.CertificationTarget{}, "name = ?", testdata.MockCertificationTargetName2)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, int(count))
@@ -352,42 +352,42 @@ func Test_storage_Save(t *testing.T) {
 	}
 
 	var (
-		err        error
-		s          persistence.Storage
-		service    *orchestrator.CertificationTarget
-		newService *orchestrator.CertificationTarget
-		gotService *orchestrator.CertificationTarget
-		myVar      MyTest
+		err       error
+		s         persistence.Storage
+		target    *orchestrator.CertificationTarget
+		newTarget *orchestrator.CertificationTarget
+		gotTarget *orchestrator.CertificationTarget
+		myVar     MyTest
 	)
-	service = orchestratortest.NewCertificationTarget()
+	target = orchestratortest.NewCertificationTarget()
 
 	// Create storage
 	s, err = NewStorage(WithAdditionalAutoMigration(&MyTest{}))
 	assert.NoError(t, err)
 
-	// Create service
-	err = s.Create(service)
+	// Create certification target
+	err = s.Create(target)
 	assert.NoError(t, err)
 
-	err = s.Get(&orchestrator.CertificationTarget{}, "name = ?", service.Name)
+	err = s.Get(&orchestrator.CertificationTarget{}, "name = ?", target.Name)
 	assert.NoError(t, err)
 
-	// Save new service: Change description. Name and ID remain unchanged
-	newService = orchestratortest.NewCertificationTarget()
-	newService.Description = ""
+	// Save new certification target: Change description. Name and ID remain unchanged
+	newTarget = orchestratortest.NewCertificationTarget()
+	newTarget.Description = ""
 
-	err = s.Save(newService, "name = ?", service.Name)
+	err = s.Save(newTarget, "name = ?", target.Name)
 	assert.NoError(t, err)
 
-	gotService = &orchestrator.CertificationTarget{}
-	err = s.Get(gotService, "name = ?", service.Name)
+	gotTarget = &orchestrator.CertificationTarget{}
+	err = s.Get(gotTarget, "name = ?", target.Name)
 	assert.NoError(t, err)
-	assert.NoError(t, api.Validate(gotService))
+	assert.NoError(t, api.Validate(gotTarget))
 
 	// Name should be the same
-	assert.Equal(t, service.Name, gotService.Name)
+	assert.Equal(t, target.Name, gotTarget.Name)
 	// Description should be zero
-	assert.Equal(t, "", gotService.Description)
+	assert.Equal(t, "", gotTarget.Description)
 
 	// Save MyTest
 	myVar = MyTest{ID: 1, Name: "Test"}
@@ -447,27 +447,27 @@ func Test_storage_Update(t *testing.T) {
 
 func Test_storage_Delete(t *testing.T) {
 	var (
-		err     error
-		s       persistence.Storage
-		service *orchestrator.CertificationTarget
+		err    error
+		s      persistence.Storage
+		target *orchestrator.CertificationTarget
 	)
-	service = orchestratortest.NewCertificationTarget()
+	target = orchestratortest.NewCertificationTarget()
 
 	// Create storage
 	s, err = NewStorage()
 	assert.NoError(t, err)
 
-	// Create service
-	err = s.Create(service)
+	// Create certification target
+	err = s.Create(target)
 	assert.NoError(t, err)
 
-	// Should return ErrRecordNotFound since there is no service "Fake" in DB
+	// Should return ErrRecordNotFound since there is no certification target "Fake" in DB
 	assert.ErrorIs(t, s.Delete(&orchestrator.CertificationTarget{}, "name = ?", "Fake"), persistence.ErrRecordNotFound)
 
 	// Successful deletion
-	assert.Nil(t, s.Delete(&orchestrator.CertificationTarget{}, "name = ?", service.Name))
-	// Check with s.Get that service is not in DB anymore
-	assert.ErrorIs(t, s.Get(&orchestrator.CertificationTarget{}, "name = ?", service.Name), persistence.ErrRecordNotFound)
+	assert.Nil(t, s.Delete(&orchestrator.CertificationTarget{}, "name = ?", target.Name))
+	// Check with s.Get that certification target is not in DB anymore
+	assert.ErrorIs(t, s.Get(&orchestrator.CertificationTarget{}, "name = ?", target.Name), persistence.ErrRecordNotFound)
 
 	// Should return DB error since a non-supported type is passed (just a string instead of, e.g., &orchestrator.CertificationTarget{})
 	assert.Contains(t, s.Delete("Unsupported Type").Error(), "unsupported data type")

@@ -122,8 +122,8 @@ var (
 )
 
 const (
-	// DefaultCertificationTargetID is the default service ID. Currently, our discoverers have no way to differentiate between different
-	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+	// DefaultCertificationTargetID is the default certification target ID. Currently, our discoverers have no way to differentiate between different
+	// targets, but we need this feature in the future. This serves as a default to already prepare the necessary
 	// structures for this feature.
 	DefaultCertificationTargetID = "00000000-0000-0000-0000-000000000000"
 

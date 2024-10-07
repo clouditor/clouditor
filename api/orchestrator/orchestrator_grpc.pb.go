@@ -89,7 +89,7 @@ const (
 	Orchestrator_GetControl_FullMethodName                       = "/clouditor.orchestrator.v1.Orchestrator/GetControl"
 	Orchestrator_CreateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/CreateAuditScope"
 	Orchestrator_GetAuditScope_FullMethodName                    = "/clouditor.orchestrator.v1.Orchestrator/GetAuditScope"
-	Orchestrator_ListTargetsOfEvaluation_FullMethodName          = "/clouditor.orchestrator.v1.Orchestrator/ListTargetsOfEvaluation"
+	Orchestrator_ListAuditScopes_FullMethodName                  = "/clouditor.orchestrator.v1.Orchestrator/ListAuditScopes"
 	Orchestrator_UpdateAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/UpdateAuditScope"
 	Orchestrator_RemoveAuditScope_FullMethodName                 = "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope"
 	Orchestrator_GetRuntimeInfo_FullMethodName                   = "/clouditor.orchestrator.v1.Orchestrator/GetRuntimeInfo"
@@ -199,8 +199,8 @@ type OrchestratorClient interface {
 	CreateAuditScope(ctx context.Context, in *CreateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
 	// Retrieves a Audit Scope
 	GetAuditScope(ctx context.Context, in *GetAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
-	// Lists all Targets of Evaluation
-	ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error)
+	// Lists all Audit Scopes
+	ListAuditScopes(ctx context.Context, in *ListAuditScopesRequest, opts ...grpc.CallOption) (*ListAuditScopesResponse, error)
 	// Updates an existing Audit Scope
 	UpdateAuditScope(ctx context.Context, in *UpdateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
 	// Removes a Audit Scope
@@ -649,10 +649,10 @@ func (c *orchestratorClient) GetAuditScope(ctx context.Context, in *GetAuditScop
 	return out, nil
 }
 
-func (c *orchestratorClient) ListTargetsOfEvaluation(ctx context.Context, in *ListTargetsOfEvaluationRequest, opts ...grpc.CallOption) (*ListTargetsOfEvaluationResponse, error) {
+func (c *orchestratorClient) ListAuditScopes(ctx context.Context, in *ListAuditScopesRequest, opts ...grpc.CallOption) (*ListAuditScopesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListTargetsOfEvaluationResponse)
-	err := c.cc.Invoke(ctx, Orchestrator_ListTargetsOfEvaluation_FullMethodName, in, out, cOpts...)
+	out := new(ListAuditScopesResponse)
+	err := c.cc.Invoke(ctx, Orchestrator_ListAuditScopes_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -793,8 +793,8 @@ type OrchestratorServer interface {
 	CreateAuditScope(context.Context, *CreateAuditScopeRequest) (*AuditScope, error)
 	// Retrieves a Audit Scope
 	GetAuditScope(context.Context, *GetAuditScopeRequest) (*AuditScope, error)
-	// Lists all Targets of Evaluation
-	ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error)
+	// Lists all Audit Scopes
+	ListAuditScopes(context.Context, *ListAuditScopesRequest) (*ListAuditScopesResponse, error)
 	// Updates an existing Audit Scope
 	UpdateAuditScope(context.Context, *UpdateAuditScopeRequest) (*AuditScope, error)
 	// Removes a Audit Scope
@@ -937,8 +937,8 @@ func (UnimplementedOrchestratorServer) CreateAuditScope(context.Context, *Create
 func (UnimplementedOrchestratorServer) GetAuditScope(context.Context, *GetAuditScopeRequest) (*AuditScope, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAuditScope not implemented")
 }
-func (UnimplementedOrchestratorServer) ListTargetsOfEvaluation(context.Context, *ListTargetsOfEvaluationRequest) (*ListTargetsOfEvaluationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListTargetsOfEvaluation not implemented")
+func (UnimplementedOrchestratorServer) ListAuditScopes(context.Context, *ListAuditScopesRequest) (*ListAuditScopesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAuditScopes not implemented")
 }
 func (UnimplementedOrchestratorServer) UpdateAuditScope(context.Context, *UpdateAuditScopeRequest) (*AuditScope, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAuditScope not implemented")
@@ -1708,20 +1708,20 @@ func _Orchestrator_GetAuditScope_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Orchestrator_ListTargetsOfEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListTargetsOfEvaluationRequest)
+func _Orchestrator_ListAuditScopes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAuditScopesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, in)
+		return srv.(OrchestratorServer).ListAuditScopes(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Orchestrator_ListTargetsOfEvaluation_FullMethodName,
+		FullMethod: Orchestrator_ListAuditScopes_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrchestratorServer).ListTargetsOfEvaluation(ctx, req.(*ListTargetsOfEvaluationRequest))
+		return srv.(OrchestratorServer).ListAuditScopes(ctx, req.(*ListAuditScopesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1948,8 +1948,8 @@ var Orchestrator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Orchestrator_GetAuditScope_Handler,
 		},
 		{
-			MethodName: "ListTargetsOfEvaluation",
-			Handler:    _Orchestrator_ListTargetsOfEvaluation_Handler,
+			MethodName: "ListAuditScopes",
+			Handler:    _Orchestrator_ListAuditScopes_Handler,
 		},
 		{
 			MethodName: "UpdateAuditScope",

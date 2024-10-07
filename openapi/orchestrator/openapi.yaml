@@ -270,23 +270,23 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all Targets of Evaluation
-            operationId: Orchestrator_ListTargetsOfEvaluation
+            description: Lists all Audit Scopes
+            operationId: Orchestrator_ListAuditScopes
             parameters:
                 - name: certificationTargetId
                   in: query
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
                      check for != "" in the method to see if it is set when the service is
-                     specified, return all Targets of Evaluation that evaluate the given service
+                     specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   schema:
                     type: string
                 - name: catalogId
                   in: query
                   description: |-
-                    when the catalog is specified, return all Targets of Evaluation that
-                     evaluate the given catalog for any service
+                    when the catalog is specified, return all Audit Scopes that
+                     evaluate the given catalog for any certificationtarget
                   schema:
                     type: string
                 - name: pageSize
@@ -312,7 +312,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
+                                $ref: '#/components/schemas/ListAuditScopesResponse'
                 default:
                     description: Default error response
                     content:
@@ -489,14 +489,14 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all Targets of Evaluation
-            operationId: Orchestrator_ListTargetsOfEvaluation
+            description: Lists all Audit Scopes
+            operationId: Orchestrator_ListAuditScopes
             parameters:
                 - name: catalogId
                   in: path
                   description: |-
-                    when the catalog is specified, return all Targets of Evaluation that
-                     evaluate the given catalog for any service
+                    when the catalog is specified, return all Audit Scopes that
+                     evaluate the given catalog for any certificationtarget
                   required: true
                   schema:
                     type: string
@@ -505,7 +505,7 @@ paths:
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
                      check for != "" in the method to see if it is set when the service is
-                     specified, return all Targets of Evaluation that evaluate the given service
+                     specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   schema:
                     type: string
@@ -532,7 +532,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
+                                $ref: '#/components/schemas/ListAuditScopesResponse'
                 default:
                     description: Default error response
                     content:
@@ -978,15 +978,15 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Lists all Targets of Evaluation
-            operationId: Orchestrator_ListTargetsOfEvaluation
+            description: Lists all Audit Scopes
+            operationId: Orchestrator_ListAuditScopes
             parameters:
                 - name: certificationTargetId
                   in: path
                   description: |-
                     We cannot create additional bindings when the parameter is optional so we
                      check for != "" in the method to see if it is set when the service is
-                     specified, return all Targets of Evaluation that evaluate the given service
+                     specified, return all Audit Scopes that evaluate the given certification target
                      for any catalog
                   required: true
                   schema:
@@ -994,8 +994,8 @@ paths:
                 - name: catalogId
                   in: query
                   description: |-
-                    when the catalog is specified, return all Targets of Evaluation that
-                     evaluate the given catalog for any service
+                    when the catalog is specified, return all Audit Scopes that
+                     evaluate the given catalog for any certificationtarget
                   schema:
                     type: string
                 - name: pageSize
@@ -1021,7 +1021,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListTargetsOfEvaluationResponse'
+                                $ref: '#/components/schemas/ListAuditScopesResponse'
                 default:
                     description: Default error response
                     content:
@@ -1052,6 +1052,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AuditScope'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/orchestrator/certification_targets/{certificationTargetId}/audit_scopes/{catalogId}:
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a Audit Scope
+            operationId: Orchestrator_RemoveAuditScope
+            parameters:
+                - name: certificationTargetId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: catalogId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -1179,33 +1206,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CertificationTarget'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/cloud_services/{certificationTargetId}/toes/{catalogId}:
-        delete:
-            tags:
-                - Orchestrator
-            description: Removes a Audit Scope
-            operationId: Orchestrator_RemoveAuditScope
-            parameters:
-                - name: certificationTargetId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -1868,6 +1868,15 @@ components:
                         $ref: '#/components/schemas/AssessmentTool'
                 nextPageToken:
                     type: string
+        ListAuditScopesResponse:
+            type: object
+            properties:
+                auditScope:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AuditScope'
+                nextPageToken:
+                    type: string
         ListCatalogsResponse:
             type: object
             properties:
@@ -1888,11 +1897,11 @@ components:
                     type: string
         ListCertificationTargetsResponse:
             required:
-                - services
-                - services
+                - targets
+                - targets
             type: object
             properties:
-                services:
+                targets:
                     type: array
                     items:
                         $ref: '#/components/schemas/CertificationTarget'
@@ -1933,15 +1942,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Certificate'
-                nextPageToken:
-                    type: string
-        ListTargetsOfEvaluationResponse:
-            type: object
-            properties:
-                auditScope:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/AuditScope'
                 nextPageToken:
                     type: string
         Metric:
