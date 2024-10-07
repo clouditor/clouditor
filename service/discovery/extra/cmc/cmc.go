@@ -61,7 +61,7 @@ func (*cmcDiscovery) Description() string {
 
 func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
 	d := &cmcDiscovery{
-		csID:      config.DefaultCloudServiceID,
+		csID:      config.DefaultCertificationTargetID,
 		cmcAddr:   addr,
 		capemPath: "local/certificate_remote_attestation.pem",
 	}
@@ -74,7 +74,7 @@ func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer 
 	return d
 }
 
-func (a *cmcDiscovery) CloudServiceID() string {
+func (a *cmcDiscovery) CertificationTargetID() string {
 	return a.csID
 }
 
