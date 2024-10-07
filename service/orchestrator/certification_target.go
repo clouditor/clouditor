@@ -79,7 +79,7 @@ func (s *Service) RegisterCertificationTarget(ctx context.Context, req *orchestr
 		res.Metadata.Icon = req.CertificationTarget.Metadata.Icon
 	}
 
-	// Persist the service in our database
+	// Persist the certification target in our database
 	err = s.storage.Create(res)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not add certification target to the database: %v", err)
@@ -115,7 +115,7 @@ func (svc *Service) ListCertificationTargets(ctx context.Context, req *orchestra
 	}
 
 	// Paginate the certification targets according to the request
-	res.Services, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CertificationTarget](req, svc.storage,
+	res.Targets, res.NextPageToken, err = service.PaginateStorage[*orchestrator.CertificationTarget](req, svc.storage,
 		service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
@@ -141,7 +141,7 @@ func (s *Service) GetCertificationTarget(ctx context.Context, req *orchestrator.
 
 	err = s.storage.Get(response, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
+		return nil, status.Errorf(codes.NotFound, "certification target not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -203,7 +203,7 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 
 	err = s.storage.Delete(&orchestrator.CertificationTarget{Id: req.CertificationTargetId})
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
+		return nil, status.Errorf(codes.NotFound, "certification target not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %s", err)
 	}
@@ -234,7 +234,7 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	CertificationTarget := new(orchestrator.CertificationTarget)
 	err = s.storage.Get(CertificationTarget, "Id = ?", req.CertificationTargetId)
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "service not found")
+		return nil, status.Errorf(codes.NotFound, "certification target not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error getting certification target: %s", err)
 	}
@@ -271,10 +271,10 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 // if no certification target exists in the database.
 //
 // If a new certification target was created, it will be returned.
-func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.CertificationTarget, err error) {
+func (s *Service) CreateDefaultCertificationTarget() (target *orchestrator.CertificationTarget, err error) {
 	log.Infof("Trying to create new default certification target...")
 
-	count, err := s.storage.Count(service)
+	count, err := s.storage.Count(target)
 	if err != nil {
 		return nil, fmt.Errorf("storage error: %w", err)
 	}
@@ -283,7 +283,7 @@ func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.Cert
 		now := timestamppb.Now()
 
 		// Create a default certification target
-		service =
+		target =
 			&orchestrator.CertificationTarget{
 				Id:          DefaultCertificationTargetId,
 				Name:        DefaultCertificationTargetName,
@@ -294,11 +294,11 @@ func (s *Service) CreateDefaultCertificationTarget() (service *orchestrator.Cert
 			}
 
 		// Save it in the database
-		err = s.storage.Create(service)
+		err = s.storage.Create(target)
 		if err != nil {
 			return nil, fmt.Errorf("storage error: %w", err)
 		} else {
-			log.Infof("Created new default target certification target: %s", service.Id)
+			log.Infof("Created new default target certification target: %s", target.Id)
 		}
 	} else {
 		log.Infof("Default target certification target already exist.")

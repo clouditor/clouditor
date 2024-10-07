@@ -495,7 +495,7 @@ message ListCertificationTargetsRequest {
 }
 
 message ListCertificationTargetsResponse {
-  repeated CertificationTarget services = 1 [
+  repeated CertificationTarget targets = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.field_behavior) = REQUIRED
   ];

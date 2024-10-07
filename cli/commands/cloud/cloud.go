@@ -84,11 +84,11 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 		Short: "Lists all target certification targets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err      error
-				session  *cli.Session
-				client   orchestrator.OrchestratorClient
-				res      *orchestrator.ListCertificationTargetsResponse
-				services []*orchestrator.CertificationTarget
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.ListCertificationTargetsResponse
+				target  []*orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -98,13 +98,13 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			services, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
-				return res.Services
+			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
+				return res.Targets
 			})
 
-			// Build a response with all services
+			// Build a response with all certification targets
 			res = &orchestrator.ListCertificationTargetsResponse{
-				Services: services,
+				Targets: target,
 			}
 
 			return session.HandleResponse(res, err)

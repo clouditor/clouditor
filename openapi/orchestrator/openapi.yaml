@@ -1897,11 +1897,11 @@ components:
                     type: string
         ListCertificationTargetsResponse:
             required:
-                - services
-                - services
+                - targets
+                - targets
             type: object
             properties:
-                services:
+                targets:
                     type: array
                     items:
                         $ref: '#/components/schemas/CertificationTarget'
