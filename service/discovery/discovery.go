@@ -372,7 +372,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
 		case provider == ProviderCMC:
 			// TODO(anatheka): Delete addr and get the address from somewhere else
-			addr := "nuc-02.aisec.fraunhofer.de:8081"
+			addr := ""
 			svc.discoverers = append(svc.discoverers, cmc.NewCMCDiscovery(addr))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
