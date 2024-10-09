@@ -51,7 +51,7 @@ type PayloadRequest = api.PayloadRequest
 //   - orchestrator.AuditScope
 //   - orchestrator.RemoveAuditScopeRequest
 //   - orchestrator.GetAuditScopeRequest
-//   - orchestrator.ListTargetsOfEvaluationRequest
+//   - orchestrator.ListAuditScopesRequest
 //   - orchestrator.Certificate
 //
 // All other requests, especially in cases where the certification target ID is

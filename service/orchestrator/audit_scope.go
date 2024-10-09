@@ -95,8 +95,8 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	return response, nil
 }
 
-// ListTargetsOfEvaluation implements method for getting a AuditScope
-func (svc *Service) ListTargetsOfEvaluation(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
+// ListAuditScopes implements method for getting a AuditScope
+func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
 	var conds = []any{gorm.WithoutPreload()}
 
 	// Validate request

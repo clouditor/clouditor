@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2020-2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,89 +23,53 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package azure
 
 import (
 	"testing"
-	"time"
 
+	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Test_SafeTimestamp(t *testing.T) {
-
-	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
-	testTimeUnix := testTime.Unix()
-
-	type args struct {
-		t *time.Time
+func Test_azureDiscovery_discoverMLWorkspaces(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
 	}
 	tests := []struct {
-		name string
-		args args
-		want int64
+		name    string
+		fields  fields
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Empty time",
-			args: args{
-				t: &time.Time{},
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(nil),
 			},
-			want: 0,
-		},
-		{
-			name: "Time is nil",
-			args: args{},
-			want: 0,
-		},
-		{
-			name: "Valid time",
-			args: args{
-				t: &testTime,
-			},
-			want: testTimeUnix,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, SafeTimestamp(tt.args.t))
-		})
-	}
-}
-
-func TestTimestamp(t *testing.T) {
-	type args struct {
-		t string
-	}
-	tests := []struct {
-		name string
-		args args
-		want assert.Want[*timestamppb.Timestamp]
-	}{
-		{
-			name: "empty input",
-			args: args{},
-			want: func(t *testing.T, got *timestamppb.Timestamp) bool {
-				return assert.Equal(t, &timestamppb.Timestamp{}, got)
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrSubsciptionNotFound.Error())
 			},
 		},
 		{
 			name: "Happy path",
-			args: args{
-				t: "2024-08-06T09:39:25Z",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
 			},
-			want: func(t *testing.T, got *timestamppb.Timestamp) bool {
-				time, err := time.Parse(time.RFC3339, "2024-08-06T09:39:25Z")
-				assert.NoError(t, err)
-
-				return assert.Equal(t, timestamppb.New(time), got)
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				return assert.Equal(t, 1, len(got))
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Timestamp(tt.args.t)
+			d := tt.fields.azureDiscovery
 
+			got, err := d.discoverMLWorkspaces()
+
+			tt.wantErr(t, err)
 			tt.want(t, got)
 		})
 	}

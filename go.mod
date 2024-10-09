@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/sync v0.8.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -41,7 +41,6 @@ require (
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.24.0 // indirect
-
 )
 
 // runtime dependencies (security)
@@ -51,7 +50,6 @@ require (
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/oauth2 v0.23.0
-
 )
 
 // runtime dependencies (rpc)
@@ -68,7 +66,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.67.0
 	google.golang.org/protobuf v1.34.2
-
 )
 
 // runtime dependencies (storage)
@@ -90,7 +87,6 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.23.1 // indirect
-
 )
 
 // runtime dependencies (config, cli)
@@ -136,7 +132,6 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	golang.org/x/net v0.28.0 // indirect
-
 )
 
 // runtime dependencies (AWS)
@@ -162,7 +157,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.3
 	github.com/aws/smithy-go v1.21.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-
 )
 
 // runtime dependencies (k8s)
@@ -209,7 +203,6 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	go.etcd.io/bbolt v1.3.10 // indirect
 	golang.org/x/time v0.6.0 // indirect
-
 )
 
 // testing dependencies (core)
@@ -219,7 +212,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-
 )
 
 // tools dependencies
@@ -230,5 +222,30 @@ require (
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
+)
 
+require github.com/Fraunhofer-AISEC/cmc v0.7.0
+
+require (
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0
+	github.com/Fraunhofer-AISEC/go-attestation v0.3.3-0.20230623144130-44bece0a4cef // indirect
+	github.com/dsnet/golib/memfile v1.0.0 // indirect
+	github.com/edgelesssys/ego v1.4.1 // indirect
+	github.com/google/certificate-transparency-go v1.1.6 // indirect
+	github.com/google/go-tpm v0.9.0 // indirect
+	github.com/google/go-tspi v0.3.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
+	github.com/opencontainers/runtime-spec v1.2.0 // indirect
+	github.com/pion/dtls/v2 v2.2.7 // indirect
+	github.com/pion/logging v0.2.2 // indirect
+	github.com/pion/transport/v2 v2.2.1 // indirect
+	github.com/pion/udp/v2 v2.0.1 // indirect
+	github.com/plgd-dev/go-coap/v3 v3.1.2 // indirect
+	github.com/robertkrimen/otto v0.2.1 // indirect
+	github.com/veraison/go-cose v1.1.0 // indirect
+	go.mozilla.org/pkcs7 v0.0.0-20210826202110-33d05740a352 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
