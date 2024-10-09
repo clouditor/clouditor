@@ -1870,7 +1870,7 @@ components:
         ListAuditScopesResponse:
             type: object
             properties:
-                auditScope:
+                auditScopes:
                     type: array
                     items:
                         $ref: '#/components/schemas/AuditScope'
