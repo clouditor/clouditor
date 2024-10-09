@@ -307,22 +307,22 @@ service Orchestrator {
   // Creates a new Audit Scope
   rpc CreateAuditScope(CreateAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {
-      post: "/v1/orchestrator/auditScopes"
+      post: "/v1/orchestrator/audit_scopes"
       body: "audit_scope"
     };
   }
 
   // Retrieves a Audit Scope
   rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes/{catalog_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
   }
 
   // Lists all Audit Scopes
   rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
     option (google.api.http) = {
-      get: "/v1/orchestrator/auditScopes"
-      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/auditScopes"}
-      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/auditScopes"}
+      get: "/v1/orchestrator/audit_scopes"
+      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes"}
+      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/audit_scopes"}
     };
   }
 
@@ -331,7 +331,7 @@ service Orchestrator {
     option (google.api.http) = {
       put:
         "/v1/orchestrator/certification_targets/"
-        "{audit_scope.certification_target_id}/auditScopes/"
+        "{audit_scope.certification_target_id}/audit_scopes/"
         "{audit_scope.catalog_id}"
       body: "audit_scope"
     };
