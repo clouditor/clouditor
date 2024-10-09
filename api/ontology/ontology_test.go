@@ -106,6 +106,7 @@ func TestResourceMap(t *testing.T) {
 					"internetAccessibleEndpoint": false,
 					"labels":                     map[string]any{},
 					"name":                       "My VM",
+					"description":                "",
 					"networkInterfaceIds":        []any{},
 					"malwareProtection":          nil,
 					"osLogging":                  nil,
