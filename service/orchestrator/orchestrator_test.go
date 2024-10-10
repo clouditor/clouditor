@@ -150,7 +150,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 
 	type args struct {
 		in0                      context.Context
-		serviceUpdate            *orchestrator.UpdateCertificationTargetRequest
+		targetUpdate             *orchestrator.UpdateCertificationTargetRequest
 		CertificationTargetHooks []orchestrator.CertificationTargetHookFunc
 	}
 	tests := []struct {
@@ -163,11 +163,11 @@ func TestCertificationTargetHooks(t *testing.T) {
 			name: "Update Certification Target",
 			args: args{
 				in0: context.TODO(),
-				serviceUpdate: &orchestrator.UpdateCertificationTargetRequest{
+				targetUpdate: &orchestrator.UpdateCertificationTargetRequest{
 					CertificationTarget: &orchestrator.CertificationTarget{
 						Id:          "00000000-0000-0000-0000-000000000000",
-						Name:        "test service",
-						Description: "test service",
+						Name:        "test target",
+						Description: "test target",
 					},
 				},
 				CertificationTargetHooks: []orchestrator.CertificationTargetHookFunc{firstHookFunction, secondHookFunction},
@@ -175,7 +175,7 @@ func TestCertificationTargetHooks(t *testing.T) {
 			wantErr: assert.Nil[error],
 			wantRes: func(t *testing.T, got *orchestrator.CertificationTarget) bool {
 				return assert.Equal(t, "00000000-0000-0000-0000-000000000000", got.Id) &&
-					assert.Equal(t, "test service", got.Name) && assert.Equal(t, "test service", got.Description)
+					assert.Equal(t, "test target", got.Name) && assert.Equal(t, "test target", got.Description)
 			},
 		},
 	}
@@ -200,9 +200,9 @@ func TestCertificationTargetHooks(t *testing.T) {
 			}
 
 			// To test the hooks we have to call a function that calls the hook function
-			gotRes, err := s.UpdateCertificationTarget(tt.args.in0, tt.args.serviceUpdate)
+			gotRes, err := s.UpdateCertificationTarget(tt.args.in0, tt.args.targetUpdate)
 
-			// wait for all hooks (2 services * 2 hooks)
+			// wait for all hooks (2 certification targets * 2 hooks)
 			wg.Wait()
 
 			tt.wantErr(t, err)

@@ -91,7 +91,7 @@ func (*mockMetricsSource) Metrics() (metrics []*assessment.Metric, err error) {
 	return
 }
 
-func (m *mockMetricsSource) MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
+func (m *mockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	// Fetch the metric configuration directly from our file
 	bundle := fmt.Sprintf("policies/bundles/%s/%s/data.json", metric.CategoryID(), metric.Id)
 
@@ -104,7 +104,7 @@ func (m *mockMetricsSource) MetricConfiguration(serviceID string, metric *assess
 
 	config.IsDefault = true
 	config.MetricId = metric.Id
-	config.CertificationTargetId = serviceID
+	config.CertificationTargetId = targetID
 
 	return &config, nil
 }
@@ -129,13 +129,13 @@ type updatedMockMetricsSource struct {
 	mockMetricsSource
 }
 
-func (*updatedMockMetricsSource) MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
+func (*updatedMockMetricsSource) MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error) {
 	return &assessment.MetricConfiguration{
 		Operator:              "==",
 		TargetValue:           structpb.NewBoolValue(false),
 		IsDefault:             false,
 		UpdatedAt:             timestamppb.New(time.Date(2022, 12, 1, 0, 0, 0, 0, time.Local)),
 		MetricId:              metric.Id,
-		CertificationTargetId: serviceID,
+		CertificationTargetId: targetID,
 	}, nil
 }

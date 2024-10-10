@@ -215,7 +215,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, serviceID string, metric *assessment.Metric, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.Metric, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -224,14 +224,14 @@ func (re *regoEval) evalMap(baseDir string, serviceID string, metric *assessment
 	)
 
 	// We need to check, if the metric configuration has been changed.
-	config, err := src.MetricConfiguration(serviceID, metric)
+	config, err := src.MetricConfiguration(targetID, metric)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch metric configuration for metric %s: %w", metric.Id, err)
 	}
 
 	// We build a key out of the metric and its configuration, so we are creating a new Rego implementation
-	// if the metric configuration (i.e. its hash) for a particular service has changed.
-	key = fmt.Sprintf("%s-%s-%s", metric.Id, serviceID, config.Hash())
+	// if the metric configuration (i.e. its hash) for a particular certification target has changed.
+	key = fmt.Sprintf("%s-%s-%s", metric.Id, targetID, config.Hash())
 
 	// Try to fetch a cached prepared query for the specified key. If the key is not found, we create a new query with
 	// the function specified as the second parameter
