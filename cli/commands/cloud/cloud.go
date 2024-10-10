@@ -84,11 +84,11 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 		Short: "Lists all target certification targets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
-				err      error
-				session  *cli.Session
-				client   orchestrator.OrchestratorClient
-				res      *orchestrator.ListCertificationTargetsResponse
-				services []*orchestrator.CertificationTarget
+				err     error
+				session *cli.Session
+				client  orchestrator.OrchestratorClient
+				res     *orchestrator.ListCertificationTargetsResponse
+				target  []*orchestrator.CertificationTarget
 			)
 
 			if session, err = cli.ContinueSession(); err != nil {
@@ -98,13 +98,13 @@ func NewListCertificationTargetsCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			services, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
-				return res.Services
+			target, err = api.ListAllPaginated(&orchestrator.ListCertificationTargetsRequest{}, client.ListCertificationTargets, func(res *orchestrator.ListCertificationTargetsResponse) []*orchestrator.CertificationTarget {
+				return res.Targets
 			})
 
-			// Build a response with all services
+			// Build a response with all certification targets
 			res = &orchestrator.ListCertificationTargetsResponse{
-				Services: services,
+				Targets: target,
 			}
 
 			return session.HandleResponse(res, err)
@@ -138,9 +138,9 @@ func NewGetCertificationTargetCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			serviceID := args[0]
+			targetID := args[0]
 
-			res, err = client.GetCertificationTarget(context.Background(), &orchestrator.GetCertificationTargetRequest{CertificationTargetId: serviceID})
+			res, err = client.GetCertificationTarget(context.Background(), &orchestrator.GetCertificationTargetRequest{CertificationTargetId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -171,9 +171,9 @@ func NewRemoveCertificationTargetComand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			serviceID := args[0]
+			targetID := args[0]
 
-			res, err = client.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: serviceID})
+			res, err = client.RemoveCertificationTarget(context.Background(), &orchestrator.RemoveCertificationTargetRequest{CertificationTargetId: targetID})
 
 			return session.HandleResponse(res, err)
 		},
@@ -217,7 +217,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().String("id", "", "the certification target id to update")
-	cmd.PersistentFlags().StringP("name", "n", "", "the name of the service")
+	cmd.PersistentFlags().StringP("name", "n", "", "the name of the certification target")
 	cmd.PersistentFlags().StringP("description", "d", "", "an optional description")
 
 	_ = cmd.MarkPersistentFlagRequired("id")
@@ -239,7 +239,7 @@ func NewUpdateCertificationTargetCommand() *cobra.Command {
 func NewGetMetricConfigurationCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get-metric-configuration",
-		Short: "Retrieves a metric configuration for a specific target service",
+		Short: "Retrieves a metric configuration for a specific certification target",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var (
@@ -256,10 +256,10 @@ func NewGetMetricConfigurationCommand() *cobra.Command {
 
 			client = orchestrator.NewOrchestratorClient(session)
 
-			serviceID := args[0]
+			targetID := args[0]
 			metricID := args[1]
 
-			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: serviceID, MetricId: metricID})
+			res, err = client.GetMetricConfiguration(context.Background(), &orchestrator.GetMetricConfigurationRequest{CertificationTargetId: targetID, MetricId: metricID})
 
 			return session.HandleResponse(res, err)
 		},

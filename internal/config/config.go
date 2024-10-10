@@ -49,7 +49,7 @@ const (
 	ServiceOAuth2EndpointFlag            = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag            = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag        = "service-oauth2-client-secret"
-	CertificationTargetIDFlag            = "cloud-service-id"
+	CertificationTargetIDFlag            = "certification-target-id"
 	AssessmentURLFlag                    = "assessment-url"
 	OrchestratorURLFlag                  = "orchestrator-url"
 	EvidenceStoreURLFlag                 = "evidence-store-url"
@@ -122,8 +122,8 @@ var (
 )
 
 const (
-	// DefaultCertificationTargetID is the default service ID. Currently, our discoverers have no way to differentiate between different
-	// services, but we need this feature in the future. This serves as a default to already prepare the necessary
+	// DefaultCertificationTargetID is the default certification target ID. Currently, our discoverers have no way to differentiate between different
+	// targets, but we need this feature in the future. This serves as a default to already prepare the necessary
 	// structures for this feature.
 	DefaultCertificationTargetID = "00000000-0000-0000-0000-000000000000"
 

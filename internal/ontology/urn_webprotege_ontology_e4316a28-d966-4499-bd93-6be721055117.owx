@@ -91,6 +91,12 @@
         <Class abbreviatedIRI="cl:CloudSDK"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:Code"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:Component"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:Compute"/>
     </Declaration>
     <Declaration>
@@ -238,6 +244,9 @@
         <Class abbreviatedIRI="cl:L3Firewall"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:Library"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:LoadBalancer"/>
     </Declaration>
     <Declaration>
@@ -262,6 +271,9 @@
         <Class abbreviatedIRI="cl:LoggingService"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:MachineLearning"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:MalwareProtection"/>
     </Declaration>
     <Declaration>
@@ -269,6 +281,9 @@
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:MessagingHub"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:Module"/>
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:MultiFactorAuthentiation"/>
@@ -391,10 +406,16 @@
         <Class abbreviatedIRI="cl:VirtualSubNetwork"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:WebApplicationFirewall"/>
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:Workflow"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:Workspace"/>
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:ZoneRedundancy"/>
@@ -493,7 +514,16 @@
         <DataProperty abbreviatedIRI="cl:creation_time"/>
     </Declaration>
     <Declaration>
+        <DataProperty abbreviatedIRI="cl:cve"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty abbreviatedIRI="cl:cwe"/>
+    </Declaration>
+    <Declaration>
         <DataProperty abbreviatedIRI="cl:daysSinceActive"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty abbreviatedIRI="cl:description"/>
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="cl:disablePasswordPolicy"/>
@@ -581,6 +611,9 @@
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="cl:privileged"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty abbreviatedIRI="cl:programmingVersion"/>
     </Declaration>
     <Declaration>
         <DataProperty abbreviatedIRI="cl:protocol"/>
@@ -943,13 +976,13 @@
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Application"/>
-        <Class abbreviatedIRI="cl:BaseResource"/>
+        <Class abbreviatedIRI="cl:Component"/>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Application"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
-            <Class abbreviatedIRI="cl:Functionality"/>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class abbreviatedIRI="cl:AutomaticUpdates"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -958,6 +991,13 @@
             <ObjectProperty abbreviatedIRI="prop:runsOn"/>
             <Class abbreviatedIRI="cl:Compute"/>
         </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Application"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:programmingVersion"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Application"/>
@@ -1121,6 +1161,13 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:BaseResource"/>
         <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:description"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:BaseResource"/>
+        <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="cl:id"/>
             <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
@@ -1240,6 +1287,35 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:CloudSDK"/>
         <Class abbreviatedIRI="cl:Framework"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Code"/>
+        <Class abbreviatedIRI="cl:BaseResource"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Code"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Functionality"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Code"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Module"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Component"/>
+        <Class abbreviatedIRI="cl:Code"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Component"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Library"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Compute"/>
@@ -1921,6 +1997,17 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:Library"/>
+        <Class abbreviatedIRI="cl:Component"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Library"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Vulnerability"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:LoadBalancer"/>
         <Class abbreviatedIRI="cl:NetworkService"/>
     </SubClassOf>
@@ -2051,6 +2138,10 @@
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:MachineLearning"/>
+        <Class abbreviatedIRI="cl:CloudResource"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:MalwareProtection"/>
         <Class abbreviatedIRI="cl:Auditing"/>
     </SubClassOf>
@@ -2089,6 +2180,10 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:MessagingHub"/>
         <Class abbreviatedIRI="cl:IoT"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Module"/>
+        <Class abbreviatedIRI="cl:Code"/>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:MultiFactorAuthentiation"/>
@@ -2370,6 +2465,13 @@
         <Class abbreviatedIRI="cl:Document"/>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:SecurityAdvisoryDocument"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:Vulnerability"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:SecurityAdvisoryFeed"/>
         <Class abbreviatedIRI="cl:Functionality"/>
     </SubClassOf>
@@ -2587,6 +2689,45 @@
         <Class abbreviatedIRI="cl:Networking"/>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <Class abbreviatedIRI="cl:Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:cve"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:cwe"/>
+            <Datatype abbreviatedIRI="xsd:listString"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:description"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:name"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Vulnerability"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:url"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:WebApplicationFirewall"/>
         <Class abbreviatedIRI="cl:Firewall"/>
     </SubClassOf>
@@ -2600,6 +2741,31 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:Workflow"/>
         <Class abbreviatedIRI="cl:CICDService"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <Class abbreviatedIRI="cl:MachineLearning"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="cl:offersInterface"/>
+            <Class abbreviatedIRI="cl:AtRestEncryption"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class abbreviatedIRI="cl:ResourceLogging"/>
+        </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:ZoneRedundancy"/>
@@ -3187,6 +3353,16 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Code</AbbreviatedIRI>
+        <Literal>Code</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Component</AbbreviatedIRI>
+        <Literal>Component</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:Compute</AbbreviatedIRI>
         <Literal xml:lang="english">Compute</Literal>
     </AnnotationAssertion>
@@ -3471,6 +3647,11 @@ name = metadata.name</Literal>
         <Literal>L3Firewall</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Library</AbbreviatedIRI>
+        <Literal>Library</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <AbbreviatedIRI>cl:LoadBalancer</AbbreviatedIRI>
         <Literal>A Load Balancer may have multiple access restriction features, e.g. a L3 firewall and a WAF</Literal>
@@ -3526,6 +3707,11 @@ name = metadata.name</Literal>
         <Literal>LoggingService</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:MachineLearning</AbbreviatedIRI>
+        <Literal>MachineLearning</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <AbbreviatedIRI>cl:MalwareProtection</AbbreviatedIRI>
         <Literal>analyzes the activity within a Compute resource</Literal>
@@ -3544,6 +3730,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:MessagingHub</AbbreviatedIRI>
         <Literal xml:lang="english">MessagingHub</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Module</AbbreviatedIRI>
+        <Literal>CodeModule</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3777,6 +3968,21 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <AbbreviatedIRI>cl:Vulnerability</AbbreviatedIRI>
+        <Literal>cve: Common Vulnerabilities and Exposures</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <AbbreviatedIRI>cl:Vulnerability</AbbreviatedIRI>
+        <Literal>cwe: Common Weakness Enumeration</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Vulnerability</AbbreviatedIRI>
+        <Literal>Vulnerability</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <AbbreviatedIRI>cl:WebApplicationFirewall</AbbreviatedIRI>
         <Literal>A WAF is a L7 firewall that includes L3 capabilities</Literal>
     </AnnotationAssertion>
@@ -3789,6 +3995,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:Workflow</AbbreviatedIRI>
         <Literal xml:lang="english">Workflow</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:Workspace</AbbreviatedIRI>
+        <Literal>MLWorkspace</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3847,8 +4058,23 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:cve</AbbreviatedIRI>
+        <Literal>cve</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:cwe</AbbreviatedIRI>
+        <Literal>cwe</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:daysSinceActive</AbbreviatedIRI>
         <Literal>durationSinceActive</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:description</AbbreviatedIRI>
+        <Literal>description</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -4034,6 +4260,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:privileged</AbbreviatedIRI>
         <Literal>privileged</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:programmingVersion</AbbreviatedIRI>
+        <Literal>programmingVersion</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

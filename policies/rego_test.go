@@ -395,11 +395,11 @@ func Test_regoEval_evalMap(t *testing.T) {
 		pkg  string
 	}
 	type args struct {
-		baseDir   string
-		serviceID string
-		metric    *assessment.Metric
-		m         map[string]interface{}
-		src       MetricsSource
+		baseDir  string
+		targetID string
+		metric   *assessment.Metric
+		m        map[string]interface{}
+		src      MetricsSource
 	}
 	tests := []struct {
 		name       string
@@ -416,7 +416,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCertificationTargetID1,
+				targetID: testdata.MockCertificationTargetID1,
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
 					Category: "Endpoint Security",
@@ -458,7 +458,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				pkg:  DefaultRegoPackage,
 			},
 			args: args{
-				serviceID: testdata.MockCertificationTargetID1,
+				targetID: testdata.MockCertificationTargetID1,
 				metric: &assessment.Metric{
 					Id:       "AutomaticUpdatesEnabled",
 					Category: "Endpoint Security",
@@ -500,7 +500,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 				mrtc: tt.fields.mrtc,
 				pkg:  tt.fields.pkg,
 			}
-			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.serviceID, tt.args.metric, tt.args.m, tt.args.src)
+			gotResult, err := re.evalMap(tt.args.baseDir, tt.args.targetID, tt.args.metric, tt.args.m, tt.args.src)
 
 			tt.wantErr(t, err)
 			tt.wantResult(t, gotResult)

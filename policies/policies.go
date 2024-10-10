@@ -66,10 +66,10 @@ type Result struct {
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
-// configuration as well as implementation for a particular metric (and target service)
+// configuration as well as implementation for a particular metric (and certification target)
 type MetricsSource interface {
 	Metrics() ([]*assessment.Metric, error)
-	MetricConfiguration(serviceID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)
+	MetricConfiguration(targetID string, metric *assessment.Metric) (*assessment.MetricConfiguration, error)
 	MetricImplementation(lang assessment.MetricImplementation_Language, metric *assessment.Metric) (*assessment.MetricImplementation, error)
 }
 

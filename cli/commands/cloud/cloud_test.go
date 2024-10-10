@@ -112,7 +112,7 @@ func TestListCertificationTargetsCommand(t *testing.T) {
 		err = protojson.Unmarshal(b.Bytes(), &response)
 
 		assert.NoError(t, err)
-		return assert.NotEmpty(t, response.Services)
+		return assert.NotEmpty(t, response.Targets)
 	}, server.WithServices(svc))
 	assert.NoError(t, err)
 }
@@ -242,7 +242,7 @@ func TestGetMetricConfiguration(t *testing.T) {
 		cli.Output = &b
 
 		// create a new target service
-		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myservice"}})
+		target, err = svc.RegisterCertificationTarget(context.TODO(), &orchestrator.RegisterCertificationTargetRequest{CertificationTarget: &orchestrator.CertificationTarget{Name: "myTarget"}})
 
 		assert.NotNil(t, target)
 		assert.NoError(t, err)
