@@ -59,7 +59,7 @@ message AccessRestriction {
 // This represents the cloud account as a whole, e.g., an Azure subscription.
 message Account {
   option (resource_type_names) = "Account";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -123,10 +123,11 @@ message Application {
   repeated string translation_units = 9;
   AutomaticUpdates automatic_updates = 10;
   repeated string code_module_ids = 11;
-  optional string compute_id = 12;
-  repeated Functionality functionalities = 13;
-  repeated string library_ids = 14;
-  optional string parent_id = 15;
+  optional string code_repository_id = 12;
+  optional string compute_id = 13;
+  repeated Functionality functionalities = 14;
+  repeated string library_ids = 15;
+  optional string parent_id = 16;
 }
 
 // ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -240,49 +241,50 @@ message Resource {
     Account account = 1;
     Job job = 2;
     Workflow workflow = 3;
-    Container container = 4;
-    Function function = 5;
-    VirtualMachine virtual_machine = 6;
-    ContainerOrchestration container_orchestration = 7;
-    ContainerRegistry container_registry = 8;
-    Certificate certificate = 9;
-    Key key = 10;
-    Secret secret = 11;
-    Identity identity = 12;
-    RoleAssignment role_assignment = 13;
-    ContainerImage container_image = 14;
-    VMImage vm_image = 15;
-    DeviceProvisioningService device_provisioning_service = 16;
-    MessagingHub messaging_hub = 17;
-    KeyVault key_vault = 18;
-    MLWorkspace ml_workspace = 19;
-    NetworkInterface network_interface = 20;
-    NetworkSecurityGroup network_security_group = 21;
-    FunctionService function_service = 22;
-    GenericNetworkService generic_network_service = 23;
-    LoadBalancer load_balancer = 24;
-    LoggingService logging_service = 25;
-    SecurityAdvisoryService security_advisory_service = 26;
-    DocumentDatabaseService document_database_service = 27;
-    KeyValueDatabaseService key_value_database_service = 28;
-    MultiModalDatabaseService multi_modal_database_service = 29;
-    RelationalDatabaseService relational_database_service = 30;
-    FileStorageService file_storage_service = 31;
-    ObjectStorageService object_storage_service = 32;
-    VirtualNetwork virtual_network = 33;
-    VirtualSubNetwork virtual_sub_network = 34;
-    PasswordPolicy password_policy = 35;
-    ResourceGroup resource_group = 36;
-    BlockStorage block_storage = 37;
-    DatabaseStorage database_storage = 38;
-    FileStorage file_storage = 39;
-    ObjectStorage object_storage = 40;
-    Application application = 41;
-    Library library = 42;
-    CodeModule code_module = 43;
-    GenericDocument generic_document = 44;
-    SecurityAdvisoryDocument security_advisory_document = 45;
-    ServiceMetadataDocument service_metadata_document = 46;
+    CodeRepository code_repository = 4;
+    Container container = 5;
+    Function function = 6;
+    VirtualMachine virtual_machine = 7;
+    ContainerOrchestration container_orchestration = 8;
+    ContainerRegistry container_registry = 9;
+    Certificate certificate = 10;
+    Key key = 11;
+    Secret secret = 12;
+    Identity identity = 13;
+    RoleAssignment role_assignment = 14;
+    ContainerImage container_image = 15;
+    VMImage vm_image = 16;
+    DeviceProvisioningService device_provisioning_service = 17;
+    MessagingHub messaging_hub = 18;
+    KeyVault key_vault = 19;
+    MLWorkspace ml_workspace = 20;
+    NetworkInterface network_interface = 21;
+    NetworkSecurityGroup network_security_group = 22;
+    FunctionService function_service = 23;
+    GenericNetworkService generic_network_service = 24;
+    LoadBalancer load_balancer = 25;
+    LoggingService logging_service = 26;
+    SecurityAdvisoryService security_advisory_service = 27;
+    DocumentDatabaseService document_database_service = 28;
+    KeyValueDatabaseService key_value_database_service = 29;
+    MultiModalDatabaseService multi_modal_database_service = 30;
+    RelationalDatabaseService relational_database_service = 31;
+    FileStorageService file_storage_service = 32;
+    ObjectStorageService object_storage_service = 33;
+    VirtualNetwork virtual_network = 34;
+    VirtualSubNetwork virtual_sub_network = 35;
+    PasswordPolicy password_policy = 36;
+    ResourceGroup resource_group = 37;
+    BlockStorage block_storage = 38;
+    DatabaseStorage database_storage = 39;
+    FileStorage file_storage = 40;
+    ObjectStorage object_storage = 41;
+    Application application = 42;
+    Library library = 43;
+    CodeModule code_module = 44;
+    GenericDocument generic_document = 45;
+    SecurityAdvisoryDocument security_advisory_document = 46;
+    ServiceMetadataDocument service_metadata_document = 47;
   }
 }
 
@@ -290,7 +292,7 @@ message Resource {
 message BlockStorage {
   option (resource_type_names) = "BlockStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -337,7 +339,7 @@ message CICDService {
 message Certificate {
   option (resource_type_names) = "Certificate";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -352,8 +354,8 @@ message Certificate {
   google.protobuf.Timestamp not_before_date = 10;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 11;
-  optional string cloud_resource_id = 12;
-  GeoLocation geo_location = 13;
+  GeoLocation geo_location = 12;
+  optional string infrastructure_id = 13;
   repeated Redundancy redundancies = 14;
   optional string parent_id = 15;
   UsageStatistics usage_statistics = 16;
@@ -383,49 +385,50 @@ message CipherSuite {
   string session_cipher = 4;
 }
 
-// CloudResource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-message CloudResource {
+// Infrastructure is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Infrastructure {
   oneof type {
     Account account = 1;
     Job job = 2;
     Workflow workflow = 3;
-    Container container = 4;
-    Function function = 5;
-    VirtualMachine virtual_machine = 6;
-    ContainerOrchestration container_orchestration = 7;
-    ContainerRegistry container_registry = 8;
-    Certificate certificate = 9;
-    Key key = 10;
-    Secret secret = 11;
-    Identity identity = 12;
-    RoleAssignment role_assignment = 13;
-    ContainerImage container_image = 14;
-    VMImage vm_image = 15;
-    DeviceProvisioningService device_provisioning_service = 16;
-    MessagingHub messaging_hub = 17;
-    KeyVault key_vault = 18;
-    MLWorkspace ml_workspace = 19;
-    NetworkInterface network_interface = 20;
-    NetworkSecurityGroup network_security_group = 21;
-    FunctionService function_service = 22;
-    GenericNetworkService generic_network_service = 23;
-    LoadBalancer load_balancer = 24;
-    LoggingService logging_service = 25;
-    SecurityAdvisoryService security_advisory_service = 26;
-    DocumentDatabaseService document_database_service = 27;
-    KeyValueDatabaseService key_value_database_service = 28;
-    MultiModalDatabaseService multi_modal_database_service = 29;
-    RelationalDatabaseService relational_database_service = 30;
-    FileStorageService file_storage_service = 31;
-    ObjectStorageService object_storage_service = 32;
-    VirtualNetwork virtual_network = 33;
-    VirtualSubNetwork virtual_sub_network = 34;
-    PasswordPolicy password_policy = 35;
-    ResourceGroup resource_group = 36;
-    BlockStorage block_storage = 37;
-    DatabaseStorage database_storage = 38;
-    FileStorage file_storage = 39;
-    ObjectStorage object_storage = 40;
+    CodeRepository code_repository = 4;
+    Container container = 5;
+    Function function = 6;
+    VirtualMachine virtual_machine = 7;
+    ContainerOrchestration container_orchestration = 8;
+    ContainerRegistry container_registry = 9;
+    Certificate certificate = 10;
+    Key key = 11;
+    Secret secret = 12;
+    Identity identity = 13;
+    RoleAssignment role_assignment = 14;
+    ContainerImage container_image = 15;
+    VMImage vm_image = 16;
+    DeviceProvisioningService device_provisioning_service = 17;
+    MessagingHub messaging_hub = 18;
+    KeyVault key_vault = 19;
+    MLWorkspace ml_workspace = 20;
+    NetworkInterface network_interface = 21;
+    NetworkSecurityGroup network_security_group = 22;
+    FunctionService function_service = 23;
+    GenericNetworkService generic_network_service = 24;
+    LoadBalancer load_balancer = 25;
+    LoggingService logging_service = 26;
+    SecurityAdvisoryService security_advisory_service = 27;
+    DocumentDatabaseService document_database_service = 28;
+    KeyValueDatabaseService key_value_database_service = 29;
+    MultiModalDatabaseService multi_modal_database_service = 30;
+    RelationalDatabaseService relational_database_service = 31;
+    FileStorageService file_storage_service = 32;
+    ObjectStorageService object_storage_service = 33;
+    VirtualNetwork virtual_network = 34;
+    VirtualSubNetwork virtual_sub_network = 35;
+    PasswordPolicy password_policy = 36;
+    ResourceGroup resource_group = 37;
+    BlockStorage block_storage = 38;
+    DatabaseStorage database_storage = 39;
+    FileStorage file_storage = 40;
+    ObjectStorage object_storage = 41;
   }
 }
 
@@ -442,6 +445,26 @@ message Code {
     Library library = 2;
     CodeModule code_module = 3;
   }
+}
+
+// CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeRepository {
+  option (resource_type_names) = "CodeRepository";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 1;
+  string description = 2;
+  string id = 3 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 4;
+  map<string, string> labels = 5;
+  string name = 6 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 7;
+  GeoLocation geo_location = 8;
+  repeated Redundancy redundancies = 9;
+  optional string parent_id = 10;
+  UsageStatistics usage_statistics = 11;
 }
 
 // Component is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -475,7 +498,7 @@ message Confidentiality {
 message Container {
   option (resource_type_names) = "Container";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -501,7 +524,7 @@ message Container {
 message ContainerImage {
   option (resource_type_names) = "ContainerImage";
   option (resource_type_names) = "Image";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -522,7 +545,7 @@ message ContainerImage {
 // ContainerOrchestration is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ContainerOrchestration {
   option (resource_type_names) = "ContainerOrchestration";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -545,7 +568,7 @@ message ContainerOrchestration {
 // ContainerRegistry is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ContainerRegistry {
   option (resource_type_names) = "ContainerRegistry";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -649,7 +672,7 @@ message DatabaseService {
 message DatabaseStorage {
   option (resource_type_names) = "DatabaseStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -674,7 +697,7 @@ message DatabaseStorage {
 message DeviceProvisioningService {
   option (resource_type_names) = "DeviceProvisioningService";
   option (resource_type_names) = "IoT";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -708,7 +731,7 @@ message DocumentDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -764,7 +787,7 @@ message Error {
 message FileStorage {
   option (resource_type_names) = "FileStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -793,7 +816,7 @@ message FileStorageService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -840,7 +863,7 @@ message Framework {
 message Function {
   option (resource_type_names) = "Function";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -868,7 +891,7 @@ message FunctionService {
   option (resource_type_names) = "FunctionService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -941,7 +964,7 @@ message GenericNetworkService {
   option (resource_type_names) = "GenericNetworkService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1045,7 +1068,7 @@ message Identifiable {
 message Identity {
   option (resource_type_names) = "Identity";
   option (resource_type_names) = "Identifiable";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   bool activated = 1;
@@ -1111,7 +1134,7 @@ message IoT {
 message Job {
   option (resource_type_names) = "Job";
   option (resource_type_names) = "CICDService";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1143,7 +1166,7 @@ message TokenBasedAuthentication {
 message Key {
   option (resource_type_names) = "Key";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   string algorithm = 1;
@@ -1160,8 +1183,8 @@ message Key {
   google.protobuf.Timestamp not_before_date = 12;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 13;
-  optional string cloud_resource_id = 14;
-  GeoLocation geo_location = 15;
+  GeoLocation geo_location = 14;
+  optional string infrastructure_id = 15;
   repeated Redundancy redundancies = 16;
   optional string parent_id = 17;
   UsageStatistics usage_statistics = 18;
@@ -1174,7 +1197,7 @@ message KeyValueDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1204,7 +1227,7 @@ message KeyValueDatabaseService {
 // KeyVault is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message KeyVault {
   option (resource_type_names) = "KeyVault";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1250,10 +1273,11 @@ message Library {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
   repeated string code_module_ids = 7;
-  repeated Functionality functionalities = 8;
-  repeated string library_ids = 9;
-  optional string parent_id = 10;
-  repeated Vulnerability vulnerabilities = 11;
+  optional string code_repository_id = 8;
+  repeated Functionality functionalities = 9;
+  repeated string library_ids = 10;
+  optional string parent_id = 11;
+  repeated Vulnerability vulnerabilities = 12;
 }
 
 // LoadBalancer is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1262,7 +1286,7 @@ message LoadBalancer {
   option (resource_type_names) = "LoadBalancer";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1354,7 +1378,7 @@ message LoggingService {
   option (resource_type_names) = "LoggingService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1414,7 +1438,7 @@ message ManagedKeyEncryption {
 message MessagingHub {
   option (resource_type_names) = "MessagingHub";
   option (resource_type_names) = "IoT";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1445,8 +1469,9 @@ message CodeModule {
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6;
   repeated string code_module_ids = 7;
-  repeated Functionality functionalities = 8;
-  optional string parent_id = 9;
+  optional string code_repository_id = 8;
+  repeated Functionality functionalities = 9;
+  optional string parent_id = 10;
 }
 
 // MultiFactorAuthentiation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1467,7 +1492,7 @@ message MultiModalDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1498,7 +1523,7 @@ message MultiModalDatabaseService {
 message NetworkInterface {
   option (resource_type_names) = "NetworkInterface";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1521,7 +1546,7 @@ message NetworkInterface {
 message NetworkSecurityGroup {
   option (resource_type_names) = "NetworkSecurityGroup";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1615,7 +1640,7 @@ message OTPBasedAuthentication {
 message ObjectStorage {
   option (resource_type_names) = "ObjectStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1654,7 +1679,7 @@ message ObjectStorageService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1703,7 +1728,7 @@ message PasswordBasedAuthentication {
 // PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message PasswordPolicy {
   option (resource_type_names) = "PasswordPolicy";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1748,7 +1773,7 @@ message RelationalDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1801,7 +1826,7 @@ message RemoteDocumentLocation {
 // ResourceGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ResourceGroup {
   option (resource_type_names) = "ResourceGroup";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1836,7 +1861,7 @@ message ResourceLogging {
 message RoleAssignment {
   option (resource_type_names) = "RoleAssignment";
   option (resource_type_names) = "Identifiable";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   bool activated = 1;
@@ -1870,7 +1895,7 @@ message SchemaValidation {
 message Secret {
   option (resource_type_names) = "Secret";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -1885,8 +1910,8 @@ message Secret {
   google.protobuf.Timestamp not_before_date = 10;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 11;
-  optional string cloud_resource_id = 12;
-  GeoLocation geo_location = 13;
+  GeoLocation geo_location = 12;
+  optional string infrastructure_id = 13;
   repeated Redundancy redundancies = 14;
   optional string parent_id = 15;
   UsageStatistics usage_statistics = 16;
@@ -1929,7 +1954,7 @@ message SecurityAdvisoryService {
   option (resource_type_names) = "SecurityAdvisoryService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2087,7 +2112,7 @@ message UsageStatistics {
 message VMImage {
   option (resource_type_names) = "VMImage";
   option (resource_type_names) = "Image";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2109,7 +2134,7 @@ message VMImage {
 message VirtualMachine {
   option (resource_type_names) = "VirtualMachine";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2140,7 +2165,7 @@ message VirtualMachine {
 message VirtualNetwork {
   option (resource_type_names) = "VirtualNetwork";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2161,7 +2186,7 @@ message VirtualNetwork {
 message VirtualSubNetwork {
   option (resource_type_names) = "VirtualSubNetwork";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2208,7 +2233,7 @@ message WebApplicationFirewall {
 message Workflow {
   option (resource_type_names) = "Workflow";
   option (resource_type_names) = "CICDService";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;
@@ -2229,7 +2254,7 @@ message Workflow {
 message MLWorkspace {
   option (resource_type_names) = "MLWorkspace";
   option (resource_type_names) = "MachineLearning";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
   google.protobuf.Timestamp creation_time = 1;

@@ -94,6 +94,9 @@
         <Class abbreviatedIRI="cl:Code"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:CodeRepository"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:Component"/>
     </Declaration>
     <Declaration>
@@ -1295,6 +1298,13 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:Code"/>
         <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <Class abbreviatedIRI="cl:CodeRepository"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Code"/>
+        <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class abbreviatedIRI="cl:Functionality"/>
         </ObjectSomeValuesFrom>
@@ -1305,6 +1315,10 @@
             <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class abbreviatedIRI="cl:Module"/>
         </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:CodeRepository"/>
+        <Class abbreviatedIRI="cl:CloudResource"/>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:Component"/>
@@ -3344,7 +3358,7 @@ name = metadata.name</Literal>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:CloudResource</AbbreviatedIRI>
-        <Literal>CloudResource</Literal>
+        <Literal>Infrastructure</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3355,6 +3369,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:Code</AbbreviatedIRI>
         <Literal>Code</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:CodeRepository</AbbreviatedIRI>
+        <Literal>CodeRepository</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
