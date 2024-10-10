@@ -3,8 +3,2575 @@
 
 openapi: 3.0.3
 info:
-    title: ""
+    title: OntologyService API
     version: 0.0.1
-paths: {}
+paths:
+    /v1/ontology/check:
+        get:
+            tags:
+                - OntologyService
+            operationId: OntologyService_Check
+            parameters:
+                - name: resource.account.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.account.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.account.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.account.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.account.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.account.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.account.geoLocation.region
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.account.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.account.usageStatistics.apiHitsPerMonth
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: resource.job.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.job.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.job.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.job.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.job.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.job.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.job.geoLocation.region
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.job.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.job.usageStatistics.apiHitsPerMonth
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: resource.workflow.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.workflow.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.workflow.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.workflow.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.workflow.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.workflow.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.workflow.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeRepository.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.codeRepository.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeRepository.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeRepository.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.codeRepository.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeRepository.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.codeRepository.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.container.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.container.encryptionInUse.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.imageId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.container.remoteAttestation.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.container.remoteAttestation.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.remoteAttestation.status
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.container.resourceLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.resourceLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.resourceLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.container.resourceLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.container.resourceLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.function.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.function.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.function.runtimeLanguage
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.runtimeVersion
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.encryptionInUse.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.function.remoteAttestation.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.function.remoteAttestation.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.remoteAttestation.status
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.function.resourceLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.resourceLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.resourceLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.function.resourceLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.function.resourceLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.virtualMachine.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualMachine.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualMachine.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualMachine.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.virtualMachine.activityLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.activityLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.activityLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.activityLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.activityLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.automaticUpdates.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.automaticUpdates.interval
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.automaticUpdates.securityOnly
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.blockStorageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.bootLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.bootLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.bootLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.bootLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.bootLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.malwareProtection.durationSinceActive
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.malwareProtection.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.malwareProtection.numberOfThreatsFound
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: resource.virtualMachine.malwareProtection.applicationLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.malwareProtection.applicationLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.malwareProtection.applicationLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.malwareProtection.applicationLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.malwareProtection.applicationLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.networkInterfaceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.osLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.osLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.osLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.virtualMachine.osLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualMachine.osLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualMachine.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.containerOrchestration.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.containerOrchestration.managementUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.containerOrchestration.containerIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.containerOrchestration.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerRegistry.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.containerRegistry.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerRegistry.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerRegistry.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.containerRegistry.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerRegistry.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.containerRegistry.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.certificate.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.certificate.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.certificate.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.certificate.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.certificate.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.certificate.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.certificate.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.certificate.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.certificate.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.certificate.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.certificate.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.certificate.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.key.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.key.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.key.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.key.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.key.keySize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: resource.key.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.key.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.key.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.key.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.secret.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.secret.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.secret.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.secret.expirationDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.secret.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.secret.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.secret.isManaged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.secret.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.secret.notBeforeDate
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.secret.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.secret.infrastructureId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.secret.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.identity.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.identity.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.identity.disablePasswordPolicy
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.enforceMfa
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.identity.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.lastActivity
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.identity.loginDefenderEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.identity.privileged
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.identity.authenticity.certificateBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.certificateBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.tokenBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.tokenBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.tokenBasedAuthentication.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.multiFactorAuthentiation.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.noAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.otpBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.otpBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.passwordBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.passwordBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.singleSignOn.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authenticity.singleSignOn.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authorization.l3Firewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authorization.l3Firewall.inbound
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authorization.l3Firewall.restrictedPorts
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.identity.authorization.webApplicationFirewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.identity.authorization.rbac.broadAssignments
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.identity.authorization.rbac.mixedDuties
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.identity.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.roleAssignment.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.authenticity.certificateBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.certificateBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.tokenBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.tokenBasedAuthentication.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.tokenBasedAuthentication.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.multiFactorAuthentiation.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.noAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.otpBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.otpBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.passwordBasedAuthentication.activated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.passwordBasedAuthentication.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.singleSignOn.contextIsChecked
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authenticity.singleSignOn.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authorization.l3Firewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authorization.l3Firewall.inbound
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authorization.l3Firewall.restrictedPorts
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.roleAssignment.authorization.webApplicationFirewall.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.roleAssignment.authorization.rbac.broadAssignments
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.roleAssignment.authorization.rbac.mixedDuties
+                  in: query
+                  description: 'see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)'
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.roleAssignment.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerImage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.containerImage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerImage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerImage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.containerImage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerImage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.containerImage.applicationId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.containerImage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.vmImage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.vmImage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.vmImage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.vmImage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.vmImage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.vmImage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.vmImage.applicationId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.vmImage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.deviceProvisioningService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.deviceProvisioningService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.deviceProvisioningService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.deviceProvisioningService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.deviceProvisioningService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.deviceProvisioningService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.deviceProvisioningService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.messagingHub.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.messagingHub.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.messagingHub.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.messagingHub.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.messagingHub.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.messagingHub.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.messagingHub.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyVault.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.keyVault.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyVault.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyVault.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.keyVault.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyVault.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.keyVault.credentialIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.keyVault.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.mlWorkspace.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.mlWorkspace.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.atRestEncryption.customerKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.atRestEncryption.customerKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.mlWorkspace.atRestEncryption.customerKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.atRestEncryption.managedKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.atRestEncryption.managedKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.mlWorkspace.atRestEncryption.managedKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.mlWorkspace.storageId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkInterface.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.networkInterface.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkInterface.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkInterface.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.networkInterface.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkInterface.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.networkInterface.networkServiceId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkInterface.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkSecurityGroup.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.networkSecurityGroup.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkSecurityGroup.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkSecurityGroup.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.networkSecurityGroup.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.networkSecurityGroup.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.networkSecurityGroup.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.functionService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.functionService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.functionService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.functionService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.functionService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.functionIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.functionService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.transportEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.functionService.transportEncryption.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.functionService.transportEncryption.protocol
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.functionService.transportEncryption.protocolVersion
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.genericNetworkService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.genericNetworkService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.genericNetworkService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.genericNetworkService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.genericNetworkService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.transportEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.genericNetworkService.transportEncryption.enforced
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.genericNetworkService.transportEncryption.protocol
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericNetworkService.transportEncryption.protocolVersion
+                  in: query
+                  schema:
+                    type: number
+                    format: float
+                - name: resource.loadBalancer.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.loadBalancer.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.loadBalancer.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.loadBalancer.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.loadBalancer.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.url
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.networkServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.loadBalancer.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loadBalancer.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.loggingService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.loggingService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.loggingService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.loggingService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.loggingService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.loggingService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.securityAdvisoryService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.securityAdvisoryService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.securityAdvisoryService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.securityAdvisoryService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.securityAdvisoryService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.keyIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.securityAdvisoryService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.documentDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.documentDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.documentDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.documentDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.httpEndpoint.handler
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.httpEndpoint.method
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.httpEndpoint.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.httpEndpoint.url
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.malwareProtection.durationSinceActive
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.documentDatabaseService.malwareProtection.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.documentDatabaseService.malwareProtection.numberOfThreatsFound
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: resource.documentDatabaseService.malwareProtection.applicationLogging.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.documentDatabaseService.malwareProtection.applicationLogging.monitoringLogDataEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.documentDatabaseService.malwareProtection.applicationLogging.retentionPeriod
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.documentDatabaseService.malwareProtection.applicationLogging.securityAlertsEnabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.documentDatabaseService.malwareProtection.applicationLogging.loggingServiceIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.documentDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.documentDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.keyValueDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.keyValueDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.keyValueDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.keyValueDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.keyValueDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.httpEndpoint.handler
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.httpEndpoint.method
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.httpEndpoint.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.httpEndpoint.url
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.keyValueDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.multiModalDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.multiModalDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.multiModalDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.multiModalDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.multiModalDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.multiModalDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.relationalDatabaseService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.relationalDatabaseService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.relationalDatabaseService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.relationalDatabaseService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.relationalDatabaseService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.relationalDatabaseService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.fileStorageService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.fileStorageService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.fileStorageService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.fileStorageService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.fileStorageService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorageService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.objectStorageService.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.objectStorageService.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.objectStorageService.ips
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.objectStorageService.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.ports
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: resource.objectStorageService.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.serviceMetadataDocumentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorageService.storageIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.virtualNetwork.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.virtualNetwork.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualNetwork.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualNetwork.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualNetwork.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualNetwork.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.virtualNetwork.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualSubNetwork.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.virtualSubNetwork.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualSubNetwork.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualSubNetwork.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.virtualSubNetwork.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.virtualSubNetwork.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.virtualSubNetwork.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.passwordPolicy.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.passwordPolicy.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.passwordPolicy.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.passwordPolicy.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.passwordPolicy.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.passwordPolicy.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.passwordPolicy.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.resourceGroup.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.resourceGroup.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.resourceGroup.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.resourceGroup.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.resourceGroup.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.resourceGroup.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.resourceGroup.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.blockStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.blockStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.blockStorage.atRestEncryption.customerKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.atRestEncryption.customerKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.blockStorage.atRestEncryption.customerKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.atRestEncryption.managedKeyEncryption.algorithm
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.atRestEncryption.managedKeyEncryption.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.blockStorage.atRestEncryption.managedKeyEncryption.keyUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.blockStorage.immutability.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.blockStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.databaseStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.databaseStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.databaseStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.databaseStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.databaseStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.databaseStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.databaseStorage.immutability.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.databaseStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.fileStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.fileStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.fileStorage.publicAccess
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.fileStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.fileStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorage.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.objectStorage.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorage.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorage.internetAccessibleEndpoint
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.objectStorage.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.objectStorage.publicAccess
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.objectStorage.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.objectStorage.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.application.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.programmingLanguage
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.programmingVersion
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.application.translationUnits
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.application.automaticUpdates.enabled
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.application.automaticUpdates.interval
+                  in: query
+                  schema:
+                    pattern: ^-?(?:0|[1-9][0-9]{0,11})(?:\.[0-9]{1,9})?s$
+                    type: string
+                    description: Represents a a duration between -315,576,000,000s and 315,576,000,000s (around 10000 years). Precision is in nanoseconds. 1 nanosecond is represented as 0.000000001s
+                - name: resource.application.automaticUpdates.securityOnly
+                  in: query
+                  schema:
+                    type: boolean
+                - name: resource.application.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.application.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.computeId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.application.libraryIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.application.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.library.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.library.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.library.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.library.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.library.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.library.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.library.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.library.libraryIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.library.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeModule.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.codeModule.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeModule.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeModule.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeModule.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.codeModule.codeModuleIds
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: resource.codeModule.codeRepositoryId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.codeModule.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.genericDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.genericDocument.documentLocation.localDocumentLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.documentLocation.remoteDocumentLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.schemaValidation.format
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.genericDocument.schemaValidation.schemaUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.securityAdvisoryDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.documentLocation.localDocumentLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.documentLocation.remoteDocumentLocation.path
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.schemaValidation.format
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.securityAdvisoryDocument.schemaValidation.schemaUrl
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.creationTime
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
+                - name: resource.serviceMetadataDocument.description
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.filetype
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.id
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.name
+                  in: query
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.raw
+                  in: query
+                  description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                  schema:
+                    type: string
+                - name: resource.serviceMetadataDocument.parentId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
-    schemas: {}
+    schemas:
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: OntologyService
