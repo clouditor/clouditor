@@ -35,7 +35,10 @@ option go_package = "clouditor.io/clouditor/v2/api/ontology";
 
 service OntologyService {
   rpc Check(CheckRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {get: "/v1/ontology/check"};
+    option (google.api.http) = {
+      post: "/v1/ontology/check"
+      body: "resource"
+    };
   }
 }
 
