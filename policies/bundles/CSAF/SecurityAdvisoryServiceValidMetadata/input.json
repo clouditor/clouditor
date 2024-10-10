@@ -32,7 +32,7 @@
         "SecurityAdvisoryService",
         "NetworkService",
         "Networking",
-        "CloudResource",
+        "Infrastructure",
         "Resource"
     ],
     "usageStatistics": null,
@@ -89,7 +89,7 @@
             "type": [
                 "Key",
                 "Credential",
-                "CloudResource",
+                "Infrastructure",
                 "Resource"
             ],
             "usageStatistics": null

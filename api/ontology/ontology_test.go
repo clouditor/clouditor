@@ -26,7 +26,7 @@ func TestResourceTypes(t *testing.T) {
 			args: args{
 				r: &VirtualMachine{},
 			},
-			want: []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+			want: []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
 		},
 	}
 	for _, tt := range tests {
@@ -119,7 +119,7 @@ func TestResourceMap(t *testing.T) {
 						"interval":     "172800s",
 						"securityOnly": false,
 					},
-					"type":            []string{"VirtualMachine", "Compute", "CloudResource", "Resource"},
+					"type":            []string{"VirtualMachine", "Compute", "Infrastructure", "Resource"},
 					"usageStatistics": nil,
 				}
 
