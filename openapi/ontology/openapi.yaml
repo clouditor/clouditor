@@ -581,6 +581,12 @@ components:
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
             description: ContainerRegistry is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        CryptographicHash:
+            type: object
+            properties:
+                algorithm:
+                    type: string
+            description: CryptographicHash is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         CustomerKeyEncryption:
             type: object
             properties:
@@ -669,6 +675,12 @@ components:
             description: |-
                 DatabaseStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
                  describes the actual database or a table in a database
+        Decryption:
+            type: object
+            properties:
+                algorithm:
+                    type: string
+            description: Decryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         DeviceProvisioningService:
             type: object
             properties:
@@ -790,6 +802,12 @@ components:
                     items:
                         $ref: '#/components/schemas/Error'
             description: DocumentSignature is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+        Encryption:
+            type: object
+            properties:
+                algorithm:
+                    type: string
+            description: Encryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         EncryptionInUse:
             type: object
             properties:
@@ -1017,6 +1035,12 @@ components:
                     $ref: '#/components/schemas/HttpEndpoint'
                 httpRequestHandler:
                     $ref: '#/components/schemas/HttpRequestHandler'
+                decryption:
+                    $ref: '#/components/schemas/Decryption'
+                encryption:
+                    $ref: '#/components/schemas/Encryption'
+                cryptographicHash:
+                    $ref: '#/components/schemas/CryptographicHash'
                 databaseConnect:
                     $ref: '#/components/schemas/DatabaseConnect'
                 databaseQuery:

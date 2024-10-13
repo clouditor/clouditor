@@ -124,6 +124,9 @@
         <Class abbreviatedIRI="cl:CryptographicHash"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:CryptographicOperation"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:CustomerKeyEncryption"/>
     </Declaration>
     <Declaration>
@@ -145,6 +148,9 @@
         <Class abbreviatedIRI="cl:DatabaseStorage"/>
     </Declaration>
     <Declaration>
+        <Class abbreviatedIRI="cl:DecryptionOperation"/>
+    </Declaration>
+    <Declaration>
         <Class abbreviatedIRI="cl:DeviceProvisioningService"/>
     </Declaration>
     <Declaration>
@@ -158,6 +164,9 @@
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:EncryptionInUse"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:EncryptionOperation"/>
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:Error"/>
@@ -194,6 +203,9 @@
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:GeoRedundancy"/>
+    </Declaration>
+    <Declaration>
+        <Class abbreviatedIRI="cl:HashOperation"/>
     </Declaration>
     <Declaration>
         <Class abbreviatedIRI="cl:HttpClientLibrary"/>
@@ -1469,6 +1481,10 @@
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:CryptographicOperation"/>
+        <Class abbreviatedIRI="cl:Operation"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:CustomerKeyEncryption"/>
         <Class abbreviatedIRI="cl:AtRestEncryption"/>
     </SubClassOf>
@@ -1546,6 +1562,17 @@
         <Class abbreviatedIRI="cl:Storage"/>
     </SubClassOf>
     <SubClassOf>
+        <Class abbreviatedIRI="cl:DecryptionOperation"/>
+        <Class abbreviatedIRI="cl:CryptographicOperation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:DecryptionOperation"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:algorithm"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
         <Class abbreviatedIRI="cl:DeviceProvisioningService"/>
         <Class abbreviatedIRI="cl:IoT"/>
     </SubClassOf>
@@ -1619,6 +1646,17 @@
         <DataSomeValuesFrom>
             <DataProperty abbreviatedIRI="prop:enabled"/>
             <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:EncryptionOperation"/>
+        <Class abbreviatedIRI="cl:CryptographicOperation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:EncryptionOperation"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:algorithm"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
         </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -1717,6 +1755,17 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:GeoRedundancy"/>
         <Class abbreviatedIRI="cl:Redundancy"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:HashOperation"/>
+        <Class abbreviatedIRI="cl:CryptographicOperation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:HashOperation"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="prop:algorithm"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:HttpClientLibrary"/>
@@ -3427,6 +3476,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:CryptographicOperation</AbbreviatedIRI>
+        <Literal>CryptographicOperation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:CustomerKeyEncryption</AbbreviatedIRI>
         <Literal xml:lang="english">CustomerKeyEncryption</Literal>
     </AnnotationAssertion>
@@ -3472,6 +3526,11 @@ name = metadata.name</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:DecryptionOperation</AbbreviatedIRI>
+        <Literal>Decryption</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:DeviceProvisioningService</AbbreviatedIRI>
         <Literal xml:lang="english">DeviceProvisioningService</Literal>
     </AnnotationAssertion>
@@ -3499,6 +3558,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:EncryptionInUse</AbbreviatedIRI>
         <Literal>EncryptionInUse</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:EncryptionOperation</AbbreviatedIRI>
+        <Literal>Encryption</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
@@ -3574,6 +3638,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:GeoRedundancy</AbbreviatedIRI>
         <Literal>GeoRedundancy</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:HashOperation</AbbreviatedIRI>
+        <Literal>CryptographicHash</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>

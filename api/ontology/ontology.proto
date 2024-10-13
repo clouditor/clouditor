@@ -604,6 +604,15 @@ message DocumentChecksum {
   repeated Error errors = 2;
 }
 
+// CryptographicOperation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message CryptographicOperation {
+  oneof type {
+    Decryption decryption = 1;
+    Encryption encryption = 2;
+    CryptographicHash cryptographic_hash = 3;
+  }
+}
+
 // CustomerKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message CustomerKeyEncryption {
   option (resource_type_names) = "CustomerKeyEncryption";
@@ -693,6 +702,16 @@ message DatabaseStorage {
   UsageStatistics usage_statistics = 15;
 }
 
+// Decryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Decryption {
+  option (resource_type_names) = "Decryption";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 1;
+}
+
 // DeviceProvisioningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message DeviceProvisioningService {
   option (resource_type_names) = "DeviceProvisioningService";
@@ -773,6 +792,16 @@ message EncryptionInUse {
   option (resource_type_names) = "SecurityFeature";
 
   bool enabled = 1;
+}
+
+// Encryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Encryption {
+  option (resource_type_names) = "Encryption";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 1;
 }
 
 // Error is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -924,14 +953,17 @@ message Functionality {
     Error error = 4;
     HttpEndpoint http_endpoint = 5;
     HttpRequestHandler http_request_handler = 6;
-    DatabaseConnect database_connect = 7;
-    DatabaseQuery database_query = 8;
-    HttpRequest http_request = 9;
-    LogOperation log_operation = 10;
-    ObjectStorageRequest object_storage_request = 11;
-    SchemaValidation schema_validation = 12;
-    SecurityAdvisoryFeed security_advisory_feed = 13;
-    Vulnerability vulnerability = 14;
+    Decryption decryption = 7;
+    Encryption encryption = 8;
+    CryptographicHash cryptographic_hash = 9;
+    DatabaseConnect database_connect = 10;
+    DatabaseQuery database_query = 11;
+    HttpRequest http_request = 12;
+    LogOperation log_operation = 13;
+    ObjectStorageRequest object_storage_request = 14;
+    SchemaValidation schema_validation = 15;
+    SecurityAdvisoryFeed security_advisory_feed = 16;
+    Vulnerability vulnerability = 17;
   }
 }
 
@@ -1004,6 +1036,16 @@ message GeoRedundancy {
   option (resource_type_names) = "SecurityFeature";
 
   repeated GeoLocation geo_locations = 1;
+}
+
+// CryptographicHash is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CryptographicHash {
+  option (resource_type_names) = "CryptographicHash";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 1;
 }
 
 // HttpClientLibrary is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1707,11 +1749,14 @@ message ObjectStorageService {
 // Operation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Operation {
   oneof type {
-    DatabaseConnect database_connect = 1;
-    DatabaseQuery database_query = 2;
-    HttpRequest http_request = 3;
-    LogOperation log_operation = 4;
-    ObjectStorageRequest object_storage_request = 5;
+    Decryption decryption = 1;
+    Encryption encryption = 2;
+    CryptographicHash cryptographic_hash = 3;
+    DatabaseConnect database_connect = 4;
+    DatabaseQuery database_query = 5;
+    HttpRequest http_request = 6;
+    LogOperation log_operation = 7;
+    ObjectStorageRequest object_storage_request = 8;
   }
 }
 
