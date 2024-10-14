@@ -92,7 +92,7 @@ func TestInitConfig(t *testing.T) {
 	}
 }
 
-func TestInitCobra(t *testing.T) {
+func TestInitCobra_EmbeddedOAuth2ServerEnabled(t *testing.T) {
 	type args struct {
 		engineCmd *cobra.Command
 	}
@@ -103,9 +103,9 @@ func TestInitCobra(t *testing.T) {
 		want      assert.Want[bool]
 	}{
 		{
-			name: "Happy path: StartEmbeddedOAuth2Server set to false",
+			name: "Happy path: EmbeddedOAuth2ServerEnabled set to false",
 			prepViper: func() {
-				viper.Set(APIStartEmbeddedOAuth2ServerFlag, false)
+				viper.Set(EmbeddedOAuth2ServerEnabledFlag, false)
 			},
 			args: args{engineCmd: &cobra.Command{}},
 			want: func(t *testing.T, got bool) bool {
@@ -113,9 +113,9 @@ func TestInitCobra(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path: StartEmbeddedOAuth2Server set to true",
+			name: "Happy path: EmbeddedOAuth2ServerEnabled set to true",
 			prepViper: func() {
-				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
+				viper.Set(EmbeddedOAuth2ServerEnabledFlag, true)
 			},
 			args: args{engineCmd: &cobra.Command{}},
 			want: func(t *testing.T, got bool) bool {
@@ -130,7 +130,50 @@ func TestInitCobra(t *testing.T) {
 
 			InitCobra(tt.args.engineCmd)
 
-			tt.want(t, viper.GetBool(APIStartEmbeddedOAuth2ServerFlag))
+			tt.want(t, viper.GetBool(EmbeddedOAuth2ServerEnabledFlag))
+		})
+	}
+}
+
+func TestInitCobra_EmbeddedOAuth2ServerPublicURL(t *testing.T) {
+	type args struct {
+		engineCmd *cobra.Command
+	}
+	tests := []struct {
+		name      string
+		prepViper func()
+		args      args
+		want      assert.Want[string]
+	}{
+		{
+			name: "Happy path: EmbeddedOAuth2ServerPublicURLFlag set",
+			prepViper: func() {
+				viper.Set(EmbeddedOAuth2ServerPublicURLFlag, "http://localhost")
+			},
+			args: args{engineCmd: &cobra.Command{}},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "http://localhost", got)
+			},
+		},
+		{
+			name: "Happy path: EmbeddedOAuth2ServerPublicURLFlag not set",
+			prepViper: func() {
+				viper.Set(EmbeddedOAuth2ServerPublicURLFlag, "")
+			},
+			args: args{engineCmd: &cobra.Command{}},
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, "", got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			tt.prepViper()
+
+			InitCobra(tt.args.engineCmd)
+
+			tt.want(t, viper.GetString(EmbeddedOAuth2ServerPublicURLFlag))
 		})
 	}
 }
