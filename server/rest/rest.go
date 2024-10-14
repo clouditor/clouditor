@@ -195,11 +195,12 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...ServerConfigOption) (err error) {
+func RunServer(ctx context.Context, grpcPort uint16, port uint16, publicUrl string, serverOpts ...ServerConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	httpPort = port
+	httpPublicURL = publicUrl
 
 	mux := runtime.NewServeMux()
 

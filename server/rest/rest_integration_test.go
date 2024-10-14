@@ -96,6 +96,7 @@ func TestREST(t *testing.T) {
 			context.Background(),
 			grpcPort,
 			0,
+			"http://localhost",
 			rest.WithAllowedOrigins(origins),
 			rest.WithAllowedMethods(methods),
 			rest.WithAllowedHeaders(headers),
