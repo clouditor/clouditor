@@ -452,6 +452,7 @@ message CodeRegion {
   option (resource_type_names) = "CodeRegion";
   option (resource_type_names) = "Functionality";
 
+  string code = 11271;
   int32 end_column = 18978;
   int32 end_line = 7512;
   string file = 1260;
