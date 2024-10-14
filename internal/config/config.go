@@ -46,7 +46,7 @@ const (
 	APICORSAllowedMethodsFlags           = "api-cors-allowed-methods"
 	APIJWKSURLFlag                       = "api-jwks-url"
 	APIStartEmbeddedOAuth2ServerFlag     = "api-start-embedded-oauth-server"
-	APIEmbeddedOAuth2ServerPublicURLFlag = "api-embedded-oauth-server-public-url"
+	EmbeddedOAuth2ServerPublicURLFlag    = "embedded-oauth2-server-public-url"
 	ServiceOAuth2EndpointFlag            = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag            = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag        = "service-oauth2-client-secret"
