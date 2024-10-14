@@ -45,14 +45,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	OntologyService_Check_FullMethodName = "/clouditor.ontology.v1.OntologyService/Check"
+	OntologyService_Noop_FullMethodName = "/clouditor.ontology.v1.OntologyService/Noop"
 )
 
 // OntologyServiceClient is the client API for OntologyService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// This service is a no-op, and is only necessary in order to generate the OpenAPI definitions for our ontology objects. It MUST not be implemented.
 type OntologyServiceClient interface {
-	Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Noop(ctx context.Context, in *NoopRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type ontologyServiceClient struct {
@@ -63,10 +65,10 @@ func NewOntologyServiceClient(cc grpc.ClientConnInterface) OntologyServiceClient
 	return &ontologyServiceClient{cc}
 }
 
-func (c *ontologyServiceClient) Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *ontologyServiceClient) Noop(ctx context.Context, in *NoopRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, OntologyService_Check_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, OntologyService_Noop_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +78,10 @@ func (c *ontologyServiceClient) Check(ctx context.Context, in *CheckRequest, opt
 // OntologyServiceServer is the server API for OntologyService service.
 // All implementations must embed UnimplementedOntologyServiceServer
 // for forward compatibility.
+//
+// This service is a no-op, and is only necessary in order to generate the OpenAPI definitions for our ontology objects. It MUST not be implemented.
 type OntologyServiceServer interface {
-	Check(context.Context, *CheckRequest) (*emptypb.Empty, error)
+	Noop(context.Context, *NoopRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOntologyServiceServer()
 }
 
@@ -88,8 +92,8 @@ type OntologyServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedOntologyServiceServer struct{}
 
-func (UnimplementedOntologyServiceServer) Check(context.Context, *CheckRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
+func (UnimplementedOntologyServiceServer) Noop(context.Context, *NoopRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Noop not implemented")
 }
 func (UnimplementedOntologyServiceServer) mustEmbedUnimplementedOntologyServiceServer() {}
 func (UnimplementedOntologyServiceServer) testEmbeddedByValue()                         {}
@@ -112,20 +116,20 @@ func RegisterOntologyServiceServer(s grpc.ServiceRegistrar, srv OntologyServiceS
 	s.RegisterService(&OntologyService_ServiceDesc, srv)
 }
 
-func _OntologyService_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckRequest)
+func _OntologyService_Noop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NoopRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OntologyServiceServer).Check(ctx, in)
+		return srv.(OntologyServiceServer).Noop(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: OntologyService_Check_FullMethodName,
+		FullMethod: OntologyService_Noop_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OntologyServiceServer).Check(ctx, req.(*CheckRequest))
+		return srv.(OntologyServiceServer).Noop(ctx, req.(*NoopRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -138,8 +142,8 @@ var OntologyService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*OntologyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Check",
-			Handler:    _OntologyService_Check_Handler,
+			MethodName: "Noop",
+			Handler:    _OntologyService_Noop_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

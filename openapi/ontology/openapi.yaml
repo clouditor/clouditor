@@ -4,13 +4,14 @@
 openapi: 3.0.3
 info:
     title: OntologyService API
+    description: This service is a no-op, and is only necessary in order to generate the OpenAPI definitions for our ontology objects. It MUST not be implemented.
     version: 0.0.1
 paths:
-    /v1/ontology/check:
+    /v1/ontology/noop:
         post:
             tags:
                 - OntologyService
-            operationId: OntologyService_Check
+            operationId: OntologyService_Noop
             requestBody:
                 content:
                     application/json:

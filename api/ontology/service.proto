@@ -33,15 +33,16 @@ import "google/protobuf/empty.proto";
 
 option go_package = "clouditor.io/clouditor/v2/api/ontology";
 
+// This service is a no-op, and is only necessary in order to generate the OpenAPI definitions for our ontology objects. It MUST not be implemented.
 service OntologyService {
-  rpc Check(CheckRequest) returns (google.protobuf.Empty) {
+  rpc Noop(NoopRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/ontology/check"
+      post: "/v1/ontology/noop"
       body: "resource"
     };
   }
 }
 
-message CheckRequest {
+message NoopRequest {
   clouditor.ontology.v1.Resource resource = 1;
 }
