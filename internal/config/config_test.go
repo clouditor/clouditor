@@ -105,7 +105,7 @@ func TestInitCobra(t *testing.T) {
 		{
 			name: "Happy path: StartEmbeddedOAuth2Server set to false",
 			prepViper: func() {
-				viper.Set(APIStartEmbeddedOAuth2ServerFlag, false)
+				viper.Set(EmbeddedOAuth2ServerEnabledFlag, false)
 			},
 			args: args{engineCmd: &cobra.Command{}},
 			want: func(t *testing.T, got bool) bool {
@@ -115,7 +115,7 @@ func TestInitCobra(t *testing.T) {
 		{
 			name: "Happy path: StartEmbeddedOAuth2Server set to true",
 			prepViper: func() {
-				viper.Set(APIStartEmbeddedOAuth2ServerFlag, true)
+				viper.Set(EmbeddedOAuth2ServerEnabledFlag, true)
 			},
 			args: args{engineCmd: &cobra.Command{}},
 			want: func(t *testing.T, got bool) bool {
@@ -130,7 +130,7 @@ func TestInitCobra(t *testing.T) {
 
 			InitCobra(tt.args.engineCmd)
 
-			tt.want(t, viper.GetBool(APIStartEmbeddedOAuth2ServerFlag))
+			tt.want(t, viper.GetBool(EmbeddedOAuth2ServerEnabledFlag))
 		})
 	}
 }

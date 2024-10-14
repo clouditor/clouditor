@@ -45,8 +45,8 @@ const (
 	APICORSAllowedHeadersFlags           = "api-cors-allowed-headers"
 	APICORSAllowedMethodsFlags           = "api-cors-allowed-methods"
 	APIJWKSURLFlag                       = "api-jwks-url"
-	APIStartEmbeddedOAuth2ServerFlag     = "api-start-embedded-oauth-server"
-	EmbeddedOAuth2ServerPublicHostFlag   = "embedded-oauth2-server-public-url"
+	EmbeddedOAuth2ServerEnabledFlag      = "embedded-oauth2-server-enabled"
+	EmbeddedOAuth2ServerPublicURLFlag    = "embedded-oauth2-server-public-url"
 	ServiceOAuth2EndpointFlag            = "service-oauth2-token-endpoint"
 	ServiceOAuth2ClientIDFlag            = "service-oauth2-client-id"
 	ServiceOAuth2ClientSecretFlag        = "service-oauth2-client-secret"
@@ -138,9 +138,9 @@ func init() {
 }
 
 func InitCobra(engineCmd *cobra.Command) {
-	engineCmd.Flags().Bool(APIStartEmbeddedOAuth2ServerFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
+	engineCmd.Flags().Bool(EmbeddedOAuth2ServerEnabledFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
-	_ = viper.BindPFlag(APIStartEmbeddedOAuth2ServerFlag, engineCmd.Flags().Lookup(APIStartEmbeddedOAuth2ServerFlag))
+	_ = viper.BindPFlag(EmbeddedOAuth2ServerEnabledFlag, engineCmd.Flags().Lookup(EmbeddedOAuth2ServerEnabledFlag))
 }
 
 func InitConfig() {

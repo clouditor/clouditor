@@ -49,6 +49,7 @@ import (
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/storage"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -61,9 +62,6 @@ var (
 
 	// httpPort holds the used HTTP port of the http.Server
 	httpPort uint16
-
-	// httpHost holds the used HTTP public URL of the http.Server
-	httpHost string
 
 	// sock holds the listener socket of our REST API.
 	sock net.Listener
@@ -156,7 +154,14 @@ func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
 	return func(c *restConfig, sm *runtime.ServeMux) {
-		publicURL := fmt.Sprintf("%s:%d/v1/auth", httpHost, httpPort)
+		var publicURL string
+
+		// Check if an embedded OAuth2 server public URL is given, otherwise take localhost.
+		if config.EmbeddedOAuth2ServerPublicURLFlag == "" {
+			publicURL = fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
+		} else {
+			publicURL = fmt.Sprintf("%s:%d/v1/auth", viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag), httpPort)
+		}
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
 
@@ -195,12 +200,11 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 
 // RunServer starts our REST API. The REST API is a reverse proxy using grpc-gateway that
 // exposes certain gRPC calls as RESTful HTTP methods.
-func RunServer(ctx context.Context, grpcPort uint16, port uint16, host string, serverOpts ...ServerConfigOption) (err error) {
+func RunServer(ctx context.Context, grpcPort uint16, port uint16, serverOpts ...ServerConfigOption) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	httpPort = port
-	httpHost = host
 
 	mux := runtime.NewServeMux()
 
