@@ -105,7 +105,6 @@ func (l *Launcher) Launch() (err error) {
 	var (
 		grpcPort uint16
 		httpPort uint16
-		httpHost string
 		restOpts []rest.ServerConfigOption
 		grpcOpts []server.StartGRPCServerOption
 	)
@@ -189,7 +188,6 @@ func (l *Launcher) Launch() (err error) {
 	err = rest.RunServer(context.Background(),
 		grpcPort,
 		httpPort,
-		httpHost,
 		restOpts...,
 	)
 	if err != nil && err != http.ErrServerClosed {
