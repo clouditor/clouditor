@@ -83,15 +83,16 @@ func NewStandaloneCommand() *cobra.Command {
 		cmd.Flags().String(config.EvidenceStoreURLFlag, config.DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
 	}
 
-	// Set the APIEmbeddedOAuth2ServerPublicURLFlag default value to the default embedded OAuth2 server URL "http://localhost"
-	if cmd.Flag(config.EmbeddedOAuth2ServerPublicURLFlag) == nil {
-		cmd.Flags().String(config.EmbeddedOAuth2ServerPublicURLFlag, config.DefaultEmbeddedOAuth2ServerPublicURL, "Specifies the embedded OAuth 2.0 authorization server public URL. Default is 'http://localhost'.")
+	// Set the EmbeddedOAuth2ServerPublicHostFlag default value to the default embedded OAuth2 server host "http://localhost"
+	if cmd.Flag(config.EmbeddedOAuth2ServerPublicHostFlag) == nil {
+		cmd.Flags().String(config.EmbeddedOAuth2ServerPublicHostFlag, config.DefaultEmbeddedOAuth2ServerPublicHost, "Specifies the embedded OAuth 2.0 authorization server public host. Default is 'http://localhost'.")
 	}
 
 	// Set flag to start embedded OAuth2 server
 	cmd.Flags().Bool(config.APIStartEmbeddedOAuth2ServerFlag, true, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
 	_ = viper.BindPFlag(config.APIStartEmbeddedOAuth2ServerFlag, cmd.Flags().Lookup(config.APIStartEmbeddedOAuth2ServerFlag))
+	_ = viper.BindPFlag(config.EmbeddedOAuth2ServerPublicHostFlag, cmd.Flags().Lookup(config.EmbeddedOAuth2ServerPublicHostFlag))
 
 	_ = viper.BindPFlag(config.APIgRPCPortFlag, cmd.Flags().Lookup(config.APIgRPCPortFlag))
 	_ = viper.BindPFlag(config.APIHTTPPortFlag, cmd.Flags().Lookup(config.APIHTTPPortFlag))

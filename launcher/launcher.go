@@ -103,11 +103,11 @@ func NewLauncher(name string, specs ...ServiceSpec) (l *Launcher, err error) {
 // Launch starts the gRPC server and the corresponding gRPC-HTTP gateway with the given gRPC server Options
 func (l *Launcher) Launch() (err error) {
 	var (
-		grpcPort      uint16
-		httpPort      uint16
-		httpPublicURL string
-		restOpts      []rest.ServerConfigOption
-		grpcOpts      []server.StartGRPCServerOption
+		grpcPort uint16
+		httpPort uint16
+		httpHost string
+		restOpts []rest.ServerConfigOption
+		grpcOpts []server.StartGRPCServerOption
 	)
 
 	// Default gRPC opts we want for all services
@@ -122,7 +122,7 @@ func (l *Launcher) Launch() (err error) {
 
 	grpcPort = viper.GetUint16(config.APIgRPCPortFlag)
 	httpPort = viper.GetUint16(config.APIHTTPPortFlag)
-	httpPublicURL = viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag)
+	httpHost = viper.GetString(config.EmbeddedOAuth2ServerPublicHostFlag)
 
 	restOpts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
@@ -190,7 +190,7 @@ func (l *Launcher) Launch() (err error) {
 	err = rest.RunServer(context.Background(),
 		grpcPort,
 		httpPort,
-		httpPublicURL,
+		httpHost,
 		restOpts...,
 	)
 	if err != nil && err != http.ErrServerClosed {
