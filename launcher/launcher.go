@@ -122,7 +122,7 @@ func (l *Launcher) Launch() (err error) {
 
 	grpcPort = viper.GetUint16(config.APIgRPCPortFlag)
 	httpPort = viper.GetUint16(config.APIHTTPPortFlag)
-	httpPublicURL = viper.GetString(config.APIEmbeddedOAuth2ServerPublicURLFlag)
+	httpPublicURL = viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag)
 
 	restOpts = []rest.ServerConfigOption{
 		rest.WithAllowedOrigins(viper.GetStringSlice(config.APICORSAllowedOriginsFlags)),
