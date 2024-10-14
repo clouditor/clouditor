@@ -328,8 +328,8 @@ func TestService_ListAuditScopes(t *testing.T) {
 	// 1st case: No Audit Scopes stored
 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScope)
-	assert.Empty(t, listAuditScopesResponse.AuditScope)
+	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+	assert.Empty(t, listAuditScopesResponse.AuditScopes)
 
 	// 2nd case: One Audit Scope stored
 	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
@@ -337,10 +337,10 @@ func TestService_ListAuditScopes(t *testing.T) {
 
 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScope)
-	assert.NotEmpty(t, listAuditScopesResponse.AuditScope)
-	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScope[0]))
-	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScope))
+	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
+	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
+	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
 }
 
 func TestService_UpdateAuditScope(t *testing.T) {
@@ -425,9 +425,9 @@ func TestService_RemoveAuditScope(t *testing.T) {
 	// Verify that there is a record for Audit Scope in the DB
 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
 	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScope)
-	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScope[0]))
-	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScope))
+	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
+	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
 
 	// Remove record
 	_, err = orchestratorService.RemoveAuditScope(context.Background(), &orchestrator.RemoveAuditScopeRequest{
@@ -439,7 +439,7 @@ func TestService_RemoveAuditScope(t *testing.T) {
 	// There is no record for Audit Scope in the DB
 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(listAuditScopesResponse.AuditScope))
+	assert.Equal(t, 0, len(listAuditScopesResponse.AuditScopes))
 }
 
 func TestToeHook(t *testing.T) {

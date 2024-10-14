@@ -64,6 +64,13 @@ func NewStandaloneCommand() *cobra.Command {
 		},
 	}
 
+	BindFlags(cmd)
+
+	return cmd
+
+}
+
+func BindFlags(cmd *cobra.Command) {
 	// Set gRPC and HTTP port
 	cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
@@ -86,11 +93,6 @@ func NewStandaloneCommand() *cobra.Command {
 		cmd.Flags().String(config.EvidenceStoreURLFlag, config.DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
 	}
 
-	// Set the EmbeddedOAuth2ServerPublicHostFlag default value to the default embedded OAuth2 server host "http://localhost"
-	if cmd.Flag(config.EmbeddedOAuth2ServerPublicURLFlag) == nil {
-		cmd.Flags().String(config.EmbeddedOAuth2ServerPublicURLFlag, config.EmbeddedOAuth2ServerPublicURLFlag, "Specifies the embedded OAuth 2.0 authorization server public host. Default is 'http://localhost'.")
-	}
-
 	// Set flag to start embedded OAuth2 server
 	cmd.Flags().Bool(config.EmbeddedOAuth2ServerEnabledFlag, true, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
@@ -108,6 +110,4 @@ func NewStandaloneCommand() *cobra.Command {
 	command_discovery.BindFlags(cmd)
 	command_evaluation.BindFlags(cmd)
 	command_orchestrator.BindFlags(cmd)
-
-	return cmd
 }

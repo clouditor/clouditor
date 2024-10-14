@@ -118,7 +118,7 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	}
 
 	res = new(orchestrator.ListAuditScopesResponse)
-	res.AuditScope, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
+	res.AuditScopes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
 	}

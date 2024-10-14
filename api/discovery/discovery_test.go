@@ -131,7 +131,7 @@ func TestToDiscoveryResource(t *testing.T) {
 				Id:                    "my-block-storage",
 				CertificationTargetId: testdata.MockCertificationTargetID1,
 				ToolId:                testdata.MockEvidenceToolID1,
-				ResourceType:          "BlockStorage,Storage,CloudResource,Resource",
+				ResourceType:          "BlockStorage,Storage,Infrastructure,Resource",
 				Properties: prototest.NewAny(t, &ontology.BlockStorage{
 					Id:   "my-block-storage",
 					Name: "My Block Storage",

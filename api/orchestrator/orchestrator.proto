@@ -915,7 +915,7 @@ message ListAuditScopesRequest {
 }
 
 message ListAuditScopesResponse {
-  repeated AuditScope audit_scope = 1;
+  repeated AuditScope audit_scopes = 1;
   string next_page_token = 2;
 }
 

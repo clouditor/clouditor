@@ -50,8 +50,8 @@ message ABAC {
 // AccessRestriction is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message AccessRestriction {
   oneof type {
-    L3Firewall l3_firewall = 1;
-    WebApplicationFirewall web_application_firewall = 2;
+    L3Firewall l3_firewall = 9125;
+    WebApplicationFirewall web_application_firewall = 5789;
   }
 }
 
@@ -59,21 +59,21 @@ message AccessRestriction {
 // This represents the cloud account as a whole, e.g., an Azure subscription.
 message Account {
   option (resource_type_names) = "Account";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 12742;
+  string description = 8955;
+  string id = 1395 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 5528;
+  map<string, string> labels = 6485;
+  string name = 18836 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 14088;
+  GeoLocation geo_location = 2374;
+  repeated Redundancy redundancies = 15991;
+  optional string parent_id = 12102;
+  UsageStatistics usage_statistics = 11624;
 }
 
 // ActivityLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -83,11 +83,11 @@ message ActivityLogging {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool monitoring_log_data_enabled = 2;
-  google.protobuf.Duration retention_period = 3;
-  bool security_alerts_enabled = 4;
-  repeated string logging_service_ids = 5;
+  bool enabled = 18133;
+  bool monitoring_log_data_enabled = 13626;
+  google.protobuf.Duration retention_period = 10788;
+  bool security_alerts_enabled = 17680;
+  repeated string logging_service_ids = 589;
 }
 
 // AnomalyDetection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -98,9 +98,9 @@ message AnomalyDetection {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  string scope = 2;
-  ApplicationLogging application_logging = 3;
+  bool enabled = 8852;
+  string scope = 8482;
+  ApplicationLogging application_logging = 11132;
 }
 
 // Application is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -111,22 +111,23 @@ message Application {
   option (resource_type_names) = "Code";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  map<string, string> labels = 4;
-  string name = 5 [(buf.validate.field).required = true];
-  string programming_language = 6;
-  string programming_version = 7;
+  google.protobuf.Timestamp creation_time = 15057;
+  string description = 2283;
+  string id = 9299 [(buf.validate.field).required = true];
+  map<string, string> labels = 12760;
+  string name = 1409 [(buf.validate.field).required = true];
+  string programming_language = 1665;
+  string programming_version = 3150;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8;
-  repeated string translation_units = 9;
-  AutomaticUpdates automatic_updates = 10;
-  repeated string code_module_ids = 11;
-  optional string compute_id = 12;
-  repeated Functionality functionalities = 13;
-  repeated string library_ids = 14;
-  optional string parent_id = 15;
+  string raw = 18684;
+  repeated string translation_units = 9449;
+  AutomaticUpdates automatic_updates = 1953;
+  repeated string code_module_ids = 15130;
+  optional string code_repository_id = 12633;
+  optional string compute_id = 8224;
+  repeated Functionality functionalities = 7253;
+  repeated string library_ids = 14815;
+  optional string parent_id = 13276;
 }
 
 // ApplicationLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -136,63 +137,63 @@ message ApplicationLogging {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool monitoring_log_data_enabled = 2;
-  google.protobuf.Duration retention_period = 3;
-  bool security_alerts_enabled = 4;
-  repeated string logging_service_ids = 5;
+  bool enabled = 13571;
+  bool monitoring_log_data_enabled = 4205;
+  google.protobuf.Duration retention_period = 6319;
+  bool security_alerts_enabled = 17870;
+  repeated string logging_service_ids = 3793;
 }
 
 // AtRestEncryption is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message AtRestEncryption {
   oneof type {
-    CustomerKeyEncryption customer_key_encryption = 1;
-    ManagedKeyEncryption managed_key_encryption = 2;
+    CustomerKeyEncryption customer_key_encryption = 5547;
+    ManagedKeyEncryption managed_key_encryption = 9197;
   }
 }
 
 // Attestation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Attestation {
   oneof type {
-    LocalAttestation local_attestation = 1;
-    RemoteAttestation remote_attestation = 2;
+    LocalAttestation local_attestation = 4296;
+    RemoteAttestation remote_attestation = 13640;
   }
 }
 
 // Auditing is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Auditing {
   oneof type {
-    AnomalyDetection anomaly_detection = 1;
-    ActivityLogging activity_logging = 2;
-    ApplicationLogging application_logging = 3;
-    BootLogging boot_logging = 4;
-    OSLogging os_logging = 5;
-    ResourceLogging resource_logging = 6;
-    MalwareProtection malware_protection = 7;
-    UsageStatistics usage_statistics = 8;
+    AnomalyDetection anomaly_detection = 4728;
+    ActivityLogging activity_logging = 2956;
+    ApplicationLogging application_logging = 12791;
+    BootLogging boot_logging = 18439;
+    OSLogging os_logging = 2926;
+    ResourceLogging resource_logging = 17563;
+    MalwareProtection malware_protection = 7265;
+    UsageStatistics usage_statistics = 15242;
   }
 }
 
 // Authenticity is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Authenticity {
   oneof type {
-    CertificateBasedAuthentication certificate_based_authentication = 1;
-    TokenBasedAuthentication token_based_authentication = 2;
-    MultiFactorAuthentiation multi_factor_authentiation = 3;
-    NoAuthentication no_authentication = 4;
-    OTPBasedAuthentication otp_based_authentication = 5;
-    PasswordBasedAuthentication password_based_authentication = 6;
-    SingleSignOn single_sign_on = 7;
+    CertificateBasedAuthentication certificate_based_authentication = 560;
+    TokenBasedAuthentication token_based_authentication = 3684;
+    MultiFactorAuthentiation multi_factor_authentiation = 13104;
+    NoAuthentication no_authentication = 17718;
+    OTPBasedAuthentication otp_based_authentication = 18743;
+    PasswordBasedAuthentication password_based_authentication = 16941;
+    SingleSignOn single_sign_on = 9281;
   }
 }
 
 // Authorization is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Authorization {
   oneof type {
-    ABAC abac = 1;
-    L3Firewall l3_firewall = 2;
-    WebApplicationFirewall web_application_firewall = 3;
-    RBAC rbac = 4;
+    ABAC abac = 14694;
+    L3Firewall l3_firewall = 9125;
+    WebApplicationFirewall web_application_firewall = 5789;
+    RBAC rbac = 18783;
   }
 }
 
@@ -203,20 +204,20 @@ message AutomaticUpdates {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  google.protobuf.Duration interval = 2;
-  bool security_only = 3;
+  bool enabled = 2283;
+  google.protobuf.Duration interval = 2309;
+  bool security_only = 1034;
 }
 
 // Availability is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Availability {
   oneof type {
-    Backup backup = 1;
-    DDoSProtection d_do_s_protection = 2;
-    GeoLocation geo_location = 3;
-    GeoRedundancy geo_redundancy = 4;
-    LocalRedundancy local_redundancy = 5;
-    ZoneRedundancy zone_redundancy = 6;
+    Backup backup = 16413;
+    DDoSProtection d_do_s_protection = 16707;
+    GeoLocation geo_location = 10970;
+    GeoRedundancy geo_redundancy = 2436;
+    LocalRedundancy local_redundancy = 2537;
+    ZoneRedundancy zone_redundancy = 11145;
   }
 }
 
@@ -227,62 +228,63 @@ message Backup {
   option (resource_type_names) = "Availability";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  google.protobuf.Duration interval = 2;
-  google.protobuf.Duration retention_period = 3;
-  optional string storage_id = 4;
-  TransportEncryption transport_encryption = 5;
+  bool enabled = 2815;
+  google.protobuf.Duration interval = 7186;
+  google.protobuf.Duration retention_period = 6795;
+  optional string storage_id = 7061;
+  TransportEncryption transport_encryption = 1921;
 }
 
 // Resource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Resource {
   oneof type {
-    Account account = 1;
-    Job job = 2;
-    Workflow workflow = 3;
-    Container container = 4;
-    Function function = 5;
-    VirtualMachine virtual_machine = 6;
-    ContainerOrchestration container_orchestration = 7;
-    ContainerRegistry container_registry = 8;
-    Certificate certificate = 9;
-    Key key = 10;
-    Secret secret = 11;
-    Identity identity = 12;
-    RoleAssignment role_assignment = 13;
-    ContainerImage container_image = 14;
-    VMImage vm_image = 15;
-    DeviceProvisioningService device_provisioning_service = 16;
-    MessagingHub messaging_hub = 17;
-    KeyVault key_vault = 18;
-    MLWorkspace ml_workspace = 19;
-    NetworkInterface network_interface = 20;
-    NetworkSecurityGroup network_security_group = 21;
-    FunctionService function_service = 22;
-    GenericNetworkService generic_network_service = 23;
-    LoadBalancer load_balancer = 24;
-    LoggingService logging_service = 25;
-    SecurityAdvisoryService security_advisory_service = 26;
-    DocumentDatabaseService document_database_service = 27;
-    KeyValueDatabaseService key_value_database_service = 28;
-    MultiModalDatabaseService multi_modal_database_service = 29;
-    RelationalDatabaseService relational_database_service = 30;
-    FileStorageService file_storage_service = 31;
-    ObjectStorageService object_storage_service = 32;
-    VirtualNetwork virtual_network = 33;
-    VirtualSubNetwork virtual_sub_network = 34;
-    PasswordPolicy password_policy = 35;
-    ResourceGroup resource_group = 36;
-    BlockStorage block_storage = 37;
-    DatabaseStorage database_storage = 38;
-    FileStorage file_storage = 39;
-    ObjectStorage object_storage = 40;
-    Application application = 41;
-    Library library = 42;
-    CodeModule code_module = 43;
-    GenericDocument generic_document = 44;
-    SecurityAdvisoryDocument security_advisory_document = 45;
-    ServiceMetadataDocument service_metadata_document = 46;
+    Account account = 11456;
+    Job job = 3999;
+    Workflow workflow = 8746;
+    CodeRepository code_repository = 3431;
+    Container container = 1659;
+    Function function = 14943;
+    VirtualMachine virtual_machine = 18360;
+    ContainerOrchestration container_orchestration = 3211;
+    ContainerRegistry container_registry = 8326;
+    Certificate certificate = 8542;
+    Key key = 5122;
+    Secret secret = 16127;
+    Identity identity = 14693;
+    RoleAssignment role_assignment = 2361;
+    ContainerImage container_image = 17864;
+    VMImage vm_image = 16417;
+    DeviceProvisioningService device_provisioning_service = 14564;
+    MessagingHub messaging_hub = 12819;
+    KeyVault key_vault = 18627;
+    MLWorkspace ml_workspace = 3361;
+    NetworkInterface network_interface = 9859;
+    NetworkSecurityGroup network_security_group = 12647;
+    FunctionService function_service = 4929;
+    GenericNetworkService generic_network_service = 1382;
+    LoadBalancer load_balancer = 4201;
+    LoggingService logging_service = 14131;
+    SecurityAdvisoryService security_advisory_service = 173;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
+    VirtualNetwork virtual_network = 2559;
+    VirtualSubNetwork virtual_sub_network = 11314;
+    PasswordPolicy password_policy = 970;
+    ResourceGroup resource_group = 494;
+    BlockStorage block_storage = 10253;
+    DatabaseStorage database_storage = 12299;
+    FileStorage file_storage = 2736;
+    ObjectStorage object_storage = 10870;
+    Application application = 18554;
+    Library library = 14265;
+    CodeModule code_module = 10890;
+    GenericDocument generic_document = 5702;
+    SecurityAdvisoryDocument security_advisory_document = 8513;
+    ServiceMetadataDocument service_metadata_document = 13959;
   }
 }
 
@@ -290,25 +292,25 @@ message Resource {
 message BlockStorage {
   option (resource_type_names) = "BlockStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 11167;
+  string description = 2163;
+  string id = 7003 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15007;
+  map<string, string> labels = 15784;
+  string name = 13869 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  AtRestEncryption at_rest_encryption = 8;
-  repeated Backup backups = 9;
-  GeoLocation geo_location = 10;
-  Immutability immutability = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  ResourceLogging resource_logging = 14;
-  UsageStatistics usage_statistics = 15;
+  string raw = 11057;
+  AtRestEncryption at_rest_encryption = 4444;
+  repeated Backup backups = 4533;
+  GeoLocation geo_location = 3522;
+  Immutability immutability = 9844;
+  repeated Redundancy redundancies = 14466;
+  optional string parent_id = 8468;
+  ResourceLogging resource_logging = 12392;
+  UsageStatistics usage_statistics = 17806;
 }
 
 // BootLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -318,18 +320,18 @@ message BootLogging {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool monitoring_log_data_enabled = 2;
-  google.protobuf.Duration retention_period = 3;
-  bool security_alerts_enabled = 4;
-  repeated string logging_service_ids = 5;
+  bool enabled = 17321;
+  bool monitoring_log_data_enabled = 9135;
+  google.protobuf.Duration retention_period = 2338;
+  bool security_alerts_enabled = 3133;
+  repeated string logging_service_ids = 15790;
 }
 
 // CICDService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message CICDService {
   oneof type {
-    Job job = 1;
-    Workflow workflow = 2;
+    Job job = 3999;
+    Workflow workflow = 8746;
   }
 }
 
@@ -337,26 +339,26 @@ message CICDService {
 message Certificate {
   option (resource_type_names) = "Certificate";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  bool enabled = 3;
-  google.protobuf.Timestamp expiration_date = 4;
-  string id = 5 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 6;
-  bool is_managed = 7;
-  map<string, string> labels = 8;
-  string name = 9 [(buf.validate.field).required = true];
-  google.protobuf.Timestamp not_before_date = 10;
+  google.protobuf.Timestamp creation_time = 18284;
+  string description = 10382;
+  bool enabled = 11036;
+  google.protobuf.Timestamp expiration_date = 17025;
+  string id = 1585 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15261;
+  bool is_managed = 16025;
+  map<string, string> labels = 1369;
+  string name = 18981 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp not_before_date = 11770;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 11;
-  optional string cloud_resource_id = 12;
-  GeoLocation geo_location = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  UsageStatistics usage_statistics = 16;
+  string raw = 7199;
+  GeoLocation geo_location = 12402;
+  optional string infrastructure_id = 8357;
+  repeated Redundancy redundancies = 7304;
+  optional string parent_id = 10685;
+  UsageStatistics usage_statistics = 11629;
 }
 
 // CertificateBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -365,8 +367,8 @@ message CertificateBasedAuthentication {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool context_is_checked = 1;
-  bool enabled = 2;
+  bool context_is_checked = 14958;
+  bool enabled = 11983;
 }
 
 // CipherSuite is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -375,57 +377,58 @@ message CipherSuite {
   option (resource_type_names) = "Functionality";
 
   // for example: RSA, ECDSA
-  string authentication_mechanism = 1;
-  string key_exchange_algorithm = 2;
+  string authentication_mechanism = 3667;
+  string key_exchange_algorithm = 14920;
   // naming schema: SHA-256
-  string mac_algorithm = 3;
+  string mac_algorithm = 2344;
   // naming schema: AES-128-GCM
-  string session_cipher = 4;
+  string session_cipher = 5742;
 }
 
-// CloudResource is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
-message CloudResource {
+// Infrastructure is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message Infrastructure {
   oneof type {
-    Account account = 1;
-    Job job = 2;
-    Workflow workflow = 3;
-    Container container = 4;
-    Function function = 5;
-    VirtualMachine virtual_machine = 6;
-    ContainerOrchestration container_orchestration = 7;
-    ContainerRegistry container_registry = 8;
-    Certificate certificate = 9;
-    Key key = 10;
-    Secret secret = 11;
-    Identity identity = 12;
-    RoleAssignment role_assignment = 13;
-    ContainerImage container_image = 14;
-    VMImage vm_image = 15;
-    DeviceProvisioningService device_provisioning_service = 16;
-    MessagingHub messaging_hub = 17;
-    KeyVault key_vault = 18;
-    MLWorkspace ml_workspace = 19;
-    NetworkInterface network_interface = 20;
-    NetworkSecurityGroup network_security_group = 21;
-    FunctionService function_service = 22;
-    GenericNetworkService generic_network_service = 23;
-    LoadBalancer load_balancer = 24;
-    LoggingService logging_service = 25;
-    SecurityAdvisoryService security_advisory_service = 26;
-    DocumentDatabaseService document_database_service = 27;
-    KeyValueDatabaseService key_value_database_service = 28;
-    MultiModalDatabaseService multi_modal_database_service = 29;
-    RelationalDatabaseService relational_database_service = 30;
-    FileStorageService file_storage_service = 31;
-    ObjectStorageService object_storage_service = 32;
-    VirtualNetwork virtual_network = 33;
-    VirtualSubNetwork virtual_sub_network = 34;
-    PasswordPolicy password_policy = 35;
-    ResourceGroup resource_group = 36;
-    BlockStorage block_storage = 37;
-    DatabaseStorage database_storage = 38;
-    FileStorage file_storage = 39;
-    ObjectStorage object_storage = 40;
+    Account account = 11456;
+    Job job = 3999;
+    Workflow workflow = 8746;
+    CodeRepository code_repository = 3431;
+    Container container = 1659;
+    Function function = 14943;
+    VirtualMachine virtual_machine = 18360;
+    ContainerOrchestration container_orchestration = 3211;
+    ContainerRegistry container_registry = 8326;
+    Certificate certificate = 8542;
+    Key key = 5122;
+    Secret secret = 16127;
+    Identity identity = 14693;
+    RoleAssignment role_assignment = 2361;
+    ContainerImage container_image = 17864;
+    VMImage vm_image = 16417;
+    DeviceProvisioningService device_provisioning_service = 14564;
+    MessagingHub messaging_hub = 12819;
+    KeyVault key_vault = 18627;
+    MLWorkspace ml_workspace = 3361;
+    NetworkInterface network_interface = 9859;
+    NetworkSecurityGroup network_security_group = 12647;
+    FunctionService function_service = 4929;
+    GenericNetworkService generic_network_service = 1382;
+    LoadBalancer load_balancer = 4201;
+    LoggingService logging_service = 14131;
+    SecurityAdvisoryService security_advisory_service = 173;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
+    VirtualNetwork virtual_network = 2559;
+    VirtualSubNetwork virtual_sub_network = 11314;
+    PasswordPolicy password_policy = 970;
+    ResourceGroup resource_group = 494;
+    BlockStorage block_storage = 10253;
+    DatabaseStorage database_storage = 12299;
+    FileStorage file_storage = 2736;
+    ObjectStorage object_storage = 10870;
   }
 }
 
@@ -438,36 +441,68 @@ message CloudSDK {
 // Code is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Code {
   oneof type {
-    Application application = 1;
-    Library library = 2;
-    CodeModule code_module = 3;
+    Application application = 18554;
+    Library library = 14265;
+    CodeModule code_module = 10890;
   }
+}
+
+// CodeRegion is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeRegion {
+  option (resource_type_names) = "CodeRegion";
+  option (resource_type_names) = "Functionality";
+
+  int32 end_column = 18978;
+  int32 end_line = 7512;
+  string file = 1260;
+  int32 start_column = 5651;
+  int32 start_line = 11889;
+}
+
+// CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeRepository {
+  option (resource_type_names) = "CodeRepository";
+  option (resource_type_names) = "Infrastructure";
+  option (resource_type_names) = "Resource";
+
+  google.protobuf.Timestamp creation_time = 14345;
+  string description = 5754;
+  string id = 1358 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 8874;
+  map<string, string> labels = 6055;
+  string name = 12766 [(buf.validate.field).required = true];
+  // The raw field contains the raw information that is used to fill in the fields of the ontology.
+  string raw = 15664;
+  GeoLocation geo_location = 3636;
+  repeated Redundancy redundancies = 2093;
+  optional string parent_id = 8043;
+  UsageStatistics usage_statistics = 14597;
 }
 
 // Component is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Component {
   oneof type {
-    Application application = 1;
-    Library library = 2;
+    Application application = 18554;
+    Library library = 14265;
   }
 }
 
 // Compute is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Compute {
   oneof type {
-    Container container = 1;
-    Function function = 2;
-    VirtualMachine virtual_machine = 3;
+    Container container = 1659;
+    Function function = 14943;
+    VirtualMachine virtual_machine = 18360;
   }
 }
 
 // Confidentiality is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Confidentiality {
   oneof type {
-    CustomerKeyEncryption customer_key_encryption = 1;
-    ManagedKeyEncryption managed_key_encryption = 2;
-    EncryptionInUse encryption_in_use = 3;
-    TransportEncryption transport_encryption = 4;
+    CustomerKeyEncryption customer_key_encryption = 5547;
+    ManagedKeyEncryption managed_key_encryption = 9197;
+    EncryptionInUse encryption_in_use = 15775;
+    TransportEncryption transport_encryption = 15929;
   }
 }
 
@@ -475,99 +510,99 @@ message Confidentiality {
 message Container {
   option (resource_type_names) = "Container";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 9429;
+  string description = 12773;
+  string id = 903 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 10112;
+  map<string, string> labels = 13214;
+  string name = 736 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  EncryptionInUse encryption_in_use = 8;
-  GeoLocation geo_location = 9;
-  optional string image_id = 10;
-  repeated string network_interface_ids = 11;
-  repeated Redundancy redundancies = 12;
-  RemoteAttestation remote_attestation = 13;
-  optional string parent_id = 14;
-  ResourceLogging resource_logging = 15;
-  UsageStatistics usage_statistics = 16;
+  string raw = 18367;
+  EncryptionInUse encryption_in_use = 14323;
+  GeoLocation geo_location = 1707;
+  optional string image_id = 9825;
+  repeated string network_interface_ids = 250;
+  repeated Redundancy redundancies = 15735;
+  RemoteAttestation remote_attestation = 15151;
+  optional string parent_id = 16383;
+  ResourceLogging resource_logging = 11967;
+  UsageStatistics usage_statistics = 14019;
 }
 
 // ContainerImage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ContainerImage {
   option (resource_type_names) = "ContainerImage";
   option (resource_type_names) = "Image";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 11155;
+  string description = 10874;
+  string id = 6384 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 13186;
+  map<string, string> labels = 18019;
+  string name = 2181 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  optional string application_id = 8;
-  GeoLocation geo_location = 9;
-  repeated Redundancy redundancies = 10;
-  optional string parent_id = 11;
-  UsageStatistics usage_statistics = 12;
+  string raw = 10543;
+  optional string application_id = 9751;
+  GeoLocation geo_location = 13766;
+  repeated Redundancy redundancies = 10648;
+  optional string parent_id = 14165;
+  UsageStatistics usage_statistics = 6924;
 }
 
 // ContainerOrchestration is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ContainerOrchestration {
   option (resource_type_names) = "ContainerOrchestration";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string management_url = 6;
-  string name = 7 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 10116;
+  string description = 259;
+  string id = 12671 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 2619;
+  map<string, string> labels = 15294;
+  string management_url = 1007;
+  string name = 18187 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8;
-  repeated string container_ids = 9;
-  GeoLocation geo_location = 10;
-  repeated Redundancy redundancies = 11;
-  optional string parent_id = 12;
-  ResourceLogging resource_logging = 13;
-  UsageStatistics usage_statistics = 14;
+  string raw = 17471;
+  repeated string container_ids = 12733;
+  GeoLocation geo_location = 13354;
+  repeated Redundancy redundancies = 2264;
+  optional string parent_id = 16309;
+  ResourceLogging resource_logging = 13646;
+  UsageStatistics usage_statistics = 6319;
 }
 
 // ContainerRegistry is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ContainerRegistry {
   option (resource_type_names) = "ContainerRegistry";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 4243;
+  string description = 17637;
+  string id = 17713 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 12721;
+  map<string, string> labels = 2453;
+  string name = 1523 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 5030;
+  GeoLocation geo_location = 15152;
+  repeated Redundancy redundancies = 18999;
+  optional string parent_id = 2537;
+  UsageStatistics usage_statistics = 17864;
 }
 
 // Credential is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Credential {
   oneof type {
-    Certificate certificate = 1;
-    Key key = 2;
-    Secret secret = 3;
+    Certificate certificate = 8542;
+    Key key = 5122;
+    Secret secret = 16127;
   }
 }
 
@@ -577,8 +612,17 @@ message DocumentChecksum {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  string algorithm = 1;
-  repeated Error errors = 2;
+  string algorithm = 943;
+  repeated Error errors = 17465;
+}
+
+// CryptographicOperation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
+message CryptographicOperation {
+  oneof type {
+    Decryption decryption = 11278;
+    Encryption encryption = 2715;
+    CryptographicHash cryptographic_hash = 7725;
+  }
 }
 
 // CustomerKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -588,9 +632,9 @@ message CustomerKeyEncryption {
   option (resource_type_names) = "Confidentiality";
   option (resource_type_names) = "SecurityFeature";
 
-  string algorithm = 1;
-  bool enabled = 2;
-  string key_url = 3;
+  string algorithm = 14884;
+  bool enabled = 12751;
+  string key_url = 6413;
 }
 
 // DDoSProtection is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -607,16 +651,17 @@ message DatabaseConnect {
   option (resource_type_names) = "Operation";
   option (resource_type_names) = "Functionality";
 
-  repeated string calls = 1;
-  repeated string database_service_ids = 2;
-  optional string database_storage_id = 3;
+  repeated string calls = 12922;
+  CodeRegion code_region = 5983;
+  repeated string database_service_ids = 5749;
+  optional string database_storage_id = 3674;
 }
 
 // DatabaseOperation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message DatabaseOperation {
   oneof type {
-    DatabaseConnect database_connect = 1;
-    DatabaseQuery database_query = 2;
+    DatabaseConnect database_connect = 10798;
+    DatabaseQuery database_query = 7698;
   }
 }
 
@@ -627,20 +672,21 @@ message DatabaseQuery {
   option (resource_type_names) = "Operation";
   option (resource_type_names) = "Functionality";
 
-  repeated string calls = 1;
-  bool modify = 2;
-  repeated string database_service_ids = 3;
-  optional string database_storage_id = 4;
+  repeated string calls = 7647;
+  bool modify = 7601;
+  CodeRegion code_region = 8496;
+  repeated string database_service_ids = 14358;
+  optional string database_storage_id = 17880;
 }
 
 // DatabaseService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 // This class represents a database service. For example, a postgres SQL server would be modelled as a database service (with a host and IP) and the individual tables or collections would be modelled as a DatabaseStorage entity.
 message DatabaseService {
   oneof type {
-    DocumentDatabaseService document_database_service = 1;
-    KeyValueDatabaseService key_value_database_service = 2;
-    MultiModalDatabaseService multi_modal_database_service = 3;
-    RelationalDatabaseService relational_database_service = 4;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
   }
 }
 
@@ -649,55 +695,66 @@ message DatabaseService {
 message DatabaseStorage {
   option (resource_type_names) = "DatabaseStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 14609;
+  string description = 4217;
+  string id = 5278 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 10131;
+  map<string, string> labels = 15362;
+  string name = 1264 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  AtRestEncryption at_rest_encryption = 8;
-  repeated Backup backups = 9;
-  GeoLocation geo_location = 10;
-  Immutability immutability = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  ResourceLogging resource_logging = 14;
-  UsageStatistics usage_statistics = 15;
+  string raw = 11538;
+  AtRestEncryption at_rest_encryption = 14578;
+  repeated Backup backups = 12872;
+  GeoLocation geo_location = 16892;
+  Immutability immutability = 13674;
+  repeated Redundancy redundancies = 15577;
+  optional string parent_id = 3160;
+  ResourceLogging resource_logging = 16054;
+  UsageStatistics usage_statistics = 283;
+}
+
+// Decryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Decryption {
+  option (resource_type_names) = "Decryption";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 3758;
+  CodeRegion code_region = 12634;
 }
 
 // DeviceProvisioningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message DeviceProvisioningService {
   option (resource_type_names) = "DeviceProvisioningService";
   option (resource_type_names) = "IoT";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 17874;
+  string description = 18095;
+  string id = 18723 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15029;
+  map<string, string> labels = 5934;
+  string name = 9731 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 14841;
+  GeoLocation geo_location = 9853;
+  repeated Redundancy redundancies = 12751;
+  optional string parent_id = 4221;
+  UsageStatistics usage_statistics = 8367;
 }
 
 // Document is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 // path: Describes either local path or path in URL format
 message Document {
   oneof type {
-    GenericDocument generic_document = 1;
-    SecurityAdvisoryDocument security_advisory_document = 2;
-    ServiceMetadataDocument service_metadata_document = 3;
+    GenericDocument generic_document = 5702;
+    SecurityAdvisoryDocument security_advisory_document = 8513;
+    ServiceMetadataDocument service_metadata_document = 13959;
   }
 }
 
@@ -708,38 +765,38 @@ message DocumentDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 11758;
+  string description = 13774;
+  string id = 7556 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 9855;
+  repeated string ips = 7051;
+  map<string, string> labels = 3177;
+  string name = 12726 [(buf.validate.field).required = true];
+  repeated uint32 ports = 10225;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  repeated AnomalyDetection anomaly_detections = 10;
-  Authenticity authenticity = 11;
-  optional string compute_id = 12;
-  GeoLocation geo_location = 13;
-  HttpEndpoint http_endpoint = 14;
-  MalwareProtection malware_protection = 15;
-  repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  optional string service_metadata_document_id = 18;
-  repeated string storage_ids = 19;
-  TransportEncryption transport_encryption = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 7317;
+  repeated AnomalyDetection anomaly_detections = 1003;
+  Authenticity authenticity = 6961;
+  optional string compute_id = 6197;
+  GeoLocation geo_location = 9480;
+  HttpEndpoint http_endpoint = 7406;
+  MalwareProtection malware_protection = 15064;
+  repeated Redundancy redundancies = 953;
+  optional string parent_id = 17568;
+  optional string service_metadata_document_id = 1112;
+  repeated string storage_ids = 7020;
+  TransportEncryption transport_encryption = 10295;
+  UsageStatistics usage_statistics = 10074;
 }
 
 // DocumentLocation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message DocumentLocation {
   oneof type {
-    LocalDocumentLocation local_document_location = 1;
-    RemoteDocumentLocation remote_document_location = 2;
+    LocalDocumentLocation local_document_location = 10096;
+    RemoteDocumentLocation remote_document_location = 9297;
   }
 }
 
@@ -749,7 +806,18 @@ message EncryptionInUse {
   option (resource_type_names) = "Confidentiality";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
+  bool enabled = 8542;
+}
+
+// Encryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message Encryption {
+  option (resource_type_names) = "Encryption";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 16274;
+  CodeRegion code_region = 9339;
 }
 
 // Error is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -757,33 +825,33 @@ message Error {
   option (resource_type_names) = "Error";
   option (resource_type_names) = "Functionality";
 
-  string message = 1;
+  string message = 3497;
 }
 
 // FileStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message FileStorage {
   option (resource_type_names) = "FileStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
-  bool public_access = 7;
+  google.protobuf.Timestamp creation_time = 3786;
+  string description = 6154;
+  string id = 4569 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 3582;
+  map<string, string> labels = 2787;
+  string name = 16132 [(buf.validate.field).required = true];
+  bool public_access = 10539;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8;
-  AtRestEncryption at_rest_encryption = 9;
-  repeated Backup backups = 10;
-  GeoLocation geo_location = 11;
-  Immutability immutability = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  ResourceLogging resource_logging = 15;
-  UsageStatistics usage_statistics = 16;
+  string raw = 4379;
+  AtRestEncryption at_rest_encryption = 1429;
+  repeated Backup backups = 17584;
+  GeoLocation geo_location = 5391;
+  Immutability immutability = 7897;
+  repeated Redundancy redundancies = 1278;
+  optional string parent_id = 4433;
+  ResourceLogging resource_logging = 18223;
+  UsageStatistics usage_statistics = 8987;
 }
 
 // FileStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -793,46 +861,46 @@ message FileStorageService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 18615;
+  string description = 9940;
+  string id = 17295 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 16036;
+  repeated string ips = 6543;
+  map<string, string> labels = 9347;
+  string name = 3149 [(buf.validate.field).required = true];
+  repeated uint32 ports = 12509;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  GeoLocation geo_location = 12;
-  HttpEndpoint http_endpoint = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  optional string service_metadata_document_id = 16;
-  repeated string storage_ids = 17;
-  TransportEncryption transport_encryption = 18;
-  UsageStatistics usage_statistics = 19;
+  string raw = 13948;
+  Authenticity authenticity = 16174;
+  optional string compute_id = 15440;
+  GeoLocation geo_location = 16763;
+  HttpEndpoint http_endpoint = 12282;
+  repeated Redundancy redundancies = 4497;
+  optional string parent_id = 3568;
+  optional string service_metadata_document_id = 10599;
+  repeated string storage_ids = 5495;
+  TransportEncryption transport_encryption = 18341;
+  UsageStatistics usage_statistics = 1779;
 }
 
 // Firewall is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Firewall {
   oneof type {
-    L3Firewall l3_firewall = 1;
-    WebApplicationFirewall web_application_firewall = 2;
+    L3Firewall l3_firewall = 9125;
+    WebApplicationFirewall web_application_firewall = 5789;
   }
 }
 
 // Framework is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Framework {
   oneof type {
-    CloudSDK cloud_sdk = 1;
-    HttpClientLibrary http_client_library = 2;
-    HttpServer http_server = 3;
-    Logger logger = 4;
+    CloudSDK cloud_sdk = 776;
+    HttpClientLibrary http_client_library = 12339;
+    HttpServer http_server = 12938;
+    Logger logger = 17354;
   }
 }
 
@@ -840,27 +908,27 @@ message Framework {
 message Function {
   option (resource_type_names) = "Function";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 4066;
+  string description = 18203;
+  string id = 11465 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 4184;
+  map<string, string> labels = 15030;
+  string name = 6517 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  string runtime_language = 8;
-  string runtime_version = 9;
-  EncryptionInUse encryption_in_use = 10;
-  GeoLocation geo_location = 11;
-  repeated string network_interface_ids = 12;
-  repeated Redundancy redundancies = 13;
-  RemoteAttestation remote_attestation = 14;
-  optional string parent_id = 15;
-  ResourceLogging resource_logging = 16;
-  UsageStatistics usage_statistics = 17;
+  string raw = 1531;
+  string runtime_language = 7048;
+  string runtime_version = 16017;
+  EncryptionInUse encryption_in_use = 16630;
+  GeoLocation geo_location = 8822;
+  repeated string network_interface_ids = 3840;
+  repeated Redundancy redundancies = 18216;
+  RemoteAttestation remote_attestation = 13435;
+  optional string parent_id = 11924;
+  ResourceLogging resource_logging = 5288;
+  UsageStatistics usage_statistics = 9808;
 }
 
 // FunctionService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -868,47 +936,51 @@ message FunctionService {
   option (resource_type_names) = "FunctionService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 3632;
+  string description = 17359;
+  string id = 3617 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 5242;
+  repeated string ips = 7370;
+  map<string, string> labels = 18713;
+  string name = 15731 [(buf.validate.field).required = true];
+  repeated uint32 ports = 17713;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  repeated string function_ids = 12;
-  GeoLocation geo_location = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  optional string service_metadata_document_id = 16;
-  TransportEncryption transport_encryption = 17;
-  UsageStatistics usage_statistics = 18;
+  string raw = 4925;
+  Authenticity authenticity = 17652;
+  optional string compute_id = 5429;
+  repeated string function_ids = 2362;
+  GeoLocation geo_location = 8116;
+  repeated Redundancy redundancies = 17787;
+  optional string parent_id = 11473;
+  optional string service_metadata_document_id = 5508;
+  TransportEncryption transport_encryption = 8143;
+  UsageStatistics usage_statistics = 7485;
 }
 
 // Functionality is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Functionality {
   oneof type {
-    CipherSuite cipher_suite = 1;
-    LocalDocumentLocation local_document_location = 2;
-    RemoteDocumentLocation remote_document_location = 3;
-    Error error = 4;
-    HttpEndpoint http_endpoint = 5;
-    HttpRequestHandler http_request_handler = 6;
-    DatabaseConnect database_connect = 7;
-    DatabaseQuery database_query = 8;
-    HttpRequest http_request = 9;
-    LogOperation log_operation = 10;
-    ObjectStorageRequest object_storage_request = 11;
-    SchemaValidation schema_validation = 12;
-    SecurityAdvisoryFeed security_advisory_feed = 13;
-    Vulnerability vulnerability = 14;
+    CipherSuite cipher_suite = 11132;
+    CodeRegion code_region = 9184;
+    LocalDocumentLocation local_document_location = 10096;
+    RemoteDocumentLocation remote_document_location = 9297;
+    Error error = 6544;
+    HttpEndpoint http_endpoint = 4266;
+    HttpRequestHandler http_request_handler = 7403;
+    Decryption decryption = 11278;
+    Encryption encryption = 2715;
+    CryptographicHash cryptographic_hash = 7725;
+    DatabaseConnect database_connect = 10798;
+    DatabaseQuery database_query = 7698;
+    HttpRequest http_request = 2901;
+    LogOperation log_operation = 14250;
+    ObjectStorageRequest object_storage_request = 16887;
+    SchemaValidation schema_validation = 16331;
+    SecurityAdvisoryFeed security_advisory_feed = 13903;
+    Vulnerability vulnerability = 5095;
   }
 }
 
@@ -919,20 +991,20 @@ message GenericDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string filetype = 3;
-  string id = 4 [(buf.validate.field).required = true];
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 11055;
+  string description = 5911;
+  string filetype = 4013;
+  string id = 11297 [(buf.validate.field).required = true];
+  map<string, string> labels = 9013;
+  string name = 5165 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  repeated DocumentChecksum document_checksums = 8;
-  DocumentLocation document_location = 9;
-  repeated DocumentSignature document_signatures = 10;
-  optional string parent_id = 11;
-  SchemaValidation schema_validation = 12;
-  repeated SecurityFeature security_features = 13;
+  string raw = 2153;
+  repeated DocumentChecksum document_checksums = 14501;
+  DocumentLocation document_location = 7961;
+  repeated DocumentSignature document_signatures = 16971;
+  optional string parent_id = 10767;
+  SchemaValidation schema_validation = 15254;
+  repeated SecurityFeature security_features = 1202;
 }
 
 // GenericNetworkService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -941,27 +1013,27 @@ message GenericNetworkService {
   option (resource_type_names) = "GenericNetworkService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 16606;
+  string description = 14235;
+  string id = 12784 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 2744;
+  repeated string ips = 11538;
+  map<string, string> labels = 5016;
+  string name = 13467 [(buf.validate.field).required = true];
+  repeated uint32 ports = 532;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  GeoLocation geo_location = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  optional string service_metadata_document_id = 15;
-  TransportEncryption transport_encryption = 16;
-  UsageStatistics usage_statistics = 17;
+  string raw = 10844;
+  Authenticity authenticity = 16001;
+  optional string compute_id = 6238;
+  GeoLocation geo_location = 10055;
+  repeated Redundancy redundancies = 16059;
+  optional string parent_id = 12959;
+  optional string service_metadata_document_id = 11825;
+  TransportEncryption transport_encryption = 13959;
+  UsageStatistics usage_statistics = 16789;
 }
 
 // GeoLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -970,7 +1042,7 @@ message GeoLocation {
   option (resource_type_names) = "Availability";
   option (resource_type_names) = "SecurityFeature";
 
-  string region = 1;
+  string region = 7708;
 }
 
 // GeoRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -980,7 +1052,19 @@ message GeoRedundancy {
   option (resource_type_names) = "Availability";
   option (resource_type_names) = "SecurityFeature";
 
-  repeated GeoLocation geo_locations = 1;
+  repeated GeoLocation geo_locations = 13910;
+}
+
+// CryptographicHash is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CryptographicHash {
+  option (resource_type_names) = "CryptographicHash";
+  option (resource_type_names) = "CryptographicOperation";
+  option (resource_type_names) = "Operation";
+  option (resource_type_names) = "Functionality";
+
+  string algorithm = 9887;
+  bool uses_salt = 8538;
+  CodeRegion code_region = 6454;
 }
 
 // HttpClientLibrary is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -996,12 +1080,12 @@ message HttpEndpoint {
   option (resource_type_names) = "HttpEndpoint";
   option (resource_type_names) = "Functionality";
 
-  string handler = 1;
-  string method = 2;
-  string path = 3;
-  string url = 4;
-  Authenticity authenticity = 5;
-  TransportEncryption transport_encryption = 7;
+  string handler = 9890;
+  string method = 125;
+  string path = 17149;
+  string url = 8687;
+  Authenticity authenticity = 18568;
+  TransportEncryption transport_encryption = 12277;
 }
 
 // HttpRequest is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1010,9 +1094,10 @@ message HttpRequest {
   option (resource_type_names) = "Operation";
   option (resource_type_names) = "Functionality";
 
-  string call = 1;
-  string req_body = 2;
-  repeated HttpEndpoint http_endpoints = 3;
+  string call = 3127;
+  string req_body = 14536;
+  CodeRegion code_region = 6045;
+  repeated HttpEndpoint http_endpoints = 8204;
 }
 
 // HttpRequestHandler is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1020,9 +1105,9 @@ message HttpRequestHandler {
   option (resource_type_names) = "HttpRequestHandler";
   option (resource_type_names) = "Functionality";
 
-  string path = 1;
-  optional string application_id = 2;
-  repeated HttpEndpoint http_endpoints = 3;
+  string path = 3307;
+  optional string application_id = 9918;
+  repeated HttpEndpoint http_endpoints = 8938;
 }
 
 // HttpServer is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1030,14 +1115,14 @@ message HttpServer {
   option (resource_type_names) = "HttpServer";
   option (resource_type_names) = "Framework";
 
-  HttpRequestHandler http_request_handler = 1;
+  HttpRequestHandler http_request_handler = 18811;
 }
 
 // Identifiable is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Identifiable {
   oneof type {
-    Identity identity = 1;
-    RoleAssignment role_assignment = 2;
+    Identity identity = 14693;
+    RoleAssignment role_assignment = 2361;
   }
 }
 
@@ -1045,36 +1130,36 @@ message Identifiable {
 message Identity {
   option (resource_type_names) = "Identity";
   option (resource_type_names) = "Identifiable";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  bool activated = 1;
-  google.protobuf.Timestamp creation_time = 2;
-  string description = 3;
-  bool disable_password_policy = 4;
-  bool enforce_mfa = 5;
-  string id = 6 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 7;
-  map<string, string> labels = 8;
-  google.protobuf.Timestamp last_activity = 9;
-  bool login_defender_enabled = 10;
-  string name = 11 [(buf.validate.field).required = true];
-  bool privileged = 12;
+  bool activated = 10116;
+  google.protobuf.Timestamp creation_time = 14103;
+  string description = 9218;
+  bool disable_password_policy = 5968;
+  bool enforce_mfa = 13721;
+  string id = 5350 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15444;
+  map<string, string> labels = 716;
+  google.protobuf.Timestamp last_activity = 2591;
+  bool login_defender_enabled = 18632;
+  string name = 2578 [(buf.validate.field).required = true];
+  bool privileged = 2301;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 13;
-  Authenticity authenticity = 14;
-  Authorization authorization = 15;
-  GeoLocation geo_location = 16;
-  repeated Redundancy redundancies = 17;
-  optional string parent_id = 18;
-  UsageStatistics usage_statistics = 19;
+  string raw = 16151;
+  Authenticity authenticity = 6720;
+  Authorization authorization = 14925;
+  GeoLocation geo_location = 9161;
+  repeated Redundancy redundancies = 15828;
+  optional string parent_id = 5028;
+  UsageStatistics usage_statistics = 4966;
 }
 
 // Image is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Image {
   oneof type {
-    ContainerImage container_image = 1;
-    VMImage vm_image = 2;
+    ContainerImage container_image = 17864;
+    VMImage vm_image = 16417;
   }
 }
 
@@ -1084,26 +1169,26 @@ message Immutability {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
+  bool enabled = 1859;
 }
 
 // Integrity is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Integrity {
   oneof type {
-    LocalAttestation local_attestation = 1;
-    RemoteAttestation remote_attestation = 2;
-    AutomaticUpdates automatic_updates = 3;
-    DocumentChecksum document_checksum = 4;
-    Immutability immutability = 5;
-    DocumentSignature document_signature = 6;
+    LocalAttestation local_attestation = 4296;
+    RemoteAttestation remote_attestation = 13640;
+    AutomaticUpdates automatic_updates = 9990;
+    DocumentChecksum document_checksum = 16099;
+    Immutability immutability = 2008;
+    DocumentSignature document_signature = 7943;
   }
 }
 
 // IoT is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message IoT {
   oneof type {
-    DeviceProvisioningService device_provisioning_service = 1;
-    MessagingHub messaging_hub = 2;
+    DeviceProvisioningService device_provisioning_service = 14564;
+    MessagingHub messaging_hub = 12819;
   }
 }
 
@@ -1111,21 +1196,21 @@ message IoT {
 message Job {
   option (resource_type_names) = "Job";
   option (resource_type_names) = "CICDService";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 2948;
+  string description = 7869;
+  string id = 14780 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 5659;
+  map<string, string> labels = 17969;
+  string name = 18498 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 5776;
+  GeoLocation geo_location = 2037;
+  repeated Redundancy redundancies = 12361;
+  optional string parent_id = 15338;
+  UsageStatistics usage_statistics = 11249;
 }
 
 // TokenBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1134,37 +1219,37 @@ message TokenBasedAuthentication {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool context_is_checked = 1;
-  bool enabled = 2;
-  bool enforced = 3;
+  bool context_is_checked = 1232;
+  bool enabled = 10600;
+  bool enforced = 6934;
 }
 
 // Key is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message Key {
   option (resource_type_names) = "Key";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  string algorithm = 1;
-  google.protobuf.Timestamp creation_time = 2;
-  string description = 3;
-  bool enabled = 4;
-  google.protobuf.Timestamp expiration_date = 5;
-  string id = 6 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 7;
-  bool is_managed = 8;
-  int32 key_size = 9;
-  map<string, string> labels = 10;
-  string name = 11 [(buf.validate.field).required = true];
-  google.protobuf.Timestamp not_before_date = 12;
+  string algorithm = 1413;
+  google.protobuf.Timestamp creation_time = 4922;
+  string description = 17406;
+  bool enabled = 12499;
+  google.protobuf.Timestamp expiration_date = 15098;
+  string id = 15294 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 434;
+  bool is_managed = 16202;
+  int32 key_size = 16391;
+  map<string, string> labels = 4273;
+  string name = 18961 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp not_before_date = 235;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 13;
-  optional string cloud_resource_id = 14;
-  GeoLocation geo_location = 15;
-  repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  UsageStatistics usage_statistics = 18;
+  string raw = 11846;
+  GeoLocation geo_location = 16066;
+  optional string infrastructure_id = 15145;
+  repeated Redundancy redundancies = 12591;
+  optional string parent_id = 4414;
+  UsageStatistics usage_statistics = 9113;
 }
 
 // KeyValueDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1174,52 +1259,52 @@ message KeyValueDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 15632;
+  string description = 1436;
+  string id = 14675 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 1908;
+  repeated string ips = 10855;
+  map<string, string> labels = 13607;
+  string name = 11207 [(buf.validate.field).required = true];
+  repeated uint32 ports = 6710;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  repeated AnomalyDetection anomaly_detections = 10;
-  Authenticity authenticity = 11;
-  optional string compute_id = 12;
-  GeoLocation geo_location = 13;
-  HttpEndpoint http_endpoint = 14;
-  MalwareProtection malware_protection = 15;
-  repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  optional string service_metadata_document_id = 18;
-  repeated string storage_ids = 19;
-  TransportEncryption transport_encryption = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 14509;
+  repeated AnomalyDetection anomaly_detections = 18959;
+  Authenticity authenticity = 11723;
+  optional string compute_id = 11235;
+  GeoLocation geo_location = 6514;
+  HttpEndpoint http_endpoint = 15867;
+  MalwareProtection malware_protection = 10213;
+  repeated Redundancy redundancies = 281;
+  optional string parent_id = 18945;
+  optional string service_metadata_document_id = 3747;
+  repeated string storage_ids = 14846;
+  TransportEncryption transport_encryption = 5751;
+  UsageStatistics usage_statistics = 4417;
 }
 
 // KeyVault is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message KeyVault {
   option (resource_type_names) = "KeyVault";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 13116;
+  string description = 4543;
+  string id = 11681 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15576;
+  map<string, string> labels = 11857;
+  string name = 5705 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  repeated string credential_ids = 8;
-  GeoLocation geo_location = 9;
-  repeated Redundancy redundancies = 10;
-  optional string parent_id = 11;
-  UsageStatistics usage_statistics = 12;
+  string raw = 16199;
+  repeated string credential_ids = 17792;
+  GeoLocation geo_location = 413;
+  repeated Redundancy redundancies = 2540;
+  optional string parent_id = 18361;
+  UsageStatistics usage_statistics = 5303;
 }
 
 // L3Firewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1230,9 +1315,9 @@ message L3Firewall {
   option (resource_type_names) = "Authorization";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool inbound = 2;
-  string restricted_ports = 3;
+  bool enabled = 9476;
+  bool inbound = 1000;
+  string restricted_ports = 7341;
 }
 
 // Library is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1242,18 +1327,19 @@ message Library {
   option (resource_type_names) = "Code";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  map<string, string> labels = 4;
-  string name = 5 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 11987;
+  string description = 2499;
+  string id = 11694 [(buf.validate.field).required = true];
+  map<string, string> labels = 7546;
+  string name = 18601 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 6;
-  repeated string code_module_ids = 7;
-  repeated Functionality functionalities = 8;
-  repeated string library_ids = 9;
-  optional string parent_id = 10;
-  repeated Vulnerability vulnerabilities = 11;
+  string raw = 9988;
+  repeated string code_module_ids = 9719;
+  optional string code_repository_id = 295;
+  repeated Functionality functionalities = 10589;
+  repeated string library_ids = 9020;
+  optional string parent_id = 2928;
+  repeated Vulnerability vulnerabilities = 3131;
 }
 
 // LoadBalancer is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1262,31 +1348,31 @@ message LoadBalancer {
   option (resource_type_names) = "LoadBalancer";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 2708;
+  string description = 2822;
+  string id = 8281 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 16617;
+  repeated string ips = 12489;
+  map<string, string> labels = 1121;
+  string name = 16420 [(buf.validate.field).required = true];
+  repeated uint32 ports = 5004;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  string url = 10;
-  AccessRestriction access_restriction = 11;
-  Authenticity authenticity = 12;
-  optional string compute_id = 13;
-  GeoLocation geo_location = 14;
-  repeated HttpEndpoint http_endpoints = 15;
-  repeated string network_service_ids = 16;
-  repeated Redundancy redundancies = 17;
-  optional string parent_id = 18;
-  optional string service_metadata_document_id = 19;
-  TransportEncryption transport_encryption = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 16379;
+  string url = 2355;
+  AccessRestriction access_restriction = 6911;
+  Authenticity authenticity = 4102;
+  optional string compute_id = 4301;
+  GeoLocation geo_location = 17490;
+  repeated HttpEndpoint http_endpoints = 10792;
+  repeated string network_service_ids = 14537;
+  repeated Redundancy redundancies = 10689;
+  optional string parent_id = 3822;
+  optional string service_metadata_document_id = 8705;
+  TransportEncryption transport_encryption = 9485;
+  UsageStatistics usage_statistics = 16809;
 }
 
 // LocalAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1296,7 +1382,7 @@ message LocalAttestation {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
+  bool enabled = 12670;
 }
 
 // LocalDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1305,8 +1391,8 @@ message LocalDocumentLocation {
   option (resource_type_names) = "DocumentLocation";
   option (resource_type_names) = "Functionality";
 
-  string path = 1;
-  AtRestEncryption at_rest_encryption = 2;
+  string path = 5788;
+  AtRestEncryption at_rest_encryption = 47;
 }
 
 // LocalRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1316,7 +1402,7 @@ message LocalRedundancy {
   option (resource_type_names) = "Availability";
   option (resource_type_names) = "SecurityFeature";
 
-  repeated GeoLocation geo_locations = 1;
+  repeated GeoLocation geo_locations = 5006;
 }
 
 // LogOperation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1326,9 +1412,10 @@ message LogOperation {
   option (resource_type_names) = "Operation";
   option (resource_type_names) = "Functionality";
 
-  string call = 1;
-  string value = 2;
-  Logging logging = 3;
+  string call = 6418;
+  string value = 7549;
+  CodeRegion code_region = 11664;
+  Logging logging = 12393;
 }
 
 // Logger is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1340,11 +1427,11 @@ message Logger {
 // Logging is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Logging {
   oneof type {
-    ActivityLogging activity_logging = 1;
-    ApplicationLogging application_logging = 2;
-    BootLogging boot_logging = 3;
-    OSLogging os_logging = 4;
-    ResourceLogging resource_logging = 5;
+    ActivityLogging activity_logging = 2956;
+    ApplicationLogging application_logging = 12791;
+    BootLogging boot_logging = 18439;
+    OSLogging os_logging = 2926;
+    ResourceLogging resource_logging = 17563;
   }
 }
 
@@ -1354,34 +1441,34 @@ message LoggingService {
   option (resource_type_names) = "LoggingService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 13718;
+  string description = 15076;
+  string id = 10888 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 3605;
+  repeated string ips = 4262;
+  map<string, string> labels = 769;
+  string name = 3964 [(buf.validate.field).required = true];
+  repeated uint32 ports = 2549;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  GeoLocation geo_location = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  optional string service_metadata_document_id = 15;
-  repeated string storage_ids = 16;
-  TransportEncryption transport_encryption = 17;
-  UsageStatistics usage_statistics = 18;
+  string raw = 3703;
+  Authenticity authenticity = 15306;
+  optional string compute_id = 10285;
+  GeoLocation geo_location = 4238;
+  repeated Redundancy redundancies = 1550;
+  optional string parent_id = 258;
+  optional string service_metadata_document_id = 16013;
+  repeated string storage_ids = 7044;
+  TransportEncryption transport_encryption = 17323;
+  UsageStatistics usage_statistics = 1203;
 }
 
 // MachineLearning is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message MachineLearning {
   oneof type {
-    MLWorkspace ml_workspace = 1;
+    MLWorkspace ml_workspace = 3361;
   }
 }
 
@@ -1392,10 +1479,10 @@ message MalwareProtection {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  google.protobuf.Duration duration_since_active = 1;
-  bool enabled = 2;
-  int32 number_of_threats_found = 3;
-  ApplicationLogging application_logging = 4;
+  google.protobuf.Duration duration_since_active = 18754;
+  bool enabled = 18004;
+  int32 number_of_threats_found = 11973;
+  ApplicationLogging application_logging = 8181;
 }
 
 // ManagedKeyEncryption is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1405,30 +1492,30 @@ message ManagedKeyEncryption {
   option (resource_type_names) = "Confidentiality";
   option (resource_type_names) = "SecurityFeature";
 
-  string algorithm = 1;
-  bool enabled = 2;
-  string key_url = 3;
+  string algorithm = 2563;
+  bool enabled = 18264;
+  string key_url = 16266;
 }
 
 // MessagingHub is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message MessagingHub {
   option (resource_type_names) = "MessagingHub";
   option (resource_type_names) = "IoT";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 8454;
+  string description = 11913;
+  string id = 7039 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 5261;
+  map<string, string> labels = 4650;
+  string name = 4131 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 6465;
+  GeoLocation geo_location = 10702;
+  repeated Redundancy redundancies = 18734;
+  optional string parent_id = 2352;
+  UsageStatistics usage_statistics = 13729;
 }
 
 // CodeModule is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1437,16 +1524,17 @@ message CodeModule {
   option (resource_type_names) = "Code";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  map<string, string> labels = 4;
-  string name = 5 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 4660;
+  string description = 1331;
+  string id = 3225 [(buf.validate.field).required = true];
+  map<string, string> labels = 2688;
+  string name = 16449 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 6;
-  repeated string code_module_ids = 7;
-  repeated Functionality functionalities = 8;
-  optional string parent_id = 9;
+  string raw = 18119;
+  repeated string code_module_ids = 17307;
+  optional string code_repository_id = 12032;
+  repeated Functionality functionalities = 5976;
+  optional string parent_id = 18719;
 }
 
 // MultiFactorAuthentiation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1455,8 +1543,8 @@ message MultiFactorAuthentiation {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool context_is_checked = 1;
-  repeated Authenticity authenticities = 2;
+  bool context_is_checked = 17335;
+  repeated Authenticity authenticities = 14915;
 }
 
 // MultiModalDatabaseService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1467,75 +1555,75 @@ message MultiModalDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 10465;
+  string description = 15631;
+  string id = 5439 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 16156;
+  repeated string ips = 8280;
+  map<string, string> labels = 7492;
+  string name = 13533 [(buf.validate.field).required = true];
+  repeated uint32 ports = 5;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  repeated AnomalyDetection anomaly_detections = 10;
-  Authenticity authenticity = 11;
-  optional string compute_id = 12;
-  GeoLocation geo_location = 13;
-  HttpEndpoint http_endpoint = 14;
-  MalwareProtection malware_protection = 15;
-  repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  optional string service_metadata_document_id = 18;
-  repeated string storage_ids = 19;
-  TransportEncryption transport_encryption = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 17449;
+  repeated AnomalyDetection anomaly_detections = 7208;
+  Authenticity authenticity = 12713;
+  optional string compute_id = 18111;
+  GeoLocation geo_location = 4221;
+  HttpEndpoint http_endpoint = 8906;
+  MalwareProtection malware_protection = 13719;
+  repeated Redundancy redundancies = 9020;
+  optional string parent_id = 4408;
+  optional string service_metadata_document_id = 13625;
+  repeated string storage_ids = 7826;
+  TransportEncryption transport_encryption = 3867;
+  UsageStatistics usage_statistics = 10570;
 }
 
 // NetworkInterface is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message NetworkInterface {
   option (resource_type_names) = "NetworkInterface";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 5497;
+  string description = 10885;
+  string id = 17981 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 14370;
+  map<string, string> labels = 4721;
+  string name = 12404 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  AccessRestriction access_restriction = 8;
-  GeoLocation geo_location = 9;
-  optional string network_service_id = 10;
-  repeated Redundancy redundancies = 11;
-  optional string parent_id = 12;
-  UsageStatistics usage_statistics = 13;
+  string raw = 5176;
+  AccessRestriction access_restriction = 15102;
+  GeoLocation geo_location = 8368;
+  optional string network_service_id = 16990;
+  repeated Redundancy redundancies = 13764;
+  optional string parent_id = 11276;
+  UsageStatistics usage_statistics = 3807;
 }
 
 // NetworkSecurityGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message NetworkSecurityGroup {
   option (resource_type_names) = "NetworkSecurityGroup";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 7240;
+  string description = 3524;
+  string id = 11635 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 15045;
+  map<string, string> labels = 5905;
+  string name = 11440 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 11170;
+  GeoLocation geo_location = 6795;
+  repeated Redundancy redundancies = 13648;
+  optional string parent_id = 14499;
+  UsageStatistics usage_statistics = 6140;
 }
 
 // NetworkService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -1543,38 +1631,38 @@ message NetworkSecurityGroup {
 // has: Compute instance the network service is running on. This can also be a compute resource within the cloud provider itself if it is a managed service (e.g. Azure App Service)
 message NetworkService {
   oneof type {
-    FunctionService function_service = 1;
-    GenericNetworkService generic_network_service = 2;
-    LoadBalancer load_balancer = 3;
-    LoggingService logging_service = 4;
-    SecurityAdvisoryService security_advisory_service = 5;
-    DocumentDatabaseService document_database_service = 6;
-    KeyValueDatabaseService key_value_database_service = 7;
-    MultiModalDatabaseService multi_modal_database_service = 8;
-    RelationalDatabaseService relational_database_service = 9;
-    FileStorageService file_storage_service = 10;
-    ObjectStorageService object_storage_service = 11;
+    FunctionService function_service = 4929;
+    GenericNetworkService generic_network_service = 1382;
+    LoadBalancer load_balancer = 4201;
+    LoggingService logging_service = 14131;
+    SecurityAdvisoryService security_advisory_service = 173;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
   }
 }
 
 // Networking is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Networking {
   oneof type {
-    NetworkInterface network_interface = 1;
-    NetworkSecurityGroup network_security_group = 2;
-    FunctionService function_service = 3;
-    GenericNetworkService generic_network_service = 4;
-    LoadBalancer load_balancer = 5;
-    LoggingService logging_service = 6;
-    SecurityAdvisoryService security_advisory_service = 7;
-    DocumentDatabaseService document_database_service = 8;
-    KeyValueDatabaseService key_value_database_service = 9;
-    MultiModalDatabaseService multi_modal_database_service = 10;
-    RelationalDatabaseService relational_database_service = 11;
-    FileStorageService file_storage_service = 12;
-    ObjectStorageService object_storage_service = 13;
-    VirtualNetwork virtual_network = 14;
-    VirtualSubNetwork virtual_sub_network = 15;
+    NetworkInterface network_interface = 9859;
+    NetworkSecurityGroup network_security_group = 12647;
+    FunctionService function_service = 4929;
+    GenericNetworkService generic_network_service = 1382;
+    LoadBalancer load_balancer = 4201;
+    LoggingService logging_service = 14131;
+    SecurityAdvisoryService security_advisory_service = 173;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
+    VirtualNetwork virtual_network = 2559;
+    VirtualSubNetwork virtual_sub_network = 11314;
   }
 }
 
@@ -1584,7 +1672,7 @@ message NoAuthentication {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool context_is_checked = 1;
+  bool context_is_checked = 12023;
 }
 
 // OSLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1594,11 +1682,11 @@ message OSLogging {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool monitoring_log_data_enabled = 2;
-  google.protobuf.Duration retention_period = 3;
-  bool security_alerts_enabled = 4;
-  repeated string logging_service_ids = 5;
+  bool enabled = 207;
+  bool monitoring_log_data_enabled = 12434;
+  google.protobuf.Duration retention_period = 11358;
+  bool security_alerts_enabled = 7453;
+  repeated string logging_service_ids = 10850;
 }
 
 // OTPBasedAuthentication is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1607,34 +1695,34 @@ message OTPBasedAuthentication {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool activated = 1;
-  bool context_is_checked = 2;
+  bool activated = 7456;
+  bool context_is_checked = 18913;
 }
 
 // ObjectStorage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ObjectStorage {
   option (resource_type_names) = "ObjectStorage";
   option (resource_type_names) = "Storage";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
-  bool public_access = 7;
+  google.protobuf.Timestamp creation_time = 3389;
+  string description = 7516;
+  string id = 4155 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 18085;
+  map<string, string> labels = 15572;
+  string name = 13009 [(buf.validate.field).required = true];
+  bool public_access = 4621;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8;
-  AtRestEncryption at_rest_encryption = 9;
-  repeated Backup backups = 10;
-  GeoLocation geo_location = 11;
-  Immutability immutability = 12;
-  repeated Redundancy redundancies = 13;
-  optional string parent_id = 14;
-  ResourceLogging resource_logging = 15;
-  UsageStatistics usage_statistics = 16;
+  string raw = 6632;
+  AtRestEncryption at_rest_encryption = 2034;
+  repeated Backup backups = 10118;
+  GeoLocation geo_location = 8835;
+  Immutability immutability = 13608;
+  repeated Redundancy redundancies = 3309;
+  optional string parent_id = 1663;
+  ResourceLogging resource_logging = 3619;
+  UsageStatistics usage_statistics = 8818;
 }
 
 // ObjectStorageRequest is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1643,8 +1731,9 @@ message ObjectStorageRequest {
   option (resource_type_names) = "Operation";
   option (resource_type_names) = "Functionality";
 
-  string source = 1;
-  repeated string object_storage_ids = 2;
+  string source = 178;
+  CodeRegion code_region = 18257;
+  repeated string object_storage_ids = 2364;
 }
 
 // ObjectStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1654,39 +1743,42 @@ message ObjectStorageService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 11795;
+  string description = 11196;
+  string id = 18683 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 16284;
+  repeated string ips = 17168;
+  map<string, string> labels = 17764;
+  string name = 1365 [(buf.validate.field).required = true];
+  repeated uint32 ports = 8166;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  GeoLocation geo_location = 12;
-  HttpEndpoint http_endpoint = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  optional string service_metadata_document_id = 16;
-  repeated string storage_ids = 17;
-  TransportEncryption transport_encryption = 18;
-  UsageStatistics usage_statistics = 19;
+  string raw = 16651;
+  Authenticity authenticity = 6852;
+  optional string compute_id = 4562;
+  GeoLocation geo_location = 18831;
+  HttpEndpoint http_endpoint = 6388;
+  repeated Redundancy redundancies = 11741;
+  optional string parent_id = 1174;
+  optional string service_metadata_document_id = 9311;
+  repeated string storage_ids = 8237;
+  TransportEncryption transport_encryption = 7390;
+  UsageStatistics usage_statistics = 14005;
 }
 
 // Operation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Operation {
   oneof type {
-    DatabaseConnect database_connect = 1;
-    DatabaseQuery database_query = 2;
-    HttpRequest http_request = 3;
-    LogOperation log_operation = 4;
-    ObjectStorageRequest object_storage_request = 5;
+    Decryption decryption = 11278;
+    Encryption encryption = 2715;
+    CryptographicHash cryptographic_hash = 7725;
+    DatabaseConnect database_connect = 10798;
+    DatabaseQuery database_query = 7698;
+    HttpRequest http_request = 2901;
+    LogOperation log_operation = 14250;
+    ObjectStorageRequest object_storage_request = 16887;
   }
 }
 
@@ -1696,28 +1788,28 @@ message PasswordBasedAuthentication {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool activated = 1;
-  bool context_is_checked = 2;
+  bool activated = 11798;
+  bool context_is_checked = 1362;
 }
 
 // PasswordPolicy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message PasswordPolicy {
   option (resource_type_names) = "PasswordPolicy";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 1562;
+  string description = 16661;
+  string id = 2029 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 14885;
+  map<string, string> labels = 716;
+  string name = 8966 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 10264;
+  GeoLocation geo_location = 4406;
+  repeated Redundancy redundancies = 3325;
+  optional string parent_id = 2509;
+  UsageStatistics usage_statistics = 14852;
 }
 
 // RBAC is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1727,17 +1819,17 @@ message RBAC {
   option (resource_type_names) = "SecurityFeature";
 
   // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float broad_assignments = 1;
+  float broad_assignments = 5678;
   // see Privacy Smells: Detecting Privacy Problems in Cloud Architectures (2020)
-  float mixed_duties = 2;
+  float mixed_duties = 14446;
 }
 
 // Redundancy is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Redundancy {
   oneof type {
-    GeoRedundancy geo_redundancy = 1;
-    LocalRedundancy local_redundancy = 2;
-    ZoneRedundancy zone_redundancy = 3;
+    GeoRedundancy geo_redundancy = 2436;
+    LocalRedundancy local_redundancy = 2537;
+    ZoneRedundancy zone_redundancy = 11145;
   }
 }
 
@@ -1748,31 +1840,31 @@ message RelationalDatabaseService {
   option (resource_type_names) = "StorageService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 10783;
+  string description = 12776;
+  string id = 13147 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 12634;
+  repeated string ips = 13907;
+  map<string, string> labels = 5189;
+  string name = 10710 [(buf.validate.field).required = true];
+  repeated uint32 ports = 285;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  repeated AnomalyDetection anomaly_detections = 10;
-  Authenticity authenticity = 11;
-  optional string compute_id = 12;
-  GeoLocation geo_location = 13;
-  HttpEndpoint http_endpoint = 14;
-  MalwareProtection malware_protection = 15;
-  repeated Redundancy redundancies = 16;
-  optional string parent_id = 17;
-  optional string service_metadata_document_id = 18;
-  repeated string storage_ids = 19;
-  TransportEncryption transport_encryption = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 308;
+  repeated AnomalyDetection anomaly_detections = 13020;
+  Authenticity authenticity = 6;
+  optional string compute_id = 18729;
+  GeoLocation geo_location = 2744;
+  HttpEndpoint http_endpoint = 5892;
+  MalwareProtection malware_protection = 12233;
+  repeated Redundancy redundancies = 15094;
+  optional string parent_id = 4594;
+  optional string service_metadata_document_id = 8061;
+  repeated string storage_ids = 4243;
+  TransportEncryption transport_encryption = 11409;
+  UsageStatistics usage_statistics = 9703;
 }
 
 // RemoteAttestation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1782,9 +1874,9 @@ message RemoteAttestation {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  google.protobuf.Timestamp creation_time = 1;
-  bool enabled = 2;
-  bool status = 3;
+  google.protobuf.Timestamp creation_time = 7501;
+  bool enabled = 1238;
+  bool status = 9341;
 }
 
 // RemoteDocumentLocation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1793,29 +1885,29 @@ message RemoteDocumentLocation {
   option (resource_type_names) = "DocumentLocation";
   option (resource_type_names) = "Functionality";
 
-  string path = 1;
-  Authenticity authenticity = 2;
-  TransportEncryption transport_encryption = 3;
+  string path = 1220;
+  Authenticity authenticity = 8682;
+  TransportEncryption transport_encryption = 17914;
 }
 
 // ResourceGroup is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message ResourceGroup {
   option (resource_type_names) = "ResourceGroup";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 16852;
+  string description = 12107;
+  string id = 11216 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 14821;
+  map<string, string> labels = 17517;
+  string name = 18950 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 16903;
+  GeoLocation geo_location = 773;
+  repeated Redundancy redundancies = 1522;
+  optional string parent_id = 14157;
+  UsageStatistics usage_statistics = 2564;
 }
 
 // ResourceLogging is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1825,35 +1917,35 @@ message ResourceLogging {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool monitoring_log_data_enabled = 2;
-  google.protobuf.Duration retention_period = 3;
-  bool security_alerts_enabled = 4;
-  repeated string logging_service_ids = 5;
+  bool enabled = 1509;
+  bool monitoring_log_data_enabled = 6804;
+  google.protobuf.Duration retention_period = 6776;
+  bool security_alerts_enabled = 6099;
+  repeated string logging_service_ids = 15310;
 }
 
 // RoleAssignment is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message RoleAssignment {
   option (resource_type_names) = "RoleAssignment";
   option (resource_type_names) = "Identifiable";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  bool activated = 1;
-  google.protobuf.Timestamp creation_time = 2;
-  string description = 3;
-  string id = 4 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
+  bool activated = 11248;
+  google.protobuf.Timestamp creation_time = 13977;
+  string description = 8960;
+  string id = 6310 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 16789;
+  map<string, string> labels = 18346;
+  string name = 2963 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 8;
-  Authenticity authenticity = 9;
-  Authorization authorization = 10;
-  GeoLocation geo_location = 11;
-  repeated Redundancy redundancies = 12;
-  optional string parent_id = 13;
-  UsageStatistics usage_statistics = 14;
+  string raw = 10862;
+  Authenticity authenticity = 11180;
+  Authorization authorization = 13796;
+  GeoLocation geo_location = 12302;
+  repeated Redundancy redundancies = 13392;
+  optional string parent_id = 2313;
+  UsageStatistics usage_statistics = 2808;
 }
 
 // SchemaValidation is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1861,35 +1953,35 @@ message SchemaValidation {
   option (resource_type_names) = "SchemaValidation";
   option (resource_type_names) = "Functionality";
 
-  string format = 1;
-  string schema_url = 2;
-  repeated Error errors = 3;
+  string format = 1670;
+  string schema_url = 13358;
+  repeated Error errors = 8879;
 }
 
 // Secret is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message Secret {
   option (resource_type_names) = "Secret";
   option (resource_type_names) = "Credential";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  bool enabled = 3;
-  google.protobuf.Timestamp expiration_date = 4;
-  string id = 5 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 6;
-  bool is_managed = 7;
-  map<string, string> labels = 8;
-  string name = 9 [(buf.validate.field).required = true];
-  google.protobuf.Timestamp not_before_date = 10;
+  google.protobuf.Timestamp creation_time = 17509;
+  string description = 11419;
+  bool enabled = 5437;
+  google.protobuf.Timestamp expiration_date = 2358;
+  string id = 13519 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 2994;
+  bool is_managed = 3899;
+  map<string, string> labels = 1676;
+  string name = 964 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp not_before_date = 13335;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 11;
-  optional string cloud_resource_id = 12;
-  GeoLocation geo_location = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  UsageStatistics usage_statistics = 16;
+  string raw = 5998;
+  GeoLocation geo_location = 2663;
+  optional string infrastructure_id = 962;
+  repeated Redundancy redundancies = 14309;
+  optional string parent_id = 13447;
+  UsageStatistics usage_statistics = 10517;
 }
 
 // SecurityAdvisoryDocument is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1898,21 +1990,21 @@ message SecurityAdvisoryDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string filetype = 3;
-  string id = 4 [(buf.validate.field).required = true];
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 12215;
+  string description = 18614;
+  string filetype = 13221;
+  string id = 10862 [(buf.validate.field).required = true];
+  map<string, string> labels = 8011;
+  string name = 953 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  repeated DocumentChecksum document_checksums = 8;
-  DocumentLocation document_location = 9;
-  repeated DocumentSignature document_signatures = 10;
-  optional string parent_id = 11;
-  SchemaValidation schema_validation = 12;
-  repeated SecurityFeature security_features = 13;
-  repeated Vulnerability vulnerabilities = 14;
+  string raw = 1803;
+  repeated DocumentChecksum document_checksums = 14645;
+  DocumentLocation document_location = 11674;
+  repeated DocumentSignature document_signatures = 15164;
+  optional string parent_id = 17394;
+  SchemaValidation schema_validation = 2392;
+  repeated SecurityFeature security_features = 11115;
+  repeated Vulnerability vulnerabilities = 11700;
 }
 
 // SecurityAdvisoryFeed is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1920,7 +2012,7 @@ message SecurityAdvisoryFeed {
   option (resource_type_names) = "SecurityAdvisoryFeed";
   option (resource_type_names) = "Functionality";
 
-  repeated string security_advisory_document_ids = 1;
+  repeated string security_advisory_document_ids = 1213;
 }
 
 // SecurityAdvisoryService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1929,69 +2021,69 @@ message SecurityAdvisoryService {
   option (resource_type_names) = "SecurityAdvisoryService";
   option (resource_type_names) = "NetworkService";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  repeated string ips = 5;
-  map<string, string> labels = 6;
-  string name = 7 [(buf.validate.field).required = true];
-  repeated uint32 ports = 8;
+  google.protobuf.Timestamp creation_time = 3025;
+  string description = 2320;
+  string id = 18683 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 4910;
+  repeated string ips = 2661;
+  map<string, string> labels = 837;
+  string name = 2102 [(buf.validate.field).required = true];
+  repeated uint32 ports = 4555;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 9;
-  Authenticity authenticity = 10;
-  optional string compute_id = 11;
-  GeoLocation geo_location = 12;
-  repeated string key_ids = 13;
-  repeated Redundancy redundancies = 14;
-  optional string parent_id = 15;
-  repeated SecurityAdvisoryFeed security_advisory_feeds = 16;
-  optional string service_metadata_document_id = 17;
-  TransportEncryption transport_encryption = 18;
-  UsageStatistics usage_statistics = 19;
+  string raw = 10467;
+  Authenticity authenticity = 13452;
+  optional string compute_id = 7662;
+  GeoLocation geo_location = 16008;
+  repeated string key_ids = 16432;
+  repeated Redundancy redundancies = 18001;
+  optional string parent_id = 592;
+  repeated SecurityAdvisoryFeed security_advisory_feeds = 12072;
+  optional string service_metadata_document_id = 9438;
+  TransportEncryption transport_encryption = 11117;
+  UsageStatistics usage_statistics = 3613;
 }
 
 // SecurityFeature is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message SecurityFeature {
   oneof type {
-    AnomalyDetection anomaly_detection = 1;
-    ActivityLogging activity_logging = 2;
-    ApplicationLogging application_logging = 3;
-    BootLogging boot_logging = 4;
-    OSLogging os_logging = 5;
-    ResourceLogging resource_logging = 6;
-    MalwareProtection malware_protection = 7;
-    UsageStatistics usage_statistics = 8;
-    CertificateBasedAuthentication certificate_based_authentication = 9;
-    TokenBasedAuthentication token_based_authentication = 10;
-    MultiFactorAuthentiation multi_factor_authentiation = 11;
-    NoAuthentication no_authentication = 12;
-    OTPBasedAuthentication otp_based_authentication = 13;
-    PasswordBasedAuthentication password_based_authentication = 14;
-    SingleSignOn single_sign_on = 15;
-    ABAC abac = 16;
-    L3Firewall l3_firewall = 17;
-    WebApplicationFirewall web_application_firewall = 18;
-    RBAC rbac = 19;
-    Backup backup = 20;
-    DDoSProtection d_do_s_protection = 21;
-    GeoLocation geo_location = 22;
-    GeoRedundancy geo_redundancy = 23;
-    LocalRedundancy local_redundancy = 24;
-    ZoneRedundancy zone_redundancy = 25;
-    CustomerKeyEncryption customer_key_encryption = 26;
-    ManagedKeyEncryption managed_key_encryption = 27;
-    EncryptionInUse encryption_in_use = 28;
-    TransportEncryption transport_encryption = 29;
-    LocalAttestation local_attestation = 30;
-    RemoteAttestation remote_attestation = 31;
-    AutomaticUpdates automatic_updates = 32;
-    DocumentChecksum document_checksum = 33;
-    Immutability immutability = 34;
-    DocumentSignature document_signature = 35;
+    AnomalyDetection anomaly_detection = 4728;
+    ActivityLogging activity_logging = 2956;
+    ApplicationLogging application_logging = 12791;
+    BootLogging boot_logging = 18439;
+    OSLogging os_logging = 2926;
+    ResourceLogging resource_logging = 17563;
+    MalwareProtection malware_protection = 7265;
+    UsageStatistics usage_statistics = 15242;
+    CertificateBasedAuthentication certificate_based_authentication = 560;
+    TokenBasedAuthentication token_based_authentication = 3684;
+    MultiFactorAuthentiation multi_factor_authentiation = 13104;
+    NoAuthentication no_authentication = 17718;
+    OTPBasedAuthentication otp_based_authentication = 18743;
+    PasswordBasedAuthentication password_based_authentication = 16941;
+    SingleSignOn single_sign_on = 9281;
+    ABAC abac = 14694;
+    L3Firewall l3_firewall = 9125;
+    WebApplicationFirewall web_application_firewall = 5789;
+    RBAC rbac = 18783;
+    Backup backup = 16413;
+    DDoSProtection d_do_s_protection = 16707;
+    GeoLocation geo_location = 10970;
+    GeoRedundancy geo_redundancy = 2436;
+    LocalRedundancy local_redundancy = 2537;
+    ZoneRedundancy zone_redundancy = 11145;
+    CustomerKeyEncryption customer_key_encryption = 5547;
+    ManagedKeyEncryption managed_key_encryption = 9197;
+    EncryptionInUse encryption_in_use = 15775;
+    TransportEncryption transport_encryption = 15929;
+    LocalAttestation local_attestation = 4296;
+    RemoteAttestation remote_attestation = 13640;
+    AutomaticUpdates automatic_updates = 9990;
+    DocumentChecksum document_checksum = 16099;
+    Immutability immutability = 2008;
+    DocumentSignature document_signature = 7943;
   }
 }
 
@@ -2001,20 +2093,20 @@ message ServiceMetadataDocument {
   option (resource_type_names) = "Document";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string filetype = 3;
-  string id = 4 [(buf.validate.field).required = true];
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 7335;
+  string description = 9395;
+  string filetype = 16847;
+  string id = 8568 [(buf.validate.field).required = true];
+  map<string, string> labels = 555;
+  string name = 13605 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  repeated DocumentChecksum document_checksums = 8;
-  DocumentLocation document_location = 9;
-  repeated DocumentSignature document_signatures = 10;
-  optional string parent_id = 11;
-  SchemaValidation schema_validation = 12;
-  repeated SecurityFeature security_features = 13;
+  string raw = 11658;
+  repeated DocumentChecksum document_checksums = 11937;
+  DocumentLocation document_location = 3639;
+  repeated DocumentSignature document_signatures = 1315;
+  optional string parent_id = 10323;
+  SchemaValidation schema_validation = 6622;
+  repeated SecurityFeature security_features = 18737;
 }
 
 // DocumentSignature is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2023,8 +2115,8 @@ message DocumentSignature {
   option (resource_type_names) = "Integrity";
   option (resource_type_names) = "SecurityFeature";
 
-  string algorithm = 1;
-  repeated Error errors = 2;
+  string algorithm = 4031;
+  repeated Error errors = 12856;
 }
 
 // SingleSignOn is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2033,17 +2125,17 @@ message SingleSignOn {
   option (resource_type_names) = "Authenticity";
   option (resource_type_names) = "SecurityFeature";
 
-  bool context_is_checked = 1;
-  bool enabled = 2;
+  bool context_is_checked = 14488;
+  bool enabled = 10569;
 }
 
 // Storage is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
 message Storage {
   oneof type {
-    BlockStorage block_storage = 1;
-    DatabaseStorage database_storage = 2;
-    FileStorage file_storage = 3;
-    ObjectStorage object_storage = 4;
+    BlockStorage block_storage = 10253;
+    DatabaseStorage database_storage = 12299;
+    FileStorage file_storage = 2736;
+    ObjectStorage object_storage = 10870;
   }
 }
 
@@ -2051,12 +2143,12 @@ message Storage {
 // This entity represents a network-based service that can be used to access a particular storage backend. It has multiple subclasses, e.g., for databases or object stores. It has a list of storage resources associated to it.
 message StorageService {
   oneof type {
-    DocumentDatabaseService document_database_service = 1;
-    KeyValueDatabaseService key_value_database_service = 2;
-    MultiModalDatabaseService multi_modal_database_service = 3;
-    RelationalDatabaseService relational_database_service = 4;
-    FileStorageService file_storage_service = 5;
-    ObjectStorageService object_storage_service = 6;
+    DocumentDatabaseService document_database_service = 17950;
+    KeyValueDatabaseService key_value_database_service = 1004;
+    MultiModalDatabaseService multi_modal_database_service = 2657;
+    RelationalDatabaseService relational_database_service = 12485;
+    FileStorageService file_storage_service = 16814;
+    ObjectStorageService object_storage_service = 6459;
   }
 }
 
@@ -2067,11 +2159,11 @@ message TransportEncryption {
   option (resource_type_names) = "Confidentiality";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
-  bool enforced = 2;
-  string protocol = 3;
-  float protocol_version = 4;
-  repeated CipherSuite cipher_suites = 5;
+  bool enabled = 2648;
+  bool enforced = 8230;
+  string protocol = 14651;
+  float protocol_version = 2365;
+  repeated CipherSuite cipher_suites = 17881;
 }
 
 // UsageStatistics is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2080,102 +2172,102 @@ message UsageStatistics {
   option (resource_type_names) = "Auditing";
   option (resource_type_names) = "SecurityFeature";
 
-  int32 api_hits_per_month = 1;
+  int32 api_hits_per_month = 7625;
 }
 
 // VMImage is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message VMImage {
   option (resource_type_names) = "VMImage";
   option (resource_type_names) = "Image";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 8279;
+  string description = 4760;
+  string id = 17867 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 14985;
+  map<string, string> labels = 17229;
+  string name = 6244 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  optional string application_id = 8;
-  GeoLocation geo_location = 9;
-  repeated Redundancy redundancies = 10;
-  optional string parent_id = 11;
-  UsageStatistics usage_statistics = 12;
+  string raw = 3459;
+  optional string application_id = 15711;
+  GeoLocation geo_location = 4609;
+  repeated Redundancy redundancies = 18349;
+  optional string parent_id = 13735;
+  UsageStatistics usage_statistics = 2369;
 }
 
 // VirtualMachine is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message VirtualMachine {
   option (resource_type_names) = "VirtualMachine";
   option (resource_type_names) = "Compute";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 6633;
+  string description = 14513;
+  string id = 8104 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 2070;
+  map<string, string> labels = 2416;
+  string name = 11617 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  ActivityLogging activity_logging = 8;
-  AutomaticUpdates automatic_updates = 9;
-  repeated string block_storage_ids = 10;
-  BootLogging boot_logging = 11;
-  EncryptionInUse encryption_in_use = 12;
-  GeoLocation geo_location = 13;
-  MalwareProtection malware_protection = 14;
-  repeated string network_interface_ids = 15;
-  OSLogging os_logging = 16;
-  repeated Redundancy redundancies = 17;
-  RemoteAttestation remote_attestation = 18;
-  optional string parent_id = 19;
-  ResourceLogging resource_logging = 20;
-  UsageStatistics usage_statistics = 21;
+  string raw = 14073;
+  ActivityLogging activity_logging = 8134;
+  AutomaticUpdates automatic_updates = 7114;
+  repeated string block_storage_ids = 2182;
+  BootLogging boot_logging = 15845;
+  EncryptionInUse encryption_in_use = 10596;
+  GeoLocation geo_location = 7308;
+  MalwareProtection malware_protection = 16535;
+  repeated string network_interface_ids = 741;
+  OSLogging os_logging = 8084;
+  repeated Redundancy redundancies = 14823;
+  RemoteAttestation remote_attestation = 17180;
+  optional string parent_id = 10949;
+  ResourceLogging resource_logging = 15452;
+  UsageStatistics usage_statistics = 14541;
 }
 
 // VirtualNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message VirtualNetwork {
   option (resource_type_names) = "VirtualNetwork";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 1885;
+  string description = 9930;
+  string id = 4087 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 7871;
+  map<string, string> labels = 6818;
+  string name = 818 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 14216;
+  GeoLocation geo_location = 7268;
+  repeated Redundancy redundancies = 3591;
+  optional string parent_id = 2814;
+  UsageStatistics usage_statistics = 7205;
 }
 
 // VirtualSubNetwork is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message VirtualSubNetwork {
   option (resource_type_names) = "VirtualSubNetwork";
   option (resource_type_names) = "Networking";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 317;
+  string description = 14512;
+  string id = 10226 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 14405;
+  map<string, string> labels = 4188;
+  string name = 1563 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 15165;
+  GeoLocation geo_location = 18482;
+  repeated Redundancy redundancies = 14386;
+  optional string parent_id = 12551;
+  UsageStatistics usage_statistics = 6155;
 }
 
 // Vulnerability is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2185,11 +2277,11 @@ message Vulnerability {
   option (resource_type_names) = "Vulnerability";
   option (resource_type_names) = "Functionality";
 
-  string cve = 1;
-  repeated string cwe = 2;
-  string description = 3;
-  string name = 4 [(buf.validate.field).required = true];
-  string url = 5;
+  string cve = 205;
+  repeated string cwe = 18325;
+  string description = 10690;
+  string name = 13528 [(buf.validate.field).required = true];
+  string url = 11925;
 }
 
 // WebApplicationFirewall is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2201,52 +2293,52 @@ message WebApplicationFirewall {
   option (resource_type_names) = "Authorization";
   option (resource_type_names) = "SecurityFeature";
 
-  bool enabled = 1;
+  bool enabled = 8961;
 }
 
 // Workflow is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message Workflow {
   option (resource_type_names) = "Workflow";
   option (resource_type_names) = "CICDService";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 5596;
+  string description = 2895;
+  string id = 6168 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 5072;
+  map<string, string> labels = 9318;
+  string name = 12414 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  GeoLocation geo_location = 8;
-  repeated Redundancy redundancies = 9;
-  optional string parent_id = 10;
-  UsageStatistics usage_statistics = 11;
+  string raw = 9416;
+  GeoLocation geo_location = 14478;
+  repeated Redundancy redundancies = 15255;
+  optional string parent_id = 3002;
+  UsageStatistics usage_statistics = 15450;
 }
 
 // MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message MLWorkspace {
   option (resource_type_names) = "MLWorkspace";
   option (resource_type_names) = "MachineLearning";
-  option (resource_type_names) = "CloudResource";
+  option (resource_type_names) = "Infrastructure";
   option (resource_type_names) = "Resource";
 
-  google.protobuf.Timestamp creation_time = 1;
-  string description = 2;
-  string id = 3 [(buf.validate.field).required = true];
-  bool internet_accessible_endpoint = 4;
-  map<string, string> labels = 5;
-  string name = 6 [(buf.validate.field).required = true];
+  google.protobuf.Timestamp creation_time = 8432;
+  string description = 17583;
+  string id = 1199 [(buf.validate.field).required = true];
+  bool internet_accessible_endpoint = 8784;
+  map<string, string> labels = 18904;
+  string name = 9265 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
-  string raw = 7;
-  AtRestEncryption at_rest_encryption = 8;
-  GeoLocation geo_location = 9;
-  repeated Redundancy redundancies = 10;
-  optional string parent_id = 11;
-  ResourceLogging resource_logging = 12;
-  optional string storage_id = 13;
-  UsageStatistics usage_statistics = 14;
+  string raw = 13297;
+  AtRestEncryption at_rest_encryption = 12398;
+  GeoLocation geo_location = 8174;
+  repeated Redundancy redundancies = 16100;
+  optional string parent_id = 672;
+  ResourceLogging resource_logging = 15549;
+  optional string storage_id = 2357;
+  UsageStatistics usage_statistics = 13057;
 }
 
 // ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -2256,5 +2348,5 @@ message ZoneRedundancy {
   option (resource_type_names) = "Availability";
   option (resource_type_names) = "SecurityFeature";
 
-  repeated GeoLocation geo_locations = 1;
+  repeated GeoLocation geo_locations = 11767;
 }
