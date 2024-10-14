@@ -69,39 +69,39 @@ const (
 	DashboardCallbackURLFlag             = "dashboard-callback-url"
 	LogLevelFlag                         = "log-level"
 
-	DefaultAPIDefaultUser                      = "clouditor"
-	DefaultAPIDefaultPassword                  = "clouditor"
-	DefaultAPIgRPCPort                  uint16 = 9090
-	DefaultAPIgRPCPortOrchestrator      uint16 = 9090
-	DefaultAPIgRPCPortDiscovery         uint16 = 9091
-	DefaultAPIgRPCPortEvidenceStore     uint16 = 9092
-	DefaultAPIgRPCPortAssessment        uint16 = 9093
-	DefaultAPIgRPCPortEvaluation        uint16 = 9094
-	DefaultAPIHTTPPortOrchestrator      uint16 = 8080
-	DefaultAPIHTTPPortDiscovery         uint16 = 8081
-	DefaultAPIHTTPPortEvidenceStore     uint16 = 8082
-	DefaultAPIHTTPPortAssessment        uint16 = 8083
-	DefaultAPIHTTPPortEvaluation        uint16 = 8084
-	DefaultAPIStartEmbeddedOAuth2Server        = true
-	DefaultServiceOAuth2Endpoint               = "http://localhost:8080/v1/auth/token"
-	DefaultServiceOAuth2ClientID               = "clouditor"
-	DefaultServiceOAuth2ClientSecret           = "clouditor"
-	DefaultOrchestratorURL                     = "localhost:9090"
-	DefaultEvidenceStoreURL                    = "localhost:9090"
-	DefaultAssessmentURL                       = "localhost:9090"
-	DefaultDBUserName                          = "postgres"
-	DefaultDBPassword                          = "postgres"
-	DefaultDBHost                              = "localhost"
-	DefaultDBName                              = "postgres"
-	DefaultDBPort                       uint16 = 5432
-	DefaultDBSSLMode                           = "disable"
-	DefaultDBInMemory                          = false
-	DefaultCreateDefaultTarget                 = true
-	DefaultDiscoveryAutoStart                  = false
-	DefaultDiscoveryResourceGroup              = ""
-	DefaultCSAFDomain                          = ""
-	DefaultDashboardCallbackURL                = "http://localhost:8080/callback"
-	DefaultLogLevel                            = "info"
+	DefaultAPIDefaultUser                     = "clouditor"
+	DefaultAPIDefaultPassword                 = "clouditor"
+	DefaultAPIgRPCPort                 uint16 = 9090
+	DefaultAPIgRPCPortOrchestrator     uint16 = 9090
+	DefaultAPIgRPCPortDiscovery        uint16 = 9091
+	DefaultAPIgRPCPortEvidenceStore    uint16 = 9092
+	DefaultAPIgRPCPortAssessment       uint16 = 9093
+	DefaultAPIgRPCPortEvaluation       uint16 = 9094
+	DefaultAPIHTTPPortOrchestrator     uint16 = 8080
+	DefaultAPIHTTPPortDiscovery        uint16 = 8081
+	DefaultAPIHTTPPortEvidenceStore    uint16 = 8082
+	DefaultAPIHTTPPortAssessment       uint16 = 8083
+	DefaultAPIHTTPPortEvaluation       uint16 = 8084
+	DefaultEmbeddedOAuth2ServerEnabled        = true
+	DefaultServiceOAuth2Endpoint              = "http://localhost:8080/v1/auth/token"
+	DefaultServiceOAuth2ClientID              = "clouditor"
+	DefaultServiceOAuth2ClientSecret          = "clouditor"
+	DefaultOrchestratorURL                    = "localhost:9090"
+	DefaultEvidenceStoreURL                   = "localhost:9090"
+	DefaultAssessmentURL                      = "localhost:9090"
+	DefaultDBUserName                         = "postgres"
+	DefaultDBPassword                         = "postgres"
+	DefaultDBHost                             = "localhost"
+	DefaultDBName                             = "postgres"
+	DefaultDBPort                      uint16 = 5432
+	DefaultDBSSLMode                          = "disable"
+	DefaultDBInMemory                         = false
+	DefaultCreateDefaultTarget                = true
+	DefaultDiscoveryAutoStart                 = false
+	DefaultDiscoveryResourceGroup             = ""
+	DefaultCSAFDomain                         = ""
+	DefaultDashboardCallbackURL               = "http://localhost:8080/callback"
+	DefaultLogLevel                           = "info"
 
 	EnvPrefix = "CLOUDITOR"
 )
@@ -137,7 +137,7 @@ func init() {
 }
 
 func InitCobra(engineCmd *cobra.Command) {
-	engineCmd.Flags().Bool(EmbeddedOAuth2ServerEnabledFlag, DefaultAPIStartEmbeddedOAuth2Server, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
+	engineCmd.Flags().Bool(EmbeddedOAuth2ServerEnabledFlag, DefaultEmbeddedOAuth2ServerEnabled, "Specifies whether the embedded OAuth 2.0 authorization server is started as part of the REST gateway. For production workloads, an external authorization server is recommended.")
 
 	_ = viper.BindPFlag(EmbeddedOAuth2ServerEnabledFlag, engineCmd.Flags().Lookup(EmbeddedOAuth2ServerEnabledFlag))
 }
