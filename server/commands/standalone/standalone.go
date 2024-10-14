@@ -64,6 +64,13 @@ func NewStandaloneCommand() *cobra.Command {
 		},
 	}
 
+	BindFlags(cmd)
+
+	return cmd
+
+}
+
+func BindFlags(cmd *cobra.Command) {
 	// Set gRPC and HTTP port
 	cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
@@ -100,6 +107,4 @@ func NewStandaloneCommand() *cobra.Command {
 	command_discovery.BindFlags(cmd)
 	command_evaluation.BindFlags(cmd)
 	command_orchestrator.BindFlags(cmd)
-
-	return cmd
 }
