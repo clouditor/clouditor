@@ -447,6 +447,18 @@ message Code {
   }
 }
 
+// CodeRegion is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
+message CodeRegion {
+  option (resource_type_names) = "CodeRegion";
+  option (resource_type_names) = "Functionality";
+
+  int32 end_column = 1;
+  int32 end_line = 2;
+  string file = 3;
+  int32 start_column = 4;
+  int32 start_line = 5;
+}
+
 // CodeRepository is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
 message CodeRepository {
   option (resource_type_names) = "CodeRepository";
@@ -640,8 +652,9 @@ message DatabaseConnect {
   option (resource_type_names) = "Functionality";
 
   repeated string calls = 1;
-  repeated string database_service_ids = 2;
-  optional string database_storage_id = 3;
+  CodeRegion code_region = 2;
+  repeated string database_service_ids = 3;
+  optional string database_storage_id = 4;
 }
 
 // DatabaseOperation is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -661,8 +674,9 @@ message DatabaseQuery {
 
   repeated string calls = 1;
   bool modify = 2;
-  repeated string database_service_ids = 3;
-  optional string database_storage_id = 4;
+  CodeRegion code_region = 3;
+  repeated string database_service_ids = 4;
+  optional string database_storage_id = 5;
 }
 
 // DatabaseService is an abstract class in our ontology, it cannot be instantiated but acts as an "interface".
@@ -710,6 +724,7 @@ message Decryption {
   option (resource_type_names) = "Functionality";
 
   string algorithm = 1;
+  CodeRegion code_region = 2;
 }
 
 // DeviceProvisioningService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -802,6 +817,7 @@ message Encryption {
   option (resource_type_names) = "Functionality";
 
   string algorithm = 1;
+  CodeRegion code_region = 2;
 }
 
 // Error is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -948,22 +964,23 @@ message FunctionService {
 message Functionality {
   oneof type {
     CipherSuite cipher_suite = 1;
-    LocalDocumentLocation local_document_location = 2;
-    RemoteDocumentLocation remote_document_location = 3;
-    Error error = 4;
-    HttpEndpoint http_endpoint = 5;
-    HttpRequestHandler http_request_handler = 6;
-    Decryption decryption = 7;
-    Encryption encryption = 8;
-    CryptographicHash cryptographic_hash = 9;
-    DatabaseConnect database_connect = 10;
-    DatabaseQuery database_query = 11;
-    HttpRequest http_request = 12;
-    LogOperation log_operation = 13;
-    ObjectStorageRequest object_storage_request = 14;
-    SchemaValidation schema_validation = 15;
-    SecurityAdvisoryFeed security_advisory_feed = 16;
-    Vulnerability vulnerability = 17;
+    CodeRegion code_region = 2;
+    LocalDocumentLocation local_document_location = 3;
+    RemoteDocumentLocation remote_document_location = 4;
+    Error error = 5;
+    HttpEndpoint http_endpoint = 6;
+    HttpRequestHandler http_request_handler = 7;
+    Decryption decryption = 8;
+    Encryption encryption = 9;
+    CryptographicHash cryptographic_hash = 10;
+    DatabaseConnect database_connect = 11;
+    DatabaseQuery database_query = 12;
+    HttpRequest http_request = 13;
+    LogOperation log_operation = 14;
+    ObjectStorageRequest object_storage_request = 15;
+    SchemaValidation schema_validation = 16;
+    SecurityAdvisoryFeed security_advisory_feed = 17;
+    Vulnerability vulnerability = 18;
   }
 }
 
@@ -1046,6 +1063,8 @@ message CryptographicHash {
   option (resource_type_names) = "Functionality";
 
   string algorithm = 1;
+  bool uses_salt = 2;
+  CodeRegion code_region = 3;
 }
 
 // HttpClientLibrary is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1077,7 +1096,8 @@ message HttpRequest {
 
   string call = 1;
   string req_body = 2;
-  repeated HttpEndpoint http_endpoints = 3;
+  CodeRegion code_region = 3;
+  repeated HttpEndpoint http_endpoints = 4;
 }
 
 // HttpRequestHandler is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1394,7 +1414,8 @@ message LogOperation {
 
   string call = 1;
   string value = 2;
-  Logging logging = 3;
+  CodeRegion code_region = 3;
+  Logging logging = 4;
 }
 
 // Logger is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
@@ -1711,7 +1732,8 @@ message ObjectStorageRequest {
   option (resource_type_names) = "Functionality";
 
   string source = 1;
-  repeated string object_storage_ids = 2;
+  CodeRegion code_region = 2;
+  repeated string object_storage_ids = 3;
 }
 
 // ObjectStorageService is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
