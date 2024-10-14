@@ -75,6 +75,9 @@ func BindFlags(cmd *cobra.Command) {
 	cmd.Flags().Uint16(config.APIgRPCPortFlag, config.DefaultAPIgRPCPort, "Specifies the port used for the Clouditor gRPC API")
 	cmd.Flags().Uint16(config.APIHTTPPortFlag, config.DefaultAPIHTTPPort, "Specifies the port used for the Clouditor HTTP API")
 
+	// Set embedded OAuth2 server public URL
+	cmd.Flags().String(config.EmbeddedOAuth2ServerPublicURLFlag, "", "Specifies the embedded OAuth 2.0 authorization server public URL.")
+
 	// Set the OrchestratorURLFlag default value to the default orchestrator URL "localhost:9090"
 	if cmd.Flag(config.OrchestratorURLFlag) == nil {
 		cmd.Flags().String(config.OrchestratorURLFlag, config.DefaultOrchestratorURL, "Specifies the Orchestrator URL")
@@ -88,11 +91,6 @@ func BindFlags(cmd *cobra.Command) {
 	// Set the EvidenceStoreURLFLag default value to the default evidence store URL "localhost:9090"
 	if cmd.Flag(config.EvidenceStoreURLFlag) == nil {
 		cmd.Flags().String(config.EvidenceStoreURLFlag, config.DefaultEvidenceStoreURL, "Specifies the Evidence Store URL")
-	}
-
-	// Set the EmbeddedOAuth2ServerPublicHostFlag default value to the default embedded OAuth2 server host "http://localhost"
-	if cmd.Flag(config.EmbeddedOAuth2ServerPublicURLFlag) == nil {
-		cmd.Flags().String(config.EmbeddedOAuth2ServerPublicURLFlag, config.DefaultEmbeddedOAuth2ServerPublicHost, "Specifies the embedded OAuth 2.0 authorization server public host. Default is 'http://localhost'.")
 	}
 
 	// Set flag to start embedded OAuth2 server
