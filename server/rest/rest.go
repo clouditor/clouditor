@@ -62,6 +62,9 @@ var (
 	// httpPort holds the used HTTP port of the http.Server
 	httpPort uint16
 
+	// publicHttpURL holds the used HTTP public URL of the http.Server
+	httpPublicURL string
+
 	// sock holds the listener socket of our REST API.
 	sock net.Listener
 
@@ -153,7 +156,7 @@ func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
 	return func(c *restConfig, sm *runtime.ServeMux) {
-		publicURL := fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
+		publicURL := fmt.Sprintf("%s:%d/v1/auth", httpPublicURL, httpPort)
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
 
