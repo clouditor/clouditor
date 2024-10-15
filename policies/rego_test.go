@@ -357,6 +357,39 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "Application: StrongCryptographicHash",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.Application{
+					Id: "app",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "MD5",
+								},
+							},
+						},
+					},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":      false,
+				"AutomaticUpdatesInterval":     false,
+				"AutomaticUpdatesSecurityOnly": false,
+				"ResourceInventory":            true,
+				"StrongCryptographicHash":      false,
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 
 	for _, tt := range tests {
@@ -405,7 +438,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 		name       string
 		fields     fields
 		args       args
-		wantResult assert.Want[*Result]
+		wantResult assert.Want[*CombinedResult]
 		wantErr    assert.WantErr
 	}{
 		{
@@ -429,8 +462,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &mockMetricsSource{t: t},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   true,
 					TargetValue: true,
@@ -471,8 +504,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &updatedMockMetricsSource{mockMetricsSource{t: t}},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   false,
 					TargetValue: false,
