@@ -156,11 +156,13 @@ func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate b
 	return func(c *restConfig, sm *runtime.ServeMux) {
 		var publicURL string
 
+		oauthHost := viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag)
+
 		// Check if an embedded OAuth2 server public URL is given, otherwise take localhost.
-		if config.EmbeddedOAuth2ServerPublicURLFlag == "" {
+		if oauthHost == "" {
 			publicURL = fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
 		} else {
-			publicURL = fmt.Sprintf("%s:%d/v1/auth", viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag), httpPort)
+			publicURL = fmt.Sprintf("%s:%d/v1/auth", oauthHost, httpPort)
 		}
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
