@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2020-2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,33 +23,29 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package util
+package azure
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
 
-// SafeTimestamp returns either the UNIX timestamp of the time t or 0 if it is nil
-func SafeTimestamp(t *time.Time) int64 {
-	if t == nil {
-		return 0
-	}
+func handleMLWorkspace(value *armmachinelearning.Workspace) (*ontology.MLWorkspace, error) {
+	atRestEnc := getAtRestEncryption(value.Properties.Encryption)
 
-	if t.IsZero() {
-		return 0
-	}
-
-	return t.Unix()
-}
-
-// Timestamp converts a Timestamp string to a timestamppb.Timestamp
-func Timestamp(t string) *timestamppb.Timestamp {
-	time, err := time.Parse(time.RFC3339, t)
-	if err != nil {
-		return &timestamppb.Timestamp{}
-	}
-
-	return timestamppb.New(time)
+	return &ontology.MLWorkspace{
+		Id:                         resourceID(value.ID),
+		Name:                       util.Deref(value.Name),
+		CreationTime:               creationTime(value.SystemData.CreatedAt),
+		GeoLocation:                location(value.Location),
+		Labels:                     labels(value.Tags),
+		ParentId:                   resourceGroupID(value.ID),
+		Raw:                        discovery.Raw(value),
+		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
+		ResourceLogging:            getResourceLogging(value.Properties.ApplicationInsights),
+		AtRestEncryption:           atRestEnc,
+		StorageId:                  util.Ref(resourceID(value.Properties.StorageAccount)),
+	}, nil
 }
