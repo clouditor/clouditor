@@ -28,7 +28,7 @@ mapped |
 	mapped := {
 		"property": "cryptographicHash.algorithm",
 		"value": func.cryptographicHash.algorithm,
-		"targetValue": data.target_value,
+		"target_value": data.target_value,
 		"operator": data.operator,
 		"success": compare(data.operator, data.target_value, func.cryptographicHash.algorithm),
 	}
