@@ -215,7 +215,7 @@ func TestLauncher_Launch(t *testing.T) {
 		{
 			name: "Happy path: with embedded OAuth 2.0 server",
 			prepViper: func() {
-				viper.Set(config.APIStartEmbeddedOAuth2ServerFlag, true)
+				viper.Set(config.EmbeddedOAuth2ServerEnabledFlag, true)
 				viper.Set(config.APIKeyPathFlag, "keyPath")
 				viper.Set(config.APIKeyPasswordFlag, "passwd")
 				viper.Set(config.APIKeySaveOnCreateFlag, true)

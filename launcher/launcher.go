@@ -132,7 +132,7 @@ func (l *Launcher) Launch() (err error) {
 	// our existing REST gateway). In a production scenario the usage of a dedicated (external) OAuth 2.0 server is
 	// recommended. In order to configure the external server, the flags ServiceOAuth2EndpointFlag and APIJWKSURLFlag
 	// can be used.
-	if viper.GetBool(config.APIStartEmbeddedOAuth2ServerFlag) {
+	if viper.GetBool(config.EmbeddedOAuth2ServerEnabledFlag) {
 		restOpts = append(restOpts,
 			rest.WithEmbeddedOAuth2Server(
 				viper.GetString(config.APIKeyPathFlag),

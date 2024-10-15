@@ -49,6 +49,7 @@ import (
 	oauth2 "github.com/oxisto/oauth2go"
 	"github.com/oxisto/oauth2go/storage"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -153,7 +154,16 @@ func WithAdditionalGRPCOpts(opts []grpc.DialOption) ServerConfigOption {
 // recommended.
 func WithEmbeddedOAuth2Server(keyPath string, keyPassword string, saveOnCreate bool, opts ...oauth2.AuthorizationServerOption) ServerConfigOption {
 	return func(c *restConfig, sm *runtime.ServeMux) {
-		publicURL := fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
+		var publicURL string
+
+		oauthHost := viper.GetString(config.EmbeddedOAuth2ServerPublicURLFlag)
+
+		// Check if an embedded OAuth2 server public URL is given, otherwise take localhost.
+		if oauthHost == "" {
+			publicURL = fmt.Sprintf("http://localhost:%d/v1/auth", httpPort)
+		} else {
+			publicURL = fmt.Sprintf("%s:%d/v1/auth", oauthHost, httpPort)
+		}
 
 		log.Infof("Using embedded OAuth2.0 server on %s", publicURL)
 
