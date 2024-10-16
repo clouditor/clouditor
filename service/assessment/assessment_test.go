@@ -918,7 +918,44 @@ func TestService_handleEvidence(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "correct evidence",
+			name: "correct evidence: using metrics which returns comparison results",
+			fields: fields{
+				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
+				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
+			},
+			args: args{
+				evidence: &evidence.Evidence{
+					Id:                    testdata.MockEvidenceID1,
+					ToolId:                testdata.MockEvidenceToolID1,
+					Timestamp:             timestamppb.Now(),
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Resource: prototest.NewAny(t, &ontology.Application{
+						Id:   "Application",
+						Name: "Application",
+						Functionalities: []*ontology.Functionality{
+							{
+								Type: &ontology.Functionality_CryptographicHash{
+									CryptographicHash: &ontology.CryptographicHash{
+										Algorithm: "md5",
+										UsesSalt:  false,
+									},
+								},
+							},
+						},
+					}),
+				},
+			},
+			want: func(t *testing.T, got []*assessment.AssessmentResult) bool {
+				for _, result := range got {
+					err := api.Validate(result)
+					assert.NoError(t, err)
+				}
+				return assert.Equal(t, 5, len(got))
+			},
+			wantErr: assert.Nil[error],
+		},
+		{
+			name: "correct evidence: using metrics which do not return comparison results",
 			fields: fields{
 				evidenceStore: api.NewRPCConnection(testdata.MockGRPCTarget, evidence.NewEvidenceStoreClient, grpc.WithContextDialer(bufConnDialer)),
 				orchestrator:  api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(bufConnDialer)),
@@ -1156,7 +1193,7 @@ type eventRecorder struct {
 	done  bool
 }
 
-func (*eventRecorder) Eval(_ *evidence.Evidence, _ ontology.IsResource, _ map[string]ontology.IsResource, _ policies.MetricsSource) (data []*policies.Result, err error) {
+func (*eventRecorder) Eval(_ *evidence.Evidence, _ ontology.IsResource, _ map[string]ontology.IsResource, _ policies.MetricsSource) (data []*policies.CombinedResult, err error) {
 	return nil, nil
 }
 

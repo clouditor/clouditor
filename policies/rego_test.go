@@ -357,6 +357,39 @@ func Test_regoEval_Eval(t *testing.T) {
 			},
 			wantErr: assert.Nil[error],
 		},
+		{
+			name: "Application: StrongCryptographicHash",
+			fields: fields{
+				qc:      newQueryCache(),
+				mrtc:    &metricsCache{m: make(map[string][]*assessment.Metric)},
+				storage: testutil.NewInMemoryStorage(t),
+				pkg:     DefaultRegoPackage,
+			},
+			args: args{
+				resource: &ontology.Application{
+					Id: "app",
+					Functionalities: []*ontology.Functionality{
+						{
+							Type: &ontology.Functionality_CryptographicHash{
+								CryptographicHash: &ontology.CryptographicHash{
+									Algorithm: "MD5",
+								},
+							},
+						},
+					},
+				},
+				evidenceID: mockVM1EvidenceID,
+				src:        &mockMetricsSource{t: t},
+			},
+			compliant: map[string]bool{
+				"AutomaticUpdatesEnabled":      false,
+				"AutomaticUpdatesInterval":     false,
+				"AutomaticUpdatesSecurityOnly": false,
+				"ResourceInventory":            true,
+				"StrongCryptographicHash":      false,
+			},
+			wantErr: assert.Nil[error],
+		},
 	}
 
 	for _, tt := range tests {
@@ -405,7 +438,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 		name       string
 		fields     fields
 		args       args
-		wantResult assert.Want[*Result]
+		wantResult assert.Want[*CombinedResult]
 		wantErr    assert.WantErr
 	}{
 		{
@@ -429,8 +462,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &mockMetricsSource{t: t},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   true,
 					TargetValue: true,
@@ -471,8 +504,8 @@ func Test_regoEval_evalMap(t *testing.T) {
 				},
 				src: &updatedMockMetricsSource{mockMetricsSource{t: t}},
 			},
-			wantResult: func(t *testing.T, got *Result) bool {
-				want := &Result{
+			wantResult: func(t *testing.T, got *CombinedResult) bool {
+				want := &CombinedResult{
 					Applicable:  true,
 					Compliant:   false,
 					TargetValue: false,
@@ -504,6 +537,76 @@ func Test_regoEval_evalMap(t *testing.T) {
 
 			tt.wantErr(t, err)
 			tt.wantResult(t, gotResult)
+		})
+	}
+}
+
+func Test_reencode(t *testing.T) {
+	type args struct {
+		in  any
+		out any
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: Map to Map",
+			args: args{
+				in:  map[string]string{"key": "value"},
+				out: new(map[string]string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: Slice to Slice",
+			args: args{
+				in:  []int{1, 2, 3},
+				out: new([]int),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: String to String",
+			args: args{
+				in:  "hello",
+				out: new(string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid Input (Marshal)",
+			args: args{
+				in:  make(chan int),
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "Invalid Input (Unmarshal)",
+			args: args{
+				in:  42, // Invalid input for unmarshalling into a map[string]string
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			switch out := tt.args.out.(type) {
+			case *map[string]string:
+				err = reencode(tt.args.in, out)
+			case *([]int):
+				err = reencode(tt.args.in, out)
+			case *string:
+				err = reencode(tt.args.in, out)
+			default:
+				t.Fatalf("unsupported type: %T", out)
+			}
+
+			tt.wantErr(t, err)
 		})
 	}
 }
