@@ -540,3 +540,73 @@ func Test_regoEval_evalMap(t *testing.T) {
 		})
 	}
 }
+
+func Test_reencode(t *testing.T) {
+	type args struct {
+		in  any
+		out any
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: Map to Map",
+			args: args{
+				in:  map[string]string{"key": "value"},
+				out: new(map[string]string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: Slice to Slice",
+			args: args{
+				in:  []int{1, 2, 3},
+				out: new([]int),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: String to String",
+			args: args{
+				in:  "hello",
+				out: new(string),
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Invalid Input (Marshal)",
+			args: args{
+				in:  make(chan int),
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "Invalid Input (Unmarshal)",
+			args: args{
+				in:  42, // Invalid input for unmarshalling into a map[string]string
+				out: new(map[string]string),
+			},
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err error
+			switch out := tt.args.out.(type) {
+			case *map[string]string:
+				err = reencode(tt.args.in, out)
+			case *([]int):
+				err = reencode(tt.args.in, out)
+			case *string:
+				err = reencode(tt.args.in, out)
+			default:
+				t.Fatalf("unsupported type: %T", out)
+			}
+
+			tt.wantErr(t, err)
+		})
+	}
+}
