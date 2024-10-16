@@ -151,7 +151,7 @@ message ComparisonResult {
   string value = 2;
 
   // Operator is the operator used in the comparison
-  string operator = 3 [(buf.validate.field).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$"];
+  string operator = 3 [(buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$"];
 
   // TargetValue is the target value used in the comparison
   google.protobuf.Value target_value = 4 [(tagger.tags) = "gorm:\"serializer:json\""];

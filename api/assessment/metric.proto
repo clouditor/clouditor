@@ -113,7 +113,7 @@ message Order {
 // Defines the operator and a target value for an individual metric
 message MetricConfiguration {
   // The operator to compare the metric, such as == or >
-  string operator = 1 [(buf.validate.field).string.pattern = "^(|<|>|<=|>=|==|isIn|allIn)$"];
+  string operator = 1 [(buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$"];
 
   // The target value
   google.protobuf.Value target_value = 2 [
