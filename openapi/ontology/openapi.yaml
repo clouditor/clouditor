@@ -403,6 +403,8 @@ components:
         CodeRegion:
             type: object
             properties:
+                code:
+                    type: string
                 endColumn:
                     type: integer
                     format: int32
