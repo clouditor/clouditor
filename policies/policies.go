@@ -68,6 +68,9 @@ type CombinedResult struct {
 
 	// ComparisonResult is an optional feature to get more infos about the comparisons
 	ComparisonResult []*assessment.ComparisonResult
+
+	// Message contains an optional string that the metric can supply to provide a human readable representation of the result
+	Message string
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric
