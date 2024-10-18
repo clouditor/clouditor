@@ -1442,13 +1442,14 @@ components:
                     items:
                         type: string
                     description: Resource types
-                nonComplianceComments:
+                complianceComment:
                     type: string
-                    description: Some comments on the reason for non-compliance
-                nonComplianceDetails:
+                    description: ComplianceComment contains a human readable description on the reason for (non)-compliance.
+                complianceDetails:
                     type: array
                     items:
                         $ref: '#/components/schemas/ComparisonResult'
+                    description: ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
                 certificationTargetId:
                     type: string
                     description: The certification target which this assessment result belongs to

@@ -8,10 +8,10 @@ default applicable = false
 
 default compliant = false
 
-hashes = [func | func := app.functionalities[_]; func.cryptographicHash]
+hashes := [func | func := app.functionalities[_]; func.cryptographicHash]
 
 applicable if {
-    #some i
+	#some i
 	#functionalities[i].cryptographicHash
 
 	# the resource type should be an application
@@ -22,7 +22,13 @@ compliant if {
 	count(violations) == 0
 }
 
-results = [
+message := "The anaylzed resource uses strong cryptographic hashes." if {
+	compliant
+} else := "The anaylzed resource contains evidence that weak cryptographic hashes are used." if {
+	not compliant
+}
+
+results := [
 mapped |
 	func := app.functionalities[_]
 	mapped := {
@@ -34,4 +40,4 @@ mapped |
 	}
 ]
 
-violations = [x | y := results[_]; y.success == false; x = y]
+violations := [x | y := results[_]; y.success == false; x = y]
