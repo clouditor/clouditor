@@ -41,8 +41,8 @@ var (
 )
 
 const (
-	DefaultNonCompliantMessage = "The metric assess that the resource contains properties that are not compliant to the target value."
-	DefaultCompliantMessage    = "The result of the metric is that the evidence is compliant to the target value."
+	DefaultNonCompliantMessage = "The metric has assessed that the resource contains properties that are not compliant to the target value."
+	DefaultCompliantMessage    = "The result of the metric sh that the evidence is compliant to the target value."
 	AdditionalDetailsMessage   = "Additional details can be found in the comparison below."
 )
 
