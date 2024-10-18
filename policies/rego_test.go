@@ -477,6 +477,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 						MetricId:              "AutomaticUpdatesEnabled",
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
+					Message: assessment.DefaultCompliantMessage,
 				}
 
 				return assert.Equal(t, want, got)
@@ -519,6 +520,7 @@ func Test_regoEval_evalMap(t *testing.T) {
 						MetricId:              "AutomaticUpdatesEnabled",
 						CertificationTargetId: testdata.MockCertificationTargetID1,
 					},
+					Message: assessment.DefaultNonCompliantMessage,
 				}
 
 				return assert.Equal(t, want, got)

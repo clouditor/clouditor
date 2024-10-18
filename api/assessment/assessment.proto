@@ -130,10 +130,11 @@ message AssessmentResult {
     (buf.validate.field).repeated.min_items = 1
   ];
 
-  // Some comments on the reason for non-compliance
-  string non_compliance_comments = 9;
+  // ComplianceComment contains a human readable description on the reason for (non)-compliance.
+  string compliance_comment = 9;
 
-  repeated ComparisonResult non_compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
+  // ComplianceDetails contains machine-readable details about which comparisons lead to a (non)-compliance.
+  repeated ComparisonResult compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
 
   // The certification target which this assessment result belongs to
   string certification_target_id = 20 [(buf.validate.field).string.uuid = true];
