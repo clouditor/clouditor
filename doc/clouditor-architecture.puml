@@ -1,0 +1,119 @@
+@startuml Clouditor
+' !include color_pallette.wsd
+
+    legend top right
+    ' <#GhostWhite,#GhostWhite>|        |= __Legend__ |
+    |=__Legend__|  |
+    |A<&arrow-right>B| A pushes data to B|
+    |A<U+21E2>B| A pulls data from B|
+    endlegend
+
+package Discovery {
+'   class Resource  << (S,Aquamarine) >> { 
+'       id
+'       name
+'       location
+'       ...
+'     }
+'     note left: properties according to the properties of the Ontology
+    
+'   class Evidence << (S,Aquamarine) >> {
+'         id
+'         timestamp
+'         cloud_service_id
+'         tool_id
+'         raw
+'         resource
+'         experimental_related_resource_ids
+'     }
+
+  class Start << (M, Aquamarine) >> {}
+  class StartDiscovery << (M, Aquamarine) >> {}
+  class ListResources << (M, Aquamarine) >> {}
+
+  Start --> StartDiscovery
+}
+
+' Assessment
+package Assessment {
+    class AssessEvidence << (M, Aquamarine) >> {}
+    class AssessEvidences << (M, Aquamarine) >> {}
+    class handleEvidence << (M, Aquamarine) >> {}
+    
+    AssessEvidences --> AssessEvidence: Evidence
+    AssessEvidence --> handleEvidence: Evidence
+}
+
+' Evidence Store
+package EvidenceStore {
+    class StoreEvidences << (M, Aquamarine) >> {}
+    class StoreEvidence << (M, Aquamarine) >> {}
+    class ListEvidences  << (M, Aquamarine) >> {}
+    class GetEvidence << (M, Aquamarine) >> {}
+
+    StoreEvidences --> StoreEvidence: Evidence
+}
+
+' Orchestrator
+package Orchestrator {
+    class StoreAssessmentResult << (M, Aquamarine) >> {}
+    class StoreAssessmentResults << (M, Aquamarine) >> {}
+    class ListAssessmentResults << (M, Aquamarine) >> {}
+    class GetTargetOfEvaluation  << (M, Aquamarine) >> {}
+    class GetCatalog << (M, Aquamarine) >> {}
+
+    StoreAssessmentResults --> StoreAssessmentResult: AssessmentResult
+    
+}
+
+' Evaluation
+package Evaluation {
+    class StartEvaluation << (M, Aquamarine) >> {}
+    class StopEvaluation << (M, Aquamarine) >> {}
+    class ListEvaluationResults << (M, Aquamarine) >> {}
+    class CreateEvaluationResult << (M, Aquamarine) >> {}
+    class evaluateControl << (M, Aquamarine) >> {}
+    class evaluateSubControl << (M, Aquamarine) >> {}
+    class addJobToScheduler << (M, Aquamarine) >> {}
+    class evaluateCatalog << (M, Aquamarine) >> {}
+    class evaluateControl << (M, Aquamarine) >> {}
+
+    StartEvaluation --> addJobToScheduler: ToE, Catalog
+    addJobToScheduler --> evaluateCatalog: ToE, Catalog
+    evaluateCatalog --> evaluateControl: ToE, Catalog
+    evaluateControl <.. evaluateSubControl: EvaluationResults
+    evaluateControl --> evaluateSubControl: ToE
+    evaluateCatalog <.. ListEvaluationResults: EvaluationResults
+}
+
+' DB/Storage
+component DB {
+
+}
+
+' Links between packages/components/microservices
+' Discovery
+StartDiscovery --> AssessEvidence: Evidence
+
+' Assessment
+handleEvidence --> StoreEvidence: Evidence
+handleEvidence --> StoreAssessmentResult: AssessmentResult
+
+' Orchestrator
+StoreAssessmentResult --> DB: AssessmentResult
+
+' Evidence Store
+StoreEvidence --> DB: Evidence
+
+' Evaluation
+CreateEvaluationResult --> DB: EvaluationResult
+evaluateControl --> DB: EvaluationResult
+evaluateSubControl <.. ListAssessmentResults: AssessmentResults
+evaluateSubControl --> DB: EvaluationResult
+StartEvaluation <.. GetTargetOfEvaluation: ToE
+StartEvaluation <.. GetCatalog: Catalog
+ListEvaluationResults <-- DB: EvaluationResult
+
+
+
+@enduml

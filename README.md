@@ -50,7 +50,7 @@ It can be used with the following command:
 ./run-engine-with-ui.sh --discovery-provider=csaf --discovery-csaf-domain=clouditor.io
 ```
 
-The domain `clouditor.io` can be replace with your actual domain.
+The domain `clouditor.io` can be replaced with your actual domain.
 
 ## Build
 
@@ -107,3 +107,11 @@ cl service discovery experimental update-resource \
 ### Command Completion
 
 The CLI offers command completion for most shells using the `cl completion` command. Specific instructions to install the shell completions can be accessed using `cl completion --help`.
+
+## Further Documentation
+
+### Architecture
+An overview of the architecture is given in [Architecture](doc/architecture.md)
+
+### Configuration
+The individual components can be configured using command line flags. All configuration options are explained in Configuration and can be displayed for each package using the `--help` flag.
