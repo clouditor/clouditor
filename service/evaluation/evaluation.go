@@ -922,7 +922,7 @@ func handlePending(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus
 // handleCompliant evaluates the given evaluation result when the current control evaluation status is COMPLIANT
 func handleCompliant(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus, []string) {
 	var (
-		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING
+		evalStatus              = evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT
 		failingAssessmentResult []string
 	)
 
