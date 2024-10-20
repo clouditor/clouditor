@@ -184,6 +184,15 @@ paths:
 components:
     schemas:
         EvaluationResult:
+            required:
+                - id
+                - certificationTargetId
+                - controlId
+                - controlCategoryName
+                - controlCatalogId
+                - status
+                - timestamp
+                - failingAssessmentResultIds
             type: object
             properties:
                 id:

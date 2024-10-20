@@ -144,6 +144,7 @@ var (
 		EvidenceId:            testdata.MockEvidenceID1,
 		ResourceId:            testdata.MockResourceID1,
 		ResourceTypes:         []string{"Resource"},
+		ComplianceComment:     assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:              "==",
 			TargetValue:           structpb.NewBoolValue(true),
@@ -162,6 +163,7 @@ var (
 		EvidenceId:            testdata.MockEvidenceID1,
 		ResourceId:            testdata.MockResourceID1,
 		ResourceTypes:         []string{"Resource"},
+		ComplianceComment:     assessment.DefaultCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:              "==",
 			TargetValue:           structpb.NewBoolValue(true),
@@ -180,6 +182,7 @@ var (
 		EvidenceId:            testdata.MockEvidenceID1,
 		ResourceId:            testdata.MockResourceID1,
 		ResourceTypes:         []string{"Resource"},
+		ComplianceComment:     assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:              "==",
 			TargetValue:           structpb.NewBoolValue(true),
@@ -198,6 +201,7 @@ var (
 		EvidenceId:            testdata.MockEvidenceID1,
 		ResourceId:            testdata.MockResourceID2,
 		ResourceTypes:         []string{"Resource"},
+		ComplianceComment:     assessment.DefaultNonCompliantMessage,
 		MetricConfiguration: &assessment.MetricConfiguration{
 			Operator:              "==",
 			TargetValue:           structpb.NewBoolValue(true),
