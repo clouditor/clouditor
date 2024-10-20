@@ -1412,6 +1412,17 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufValue'
             description: Defines a range
         AssessmentResult:
+            required:
+                - id
+                - timestamp
+                - metricId
+                - metricConfiguration
+                - evidenceId
+                - resourceId
+                - resourceTypes
+                - complianceComment
+                - certificationTargetId
+                - toolId
             type: object
             properties:
                 id:
@@ -1645,13 +1656,20 @@ components:
                     type: string
                     description: an icon for the certification target used by the UI
         ComparisonResult:
+            required:
+                - property
+                - value
+                - operator
+                - targetValue
+                - success
             type: object
             properties:
                 property:
                     type: string
                     description: Property is the property that was compared
                 value:
-                    type: string
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufValue'
                     description: Value is the value in the property
                 operator:
                     type: string
@@ -1848,6 +1866,9 @@ components:
                 nextPageToken:
                     type: string
         Metric:
+            required:
+                - id
+                - name
             type: object
             properties:
                 id:
@@ -1895,6 +1916,12 @@ components:
                     format: date-time
             description: A metric resource
         MetricConfiguration:
+            required:
+                - operator
+                - targetValue
+                - isDefault
+                - metricId
+                - certificationTargetId
             type: object
             properties:
                 operator:
@@ -1919,6 +1946,9 @@ components:
                     description: The certification target this configuration belongs to
             description: Defines the operator and a target value for an individual metric
         MetricImplementation:
+            required:
+                - metricId
+                - code
             type: object
             properties:
                 metricId:

@@ -106,7 +106,14 @@ func TestService_ListGraphEdges(t *testing.T) {
 				req: &discovery.ListGraphEdgesRequest{},
 			},
 			wantRes: &discovery.ListGraphEdgesResponse{
-				Edges: []*discovery.GraphEdge{},
+				Edges: []*discovery.GraphEdge{
+					{
+						Type:   "storage",
+						Id:     "some-storage-account-id-some-id",
+						Source: "some-storage-account-id",
+						Target: "some-id",
+					},
+				},
 			},
 			wantErr: assert.NoError,
 		},
@@ -147,6 +154,12 @@ func TestService_ListGraphEdges(t *testing.T) {
 						Target: "some-storage-account-id",
 						Type:   "parent",
 					},
+					{
+						Type:   "storage",
+						Id:     "some-storage-account-id-some-id",
+						Source: "some-storage-account-id",
+						Target: "some-id",
+					},
 				},
 			},
 			wantErr: assert.NoError,
@@ -165,8 +178,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 				ctID:              tt.fields.ctID,
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
-
-			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
+			assert.Equal(t, tt.wantRes, gotRes)
 			tt.wantErr(t, err)
 		})
 	}
