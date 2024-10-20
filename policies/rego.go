@@ -347,8 +347,10 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 
 	// Check, if the metric supplies an additional message
 	if msg, ok := output.(map[string]interface{})["message"]; ok {
-		// Also append a short comment that details can be found in the ... details
-		result.Message = fmt.Sprintf("%s %s", msg, assessment.AdditionalDetailsMessage)
+		// Also append a short comment that details can be found in the ... details, if we have any
+		if len(result.ComparisonResult) > 0 {
+			result.Message = fmt.Sprintf("%s %s", msg, assessment.AdditionalDetailsMessage)
+		}
 	} else if result.Compliant {
 		result.Message = assessment.DefaultCompliantMessage
 	} else if !result.Compliant {
