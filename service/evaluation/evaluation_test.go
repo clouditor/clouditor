@@ -2067,8 +2067,8 @@ func Test_handleCompliant(t *testing.T) {
 			name: "Status: Not compliant manually",
 			args: args{
 				er: &evaluation.EvaluationResult{
-					Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
-					FailingAssessmentResultIds: []string{"fail1", "fail2"},
+					Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+					AssessmentResultIds: []string{"fail1", "fail2"},
 				},
 			},
 			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {

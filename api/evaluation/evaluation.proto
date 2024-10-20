@@ -173,9 +173,8 @@ message EvaluationResult {
     (google.api.field_behavior) = REQUIRED
   ];
 
-  // List of assessment results because of which the evaluation status is not
-  // 'compliant'
-  repeated string failing_assessment_result_ids = 10 [
+  // List of assessment results because of which the evaluation status is compliant or not compliant
+  repeated string assessment_result_ids = 10 [
     (tagger.tags) = "gorm:\"serializer:json\"",
     (buf.validate.field).repeated.items.string.min_len = 1,
     (google.api.field_behavior) = REQUIRED

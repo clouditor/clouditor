@@ -654,6 +654,7 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 	copy(results[len(relevant):], manual)
 
 	var nonCompliantAssessmentResults = []string{}
+	var resultIds = []string{}
 
 	for _, r := range results {
 		// status is the current evaluation status, r.Status is the status of the evaluation result of the subcontrol
@@ -667,21 +668,24 @@ func (svc *Service) evaluateControl(ctx context.Context, auditScope *orchestrato
 			status, nonCompliantAssessmentResults = handleCompliant(r)
 		case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 			// Evaluation status does not change if it is already not_compliant
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetFailingAssessmentResultIds()...)
+			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetAssessmentResultIds()...)
 		}
+
+		// We are interested in all result IDs in order to provide a trace back from evaluation result back to assessment (and evidence).
+		resultIds = append(resultIds, r.AssessmentResultIds...)
 	}
 
 	// Create evaluation result
 	result = &evaluation.EvaluationResult{
-		Id:                         uuid.NewString(),
-		Timestamp:                  timestamppb.Now(),
-		ControlCategoryName:        control.CategoryName,
-		ControlCatalogId:           control.CategoryCatalogId,
-		ControlId:                  control.Id,
-		CertificationTargetId:      auditScope.CertificationTargetId,
-		AuditScopeId:               auditScope.Id,
-		Status:                     status,
-		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		ControlCategoryName:   control.CategoryName,
+		ControlCatalogId:      control.CategoryCatalogId,
+		ControlId:             control.Id,
+		CertificationTargetId: auditScope.CertificationTargetId,
+		AuditScopeId:          auditScope.Id,
+		Status:                status,
+		AssessmentResultIds:   resultIds,
 	}
 
 	err = svc.storage.Create(result)
@@ -704,6 +708,7 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 		assessments                   []*assessment.AssessmentResult
 		status                        evaluation.EvaluationStatus
 		nonCompliantAssessmentResults []string
+		resultIds                     []string
 	)
 
 	if auditScope == nil || control == nil {
@@ -755,25 +760,26 @@ func (svc *Service) evaluateSubcontrol(_ context.Context, auditScope *orchestrat
 	}
 
 	// Here the actual evaluation takes place. We check if the assessment results are compliant.
-	for _, results := range assessments {
-		if !results.Compliant {
-			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, results.GetId())
+	for _, r := range assessments {
+		if !r.Compliant {
+			nonCompliantAssessmentResults = append(nonCompliantAssessmentResults, r.GetId())
 			status = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
 		}
+		resultIds = append(resultIds, r.GetId())
 	}
 
 	// Create evaluation result
 	eval = &evaluation.EvaluationResult{
-		Id:                         uuid.NewString(),
-		Timestamp:                  timestamppb.Now(),
-		ControlCategoryName:        control.CategoryName,
-		ControlCatalogId:           control.CategoryCatalogId,
-		ControlId:                  control.Id,
-		ParentControlId:            control.ParentControlId,
-		CertificationTargetId:      auditScope.CertificationTargetId,
-		AuditScopeId:               auditScope.Id,
-		Status:                     status,
-		FailingAssessmentResultIds: nonCompliantAssessmentResults,
+		Id:                    uuid.NewString(),
+		Timestamp:             timestamppb.Now(),
+		ControlCategoryName:   control.CategoryName,
+		ControlCatalogId:      control.CategoryCatalogId,
+		ControlId:             control.Id,
+		ParentControlId:       control.ParentControlId,
+		CertificationTargetId: auditScope.CertificationTargetId,
+		AuditScopeId:          auditScope.Id,
+		Status:                status,
+		AssessmentResultIds:   resultIds,
 	}
 
 	err = svc.storage.Create(eval)
@@ -921,7 +927,7 @@ func handlePending(er *evaluation.EvaluationResult) (evaluation.EvaluationStatus
 	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
+		failingAssessmentResult = append(failingAssessmentResult, er.GetAssessmentResultIds()...)
 	}
 
 	return evalStatus, failingAssessmentResult
@@ -939,7 +945,7 @@ func handleCompliant(er *evaluation.EvaluationResult) (evaluation.EvaluationStat
 		// valuation status does not change
 	case evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY:
 		evalStatus = evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT
-		failingAssessmentResult = append(failingAssessmentResult, er.GetFailingAssessmentResultIds()...)
+		failingAssessmentResult = append(failingAssessmentResult, er.GetAssessmentResultIds()...)
 	}
 
 	return evalStatus, failingAssessmentResult
