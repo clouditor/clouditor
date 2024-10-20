@@ -110,6 +110,7 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 	// * compliant status
 	// * metric ID
 	// * tool ID
+	// * assessment result ID(s)
 	if req.Filter != nil {
 		if req.Filter.CertificationTargetId != nil {
 			query = append(query, "certification_target_id = ?")
@@ -122,6 +123,10 @@ func (svc *Service) ListAssessmentResults(ctx context.Context, req *orchestrator
 		if req.Filter.MetricIds != nil {
 			query = append(query, "metric_id IN ?")
 			args = append(args, req.Filter.GetMetricIds())
+		}
+		if req.Filter.AssessmentResultIds != nil {
+			query = append(query, "id IN ?")
+			args = append(args, req.Filter.GetAssessmentResultIds())
 		}
 		if req.Filter.ToolId != nil {
 			query = append(query, "tool_id = ?")

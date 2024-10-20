@@ -484,16 +484,9 @@ func (svc *Service) handleEvidence(ctx context.Context, ev *evidence.Evidence, r
 			EvidenceId:            ev.GetId(),
 			ResourceId:            resource.GetId(),
 			ResourceTypes:         types,
-			NonComplianceComments: "No comments so far",
+			ComplianceComment:     data.Message,
+			ComplianceDetails:     data.ComparisonResult,
 			ToolId:                util.Ref(assessment.AssessmentToolId),
-		}
-
-		// Some (newer) metrics have non-compliance details, so we can also fill them
-		for _, comparison := range data.ComparisonResult {
-			// For now we are only interested in failing results
-			if !comparison.Success {
-				result.NonComplianceDetails = append(result.NonComplianceDetails, comparison)
-			}
 		}
 
 		// Inform hooks about new assessment result
