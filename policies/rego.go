@@ -350,6 +350,8 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		// Also append a short comment that details can be found in the ... details, if we have any
 		if len(result.ComparisonResult) > 0 {
 			result.Message = fmt.Sprintf("%s %s", msg, assessment.AdditionalDetailsMessage)
+		} else {
+			result.Message = assessment.AdditionalDetailsMessage
 		}
 	} else if result.Compliant {
 		result.Message = assessment.DefaultCompliantMessage
