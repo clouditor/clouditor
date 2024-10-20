@@ -192,7 +192,7 @@ components:
                 - controlCatalogId
                 - status
                 - timestamp
-                - failingAssessmentResultIds
+                - assessmentResultIds
             type: object
             properties:
                 id:
@@ -228,13 +228,11 @@ components:
                     type: string
                     description: Time of evaluation
                     format: date-time
-                failingAssessmentResultIds:
+                assessmentResultIds:
                     type: array
                     items:
                         type: string
-                    description: |-
-                        List of assessment results because of which the evaluation status is not
-                         'compliant'
+                    description: List of assessment results because of which the evaluation status is compliant or not compliant
                 comment:
                     type: string
                 validUntil:
