@@ -40,6 +40,13 @@ paths:
                   description: Optional. List only assessment result from a specific assessment tool.
                   schema:
                     type: string
+                - name: filter.assessmentResultIds
+                  in: query
+                  description: Optional. List only assessment result from a specific list of IDs.
+                  schema:
+                    type: array
+                    items:
+                        type: string
                 - name: latestByResourceId
                   in: query
                   description: Optional. Latest results grouped by resource_id and metric_id.
