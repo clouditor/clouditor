@@ -659,6 +659,63 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/catalogs/{catalogId}/controls:
+        get:
+            tags:
+                - Orchestrator
+            description: |-
+                If no additional parameters are specified, this lists all controls. If a
+                 catalog ID and a category name is specified, then only controls containing
+                 in this category are returned.
+            operationId: Orchestrator_ListControls
+            parameters:
+                - name: catalogId
+                  in: path
+                  description: return either all controls or only the controls of the specified category
+                  required: true
+                  schema:
+                    type: string
+                - name: categoryName
+                  in: query
+                  schema:
+                    type: string
+                - name: filter.assuranceLevels
+                  in: query
+                  description: Optional. Lists only controls with the specified assurance levels.
+                  schema:
+                    type: array
+                    items:
+                        type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageToken
+                  in: query
+                  schema:
+                    type: string
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: asc
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListControlsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/certificates:
         get:
             tags:

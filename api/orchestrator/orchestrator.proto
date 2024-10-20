@@ -292,6 +292,7 @@ service Orchestrator {
   rpc ListControls(ListControlsRequest) returns (ListControlsResponse) {
     option (google.api.http) = {
       get: "/v1/orchestrator/controls"
+      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/controls"}
       additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/categories/{category_name}/controls"}
     };
   }
