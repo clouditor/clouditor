@@ -26,6 +26,7 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/v2/api/evaluation"
 	"context"
 	"errors"
 	"fmt"
@@ -183,6 +184,13 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 		CatalogId:             req.GetCatalogId(),
 	}
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
+
+	if req.RemoveEvaluationResults {
+		err := svc.storage.Delete(&evaluation.EvaluationResult{}, "certification_target_id = ? AND control_catalog_id = ?", req.CertificationTargetId, req.CatalogId)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
 
