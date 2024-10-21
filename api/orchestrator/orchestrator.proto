@@ -883,6 +883,7 @@ message RemoveAuditScopeRequest {
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
+  bool remove_evaluation_results = 3;
 }
 
 message GetAuditScopeRequest {

@@ -1074,6 +1074,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: removeEvaluationResults
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
