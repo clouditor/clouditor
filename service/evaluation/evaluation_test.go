@@ -1735,3 +1735,171 @@ func TestDefaultServiceSpec(t *testing.T) {
 		})
 	}
 }
+
+func Test_handlePending(t *testing.T) {
+	type args struct {
+		eval *evaluation.EvaluationResult
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.Want[evaluation.EvaluationStatus]
+		want1 assert.Want[[]string]
+	}{
+		{
+			name: "Status: Pending",
+			args: args{
+				eval: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Compliant",
+			args: args{
+				eval: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Compliant manually",
+			args: args{
+				eval: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Not compliant manually without failing assessment results",
+			args: args{
+				eval: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Not compliant with failing assessment results",
+			args: args{
+				eval: &evaluation.EvaluationResult{
+					Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
+					FailingAssessmentResultIds: []string{"fail1", "fail2"},
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Equal(t, []string{"fail1", "fail2"}, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := handlePending(tt.args.eval)
+			tt.want(t, got)
+			tt.want1(t, got1)
+		})
+	}
+}
+
+func Test_handleCompliant(t *testing.T) {
+	type args struct {
+		er *evaluation.EvaluationResult
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  assert.Want[evaluation.EvaluationStatus]
+		want1 assert.Want[[]string]
+	}{
+		{
+			name: "Status: Pending",
+			args: args{
+				er: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_PENDING,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Compliant",
+			args: args{
+				er: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Compliant manually",
+			args: args{
+				er: &evaluation.EvaluationResult{
+					Status: evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT_MANUALLY,
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Nil(t, got)
+			},
+		},
+		{
+			name: "Status: Not compliant manually",
+			args: args{
+				er: &evaluation.EvaluationResult{
+					Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+					FailingAssessmentResultIds: []string{"fail1", "fail2"},
+				},
+			},
+			want: func(t *testing.T, got evaluation.EvaluationStatus) bool {
+				return assert.Equal(t, evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT, got)
+			},
+			want1: func(t *testing.T, got []string) bool {
+				return assert.Equal(t, []string{"fail1", "fail2"}, got)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := handleCompliant(tt.args.er)
+			tt.want(t, got)
+			tt.want1(t, got1)
+		})
+	}
+}
