@@ -43,7 +43,6 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -329,36 +328,6 @@ func TestService_GetAuditScope(t *testing.T) {
 	}
 }
 
-func TestService_ListAuditScopes(t *testing.T) {
-	var (
-		listAuditScopesResponse *orchestrator.ListAuditScopesResponse
-		err                     error
-	)
-
-	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-	assert.NoError(t, err)
-	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
-	assert.NoError(t, err)
-
-	// 1st case: No Audit Scopes stored
-	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-	assert.Empty(t, listAuditScopesResponse.AuditScopes)
-
-	// 2nd case: One Audit Scope stored
-	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
-	assert.NoError(t, err)
-
-	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
-	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
-	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
-}
-
 func TestService_UpdateAuditScope(t *testing.T) {
 	var (
 		auditScope *orchestrator.AuditScope
@@ -558,4 +527,125 @@ func TestToeHook(t *testing.T) {
 			assert.Equal(t, 2, hookCallCounter)
 		})
 	}
+}
+
+func TestService_ListAuditScopes(t *testing.T) {
+	type fields struct {
+		storage persistence.Storage
+		authz   service.AuthorizationStrategy
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.ListAuditScopesRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*orchestrator.ListAuditScopesResponse]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: without filter",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					// assert.NoError(t, s.Create(orchestratortest.NewAuditScope("")))
+					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+					assert.NoError(t, err)
+
+					err = s.Create(orchestratortest.NewCatalog())
+					assert.NoError(t, err)
+
+					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+					assert.NoError(t, err)
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.ListAuditScopesRequest{},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.ListAuditScopesResponse) bool {
+				assert.Equal(t, 1, len(got.AuditScopes))
+				assert.NotEmpty(t, got.AuditScopes[0].GetId())
+				want := &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID,
+				}
+				return assert.Equal(t, want, got.AuditScopes[1])
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := &Service{
+				storage: tt.fields.storage,
+				authz:   tt.fields.authz,
+			}
+			gotRes, err := svc.ListAuditScopes(tt.args.ctx, tt.args.req)
+			tt.wantRes(t, gotRes)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+// func TestService_ListAuditScopes(t *testing.T) {
+// 	var (
+// 		listAuditScopesResponse *orchestrator.ListAuditScopesResponse
+// 		err                     error
+// 	)
+
+// 	orchestratorService := NewService()
+// 	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+// 	assert.NoError(t, err)
+// 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+// 	assert.NoError(t, err)
+
+// 	// 1st case: No Audit Scopes stored
+// 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+// 	assert.Empty(t, listAuditScopesResponse.AuditScopes)
+
+// 	// 2nd case: One Audit Scope stored
+// 	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+// 	assert.NoError(t, err)
+
+// 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+// 	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
+// 	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
+// 	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
+// }
+
+func TestService_ListAuditScopes2(t *testing.T) {
+	var (
+		listAuditScopesResponse *orchestrator.ListAuditScopesResponse
+		err                     error
+	)
+
+	orchestratorService := NewService()
+	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+	assert.NoError(t, err)
+	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
+	assert.NoError(t, err)
+
+	// 1st case: No Audit Scopes stored
+	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+	assert.Empty(t, listAuditScopesResponse.AuditScopes)
+
+	// 2nd case: One Audit Scope stored
+	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+	assert.NoError(t, err)
+
+	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
+	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
+	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
+	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
 }

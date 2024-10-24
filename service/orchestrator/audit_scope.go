@@ -118,11 +118,6 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 		return nil, err
 	}
 
-	// // Check, if this request has access to the certification target according to our authorization strategy.
-	// if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
-	// 	return nil, service.ErrPermissionDenied
-	// }
-
 	// Retrieve a list of allowed certification targets according to our
 	// authorization strategy. No need to specify any conditions to our storage
 	// request, if we are allowed to see all certification targets.

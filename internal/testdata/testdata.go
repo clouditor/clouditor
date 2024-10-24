@@ -13,6 +13,9 @@ const (
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"
 	MockResourceGroup          = "TestResourceGroup"
 
+	// Audit Scope
+	MockAuditScopeID = "11111111-1111-1111-1111-111111111123"
+
 	// Auth
 	MockAuthUser     = "clouditor"
 	MockAuthPassword = "clouditor"

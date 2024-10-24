@@ -820,7 +820,7 @@ message Control {
 message AuditScope {
   // Audit Scope ID
   string id = 4 [
-    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 
