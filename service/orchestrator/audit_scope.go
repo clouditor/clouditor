@@ -36,6 +36,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,6 +44,15 @@ import (
 )
 
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
+	// We want to add the UUID and does not want get it by the request, so we have to add if first and than do the validation check
+	if req.AuditScope == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
+	}
+
+	if req.AuditScope.GetId() != "" {
+		req.AuditScope.Id = uuid.NewString()
+	}
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {

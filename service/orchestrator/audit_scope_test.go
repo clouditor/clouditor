@@ -77,14 +77,30 @@ func TestService_CreateAuditScope(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Invalid request",
+			name: "Empty request",
 			args: args{
 				ctx: context.Background(),
 				req: &orchestrator.CreateAuditScopeRequest{},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "audit_scope: value is required")
+				return assert.ErrorContains(t, err, "empty request")
+			},
+			want: assert.Nil[*orchestrator.AuditScope],
+		},
+		{
+			name: "Invalid request",
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.CreateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						CatalogId: "testcatalog",
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "audit_scope.id: value length must be at least 1 characters")
 			},
 			want: assert.Nil[*orchestrator.AuditScope],
 		},
