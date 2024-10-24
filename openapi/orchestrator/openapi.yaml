@@ -273,20 +273,14 @@ paths:
             description: Lists all Audit Scopes
             operationId: Orchestrator_ListAuditScopes
             parameters:
-                - name: certificationTargetId
+                - name: filter.certificationTargetId
                   in: query
-                  description: |-
-                    We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the certification target is
-                     specified, return all Audit Scopes that evaluate the given certification target
-                     for any catalog
+                  description: Optional. List only audit scopes of a specific certification target
                   schema:
                     type: string
-                - name: catalogId
+                - name: filter.catalogId
                   in: query
-                  description: |-
-                    when the catalog is specified, return all Audit Scopes that
-                     evaluate the given catalog for any certificationtarget
+                  description: Optional. List only audit scopes that evaluate the given catalog for any certification target
                   schema:
                     type: string
                 - name: pageSize
@@ -479,60 +473,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/catalogs/{catalogId}/audit_scopes:
-        get:
-            tags:
-                - Orchestrator
-            description: Lists all Audit Scopes
-            operationId: Orchestrator_ListAuditScopes
-            parameters:
-                - name: catalogId
-                  in: path
-                  description: |-
-                    when the catalog is specified, return all Audit Scopes that
-                     evaluate the given catalog for any certificationtarget
-                  required: true
-                  schema:
-                    type: string
-                - name: certificationTargetId
-                  in: query
-                  description: |-
-                    We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the certification target is
-                     specified, return all Audit Scopes that evaluate the given certification target
-                     for any catalog
-                  schema:
-                    type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListAuditScopesResponse'
                 default:
                     description: Default error response
                     content:
@@ -968,60 +908,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/orchestrator/certification_targets/{certificationTargetId}/audit_scopes:
-        get:
-            tags:
-                - Orchestrator
-            description: Lists all Audit Scopes
-            operationId: Orchestrator_ListAuditScopes
-            parameters:
-                - name: certificationTargetId
-                  in: path
-                  description: |-
-                    We cannot create additional bindings when the parameter is optional so we
-                     check for != "" in the method to see if it is set when the certification target is
-                     specified, return all Audit Scopes that evaluate the given certification target
-                     for any catalog
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: query
-                  description: |-
-                    when the catalog is specified, return all Audit Scopes that
-                     evaluate the given catalog for any certificationtarget
-                  schema:
-                    type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageToken
-                  in: query
-                  schema:
-                    type: string
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: asc
-                  in: query
-                  schema:
-                    type: boolean
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListAuditScopesResponse'
                 default:
                     description: Default error response
                     content:

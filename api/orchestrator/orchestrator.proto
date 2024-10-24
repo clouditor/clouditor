@@ -319,11 +319,7 @@ service Orchestrator {
 
   // Lists all Audit Scopes
   rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
-    option (google.api.http) = {
-      get: "/v1/orchestrator/audit_scopes"
-      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes"}
-      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/audit_scopes"}
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes"};
   }
 
   // Updates an existing Audit Scope
@@ -905,14 +901,14 @@ message GetAuditScopeRequest {
 }
 
 message ListAuditScopesRequest {
-  // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the certification target is
-  // specified, return all Audit Scopes that evaluate the given certification target
-  // for any catalog
-  string certification_target_id = 1;
-  // when the catalog is specified, return all Audit Scopes that
-  // evaluate the given catalog for any certificationtarget
-  string catalog_id = 2;
+  message Filter {
+    // Optional. List only audit scopes of a specific certification target
+    optional string certification_target_id = 1;
+    // Optional. List only audit scopes that evaluate the given catalog for any certification target
+    string catalog_id = 2;
+  }
+
+  optional Filter filter = 1;
 
   int32 page_size = 10;
   string page_token = 11;
