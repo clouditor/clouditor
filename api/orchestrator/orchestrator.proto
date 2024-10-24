@@ -749,7 +749,8 @@ message Category {
   repeated Control controls = 4 [
     (tagger.tags) =
       "gorm:\"foreignKey:category_name,category_"
-      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
+,
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -793,7 +794,8 @@ message Control {
     (tagger.tags) =
       "gorm:\"foreignKey:parent_control_id,parent_control_"
       "category_name,parent_control_category_catalog_id;"
-      "references=id,category_name;category_catalog_id\"",
+      "references=id,category_name;category_catalog_id\""
+,
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -820,6 +822,12 @@ message Control {
 // A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 message AuditScope {
+  // Audit Scope ID
+  string id = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
   string certification_target_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,

@@ -1600,10 +1600,14 @@ components:
                  certain metrics.
         AuditScope:
             required:
+                - id
                 - certificationTargetId
                 - catalogId
             type: object
             properties:
+                id:
+                    type: string
+                    description: Audit Scope ID
                 certificationTargetId:
                     type: string
                 catalogId:

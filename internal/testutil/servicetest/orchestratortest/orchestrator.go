@@ -7,6 +7,7 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/util"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -97,6 +98,7 @@ func NewCatalog() *orchestrator.Catalog {
 // NewAuditScope creates a new Audit Scope. The assurance level is set if available.
 func NewAuditScope(assuranceLevel string) *orchestrator.AuditScope {
 	var auditScope = &orchestrator.AuditScope{
+		Id:                    uuid.NewString(),
 		CertificationTargetId: testdata.MockCertificationTargetID1,
 		CatalogId:             testdata.MockCatalogID,
 	}
