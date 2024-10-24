@@ -97,6 +97,7 @@ func NewCatalog() *orchestrator.Catalog {
 // NewAuditScope creates a new Audit Scope. The assurance level is set if available.
 func NewAuditScope(assuranceLevel string) *orchestrator.AuditScope {
 	var auditScope = &orchestrator.AuditScope{
+		Id:                    testdata.MockAuditScopeID,
 		CertificationTargetId: testdata.MockCertificationTargetID1,
 		CatalogId:             testdata.MockCatalogID,
 	}

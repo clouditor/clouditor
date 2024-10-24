@@ -319,11 +319,7 @@ service Orchestrator {
 
   // Lists all Audit Scopes
   rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
-    option (google.api.http) = {
-      get: "/v1/orchestrator/audit_scopes"
-      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes"}
-      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/audit_scopes"}
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes"};
   }
 
   // Updates an existing Audit Scope
@@ -749,7 +745,8 @@ message Category {
   repeated Control controls = 4 [
     (tagger.tags) =
       "gorm:\"foreignKey:category_name,category_"
-      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
+,
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -793,7 +790,8 @@ message Control {
     (tagger.tags) =
       "gorm:\"foreignKey:parent_control_id,parent_control_"
       "category_name,parent_control_category_catalog_id;"
-      "references=id,category_name;category_catalog_id\"",
+      "references=id,category_name;category_catalog_id\""
+,
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -820,6 +818,12 @@ message Control {
 // A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 message AuditScope {
+  // Audit Scope ID
+  string id = 4 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+
   string certification_target_id = 1 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
@@ -897,14 +901,14 @@ message GetAuditScopeRequest {
 }
 
 message ListAuditScopesRequest {
-  // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the certification target is
-  // specified, return all Audit Scopes that evaluate the given certification target
-  // for any catalog
-  string certification_target_id = 1;
-  // when the catalog is specified, return all Audit Scopes that
-  // evaluate the given catalog for any certificationtarget
-  string catalog_id = 2;
+  message Filter {
+    // Optional. List only audit scopes of a specific certification target
+    optional string certification_target_id = 1;
+    // Optional. List only audit scopes that evaluate the given catalog for any certification target
+    string catalog_id = 2;
+  }
+
+  optional Filter filter = 1;
 
   int32 page_size = 10;
   string page_token = 11;

@@ -30,6 +30,7 @@ import (
 
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"github.com/google/uuid"
 )
 
 func TestValidate(t *testing.T) {
@@ -75,6 +76,7 @@ func TestValidate(t *testing.T) {
 			args: args{
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
+						Id:                    uuid.NewString(),
 						CertificationTargetId: "11111111-1111-1111-1111-111111111111",
 						CatalogId:             "0000",
 					},

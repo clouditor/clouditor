@@ -29,6 +29,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/orchestrator"
@@ -36,6 +38,7 @@ import (
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,6 +46,15 @@ import (
 )
 
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
+	// We want to add the UUID and does not want get it by the request, so we have to add if first and than do the validation check
+	if req.AuditScope == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
+	}
+
+	if req.AuditScope.GetId() != "" {
+		req.AuditScope.Id = uuid.NewString()
+	}
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -95,9 +107,10 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	return response, nil
 }
 
-// ListAuditScopes implements method for getting a AuditScope
+// ListAuditScopes implements method for getting an Audit Scope
 func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
-	var conds = []any{gorm.WithoutPreload()}
+	var allowed []string
+	var all bool
 
 	// Validate request
 	err = api.Validate(req)
@@ -105,22 +118,52 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
+	// Retrieve a list of allowed certification targets according to our
+	// authorization strategy. No need to specify any conditions to our storage
+	// request, if we are allowed to see all certification targets.
+	all, allowed = svc.authz.AllowedCertificationTargets(ctx)
+
+	// The content of the filtered certification target ID must be in the list of allowed certification target IDs,
+	// unless one can access *all* the certification targets.
+	if !all && req.Filter != nil && req.Filter.CertificationTargetId != nil && !slices.Contains(allowed, req.Filter.GetCertificationTargetId()) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Either the certification_target_id or the catalog_id is set and the conds are added accordingly.
-	if req.GetCertificationTargetId() != "" {
-		conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
-	} else if req.GetCatalogId() != "" {
-		conds = append(conds, "catalog_id = ?", req.CatalogId)
+	var query []string
+	var args []any
+
+	// Filtering the audit scopes by
+	// * certification target ID
+	// * catalog ID
+	if req.Filter != nil {
+		if req.Filter.GetCertificationTargetId() != "" {
+			query = append(query, "certification_target_id = ?")
+			args = append(args, req.Filter.GetCertificationTargetId())
+			// conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
+		}
+		if req.Filter.GetCatalogId() != "" {
+			query = append(query, "catalog_id = ?")
+			args = append(args, req.Filter.GetCatalogId())
+			// conds = append(conds, "catalog_id = ?", req.CatalogId)
+		}
 	}
 
 	res = new(orchestrator.ListAuditScopesResponse)
-	res.AuditScopes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, conds...)
+
+	// In any case, we need to make sure that we only select audit scopes that we
+	// have access to (if we do not have access to all)
+	if !all {
+		query = append(query, "certification_target_id IN ?")
+		args = append(args, allowed)
+	}
+
+	// Join query with AND and prepend the query
+	args = append([]any{strings.Join(query, " AND ")}, args...)
+
+	// Paginate the audit scopes according to the request
+	res.AuditScopes, res.NextPageToken, err = service.PaginateStorage[*orchestrator.AuditScope](req, svc.storage, service.DefaultPaginationOpts, args...)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "could not paginate results: %v", err)
+		return nil, status.Errorf(codes.Internal, "could not paginate audit scopes: %v", err)
 	}
 	return
 }
