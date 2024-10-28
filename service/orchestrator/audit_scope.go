@@ -136,12 +136,12 @@ func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListA
 	// * certification target ID
 	// * catalog ID
 	if req.Filter != nil {
-		if req.Filter.GetCertificationTargetId() != "" {
+		if req.Filter.CertificationTargetId != nil {
 			query = append(query, "certification_target_id = ?")
 			args = append(args, req.Filter.GetCertificationTargetId())
 			// conds = append(conds, "certification_target_id = ?", req.CertificationTargetId)
 		}
-		if req.Filter.GetCatalogId() != "" {
+		if req.Filter.CatalogId != nil {
 			query = append(query, "catalog_id = ?")
 			args = append(args, req.Filter.GetCatalogId())
 			// conds = append(conds, "catalog_id = ?", req.CatalogId)

@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
+	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
@@ -110,7 +111,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic),
+				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1),
 			}},
 			want: assert.Nil[*orchestrator.AuditScope],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -131,7 +132,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope(""),
+				AuditScope: orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1),
 			}},
 			wantSvc: func(t *testing.T, got *Service) bool {
 				// We want to assert that certain things happened in our database
@@ -170,7 +171,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic),
+				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1),
 			}},
 			wantSvc: func(t *testing.T, got *Service) bool {
 				// We want to assert that certain things happened in our database
@@ -271,7 +272,7 @@ func TestService_GetAuditScope(t *testing.T) {
 					err = s.Create(orchestratortest.NewCatalog())
 					assert.NoError(t, err)
 
-					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -296,7 +297,7 @@ func TestService_GetAuditScope(t *testing.T) {
 					err = s.Create(orchestratortest.NewCatalog())
 					assert.NoError(t, err)
 
-					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -306,7 +307,7 @@ func TestService_GetAuditScope(t *testing.T) {
 				CatalogId:             testdata.MockCatalogID,
 			}},
 			wantResponse: func(t *testing.T, got *orchestrator.AuditScope) bool {
-				want := orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic)
+				want := orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1)
 
 				return assert.NoError(t, api.Validate(got)) &&
 					assert.Equal(t, want.CertificationTargetId, got.CertificationTargetId) &&
@@ -354,12 +355,12 @@ func TestService_UpdateAuditScope(t *testing.T) {
 
 	// 3rd case: Audit Scope not found since there are no Audit Scopes
 	_, err = orchestratorService.UpdateAuditScope(context.Background(), &orchestrator.UpdateAuditScopeRequest{
-		AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic),
+		AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1),
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
 
 	// 4th case: Audit Scope updated successfully
-	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
 	assert.NoError(t, err)
 
 	// update the auditScope's assurance level and send the update request
@@ -404,7 +405,7 @@ func TestService_RemoveAuditScope(t *testing.T) {
 	assert.Equal(t, status.Code(err), codes.NotFound)
 
 	// 3rd case: Record removed successfully
-	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
 	assert.NoError(t, err)
 
 	// Verify that there is a record for Audit Scope in the DB
@@ -512,7 +513,7 @@ func TestToeHook(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Create new Audit Scope
-			err = s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+			err = s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
 			assert.NoError(t, err)
 
 			gotRes, err := s.UpdateAuditScope(tt.args.ctx, tt.args.req)
@@ -546,17 +547,71 @@ func TestService_ListAuditScopes(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "CertificationTargetId filter and no access rights",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					err := s.Create(orchestratortest.MockAuditScopeCertTargetID1)
+					assert.NoError(t, err)
+					err = s.Create(orchestratortest.MockAuditScopeCertTargetID2)
+					assert.NoError(t, err)
+
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.ListAuditScopesRequest{
+					Filter: &orchestrator.ListAuditScopesRequest_Filter{
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID2),
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.ListAuditScopesResponse) bool {
+				assert.Equal(t, 0, len(got.AuditScopes))
+				return assert.Empty(t, got.AuditScopes)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: with certificationTargetId filter and access rights",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					err := s.Create(orchestratortest.MockAuditScopeCertTargetID1)
+					assert.NoError(t, err)
+					err = s.Create(orchestratortest.MockAuditScopeCertTargetID2)
+					assert.NoError(t, err)
+					err = s.Create(orchestratortest.MockAuditScopeCertTargetID3)
+					assert.NoError(t, err)
+				}),
+				authz: servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.ListAuditScopesRequest{
+					Filter: &orchestrator.ListAuditScopesRequest_Filter{
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.ListAuditScopesResponse) bool {
+				assert.Equal(t, 2, len(got.AuditScopes))
+				want := []*orchestrator.AuditScope{
+					orchestratortest.MockAuditScopeCertTargetID1,
+					orchestratortest.MockAuditScopeCertTargetID2,
+				}
+				return assert.Equal(t, want, got.AuditScopes)
+			},
+			wantErr: assert.NoError,
+		},
+		{
 			name: "Happy path: without filter",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// assert.NoError(t, s.Create(orchestratortest.NewAuditScope("")))
-					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
+					err := s.Create(orchestratortest.MockAuditScopeCertTargetID1)
 					assert.NoError(t, err)
-
-					err = s.Create(orchestratortest.NewCatalog())
+					err = s.Create(orchestratortest.MockAuditScopeCertTargetID2)
 					assert.NoError(t, err)
-
-					err = s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
+					err = s.Create(orchestratortest.MockAuditScopeCertTargetID3)
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
@@ -566,13 +621,12 @@ func TestService_ListAuditScopes(t *testing.T) {
 				req: &orchestrator.ListAuditScopesRequest{},
 			},
 			wantRes: func(t *testing.T, got *orchestrator.ListAuditScopesResponse) bool {
-				assert.Equal(t, 1, len(got.AuditScopes))
-				assert.NotEmpty(t, got.AuditScopes[0].GetId())
-				want := &orchestrator.AuditScope{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
-					CatalogId:             testdata.MockCatalogID,
+				assert.Equal(t, 2, len(got.AuditScopes))
+				want := []*orchestrator.AuditScope{
+					orchestratortest.MockAuditScopeCertTargetID1,
+					orchestratortest.MockAuditScopeCertTargetID2,
 				}
-				return assert.Equal(t, want, got.AuditScopes[1])
+				return assert.Equal(t, want, got.AuditScopes)
 			},
 			wantErr: assert.NoError,
 		},
@@ -588,64 +642,4 @@ func TestService_ListAuditScopes(t *testing.T) {
 			tt.wantErr(t, err)
 		})
 	}
-}
-
-// func TestService_ListAuditScopes(t *testing.T) {
-// 	var (
-// 		listAuditScopesResponse *orchestrator.ListAuditScopesResponse
-// 		err                     error
-// 	)
-
-// 	orchestratorService := NewService()
-// 	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-// 	assert.NoError(t, err)
-// 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
-// 	assert.NoError(t, err)
-
-// 	// 1st case: No Audit Scopes stored
-// 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-// 	assert.Empty(t, listAuditScopesResponse.AuditScopes)
-
-// 	// 2nd case: One Audit Scope stored
-// 	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
-// 	assert.NoError(t, err)
-
-// 	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-// 	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
-// 	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
-// 	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
-// }
-
-func TestService_ListAuditScopes2(t *testing.T) {
-	var (
-		listAuditScopesResponse *orchestrator.ListAuditScopesResponse
-		err                     error
-	)
-
-	orchestratorService := NewService()
-	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-	assert.NoError(t, err)
-	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
-	assert.NoError(t, err)
-
-	// 1st case: No Audit Scopes stored
-	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-	assert.Empty(t, listAuditScopesResponse.AuditScopes)
-
-	// 2nd case: One Audit Scope stored
-	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic))
-	assert.NoError(t, err)
-
-	listAuditScopesResponse, err = orchestratorService.ListAuditScopes(context.Background(), &orchestrator.ListAuditScopesRequest{})
-	assert.NoError(t, err)
-	assert.NotNil(t, listAuditScopesResponse.AuditScopes)
-	assert.NotEmpty(t, listAuditScopesResponse.AuditScopes)
-	assert.NoError(t, api.Validate(listAuditScopesResponse.AuditScopes[0]))
-	assert.Equal(t, 1, len(listAuditScopesResponse.AuditScopes))
 }
