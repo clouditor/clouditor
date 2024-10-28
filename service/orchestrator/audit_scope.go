@@ -68,9 +68,6 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 
 	// Create the Audit Scope
 	err = svc.storage.Create(&req.AuditScope)
-	if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid catalog or certification target")
-	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
