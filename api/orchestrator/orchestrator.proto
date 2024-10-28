@@ -820,12 +820,12 @@ message Control {
 message AuditScope {
   // Audit Scope ID
   string id = 4 [
+    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
 
   string certification_target_id = 1 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -905,7 +905,7 @@ message ListAuditScopesRequest {
     // Optional. List only audit scopes of a specific certification target
     optional string certification_target_id = 1;
     // Optional. List only audit scopes that evaluate the given catalog for any certification target
-    string catalog_id = 2;
+    optional string catalog_id = 2;
   }
 
   optional Filter filter = 1;
