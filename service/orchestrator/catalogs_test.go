@@ -196,7 +196,7 @@ func TestService_GetCatalog(t *testing.T) {
 				// Create Catalog
 				assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 			})},
-			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: testdata.MockCatalogID}},
+			args: args{req: &orchestrator.GetCatalogRequest{CatalogId: testdata.MockCatalogID1}},
 			wantResponse: func(t *testing.T, got *orchestrator.Catalog) bool {
 				want := orchestratortest.NewCatalog()
 				assert.Equal(t, 1, len(got.Categories))
@@ -251,7 +251,7 @@ func TestService_UpdateCatalog(t *testing.T) {
 	// 3rd case: Catalog not found since there are no catalogs yet
 	_, err = orchestratorService.UpdateCatalog(context.Background(), &orchestrator.UpdateCatalogRequest{
 		Catalog: &orchestrator.Catalog{
-			Id:              testdata.MockCatalogID,
+			Id:              testdata.MockCatalogID1,
 			Name:            testdata.MockCatalogName,
 			AssuranceLevels: []string{testdata.AssuranceLevelBasic, testdata.AssuranceLevelSubstantial, testdata.AssuranceLevelHigh},
 		},
@@ -362,18 +362,18 @@ func TestService_GetCategory(t *testing.T) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
 			args: args{
-				req: &orchestrator.GetCategoryRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName},
+				req: &orchestrator.GetCategoryRequest{CatalogId: testdata.MockCatalogID1, CategoryName: testdata.MockCategoryName},
 			},
 			wantRes: &orchestrator.Category{
 				Name:        testdata.MockCategoryName,
 				Description: testdata.MockCategoryDescription,
-				CatalogId:   testdata.MockCatalogID,
+				CatalogId:   testdata.MockCatalogID1,
 				Controls: []*orchestrator.Control{
 					{
 						Id:                testdata.MockControlID1,
 						Name:              testdata.MockControlName,
 						CategoryName:      testdata.MockCategoryName,
-						CategoryCatalogId: testdata.MockCatalogID,
+						CategoryCatalogId: testdata.MockCatalogID1,
 						Description:       testdata.MockControlDescription,
 						Controls:          []*orchestrator.Control{},
 					},
@@ -381,7 +381,7 @@ func TestService_GetCategory(t *testing.T) {
 						Id:                testdata.MockControlID2,
 						Name:              testdata.MockControlName,
 						CategoryName:      testdata.MockCategoryName,
-						CategoryCatalogId: testdata.MockCatalogID,
+						CategoryCatalogId: testdata.MockCatalogID1,
 						Description:       testdata.MockControlDescription,
 						Controls:          []*orchestrator.Control{},
 					},
@@ -439,7 +439,7 @@ func TestService_GetControl(t *testing.T) {
 					// Create Catalog
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
-			args:    args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: "WrongControlID"}},
+			args:    args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID1, CategoryName: testdata.MockCategoryName, ControlId: "WrongControlID"}},
 			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
@@ -453,11 +453,11 @@ func TestService_GetControl(t *testing.T) {
 					// Create Catalog
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
 				})},
-			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID1}},
+			args: args{req: &orchestrator.GetControlRequest{CatalogId: testdata.MockCatalogID1, CategoryName: testdata.MockCategoryName, ControlId: testdata.MockControlID1}},
 			wantRes: &orchestrator.Control{
 				Id:                testdata.MockControlID1,
 				CategoryName:      testdata.MockCategoryName,
-				CategoryCatalogId: testdata.MockCatalogID,
+				CategoryCatalogId: testdata.MockCatalogID1,
 				Name:              testdata.MockControlName,
 				Description:       testdata.MockControlDescription,
 				Controls: []*orchestrator.Control{{
@@ -466,10 +466,10 @@ func TestService_GetControl(t *testing.T) {
 					Description:                    testdata.MockSubControlDescription,
 					Metrics:                        []*assessment.Metric{}, // metrics on sub-controls are not returned
 					CategoryName:                   testdata.MockCategoryName,
-					CategoryCatalogId:              testdata.MockCatalogID,
+					CategoryCatalogId:              testdata.MockCatalogID1,
 					AssuranceLevel:                 &testdata.AssuranceLevelBasic,
 					ParentControlId:                util.Ref(testdata.MockControlID1),
-					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID),
+					ParentControlCategoryCatalogId: util.Ref(testdata.MockCatalogID1),
 					ParentControlCategoryName:      util.Ref(testdata.MockCategoryName),
 				}},
 			},

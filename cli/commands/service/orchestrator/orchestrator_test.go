@@ -146,7 +146,7 @@ func TestNewGetCatalogCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetCatalogCommand()
-	err := cmd.RunE(nil, []string{testdata.MockCatalogID})
+	err := cmd.RunE(nil, []string{testdata.MockCatalogID1})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Catalog{}
@@ -155,7 +155,7 @@ func TestNewGetCatalogCommand(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 	assert.NotEmpty(t, response)
-	assert.Equal(t, testdata.MockCatalogID, response.Id)
+	assert.Equal(t, testdata.MockCatalogID1, response.Id)
 }
 
 func TestNewGetCategoryCommand(t *testing.T) {
@@ -164,7 +164,7 @@ func TestNewGetCategoryCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetCategoryCommand()
-	err := cmd.RunE(nil, []string{testdata.MockCatalogID, testdata.MockCategoryName})
+	err := cmd.RunE(nil, []string{testdata.MockCatalogID1, testdata.MockCategoryName})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Category{}
@@ -182,7 +182,7 @@ func TestNewGetControlCommand(t *testing.T) {
 	cli.Output = &b
 
 	cmd := NewGetControlCommand()
-	err := cmd.RunE(nil, []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1})
+	err := cmd.RunE(nil, []string{testdata.MockCatalogID1, testdata.MockCategoryName, testdata.MockControlID1})
 	assert.NoError(t, err)
 
 	var response = &orchestrator.Control{}

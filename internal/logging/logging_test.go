@@ -152,7 +152,7 @@ func TestLogRequest(t *testing.T) {
 				req: &orchestrator.UpdateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-						CatalogId:             testdata.MockCatalogID,
+						CatalogId:             testdata.MockCatalogID1,
 					},
 				},
 			},
@@ -166,10 +166,10 @@ func TestLogRequest(t *testing.T) {
 				req: &orchestrator.UpdateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-						CatalogId:             testdata.MockCatalogID,
+						CatalogId:             testdata.MockCatalogID1,
 					},
 				},
-				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID)},
+				params: []string{fmt.Sprintf("and Catalog '%s'", testdata.MockCatalogID1)},
 			},
 			want: "level=debug msg=AuditScope updated for Certification Target '11111111-1111-1111-1111-111111111111' and Catalog 'Cat1234'.\n",
 		},
