@@ -47,15 +47,6 @@ func TestValidate(t *testing.T) {
 		{
 			name: "Missing request",
 			args: args{
-				req: nil,
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrEmptyRequest.Error())
-			},
-		},
-		{
-			name: "Missing request",
-			args: args{
 				req: nilReq,
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
