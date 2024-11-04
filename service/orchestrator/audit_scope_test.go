@@ -488,6 +488,19 @@ func TestService_ListAuditScopes(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "Error: validation error",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   servicetest.NewAuthorizationStrategy(true),
+			},
+			args:    args{},
+			wantRes: assert.Nil[*orchestrator.ListAuditScopesResponse],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, "empty request")
+			},
+		},
+		{
 			name: "Permission denied",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
