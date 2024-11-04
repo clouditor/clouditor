@@ -174,7 +174,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	}
 
 	// Lookup if certificate entry is in DB. If not, return NotFound error
-	if err = svc.checkExistence(req); err != nil {
+	if err = svc.checkCertificateExistence(req); err != nil {
 		return
 	}
 	// 2) Check if client is authorized to remove certificate.
@@ -215,7 +215,7 @@ func (svc *Service) checkAuthorization(ctx context.Context, req *orchestrator.Re
 }
 
 // checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
-func (svc *Service) checkExistence(req *orchestrator.RemoveCertificateRequest) error {
+func (svc *Service) checkCertificateExistence(req *orchestrator.RemoveCertificateRequest) error {
 	count, err := svc.storage.Count(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	if err != nil {
 		return status.Errorf(codes.Internal, "database error: %v", err)

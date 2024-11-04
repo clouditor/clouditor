@@ -964,8 +964,8 @@ func TestService_checkExistence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkExistence(tt.args.req),
-				fmt.Sprintf("checkExistence(%v)", tt.args.req))
+			tt.wantErr(t, tt.fields.svc.checkCertificateExistence(tt.args.req),
+				fmt.Sprintf("checkCertificateExistence(%v)", tt.args.req))
 		})
 	}
 }
