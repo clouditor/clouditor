@@ -45,6 +45,9 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// ErrAuditScopeNotFound indicates the audit scope was not found
+var ErrAuditScopeNotFound = status.Error(codes.NotFound, "audit scope not found")
+
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// We want to add the UUID and does not want get it by the request, so we have to add if first and than do the validation check
 	if req.AuditScope == nil {
@@ -205,26 +208,33 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessDelete, req) {
-		return nil, service.ErrPermissionDenied
+	// Check if auditScope exists in DB, otherwise, return NotFound error
+	if err = svc.checkAuditScopeExistence(req); err != nil {
+		return
 	}
 
-	err = svc.storage.Delete(&orchestrator.AuditScope{}, "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
-	} else if err != nil {
+	// Check if client is authorized to remove audit scope.
+	if err = svc.checkAuditScopeAuthorization(ctx, req); err != nil {
+		return
+	}
+
+	// Delete entry
+	err = svc.storage.Delete(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
+	if err != nil { // Only internal errors left since others (Permission and NotFound) are already covered
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
 
-	// Since we don't have a AuditScope object, we create one to be able to inform the hook about the deleted AuditScope.
+	// Since we don't have an AuditScope object, we create one to be able to inform the hook about the deleted AuditScope.
 	auditScope := &orchestrator.AuditScope{
-		CertificationTargetId: req.GetCertificationTargetId(),
-		CatalogId:             req.GetCatalogId(),
+		Id: req.GetAuditScopeId(),
 	}
+	// auditScope := &orchestrator.AuditScope{
+	// 	CertificationTargetId: req.GetCertificationTargetId(),
+	// 	CatalogId:             req.GetCatalogId(),
+	// }
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req, fmt.Sprintf("and Catalog '%s'", req.GetCatalogId()))
+	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
 
 	return &emptypb.Empty{}, nil
 }
@@ -249,4 +259,38 @@ func (s *Service) RegisterToeHook(hook orchestrator.AuditScopeHookFunc) {
 	s.hookMutex.Lock()
 	defer s.hookMutex.Unlock()
 	s.auditScopeHooks = append(s.auditScopeHooks, hook)
+}
+
+// TODO: all Is a duplication of the method checkCertificateAuthorization()
+// checkAuditScopeAuthorization checks if client is authorized to remove certificate by
+// 1) checking admin flag: If it is enabled (`all`) the client is authorized
+// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
+// Error is returned if not authorized or internal DB error occurred.
+// Note: Use the checkExistence before to ensure that the entry is in the DB!
+func (svc *Service) checkAuditScopeAuthorization(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) error {
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	if !all {
+		count2, err := svc.storage.Count(&orchestrator.AuditScope{}, "id = ? AND certification_target_id IN ?",
+			req.GetAuditScopeId(), allowed)
+		if err != nil {
+			return status.Errorf(codes.Internal, "database error: %v", err)
+		}
+		if count2 == 0 {
+			return service.ErrPermissionDenied
+		}
+	}
+	return nil
+}
+
+// TODO: all Is a duplication of the method checkCertificateExistence()
+// checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
+func (svc *Service) checkAuditScopeExistence(req *orchestrator.RemoveAuditScopeRequest) error {
+	count, err := svc.storage.Count(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
+	if err != nil {
+		return status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	if count == 0 {
+		return ErrAuditScopeNotFound
+	}
+	return nil
 }

@@ -179,7 +179,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	}
 	// 2) Check if client is authorized to remove certificate.
 	// Only remove certificate if user is authorized for the corresponding certification target.
-	if err = svc.checkAuthorization(ctx, req); err != nil {
+	if err = svc.checkCertificateAuthorization(ctx, req); err != nil {
 		return
 	}
 
@@ -194,12 +194,12 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	return &emptypb.Empty{}, nil
 }
 
-// checkAuthorization checks if client is authorized to remove certificate by
+// checkCertificateAuthorization checks if client is authorized to remove certificate by
 // 1) checking admin flag: If it is enabled (`all`) the client is authorized
 // 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
 // Error is returned if not authorized or internal DB error occurred.
 // Note: Use the checkExistence before to ensure that the entry is in the DB!
-func (svc *Service) checkAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
+func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orchestrator.RemoveCertificateRequest) error {
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",

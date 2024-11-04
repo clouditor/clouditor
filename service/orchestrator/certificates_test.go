@@ -892,7 +892,7 @@ func TestService_checkAuthorization(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkAuthorization(tt.args.ctx, tt.args.req),
+			tt.wantErr(t, tt.fields.svc.checkCertificateAuthorization(tt.args.ctx, tt.args.req),
 				fmt.Sprintf("checkAuthorization(%v, %v)", tt.args.ctx, tt.args.req))
 		})
 	}
