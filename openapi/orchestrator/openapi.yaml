@@ -337,6 +337,28 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/orchestrator/audit_scopes/{auditScopeId}:
+        delete:
+            tags:
+                - Orchestrator
+            description: Removes a Audit Scope
+            operationId: Orchestrator_RemoveAuditScope
+            parameters:
+                - name: auditScopeId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/orchestrator/catalogs:
         get:
             tags:
@@ -938,32 +960,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AuditScope'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-        delete:
-            tags:
-                - Orchestrator
-            description: Removes a Audit Scope
-            operationId: Orchestrator_RemoveAuditScope
-            parameters:
-                - name: certificationTargetId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
                 default:
                     description: Default error response
                     content:

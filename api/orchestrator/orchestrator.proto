@@ -335,7 +335,7 @@ service Orchestrator {
 
   // Removes a Audit Scope
   rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Get Runtime Information
@@ -824,17 +824,14 @@ message AuditScope {
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
-
   string certification_target_id = 1 [
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
   string catalog_id = 2 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;
@@ -879,12 +876,8 @@ message CreateAuditScopeRequest {
 }
 
 message RemoveAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
 }

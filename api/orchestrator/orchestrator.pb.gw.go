@@ -2179,24 +2179,14 @@ func request_Orchestrator_RemoveAuditScope_0(ctx context.Context, marshaler runt
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	msg, err := client.RemoveAuditScope(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -2215,24 +2205,14 @@ func local_request_Orchestrator_RemoveAuditScope_0(ctx context.Context, marshale
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	msg, err := server.RemoveAuditScope(ctx, &protoReq)
@@ -3348,7 +3328,7 @@ func RegisterOrchestratorHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/audit_scopes/{audit_scope_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4383,7 +4363,7 @@ func RegisterOrchestratorHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.orchestrator.v1.Orchestrator/RemoveAuditScope", runtime.WithHTTPPathPattern("/v1/orchestrator/audit_scopes/{audit_scope_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -4511,7 +4491,7 @@ var (
 
 	pattern_Orchestrator_UpdateAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "audit_scope.certification_target_id", "audit_scopes", "audit_scope.catalog_id"}, ""))
 
-	pattern_Orchestrator_RemoveAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "orchestrator", "certification_targets", "certification_target_id", "audit_scopes", "catalog_id"}, ""))
+	pattern_Orchestrator_RemoveAuditScope_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "orchestrator", "audit_scopes", "audit_scope_id"}, ""))
 
 	pattern_Orchestrator_GetRuntimeInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "orchestrator", "runtime_info"}, ""))
 )
