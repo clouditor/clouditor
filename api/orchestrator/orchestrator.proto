@@ -314,7 +314,7 @@ service Orchestrator {
 
   // Retrieves a Audit Scope
   rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Lists all Audit Scopes
@@ -883,12 +883,8 @@ message RemoveAuditScopeRequest {
 }
 
 message GetAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
 }

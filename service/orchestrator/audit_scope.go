@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/persistence"
-	"clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -85,26 +84,29 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 }
 
 // GetAuditScope implements method for getting a AuditScope, e.g. to show its state in the UI
-func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (response *orchestrator.AuditScope, err error) {
+func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessRead, req) {
-		return nil, service.ErrPermissionDenied
-	}
-
-	response = new(orchestrator.AuditScope)
-	err = svc.storage.Get(response, gorm.WithoutPreload(), "certification_target_id = ? AND catalog_id = ?", req.CertificationTargetId, req.CatalogId)
+	res = new(orchestrator.AuditScope)
+	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, status.Errorf(codes.NotFound, "Audit Scope not found")
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
-	return response, nil
+
+	// Check if client is allowed to access the audit scope
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	if !all && !slices.Contains(allowed, res.CertificationTargetId) {
+		// Important to nil the response since it is set already
+		return nil, status.Error(codes.PermissionDenied, service.ErrPermissionDenied.Error())
+	}
+
+	return res, nil
 }
 
 // ListAuditScopes implements method for getting an Audit Scope
@@ -228,10 +230,7 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 	auditScope := &orchestrator.AuditScope{
 		Id: req.GetAuditScopeId(),
 	}
-	// auditScope := &orchestrator.AuditScope{
-	// 	CertificationTargetId: req.GetCertificationTargetId(),
-	// 	CatalogId:             req.GetCatalogId(),
-	// }
+
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
