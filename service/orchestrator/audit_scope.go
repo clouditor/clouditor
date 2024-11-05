@@ -254,7 +254,7 @@ func (s *Service) RegisterToeHook(hook orchestrator.AuditScopeHookFunc) {
 	s.auditScopeHooks = append(s.auditScopeHooks, hook)
 }
 
-// checkAuditScopeAvailability checks if the entry exists in the DB and if client has necessary authorization.
+// checkAuditScopeAvailability checks if the audit scope entry exists in the DB and if client has necessary authorization.
 // 1) checking if entry exists in DB
 // 2) checking admin flag: If it is enabled (`all`) the client is authorized
 // 3) querying the DB within the range of certification targets (`allowed`) the client is allowed to access

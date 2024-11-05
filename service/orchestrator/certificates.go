@@ -203,7 +203,7 @@ func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orch
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
-			req.CertificateId, allowed)
+			req.GetCertificateId(), allowed)
 		if err != nil {
 			return status.Errorf(codes.Internal, "database error: %v", err)
 		}
