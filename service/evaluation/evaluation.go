@@ -191,8 +191,18 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	// Check if client is authorized to remove audit scope.
-	if err = svc.checkEvaluationAuthorization(ctx, req.GetAuditScopeId()); err != nil {
+	// Get Audit Scope
+	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
+		AuditScopeId: req.GetAuditScopeId(),
+	})
+	if err != nil {
+		err = fmt.Errorf("could not get audit scope: %w", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
+	// Check, if this request has access to the certification target according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -204,16 +214,6 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		interval = defaultInterval
 	} else {
 		interval = int(req.GetInterval())
-	}
-
-	// Get Audit Scope
-	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
-		AuditScopeId: req.GetAuditScopeId(),
-	})
-	if err != nil {
-		err = fmt.Errorf("could not get audit scope: %w", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
 	// Get all Controls from Orchestrator for the evaluation
@@ -276,11 +276,6 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if err = svc.checkEvaluationAuthorization(ctx, req.GetAuditScopeId()); err != nil {
-		return nil, service.ErrPermissionDenied
-	}
-
 	// Get Audit Scope
 	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
 		AuditScopeId: req.GetAuditScopeId(),
@@ -289,6 +284,11 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		err = fmt.Errorf("could not get audit scope: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
+	// Check, if this request has access to the certification target according to our authorization strategy.
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
+		return nil, service.ErrPermissionDenied
 	}
 
 	// Stop jobs(s) for given audit scope
@@ -956,25 +956,4 @@ func values[M ~map[K]V, K comparable, V any](m M) []V {
 	}
 
 	return rr
-}
-
-// TODO: all Is a duplication of the method checkCertificateAuthorization()
-// checkEvaluationAuthorization checks if client is authorized to start the evaluation by
-// 1) checking admin flag: If it is enabled (`all`) the client is authorized
-// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
-// Error is returned if not authorized or internal DB error occurred.
-// Note: Use the checkExistence before to ensure that the entry is in the DB!
-func (svc *Service) checkEvaluationAuthorization(ctx context.Context, auditScopeId string) error {
-	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
-	if !all {
-		count2, err := svc.storage.Count(&orchestrator.AuditScope{}, "id = ? AND certification_target_id IN ?",
-			auditScopeId, allowed)
-		if err != nil {
-			return status.Errorf(codes.Internal, "database error: %v", err)
-		}
-		if count2 == 0 {
-			return service.ErrPermissionDenied
-		}
-	}
-	return nil
 }

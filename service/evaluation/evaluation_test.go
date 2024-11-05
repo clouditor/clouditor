@@ -47,7 +47,6 @@ import (
 	"clouditor.io/clouditor/v2/launcher"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
-
 	"github.com/go-co-op/gocron"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
@@ -582,6 +581,10 @@ func TestService_StopEvaluation(t *testing.T) {
 			fields: fields{
 				authz:   servicetest.NewAuthorizationStrategy(false),
 				storage: testutil.NewInMemoryStorage(t),
+				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					err := s.Create(orchestratortest.MockAuditScopeCertTargetID1)
+					assert.NoError(t, err)
+				})))),
 			},
 			args: args{
 				in0: context.Background(),
@@ -723,6 +726,10 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				authz:   &service.AuthorizationStrategyJWT{},
 				storage: testutil.NewInMemoryStorage(t),
+				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					err := s.Create(orchestratortest.MockAuditScopeCertTargetID1)
+					assert.NoError(t, err)
+				})))),
 			},
 			args: args{
 				in0: context.Background(),
@@ -1928,3 +1935,55 @@ func Test_handleCompliant(t *testing.T) {
 		})
 	}
 }
+
+// func TestService_checkAuthorization(t *testing.T) {
+// 	type fields struct {
+// 		svc *Service
+// 	}
+// 	type args struct {
+// 		ctx          context.Context
+// 		auditScopeId string
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		fields  fields
+// 		args    args
+// 		wantErr assert.ErrorAssertionFunc
+// 	}{
+// 		{
+// 			name: "error: database error",
+// 			fields: fields{
+// 				svc: NewService(WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB}),
+// 					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false))),
+// 			},
+// 			args: args{
+// 				ctx:          context.Background(),
+// 				auditScopeId: testdata.MockAuditScopeID1,
+// 			},
+// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+// 				assert.Equal(t, codes.Internal, status.Code(err))
+// 				return assert.ErrorContains(t, err, "database error")
+// 			},
+// 		},
+// 		{
+// 			name: "Happy path",
+// 			fields: fields{
+// 				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+// 					assert.NoError(t, s.Create(orchestratortest.MockAuditScopeCertTargetID1))
+// 				}))),
+// 			},
+// 			args: args{
+// 				ctx:          context.Background(),
+// 				auditScopeId: testdata.MockAuditScopeID1,
+// 			},
+// 			wantErr: assert.NoError,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			err := tt.fields.svc.checkAuthorization(tt.args.ctx, tt.args.auditScopeId)
+
+// 			tt.wantErr(t, err)
+// 		})
+// 	}
+// }
