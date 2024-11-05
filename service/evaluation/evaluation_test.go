@@ -130,7 +130,7 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name: "Happy path",
+			name: "Happy path: without additional services",
 			args: args{
 				opts: []service.Option[*Service]{},
 			},
