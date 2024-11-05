@@ -191,8 +191,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	// Check if client is authorized to remove audit scope.
+	if err = svc.checkEvaluationAuthorization(ctx, req); err != nil {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -206,18 +206,9 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		interval = int(req.GetInterval())
 	}
 
-	// Get all Controls from Orchestrator for the evaluation
-	err = svc.cacheControls(req.CatalogId)
-	if err != nil {
-		err = fmt.Errorf("could not cache controls: %w", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%s", err)
-	}
-
 	// Get Audit Scope
 	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
-		CertificationTargetId: req.CertificationTargetId,
-		CatalogId:             req.CatalogId,
+		AuditScopeId: req.GetAuditScopeId(),
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get audit scope: %w", err)
@@ -225,9 +216,17 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
+	// Get all Controls from Orchestrator for the evaluation
+	err = svc.cacheControls(auditScope.GetCatalogId())
+	if err != nil {
+		err = fmt.Errorf("could not cache controls: %w", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
 	// Retrieve the catalog
 	catalog, err = svc.orchestrator.Client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{
-		CatalogId: req.CatalogId,
+		CatalogId: auditScope.GetCatalogId(),
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get catalog: %w", err)
@@ -236,7 +235,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check, if a previous job exists and/or is running
-	jobs, err = svc.scheduler.FindJobsByTag(req.CertificationTargetId, req.CatalogId)
+	// TODO(all): tags for audit_scope_id instead of certification_target and catalog_id?
+	jobs, err = svc.scheduler.FindJobsByTag(auditScope.CertificationTargetId, auditScope.CatalogId)
 	if err != nil && !errors.Is(err, gocron.ErrJobNotFoundWithTag) {
 		err = fmt.Errorf("error while retrieving existing scheduler job: %w", err)
 		log.Error(err)
@@ -946,4 +946,25 @@ func values[M ~map[K]V, K comparable, V any](m M) []V {
 	}
 
 	return rr
+}
+
+// TODO: all Is a duplication of the method checkCertificateAuthorization()
+// checkEvaluationAuthorization checks if client is authorized to start the evaluation by
+// 1) checking admin flag: If it is enabled (`all`) the client is authorized
+// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
+// Error is returned if not authorized or internal DB error occurred.
+// Note: Use the checkExistence before to ensure that the entry is in the DB!
+func (svc *Service) checkEvaluationAuthorization(ctx context.Context, req *evaluation.StartEvaluationRequest) error {
+	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
+	if !all {
+		count2, err := svc.storage.Count(&orchestrator.AuditScope{}, "id = ? AND certification_target_id IN ?",
+			req.GetAuditScopeId(), allowed)
+		if err != nil {
+			return status.Errorf(codes.Internal, "database error: %v", err)
+		}
+		if count2 == 0 {
+			return service.ErrPermissionDenied
+		}
+	}
+	return nil
 }
