@@ -966,3 +966,91 @@ func TestService_UpdateAuditScope(t *testing.T) {
 		})
 	}
 }
+
+func TestService_checkAuditScopeAvailability(t *testing.T) {
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.RemoveAuditScopeRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: no audit scope in DB and database error",
+			fields: fields{
+				svc: NewService(WithStorage(&testutil.StorageWithError{CountErr: gorm.ErrInvalidDB})),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId: testdata.MockAuditScopeID1,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "database error")
+			},
+		},
+		{
+			name: "error: no audit scope in DB",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId: testdata.MockAuditScopeID1,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrAuditScopeNotFound)
+			},
+		},
+		{
+			name: "error: permission denied",
+			fields: fields{
+				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
+				})),
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false))),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId: testdata.MockAuditScopeID1,
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, service.ErrPermissionDenied)
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				svc: NewService(WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
+				}))),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId: testdata.MockAuditScopeID1,
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.fields.svc.checkAuditScopeAvailability(tt.args.ctx, tt.args.req)
+
+			tt.wantErr(t, err)
+		})
+	}
+}

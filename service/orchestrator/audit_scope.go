@@ -210,7 +210,7 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 	}
 
 	// Check if the entry exists in the DB and if client has necessary authorization
-	if err = svc.checkScopeAvailability(ctx, req); err != nil {
+	if err = svc.checkAuditScopeAvailability(ctx, req); err != nil {
 		return
 	}
 
@@ -254,12 +254,12 @@ func (s *Service) RegisterToeHook(hook orchestrator.AuditScopeHookFunc) {
 	s.auditScopeHooks = append(s.auditScopeHooks, hook)
 }
 
-// checkScopeAvailability checks if the entry exists in the DB and if client has necessary authorization.
+// checkAuditScopeAvailability checks if the entry exists in the DB and if client has necessary authorization.
 // 1) checking if entry exists in DB
 // 2) checking admin flag: If it is enabled (`all`) the client is authorized
 // 3) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
 // Error is returned if entry does not exist in DB, client is not authorized or internal DB error occurred.
-func (svc *Service) checkScopeAvailability(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) error {
+func (svc *Service) checkAuditScopeAvailability(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) error {
 	count, err := svc.storage.Count(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
 	if err != nil {
 		return status.Errorf(codes.Internal, "database error: %v", err)
