@@ -42,7 +42,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/stop:
+    /v1/evaluation/evaluate/{auditScopeId}/stop:
         post:
             tags:
                 - Evaluation
@@ -51,12 +51,7 @@ paths:
                  Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
-                - name: certificationTargetId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
+                - name: auditScopeId
                   in: path
                   required: true
                   schema:

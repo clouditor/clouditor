@@ -40,6 +40,7 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/clitest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
@@ -50,6 +51,8 @@ import (
 	"github.com/go-co-op/gocron"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -564,26 +567,26 @@ func TestService_StopEvaluation(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Request input missing",
+			name: "error: request input missing",
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{},
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "certification_target_id: value is empty, which is not a valid UUID")
+				return assert.ErrorContains(t, err, "audit_scope_id: value is empty, which is not a valid UUID")
 			},
 		},
 		{
-			name: "Not authorized",
+			name: "error: not authorized",
 			fields: fields{
-				authz: &service.AuthorizationStrategyJWT{},
+				authz:   servicetest.NewAuthorizationStrategy(false),
+				storage: testutil.NewInMemoryStorage(t),
 			},
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
-					CatalogId:             testdata.MockCatalogID1,
+					AuditScopeId: testdata.MockAuditScopeID1,
 				},
 			},
 			wantRes: nil,
@@ -592,19 +595,43 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 		},
 		{
+			name: "error: getting audit scope",
+			fields: fields{
+				authz:        servicetest.NewAuthorizationStrategy(true),
+				storage:      testutil.NewInMemoryStorage(t),
+				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {})))),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.StopEvaluationRequest{
+					AuditScopeId: testdata.MockAuditScopeID1,
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "could not get audit scope")
+			},
+		},
+		{
 			name: "Evaluation not running",
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
-					CatalogId:             testdata.MockCatalogID1,
+					AuditScopeId: testdata.MockAuditScopeID1,
 				},
 				schedulerRunning: false,
 			},
 			fields: fields{
-				scheduler:     gocron.NewScheduler(time.Local),
+				scheduler: gocron.NewScheduler(time.Local),
+				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
+				})))),
 				authz:         &service.AuthorizationStrategyAllowAll{},
 				auditScopeTag: fmt.Sprintf("%s-%s", testdata.MockCertificationTargetID1, testdata.MockCatalogID1),
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.MockAuditScopeCertTargetID1))
+				}),
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
@@ -616,12 +643,15 @@ func TestService_StopEvaluation(t *testing.T) {
 			args: args{
 				in0: context.Background(),
 				req: &evaluation.StopEvaluationRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
-					CatalogId:             testdata.MockCatalogID1,
+					AuditScopeId: testdata.MockAuditScopeID1,
 				},
 				schedulerRunning: true,
 			},
 			fields: fields{
+				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
+				})))),
+
 				scheduler: func() *gocron.Scheduler {
 					s := gocron.NewScheduler(time.UTC)
 					_, err := s.Every(1).
@@ -775,7 +805,6 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
 				})))),
 				scheduler: func() *gocron.Scheduler {
@@ -808,9 +837,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			fields: fields{
 				orchestrator: api.NewRPCConnection(testdata.MockGRPCTarget, orchestrator.NewOrchestratorClient, grpc.WithContextDialer(newBufConnDialer(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					assert.NoError(t, s.Create(orchestratortest.NewCatalog()))
-					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
 					assert.NoError(t, s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, testdata.MockCertificationTargetID1)))
-					assert.NoError(t, s.Create(orchestratortest.MockAssessmentResults))
 				})))),
 				scheduler:       gocron.NewScheduler(time.Local),
 				authz:           &service.AuthorizationStrategyAllowAll{},

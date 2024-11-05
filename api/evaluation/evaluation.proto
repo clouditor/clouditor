@@ -46,7 +46,7 @@ service Evaluation {
   // StopEvaluation stops the evaluation for the given audit scope.
   // Part of the public API, also exposed as REST.
   rpc StopEvaluation(StopEvaluationRequest) returns (StopEvaluationResponse) {
-    option (google.api.http) = {post: "/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/stop"};
+    option (google.api.http) = {post: "/v1/evaluation/evaluate/{audit_scope_id}/stop"};
   }
 
   // List all evaluation results that the user can access. It can further be
@@ -85,9 +85,10 @@ message CreateEvaluationResultRequest {
 }
 
 message StopEvaluationRequest {
-  string certification_target_id = 1 [(buf.validate.field).string.uuid = true];
-
-  string catalog_id = 2 [(buf.validate.field).string.min_len = 1];
+  string audit_scope_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message StopEvaluationResponse {}

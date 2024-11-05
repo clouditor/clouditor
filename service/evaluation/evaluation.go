@@ -192,7 +192,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check if client is authorized to remove audit scope.
-	if err = svc.checkEvaluationAuthorization(ctx, req); err != nil {
+	if err = svc.checkEvaluationAuthorization(ctx, req.GetAuditScopeId()); err != nil {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -270,6 +270,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 // StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a
 // AuditScope.
 func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
+	var auditScope *orchestrator.AuditScope
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -277,16 +279,26 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 	}
 
 	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if err = svc.checkEvaluationAuthorization(ctx, req.GetAuditScopeId()); err != nil {
 		return nil, service.ErrPermissionDenied
 	}
 
+	// Get Audit Scope
+	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
+		AuditScopeId: req.GetAuditScopeId(),
+	})
+	if err != nil {
+		err = fmt.Errorf("could not get audit scope: %w", err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
 	// Stop jobs(s) for given certification target and catalog
-	err = svc.scheduler.RemoveByTags(req.CertificationTargetId, req.CatalogId)
+	err = svc.scheduler.RemoveByTags(auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for certification target '%s' and catalog '%s' not running", req.CertificationTargetId, req.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for certification target '%s' and catalog '%s' not running", auditScope.CertificationTargetId, auditScope.CatalogId)
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for certification target '%s' and catalog '%s': %w", req.CertificationTargetId, req.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for certification target '%s' and catalog '%s': %w", auditScope.CertificationTargetId, auditScope.CatalogId, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -954,11 +966,11 @@ func values[M ~map[K]V, K comparable, V any](m M) []V {
 // 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
 // Error is returned if not authorized or internal DB error occurred.
 // Note: Use the checkExistence before to ensure that the entry is in the DB!
-func (svc *Service) checkEvaluationAuthorization(ctx context.Context, req *evaluation.StartEvaluationRequest) error {
+func (svc *Service) checkEvaluationAuthorization(ctx context.Context, auditScopeId string) error {
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		count2, err := svc.storage.Count(&orchestrator.AuditScope{}, "id = ? AND certification_target_id IN ?",
-			req.GetAuditScopeId(), allowed)
+			auditScopeId, allowed)
 		if err != nil {
 			return status.Errorf(codes.Internal, "database error: %v", err)
 		}
