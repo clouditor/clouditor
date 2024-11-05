@@ -27,6 +27,9 @@ package orchestrator
 
 import (
 	"context"
+	"reflect"
+	"runtime"
+	"sync"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
@@ -321,155 +324,103 @@ func TestService_GetAuditScope(t *testing.T) {
 	}
 }
 
-// func TestService_UpdateAuditScope(t *testing.T) {
-// 	var (
-// 		auditScope *orchestrator.AuditScope
-// 		err        error
-// 	)
-// 	orchestratorService := NewService()
-// 	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-// 	assert.NoError(t, err)
-// 	err = orchestratorService.storage.Create(orchestratortest.NewCatalog())
-// 	assert.NoError(t, err)
+func TestToeHook(t *testing.T) {
+	var (
+		hookCallCounter = 0
+		wg              sync.WaitGroup
+	)
+	wg.Add(2)
 
-// 	// 1st case: Audit Scope is nil
-// 	_, err = orchestratorService.UpdateAuditScope(context.Background(), &orchestrator.UpdateAuditScopeRequest{
-// 		AuditScope: nil,
-// 	})
-// 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	firstHookFunction := func(ctx context.Context, event *orchestrator.AuditScopeChangeEvent, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the first auditScope hook function")
 
-// 	// 2nd case: Ids are empty
-// 	_, err = orchestratorService.UpdateAuditScope(context.Background(), &orchestrator.UpdateAuditScopeRequest{
-// 		AuditScope: &orchestrator.AuditScope{},
-// 	})
-// 	assert.Equal(t, codes.InvalidArgument, status.Code(err))
-// 	assert.ErrorContains(t, err, "audit_scope.certification_target_id: value is empty, which is not a valid UUID")
+		// Checking the status
+		// UpdateAuditScope is called, so the status must be AUDIT_SCOPE_UPDATE
+		if *event.GetType().Enum() != orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_UPDATED {
+			return
+		}
 
-// 	// 3rd case: Audit Scope not found since there are no Audit Scopes
-// 	_, err = orchestratorService.UpdateAuditScope(context.Background(), &orchestrator.UpdateAuditScopeRequest{
-// 		AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1),
-// 	})
-// 	assert.Equal(t, codes.NotFound, status.Code(err))
+		wg.Done()
+	}
 
-// 	// 4th case: Audit Scope updated successfully
-// 	err = orchestratorService.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
-// 	assert.NoError(t, err)
+	secondHookFunction := func(ctx context.Context, event *orchestrator.AuditScopeChangeEvent, err error) {
+		hookCallCounter++
+		log.Println("Hello from inside the second auditScope hook function")
 
-// 	// update the auditScope's assurance level and send the update request
-// 	auditScope, err = orchestratorService.UpdateAuditScope(context.Background(), &orchestrator.UpdateAuditScopeRequest{
-// 		AuditScope: &orchestrator.AuditScope{
-// 			CertificationTargetId: testdata.MockCertificationTargetID1,
-// 			CatalogId:             testdata.MockCatalogID,
-// 			AssuranceLevel:        &testdata.AssuranceLevelBasic,
-// 		},
-// 	})
-// 	assert.NoError(t, err)
-// 	assert.NotNil(t, auditScope)
-// 	assert.NoError(t, api.Validate(auditScope))
-// 	assert.Equal(t, &testdata.AssuranceLevelBasic, auditScope.AssuranceLevel)
-// }
+		wg.Done()
+	}
 
-// func TestToeHook(t *testing.T) {
-// 	var (
-// 		hookCallCounter = 0
-// 		wg              sync.WaitGroup
-// 	)
-// 	wg.Add(2)
+	svc := NewService()
+	svc.RegisterToeHook(firstHookFunction)
+	svc.RegisterToeHook(secondHookFunction)
 
-// 	firstHookFunction := func(ctx context.Context, event *orchestrator.AuditScopeChangeEvent, err error) {
-// 		hookCallCounter++
-// 		log.Println("Hello from inside the first auditScope hook function")
+	// Check if first hook is registered
+	funcName1 := runtime.FuncForPC(reflect.ValueOf(svc.auditScopeHooks[0]).Pointer()).Name()
+	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
 
-// 		// Checking the status
-// 		// UpdateAuditScope is called, so the status must be AUDIT_SCOPE_UPDATE
-// 		if *event.GetType().Enum() != orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_UPDATED {
-// 			return
-// 		}
+	// Check if second hook is registered
+	funcName1 = runtime.FuncForPC(reflect.ValueOf(svc.auditScopeHooks[1]).Pointer()).Name()
+	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
+	assert.Equal(t, funcName1, funcName2)
 
-// 		wg.Done()
-// 	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.UpdateAuditScopeRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantRes *orchestrator.AuditScope
+		wantErr assert.WantErr
+	}{
+		{
+			name: "Store first audit scope to the map",
+			args: args{
+				ctx: context.TODO(),
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						Id:                    testdata.MockAuditScopeID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+						CatalogId:             testdata.MockCatalogID1,
+						AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
+					},
+				},
+			},
+			wantErr: assert.Nil[error],
+			wantRes: &orchestrator.AuditScope{
+				Id:                    testdata.MockAuditScopeID1,
+				CertificationTargetId: testdata.MockCertificationTargetID1,
+				CatalogId:             testdata.MockCatalogID1,
+				AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hookCallCounter = 0
 
-// 	secondHookFunction := func(ctx context.Context, event *orchestrator.AuditScopeChangeEvent, err error) {
-// 		hookCallCounter++
-// 		log.Println("Hello from inside the second auditScope hook function")
+			// Create service
+			s := svc
 
-// 		wg.Done()
-// 	}
+			// Create Audit Scope in DB
+			err := s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, ""))
+			assert.NoError(t, err)
 
-// 	svc := NewService()
-// 	svc.RegisterToeHook(firstHookFunction)
-// 	svc.RegisterToeHook(secondHookFunction)
+			gotRes, err := s.UpdateAuditScope(tt.args.ctx, tt.args.req)
 
-// 	// Check if first hook is registered
-// 	funcName1 := runtime.FuncForPC(reflect.ValueOf(svc.auditScopeHooks[0]).Pointer()).Name()
-// 	funcName2 := runtime.FuncForPC(reflect.ValueOf(firstHookFunction).Pointer()).Name()
-// 	assert.Equal(t, funcName1, funcName2)
+			// wait for all hooks (2 hooks)
+			wg.Wait()
 
-// 	// Check if second hook is registered
-// 	funcName1 = runtime.FuncForPC(reflect.ValueOf(svc.auditScopeHooks[1]).Pointer()).Name()
-// 	funcName2 = runtime.FuncForPC(reflect.ValueOf(secondHookFunction).Pointer()).Name()
-// 	assert.Equal(t, funcName1, funcName2)
+			assert.NoError(t, api.Validate(gotRes))
 
-// 	type args struct {
-// 		ctx context.Context
-// 		req *orchestrator.UpdateAuditScopeRequest
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		wantRes *orchestrator.AuditScope
-// 		wantErr assert.WantErr
-// 	}{
-// 		{
-// 			name: "Store first assessment result to the map",
-// 			args: args{
-// 				ctx: context.TODO(),
-// 				req: &orchestrator.UpdateAuditScopeRequest{
-// 					AuditScope: &orchestrator.AuditScope{
-// 						CertificationTargetId: testdata.MockCertificationTargetID1,
-// 						CatalogId:             testdata.MockCatalogID,
-// 						AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
-// 					},
-// 				},
-// 			},
-// 			wantErr: assert.Nil[error],
-// 			wantRes: &orchestrator.AuditScope{
-// 				CertificationTargetId: testdata.MockCertificationTargetID1,
-// 				CatalogId:             testdata.MockCatalogID,
-// 				AssuranceLevel:        &testdata.AssuranceLevelSubstantial,
-// 			},
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			hookCallCounter = 0
-
-// 			// Create service
-// 			s := svc
-// 			err := s.storage.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-// 			assert.NoError(t, err)
-
-// 			// Create catalog
-// 			err = s.storage.Create(orchestratortest.NewCatalog())
-// 			assert.NoError(t, err)
-
-// 			// Create new Audit Scope
-// 			err = s.storage.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1))
-// 			assert.NoError(t, err)
-
-// 			gotRes, err := s.UpdateAuditScope(tt.args.ctx, tt.args.req)
-
-// 			// wait for all hooks (2 hooks)
-// 			wg.Wait()
-
-// 			assert.NoError(t, api.Validate(gotRes))
-
-// 			tt.wantErr(t, err)
-// 			assert.Equal(t, tt.wantRes, gotRes)
-// 			assert.Equal(t, 2, hookCallCounter)
-// 		})
-// 	}
-// }
+			tt.wantErr(t, err)
+			assert.Equal(t, tt.wantRes, gotRes)
+			assert.Equal(t, 2, hookCallCounter)
+		})
+	}
+}
 
 func TestService_ListAuditScopes(t *testing.T) {
 	type fields struct {
@@ -686,7 +637,6 @@ func TestService_RemoveAuditScope(t *testing.T) {
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
 		},
-
 		{
 			name: "Error: audit scope not found",
 			fields: fields{
@@ -806,6 +756,211 @@ func TestService_RemoveAuditScope(t *testing.T) {
 			res, err := tt.fields.svc.RemoveAuditScope(tt.args.ctx, tt.args.req)
 
 			tt.wantResponse(t, res)
+			tt.wantSvc(t, tt.fields.svc)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func TestService_UpdateAuditScope(t *testing.T) {
+	type fields struct {
+		svc *Service
+	}
+	type args struct {
+		ctx context.Context
+		req *orchestrator.UpdateAuditScopeRequest
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantRes assert.Want[*orchestrator.AuditScope]
+		wantSvc assert.Want[*Service]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error: validation error",
+			fields: fields{
+				svc: NewService(),
+			},
+			args: args{
+				ctx: nil,
+				req: nil,
+			},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.InvalidArgument, status.Code(err))
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Error: permission denied",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false)),
+				),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateAuditScopeRequest{AuditScope: orchestratortest.MockAuditScopeCertTargetID1},
+			},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Error: audit scope not found",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(
+						true)),
+					// Create empty storage => No audit scope can be found
+					WithStorage(testutil.NewInMemoryStorage(t))),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+				},
+			},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+			},
+		},
+		{
+			name: "Error: database error",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
+					WithStorage(&testutil.StorageWithError{UpdateErr: gorm.ErrInvalidDB}),
+				),
+			},
+			args: args{req: &orchestrator.UpdateAuditScopeRequest{
+				AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+			}},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				n, err := svc.storage.Count(&orchestrator.AuditScope{})
+				assert.NoError(t, err)
+				return assert.Equal(t, 0, n)
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "database error")
+			},
+		},
+		{
+			name: "Error: permission denied",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t)),
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2)),
+				),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+				},
+			},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Happy path: with authorization for audit scopes with a certain specific certification target",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						err := s.Create(&orchestrator.AuditScope{
+							Id:                    testdata.MockAuditScopeID1,
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							CatalogId:             testdata.MockCatalogID1,
+							AssuranceLevel:        &testdata.AssuranceLevelHigh,
+						})
+						assert.NoError(t, err)
+					})),
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1)),
+				),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.AuditScope) bool {
+				return assert.Equal(t, orchestratortest.MockAuditScopeCertTargetID1, got)
+			},
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				res := &orchestrator.AuditScope{}
+
+				// Check if audit scope is updated in the DB
+				err := svc.storage.Get(res, "id = ?", testdata.MockAuditScopeID1)
+				assert.NoError(t, err)
+				return assert.Equal(t, orchestratortest.MockAuditScopeCertTargetID1, res)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: with authorization allAllowed",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						err := s.Create(&orchestrator.AuditScope{
+							Id:                    testdata.MockAuditScopeID1,
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							CatalogId:             testdata.MockCatalogID1,
+							AssuranceLevel:        &testdata.AssuranceLevelHigh,
+						})
+						assert.NoError(t, err)
+					})),
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
+				),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+				},
+			},
+			wantRes: func(t *testing.T, got *orchestrator.AuditScope) bool {
+				return assert.Equal(t, orchestratortest.MockAuditScopeCertTargetID1, got)
+			},
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				res := &orchestrator.AuditScope{}
+
+				// Check if audit scope is updated in the DB
+				err := svc.storage.Get(res, "id = ?", testdata.MockAuditScopeID1)
+				assert.NoError(t, err)
+				return assert.Equal(t, orchestratortest.MockAuditScopeCertTargetID1, res)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotRes, err := tt.fields.svc.UpdateAuditScope(tt.args.ctx, tt.args.req)
+
+			tt.wantRes(t, gotRes)
 			tt.wantSvc(t, tt.fields.svc)
 			tt.wantErr(t, err)
 		})

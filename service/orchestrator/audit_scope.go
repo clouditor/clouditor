@@ -185,12 +185,11 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 
 	res = req.AuditScope
 
-	err = svc.storage.Update(res, "certification_target_id = ? AND catalog_id = ?", req.AuditScope.GetCertificationTargetId(), req.AuditScope.GetCatalogId())
-
+	err = svc.storage.Update(res, "Id = ?", req.AuditScope.GetId())
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Error(codes.NotFound, "Audit Scope not found")
+		return nil, ErrAuditScopeNotFound
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, status.Error(codes.NotFound, "Audit Scope not found")
+		return nil, ErrAuditScopeNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "database error: %v", err)
 	}
