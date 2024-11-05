@@ -635,7 +635,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, fmt.Sprintf("job for certification target '%s' and catalog '%s' not running", testdata.MockCertificationTargetID1, testdata.MockCatalogID1))
+				return assert.ErrorContains(t, err, fmt.Sprintf("job for audit scope '%s' not running", testdata.MockAuditScopeID1))
 			},
 		},
 		{
@@ -656,7 +656,7 @@ func TestService_StopEvaluation(t *testing.T) {
 					s := gocron.NewScheduler(time.UTC)
 					_, err := s.Every(1).
 						Day().
-						Tag(testdata.MockCertificationTargetID1, testdata.MockCatalogID1).
+						Tag(testdata.MockAuditScopeID1).
 						Do(func() { fmt.Println("Scheduler") })
 					assert.NoError(t, err)
 
@@ -811,7 +811,7 @@ func TestService_StartEvaluation(t *testing.T) {
 					s := gocron.NewScheduler(time.Local)
 					_, err := s.Every(1).
 						Day().
-						Tag(testdata.MockCertificationTargetID1, testdata.MockCatalogID1).
+						Tag(testdata.MockAuditScopeID1).
 						Do(func() { fmt.Println("Scheduler") })
 					assert.NoError(t, err)
 
@@ -829,7 +829,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Certification Target")
+				return assert.ErrorContains(t, err, "code = AlreadyExists desc = evaluation for Audit Scope")
 			},
 		},
 		{

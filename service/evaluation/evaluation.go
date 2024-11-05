@@ -235,14 +235,13 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check, if a previous job exists and/or is running
-	// TODO(all): tags for audit_scope_id instead of certification_target and catalog_id?
-	jobs, err = svc.scheduler.FindJobsByTag(auditScope.CertificationTargetId, auditScope.CatalogId)
+	jobs, err = svc.scheduler.FindJobsByTag(auditScope.GetId())
 	if err != nil && !errors.Is(err, gocron.ErrJobNotFoundWithTag) {
 		err = fmt.Errorf("error while retrieving existing scheduler job: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Certification Target '%s' and Catalog ID '%s' already started", auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+		err = fmt.Errorf("evaluation for Audit Scope '%s' already started", auditScope.GetId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -256,9 +255,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	log.Infof("Scheduled to evaluate catalog ID '%s' for certification target '%s' every %d minutes...",
-		catalog.GetId(),
-		auditScope.GetCertificationTargetId(),
+	log.Infof("Scheduled to evaluate audit scope '%s' every %d minutes...",
+		auditScope.GetId(),
 		interval,
 	)
 
@@ -293,12 +291,12 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	// Stop jobs(s) for given certification target and catalog
-	err = svc.scheduler.RemoveByTags(auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+	// Stop jobs(s) for given audit scope
+	err = svc.scheduler.RemoveByTags(auditScope.GetId())
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for certification target '%s' and catalog '%s' not running", auditScope.CertificationTargetId, auditScope.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for audit scope '%s' not running", auditScope.GetId())
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for certification target '%s' and catalog '%s': %w", auditScope.CertificationTargetId, auditScope.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for audit scope '%s': %w", auditScope.GetId(), err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -478,15 +476,15 @@ func (svc *Service) addJobToScheduler(ctx context.Context, auditScope *orchestra
 	_, err = svc.scheduler.
 		Every(interval).
 		Minute().
-		Tag(auditScope.GetCertificationTargetId(), auditScope.GetCatalogId()).
+		Tag(auditScope.GetId()).
 		Do(svc.evaluateCatalog, ctx, auditScope, catalog, interval)
 	if err != nil {
-		err = fmt.Errorf("evaluation for certification target '%s' and catalog ID '%s' cannot be scheduled: %w", auditScope.GetCertificationTargetId(), catalog.GetId(), err)
+		err = fmt.Errorf("evaluation for audit scope '%s' cannot be scheduled: %w", auditScope.GetId(), err)
 		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", err)
 	}
 
-	log.Debugf("certification target '%s' with catalog ID '%s' added to scheduler", auditScope.GetCertificationTargetId(), catalog.GetId())
+	log.Debugf("audit scope '%s' added to scheduler", auditScope.GetId())
 
 	return
 }
@@ -866,7 +864,7 @@ func (svc *Service) cacheControls(catalogId string) error {
 	}
 
 	// Get controls for given catalog
-	controls, err = api.ListAllPaginated[*orchestrator.ListControlsResponse](&orchestrator.ListControlsRequest{
+	controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{
 		CatalogId: catalogId,
 	}, svc.orchestrator.Client.ListControls, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
 		return res.Controls
