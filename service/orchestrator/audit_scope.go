@@ -209,13 +209,8 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 		return nil, err
 	}
 
-	// Check if auditScope exists in DB, otherwise, return NotFound error
-	if err = svc.checkAuditScopeExistence(req); err != nil {
-		return
-	}
-
-	// Check if client is authorized to remove audit scope.
-	if err = svc.checkAuditScopeAuthorization(ctx, req); err != nil {
+	// Check if the entry exists in the DB and if client has necessary authorization
+	if err = svc.checkScopeAvailability(ctx, req); err != nil {
 		return
 	}
 
@@ -259,13 +254,20 @@ func (s *Service) RegisterToeHook(hook orchestrator.AuditScopeHookFunc) {
 	s.auditScopeHooks = append(s.auditScopeHooks, hook)
 }
 
-// TODO: all Is a duplication of the method checkCertificateAuthorization()
-// checkAuditScopeAuthorization checks if client is authorized to remove certificate by
-// 1) checking admin flag: If it is enabled (`all`) the client is authorized
-// 2) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
-// Error is returned if not authorized or internal DB error occurred.
-// Note: Use the checkExistence before to ensure that the entry is in the DB!
-func (svc *Service) checkAuditScopeAuthorization(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) error {
+// checkScopeAvailability checks if the entry exists in the DB and if client has necessary authorization.
+// 1) checking if entry exists in DB
+// 2) checking admin flag: If it is enabled (`all`) the client is authorized
+// 3) querying the DB within the range of certification targets (`allowed`) the client is allowed to access
+// Error is returned if entry does not exist in DB, client is not authorized or internal DB error occurred.
+func (svc *Service) checkScopeAvailability(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) error {
+	count, err := svc.storage.Count(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
+	if err != nil {
+		return status.Errorf(codes.Internal, "database error: %v", err)
+	}
+	if count == 0 {
+		return ErrAuditScopeNotFound
+	}
+
 	all, allowed := svc.authz.AllowedCertificationTargets(ctx)
 	if !all {
 		count2, err := svc.storage.Count(&orchestrator.AuditScope{}, "id = ? AND certification_target_id IN ?",
@@ -277,18 +279,6 @@ func (svc *Service) checkAuditScopeAuthorization(ctx context.Context, req *orche
 			return service.ErrPermissionDenied
 		}
 	}
-	return nil
-}
 
-// TODO: all Is a duplication of the method checkCertificateExistence()
-// checkExistence checks if the entry is in the DB. An error is returned if not, or if there is an internal DB error.
-func (svc *Service) checkAuditScopeExistence(req *orchestrator.RemoveAuditScopeRequest) error {
-	count, err := svc.storage.Count(&orchestrator.AuditScope{}, "Id = ?", req.GetAuditScopeId())
-	if err != nil {
-		return status.Errorf(codes.Internal, "database error: %v", err)
-	}
-	if count == 0 {
-		return ErrAuditScopeNotFound
-	}
 	return nil
 }
