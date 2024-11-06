@@ -48,14 +48,12 @@ import (
 var ErrAuditScopeNotFound = status.Error(codes.NotFound, "audit scope not found")
 
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
-	// We want to add the UUID and does not want get it by the request, so we have to add if first and than do the validation check
 	if req.AuditScope == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
 	}
 
-	if req.AuditScope.GetId() != "" {
-		req.AuditScope.Id = uuid.NewString()
-	}
+	// We want to add the UUID without retrieving it from the request, so we need to include it first and then perform the validation check.
+	req.AuditScope.Id = uuid.NewString()
 
 	// Validate request
 	err = api.Validate(req)

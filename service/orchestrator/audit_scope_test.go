@@ -79,30 +79,74 @@ func TestService_CreateAuditScope(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Empty request",
+			name: "error: empty request",
 			args: args{
 				ctx: context.Background(),
 				req: &orchestrator.CreateAuditScopeRequest{},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "empty request")
+				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
 			want: assert.Nil[*orchestrator.AuditScope],
 		},
 		{
-			name: "Invalid request",
+			name: "error: invalid request",
 			args: args{
 				ctx: context.Background(),
 				req: &orchestrator.CreateAuditScopeRequest{
 					AuditScope: &orchestrator.AuditScope{
-						CatalogId: "testcatalog",
+						CatalogId: testdata.MockCatalogID1,
 					},
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
-				return assert.ErrorContains(t, err, "audit_scope.id: value is empty")
+				return assert.ErrorContains(t, err, "audit_scope.certification_target_id: value is empty")
+			},
+			want: assert.Nil[*orchestrator.AuditScope],
+		},
+		{
+			name: "error: permission denied",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1}))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.CreateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						CatalogId:             testdata.MockCatalogID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+			want: assert.Nil[*orchestrator.AuditScope],
+		},
+		{
+			name: "error: database error",
+			fields: fields{
+				storage: &testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB},
+				authz:   servicetest.NewAuthorizationStrategy(true),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.CreateAuditScopeRequest{
+					AuditScope: &orchestrator.AuditScope{
+						CatalogId:             testdata.MockCatalogID1,
+						CertificationTargetId: testdata.MockCertificationTargetID1,
+					},
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
 			},
 			want: assert.Nil[*orchestrator.AuditScope],
 		},
@@ -111,9 +155,6 @@ func TestService_CreateAuditScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-					assert.NoError(t, err)
-
-					err = s.Create(catalogWithoutAssuranceLevelList)
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
@@ -150,9 +191,6 @@ func TestService_CreateAuditScope(t *testing.T) {
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-					assert.NoError(t, err)
-
-					err = s.Create(orchestratortest.NewCatalog())
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
