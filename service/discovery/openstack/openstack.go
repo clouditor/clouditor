@@ -132,7 +132,7 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 		opt(d)
 	}
 
-	// WithAuthOpts is mandatory, since it cannot be checked directly whether WithAuthOpts was passed, we check if authOpts is set before returning the discoverer
+	// WithAuthorizer is mandatory, since it cannot be checked directly whether WithAuthorizer was passed, we check if authOpts is set before returning the discoverer
 	if d.authOpts == nil {
 		return nil
 	}
@@ -147,7 +147,6 @@ func (d *openstackDiscovery) authorize() (err error) {
 
 	if d.provider == nil {
 		d.provider, err = openstack.AuthenticatedClient(*d.authOpts)
-
 		if err != nil {
 			return fmt.Errorf("error while authenticating: %w", err)
 		}

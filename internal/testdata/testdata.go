@@ -5,13 +5,21 @@ import (
 )
 
 const (
-	MockGRPCTarget             = "localhost"
+	MockGRPCTarget = "localhost"
+
+	// Azure
 	MockLocationWestEurope     = "West Europe"
 	MockLocationEastUs         = "eastus"
 	MockSubscriptionID         = "00000000-0000-0000-0000-000000000000"
 	MockSubscriptionResourceID = "/subscriptions/00000000-0000-0000-0000-000000000000"
 	MockResourceGroupID        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"
 	MockResourceGroup          = "TestResourceGroup"
+
+	// Openstack
+	MockOpenstackUsername          = "username"
+	MockOpenstackPassword          = "password"
+	MockOpenstackTenantName        = "tenant"
+	MockOpenstackIdentitiyEndpoint = "https://openstack.test:8888/v2.0"
 
 	// Audit Scope
 	MockAuditScopeID1 = "11111111-1111-1111-1111-111111111123"
