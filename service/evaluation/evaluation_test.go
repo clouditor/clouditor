@@ -613,7 +613,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, "could not get audit scope")
+				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
 			},
 		},
 		{
@@ -781,7 +781,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "could not get audit scope:")
+				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
 			},
 		},
 		{

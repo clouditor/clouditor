@@ -62,6 +62,7 @@ var (
 	ErrCategoryNameIsMissing = errors.New("category_name is missing")
 	ErrControlIdIsMissing    = errors.New("control_id is missing")
 	ErrControlNotAvailable   = errors.New("control not available")
+	ErrAuditScopeNotFound    = errors.New("audit scope not found")
 )
 
 // DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
@@ -196,7 +197,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		AuditScopeId: req.GetAuditScopeId(),
 	})
 	if err != nil {
-		err = fmt.Errorf("could not get audit scope: %w", err)
+		err = fmt.Errorf("%w: %w", ErrAuditScopeNotFound, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -281,7 +282,7 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		AuditScopeId: req.GetAuditScopeId(),
 	})
 	if err != nil {
-		err = fmt.Errorf("could not get audit scope: %w", err)
+		err = fmt.Errorf("%w: %w", ErrAuditScopeNotFound, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
