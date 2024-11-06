@@ -277,7 +277,7 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		return nil, err
 	}
 
-	// Get Audit Scope
+	// Get audit scope
 	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
 		AuditScopeId: req.GetAuditScopeId(),
 	})
@@ -407,7 +407,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		  	)
 		  	SELECT * FROM sorted_results WHERE row_number = 1 ORDER BY control_catalog_id, control_id;`, p, where), args...)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+			return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 		}
 	} else {
 		// join query with AND and prepend the query
@@ -454,7 +454,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 	res.Id = uuid.NewString()
 	err = svc.storage.Create(res)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	return res, nil

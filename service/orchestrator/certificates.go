@@ -63,7 +63,7 @@ func (svc *Service) GetCertificate(ctx context.Context, req *orchestrator.GetCer
 	if errors.Is(err, persistence.ErrRecordNotFound) {
 		return nil, ErrCertificationNotFound
 	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	// Check if client is allowed to access the corresponding certification target (targeted in the certificate)
@@ -147,7 +147,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 
 	count, err := svc.storage.Count(req.Certificate, "id=?", req.Certificate.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	if count == 0 {
@@ -158,7 +158,7 @@ func (svc *Service) UpdateCertificate(ctx context.Context, req *orchestrator.Upd
 
 	err = svc.storage.Save(response, "Id = ?", response.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Update, req)
@@ -186,7 +186,7 @@ func (svc *Service) RemoveCertificate(ctx context.Context, req *orchestrator.Rem
 	// Delete entry since client is authorized to do so
 	err = svc.storage.Delete(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	if err != nil { // Only internal errors left since others (Permission and NotFound) are already covered
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
@@ -205,7 +205,7 @@ func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orch
 		count2, err := svc.storage.Count(&orchestrator.Certificate{}, "id = ? AND certification_target_id IN ?",
 			req.GetCertificateId(), allowed)
 		if err != nil {
-			return status.Errorf(codes.Internal, "database error: %v", err)
+			return status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 		}
 		if count2 == 0 {
 			return service.ErrPermissionDenied
@@ -218,7 +218,7 @@ func (svc *Service) checkCertificateAuthorization(ctx context.Context, req *orch
 func (svc *Service) checkCertificateExistence(req *orchestrator.RemoveCertificateRequest) error {
 	count, err := svc.storage.Count(&orchestrator.Certificate{}, "Id = ?", req.CertificateId)
 	if err != nil {
-		return status.Errorf(codes.Internal, "database error: %v", err)
+		return status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 	if count == 0 {
 		return ErrCertificationNotFound

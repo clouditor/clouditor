@@ -411,7 +411,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, "database error")
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
 			},
 		},
 		{
