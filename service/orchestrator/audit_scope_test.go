@@ -241,7 +241,7 @@ func TestService_GetAuditScope(t *testing.T) {
 			name: "Error: auditScope not found",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, ""))
+					err := s.Create(orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, "", ""))
 					assert.NoError(t, err)
 				}),
 				authz: servicetest.NewAuthorizationStrategy(true),
