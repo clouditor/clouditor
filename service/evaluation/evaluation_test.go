@@ -56,6 +56,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"gorm.io/gorm"
 )
 
 func TestMain(m *testing.M) {
@@ -179,6 +180,80 @@ func TestService_ListEvaluationResults(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
+			},
+		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: servicetest.NewAuthorizationStrategy(false),
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					LatestByControlId: util.Ref(true),
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId:             util.Ref(testdata.MockSubControlID11),
+						SubControls:           util.Ref(testdata.MockControlID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+					},
+				},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Database error",
+			fields: fields{
+				storage: &testutil.StorageWithError{RawErr: gorm.ErrInvalidDB},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					LatestByControlId: util.Ref(true),
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId:             util.Ref(testdata.MockSubControlID11),
+						SubControls:           util.Ref(testdata.MockControlID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+					},
+				},
+			},
+			wantRes: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+		},
+		{
+			name: "Paginate error",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+					assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+				}),
+				authz: &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				in0: context.Background(),
+				req: &evaluation.ListEvaluationResultsRequest{
+					LatestByControlId: util.Ref(false),
+					OrderBy:           "Wrong input",
+					Filter: &evaluation.ListEvaluationResultsRequest_Filter{
+						ControlId:             util.Ref(testdata.MockSubControlID11),
+						SubControls:           util.Ref(testdata.MockControlID1),
+						CertificationTargetId: util.Ref(testdata.MockCertificationTargetID1),
+					},
+				},
+			},
+			wantRes: nil,
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "could not paginate results")
 			},
 		},
 		{
@@ -1665,7 +1740,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 		wantErr assert.WantErr
 	}{
 		{
-			name: "Happy path",
+			name: "Request validation error",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t),
 				authz:   &service.AuthorizationStrategyAllowAll{},
@@ -1673,18 +1748,16 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
 						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
 						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
 						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
-						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
 					},
 				},
 			},
-			wantRes: func(t *testing.T, got *evaluation.EvaluationResult) bool {
-				return assert.Equal(t, orchestratortest.MockControl1.Id, got.ControlId)
+			wantRes: assert.Nil[*evaluation.EvaluationResult],
+			wantErr: func(t *testing.T, err error) bool {
+				return assert.ErrorContains(t, err, " validation error:\n - result.control_id")
 			},
-			wantErr: assert.Nil[error],
 		},
 		{
 			name: "Wrong status",
@@ -1727,6 +1800,74 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "validity must be set")
 			},
+		},
+		{
+			name: "Permission denied",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   servicetest.NewAuthorizationStrategy(false),
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+					},
+				},
+			},
+			wantRes: assert.Nil[*evaluation.EvaluationResult],
+			wantErr: func(t *testing.T, err error) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
+			name: "Database error",
+			fields: fields{
+				storage: &testutil.StorageWithError{CreateErr: gorm.ErrInvalidDB},
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+					},
+				},
+			},
+			wantRes: assert.Nil[*evaluation.EvaluationResult],
+			wantErr: func(t *testing.T, err error) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   &service.AuthorizationStrategyAllowAll{},
+			},
+			args: args{
+				req: &evaluation.CreateEvaluationResultRequest{
+					Result: &evaluation.EvaluationResult{
+						ControlId:           orchestratortest.MockControl1.Id,
+						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
+						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+					},
+				},
+			},
+			wantRes: func(t *testing.T, got *evaluation.EvaluationResult) bool {
+				return assert.Equal(t, orchestratortest.MockControl1.Id, got.ControlId)
+			},
+			wantErr: assert.Nil[error],
 		},
 	}
 	for _, tt := range tests {
