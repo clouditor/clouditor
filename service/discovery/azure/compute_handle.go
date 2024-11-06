@@ -85,7 +85,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 		Labels:              labels(vm.Tags),
 		ParentId:            resourceGroupID(vm.ID),
 		Raw:                 discovery.Raw(vm),
-		NetworkInterfaceIds: []string{},
+		NetworkInterfaceIds: []string{}, // TODO(all): Discover network interface IDs
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
