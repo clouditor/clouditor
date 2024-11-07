@@ -27,22 +27,35 @@ package openstack
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack"
 )
 
 // computeClient returns the compute client if initialized
-func (d *openstackDiscovery) computeClient() (client *gophercloud.ServiceClient, err error) {
-	if d.compute == nil {
-		return nil, fmt.Errorf("compute client not initialized")
+func (d *openstackDiscovery) computeClient() (err error) {
+	if d.clients.computeClient == nil {
+		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create compute client: %w", err)
+		}
 	}
-	return d.compute, nil
+	return nil
 }
 
 // storageClient returns the compute client if initialized
-func (d *openstackDiscovery) storageClient() (client *gophercloud.ServiceClient, err error) {
-	if d.storage == nil {
-		return nil, fmt.Errorf("storage client not initialized")
+func (d *openstackDiscovery) storageClient() (err error) {
+	if d.clients.storageClient == nil {
+		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create block storage client: %w", err)
+		}
 	}
-	return d.storage, nil
+
+	return nil
 }

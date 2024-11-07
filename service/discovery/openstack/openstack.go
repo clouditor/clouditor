@@ -29,7 +29,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -65,9 +64,8 @@ type openstackDiscovery struct {
 	// clientOptions       arm.ClientOptions
 	// clients  clients //TODO(all): Implement
 	csID     string
+	clients  clients
 	provider *gophercloud.ProviderClient
-	compute  *gophercloud.ServiceClient
-	storage  *gophercloud.ServiceClient
 	authOpts *gophercloud.AuthOptions
 }
 
@@ -77,6 +75,11 @@ type AuthOptions struct {
 	Password         string `json:"password"`
 	TenantName       string `json:"tenantName"`
 	AllowReauth      bool   `json:"allowReauth"`
+}
+
+type clients struct {
+	computeClient *gophercloud.ServiceClient
+	storageClient *gophercloud.ServiceClient
 }
 
 func (*openstackDiscovery) Name() string {
@@ -152,25 +155,24 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
-	if d.compute == nil {
-		d.compute, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
-		})
+	// // TODO(all): Move to compute and storage files
+	// if d.compute == nil {
+	// 	d.compute, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
+	// 		Region: os.Getenv(RegionName),
+	// 	})
+	// 	if err != nil {
+	// 		return fmt.Errorf("could not create compute client: %w", err)
+	// 	}
+	// }
 
-		if err != nil {
-			return fmt.Errorf("could not create compute client: %w", err)
-		}
-	}
-
-	if d.storage == nil {
-		d.storage, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
-		})
-
-		if err != nil {
-			return fmt.Errorf("could not create block storage client: %w", err)
-		}
-	}
+	// if d.storage == nil {
+	// 	d.storage, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
+	// 		Region: os.Getenv(RegionName),
+	// 	})
+	// 	if err != nil {
+	// 		return fmt.Errorf("could not create block storage client: %w", err)
+	// 	}
+	// }
 
 	return
 }
@@ -189,9 +191,7 @@ func toAuthOptions(v *structpb.Value) (authOpts *AuthOptions, err error) {
 	// Get openstack auth opts from configuration
 	value := v.GetStructValue().AsMap()
 
-	if value == nil {
-		return nil, fmt.Errorf("converting raw configuration to map is nil")
-	} else if len(value) == 0 {
+	if len(value) == 0 {
 		return nil, fmt.Errorf("converting raw configuration to map is empty")
 	}
 

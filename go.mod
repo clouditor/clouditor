@@ -233,3 +233,5 @@ require (
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
 )
+
+require github.com/stretchr/objx v0.5.2 // indirect

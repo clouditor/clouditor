@@ -49,7 +49,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {
 	// TODO(oxisto): Limit the list to a specific tenant?
 	var opts servers.ListOptsBuilder = &servers.ListOpts{}
-	list, err = genericList(d, d.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
+	list, err = genericList(d, d.clients.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
 
 	return
 }
@@ -64,7 +64,7 @@ func (d *openstackDiscovery) discoverNetworkInterfaces(serverID string) ([]strin
 		return nil, fmt.Errorf("could not authorize openstack: %w", err)
 	}
 
-	err = attachinterfaces.List(d.compute, serverID).EachPage(func(p pagination.Page) (bool, error) {
+	err = attachinterfaces.List(d.clients.computeClient, serverID).EachPage(func(p pagination.Page) (bool, error) {
 		ifc, err := attachinterfaces.ExtractInterfaces(p)
 		if err != nil {
 			return false, fmt.Errorf("could not extract network interface from page: %w", err)

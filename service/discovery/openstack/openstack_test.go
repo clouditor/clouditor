@@ -32,6 +32,9 @@ import (
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/testhelper"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func TestNewOpenstackDiscovery(t *testing.T) {
@@ -90,6 +93,75 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewOpenstackDiscovery(tt.args.opts...)
 			tt.want(t, got)
+		})
+	}
+}
+
+func Test_toAuthOptions(t *testing.T) {
+	type args struct {
+		v *structpb.Value
+	}
+	tests := []struct {
+		name         string
+		args         args
+		wantAuthOpts assert.Want[*AuthOptions]
+		wantErr      assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error: input is nil",
+			args: args{
+				v: nil,
+			},
+			wantAuthOpts: assert.Nil[*AuthOptions],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "converting raw configuration to map is empty")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotAuthOpts, err := toAuthOptions(tt.args.v)
+
+			tt.wantAuthOpts(t, gotAuthOpts)
+			tt.wantErr(t, err)
+		})
+	}
+}
+
+func Test_openstackDiscovery_authorize(t *testing.T) {
+	testhelper.SetupHTTP()
+	defer testhelper.TeardownHTTP()
+
+	type fields struct {
+		isAuthorized bool
+		csID         string
+		provider     *gophercloud.ProviderClient
+		clients      clients
+		authOpts     *gophercloud.AuthOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Happy path: already authorized",
+			fields: fields{
+				provider: &gophercloud.ProviderClient{},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				isAuthorized: tt.fields.isAuthorized,
+				csID:         tt.fields.csID,
+				provider:     tt.fields.provider,
+				clients:      tt.fields.clients,
+				authOpts:     tt.fields.authOpts,
+			}
+			tt.wantErr(t, d.authorize())
 		})
 	}
 }
