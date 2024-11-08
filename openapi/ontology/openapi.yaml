@@ -403,6 +403,8 @@ components:
         CodeRegion:
             type: object
             properties:
+                code:
+                    type: string
                 endColumn:
                     type: integer
                     format: int32
@@ -1735,10 +1737,16 @@ components:
                     type: string
                 resourceLogging:
                     $ref: '#/components/schemas/ResourceLogging'
-                storageId:
-                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
+                virtualMachineIds:
+                    type: array
+                    items:
+                        type: string
             description: MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MalwareProtection:
             type: object

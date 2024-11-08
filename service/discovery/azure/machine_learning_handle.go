@@ -46,6 +46,6 @@ func handleMLWorkspace(value *armmachinelearning.Workspace) (*ontology.MLWorkspa
 		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
 		ResourceLogging:            getResourceLogging(value.Properties.ApplicationInsights),
 		AtRestEncryption:           atRestEnc,
-		StorageId:                  util.Ref(resourceID(value.Properties.StorageAccount)),
+		StorageIds:                 []string{util.Deref(value.Properties.StorageAccount)},
 	}, nil
 }

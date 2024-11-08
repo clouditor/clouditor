@@ -526,6 +526,9 @@
         <DataProperty abbreviatedIRI="cl:calls"/>
     </Declaration>
     <Declaration>
+        <DataProperty abbreviatedIRI="cl:code"/>
+    </Declaration>
+    <Declaration>
         <DataProperty abbreviatedIRI="cl:contextIsChecked"/>
     </Declaration>
     <Declaration>
@@ -1352,6 +1355,13 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:CodeRegion"/>
         <Class abbreviatedIRI="cl:Functionality"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:CodeRegion"/>
+        <DataSomeValuesFrom>
+            <DataProperty abbreviatedIRI="cl:code"/>
+            <Datatype abbreviatedIRI="xsd:string"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class abbreviatedIRI="cl:CodeRegion"/>
@@ -2893,8 +2903,15 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:Workspace"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:VirtualMachine"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -4212,6 +4229,11 @@ name = metadata.name</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
         <AbbreviatedIRI>cl:calls</AbbreviatedIRI>
         <Literal>calls</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <AbbreviatedIRI>cl:code</AbbreviatedIRI>
+        <Literal>code</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:label"/>
