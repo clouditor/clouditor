@@ -242,7 +242,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Audit Scope '%s' already started", auditScope.GetId())
+		err = fmt.Errorf("evaluation for Audit Scope '%s' (certification target '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}

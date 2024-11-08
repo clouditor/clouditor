@@ -123,7 +123,6 @@ func NewCertificationTarget() *orchestrator.CertificationTarget {
 		Id:                testdata.MockCertificationTargetID1,
 		Name:              testdata.MockCertificationTargetName1,
 		Description:       testdata.MockCertificationTargetDescription1,
-		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
 }
@@ -133,7 +132,6 @@ func NewAnotherCertificationTarget() *orchestrator.CertificationTarget {
 		Id:                testdata.MockCertificationTargetID2,
 		Name:              testdata.MockCertificationTargetName2,
 		Description:       testdata.MockCertificationTargetDescription2,
-		CatalogsInScope:   []*orchestrator.Catalog{},
 		ConfiguredMetrics: []*assessment.Metric{},
 	}
 }
