@@ -219,3 +219,10 @@ func (d *azureDiscovery) initMachineLearningClient() (err error) {
 
 	return
 }
+
+// initMachineLearningComputeClient creates the client if not already exists
+func (d *azureDiscovery) initMachineLearningComputeClient() (err error) {
+	d.clients.mlComputeClient, err = initClient(d.clients.mlComputeClient, d, armmachinelearning.NewComputeClient)
+
+	return
+}

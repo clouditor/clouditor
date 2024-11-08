@@ -87,3 +87,13 @@ func getAtRestEncryption(enc *armmachinelearning.EncryptionProperty) (atRestEnc 
 	return atRestEnc
 
 }
+
+func getComputeStringList(values []ontology.IsResource) []string {
+	var list []string
+
+	for _, value := range values {
+		list = append(list, value.GetId())
+	}
+
+	return list
+}

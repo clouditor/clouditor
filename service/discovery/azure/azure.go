@@ -175,6 +175,7 @@ type clients struct {
 
 	// Machine Learning
 	mlWorkspaceClient *armmachinelearning.WorkspacesClient
+	mlComputeClient   *armmachinelearning.ComputeClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient

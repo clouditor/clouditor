@@ -30,6 +30,7 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
 )
 
@@ -54,15 +55,63 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 		// TODO(anatheka): New Resource to Cloud Ontology, but where?
 		// Add storage, atRestEncryption (keyVault), ...?
 		for _, value := range pageResponse.Value {
-			workspace, err := handleMLWorkspace(value)
+			// Add ML compute resources
+			compute, err := d.discoverMLCompute(resourceGroupName(util.Deref(value.ID)), util.Deref(value.Name), util.Deref(value.Properties.ContainerRegistry))
+			if err != nil {
+				return nil, fmt.Errorf("error getting ML compute resources: %w", err)
+			}
 
+			// Get string list of compute resources for the ML workspace resource
+			computeList := getComputeStringList(compute)
+
+			list = append(list, compute...)
+
+			// Add ML mlWorkspace
+			mlWorkspace, err := d.handleMLWorkspace(value, computeList)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
 			}
 
-			log.Infof("Adding ML workspace '%s'", workspace.GetName())
+			list = append(list, mlWorkspace)
 
-			list = append(list, workspace)
+			log.Infof("Adding ML workspace '%s'", mlWorkspace.GetName())
+
+			list = append(list, mlWorkspace)
+		}
+	}
+
+	return list, nil
+}
+
+// discoverMLCompute discovers machine learning compute nodes
+func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]ontology.IsResource, error) {
+	var list []ontology.IsResource
+
+	// initialize machine learning compute client
+	if err := d.initMachineLearningComputeClient(); err != nil {
+		return nil, err
+	}
+
+	// List all computes nodes in specific ML workspace
+	serverListPager := d.clients.mlComputeClient.NewListPager(rg, workspace, &armmachinelearning.ComputeClientListOptions{})
+	for serverListPager.More() {
+		pageResponse, err := serverListPager.NextPage(context.TODO())
+		if err != nil {
+			log.Errorf("%s: %v", ErrGettingNextPage, err)
+			return list, err
+		}
+
+		for _, value := range pageResponse.Value {
+			compute, err := d.handleMLCompute(value)
+			if err != nil {
+				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
+			}
+
+			log.Infof("Adding ML compute resource '%s'", compute.GetName())
+
+			if compute != nil {
+				list = append(list, compute)
+			}
 		}
 	}
 
