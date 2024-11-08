@@ -42,7 +42,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
-	cl_gorm "clouditor.io/clouditor/v2/persistence/gorm"
 	"clouditor.io/clouditor/v2/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -88,7 +87,8 @@ func TestService_CreateAuditScope(t *testing.T) {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, api.ErrEmptyRequest.Error())
 			},
-			want: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: assert.NotNil[*Service],
+			want:    assert.Nil[*orchestrator.AuditScope],
 		},
 		{
 			name: "error: invalid request",
@@ -104,7 +104,8 @@ func TestService_CreateAuditScope(t *testing.T) {
 				assert.Equal(t, codes.InvalidArgument, status.Code(err))
 				return assert.ErrorContains(t, err, "audit_scope.certification_target_id: value is empty")
 			},
-			want: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: assert.NotNil[*Service],
+			want:    assert.Nil[*orchestrator.AuditScope],
 		},
 		{
 			name: "error: permission denied",
@@ -127,7 +128,8 @@ func TestService_CreateAuditScope(t *testing.T) {
 				assert.Equal(t, codes.PermissionDenied, status.Code(err))
 				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
-			want: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: assert.NotNil[*Service],
+			want:    assert.Nil[*orchestrator.AuditScope],
 		},
 		{
 			name: "error: database error",
@@ -148,40 +150,34 @@ func TestService_CreateAuditScope(t *testing.T) {
 				assert.Equal(t, codes.Internal, status.Code(err))
 				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
 			},
-			want: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: assert.NotNil[*Service],
+			want:    assert.Nil[*orchestrator.AuditScope],
 		},
 		{
 			name: "valid and assurance level not set",
 			fields: fields{
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					err := s.Create(&orchestrator.CertificationTarget{Id: testdata.MockCertificationTargetID1})
-					assert.NoError(t, err)
-				}),
-				authz: servicetest.NewAuthorizationStrategy(true),
+				storage: testutil.NewInMemoryStorage(t),
+				authz:   servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
 				AuditScope: orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, ""),
 			}},
-			wantSvc: func(t *testing.T, got *Service) bool {
-				// We want to assert that certain things happened in our database
-				var auditScopes []*orchestrator.AuditScope
-				// for join tables, do not use preload (which is the default)
-				err := got.storage.List(&auditScopes, "", false, 0, -1, cl_gorm.WithoutPreload())
-				if !assert.NoError(t, err) {
-					return false
-				}
-				if !assert.Equal(t, 1, len(auditScopes)) {
-					return false
-				}
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				auditScope := []*orchestrator.AuditScope{}
+				// Check if audit scope is created in the DB
+				err := svc.storage.List(&auditScope, "", true, 0, -1)
+				assert.NoError(t, err)
+				assert.Equal(t, 1, len(auditScope))
 
-				var service orchestrator.CertificationTarget
-				err = got.storage.Get(&service, "id = ?", testdata.MockCertificationTargetID1)
-				if !assert.NoError(t, err) {
-					return false
+				want := &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID1,
 				}
 
-				return assert.Equal(t, 1, len(service.CatalogsInScope))
-
+				// We check if the ID is set and remove it, as we are unable to verify it.
+				assert.NotEmpty(t, auditScope[0].GetId())
+				auditScope[0].Id = ""
+				return assert.Equal(t, want, auditScope[0])
 			},
 			want:    assert.AnyValue[*orchestrator.AuditScope],
 			wantErr: assert.NoError,
@@ -196,27 +192,25 @@ func TestService_CreateAuditScope(t *testing.T) {
 				authz: servicetest.NewAuthorizationStrategy(true),
 			},
 			args: args{req: &orchestrator.CreateAuditScopeRequest{
-				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelBasic, testdata.MockAuditScopeID1, ""),
+				AuditScope: orchestratortest.NewAuditScope(testdata.AssuranceLevelHigh, testdata.MockAuditScopeID1, ""),
 			}},
-			wantSvc: func(t *testing.T, got *Service) bool {
-				// We want to assert that certain things happened in our database
-				var auditScopes []*orchestrator.AuditScope
-				// for join tables, do not use preload (which is the default)
-				err := got.storage.List(&auditScopes, "", false, 0, -1, cl_gorm.WithoutPreload())
-				if !assert.NoError(t, err) {
-					return false
-				}
-				if !assert.Equal(t, 1, len(auditScopes)) {
-					return false
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				auditScope := []*orchestrator.AuditScope{}
+				// Check if audit scope is created in the DB
+				err := svc.storage.List(&auditScope, "", true, 0, -1)
+				assert.NoError(t, err)
+				assert.Equal(t, 1, len(auditScope))
+
+				want := &orchestrator.AuditScope{
+					CertificationTargetId: testdata.MockCertificationTargetID1,
+					CatalogId:             testdata.MockCatalogID1,
+					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				}
 
-				var service orchestrator.CertificationTarget
-				err = got.storage.Get(&service, "id = ?", testdata.MockCertificationTargetID1)
-				if !assert.NoError(t, err) {
-					return false
-				}
-
-				return assert.Equal(t, 1, len(service.CatalogsInScope))
+				// We check if the ID is set and remove it, as we are unable to verify it.
+				assert.NotEmpty(t, auditScope[0].GetId())
+				auditScope[0].Id = ""
+				return assert.Equal(t, want, auditScope[0])
 			},
 			want:    assert.AnyValue[*orchestrator.AuditScope],
 			wantErr: assert.NoError,
@@ -239,6 +233,7 @@ func TestService_CreateAuditScope(t *testing.T) {
 
 			gotRes, err := svc.CreateAuditScope(tt.args.ctx, tt.args.req)
 			tt.wantErr(t, err)
+			tt.wantSvc(t, svc)
 			tt.want(t, gotRes)
 		})
 	}

@@ -81,7 +81,7 @@ func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.Crea
 	return
 }
 
-// GetAuditScope implements method for getting a AuditScope, e.g. to show its state in the UI
+// GetAuditScope implements method for getting an Audit Scope, e.g. to show its state in the UI
 func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	// Validate request
 	err = api.Validate(req)
@@ -107,7 +107,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	return res, nil
 }
 
-// ListAuditScopes implements method for getting an Audit Scope
+// ListAuditScopes implements a method for listing the Audit Scopes
 func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
 	var allowed []string
 	var all bool
@@ -199,7 +199,7 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 	return
 }
 
-// RemoveAuditScope implements method for removing a AuditScope
+// RemoveAuditScope implements method for removing an Audit Scope
 func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
