@@ -213,8 +213,8 @@ func (d *azureDiscovery) initWebAppsClient() (err error) {
 	return
 }
 
-// initMachineLearningClient creates the client if not already exists
-func (d *azureDiscovery) initMachineLearningClient() (err error) {
+// initMLWorkspaceClient creates the client if not already exists
+func (d *azureDiscovery) initMLWorkspaceClient() (err error) {
 	d.clients.mlWorkspaceClient, err = initClient(d.clients.mlWorkspaceClient, d, armmachinelearning.NewWorkspacesClient)
 
 	return

@@ -55,7 +55,7 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 }
 
 // TODO(all): Should we move that to the compute file
-func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource) (*ontology.VirtualMachine, error) {
+func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource, workspaceID string) (*ontology.VirtualMachine, error) {
 	var (
 		compute *ontology.VirtualMachine
 		time    = &timestamppb.Timestamp{}
@@ -63,6 +63,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 
 	// If the compute type is 'VirtualMachine" or "ComputeInstance" than a virtual machine is used.
 	if util.Deref(value.Properties.GetCompute().ComputeType) == armmachinelearning.ComputeTypeVirtualMachine || util.Deref(value.Properties.GetCompute().ComputeType) == armmachinelearning.ComputeTypeComputeInstance {
+		// Get creation time
 		if value.SystemData != nil && value.SystemData.CreatedAt != nil {
 			time = creationTime(value.SystemData.CreatedAt)
 		}
@@ -73,7 +74,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
-			ParentId:            resourceGroupID(value.ID), // TODO(anatheka): Should be workspace ID
+			ParentId:            &workspaceID,
 			Raw:                 discovery.Raw(value),
 			NetworkInterfaceIds: []string{},
 			BlockStorageIds:     []string{},

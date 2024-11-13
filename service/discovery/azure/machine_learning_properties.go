@@ -61,15 +61,24 @@ func getEncryptionStatus(enc *armmachinelearning.EncryptionStatus) bool {
 
 func getAtRestEncryption(enc *armmachinelearning.EncryptionProperty) (atRestEnc *ontology.AtRestEncryption) {
 
+	// If the encryption property is nil, the ML workspace has managed key encryption in use
 	if enc == nil {
-		return atRestEnc
+		return &ontology.AtRestEncryption{
+			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+					Enabled:   true,
+					Algorithm: AES256,
+				},
+			},
+		}
 	}
 
 	if util.Deref(enc.KeyVaultProperties.KeyVaultArmID) == "" {
 		atRestEnc = &ontology.AtRestEncryption{
 			Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
 				ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-					Enabled: getEncryptionStatus(enc.Status),
+					Enabled:   getEncryptionStatus(enc.Status),
+					Algorithm: AES256,
 				},
 			},
 		}

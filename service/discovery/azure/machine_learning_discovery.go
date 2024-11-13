@@ -39,7 +39,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 	var list []ontology.IsResource
 
 	// initialize machine learning client
-	if err := d.initMachineLearningClient(); err != nil {
+	if err := d.initMLWorkspaceClient(); err != nil {
 		return nil, err
 	}
 
@@ -102,7 +102,7 @@ func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]on
 		}
 
 		for _, value := range pageResponse.Value {
-			compute, err := d.handleMLCompute(value)
+			compute, err := d.handleMLCompute(value, util.Deref(value.ID))
 			if err != nil {
 				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
 			}
