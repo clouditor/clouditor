@@ -55,18 +55,33 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 }
 
 // TODO(all): Should we move that to the compute file
-func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource, workspaceID string) (*ontology.VirtualMachine, error) {
+func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource, workspaceID string) (ontology.IsResource, error) {
 	var (
-		compute *ontology.VirtualMachine
-		time    = &timestamppb.Timestamp{}
+		compute   *ontology.VirtualMachine
+		container *ontology.Container
+		time      = &timestamppb.Timestamp{}
 	)
 
-	// If the compute type is 'VirtualMachine" or "ComputeInstance" than a virtual machine is used.
-	if util.Deref(value.Properties.GetCompute().ComputeType) == armmachinelearning.ComputeTypeVirtualMachine || util.Deref(value.Properties.GetCompute().ComputeType) == armmachinelearning.ComputeTypeComputeInstance {
-		// Get creation time
-		if value.SystemData != nil && value.SystemData.CreatedAt != nil {
-			time = creationTime(value.SystemData.CreatedAt)
+	// Get properties vom ComputResource
+	if value.SystemData != nil && value.SystemData.CreatedAt != nil {
+		time = creationTime(value.SystemData.CreatedAt)
+	}
+
+	// Get compute type specific properties for 'VirtualMachine" or "ComputeInstance"
+	switch c := value.Properties.(type) {
+	case *armmachinelearning.ComputeInstance:
+		container = &ontology.Container{
+			Id:                  resourceID(value.ID),
+			Name:                util.Deref(value.Name),
+			CreationTime:        time,
+			GeoLocation:         location(value.Location),
+			Labels:              labels(value.Tags),
+			ParentId:            &workspaceID,
+			Raw:                 discovery.Raw(value, c.ComputeLocation),
+			NetworkInterfaceIds: []string{},
 		}
+		return container, nil
+	case *armmachinelearning.VirtualMachine:
 
 		compute = &ontology.VirtualMachine{
 			Id:                  resourceID(value.ID),
@@ -75,11 +90,12 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
 			ParentId:            &workspaceID,
-			Raw:                 discovery.Raw(value),
+			Raw:                 discovery.Raw(value, c.ComputeLocation),
 			NetworkInterfaceIds: []string{},
 			BlockStorageIds:     []string{},
 			MalwareProtection:   &ontology.MalwareProtection{},
 		}
+
 		return compute, nil
 	}
 

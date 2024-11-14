@@ -107,11 +107,14 @@ func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]on
 				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
 			}
 
+			if compute == nil {
+				continue
+			}
+
 			log.Infof("Adding ML compute resource '%s'", compute.GetName())
 
-			if compute != nil {
-				list = append(list, compute)
-			}
+			list = append(list, compute)
+
 		}
 	}
 
