@@ -14,7 +14,8 @@ RUN go install \
     github.com/srikrsna/protoc-gen-gotag
 
 RUN go install github.com/mattn/go-sqlite3
-RUN go install github.com/bufbuild/buf/cmd/buf@latest
+# The latest version does not work with the alpine image. There are problems regarding the glibc vs. musl library
+RUN go install github.com/bufbuild/buf/cmd/buf@v1.45.0 
 
 ADD . .
 
