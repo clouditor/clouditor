@@ -56,7 +56,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 		// Add storage, atRestEncryption (keyVault), ...?
 		for _, value := range pageResponse.Value {
 			// Add ML compute resources
-			compute, err := d.discoverMLCompute(resourceGroupName(util.Deref(value.ID)), util.Deref(value.Name), util.Deref(value.Properties.ContainerRegistry))
+			compute, err := d.discoverMLCompute(resourceGroupName(util.Deref(value.ID)), value)
 			if err != nil {
 				return nil, fmt.Errorf("error getting ML compute resources: %w", err)
 			}
@@ -84,7 +84,7 @@ func (d *azureDiscovery) discoverMLWorkspaces() ([]ontology.IsResource, error) {
 }
 
 // discoverMLCompute discovers machine learning compute nodes
-func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]ontology.IsResource, error) {
+func (d *azureDiscovery) discoverMLCompute(rg string, workspace *armmachinelearning.Workspace) ([]ontology.IsResource, error) {
 	var list []ontology.IsResource
 
 	// initialize machine learning compute client
@@ -93,7 +93,7 @@ func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]on
 	}
 
 	// List all computes nodes in specific ML workspace
-	serverListPager := d.clients.mlComputeClient.NewListPager(rg, workspace, &armmachinelearning.ComputeClientListOptions{})
+	serverListPager := d.clients.mlComputeClient.NewListPager(rg, util.Deref(workspace.Name), &armmachinelearning.ComputeClientListOptions{})
 	for serverListPager.More() {
 		pageResponse, err := serverListPager.NextPage(context.TODO())
 		if err != nil {
@@ -102,7 +102,7 @@ func (d *azureDiscovery) discoverMLCompute(rg, workspace, registry string) ([]on
 		}
 
 		for _, value := range pageResponse.Value {
-			compute, err := d.handleMLCompute(value, util.Deref(value.ID))
+			compute, err := d.handleMLCompute(value, workspace.ID)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle ML workspace: %w", err)
 			}

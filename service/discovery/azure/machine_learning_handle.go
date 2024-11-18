@@ -42,7 +42,7 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 		CreationTime:               creationTime(value.SystemData.CreatedAt),
 		GeoLocation:                location(value.Location),
 		Labels:                     labels(value.Tags),
-		ParentId:                   resourceGroupID(value.ID),
+		ParentId:                   resourceGroupID(resourceID2(value.ID)),
 		Raw:                        discovery.Raw(value),
 		InternetAccessibleEndpoint: getInternetAccessibleEndpoint(value.Properties.PublicNetworkAccess),
 		ResourceLogging:            getResourceLogging(value.Properties.ApplicationInsights),
@@ -55,7 +55,7 @@ func (d *azureDiscovery) handleMLWorkspace(value *armmachinelearning.Workspace, 
 }
 
 // TODO(all): Should we move that to the compute file
-func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource, workspaceID string) (ontology.IsResource, error) {
+func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResource, workspaceID *string) (ontology.IsResource, error) {
 	var (
 		compute   *ontology.VirtualMachine
 		container *ontology.Container
@@ -76,7 +76,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
-			ParentId:            &workspaceID,
+			ParentId:            resourceID2(workspaceID),
 			Raw:                 discovery.Raw(value, c.ComputeLocation),
 			NetworkInterfaceIds: []string{},
 		}
@@ -89,7 +89,7 @@ func (d *azureDiscovery) handleMLCompute(value *armmachinelearning.ComputeResour
 			CreationTime:        time,
 			GeoLocation:         location(value.Location),
 			Labels:              labels(value.Tags),
-			ParentId:            &workspaceID,
+			ParentId:            resourceID2(workspaceID),
 			Raw:                 discovery.Raw(value, c.ComputeLocation),
 			NetworkInterfaceIds: []string{},
 			BlockStorageIds:     []string{},
