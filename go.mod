@@ -202,7 +202,7 @@ require (
 require (
 	github.com/Intevation/gval v1.3.0 // indirect
 	github.com/Intevation/jsonpath v0.2.1 // indirect
-	github.com/ProtonMail/go-crypto v1.0.0
+	github.com/ProtonMail/go-crypto v1.1.2
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/csaf-poc/csaf_distribution/v3 v3.0.1-0.20240425111311-617deb4c1721
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
