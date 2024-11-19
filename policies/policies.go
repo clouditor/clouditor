@@ -52,17 +52,22 @@ type PolicyEval interface {
 	// Eval evaluates a given evidence against a metric coming from the metrics source. In order to avoid unnecessarily
 	// unwrapping, the callee of this function needs to supply the unwrapped ontology resource, since they most likely
 	// unwrapped the resource already, e.g. to check for validation.
-	Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*Result, err error)
+	Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*CombinedResult, err error)
 	HandleMetricEvent(event *orchestrator.MetricChangeEvent) (err error)
 }
 
-type Result struct {
-	Applicable  bool
-	Compliant   bool
+type CombinedResult struct {
+	Applicable bool
+	Compliant  bool
+	// TODO(oxisto): They are now part of the individual comparison results
 	TargetValue interface{}
-	Operator    string
-	MetricID    string
-	Config      *assessment.MetricConfiguration
+	// TODO(oxisto): They are now part of the individual comparison results
+	Operator string
+	MetricID string
+	Config   *assessment.MetricConfiguration
+
+	// ComparisonResult is an optional feature to get more infos about the comparisons
+	ComparisonResult []*assessment.ComparisonResult
 }
 
 // MetricsSource is used to retrieve a list of metrics and to retrieve a metric

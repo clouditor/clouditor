@@ -776,6 +776,20 @@
     }
   },
   {
+    "id": "StrongCryptographicHash",
+    "name": "Application: Usage of strong cryptographic hashes",
+    "description": "This metric is used to assess if an application uses strong cryptographic hashes",
+    "category": "Application Security",
+    "scale": 1,
+    "range": {
+      "allowedValues": {
+        "values": [
+          "*"
+        ]
+      }
+    }
+  },
+  {
     "id": "VirtualMachineDiskEncryptionEnabled",
     "name": "VirtualMachine: Disk image encryption",
     "category": "Storage Encryption",

@@ -50,7 +50,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/oxisto/oauth2go v0.14.0
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/oauth2 v0.23.0
+	golang.org/x/oauth2 v0.24.0
+
 )
 
 // runtime dependencies (rpc)
@@ -89,6 +90,7 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.23.1 // indirect
+
 )
 
 // runtime dependencies (config, cli)
@@ -160,6 +162,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.32.0
 	github.com/aws/smithy-go v1.22.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+
 )
 
 // runtime dependencies (k8s)
@@ -206,6 +209,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	go.etcd.io/bbolt v1.3.10 // indirect
 	golang.org/x/time v0.6.0 // indirect
+
 )
 
 // testing dependencies (core)
@@ -215,10 +219,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+
 )
 
 // tools dependencies
 require (
+	github.com/Fraunhofer-AISEC/cmc v0.7.0
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
@@ -226,8 +232,6 @@ require (
 	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 )
-
-require github.com/Fraunhofer-AISEC/cmc v0.7.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0

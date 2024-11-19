@@ -91,7 +91,7 @@ func NewRegoEval(opts ...RegoEvalOption) PolicyEval {
 // Eval evaluates a given evidence against all available Rego policies and returns the result of all policies that were
 // considered to be applicable. In order to avoid multiple unwrapping, the callee will already supply an unwrapped
 // ontology resource in r.
-func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*Result, err error) {
+func (re *regoEval) Eval(evidence *evidence.Evidence, r ontology.IsResource, related map[string]ontology.IsResource, src MetricsSource) (data []*CombinedResult, err error) {
 	var (
 		baseDir string
 		m       map[string]any
@@ -215,7 +215,7 @@ func (re *regoEval) HandleMetricEvent(event *orchestrator.MetricChangeEvent) (er
 	return nil
 }
 
-func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.Metric, m map[string]interface{}, src MetricsSource) (result *Result, err error) {
+func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.Metric, m map[string]interface{}, src MetricsSource) (result *CombinedResult, err error) {
 	var (
 		query  *rego.PreparedEvalQuery
 		key    string
@@ -282,11 +282,12 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		// Create a new Rego prepared query evaluation, which can later be used to query the metric on any object (input)
 		query, err := rego.New(
 			rego.Query(fmt.Sprintf(`
+			output = data.%s.%s;
 			applicable = data.%s.%s.applicable;
 			compliant = data.%s.%s.compliant;
 			operator = data.clouditor.operator;
 			target_value = data.clouditor.target_value;
-			config = data.clouditor.config`, prefix, pkg, prefix, pkg)),
+			config = data.clouditor.config`, prefix, pkg, prefix, pkg, prefix, pkg)),
 			rego.Package(prefix),
 			rego.Store(store),
 			rego.Transaction(tx),
@@ -321,7 +322,7 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 		return nil, fmt.Errorf("no results. probably the package name of metric %s is wrong", metric.Id)
 	}
 
-	result = &Result{
+	result = &CombinedResult{
 		Applicable:  results[0].Bindings["applicable"].(bool),
 		Compliant:   results[0].Bindings["compliant"].(bool),
 		Operator:    results[0].Bindings["operator"].(string),
@@ -330,14 +331,18 @@ func (re *regoEval) evalMap(baseDir string, targetID string, metric *assessment.
 	}
 
 	// A little trick to convert the map-based metric configuration back to a real object
-	var b []byte
-	if b, err = json.Marshal(results[0].Bindings["config"]); err != nil {
-		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+	result.Config = new(assessment.MetricConfiguration)
+	if err = reencode(results[0].Bindings["config"], result.Config); err != nil {
+		return nil, err
 	}
 
-	result.Config = new(assessment.MetricConfiguration)
-	if err = json.Unmarshal(b, result.Config); err != nil {
-		return nil, fmt.Errorf("JSON unmarshal failed: %w", err)
+	// Enable the new results
+	output := results[0].Bindings["output"]
+	if results, ok := output.(map[string]interface{})["results"]; ok {
+		result.ComparisonResult = make([]*assessment.ComparisonResult, 0)
+		if err = reencode(results, &result.ComparisonResult); err != nil {
+			return nil, err
+		}
 	}
 
 	if !result.Applicable {
@@ -351,6 +356,19 @@ func newQueryCache() *queryCache {
 	return &queryCache{
 		cache: make(map[string]*rego.PreparedEvalQuery),
 	}
+}
+
+func reencode[T any](in any, out *T) (err error) {
+	var b []byte
+	if b, err = json.Marshal(in); err != nil {
+		return fmt.Errorf("JSON marshal failed: %w", err)
+	}
+
+	if err = json.Unmarshal(b, out); err != nil {
+		return fmt.Errorf("JSON unmarshal failed: %w", err)
+	}
+
+	return
 }
 
 // Get returns the prepared query for the given key. If the key was not found in the cache,

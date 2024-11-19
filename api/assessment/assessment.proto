@@ -32,6 +32,7 @@ import "api/evidence/evidence.proto";
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
 
@@ -132,11 +133,31 @@ message AssessmentResult {
   // Some comments on the reason for non-compliance
   string non_compliance_comments = 9;
 
+  repeated ComparisonResult non_compliance_details = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
+
   // The certification target which this assessment result belongs to
-  string certification_target_id = 10 [(buf.validate.field).string.uuid = true];
+  string certification_target_id = 20 [(buf.validate.field).string.uuid = true];
 
   // Reference to the tool which provided the assessment result
-  optional string tool_id = 11 [(buf.validate.field).string.min_len = 1];
+  optional string tool_id = 21 [(buf.validate.field).string.min_len = 1];
+}
+
+// An optional structure containing more details how a comparison inside an assessment result was done and if it was succesful.
+message ComparisonResult {
+  // Property is the property that was compared
+  string property = 1;
+
+  // Value is the value in the property
+  string value = 2;
+
+  // Operator is the operator used in the comparison
+  string operator = 3 [(buf.validate.field).string.pattern = "^(<|>|<=|>=|==|isIn|allIn)$"];
+
+  // TargetValue is the target value used in the comparison
+  google.protobuf.Value target_value = 4 [(tagger.tags) = "gorm:\"serializer:json\""];
+
+  // Success is true, if the comparison was sucessful
+  bool success = 5;
 }
 
 /*

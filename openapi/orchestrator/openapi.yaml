@@ -1565,6 +1565,10 @@ components:
                 nonComplianceComments:
                     type: string
                     description: Some comments on the reason for non-compliance
+                nonComplianceDetails:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ComparisonResult'
                 certificationTargetId:
                     type: string
                     description: The certification target which this assessment result belongs to
@@ -1760,6 +1764,26 @@ components:
                 icon:
                     type: string
                     description: an icon for the certification target used by the UI
+        ComparisonResult:
+            type: object
+            properties:
+                property:
+                    type: string
+                    description: Property is the property that was compared
+                value:
+                    type: string
+                    description: Value is the value in the property
+                operator:
+                    type: string
+                    description: Operator is the operator used in the comparison
+                targetValue:
+                    allOf:
+                        - $ref: '#/components/schemas/GoogleProtobufValue'
+                    description: TargetValue is the target value used in the comparison
+                success:
+                    type: boolean
+                    description: Success is true, if the comparison was sucessful
+            description: An optional structure containing more details how a comparison inside an assessment result was done and if it was succesful.
         Control:
             required:
                 - id
