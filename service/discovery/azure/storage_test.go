@@ -348,101 +348,115 @@ func Test_generalizeURL(t *testing.T) {
 	}
 }
 
-// func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
-// 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
-// 	accountName := "account1"
-// 	keySource := armstorage.KeySourceMicrosoftStorage
-// 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-// 	accountRegion := "eastus"
-// 	minTLS := armstorage.MinimumTLSVersionTLS12
-// 	endpointURL := "https://account1.blob.core.windows.net"
-// 	httpsOnly := true
+func Test_azureStorageDiscovery_handleStorageAccount(t *testing.T) {
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountName := "account1"
+	keySource := armstorage.KeySourceMicrosoftStorage
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+	accountRegion := "eastus"
+	minTLS := armstorage.MinimumTLSVersionTLS12
+	endpointURL := "https://account1.blob.core.windows.net"
+	httpsOnly := true
 
-// 	type fields struct {
-// 		azureDiscovery *azureDiscovery
-// 	}
-// 	type args struct {
-// 		account      *armstorage.Account
-// 		storagesList []ontology.IsResource
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    *ontology.ObjectStorageService
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Account is empty",
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
-// 			},
-// 		},
-// 		{
-// 			name: "No error",
-// 			fields: fields{
-// 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID:   &accountID,
-// 					Name: &accountName,
-// 					Properties: &armstorage.AccountProperties{
-// 						Encryption: &armstorage.Encryption{
-// 							KeySource: &keySource,
-// 						},
-// 						MinimumTLSVersion: &minTLS,
-// 						CreationTime:      &creationTime,
-// 						PrimaryEndpoints: &armstorage.Endpoints{
-// 							Blob: &endpointURL,
-// 						},
-// 						EnableHTTPSTrafficOnly: &httpsOnly,
-// 					},
-// 					Location: &accountRegion,
-// 				},
-// 			},
-// 			want: &ontology.ObjectStorageService{
-// 				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1",
-// 				Name:         accountName,
-// 				CreationTime: timestamppb.New(creationTime),
-// 				GeoLocation: &ontology.GeoLocation{
-// 					Region: accountRegion,
-// 				},
-// 				Labels:   map[string]string{},
-// 				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
-// 				Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"},\"minimumTlsVersion\":\"TLS1_2\",\"primaryEndpoints\":{\"blob\":\"https://account1.blob.core.windows.net\"},\"supportsHttpsTrafficOnly\":true}}]}",
-// 				TransportEncryption: &ontology.TransportEncryption{
-// 					Enforced:        true,
-// 					Enabled:         true,
-// 					Protocol:        constants.TLS,
-// 					ProtocolVersion: 1.2,
-// 				},
-// 				HttpEndpoint: &ontology.HttpEndpoint{
-// 					Url: "https://account1.[file,blob].core.windows.net",
-// 					TransportEncryption: &ontology.TransportEncryption{
-// 						Enforced:        true,
-// 						Enabled:         true,
-// 						Protocol:        constants.TLS,
-// 						ProtocolVersion: 1.2,
-// 					},
-// 				},
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			az := tt.fields.azureDiscovery
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		account         *armstorage.Account
+		storagesList    []ontology.IsResource
+		activityLogging *ontology.ActivityLogging
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*ontology.ObjectStorageService]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Account is empty",
+			want: assert.Nil[*ontology.ObjectStorageService],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
+			},
+		},
+		{
+			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID:   &accountID,
+					Name: &accountName,
+					Properties: &armstorage.AccountProperties{
+						Encryption: &armstorage.Encryption{
+							KeySource: &keySource,
+						},
+						MinimumTLSVersion: &minTLS,
+						CreationTime:      &creationTime,
+						PrimaryEndpoints: &armstorage.Endpoints{
+							Blob: &endpointURL,
+						},
+						EnableHTTPSTrafficOnly: &httpsOnly,
+					},
+					Location: &accountRegion,
+				},
+				activityLogging: &ontology.ActivityLogging{
+					Enabled: true,
+				},
+			},
+			want: func(t *testing.T, got *ontology.ObjectStorageService) bool {
+				want := &ontology.ObjectStorageService{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1",
+					Name:         accountName,
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: accountRegion,
+					},
+					Labels:   map[string]string{},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1"),
+					TransportEncryption: &ontology.TransportEncryption{
+						Enforced:        true,
+						Enabled:         true,
+						Protocol:        constants.TLS,
+						ProtocolVersion: 1.2,
+					},
+					HttpEndpoint: &ontology.HttpEndpoint{
+						Url: "https://account1.[file,blob].core.windows.net",
+						TransportEncryption: &ontology.TransportEncryption{
+							Enforced:        true,
+							Enabled:         true,
+							Protocol:        constants.TLS,
+							ProtocolVersion: 1.2,
+						},
+					},
+					ActivityLogging: &ontology.ActivityLogging{
+						Enabled: true,
+					},
+				}
 
-// 			got, err := az.handleStorageAccount(tt.args.account, tt.args.storagesList)
-// 			if !tt.wantErr(t, err) {
-// 				return
-// 			}
-// 			assert.Equal(t, tt.want, got)
-// 		})
-// 	}
-// }
+				assert.NotEmpty(t, got.Raw)
+				got.Raw = ""
+				return assert.Equal(t, want, got)
+
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			az := tt.fields.azureDiscovery
+
+			got, err := az.handleStorageAccount(tt.args.account, tt.args.storagesList, tt.args.activityLogging, "")
+			if !tt.wantErr(t, err) {
+				return
+			}
+
+			tt.want(t, got)
+		})
+	}
+}
 
 func Test_handleObjectStorage(t *testing.T) {
 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
