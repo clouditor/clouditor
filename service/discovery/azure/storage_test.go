@@ -1644,3 +1644,66 @@ func Test_checkTlsVersion(t *testing.T) {
 		})
 	}
 }
+
+func Test_azureStorageDiscovery_getActivityLogging(t *testing.T) {
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		account *armstorage.Account
+	}
+	tests := []struct {
+		name                       string
+		fields                     fields
+		args                       args
+		wantActivityLoggingAccount *ontology.ActivityLogging
+		wantActivityLoggingBlob    *ontology.ActivityLogging
+		wantActivityLoggingTable   *ontology.ActivityLogging
+		wantActivityLoggingFile    *ontology.ActivityLogging
+		wantRawAccount             string
+		wantRawBlob                string
+		wantRawTable               string
+		wantRawFile                string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"),
+				},
+			},
+			wantActivityLoggingAccount: &ontology.ActivityLogging{
+				Enabled:           true,
+				LoggingServiceIds: []string{"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/workspace1"},
+			},
+			wantActivityLoggingBlob:  nil,
+			wantActivityLoggingTable: nil,
+			wantActivityLoggingFile:  nil,
+			wantRawBlob:              "",
+			wantRawTable:             "",
+			wantRawFile:              "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+
+			// Init Diagnostic Settings Client
+			_ = d.initDiagnosticsSettingsClient()
+
+			gotActivityLoggingAccount, gotActivityLoggingBlob, gotActivityLoggingTable, gotActivityLoggingFile, gotRawAccount, gotRawBlob, gotRawTable, gotRawFile := d.getActivityLogging(tt.args.account)
+
+			assert.Equal(t, tt.wantActivityLoggingAccount, gotActivityLoggingAccount)
+			assert.Equal(t, tt.wantActivityLoggingBlob, gotActivityLoggingBlob)
+			assert.Equal(t, tt.wantActivityLoggingTable, gotActivityLoggingTable)
+			assert.Equal(t, tt.wantActivityLoggingFile, gotActivityLoggingFile)
+			assert.NotEmpty(t, gotRawAccount)
+			assert.Equal(t, tt.wantRawBlob, gotRawBlob)
+			assert.Equal(t, tt.wantRawTable, gotRawTable)
+			assert.Equal(t, tt.wantRawFile, gotRawFile)
+		})
+	}
+}

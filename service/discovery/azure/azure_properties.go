@@ -33,6 +33,7 @@ import (
 	"strings"
 	"time"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
@@ -295,6 +296,8 @@ func (d *azureDiscovery) discoverDiagnosticSettings(resourceURI string) (*ontolo
 			// Add Log Analytics WorkspaceIDs to slice
 			workspaceIDs = append(workspaceIDs, util.Deref(value.Properties.WorkspaceID))
 		}
+
+		raw = discovery.Raw(pageResponse)
 	}
 
 	if len(workspaceIDs) > 0 {
