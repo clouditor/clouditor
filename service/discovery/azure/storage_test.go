@@ -444,136 +444,149 @@ func Test_generalizeURL(t *testing.T) {
 // 	}
 // }
 
-// func Test_handleObjectStorage(t *testing.T) {
-// 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
-// 	accountRegion := "eastus"
-// 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-// 	keySource := armstorage.KeySourceMicrosoftStorage
-// 	containerID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1"
-// 	containerName := "container1"
-// 	immutability := false
-// 	publicAccess := armstorage.PublicAccessNone
+func Test_handleObjectStorage(t *testing.T) {
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountRegion := "eastus"
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+	keySource := armstorage.KeySourceMicrosoftStorage
+	containerID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1"
+	containerName := "container1"
+	immutability := false
+	publicAccess := armstorage.PublicAccessNone
 
-// 	type fields struct {
-// 		azureDiscovery *azureDiscovery
-// 	}
-// 	type args struct {
-// 		account   *armstorage.Account
-// 		container *armstorage.ListContainerItem
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    *ontology.ObjectStorage
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Account is empty",
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
-// 			},
-// 		},
-// 		{
-// 			name: "Container is empty",
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID: &accountID,
-// 				},
-// 			},
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "container is nil")
-// 			},
-// 		},
-// 		{
-// 			name: "Error getting atRestEncryption properties",
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID: &accountID,
-// 				},
-// 				container: &armstorage.ListContainerItem{
-// 					ID: &containerID,
-// 				},
-// 			},
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
-// 			},
-// 		},
-// 		{
-// 			name: "No error",
-// 			fields: fields{
-// 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID: &accountID,
-// 					Properties: &armstorage.AccountProperties{
-// 						Encryption: &armstorage.Encryption{
-// 							KeySource: &keySource,
-// 						},
-// 						CreationTime: &creationTime,
-// 					},
-// 					Location: &accountRegion,
-// 				},
-// 				container: &armstorage.ListContainerItem{
-// 					ID:   &containerID,
-// 					Name: &containerName,
-// 					Properties: &armstorage.ContainerProperties{
-// 						HasImmutabilityPolicy: &immutability,
-// 						PublicAccess:          &publicAccess,
-// 					},
-// 				},
-// 			},
-// 			want: &ontology.ObjectStorage{
-// 				Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
-// 				Name:         containerName,
-// 				CreationTime: timestamppb.New(creationTime),
-// 				GeoLocation: &ontology.GeoLocation{
-// 					Region: accountRegion,
-// 				},
-// 				Labels:   map[string]string{},
-// 				ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
-// 				Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"None\"}}]}",
-// 				AtRestEncryption: &ontology.AtRestEncryption{
-// 					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-// 						ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-// 							Algorithm: "AES256",
-// 							Enabled:   true,
-// 						},
-// 					},
-// 				},
-// 				Immutability: &ontology.Immutability{Enabled: false},
-// 				ResourceLogging: &ontology.ResourceLogging{
-// 					MonitoringLogDataEnabled: false,
-// 					SecurityAlertsEnabled:    false,
-// 				},
-// 				Backups: []*ontology.Backup{
-// 					{
-// 						Enabled:         false,
-// 						RetentionPeriod: nil,
-// 						Interval:        nil,
-// 					},
-// 				},
-// 				PublicAccess: false,
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			d := tt.fields.azureDiscovery
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		account         *armstorage.Account
+		container       *armstorage.ListContainerItem
+		activityLogging *ontology.ActivityLogging
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[*ontology.ObjectStorage]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Account is empty",
+			want: assert.Nil[*ontology.ObjectStorage],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrEmptyStorageAccount)
+			},
+		},
+		{
+			name: "Container is empty",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+			},
+			want: assert.Nil[*ontology.ObjectStorage],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "container is nil")
+			},
+		},
+		{
+			name: "Error getting atRestEncryption properties",
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+				container: &armstorage.ListContainerItem{
+					ID: &containerID,
+				},
+			},
+			want: assert.Nil[*ontology.ObjectStorage],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get object storage properties for the atRestEncryption:")
+			},
+		},
+		{
+			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+					Properties: &armstorage.AccountProperties{
+						Encryption: &armstorage.Encryption{
+							KeySource: &keySource,
+						},
+						CreationTime: &creationTime,
+					},
+					Location: &accountRegion,
+				},
+				container: &armstorage.ListContainerItem{
+					ID:   &containerID,
+					Name: &containerName,
+					Properties: &armstorage.ContainerProperties{
+						HasImmutabilityPolicy: &immutability,
+						PublicAccess:          &publicAccess,
+					},
+				},
+				activityLogging: &ontology.ActivityLogging{
+					Enabled: true,
+				},
+			},
+			want: func(t *testing.T, got *ontology.ObjectStorage) bool {
+				want := &ontology.ObjectStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
+					Name:         containerName,
+					CreationTime: timestamppb.New(creationTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: accountRegion,
+					},
+					Labels:   map[string]string{},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+					Immutability: &ontology.Immutability{Enabled: false},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
+					},
+					Backups: []*ontology.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: nil,
+							Interval:        nil,
+						},
+					},
+					ActivityLogging: &ontology.ActivityLogging{
+						Enabled: true,
+					},
+					PublicAccess: false,
+				}
 
-// 			got, err := d.handleObjectStorage(tt.args.account, tt.args.container)
-// 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
-// 				return
-// 			}
-// 			assert.Equal(t, tt.want, got)
-// 		})
-// 	}
-// }
+				assert.NotEmpty(t, got.Raw)
+				got.Raw = ""
+				return assert.Equal(t, want, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+
+			got, err := d.handleObjectStorage(tt.args.account, tt.args.container, tt.args.activityLogging)
+			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
+				return
+			}
+
+			tt.want(t, got)
+		})
+	}
+}
 
 // func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 // 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
