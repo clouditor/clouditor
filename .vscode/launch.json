@@ -74,7 +74,7 @@
                 "--discovery-provider=azure",
             ],
             "env": {},
-            "preLaunchTask": "go: generate"
+            // "preLaunchTask": "go: generate"
         },
         {
             "name": "Launch engine CCIT CMC Discovery (in-memory, dashboard development redirect with Azure discovery)",
