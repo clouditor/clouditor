@@ -46,6 +46,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
@@ -1524,6 +1525,90 @@ func Test_initClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotClient, err := initClient(tt.args.existingClient, tt.args.d, tt.args.fun)
+			tt.wantErr(t, err)
+			tt.wantClient(t, gotClient)
+		})
+	}
+}
+
+func Test_initClientWithoutSubscriptionID(t *testing.T) {
+	var (
+		someError  = errors.New("some error")
+		someClient = &armmonitor.DiagnosticSettingsClient{}
+	)
+	type args struct {
+		existingClient *armmonitor.DiagnosticSettingsClient
+		d              *azureDiscovery
+		fun            ClientCreateFuncWithoutSubscriptionID[armmonitor.DiagnosticSettingsClient]
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantClient assert.Want[*armmonitor.DiagnosticSettingsClient]
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			name: "No error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armmonitor.NewDiagnosticSettingsClient,
+			},
+			wantClient: assert.NotNil[*armmonitor.DiagnosticSettingsClient],
+			wantErr:    assert.NoError,
+		},
+		{
+			name: "Some error, client does not exist",
+			args: args{
+				existingClient: nil,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: func(credential azcore.TokenCredential, options *arm.ClientOptions) (*armmonitor.DiagnosticSettingsClient, error) {
+					return nil, someError
+				},
+			},
+			wantClient: assert.Nil[*armmonitor.DiagnosticSettingsClient],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, someError)
+			},
+		},
+		{
+			name: "No error, client already exists",
+			args: args{
+				existingClient: someClient,
+				d: &azureDiscovery{
+					cred: &mockAuthorizer{},
+
+					clientOptions: arm.ClientOptions{
+						ClientOptions: policy.ClientOptions{
+							Transport: mockSender{},
+						},
+					},
+				},
+				fun: armmonitor.NewDiagnosticSettingsClient,
+			},
+			wantClient: func(t *testing.T, got *armmonitor.DiagnosticSettingsClient) bool {
+				return assert.Same(t, someClient, got)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotClient, err := initClientWithoutSubscriptionID(tt.args.existingClient, tt.args.d, tt.args.fun)
 			tt.wantErr(t, err)
 			tt.wantClient(t, gotClient)
 		})
