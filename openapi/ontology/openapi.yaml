@@ -263,6 +263,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -681,6 +683,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -784,6 +788,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -876,6 +882,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -927,6 +935,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
                 computeId:
@@ -1419,6 +1429,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -1846,6 +1858,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -2001,6 +2015,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -2064,6 +2080,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
                 computeId:
@@ -2183,6 +2201,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:

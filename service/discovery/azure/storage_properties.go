@@ -94,3 +94,36 @@ func (d *azureDiscovery) anomalyDetectionEnabled(server *armsql.Server, db *arms
 	}
 	return false, nil
 }
+
+// getActivityLogging returns the activity logging information for the storage account, blob, table and file storage including their raw information
+func (d *azureDiscovery) getActivityLogging(account *armstorage.Account) (activityLoggingAccount, activityLoggingBlob, activityLoggingTable, activityLoggingFile *ontology.ActivityLogging, rawAccount, rawBlob, rawTable, rawFile string) {
+
+	var err error
+
+	// Get ActivityLogging for the storage account
+	activityLoggingAccount, rawAccount, err = d.discoverDiagnosticSettings(util.Deref(account.ID))
+	if err != nil {
+		log.Errorf("could not discover diagnostic settings for the storage account: %v", err)
+	}
+
+	// Get ActivityLogging for the blob service
+	activityLoggingBlob, rawBlob, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/blobServices/default")
+	if err != nil {
+		log.Errorf("could not discover diagnostic settings for the blob service: %v", err)
+	}
+
+	// Get ActivityLogging for the table service
+	activityLoggingTable, rawTable, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/tableServices/default")
+	if err != nil {
+		log.Errorf("could not discover diagnostic settings for the table service: %v", err)
+	}
+
+	// Get ActivityLogging for the file service
+	activityLoggingFile, rawFile, err = d.discoverDiagnosticSettings(util.Deref(account.ID) + "/fileServices/default")
+	if err != nil {
+		log.Errorf("could not discover diagnostic settings for the file service: %v", err)
+	}
+
+	return
+
+}

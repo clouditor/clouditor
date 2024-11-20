@@ -37,6 +37,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -46,6 +47,9 @@ import (
 
 // ClientCreateFunc is a type that describes a function to create a new Azure SDK client.
 type ClientCreateFunc[T any] func(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
+
+// ClientCreateFuncWithoutSubscriptionID is a type that describes a function to create a new Azure SDK client without subscriptionID.
+type ClientCreateFuncWithoutSubscriptionID[T any] func(credential azcore.TokenCredential, options *arm.ClientOptions) (*T, error)
 
 // initClient creates an Azure client if not already exists. This function will
 // log the error, so calling functions should just directly return the error in
@@ -64,6 +68,22 @@ func initClient[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFun
 	if err != nil {
 		err = fmt.Errorf("could not get %T client: %w", new(T), err)
 		log.Error(err)
+		return nil, err
+	}
+
+	return
+}
+
+// initClientWithoutSubscriptionID creates an Azure client if not already exists. The subscriptionID is not necessary for this client.
+func initClientWithoutSubscriptionID[T any](existingClient *T, d *azureDiscovery, fun ClientCreateFuncWithoutSubscriptionID[T]) (client *T, err error) {
+	if existingClient != nil {
+		return existingClient, nil
+	}
+
+	client, err = fun(d.cred, &d.clientOptions)
+	if err != nil {
+		err = fmt.Errorf("could not get %T client: %w", new(T), err)
+		log.Debug(err)
 		return nil, err
 	}
 
@@ -213,6 +233,13 @@ func (d *azureDiscovery) initWebAppsClient() (err error) {
 	return
 }
 
+// initMachineLearningComputeClient creates the client if not already exists
+func (d *azureDiscovery) initMachineLearningComputeClient() (err error) {
+	d.clients.mlComputeClient, err = initClient(d.clients.mlComputeClient, d, armmachinelearning.NewComputeClient)
+
+	return
+}
+
 // initMLWorkspaceClient creates the client if not already exists
 func (d *azureDiscovery) initMLWorkspaceClient() (err error) {
 	d.clients.mlWorkspaceClient, err = initClient(d.clients.mlWorkspaceClient, d, armmachinelearning.NewWorkspacesClient)
@@ -220,9 +247,9 @@ func (d *azureDiscovery) initMLWorkspaceClient() (err error) {
 	return
 }
 
-// initMachineLearningComputeClient creates the client if not already exists
-func (d *azureDiscovery) initMachineLearningComputeClient() (err error) {
-	d.clients.mlComputeClient, err = initClient(d.clients.mlComputeClient, d, armmachinelearning.NewComputeClient)
+// initDiagnosticsSettingsClient creates the client if not already exists
+func (d *azureDiscovery) initDiagnosticsSettingsClient() (err error) {
+	d.clients.diagnosticSettingsClient, err = initClientWithoutSubscriptionID(d.clients.diagnosticSettingsClient, d, armmonitor.NewDiagnosticSettingsClient)
 
 	return
 }
