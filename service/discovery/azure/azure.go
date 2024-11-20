@@ -45,6 +45,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -151,9 +152,10 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
-	accountsClient      *armstorage.AccountsClient
+	blobContainerClient      *armstorage.BlobContainersClient
+	fileStorageClient        *armstorage.FileSharesClient
+	accountsClient           *armstorage.AccountsClient
+	diagnosticSettingsClient *armmonitor.DiagnosticSettingsClient
 
 	// DB
 	databasesClient        *armsql.DatabasesClient
