@@ -602,127 +602,141 @@ func Test_handleObjectStorage(t *testing.T) {
 	}
 }
 
-// func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
-// 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-// 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
-// 	accountName := "account1"
-// 	accountRegion := "eastus"
-// 	keySource := armstorage.KeySourceMicrosoftStorage
+func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountName := "account1"
+	accountRegion := "eastus"
+	keySource := armstorage.KeySourceMicrosoftStorage
 
-// 	type fields struct {
-// 		azureDiscovery *azureDiscovery
-// 	}
-// 	type args struct {
-// 		account *armstorage.Account
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    []ontology.IsResource
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Error list pages",
-// 			fields: fields{
-// 				azureDiscovery: &azureDiscovery{
-// 					cred: nil,
-// 				},
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID: &accountID,
-// 				},
-// 			},
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
-// 			},
-// 		},
-// 		{
-// 			name: "No error",
-// 			fields: fields{
-// 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID:   &accountID,
-// 					Name: &accountName,
-// 					Properties: &armstorage.AccountProperties{
-// 						Encryption: &armstorage.Encryption{
-// 							KeySource: &keySource,
-// 						},
-// 						CreationTime: &creationTime,
-// 					},
-// 					Location: &accountRegion,
-// 				},
-// 			},
-// 			want: []ontology.IsResource{
-// 				&ontology.FileStorage{
-// 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
-// 					Name:         "fileshare1",
-// 					CreationTime: timestamppb.New(creationTime),
-// 					Labels:       map[string]string{},
-// 					GeoLocation: &ontology.GeoLocation{
-// 						Region: "eastus",
-// 					},
-// 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
-// 					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare1\",\"name\":\"fileshare1\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
-// 					AtRestEncryption: &ontology.AtRestEncryption{
-// 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-// 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-// 								Algorithm: "AES256",
-// 								Enabled:   true,
-// 							},
-// 						},
-// 					},
-// 					ResourceLogging: &ontology.ResourceLogging{
-// 						MonitoringLogDataEnabled: false,
-// 						SecurityAlertsEnabled:    false,
-// 					},
-// 				},
-// 				&ontology.FileStorage{
-// 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
-// 					Name:         "fileshare2",
-// 					CreationTime: timestamppb.New(creationTime),
-// 					Labels:       map[string]string{},
-// 					GeoLocation: &ontology.GeoLocation{
-// 						Region: "eastus",
-// 					},
-// 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
-// 					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.FileShareItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/fileServices/default/shares/fileshare2\",\"name\":\"fileshare2\",\"type\":\"Microsoft.Storage/storageAccounts/fileServices/shares\"}]}",
-// 					AtRestEncryption: &ontology.AtRestEncryption{
-// 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-// 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-// 								Algorithm: "AES256",
-// 								Enabled:   true,
-// 							},
-// 						},
-// 					},
-// 					ResourceLogging: &ontology.ResourceLogging{
-// 						MonitoringLogDataEnabled: false,
-// 						SecurityAlertsEnabled:    false,
-// 					},
-// 				},
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			d := tt.fields.azureDiscovery
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		account         *armstorage.Account
+		activityLogging *ontology.ActivityLogging
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "No error",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID:   &accountID,
+					Name: &accountName,
+					Properties: &armstorage.AccountProperties{
+						Encryption: &armstorage.Encryption{
+							KeySource: &keySource,
+						},
+						CreationTime: &creationTime,
+					},
+					Location: &accountRegion,
+				},
+			},
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				want0 := &ontology.FileStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare1",
+					Name:         "fileshare1",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
+					},
+				}
+				want1 := &ontology.FileStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/fileservices/default/shares/fileshare2",
+					Name:         "fileshare2",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
+					},
+				}
 
-// 			// initialize file share client
-// 			_ = d.initFileStorageClient()
+				// Check if the list contains 2 entries
+				assert.Equal(t, 2, len(got))
 
-// 			got, err := d.discoverFileStorages(tt.args.account)
-// 			if !tt.wantErr(t, err) {
-// 				return
-// 			}
-// 			assert.Equal(t, tt.want, got)
-// 		})
-// 	}
-// }
+				// Check first element
+				got0 := got[0].(*ontology.FileStorage)
+				assert.NotEmpty(t, got0)
+				got0.Raw = ""
+				assert.Equal(t, want0, got0)
+
+				// Check second element
+				got1 := got[1].(*ontology.FileStorage)
+				assert.NotEmpty(t, got1)
+				got1.Raw = ""
+				return assert.Equal(t, want1, got1)
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+
+			// initialize file share client
+			_ = d.initFileStorageClient()
+
+			got, err := d.discoverFileStorages(tt.args.account, tt.args.activityLogging, "")
+			if !tt.wantErr(t, err) {
+				return
+			}
+			tt.want(t, got)
+		})
+	}
+}
 
 // func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
 // 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
