@@ -738,145 +738,160 @@ func Test_azureStorageDiscovery_discoverFileStorages(t *testing.T) {
 	}
 }
 
-// func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
-// 	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
-// 	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
-// 	accountName := "account1"
-// 	accountRegion := "eastus"
-// 	keySource := armstorage.KeySourceMicrosoftStorage
+func Test_azureStorageDiscovery_discoverObjectStorages(t *testing.T) {
+	creationTime := time.Date(2017, 05, 24, 13, 28, 53, 4540398, time.UTC)
+	accountID := "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1"
+	accountName := "account1"
+	accountRegion := "eastus"
+	keySource := armstorage.KeySourceMicrosoftStorage
 
-// 	type fields struct {
-// 		azureDiscovery *azureDiscovery
-// 	}
-// 	type args struct {
-// 		account *armstorage.Account
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		want    []ontology.IsResource
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Error list pages",
-// 			fields: fields{
-// 				azureDiscovery: &azureDiscovery{
-// 					cred: nil,
-// 				},
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID: &accountID,
-// 				},
-// 			},
-// 			want: nil,
-// 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
-// 			},
-// 		},
-// 		{
-// 			name: "Happy path",
-// 			fields: fields{
-// 				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
-// 			},
-// 			args: args{
-// 				account: &armstorage.Account{
-// 					ID:   &accountID,
-// 					Name: &accountName,
-// 					Properties: &armstorage.AccountProperties{
-// 						Encryption: &armstorage.Encryption{
-// 							KeySource: &keySource,
-// 						},
-// 						CreationTime: &creationTime,
-// 					},
-// 					Location: &accountRegion,
-// 				},
-// 			},
-// 			want: []ontology.IsResource{
-// 				&ontology.ObjectStorage{
-// 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
-// 					Name:         "container1",
-// 					CreationTime: timestamppb.New(creationTime),
-// 					Labels:       map[string]string{},
-// 					GeoLocation: &ontology.GeoLocation{
-// 						Region: "eastus",
-// 					},
-// 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
-// 					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container1\",\"name\":\"container1\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
-// 					AtRestEncryption: &ontology.AtRestEncryption{
-// 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-// 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-// 								Algorithm: "AES256",
-// 								Enabled:   true,
-// 							},
-// 						},
-// 					},
-// 					Immutability: &ontology.Immutability{Enabled: false},
-// 					ResourceLogging: &ontology.ResourceLogging{
-// 						MonitoringLogDataEnabled: false,
-// 						SecurityAlertsEnabled:    false,
-// 					},
-// 					Backups: []*ontology.Backup{
-// 						{
-// 							Enabled:         false,
-// 							RetentionPeriod: nil,
-// 							Interval:        nil,
-// 						},
-// 					},
-// 					PublicAccess: true,
-// 				},
-// 				&ontology.ObjectStorage{
-// 					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
-// 					Name:         "container2",
-// 					CreationTime: timestamppb.New(creationTime),
-// 					Labels:       map[string]string{},
-// 					GeoLocation: &ontology.GeoLocation{
-// 						Region: "eastus",
-// 					},
-// 					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
-// 					Raw:      "{\"*armstorage.Account\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1\",\"location\":\"eastus\",\"name\":\"account1\",\"properties\":{\"creationTime\":\"2017-05-24T13:28:53.004540398Z\",\"encryption\":{\"keySource\":\"Microsoft.Storage\"}}}],\"*armstorage.ListContainerItem\":[{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Storage/storageAccounts/account1/blobServices/default/containers/container2\",\"name\":\"container2\",\"properties\":{\"hasImmutabilityPolicy\":false,\"publicAccess\":\"Container\"},\"type\":\"Microsoft.Storage/storageAccounts/blobServices/containers\"}]}",
-// 					AtRestEncryption: &ontology.AtRestEncryption{
-// 						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
-// 							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
-// 								Algorithm: "AES256",
-// 								Enabled:   true,
-// 							},
-// 						},
-// 					},
-// 					Immutability: &ontology.Immutability{Enabled: false},
-// 					ResourceLogging: &ontology.ResourceLogging{
-// 						MonitoringLogDataEnabled: false,
-// 						SecurityAlertsEnabled:    false,
-// 					},
-// 					Backups: []*ontology.Backup{
-// 						{
-// 							Enabled:         false,
-// 							RetentionPeriod: nil,
-// 							Interval:        nil,
-// 						},
-// 					},
-// 					PublicAccess: true,
-// 				},
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			d := tt.fields.azureDiscovery
+	type fields struct {
+		azureDiscovery *azureDiscovery
+	}
+	type args struct {
+		account         *armstorage.Account
+		activityLogging *ontology.ActivityLogging
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[[]ontology.IsResource]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "Error list pages",
+			fields: fields{
+				azureDiscovery: &azureDiscovery{
+					cred: nil,
+				},
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID: &accountID,
+				},
+			},
+			want: assert.Nil[[]ontology.IsResource],
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, ErrGettingNextPage.Error())
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				account: &armstorage.Account{
+					ID:   &accountID,
+					Name: &accountName,
+					Properties: &armstorage.AccountProperties{
+						Encryption: &armstorage.Encryption{
+							KeySource: &keySource,
+						},
+						CreationTime: &creationTime,
+					},
+					Location: &accountRegion,
+				},
+			},
+			want: func(t *testing.T, got []ontology.IsResource) bool {
+				want0 := &ontology.ObjectStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container1",
+					Name:         "container1",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+					Immutability: &ontology.Immutability{Enabled: false},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
+					},
+					Backups: []*ontology.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: nil,
+							Interval:        nil,
+						},
+					},
+					PublicAccess: true,
+				}
+				want1 := &ontology.ObjectStorage{
+					Id:           "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1/blobservices/default/containers/container2",
+					Name:         "container2",
+					CreationTime: timestamppb.New(creationTime),
+					Labels:       map[string]string{},
+					GeoLocation: &ontology.GeoLocation{
+						Region: "eastus",
+					},
+					ParentId: util.Ref("/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/res1/providers/microsoft.storage/storageaccounts/account1"),
+					AtRestEncryption: &ontology.AtRestEncryption{
+						Type: &ontology.AtRestEncryption_ManagedKeyEncryption{
+							ManagedKeyEncryption: &ontology.ManagedKeyEncryption{
+								Algorithm: "AES256",
+								Enabled:   true,
+							},
+						},
+					},
+					Immutability: &ontology.Immutability{Enabled: false},
+					ResourceLogging: &ontology.ResourceLogging{
+						MonitoringLogDataEnabled: false,
+						SecurityAlertsEnabled:    false,
+					},
+					Backups: []*ontology.Backup{
+						{
+							Enabled:         false,
+							RetentionPeriod: nil,
+							Interval:        nil,
+						},
+					},
+					PublicAccess: true,
+				}
 
-// 			// initialize blob container client
-// 			_ = d.initBlobContainerClient()
+				// Check if the list contains 2 entries
+				assert.Equal(t, 2, len(got))
 
-// 			got, err := d.discoverObjectStorages(tt.args.account)
-// 			if !tt.wantErr(t, err) {
-// 				return
-// 			}
-// 			assert.Equal(t, tt.want, got)
-// 		})
-// 	}
-// }
+				// Check first element
+				got0 := got[0].(*ontology.ObjectStorage)
+				assert.NotEmpty(t, got0)
+				got0.Raw = ""
+				assert.Equal(t, want0, got0)
+
+				// Check second element
+				got1 := got[1].(*ontology.ObjectStorage)
+				assert.NotEmpty(t, got1)
+				got1.Raw = ""
+				return assert.Equal(t, want1, got1)
+
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.fields.azureDiscovery
+
+			// initialize blob container client
+			_ = d.initBlobContainerClient()
+
+			got, err := d.discoverObjectStorages(tt.args.account, tt.args.activityLogging, "")
+			if !tt.wantErr(t, err) {
+				return
+			}
+			tt.want(t, got)
+		})
+	}
+}
 
 func Test_azureStorageDiscovery_handleSqlServer(t *testing.T) {
 	type fields struct {
