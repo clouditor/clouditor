@@ -303,6 +303,7 @@ message BlockStorage {
   string name = 13869 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 11057;
+  ActivityLogging activity_logging = 4784;
   AtRestEncryption at_rest_encryption = 4444;
   repeated Backup backups = 4533;
   GeoLocation geo_location = 3522;
@@ -707,6 +708,7 @@ message DatabaseStorage {
   string name = 1264 [(buf.validate.field).required = true];
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 11538;
+  ActivityLogging activity_logging = 5640;
   AtRestEncryption at_rest_encryption = 14578;
   repeated Backup backups = 12872;
   GeoLocation geo_location = 16892;
@@ -845,6 +847,7 @@ message FileStorage {
   bool public_access = 10539;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 4379;
+  ActivityLogging activity_logging = 17409;
   AtRestEncryption at_rest_encryption = 1429;
   repeated Backup backups = 17584;
   GeoLocation geo_location = 5391;
@@ -1716,6 +1719,7 @@ message ObjectStorage {
   bool public_access = 4621;
   // The raw field contains the raw information that is used to fill in the fields of the ontology.
   string raw = 6632;
+  ActivityLogging activity_logging = 9147;
   AtRestEncryption at_rest_encryption = 2034;
   repeated Backup backups = 10118;
   GeoLocation geo_location = 8835;
@@ -2338,8 +2342,9 @@ message MLWorkspace {
   repeated Redundancy redundancies = 16100;
   optional string parent_id = 672;
   ResourceLogging resource_logging = 15549;
-  optional string storage_id = 2357;
+  repeated string storage_ids = 2357;
   UsageStatistics usage_statistics = 13057;
+  repeated string virtual_machine_ids = 6969;
 }
 
 // ZoneRedundancy is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.

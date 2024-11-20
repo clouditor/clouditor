@@ -2706,6 +2706,13 @@
         <Class abbreviatedIRI="cl:Storage"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty abbreviatedIRI="prop:offers"/>
+            <Class abbreviatedIRI="cl:ActivityLog"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Storage"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:offers"/>
             <Class abbreviatedIRI="cl:Immutability"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
@@ -2903,8 +2910,15 @@
     <SubClassOf>
         <Class abbreviatedIRI="cl:Workspace"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty abbreviatedIRI="prop:has"/>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
             <Class abbreviatedIRI="cl:Storage"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class abbreviatedIRI="cl:Workspace"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty abbreviatedIRI="prop:hasMultiple"/>
+            <Class abbreviatedIRI="cl:VirtualMachine"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
