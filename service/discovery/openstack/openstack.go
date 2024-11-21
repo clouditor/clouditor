@@ -29,6 +29,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
@@ -78,8 +79,10 @@ type AuthOptions struct {
 }
 
 type clients struct {
+	provider      *gophercloud.ProviderClient
 	computeClient *gophercloud.ServiceClient
 	storageClient *gophercloud.ServiceClient
+	authOpts      *gophercloud.AuthOptions
 }
 
 func (*openstackDiscovery) Name() string {
@@ -155,24 +158,24 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
-	// // TODO(all): Move to compute and storage files
-	// if d.compute == nil {
-	// 	d.compute, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
-	// 		Region: os.Getenv(RegionName),
-	// 	})
-	// 	if err != nil {
-	// 		return fmt.Errorf("could not create compute client: %w", err)
-	// 	}
-	// }
+	// TODO(all): Move to compute and storage files?
+	if d.clients.computeClient == nil {
+		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create compute client: %w", err)
+		}
+	}
 
-	// if d.storage == nil {
-	// 	d.storage, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
-	// 		Region: os.Getenv(RegionName),
-	// 	})
-	// 	if err != nil {
-	// 		return fmt.Errorf("could not create block storage client: %w", err)
-	// 	}
-	// }
+	if d.clients.storageClient == nil {
+		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create block storage client: %w", err)
+		}
+	}
 
 	return
 }
@@ -217,10 +220,14 @@ type HandlerFunc[T any, R ontology.IsResource] func(in *T) (r R, err error)
 type ExtractorFunc[T any] func(r pagination.Page) ([]T, error)
 
 // genericList is a function leveraging type parameters that takes care of listing OpenStack
-// resources using a ClientFunc, which returns the needed client, a ListFunc l, which returns paginated results,
-// an extractor that extracts the results into gophercloud specific objects and a handler which converts them
-// into an appropriate Clouditor vocabulary object.
-func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery, clientGetter ClientFunc,
+// resources using a
+// - ClientFunc, which returns the needed client,
+// - a ListFunc l, which returns paginated results,
+// - a handler which converts them into an appropriate Clouditor vocabulary object,
+// - an extractor that extracts the results into gophercloud specific objects and
+// - optional options
+func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
+	clientGetter ClientFunc,
 	l ListFunc[O],
 	handler HandlerFunc[T, R],
 	extractor ExtractorFunc[T],

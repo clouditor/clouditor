@@ -27,35 +27,50 @@ package openstack
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
 )
 
 // computeClient returns the compute client if initialized
-func (d *openstackDiscovery) computeClient() (err error) {
+func (d *openstackDiscovery) computeClient() (client *gophercloud.ServiceClient, err error) {
 	if d.clients.computeClient == nil {
-		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
-		})
-		if err != nil {
-			return fmt.Errorf("could not create compute client: %w", err)
-		}
+		return nil, fmt.Errorf("compute client not initialized")
 	}
-	return nil
+	return d.clients.computeClient, nil
 }
 
 // storageClient returns the compute client if initialized
-func (d *openstackDiscovery) storageClient() (err error) {
+func (d *openstackDiscovery) storageClient() (client *gophercloud.ServiceClient, err error) {
 	if d.clients.storageClient == nil {
-		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
-			Region: os.Getenv(RegionName),
-		})
-		if err != nil {
-			return fmt.Errorf("could not create block storage client: %w", err)
-		}
+		return nil, fmt.Errorf("storage client not initialized")
 	}
-
-	return nil
+	return d.clients.storageClient, nil
 }
+
+// // initComputeClient returns the compute client if initialized
+// func (d *openstackDiscovery) initComputeClient() (err error) {
+// 	if d.clients.computeClient == nil {
+// 		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
+// 			Region: os.Getenv(RegionName),
+// 		})
+// 		if err != nil {
+// 			return fmt.Errorf("could not create compute client: %w", err)
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+// // initStorageClient returns the compute client if initialized
+// func (d *openstackDiscovery) initStorageClient() (err error) {
+// 	if d.clients.storageClient == nil {
+// 		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
+// 			Region: os.Getenv(RegionName),
+// 		})
+// 		if err != nil {
+// 			return fmt.Errorf("could not create block storage client: %w", err)
+// 		}
+// 	}
+
+// 	return nil
+// }

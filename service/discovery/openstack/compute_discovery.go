@@ -49,7 +49,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {
 	// TODO(oxisto): Limit the list to a specific tenant?
 	var opts servers.ListOptsBuilder = &servers.ListOpts{}
-	list, err = genericList(d, d.clients.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
+	list, err = genericList(d, d.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
 
 	return
 }
