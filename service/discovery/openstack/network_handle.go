@@ -26,14 +26,28 @@
 package openstack
 
 import (
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"clouditor.io/clouditor/v2/internal/util"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 )
 
-func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {
-	// TODO(oxisto): Limit the list to a specific tenant?
-	var opts servers.ListOptsBuilder = &servers.ListOpts{}
-	list, err = genericList(d, d.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
+// handleServer creates a virtual machine resource based on the Clouditor Ontology
+func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
+	r := &ontology.NetworkInterface{
+		Id:           network.ID,
+		Name:         network.Name,
+		Description:  network.Description,
+		CreationTime: timestamppb.New(network.CreatedAt),
+		GeoLocation: &ontology.GeoLocation{
+			Region: "unknown", // TODO: Can we get the region?
+		},
+		Labels:   labels(util.Ref(network.Tags)),
+		ParentId: util.Ref(network.TenantID),
+		Raw:      discovery.Raw(network),
+	}
 
-	return
+	return r, nil
 }

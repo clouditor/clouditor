@@ -81,6 +81,7 @@ type AuthOptions struct {
 type clients struct {
 	provider      *gophercloud.ProviderClient
 	computeClient *gophercloud.ServiceClient
+	networkClient *gophercloud.ServiceClient
 	storageClient *gophercloud.ServiceClient
 	authOpts      *gophercloud.AuthOptions
 }
@@ -168,6 +169,15 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	if d.clients.networkClient == nil {
+		d.clients.networkClient, err = openstack.NewNetworkV2(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create network client: %w", err)
+		}
+	}
+
 	// if d.clients.storageClient == nil {
 	// 	d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
 	// 		Region: os.Getenv(RegionName),
@@ -222,6 +232,26 @@ func NewAuthorizer( /*value *structpb.Value*/ ) (gophercloud.AuthOptions, error)
 
 // 	return
 // }
+
+// List lists OpenStack servers (compute resources) and translates them into the Clouditor ontology
+func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
+
+	// Discover network interfaces
+	network, err := d.discoverNetworkInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
+	}
+	list = append(list, network...)
+
+	// Discover servers
+	servers, err := d.discoverServers()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover servers: %w", err)
+	}
+	list = append(list, servers...)
+
+	return
+}
 
 type ClientFunc func() (*gophercloud.ServiceClient, error)
 type ListFunc[O any] func(client *gophercloud.ServiceClient, opts O) pagination.Pager

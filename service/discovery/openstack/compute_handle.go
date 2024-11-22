@@ -31,6 +31,7 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
+
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

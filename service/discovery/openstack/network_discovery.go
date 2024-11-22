@@ -27,13 +27,14 @@ package openstack
 
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 )
 
-func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {
+func (d *openstackDiscovery) discoverNetworkInterfaces() (list []ontology.IsResource, err error) {
 	// TODO(oxisto): Limit the list to a specific tenant?
-	var opts servers.ListOptsBuilder = &servers.ListOpts{}
-	list, err = genericList(d, d.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
+	var opts networks.ListOptsBuilder = &networks.ListOpts{}
+	list, err = genericList(d, d.networkClient, networks.List, d.handleNetworkInterfaces, networks.ExtractNetworks, opts)
 
 	return
 }
