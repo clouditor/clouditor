@@ -60,7 +60,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -363,9 +362,9 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
 				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
 		case provider == ProviderOpenstack:
-			authorizer, err := openstack.NewAuthorizer(&structpb.Value{})
+			authorizer, err := openstack.NewAuthorizer()
 			if err != nil {
-				log.Errorf("Could not authenticate to Azure: %v", err)
+				log.Errorf("Could not authenticate to Openstack: %v", err)
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Openstack: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
