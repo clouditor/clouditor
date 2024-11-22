@@ -27,7 +27,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install buf
-        uses: bufbuild/buf-setup-action@v1.45.0
+        uses: bufbuild/buf-setup-action@v1.46.0
         with:
           github_token: ${{ github.token }}
       - name: Generate
@@ -47,7 +47,7 @@ jobs:
 
           go test -v -coverprofile=coverage.cov -coverpkg ./... -covermode=atomic ./...  -json | tee output.json | tparse -follow || true
           tparse -format markdown -file output.json > $GITHUB_STEP_SUMMARY
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           files: coverage.cov
           flags: unittests
