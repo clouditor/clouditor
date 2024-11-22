@@ -228,7 +228,7 @@ func retentionDuration(retention string) *durationpb.Duration {
 	return durationpb.New(duration)
 }
 
-// labels converts the resource tags to the vocabulary label
+// labels converts the resource tags to the ontology label
 func labels(tags map[string]*string) map[string]string {
 	l := make(map[string]string)
 
