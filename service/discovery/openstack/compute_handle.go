@@ -26,13 +26,14 @@
 package openstack
 
 import (
+	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -45,7 +46,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	)
 
 	// boot and os logging are logged together in the console log
-	consoleOutput := servers.ShowConsoleOutput(d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
+	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
 	if consoleOutput.Result.PrettyPrintJSON() != "" {
 		bootLogging = &ontology.BootLogging{
 			Enabled: true,

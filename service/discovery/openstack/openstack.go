@@ -26,6 +26,7 @@
 package openstack
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -34,9 +35,10 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/config"
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/pagination"
+
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 	"github.com/sirupsen/logrus"
 )
 
@@ -153,7 +155,7 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 // * block storage client
 func (d *openstackDiscovery) authorize() (err error) {
 	if d.provider == nil {
-		d.provider, err = openstack.AuthenticatedClient(*d.authOpts)
+		d.provider, err = openstack.AuthenticatedClient(context.Background(), *d.authOpts)
 		if err != nil {
 			return fmt.Errorf("error while authenticating: %w", err)
 		}
@@ -178,14 +180,15 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
-	// if d.clients.storageClient == nil {
-	// 	d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
-	// 		Region: os.Getenv(RegionName),
-	// 	})
-	// 	if err != nil {
-	// 		return fmt.Errorf("could not create block storage client: %w", err)
-	// 	}
-	// }
+	if d.clients.storageClient == nil {
+		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+			Type:   "block-storage", // We have to use block-storage here, otherwise volumev3 is used as type and that does not work. volumev3 is not available in the service catalog for now. We have to wait until it is fixed, see: https://github.com/gophercloud/gophercloud/issues/3207
+		})
+		if err != nil {
+			return fmt.Errorf("could not create block storage client: %w", err)
+		}
+	}
 
 	return
 }
@@ -250,6 +253,13 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	}
 	list = append(list, servers...)
 
+	// Discover block storage
+	storage, err := d.discoverBlockStorage()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover block storage: %w", err)
+	}
+	list = append(list, storage...)
+
 	return
 }
 
@@ -281,7 +291,7 @@ func genericList[T any, O any, R ontology.IsResource](d *openstackDiscovery,
 		return nil, fmt.Errorf("failed to get client: %w", err)
 	}
 
-	err = l(client, opts).EachPage(func(p pagination.Page) (bool, error) {
+	err = l(client, opts).EachPage(context.Background(), func(_ context.Context, p pagination.Page) (bool, error) {
 		x, err := extractor(p)
 
 		if err != nil {

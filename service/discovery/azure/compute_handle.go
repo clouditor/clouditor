@@ -159,7 +159,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
-		ParentId:         resourceGroupID(disk.ID),
+		ParentId:         resourceGroupID(disk.ManagedBy),
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
 		Backups:          backups,

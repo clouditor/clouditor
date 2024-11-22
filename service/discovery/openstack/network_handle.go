@@ -29,12 +29,12 @@ import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// handleServer creates a virtual machine resource based on the Clouditor Ontology
+// handleNetworkInterfaces creates a network interface resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) (ontology.IsResource, error) {
 	r := &ontology.NetworkInterface{
 		Id:           network.ID,

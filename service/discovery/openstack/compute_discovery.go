@@ -27,7 +27,7 @@ package openstack
 
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 )
 
 func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {

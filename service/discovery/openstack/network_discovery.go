@@ -28,7 +28,7 @@ package openstack
 import (
 	"clouditor.io/clouditor/v2/api/ontology"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 )
 
 func (d *openstackDiscovery) discoverNetworkInterfaces() (list []ontology.IsResource, err error) {

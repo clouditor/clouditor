@@ -26,10 +26,11 @@
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 )
 
 // TODO(anatheka): TBD: How is the string formatted?
@@ -53,7 +54,7 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 		return nil, fmt.Errorf("could not authorize openstack: %w", err)
 	}
 
-	err = attachinterfaces.List(d.clients.computeClient, serverID).EachPage(func(p pagination.Page) (bool, error) {
+	err = attachinterfaces.List(d.clients.computeClient, serverID).EachPage(context.Background(), func(_ context.Context, p pagination.Page) (bool, error) {
 		ifc, err := attachinterfaces.ExtractInterfaces(p)
 		if err != nil {
 			return false, fmt.Errorf("could not extract network interface from page: %w", err)
