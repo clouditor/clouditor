@@ -26,23 +26,49 @@
 package openstack
 
 import (
-	"strings"
+	"fmt"
 
-	"clouditor.io/clouditor/v2/internal/util"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
+	"github.com/gophercloud/gophercloud/pagination"
 )
 
-// TODO(all): Duplicate from azure package -> refactor
-// resourceID makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things
-// are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
-func resourceID(id *string) string {
-	if id == nil {
-		return ""
-	}
+// TODO(anatheka): TBD: How is the string formatted?
+// labels converts the resource tags to the ontology label
+func labels(tags *[]string) map[string]string {
+	l := make(map[string]string)
 
-	return strings.ToLower(*id)
+	// for i := range util.Deref(tags) {
+	// }
+
+	return l
 }
 
-// resourceIDPointer makes sure that the Azure ID we get is lowercase, because Azure sometimes has weird notions that things are uppercase. Their documentation says that comparison of IDs is case-insensitive, so we lowercase everything.
-func resourceIDPointer(id *string) *string {
-	return util.Ref(resourceID(id))
+func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]string, error) {
+	var (
+		list []string
+		err  error
+	)
+
+	if err = d.authorize(); err != nil {
+		return nil, fmt.Errorf("could not authorize openstack: %w", err)
+	}
+
+	err = attachinterfaces.List(d.clients.computeClient, serverID).EachPage(func(p pagination.Page) (bool, error) {
+		ifc, err := attachinterfaces.ExtractInterfaces(p)
+		if err != nil {
+			return false, fmt.Errorf("could not extract network interface from page: %w", err)
+		}
+
+		for _, i := range ifc {
+			list = append(list, i.PortID)
+		}
+
+		return true, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("could not list network interfaces: %w", err)
+	}
+
+	return list, nil
 }

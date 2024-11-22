@@ -28,6 +28,7 @@ package openstack
 import (
 	"fmt"
 
+	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
@@ -37,26 +38,46 @@ import (
 // handleServer creates a virtual machine resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsResource, error) {
 	var (
-		err error
+		err         error
+		bootLogging *ontology.BootLogging
+		osLogging   *ontology.OSLogging
 	)
 
+	// boot and os logging are logged together in the console log
+	consoleOutput := servers.ShowConsoleOutput(d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
+	if consoleOutput.Result.PrettyPrintJSON() != "" {
+		bootLogging = &ontology.BootLogging{
+			Enabled: true,
+		}
+		osLogging = &ontology.OSLogging{
+			Enabled: true,
+		}
+	}
+
 	r := &ontology.VirtualMachine{
-		Id:           resourceID(util.Ref(server.ID)),
+		Id:           server.ID,
 		Name:         server.Name,
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
 			Region: "unknown", // TODO: Can we get the region?
 		},
-		BootLogging:     nil,
-		OsLogging:       nil,
-		BlockStorageIds: []string{},
+		Labels:            labels(server.Tags),
+		ParentId:          util.Ref(server.TenantID),
+		Raw:               discovery.Raw(server),
+		MalwareProtection: &ontology.MalwareProtection{},
+		BootLogging:       bootLogging,
+		OsLogging:         osLogging,
+		ActivityLogging:   &ontology.ActivityLogging{},
+		AutomaticUpdates:  &ontology.AutomaticUpdates{},
 	}
 
+	// Get attached block storage IDs
 	for _, v := range server.AttachedVolumes {
 		r.BlockStorageIds = append(r.BlockStorageIds, v.ID)
 	}
 
-	r.NetworkInterfaceIds, err = d.discoverNetworkInterfaces(server.ID)
+	// Get attached network interface IDs
+	r.NetworkInterfaceIds, err = d.getAttachedNetworkInterfaces(server.ID)
 	if err != nil {
 		return nil, fmt.Errorf("could not discover attached network interfaces: %w", err)
 	}

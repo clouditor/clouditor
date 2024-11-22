@@ -29,13 +29,14 @@ import (
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/ontology"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/attachinterfaces"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/pagination"
 )
 
 // List lists OpenStack servers (compute resources) and translates them into the Clouditor ontology
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
+
+	// TODO(anatheka): Add Discover network interfaces
+
 	// Discover servers
 	servers, err := d.discoverServers()
 	if err != nil {
@@ -52,34 +53,4 @@ func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err 
 	list, err = genericList(d, d.computeClient, servers.List, d.handleServer, servers.ExtractServers, opts)
 
 	return
-}
-
-func (d *openstackDiscovery) discoverNetworkInterfaces(serverID string) ([]string, error) {
-	var (
-		list []string
-		err  error
-	)
-
-	if err = d.authorize(); err != nil {
-		return nil, fmt.Errorf("could not authorize openstack: %w", err)
-	}
-
-	err = attachinterfaces.List(d.clients.computeClient, serverID).EachPage(func(p pagination.Page) (bool, error) {
-		ifc, err := attachinterfaces.ExtractInterfaces(p)
-		if err != nil {
-			return false, fmt.Errorf("could not extract network interface from page: %w", err)
-		}
-
-		for _, i := range ifc {
-			list = append(list, i.PortID)
-		}
-
-		return true, nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("could not list network interfaces: %w", err)
-	}
-
-	return list, nil
 }
