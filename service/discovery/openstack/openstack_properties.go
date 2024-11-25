@@ -44,6 +44,7 @@ func labels(tags *[]string) map[string]string {
 	return l
 }
 
+// getAttachedNetworkInterfaces gets the attached network interfaces to the given serverID.
 func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]string, error) {
 	var (
 		list []string
@@ -61,7 +62,7 @@ func (d *openstackDiscovery) getAttachedNetworkInterfaces(serverID string) ([]st
 		}
 
 		for _, i := range ifc {
-			list = append(list, i.PortID)
+			list = append(list, i.NetID)
 		}
 
 		return true, nil
