@@ -152,11 +152,9 @@ func Test_openstackDiscovery_authorize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				isAuthorized: tt.fields.isAuthorized,
-				csID:         tt.fields.csID,
-				provider:     tt.fields.provider,
-				clients:      tt.fields.clients,
-				authOpts:     tt.fields.authOpts,
+				csID:     tt.fields.csID,
+				clients:  tt.fields.clients,
+				authOpts: tt.fields.authOpts,
 			}
 			tt.wantErr(t, d.authorize())
 		})

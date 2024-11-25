@@ -60,24 +60,9 @@ var (
 )
 
 type openstackDiscovery struct {
-	isAuthorized bool
-
-	// sub  *armsubscription.Subscription
-	// cred azcore.TokenCredential
-	// clientOptions       arm.ClientOptions
-	// clients  clients //TODO(all): Implement
 	csID     string
 	clients  clients
-	provider *gophercloud.ProviderClient
 	authOpts *gophercloud.AuthOptions
-}
-
-type AuthOptions struct {
-	IdentityEndpoint string `json:"identityEndpoint"`
-	Username         string `json:"username"`
-	Password         string `json:"password"`
-	TenantName       string `json:"tenantName"`
-	AllowReauth      bool   `json:"allowReauth"`
 }
 
 type clients struct {
@@ -85,7 +70,6 @@ type clients struct {
 	computeClient *gophercloud.ServiceClient
 	networkClient *gophercloud.ServiceClient
 	storageClient *gophercloud.ServiceClient
-	authOpts      *gophercloud.AuthOptions
 }
 
 func (*openstackDiscovery) Name() string {
@@ -112,19 +96,12 @@ func WithCertificationTargetID(csID string) DiscoveryOption {
 func WithAuthorizer(o gophercloud.AuthOptions) DiscoveryOption {
 	return func(d *openstackDiscovery) {
 		d.authOpts = util.Ref(o)
-		// d.authOpts = &gophercloud.AuthOptions{
-		// 	IdentityEndpoint: o.IdentityEndpoint, // "https://identityHost:portNumber/v2.0"
-		// 	Username:         o.Username,
-		// 	Password:         o.Password,
-		// 	TenantName:       o.TenantName,
-		// 	AllowReauth:      o.AllowReauth,
-		// }
 	}
 }
 
 func WithProvider(p *gophercloud.ProviderClient) DiscoveryOption {
 	return func(d *openstackDiscovery) {
-		d.provider = p
+		d.clients.provider = p
 	}
 }
 
@@ -154,8 +131,8 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 // * compute client
 // * block storage client
 func (d *openstackDiscovery) authorize() (err error) {
-	if d.provider == nil {
-		d.provider, err = openstack.AuthenticatedClient(context.Background(), *d.authOpts)
+	if d.clients.provider == nil {
+		d.clients.provider, err = openstack.AuthenticatedClient(context.Background(), util.Deref(d.authOpts))
 		if err != nil {
 			return fmt.Errorf("error while authenticating: %w", err)
 		}
@@ -163,7 +140,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 
 	// TODO(all): Move to compute and storage files?
 	if d.clients.computeClient == nil {
-		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
+		d.clients.computeClient, err = openstack.NewComputeV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
 		})
 		if err != nil {
@@ -172,7 +149,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	}
 
 	if d.clients.networkClient == nil {
-		d.clients.networkClient, err = openstack.NewNetworkV2(d.provider, gophercloud.EndpointOpts{
+		d.clients.networkClient, err = openstack.NewNetworkV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
 		})
 		if err != nil {
@@ -181,7 +158,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	}
 
 	if d.clients.storageClient == nil {
-		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.provider, gophercloud.EndpointOpts{
+		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
 			Type:   "block-storage", // We have to use block-storage here, otherwise volumev3 is used as type and that does not work. volumev3 is not available in the service catalog for now. We have to wait until it is fixed, see: https://github.com/gophercloud/gophercloud/issues/3207
 		})
@@ -202,39 +179,7 @@ func NewAuthorizer( /*value *structpb.Value*/ ) (gophercloud.AuthOptions, error)
 	}
 	return ao, nil
 
-	// // Get AuthOpts from protobuf value
-	// authOpts, err = toAuthOptions(value)
-	// if err != nil {
-	// 	return nil, ErrConversionProtobufToAuthOptions
-	// }
-	// return ao, nil
 }
-
-// TODO(anatheka): Do we need that anymore?
-// // toAuthOptions converts the protobuf value to Openstack AuthOptions
-// func toAuthOptions(v *structpb.Value) (authOpts *AuthOptions, err error) {
-// 	// Get openstack auth opts from configuration
-// 	value := v.GetStructValue().AsMap()
-
-// 	if len(value) == 0 {
-// 		return nil, fmt.Errorf("converting raw configuration to map is empty")
-// 	}
-
-// 	// First, we have to marshal the configuration map
-// 	jsonbody, err := json.Marshal(value)
-// 	if err != nil {
-// 		err = fmt.Errorf("could not marshal configuration")
-// 		return
-// 	}
-
-// 	// Then, we can store it back to the gophercloud.AuthOptions
-// 	if err = json.Unmarshal(jsonbody, &authOpts); err != nil {
-// 		err = fmt.Errorf("could not parse configuration: %w", err)
-// 		return
-// 	}
-
-// 	return
-// }
 
 // List lists OpenStack servers (compute resources) and translates them into the Clouditor ontology
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
