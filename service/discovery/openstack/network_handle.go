@@ -49,5 +49,7 @@ func (d *openstackDiscovery) handleNetworkInterfaces(network *networks.Network) 
 		Raw:      discovery.Raw(network),
 	}
 
+	log.Infof("Adding network interface '%s", network.Name)
+
 	return r, nil
 }
