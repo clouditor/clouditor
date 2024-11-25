@@ -28,6 +28,7 @@ package openstack
 import (
 	"clouditor.io/clouditor/v2/api/discovery"
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/util"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -35,8 +36,8 @@ import (
 
 // handleBlockStorage creates a block storage resource based on the Clouditor Ontology
 func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontology.IsResource, error) {
+	// Get Name, if exits, otherwise take the ID
 	name := volume.Name
-
 	if volume.Name == "" {
 		name = volume.ID
 	}
@@ -49,10 +50,12 @@ func (d *openstackDiscovery) handleBlockStorage(volume *volumes.Volume) (ontolog
 		GeoLocation: &ontology.GeoLocation{
 			Region: "unknown", // TODO: Can we get the region?
 		},
-		Labels: map[string]string{}, // Not available
-		// ParentId: util.Ref(volume.TenantID),
-		Raw: discovery.Raw(volume),
+		ParentId: util.Ref(getParentID(volume)),
+		Labels:   map[string]string{}, // Not available
+		Raw:      discovery.Raw(volume),
 	}
+
+	log.Infof("Adding block storage '%s", volume.Name)
 
 	return r, nil
 }
