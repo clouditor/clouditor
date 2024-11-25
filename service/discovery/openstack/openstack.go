@@ -66,10 +66,11 @@ type openstackDiscovery struct {
 }
 
 type clients struct {
-	provider      *gophercloud.ProviderClient
-	computeClient *gophercloud.ServiceClient
-	networkClient *gophercloud.ServiceClient
-	storageClient *gophercloud.ServiceClient
+	provider       *gophercloud.ProviderClient
+	identityClient *gophercloud.ServiceClient
+	computeClient  *gophercloud.ServiceClient
+	networkClient  *gophercloud.ServiceClient
+	storageClient  *gophercloud.ServiceClient
 }
 
 func (*openstackDiscovery) Name() string {
@@ -139,6 +140,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 	}
 
 	// TODO(all): Move to compute and storage files?
+	// Compute client
 	if d.clients.computeClient == nil {
 		d.clients.computeClient, err = openstack.NewComputeV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
@@ -148,6 +150,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	// Network client
 	if d.clients.networkClient == nil {
 		d.clients.networkClient, err = openstack.NewNetworkV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
@@ -157,6 +160,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	// Storage client
 	if d.clients.storageClient == nil {
 		d.clients.storageClient, err = openstack.NewBlockStorageV2(d.clients.provider, gophercloud.EndpointOpts{
 			Region: os.Getenv(RegionName),
@@ -167,12 +171,20 @@ func (d *openstackDiscovery) authorize() (err error) {
 		}
 	}
 
+	// Identity client
+	if d.clients.identityClient == nil {
+		d.clients.identityClient, err = openstack.NewIdentityV3(d.clients.provider, gophercloud.EndpointOpts{
+			Region: os.Getenv(RegionName),
+		})
+		if err != nil {
+			return fmt.Errorf("could not create identity client: %w", err)
+		}
+	}
+
 	return
 }
 
-func NewAuthorizer( /*value *structpb.Value*/ ) (gophercloud.AuthOptions, error) {
-	// TODO(anatheka): Das ist gophercloud options vs. eigens definierte options
-	//  Get auth options from environment
+func NewAuthorizer() (gophercloud.AuthOptions, error) {
 	ao, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		log.Error("error getting auth options from environment: %w", err)
@@ -181,15 +193,34 @@ func NewAuthorizer( /*value *structpb.Value*/ ) (gophercloud.AuthOptions, error)
 
 }
 
-// List lists OpenStack servers (compute resources) and translates them into the Clouditor ontology
+// List discovers the following Openstack resource types and translates them into the Clouditor ontology:
+// * Domains
+// * Projects
+// * Network interfaces
+// * Servers
+// * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
+	// Discover domains resource
+	domains, err := d.discoverDomain()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover domains: %w", err)
+	}
+	list = append(list, domains...)
 
-	// Discover network interfaces
-	network, err := d.discoverNetworkInterfaces()
+	// Discover project resources
+	projects, err := d.discoverProjects()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover projects: %w", err)
+		// log.Errorf("could not discover projects: %v", err)
+	}
+	list = append(list, projects...)
+
+	// Discover networks interfaces
+	networks, err := d.discoverNetworkInterfaces()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover network interfaces: %w", err)
 	}
-	list = append(list, network...)
+	list = append(list, networks...)
 
 	// Discover servers
 	servers, err := d.discoverServers()

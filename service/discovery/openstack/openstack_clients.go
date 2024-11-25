@@ -31,6 +31,14 @@ import (
 	"github.com/gophercloud/gophercloud/v2"
 )
 
+// identifyClient returns the identity client if initialized
+func (d *openstackDiscovery) identifyClient() (client *gophercloud.ServiceClient, err error) {
+	if d.clients.identityClient == nil {
+		return nil, fmt.Errorf("identity client not initialized")
+	}
+	return d.clients.identityClient, nil
+}
+
 // computeClient returns the compute client if initialized
 func (d *openstackDiscovery) computeClient() (client *gophercloud.ServiceClient, err error) {
 	if d.clients.computeClient == nil {
@@ -54,31 +62,3 @@ func (d *openstackDiscovery) storageClient() (client *gophercloud.ServiceClient,
 	}
 	return d.clients.storageClient, nil
 }
-
-// // initComputeClient returns the compute client if initialized
-// func (d *openstackDiscovery) initComputeClient() (err error) {
-// 	if d.clients.computeClient == nil {
-// 		d.clients.computeClient, err = openstack.NewComputeV2(d.provider, gophercloud.EndpointOpts{
-// 			Region: os.Getenv(RegionName),
-// 		})
-// 		if err != nil {
-// 			return fmt.Errorf("could not create compute client: %w", err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-// // initStorageClient returns the compute client if initialized
-// func (d *openstackDiscovery) initStorageClient() (err error) {
-// 	if d.clients.storageClient == nil {
-// 		d.clients.storageClient, err = openstack.NewBlockStorageV3(d.provider, gophercloud.EndpointOpts{
-// 			Region: os.Getenv(RegionName),
-// 		})
-// 		if err != nil {
-// 			return fmt.Errorf("could not create block storage client: %w", err)
-// 		}
-// 	}
-
-// 	return nil
-// }
