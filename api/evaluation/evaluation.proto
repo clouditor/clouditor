@@ -29,6 +29,7 @@ package clouditor.evaluation.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "tagger/tagger.proto";
@@ -136,38 +137,55 @@ message EvaluationResult {
   // Evaluation result id
   string id = 1 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
+    (buf.validate.field).ignore_empty = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // The Certification Target ID the evaluation belongs to
   string certification_target_id = 2 [
     (buf.validate.field).string = {uuid: true},
-    (buf.validate.field).ignore_empty = true
+    (buf.validate.field).ignore_empty = true,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   // The control id the evaluation was based on
-  string control_id = 3 [(buf.validate.field).string.min_len = 1];
+  string control_id = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The category the evaluated control belongs to
-  string control_category_name = 4 [(buf.validate.field).string.min_len = 1];
+  string control_category_name = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // The catalog the evaluated control belongs to
-  string control_catalog_id = 5 [(buf.validate.field).string.min_len = 1];
+  string control_catalog_id = 5 [
+    (buf.validate.field).string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Optionally, specifies the parent control ID, if this is a sub-control
   optional string parent_control_id = 6;
 
   // Evaluation status
-  EvaluationStatus status = 7 [(buf.validate.field).enum.defined_only = true];
+  EvaluationStatus status = 7 [
+    (buf.validate.field).enum.defined_only = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
 
   // Time of evaluation
-  google.protobuf.Timestamp timestamp = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  google.protobuf.Timestamp timestamp = 8 [
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
+    (google.api.field_behavior) = REQUIRED
+  ];
 
-  // List of assessment results because of which the evaluation status is not
-  // 'compliant'
-  repeated string failing_assessment_result_ids = 9 [
+  // List of assessment results because of which the evaluation status is compliant or not compliant
+  repeated string assessment_result_ids = 9 [
     (tagger.tags) = "gorm:\"serializer:json\"",
-    (buf.validate.field).repeated.items.string.min_len = 1
+    (buf.validate.field).repeated.items.string.min_len = 1,
+    (google.api.field_behavior) = REQUIRED
   ];
 
   optional string comment = 10;

@@ -26,7 +26,9 @@
 package orchestrator
 
 import (
+	"clouditor.io/clouditor/v2/internal/config"
 	"context"
+	"github.com/spf13/viper"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api"
@@ -46,6 +48,12 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+func init() {
+	viper.Set(config.DefaultCertificationTargetNameFlag, config.DefaultCertificationTargetName)
+	viper.Set(config.DefaultCertificationTargetDescriptionFlag, config.DefaultCertificationTargetDescription)
+	viper.Set(config.DefaultCertificationTargetTypeFlag, int32(config.DefaultCertificationTargetType))
+}
 
 func TestService_RegisterCertificationTarget(t *testing.T) {
 	tests := []struct {
@@ -197,9 +205,9 @@ func TestService_GetCertificationTarget(t *testing.T) {
 			req:  &orchestrator.GetCertificationTargetRequest{CertificationTargetId: DefaultCertificationTargetId},
 			res: &orchestrator.CertificationTarget{
 				Id:          DefaultCertificationTargetId,
-				Name:        DefaultCertificationTargetName,
-				Description: DefaultCertificationTargetDescription,
-				TargetType:  DefaultCertificationTargetType,
+				Name:        config.DefaultCertificationTargetName,
+				Description: config.DefaultCertificationTargetDescription,
+				TargetType:  config.DefaultCertificationTargetType,
 			},
 			wantErr: assert.NoError,
 		},
@@ -278,8 +286,8 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	_, err = orchestratorService.UpdateCertificationTarget(context.TODO(), &orchestrator.UpdateCertificationTargetRequest{
 		CertificationTarget: &orchestrator.CertificationTarget{
 			Id:          testdata.MockCertificationTargetID1,
-			Name:        DefaultCertificationTargetName,
-			Description: DefaultCertificationTargetDescription,
+			Name:        config.DefaultCertificationTargetName,
+			Description: config.DefaultCertificationTargetDescription,
 		},
 	})
 	assert.Equal(t, codes.NotFound, status.Code(err))
@@ -287,8 +295,8 @@ func TestService_UpdateCertificationTarget(t *testing.T) {
 	// 4th case: Certification Target updated successfully
 	err = orchestratorService.storage.Create(&orchestrator.CertificationTarget{
 		Id:          testdata.MockCertificationTargetID1,
-		Name:        DefaultCertificationTargetName,
-		Description: DefaultCertificationTargetDescription,
+		Name:        config.DefaultCertificationTargetName,
+		Description: config.DefaultCertificationTargetDescription,
 	})
 	assert.NoError(t, err)
 	if err != nil {
@@ -367,9 +375,9 @@ func TestService_CreateDefaultCertificationTarget(t *testing.T) {
 
 	assert.Equal(t, &orchestrator.CertificationTarget{
 		Id:          DefaultCertificationTargetId,
-		Name:        DefaultCertificationTargetName,
-		Description: DefaultCertificationTargetDescription,
-		TargetType:  DefaultCertificationTargetType,
+		Name:        config.DefaultCertificationTargetName,
+		Description: config.DefaultCertificationTargetDescription,
+		TargetType:  config.DefaultCertificationTargetType,
 	}, CertificationTargetResponse)
 
 	// Check if CertificationTarget is valid
@@ -420,8 +428,8 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
 					target := &orchestrator.CertificationTarget{
 						Id:          DefaultCertificationTargetId,
-						Name:        DefaultCertificationTargetName,
-						Description: DefaultCertificationTargetDescription,
+						Name:        config.DefaultCertificationTargetName,
+						Description: config.DefaultCertificationTargetDescription,
 					}
 
 					_ = s.Create(target)
@@ -432,8 +440,8 @@ func TestService_ListCertificationTargets(t *testing.T) {
 				Targets: []*orchestrator.CertificationTarget{
 					{
 						Id:          DefaultCertificationTargetId,
-						Name:        DefaultCertificationTargetName,
-						Description: DefaultCertificationTargetDescription,
+						Name:        config.DefaultCertificationTargetName,
+						Description: config.DefaultCertificationTargetDescription,
 					},
 				},
 			},
