@@ -185,14 +185,14 @@ func TestValidArgsGetCatalogs(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],
@@ -227,14 +227,14 @@ func TestValidArgsGetCategory(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -245,7 +245,7 @@ func TestValidArgsGetCategory(t *testing.T) {
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],
@@ -280,14 +280,14 @@ func TestValidArgsGetControls(t *testing.T) {
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
-				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID, testdata.MockCatalogName, testdata.MockCatalogDescription))
+				return assert.Contains(t, got, fmt.Sprintf("%s\t%s: %s", testdata.MockCatalogID1, testdata.MockCatalogName, testdata.MockCatalogDescription))
 			},
 			want1: cobra.ShellCompDirectiveNoFileComp,
 		},
 		{
 			name: "one arg - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID},
+				args:       []string{testdata.MockCatalogID1},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -298,7 +298,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		{
 			name: "two args - return category",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName},
 				toComplete: "",
 			},
 			want: func(t *testing.T, got []string) bool {
@@ -309,7 +309,7 @@ func TestValidArgsGetControls(t *testing.T) {
 		{
 			name: "all args - return nothing",
 			args: args{
-				args:       []string{testdata.MockCatalogID, testdata.MockCategoryName, testdata.MockControlID1},
+				args:       []string{testdata.MockCatalogID1, testdata.MockCategoryName, testdata.MockControlID1},
 				toComplete: "",
 			},
 			want:  assert.Empty[[]string],

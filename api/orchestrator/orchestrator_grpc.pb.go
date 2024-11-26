@@ -197,13 +197,13 @@ type OrchestratorClient interface {
 	GetControl(ctx context.Context, in *GetControlRequest, opts ...grpc.CallOption) (*Control, error)
 	// Creates a new Audit Scope
 	CreateAuditScope(ctx context.Context, in *CreateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
-	// Retrieves a Audit Scope
+	// Retrieves an Audit Scope
 	GetAuditScope(ctx context.Context, in *GetAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
 	// Lists all Audit Scopes
 	ListAuditScopes(ctx context.Context, in *ListAuditScopesRequest, opts ...grpc.CallOption) (*ListAuditScopesResponse, error)
 	// Updates an existing Audit Scope
 	UpdateAuditScope(ctx context.Context, in *UpdateAuditScopeRequest, opts ...grpc.CallOption) (*AuditScope, error)
-	// Removes a Audit Scope
+	// Removes an Audit Scope
 	RemoveAuditScope(ctx context.Context, in *RemoveAuditScopeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Get Runtime Information
 	GetRuntimeInfo(ctx context.Context, in *runtime.GetRuntimeInfoRequest, opts ...grpc.CallOption) (*runtime.Runtime, error)
@@ -791,13 +791,13 @@ type OrchestratorServer interface {
 	GetControl(context.Context, *GetControlRequest) (*Control, error)
 	// Creates a new Audit Scope
 	CreateAuditScope(context.Context, *CreateAuditScopeRequest) (*AuditScope, error)
-	// Retrieves a Audit Scope
+	// Retrieves an Audit Scope
 	GetAuditScope(context.Context, *GetAuditScopeRequest) (*AuditScope, error)
 	// Lists all Audit Scopes
 	ListAuditScopes(context.Context, *ListAuditScopesRequest) (*ListAuditScopesResponse, error)
 	// Updates an existing Audit Scope
 	UpdateAuditScope(context.Context, *UpdateAuditScopeRequest) (*AuditScope, error)
-	// Removes a Audit Scope
+	// Removes an Audit Scope
 	RemoveAuditScope(context.Context, *RemoveAuditScopeRequest) (*emptypb.Empty, error)
 	// Get Runtime Information
 	GetRuntimeInfo(context.Context, *runtime.GetRuntimeInfoRequest) (*runtime.Runtime, error)

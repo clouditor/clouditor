@@ -38,8 +38,10 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/persistence"
 	"clouditor.io/clouditor/v2/service"
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -575,10 +577,10 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			},
 		},
 		{
-			name: "Storage error: Get CertificationTarget 'certification target not found'",
+			name: "Storage error: getting resources",
 			fields: fields{
+				storage: &testutil.StorageWithError{CountErr: gorm.ErrInvalidDB},
 				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {}),
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -588,77 +590,58 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 			},
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "certification target not found") &&
-					assert.Equal(t, codes.NotFound, status.Code(err))
-			},
-		},
-		{
-			name: "Storage error: Get CertificationTarget",
-			fields: fields{
-				authz:   servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
-				storage: &testutil.StorageWithError{GetErr: ErrSomeError},
-			},
-			args: args{
-				ctx: context.TODO(),
-				req: &orchestrator.GetCertificationTargetStatisticsRequest{
-					CertificationTargetId: testdata.MockCertificationTargetID1,
-				},
-			},
-			wantRes: nil,
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, "database error getting certification target: some error") &&
-					assert.Equal(t, codes.Internal, status.Code(err))
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "database error counting resources:")
 			},
 		},
 		{
 			name: "Happy path",
 			fields: fields{
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					// Store one certification targets
-					_ = s.Create(&orchestrator.CertificationTarget{
+					// Store one certification target
+					assert.NoError(t, s.Create(&orchestrator.CertificationTarget{
 						Id:          testdata.MockCertificationTargetID1,
 						Name:        testdata.MockCertificationTargetName1,
 						Description: testdata.MockCertificationTargetDescription1,
-						CatalogsInScope: []*orchestrator.Catalog{
-							{
-								Id:          testdata.MockCatalogID,
-								Name:        testdata.MockCatalogName,
-								Description: testdata.MockCatalogDescription,
-							},
-						},
-					})
-					_ = s.Create(&orchestrator.CertificationTarget{
-						Id:   testdata.MockCertificationTargetID2,
-						Name: testdata.MockCertificationTargetName2,
-					})
-					_ = s.Create(&evidence.Evidence{
+					}))
+
+					// Store evidences for certification target
+					assert.NoError(t, s.Create(&evidence.Evidence{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-					})
-					_ = s.Create(&evidence.Evidence{
+					}))
+					assert.NoError(t, s.Create(&evidence.Evidence{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID2,
-					})
-					_ = s.Create(&assessment.AssessmentResult{
+					}))
+
+					// Store assessment results for certification target
+					assert.NoError(t, s.Create(&assessment.AssessmentResult{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-					})
-					_ = s.Create(&assessment.AssessmentResult{
+					}))
+					assert.NoError(t, s.Create(&assessment.AssessmentResult{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-					})
-					_ = s.Create(&assessment.AssessmentResult{
+					}))
+					assert.NoError(t, s.Create(&assessment.AssessmentResult{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID2,
-					})
-					_ = s.Create(&discovery.Resource{
+					}))
+
+					// Store audit scopes
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockCertificationTargetID1)))
+					assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", "", testdata.MockCertificationTargetID1)))
+
+					// Store resources
+					assert.NoError(t, s.Create(&discovery.Resource{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID1,
-					})
-					_ = s.Create(&discovery.Resource{
+					}))
+					assert.NoError(t, s.Create(&discovery.Resource{
 						Id:                    uuid.NewString(),
 						CertificationTargetId: testdata.MockCertificationTargetID2,
-					})
+					}))
 				}),
 				authz: servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID1),
 			},
@@ -672,7 +655,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 				NumberOfDiscoveredResources: 1,
 				NumberOfAssessmentResults:   2,
 				NumberOfEvidences:           1,
-				NumberOfSelectedCatalogs:    1,
+				NumberOfSelectedCatalogs:    2,
 			},
 			wantErr: assert.NoError,
 		},
