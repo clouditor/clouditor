@@ -25,61 +25,61 @@
 
 package cmc
 
-import (
-	"clouditor.io/clouditor/v2/api/discovery"
-	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/config"
-	"github.com/sirupsen/logrus"
-)
+// import (
+// 	"clouditor.io/clouditor/v2/api/discovery"
+// 	"clouditor.io/clouditor/v2/api/ontology"
+// 	"clouditor.io/clouditor/v2/internal/config"
+// 	"github.com/sirupsen/logrus"
+// )
 
-var log *logrus.Entry
+// var log *logrus.Entry
 
-func init() {
-	log = logrus.WithField("component", "cmc-discovery")
-}
+// func init() {
+// 	log = logrus.WithField("component", "cmc-discovery")
+// }
 
-type cmcDiscovery struct {
-	// CloudServiceID
-	csID string
+// type cmcDiscovery struct {
+// 	// CloudServiceID
+// 	csID string
 
-	// CMC Addr
-	cmcAddr string
+// 	// CMC Addr
+// 	cmcAddr string
 
-	// ca pem path, should be removed or changed in future, just for testing
-	capemPath string
-}
+// 	// ca pem path, should be removed or changed in future, just for testing
+// 	capemPath string
+// }
 
-type DiscoveryOption func(a *cmcDiscovery)
+// type DiscoveryOption func(a *cmcDiscovery)
 
-func (*cmcDiscovery) Name() string {
-	return "CMC Discovery"
-}
+// func (*cmcDiscovery) Name() string {
+// 	return "CMC Discovery"
+// }
 
-func (*cmcDiscovery) Description() string {
-	return "Discovery attestation reports from CMC"
-}
+// func (*cmcDiscovery) Description() string {
+// 	return "Discovery attestation reports from CMC"
+// }
 
-func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
-	d := &cmcDiscovery{
-		csID:      config.DefaultCertificationTargetID,
-		cmcAddr:   addr,
-		capemPath: "local/certificate_remote_attestation.pem",
-	}
+// func NewCMCDiscovery(addr string, opts ...DiscoveryOption) discovery.Discoverer {
+// 	d := &cmcDiscovery{
+// 		csID:      config.DefaultCertificationTargetID,
+// 		cmcAddr:   addr,
+// 		capemPath: "local/certificate_remote_attestation.pem",
+// 	}
 
-	// Apply options
-	for _, opt := range opts {
-		opt(d)
-	}
+// 	// Apply options
+// 	for _, opt := range opts {
+// 		opt(d)
+// 	}
 
-	return d
-}
+// 	return d
+// }
 
-func (a *cmcDiscovery) CertificationTargetID() string {
-	return a.csID
-}
+// func (a *cmcDiscovery) CertificationTargetID() string {
+// 	return a.csID
+// }
 
-func (d *cmcDiscovery) List() (list []ontology.IsResource, err error) {
-	log.Infof("Fetching attestation reports from CMC %s", d.cmcAddr)
+// func (d *cmcDiscovery) List() (list []ontology.IsResource, err error) {
+// 	log.Infof("Fetching attestation reports from CMC %s", d.cmcAddr)
 
-	return d.discoverReports()
-}
+// 	return d.discoverReports()
+// }

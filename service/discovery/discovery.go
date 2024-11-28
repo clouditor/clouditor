@@ -47,7 +47,6 @@ import (
 	"clouditor.io/clouditor/v2/service"
 	"clouditor.io/clouditor/v2/service/discovery/aws"
 	"clouditor.io/clouditor/v2/service/discovery/azure"
-	"clouditor.io/clouditor/v2/service/discovery/extra/cmc"
 	"clouditor.io/clouditor/v2/service/discovery/extra/csaf"
 	"clouditor.io/clouditor/v2/service/discovery/k8s"
 
@@ -370,10 +369,10 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				opts = append(opts, csaf.WithProviderDomain(domain))
 			}
 			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
-		case provider == ProviderCMC:
-			// TODO(anatheka): Delete addr and get the address from somewhere else
-			addr := ""
-			svc.discoverers = append(svc.discoverers, cmc.NewCMCDiscovery(addr))
+		// case provider == ProviderCMC:
+		// 	// TODO(anatheka): Delete addr and get the address from somewhere else
+		// 	addr := ""
+		// 	svc.discoverers = append(svc.discoverers, cmc.NewCMCDiscovery(addr))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

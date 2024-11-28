@@ -25,102 +25,102 @@
 
 package cmc
 
-import (
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/json"
-	"fmt"
-	"os"
+// import (
+// 	"crypto/tls"
+// 	"crypto/x509"
+// 	"encoding/json"
+// 	"fmt"
+// 	"os"
 
-	"clouditor.io/clouditor/v2/api/ontology"
-	"clouditor.io/clouditor/v2/internal/util"
+// 	"clouditor.io/clouditor/v2/api/ontology"
+// 	"clouditor.io/clouditor/v2/internal/util"
 
-	ar "github.com/Fraunhofer-AISEC/cmc/attestationreport"
-	atls "github.com/Fraunhofer-AISEC/cmc/attestedtls"
-	"github.com/Fraunhofer-AISEC/cmc/cmc"
-)
+// 	ar "github.com/Fraunhofer-AISEC/cmc/attestationreport"
+// 	atls "github.com/Fraunhofer-AISEC/cmc/attestedtls"
+// 	"github.com/Fraunhofer-AISEC/cmc/cmc"
+// )
 
-const ()
+// const ()
 
-// discoverReports discovers the attestation reports from the CMC
-func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
-	var (
-		list []ontology.IsResource
-	)
+// // discoverReports discovers the attestation reports from the CMC
+// func (d *cmcDiscovery) discoverReports() ([]ontology.IsResource, error) {
+// 	var (
+// 		list []ontology.IsResource
+// 	)
 
-	// Read CA from filesystem
-	// TODO(all): Should be removed in future, just for testing
-	ca, err := os.ReadFile(d.capemPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read certificate from path '%s': %w", d.capemPath, err)
-	}
-	log.Debugf("Certificate read from path: %s", d.capemPath)
+// 	// Read CA from filesystem
+// 	// TODO(all): Should be removed in future, just for testing
+// 	ca, err := os.ReadFile(d.capemPath)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not read certificate from path '%s': %w", d.capemPath, err)
+// 	}
+// 	log.Debugf("Certificate read from path: %s", d.capemPath)
 
-	log.Debug("Initializing CMC")
-	cmc, err := cmc.NewCmc(&cmc.Config{
-		Api: "libapi",
-	})
-	if err != nil {
-		return nil, fmt.Errorf("could not create CMC config: %v", err)
-	}
+// 	log.Debug("Initializing CMC")
+// 	cmc, err := cmc.NewCmc(&cmc.Config{
+// 		Api: "libapi",
+// 	})
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not create CMC config: %v", err)
+// 	}
 
-	// Add root CA
-	log.Debug("Adding CA")
-	roots := x509.NewCertPool()
-	success := roots.AppendCertsFromPEM(ca)
-	if !success {
-		return nil, fmt.Errorf("could not add cert '%s' to root CAs", ca)
-	}
+// 	// Add root CA
+// 	log.Debug("Adding CA")
+// 	roots := x509.NewCertPool()
+// 	success := roots.AppendCertsFromPEM(ca)
+// 	if !success {
+// 		return nil, fmt.Errorf("could not add cert '%s' to root CAs", ca)
+// 	}
 
-	// Create TLS config with root CA only
-	tlsConf := &tls.Config{
-		RootCAs:       roots,
-		Renegotiation: tls.RenegotiateNever,
-	}
+// 	// Create TLS config with root CA only
+// 	tlsConf := &tls.Config{
+// 		RootCAs:       roots,
+// 		Renegotiation: tls.RenegotiateNever,
+// 	}
 
-	conn, err := atls.Dial("tcp", d.cmcAddr, tlsConf,
-		atls.WithCmcCa(ca),
-		atls.WithCmcApi(atls.CmcApi_Lib),
-		atls.WithMtls(false),
-		atls.WithAttest("server"),
-		atls.WithResultCb(func(result *ar.VerificationResult) {
-			// TODO (anatheka): Return error
-			r, err := handleReport(*result)
-			if err != nil {
-				log.Errorf("could not handle attestation report: %v", err)
-			}
+// 	conn, err := atls.Dial("tcp", d.cmcAddr, tlsConf,
+// 		atls.WithCmcCa(ca),
+// 		atls.WithCmcApi(atls.CmcApi_Lib),
+// 		atls.WithMtls(false),
+// 		atls.WithAttest("server"),
+// 		atls.WithResultCb(func(result *ar.VerificationResult) {
+// 			// TODO (anatheka): Return error
+// 			r, err := handleReport(*result)
+// 			if err != nil {
+// 				log.Errorf("could not handle attestation report: %v", err)
+// 			}
 
-			log.Debug("attestation report: ", result)
-			list = append(list, r)
-		}),
-		atls.WithCmc(cmc))
-	if err != nil {
-		return nil, fmt.Errorf("could not get attestation report: %v", err)
-	}
-	defer conn.Close()
+// 			log.Debug("attestation report: ", result)
+// 			list = append(list, r)
+// 		}),
+// 		atls.WithCmc(cmc))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("could not get attestation report: %v", err)
+// 	}
+// 	defer conn.Close()
 
-	return list, nil
-}
+// 	return list, nil
+// }
 
-// TODO(anatheka): Maybe we should call this out of the handleVirtualMachine method.
-func handleReport(result ar.VerificationResult) (*ontology.VirtualMachine, error) {
-	raw, err := json.Marshal(result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
-	}
+// // TODO(anatheka): Maybe we should call this out of the handleVirtualMachine method.
+// func handleReport(result ar.VerificationResult) (*ontology.VirtualMachine, error) {
+// 	raw, err := json.Marshal(result)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to marshal integrity result: %w", err)
+// 	}
 
-	resource := &ontology.VirtualMachine{
-		Id:   result.Prover,
-		Name: result.Prover,
-		// CreationTime: , // TODO: TBD
-		// GeoLocation: ,// TODO: TBD
-		Raw: string(raw),
-		RemoteAttestation: &ontology.RemoteAttestation{
-			Enabled:      true,
-			Status:       result.Success,
-			CreationTime: util.Timestamp(result.Created),
-		},
-	}
+// 	resource := &ontology.VirtualMachine{
+// 		Id:   result.Prover,
+// 		Name: result.Prover,
+// 		// CreationTime: , // TODO: TBD
+// 		// GeoLocation: ,// TODO: TBD
+// 		Raw: string(raw),
+// 		RemoteAttestation: &ontology.RemoteAttestation{
+// 			Enabled:      true,
+// 			Status:       result.Success,
+// 			CreationTime: util.Timestamp(result.Created),
+// 		},
+// 	}
 
-	return resource, nil
-}
+// 	return resource, nil
+// }
