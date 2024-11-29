@@ -411,7 +411,7 @@ func TestService_ListPublicCertificates(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, "database error")
+				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
 			},
 		},
 		{
@@ -892,7 +892,7 @@ func TestService_checkAuthorization(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkAuthorization(tt.args.ctx, tt.args.req),
+			tt.wantErr(t, tt.fields.svc.checkCertificateAuthorization(tt.args.ctx, tt.args.req),
 				fmt.Sprintf("checkAuthorization(%v, %v)", tt.args.ctx, tt.args.req))
 		})
 	}
@@ -964,8 +964,8 @@ func TestService_checkExistence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.wantErr(t, tt.fields.svc.checkExistence(tt.args.req),
-				fmt.Sprintf("checkExistence(%v)", tt.args.req))
+			tt.wantErr(t, tt.fields.svc.checkCertificateExistence(tt.args.req),
+				fmt.Sprintf("checkCertificateExistence(%v)", tt.args.req))
 		})
 	}
 }

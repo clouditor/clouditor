@@ -621,7 +621,7 @@ func TestService_GetCertificationTargetStatistics(t *testing.T) {
 						Description: testdata.MockCertificationTargetDescription1,
 						CatalogsInScope: []*orchestrator.Catalog{
 							{
-								Id:          testdata.MockCatalogID,
+								Id:          testdata.MockCatalogID1,
 								Name:        testdata.MockCatalogName,
 								Description: testdata.MockCatalogDescription,
 							},

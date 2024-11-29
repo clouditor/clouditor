@@ -85,7 +85,7 @@ func (d *azureDiscovery) handleVirtualMachines(vm *armcompute.VirtualMachine) (o
 		Labels:              labels(vm.Tags),
 		ParentId:            resourceGroupID(vm.ID),
 		Raw:                 discovery.Raw(vm),
-		NetworkInterfaceIds: []string{},
+		NetworkInterfaceIds: []string{}, // TODO(all): Discover network interface IDs
 		BlockStorageIds:     []string{},
 		MalwareProtection:   &ontology.MalwareProtection{},
 		BootLogging: &ontology.BootLogging{
@@ -159,7 +159,7 @@ func (d *azureDiscovery) handleBlockStorage(disk *armcompute.Disk) (*ontology.Bl
 		CreationTime:     creationTime(disk.Properties.TimeCreated),
 		GeoLocation:      location(disk.Location),
 		Labels:           labels(disk.Tags),
-		ParentId:         resourceGroupID(disk.ID),
+		ParentId:         resourceGroupID(disk.ManagedBy),
 		Raw:              discovery.Raw(disk, rawKeyUrl),
 		AtRestEncryption: enc,
 		Backups:          backups,

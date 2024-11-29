@@ -32,7 +32,7 @@ var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
 var (
-	filter_Evaluation_StartEvaluation_0 = &utilities.DoubleArray{Encoding: map[string]int{"certification_target_id": 0, "catalog_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_Evaluation_StartEvaluation_0 = &utilities.DoubleArray{Encoding: map[string]int{"audit_scope_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_Evaluation_StartEvaluation_0(ctx context.Context, marshaler runtime.Marshaler, client EvaluationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -46,24 +46,14 @@ func request_Evaluation_StartEvaluation_0(ctx context.Context, marshaler runtime
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -89,24 +79,14 @@ func local_request_Evaluation_StartEvaluation_0(ctx context.Context, marshaler r
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -132,24 +112,14 @@ func request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	msg, err := client.StopEvaluation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -168,24 +138,14 @@ func local_request_Evaluation_StopEvaluation_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["certification_target_id"]
+	val, ok = pathParams["audit_scope_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "certification_target_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "audit_scope_id")
 	}
 
-	protoReq.CertificationTargetId, err = runtime.String(val)
+	protoReq.AuditScopeId, err = runtime.String(val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "certification_target_id", err)
-	}
-
-	val, ok = pathParams["catalog_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "catalog_id")
-	}
-
-	protoReq.CatalogId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "catalog_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "audit_scope_id", err)
 	}
 
 	msg, err := server.StopEvaluation(ctx, &protoReq)
@@ -270,7 +230,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/start"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -295,7 +255,7 @@ func RegisterEvaluationHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/stop"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -409,7 +369,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/start"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StartEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/start"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -431,7 +391,7 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{certification_target_id}/{catalog_id}/stop"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/clouditor.evaluation.v1.Evaluation/StopEvaluation", runtime.WithHTTPPathPattern("/v1/evaluation/evaluate/{audit_scope_id}/stop"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -495,9 +455,9 @@ func RegisterEvaluationHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_Evaluation_StartEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "evaluation", "evaluate", "certification_target_id", "catalog_id", "start"}, ""))
+	pattern_Evaluation_StartEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "evaluation", "evaluate", "audit_scope_id", "start"}, ""))
 
-	pattern_Evaluation_StopEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "evaluation", "evaluate", "certification_target_id", "catalog_id", "stop"}, ""))
+	pattern_Evaluation_StopEvaluation_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "evaluation", "evaluate", "audit_scope_id", "stop"}, ""))
 
 	pattern_Evaluation_ListEvaluationResults_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "evaluation", "results"}, ""))
 

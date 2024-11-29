@@ -39,8 +39,8 @@ type StorageWithError struct {
 
 func (s *StorageWithError) Create(_ any) error         { return s.CreateErr }
 func (s *StorageWithError) Save(_ any, _ ...any) error { return s.SaveErr }
-func (*StorageWithError) Update(_ any, _ ...any) error {
-	return nil
+func (s *StorageWithError) Update(_ any, _ ...any) error {
+	return s.UpdateErr
 }
 func (s *StorageWithError) Get(_ any, _ ...any) error { return s.GetErr }
 func (s *StorageWithError) List(_ any, _ string, _ bool, _ int, _ int, _ ...any) error {

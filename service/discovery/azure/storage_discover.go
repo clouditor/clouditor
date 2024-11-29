@@ -113,7 +113,7 @@ func (d *azureDiscovery) discoverMongoDBDatabases(account *armcosmos.DatabaseAcc
 				CreationTime:     nil, // creation time of database not available
 				GeoLocation:      location(value.Location),
 				Labels:           labels(value.Tags),
-				ParentId:         resourceID2(account.ID),
+				ParentId:         resourceIDPointer(account.ID),
 				Raw:              discovery.Raw(account, value),
 				AtRestEncryption: atRestEnc,
 			}
@@ -207,7 +207,7 @@ func (d *azureDiscovery) getSqlDBs(server *armsql.Server) ([]ontology.IsResource
 				CreationTime: creationTime(value.Properties.CreationDate),
 				GeoLocation:  location(value.Location),
 				Labels:       labels(value.Tags),
-				ParentId:     resourceID2(server.ID),
+				ParentId:     resourceIDPointer(server.ID),
 				Raw:          discovery.Raw(value),
 				AtRestEncryption: &ontology.AtRestEncryption{
 					Type: &ontology.AtRestEncryption_ManagedKeyEncryption{

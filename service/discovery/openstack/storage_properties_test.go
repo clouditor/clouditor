@@ -1,4 +1,4 @@
-// Copyright 2022 Fraunhofer AISEC
+// Copyright 2024 Fraunhofer AISEC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,63 +23,58 @@
 //
 // This file is part of Clouditor Community Edition.
 
-package api
+package openstack
 
 import (
 	"testing"
 
-	"clouditor.io/clouditor/v2/api/orchestrator"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-	"github.com/google/uuid"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
 )
 
-func TestValidate(t *testing.T) {
-	var nilReq *orchestrator.CreateAuditScopeRequest = nil
-
+func Test_getParentID(t *testing.T) {
 	type args struct {
-		req IncomingRequest
+		volume *volumes.Volume
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr assert.ErrorAssertionFunc
+		name string
+		args args
+		want assert.Want[string]
 	}{
 		{
-			name: "Missing request",
+			name: "Happy path: no attached server available",
 			args: args{
-				req: nilReq,
+				&volumes.Volume{
+					TenantID: testdata.MockVolumeTenantID,
+				},
 			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrEmptyRequest.Error())
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockVolumeTenantID, got)
 			},
 		},
 		{
-			name: "Invalid request",
+			name: "Happy path: attached serverID",
 			args: args{
-				req: &orchestrator.CreateAuditScopeRequest{},
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.Contains(t, err.Error(), "invalid request")
-			},
-		},
-		{
-			name: "Happy path",
-			args: args{
-				req: &orchestrator.CreateAuditScopeRequest{
-					AuditScope: &orchestrator.AuditScope{
-						Id:                    uuid.NewString(),
-						CertificationTargetId: "11111111-1111-1111-1111-111111111111",
-						CatalogId:             "0000",
+				&volumes.Volume{
+					TenantID: testdata.MockVolumeTenantID,
+					Attachments: []volumes.Attachment{
+						{
+							ServerID: testdata.MockServerID1,
+						},
 					},
 				},
 			},
-			wantErr: assert.NoError,
+			want: func(t *testing.T, got string) bool {
+				return assert.Equal(t, testdata.MockServerID1, got)
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := Validate(tt.args.req)
-			tt.wantErr(t, err)
+			got := getParentID(tt.args.volume)
+
+			tt.want(t, got)
 		})
 	}
 }
