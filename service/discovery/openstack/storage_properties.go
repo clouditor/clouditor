@@ -38,6 +38,6 @@ func getParentID(volume *volumes.Volume) string {
 		}
 	}
 
-	// If no attachment is available, we attach it to the porject ID
+	// If no attachment is available, we attach it to the project ID
 	return volume.TenantID
 }
