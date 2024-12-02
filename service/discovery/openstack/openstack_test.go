@@ -29,9 +29,10 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/discovery"
+	"clouditor.io/clouditor/v2/internal/config"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"github.com/gophercloud/gophercloud/v2"
-	"github.com/gophercloud/gophercloud/v2/testhelper"
 )
 
 func TestNewOpenstackDiscovery(t *testing.T) {
@@ -48,43 +49,61 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 			args: args{},
 			want: assert.Nil[discovery.Discoverer],
 		},
-		// {
-		// 	name: "Happy path: with certification target id",
-		// 	args: args{
-		// 		opts: []DiscoveryOption{
-		// 			WithAuthorizer(&AuthOptions{
-		// 				IdentityEndpoint: testdata.MockOpenstackIdentitiyEndpoint,
-		// 				Username:         testdata.MockOpenstackUsername,
-		// 				Password:         testdata.MockOpenstackPassword,
-		// 				TenantName:       testdata.MockOpenstackTenantName,
-		// 				AllowReauth:      true,
-		// 			}),
-		// 			WithCertificationTargetID(testdata.MockCertificationTargetID2),
-		// 		},
-		// 	},
-		// 	want: func(t *testing.T, got discovery.Discoverer) bool {
-		// 		assert.Equal(t, testdata.MockCertificationTargetID2, got.CertificationTargetID())
-		// 		return assert.NotNil(t, got)
-		// 	},
-		// },
-		// {
-		// 	name: "Happy path: with authorizer",
-		// 	args: args{
-		// 		opts: []DiscoveryOption{
-		// 			WithAuthorizer(&AuthOptions{
-		// 				IdentityEndpoint: testdata.MockOpenstackIdentitiyEndpoint,
-		// 				Username:         testdata.MockOpenstackUsername,
-		// 				Password:         testdata.MockOpenstackPassword,
-		// 				TenantName:       testdata.MockOpenstackTenantName,
-		// 				AllowReauth:      true,
-		// 			}),
-		// 		},
-		// 	},
-		// 	want: func(t *testing.T, got discovery.Discoverer) bool {
-		// 		assert.Equal(t, config.DefaultCertificationTargetID, got.CertificationTargetID())
-		// 		return assert.NotNil(t, got)
-		// 	},
-		// },
+		{
+			name: "Happy path: Name",
+			args: args{
+				opts: []DiscoveryOption{
+					WithAuthorizer(gophercloud.AuthOptions{
+						IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+						Username:         testdata.MockOpenstackUsername,
+						Password:         testdata.MockOpenstackPassword,
+						TenantName:       testdata.MockOpenstackTenantName,
+						AllowReauth:      true,
+					}),
+					WithCertificationTargetID(testdata.MockCertificationTargetID2),
+				},
+			},
+			want: func(t *testing.T, got discovery.Discoverer) bool {
+				return assert.Equal(t, "OpenStack", got.Name())
+			},
+		},
+		{
+			name: "Happy path: with certification target id",
+			args: args{
+				opts: []DiscoveryOption{
+					WithAuthorizer(gophercloud.AuthOptions{
+						IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+						Username:         testdata.MockOpenstackUsername,
+						Password:         testdata.MockOpenstackPassword,
+						TenantName:       testdata.MockOpenstackTenantName,
+						AllowReauth:      true,
+					}),
+					WithCertificationTargetID(testdata.MockCertificationTargetID2),
+				},
+			},
+			want: func(t *testing.T, got discovery.Discoverer) bool {
+				assert.Equal(t, testdata.MockCertificationTargetID2, got.CertificationTargetID())
+				return assert.NotNil(t, got)
+			},
+		},
+		{
+			name: "Happy path: with authorizer",
+			args: args{
+				opts: []DiscoveryOption{
+					WithAuthorizer(gophercloud.AuthOptions{
+						IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+						Username:         testdata.MockOpenstackUsername,
+						Password:         testdata.MockOpenstackPassword,
+						TenantName:       testdata.MockOpenstackTenantName,
+						AllowReauth:      true,
+					}),
+				},
+			},
+			want: func(t *testing.T, got discovery.Discoverer) bool {
+				assert.Equal(t, config.DefaultCertificationTargetID, got.CertificationTargetID())
+				return assert.NotNil(t, got)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -94,69 +113,109 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 	}
 }
 
-// func Test_toAuthOptions(t *testing.T) {
-// 	type args struct {
-// 		v *structpb.Value
+// func Test_openstackDiscovery_authorize(t *testing.T) {
+// 	testhelper.SetupHTTP()
+// 	defer testhelper.TeardownHTTP()
+
+// 	type fields struct {
+// 		csID     string
+// 		provider *gophercloud.ProviderClient
+// 		clients  clients
+// 		authOpts *gophercloud.AuthOptions
 // 	}
 // 	tests := []struct {
-// 		name         string
-// 		args         args
-// 		wantAuthOpts assert.Want[*AuthOptions]
-// 		wantErr      assert.ErrorAssertionFunc
+// 		name    string
+// 		fields  fields
+// 		wantErr assert.ErrorAssertionFunc
 // 	}{
 // 		{
-// 			name: "error: input is nil",
-// 			args: args{
-// 				v: nil,
+// 			name: "Happy path: already authorized",
+// 			fields: fields{
+// 				provider: &gophercloud.ProviderClient{},
 // 			},
-// 			wantAuthOpts: assert.Nil[*AuthOptions],
-// 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-// 				return assert.ErrorContains(t, err, "converting raw configuration to map is empty")
-// 			},
+// 			wantErr: assert.NoError,
 // 		},
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			gotAuthOpts, err := toAuthOptions(tt.args.v)
-
-// 			tt.wantAuthOpts(t, gotAuthOpts)
-// 			tt.wantErr(t, err)
+// 			d := &openstackDiscovery{
+// 				csID:     tt.fields.csID,
+// 				clients:  tt.fields.clients,
+// 				authOpts: tt.fields.authOpts,
+// 			}
+// 			tt.wantErr(t, d.authorize())
 // 		})
 // 	}
 // }
 
-func Test_openstackDiscovery_authorize(t *testing.T) {
-	testhelper.SetupHTTP()
-	defer testhelper.TeardownHTTP()
-
+func TestNewAuthorizer(t *testing.T) {
+	type envVariables struct {
+		envVariableKey   string
+		envVariableValue string
+	}
 	type fields struct {
-		isAuthorized bool
-		csID         string
-		provider     *gophercloud.ProviderClient
-		clients      clients
-		authOpts     *gophercloud.AuthOptions
+		envVariables []envVariables
 	}
 	tests := []struct {
 		name    string
 		fields  fields
+		want    assert.Want[gophercloud.AuthOptions]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Happy path: already authorized",
+			name: "Happy path",
 			fields: fields{
-				provider: &gophercloud.ProviderClient{},
+				envVariables: []envVariables{
+					{
+						envVariableKey:   "OS_AUTH_URL",
+						envVariableValue: testdata.MockOpenstackIdentityEndpoint,
+					},
+					{
+						envVariableKey:   "OS_USERNAME",
+						envVariableValue: testdata.MockOpenstackUsername,
+					},
+					{
+						envVariableKey:   "OS_PASSWORD",
+						envVariableValue: testdata.MockOpenstackPassword,
+					},
+					{
+						envVariableKey:   "OS_TENANT_ID",
+						envVariableValue: testdata.MockProjectID1,
+					},
+					{
+						envVariableKey:   "OS_PROJECT_ID",
+						envVariableValue: testdata.MockProjectID1,
+					},
+					{
+						envVariableKey:   "OS_SYSTEM_SCOPE",
+						envVariableValue: "true",
+					},
+				},
 			},
-			wantErr: assert.NoError,
+			want: func(t *testing.T, got gophercloud.AuthOptions) bool {
+				want := gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantID:         testdata.MockProjectID1,
+					AllowReauth:      true,
+				}
+				return assert.Equal(t, want, got)
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &openstackDiscovery{
-				csID:     tt.fields.csID,
-				clients:  tt.fields.clients,
-				authOpts: tt.fields.authOpts,
+			// Set env variables
+			for _, env := range tt.fields.envVariables {
+				if env.envVariableKey != "" {
+					t.Setenv(env.envVariableKey, env.envVariableValue)
+				}
 			}
-			tt.wantErr(t, d.authorize())
+			got, err := NewAuthorizer()
+
+			tt.want(t, got)
+			tt.wantErr(t, err)
 		})
 	}
 }
