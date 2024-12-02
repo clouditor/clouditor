@@ -175,7 +175,7 @@ message ComparisonResult {
      Status status = 2;
 
      google.protobuf.Timestamp timestamp = 3
-         [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"" ];
+         [ (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"" ];
 
      string control_id = 4;
 
