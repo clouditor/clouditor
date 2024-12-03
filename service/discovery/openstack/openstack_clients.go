@@ -31,8 +31,8 @@ import (
 	"github.com/gophercloud/gophercloud/v2"
 )
 
-// identifyClient returns the identity client if initialized
-func (d *openstackDiscovery) identifyClient() (client *gophercloud.ServiceClient, err error) {
+// identityClient returns the identity client if initialized
+func (d *openstackDiscovery) identityClient() (client *gophercloud.ServiceClient, err error) {
 	if d.clients.identityClient == nil {
 		return nil, fmt.Errorf("identity client not initialized")
 	}
