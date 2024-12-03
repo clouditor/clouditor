@@ -29,6 +29,7 @@ import (
 	"context"
 	"fmt"
 
+	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces"
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
@@ -38,8 +39,9 @@ import (
 func labels(tags *[]string) map[string]string {
 	l := make(map[string]string)
 
-	// for i := range util.Deref(tags) {
-	// }
+	for _, tag := range util.Deref(tags) {
+		l[tag] = ""
+	}
 
 	return l
 }
