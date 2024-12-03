@@ -189,7 +189,7 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 	if err != nil {
 		log.Error("error getting auth options from environment: %w", err)
 	}
-	return ao, nil
+	return ao, err
 
 }
 

@@ -163,6 +163,18 @@ func TestNewAuthorizer(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
+			name: "error: missing OS_AUTH_URL",
+			fields: fields{
+				envVariables: []envVariables{},
+			},
+			want: func(t *testing.T, got gophercloud.AuthOptions) bool {
+				return assert.Empty(t, got)
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "Missing environment variable [OS_AUTH_URL]")
+			},
+		},
+		{
 			name: "Happy path",
 			fields: fields{
 				envVariables: []envVariables{
@@ -186,10 +198,6 @@ func TestNewAuthorizer(t *testing.T) {
 						envVariableKey:   "OS_PROJECT_ID",
 						envVariableValue: testdata.MockProjectID1,
 					},
-					{
-						envVariableKey:   "OS_SYSTEM_SCOPE",
-						envVariableValue: "true",
-					},
 				},
 			},
 			want: func(t *testing.T, got gophercloud.AuthOptions) bool {
@@ -198,10 +206,10 @@ func TestNewAuthorizer(t *testing.T) {
 					Username:         testdata.MockOpenstackUsername,
 					Password:         testdata.MockOpenstackPassword,
 					TenantID:         testdata.MockProjectID1,
-					AllowReauth:      true,
 				}
 				return assert.Equal(t, want, got)
 			},
+			wantErr: assert.NoError,
 		},
 	}
 	for _, tt := range tests {
