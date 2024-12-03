@@ -55,23 +55,6 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 	}{
 		{
 			name: "Happy path",
-			// fields: fields{
-			// 	clients: clients{
-			// 		provider: &gophercloud.ProviderClient{
-			// 			TokenID: client.TokenID,
-			// 			EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
-			// 				return testhelper.Endpoint(), nil
-			// 			},
-			// 		},
-			// 	},
-			// 	authOpts: &gophercloud.AuthOptions{
-			// 		IdentityEndpoint: fmt.Sprintf("https://%s:%s/v2.0", "identityHost", "portNumber"),
-			// 		Username:         "username",
-			// 		Password:         "passwort",
-			// 		TenantName:       "tenant",
-			// 		AllowReauth:      true,
-			// 	},
-			// },
 			args: args{
 				project: &projects.Project{
 					ID:          testdata.MockProjectID1,
