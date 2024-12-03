@@ -666,10 +666,10 @@ message CertificationTarget {
   }
 
   // creation time of the certification_target
-  optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // last update time of the certification_target
-  optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // additional metadata of the certification target, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
