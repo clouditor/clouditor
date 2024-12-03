@@ -356,7 +356,7 @@ func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account, act
 		}
 
 		for _, value := range pageResponse.Value {
-			objectStorages, err := d.handleObjectStorage(account, value, activityLogging)
+			objectStorages, err := d.handleObjectStorage(account, value, activityLogging, rawActivityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}

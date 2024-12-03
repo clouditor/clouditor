@@ -234,7 +234,7 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 	}, nil
 }
 
-func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem, activityLogging *ontology.ActivityLogging) (*ontology.ObjectStorage, error) {
+func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem, activityLogging *ontology.ActivityLogging, rawActivityLogging string) (*ontology.ObjectStorage, error) {
 	var (
 		backups                  []*ontology.Backup
 		monitoringLogDataEnabled bool
@@ -272,7 +272,7 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 		GeoLocation:      location(account.Location),                    // The location is the same as the storage account
 		Labels:           labels(account.Tags),                          // The storage account labels the file storage belongs to
 		ParentId:         resourceID2(account.ID),                       // the storage account is our parent
-		Raw:              discovery.Raw(account, container),
+		Raw:              discovery.Raw(account, container, rawActivityLogging),
 		AtRestEncryption: enc,
 		Immutability: &ontology.Immutability{
 			Enabled: util.Deref(container.Properties.HasImmutabilityPolicy),

@@ -592,7 +592,7 @@ func Test_handleObjectStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.fields.azureDiscovery
 
-			got, err := d.handleObjectStorage(tt.args.account, tt.args.container, tt.args.activityLogging)
+			got, err := d.handleObjectStorage(tt.args.account, tt.args.container, tt.args.activityLogging, "")
 			if !tt.wantErr(t, err, fmt.Sprintf("handleObjectStorage(%v, %v)", tt.args.account, tt.args.container)) {
 				return
 			}
