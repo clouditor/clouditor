@@ -41,7 +41,7 @@ import (
 // Since the backups for storage and compute are discovered together, the discovery is performed here and results are stored in the azureDiscovery receiver.
 func (d *azureDiscovery) discoverBackupVaults() error {
 
-	if d.backupMap != nil && len(d.backupMap) > 0 {
+	if len(d.backupMap) > 0 {
 		log.Debug("Backup Vaults already discovered.")
 		return nil
 	}
