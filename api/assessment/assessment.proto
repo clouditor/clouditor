@@ -102,7 +102,7 @@ message AssessmentResult {
 
   // Time of assessment
   google.protobuf.Timestamp timestamp = 2 [
-    (tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\"",
+    (tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\"",
     (buf.validate.field).required = true
   ];
 
