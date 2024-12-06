@@ -276,14 +276,17 @@ func (d *azureDiscovery) discoverStorageAccounts() ([]ontology.IsResource, error
 			return res.Value
 		},
 		func(account *armstorage.Account) error {
+			// Get activity logging information
+			activityLoggingAccount, activityLoggingBlob, activityLoggingFile, _, rawAccountActivityLogging, rawBlobActivityLogging, _, rawFileActivityLogging := d.getActivityLogging(account)
+
 			// Discover object storages
-			objectStorages, err := d.discoverObjectStorages(account)
+			objectStorages, err := d.discoverObjectStorages(account, activityLoggingBlob, rawBlobActivityLogging)
 			if err != nil {
 				return fmt.Errorf("could not handle object storages: %w", err)
 			}
 
 			// Discover file storages
-			fileStorages, err := d.discoverFileStorages(account)
+			fileStorages, err := d.discoverFileStorages(account, activityLoggingFile, rawFileActivityLogging)
 			if err != nil {
 				return fmt.Errorf("could not handle file storages: %w", err)
 			}
@@ -292,7 +295,7 @@ func (d *azureDiscovery) discoverStorageAccounts() ([]ontology.IsResource, error
 			storageResourcesList = append(storageResourcesList, fileStorages...)
 
 			// Create storage service for all storage account resources
-			storageService, err := d.handleStorageAccount(account, storageResourcesList)
+			storageService, err := d.handleStorageAccount(account, storageResourcesList, activityLoggingAccount, rawAccountActivityLogging)
 			if err != nil {
 				return fmt.Errorf("could not create storage service: %w", err)
 			}
@@ -313,7 +316,7 @@ func (d *azureDiscovery) discoverStorageAccounts() ([]ontology.IsResource, error
 	return storageResourcesList, nil
 }
 
-func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]ontology.IsResource, error) {
+func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account, activityLogging *ontology.ActivityLogging, rawActivityLogging string) ([]ontology.IsResource, error) {
 	var list []ontology.IsResource
 
 	// List all file shares in the specified resource group
@@ -326,7 +329,7 @@ func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]on
 		}
 
 		for _, value := range pageResponse.Value {
-			fileStorages, err := d.handleFileStorage(account, value)
+			fileStorages, err := d.handleFileStorage(account, value, activityLogging, rawActivityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle file storage: %w", err)
 			}
@@ -340,7 +343,7 @@ func (d *azureDiscovery) discoverFileStorages(account *armstorage.Account) ([]on
 	return list, nil
 }
 
-func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account) ([]ontology.IsResource, error) {
+func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account, activityLogging *ontology.ActivityLogging, rawActivityLogging string) ([]ontology.IsResource, error) {
 	var list []ontology.IsResource
 
 	// List all blob containers in the specified resource group
@@ -353,14 +356,13 @@ func (d *azureDiscovery) discoverObjectStorages(account *armstorage.Account) ([]
 		}
 
 		for _, value := range pageResponse.Value {
-			objectStorages, err := d.handleObjectStorage(account, value)
+			objectStorages, err := d.handleObjectStorage(account, value, activityLogging)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle object storage: %w", err)
 			}
 			log.Infof("Adding object storage '%s'", objectStorages.Name)
 
 			list = append(list, objectStorages)
-
 		}
 	}
 
