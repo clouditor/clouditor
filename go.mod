@@ -32,7 +32,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/sync v0.9.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -128,6 +128,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3 v3.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos v1.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection v1.0.0
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning v1.0.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity v0.12.0
@@ -226,11 +227,12 @@ require (
 
 // tools dependencies
 require (
+	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor v0.11.0
 	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/google/addlicense v1.1.0
 	github.com/lyft/protoc-gen-star v0.6.1 // indirect
 	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
-
 )
+

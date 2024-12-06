@@ -45,6 +45,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v3"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cosmos/armcosmos"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dataprotection/armdataprotection"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/machinelearning/armmachinelearning"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/monitor/armmonitor"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/security/armsecurity"
@@ -81,6 +83,7 @@ var (
 	ErrNoCredentialsConfigured  = errors.New("no credentials were configured")
 	ErrGettingNextPage          = errors.New("error getting next page")
 	ErrVaultInstanceIsEmpty     = errors.New("vault and/or instance is nil")
+	ErrSubsciptionNotFound      = errors.New("SubscriptionNotFound")
 )
 
 func (*azureDiscovery) Name() string {
@@ -151,9 +154,10 @@ type backup struct {
 
 type clients struct {
 	// Storage
-	blobContainerClient *armstorage.BlobContainersClient
-	fileStorageClient   *armstorage.FileSharesClient
-	accountsClient      *armstorage.AccountsClient
+	blobContainerClient      *armstorage.BlobContainersClient
+	fileStorageClient        *armstorage.FileSharesClient
+	accountsClient           *armstorage.AccountsClient
+	diagnosticSettingsClient *armmonitor.DiagnosticSettingsClient
 
 	// DB
 	databasesClient        *armsql.DatabasesClient
@@ -170,6 +174,10 @@ type clients struct {
 
 	// AppService
 	webAppsClient *armappservice.WebAppsClient
+
+	// Machine Learning
+	mlWorkspaceClient *armmachinelearning.WorkspacesClient
+	mlComputeClient   *armmachinelearning.ComputeClient
 
 	// Compute
 	virtualMachinesClient *armcompute.VirtualMachinesClient
@@ -310,6 +318,13 @@ func (d *azureDiscovery) List() (list []ontology.IsResource, err error) {
 		return list, fmt.Errorf("could not discover application gateways: %w", err)
 	}
 	list = append(list, ag...)
+
+	// Discover machine learning workspaces
+	mlWorkspaces, err := d.discoverMLWorkspaces()
+	if err != nil {
+		return nil, fmt.Errorf("could not discover machine learning workspaces: %w", err)
+	}
+	list = append(list, mlWorkspaces...)
 
 	return list, nil
 }

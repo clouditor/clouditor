@@ -67,6 +67,7 @@ const (
 	ProviderK8S   = "k8s"
 	ProviderAzure = "azure"
 	ProviderCSAF  = "csaf"
+	ProviderCMC   = "cmc"
 )
 
 var log *logrus.Entry
@@ -368,6 +369,10 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				opts = append(opts, csaf.WithProviderDomain(domain))
 			}
 			svc.discoverers = append(svc.discoverers, csaf.NewTrustedProviderDiscovery(opts...))
+		// case provider == ProviderCMC:
+		// 	// TODO(anatheka): Delete addr and get the address from somewhere else
+		// 	addr := ""
+		// 	svc.discoverers = append(svc.discoverers, cmc.NewCMCDiscovery(addr))
 		default:
 			newError := fmt.Errorf("provider %s not known", provider)
 			log.Error(newError)

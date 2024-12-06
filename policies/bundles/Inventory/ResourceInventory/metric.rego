@@ -1,5 +1,7 @@
 package clouditor.metrics.resource_inventory
 
+# Description: This metric verifies the existence of an inventory of cloud resources.
+
 default applicable = false
 
 default compliant = false
