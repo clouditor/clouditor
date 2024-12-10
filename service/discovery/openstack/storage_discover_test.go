@@ -77,8 +77,10 @@ func Test_openstackDiscovery_discoverBlockStorage(t *testing.T) {
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
+
 				t1, err := time.Parse("2006-01-02T15:04:05.000000", "2015-09-17T03:35:03.000000")
 				assert.NoError(t, err)
+
 				want := &ontology.BlockStorage{
 					Id:           "289da7f8-6440-407c-9fb4-7db01ec49164",
 					Name:         "vol-001",

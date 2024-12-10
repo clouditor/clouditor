@@ -34,6 +34,14 @@ import (
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 )
 
+// This code is based on the MockListResponse function from the Gophercloud library.
+// Gophercloud is licensed under the Apache License 2.0. See the LICENSE file in the
+// Gophercloud repository for the full license: https://github.com/gophercloud/gophercloud
+// Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/blockstorage/v2/volumes/testing/fixtures_test.go (2024-12-09)
+//
+// Changes:
+// - 2024-12-09: Rename function name from MockListResponse() to MockStorageListResponse()(@anatheka)
+
 func MockStorageListResponse(t *testing.T) {
 	testhelper.Mux.HandleFunc("/volumes/detail", func(w http.ResponseWriter, r *http.Request) {
 		testhelper.TestMethod(t, r, "GET")

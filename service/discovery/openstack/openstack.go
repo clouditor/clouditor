@@ -223,7 +223,7 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	list = append(list, networks...)
 
 	// Discover servers
-	servers, err := d.discoverServers()
+	servers, err := d.discoverServer()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover servers: %w", err)
 	}

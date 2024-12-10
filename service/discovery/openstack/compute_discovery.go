@@ -30,7 +30,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 )
 
-func (d *openstackDiscovery) discoverServers() (list []ontology.IsResource, err error) {
+func (d *openstackDiscovery) discoverServer() (list []ontology.IsResource, err error) {
 	// TODO(oxisto): Limit the list to a specific tenant?
 	var opts servers.ListOptsBuilder = &servers.ListOpts{
 		AllTenants: true,
