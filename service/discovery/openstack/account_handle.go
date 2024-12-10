@@ -34,8 +34,8 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 )
 
-// handleTenant returns a [ontology.ResourceGroup] out of an existing [projects.Project].
-func (d *openstackDiscovery) handleTenant(project *projects.Project) (ontology.IsResource, error) {
+// handleProject returns a [ontology.ResourceGroup] out of an existing [projects.Project].
+func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.IsResource, error) {
 	r := &ontology.ResourceGroup{
 		Id:           project.ID,
 		Name:         project.Name,

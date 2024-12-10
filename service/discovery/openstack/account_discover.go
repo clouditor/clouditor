@@ -35,7 +35,7 @@ import (
 // Discover projects/tenants. Openstack project and tenant are interchangeable.
 func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err error) {
 	var opts projects.ListOptsBuilder = &projects.ListOpts{}
-	list, err = genericList(d, d.identityClient, projects.List, d.handleTenant, projects.ExtractProjects, opts)
+	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
 
 	return
 }

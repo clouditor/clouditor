@@ -90,7 +90,7 @@ func Test_openstackDiscovery_handleTenant(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 			}
-			got, err := d.handleTenant(tt.args.project)
+			got, err := d.handleProject(tt.args.project)
 
 			tt.want(t, got)
 			tt.wantErr(t, err)
