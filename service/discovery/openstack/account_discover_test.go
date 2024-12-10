@@ -71,20 +71,24 @@ func Test_openstackDiscovery_discoverProjects(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					identityClient: client.ServiceClient(),
 				},
 			},
 			want: func(t *testing.T, got []ontology.IsResource) bool {
 				assert.Equal(t, 2, len(got))
 
 				want := &ontology.ResourceGroup{
-					Id:           "abcde",
-					Name:         "project 1",
-					CreationTime: nil,
+					Id:          "1234",
+					Name:        "Red Team",
+					Description: "The team that is red",
 					GeoLocation: &ontology.GeoLocation{
 						Region: "unknown",
 					},
-					Labels:   map[string]string{},
-					ParentId: util.Ref("11111"),
+					Labels: map[string]string{
+						"Red":  "",
+						"Team": "",
+					},
+					ParentId: util.Ref(""),
 				}
 
 				got0 := got[0].(*ontology.ResourceGroup)
@@ -144,6 +148,7 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					identityClient: client.ServiceClient(),
 				},
 			},
 			wantList: func(t *testing.T, got []ontology.IsResource) bool {
