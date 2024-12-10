@@ -264,7 +264,7 @@ func HandleListAvailableProjectsSuccessfully(t *testing.T) {
 // HandleListProjectsSuccessfully creates an HTTP handler at `/projects` on the
 // test handler mux that responds with a list of two tenants.
 func HandleListProjectsSuccessfully(t *testing.T) {
-	th.Mux.HandleFunc("/v3/projects", func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
 		th.TestHeader(t, r, "Accept", "application/json")
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)

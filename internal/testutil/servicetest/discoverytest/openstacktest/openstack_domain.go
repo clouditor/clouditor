@@ -163,7 +163,7 @@ var ExpectedDomainsSlice = []domains.Domain{FirstDomain, SecondDomain}
 // HandleListDomainsSuccessfully creates an HTTP handler at `/domains` on the
 // test handler mux that responds with a list of two domains.
 func HandleListDomainsSuccessfully(t *testing.T) {
-	th.Mux.HandleFunc("/v3/domains", func(w http.ResponseWriter, r *http.Request) {
+	th.Mux.HandleFunc("/domains", func(w http.ResponseWriter, r *http.Request) {
 		th.TestMethod(t, r, "GET")
 		th.TestHeader(t, r, "Accept", "application/json")
 		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
