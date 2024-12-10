@@ -26,7 +26,6 @@
 package openstack
 
 import (
-	"context"
 	"fmt"
 
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -45,16 +44,17 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		osLogging   *ontology.OSLogging
 	)
 
-	// boot and os logging are logged together in the console log
-	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
-	if consoleOutput.Result.PrettyPrintJSON() != "" {
-		bootLogging = &ontology.BootLogging{
-			Enabled: true,
-		}
-		osLogging = &ontology.OSLogging{
-			Enabled: true,
-		}
-	}
+	// TODO(anatheka): Check again!
+	// // boot and os logging are logged together in the console log
+	// consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
+	// if consoleOutput.Result.StatusCode PrettyPrintJSON() != "" {
+	// 	bootLogging = &ontology.BootLogging{
+	// 		Enabled: true,
+	// 	}
+	// 	osLogging = &ontology.OSLogging{
+	// 		Enabled: true,
+	// 	}
+	// }
 
 	r := &ontology.VirtualMachine{
 		Id:           server.ID,

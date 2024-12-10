@@ -36,25 +36,33 @@ import (
 	"clouditor.io/clouditor/v2/internal/util"
 	"github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Test_openstackDiscovery_discoverServer(t *testing.T) {
+func Test_openstackDiscovery_handleServer(t *testing.T) {
 	testhelper.SetupHTTP()
 	defer testhelper.TeardownHTTP()
 	openstacktest.HandleServerListSuccessfully(t)
 	openstacktest.HandleInterfaceListSuccessfully(t)
+
+	t1, err := time.Parse(time.RFC3339, "2014-09-25T13:10:02Z")
+	assert.NoError(t, err)
 
 	type fields struct {
 		csID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 	}
+	type args struct {
+		server *servers.Server
+	}
 	tests := []struct {
 		name    string
 		fields  fields
-		want    assert.Want[[]ontology.IsResource]
+		args    args
+		want    assert.Want[ontology.IsResource]
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
@@ -75,11 +83,21 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					},
 				},
 			},
-			want: func(t *testing.T, got []ontology.IsResource) bool {
-				assert.Equal(t, 3, len(got))
-
-				t1, err := time.Parse(time.RFC3339, "2014-09-25T13:10:02Z")
-				assert.NoError(t, err)
+			args: args{
+				server: &servers.Server{
+					ID:       "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
+					Name:     "herp",
+					TenantID: "fcad67a6189847c4aecfa3c81a05783b",
+					AttachedVolumes: []servers.AttachedVolume{
+						{
+							ID: "2bdbc40f-a277-45d4-94ac-d9881c777d33",
+						},
+					},
+					Created: t1,
+				},
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				assert.NotEmpty(t, got)
 
 				want := &ontology.VirtualMachine{
 					Id:           "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
@@ -97,11 +115,11 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
 				}
 
-				got0 := got[0].(*ontology.VirtualMachine)
+				gotNew := got.(*ontology.VirtualMachine)
 
-				assert.NotEmpty(t, got0.GetRaw())
-				got0.Raw = ""
-				return assert.Equal(t, want, got0)
+				assert.NotEmpty(t, gotNew.GetRaw())
+				gotNew.Raw = ""
+				return assert.Equal(t, want, gotNew)
 			},
 			wantErr: assert.NoError,
 		},
@@ -113,9 +131,13 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 			}
-			gotList, err := d.discoverServer()
 
-			tt.want(t, gotList)
+			// err := d.authorize()
+			// assert.NoError(t, err)
+
+			got, err := d.handleServer(tt.args.server)
+
+			tt.want(t, got)
 			tt.wantErr(t, err)
 		})
 	}
