@@ -43,7 +43,6 @@ import (
 func Test_openstackDiscovery_discoverNetworkInterfaces(t *testing.T) {
 	testhelper.SetupHTTP()
 	defer testhelper.TeardownHTTP()
-	// openstacktest.HandleInterfaceListSuccessfully(t)
 	openstacktest.HandleNetworkListSuccessfully(t)
 
 	type fields struct {
