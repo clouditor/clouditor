@@ -147,7 +147,7 @@ func (d *azureDiscovery) handleSqlServer(server *armsql.Server) ([]ontology.IsRe
 	return list, nil
 }
 
-func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []ontology.IsResource) (*ontology.ObjectStorageService, error) {
+func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, storagesList []ontology.IsResource, activityLogging *ontology.ActivityLogging, rawActivityLogging string) (*ontology.ObjectStorageService, error) {
 	var (
 		storageResourceIDs []string
 	)
@@ -178,18 +178,19 @@ func (d *azureDiscovery) handleStorageAccount(account *armstorage.Account, stora
 		GeoLocation:         location(account.Location),
 		Labels:              labels(account.Tags),
 		ParentId:            resourceGroupID(account.ID),
-		Raw:                 discovery.Raw(account),
+		Raw:                 discovery.Raw(account, rawActivityLogging),
 		TransportEncryption: te,
 		HttpEndpoint: &ontology.HttpEndpoint{
 			Url:                 generalizeURL(util.Deref(account.Properties.PrimaryEndpoints.Blob)),
 			TransportEncryption: te,
 		},
+		ActivityLogging: activityLogging,
 	}
 
 	return storageService, nil
 }
 
-func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem) (*ontology.FileStorage, error) {
+func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshare *armstorage.FileShareItem, activityLogging *ontology.ActivityLogging, rawActivityLogging string) (*ontology.FileStorage, error) {
 	var (
 		monitoringLogDataEnabled bool
 		securityAlertsEnabled    bool
@@ -223,16 +224,17 @@ func (d *azureDiscovery) handleFileStorage(account *armstorage.Account, fileshar
 		GeoLocation:  location(account.Location),                    // The location is the same as the storage account
 		Labels:       labels(account.Tags),                          // The storage account labels the file storage belongs to
 		ParentId:     resourceID2(account.ID),                       // the storage account is our parent
-		Raw:          discovery.Raw(account, fileshare),
+		Raw:          discovery.Raw(account, fileshare, rawActivityLogging),
 		ResourceLogging: &ontology.ResourceLogging{
 			MonitoringLogDataEnabled: monitoringLogDataEnabled,
 			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
+		ActivityLogging:  activityLogging,
 		AtRestEncryption: enc,
 	}, nil
 }
 
-func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem) (*ontology.ObjectStorage, error) {
+func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, container *armstorage.ListContainerItem, activityLogging *ontology.ActivityLogging) (*ontology.ObjectStorage, error) {
 	var (
 		backups                  []*ontology.Backup
 		monitoringLogDataEnabled bool
@@ -279,7 +281,8 @@ func (d *azureDiscovery) handleObjectStorage(account *armstorage.Account, contai
 			MonitoringLogDataEnabled: monitoringLogDataEnabled,
 			SecurityAlertsEnabled:    securityAlertsEnabled,
 		},
-		Backups:      backups,
-		PublicAccess: util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
+		ActivityLogging: activityLogging,
+		Backups:         backups,
+		PublicAccess:    util.Deref(container.Properties.PublicAccess) != armstorage.PublicAccessNone,
 	}, nil
 }

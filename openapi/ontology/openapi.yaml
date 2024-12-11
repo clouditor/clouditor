@@ -263,6 +263,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -681,6 +683,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -784,6 +788,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -876,6 +882,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -927,6 +935,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
                 computeId:
@@ -1419,6 +1429,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -1737,10 +1749,16 @@ components:
                     type: string
                 resourceLogging:
                     $ref: '#/components/schemas/ResourceLogging'
-                storageId:
-                    type: string
+                storageIds:
+                    type: array
+                    items:
+                        type: string
                 usageStatistics:
                     $ref: '#/components/schemas/UsageStatistics'
+                virtualMachineIds:
+                    type: array
+                    items:
+                        type: string
             description: MLWorkspace is an entity class in our ontology. It can be instantiated and contains all of its properties as well of its implemented interfaces.
         MalwareProtection:
             type: object
@@ -1840,6 +1858,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
@@ -1995,6 +2015,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 atRestEncryption:
                     $ref: '#/components/schemas/AtRestEncryption'
                 backups:
@@ -2058,6 +2080,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 authenticity:
                     $ref: '#/components/schemas/Authenticity'
                 computeId:
@@ -2177,6 +2201,8 @@ components:
                 raw:
                     type: string
                     description: The raw field contains the raw information that is used to fill in the fields of the ontology.
+                activityLogging:
+                    $ref: '#/components/schemas/ActivityLogging'
                 anomalyDetections:
                     type: array
                     items:
