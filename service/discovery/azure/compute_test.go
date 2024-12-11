@@ -964,53 +964,53 @@ func Test_azureComputeDiscovery_handleBlockStorage(t *testing.T) {
 		want    *ontology.BlockStorage
 		wantErr assert.ErrorAssertionFunc
 	}{
-		// {
-		// 	name: "Empty input",
-		// 	args: args{
-		// 		disk: nil,
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "disk is nil")
-		// 	},
-		// },
-		// {
-		// 	name: "Empty diskID",
-		// 	fields: fields{
-		// 		azureDiscovery: NewMockAzureDiscovery(newMockSender()),
-		// 	},
-		// 	args: args{
-		// 		disk: &armcompute.Disk{
-		// 			ID: &diskID,
-		// 			Properties: &armcompute.DiskProperties{
-		// 				Encryption: &armcompute.Encryption{
-		// 					Type: &encType,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "could not get block storage properties for the atRestEncryption:")
-		// 	},
-		// },
-		// {
-		// 	name: "Empty encryptionType",
-		// 	args: args{
-		// 		disk: &armcompute.Disk{
-		// 			ID: &diskID,
-		// 			Properties: &armcompute.DiskProperties{
-		// 				Encryption: &armcompute.Encryption{
-		// 					Type: nil,
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-		// 		return assert.ErrorContains(t, err, "error getting atRestEncryption properties of blockStorage")
-		// 	},
-		// },
+		{
+			name: "Empty input",
+			args: args{
+				disk: nil,
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "disk is nil")
+			},
+		},
+		{
+			name: "Empty diskID",
+			fields: fields{
+				azureDiscovery: NewMockAzureDiscovery(newMockSender()),
+			},
+			args: args{
+				disk: &armcompute.Disk{
+					ID: &diskID,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type: &encType,
+						},
+					},
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not get block storage properties for the atRestEncryption:")
+			},
+		},
+		{
+			name: "Empty encryptionType",
+			args: args{
+				disk: &armcompute.Disk{
+					ID: &diskID,
+					Properties: &armcompute.DiskProperties{
+						Encryption: &armcompute.Encryption{
+							Type: nil,
+						},
+					},
+				},
+			},
+			want: nil,
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error getting atRestEncryption properties of blockStorage")
+			},
+		},
 		{
 			name: "No error",
 			args: args{
