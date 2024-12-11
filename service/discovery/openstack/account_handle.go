@@ -39,7 +39,7 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 	r := &ontology.ResourceGroup{
 		Id:           project.ID,
 		Name:         project.Name,
-		CreationTime: nil, // project do not have a creation date
+		CreationTime: nil, // project does not have a creation date
 		GeoLocation: &ontology.GeoLocation{
 			Region: "unknown", // TODO: Can we get the region?
 		},
