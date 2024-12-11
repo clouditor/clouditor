@@ -26,6 +26,7 @@
 package openstack
 
 import (
+	"errors"
 	"testing"
 
 	"clouditor.io/clouditor/v2/api/discovery"
@@ -118,40 +119,134 @@ func TestNewOpenstackDiscovery(t *testing.T) {
 	}
 }
 
-// func Test_openstackDiscovery_authorize(t *testing.T) {
-// 	testhelper.SetupHTTP()
-// 	defer testhelper.TeardownHTTP()
+func Test_openstackDiscovery_authorize(t *testing.T) {
+	testhelper.SetupHTTP()
+	defer testhelper.TeardownHTTP()
 
-// 	type fields struct {
-// 		csID     string
-// 		provider *gophercloud.ProviderClient
-// 		clients  clients
-// 		authOpts *gophercloud.AuthOptions
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		wantErr assert.ErrorAssertionFunc
-// 	}{
-// 		{
-// 			name: "Happy path: already authorized",
-// 			fields: fields{
-// 				provider: &gophercloud.ProviderClient{},
-// 			},
-// 			wantErr: assert.NoError,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			d := &openstackDiscovery{
-// 				csID:     tt.fields.csID,
-// 				clients:  tt.fields.clients,
-// 				authOpts: tt.fields.authOpts,
-// 			}
-// 			tt.wantErr(t, d.authorize())
-// 		})
-// 	}
-// }
+	type fields struct {
+		csID     string
+		clients  clients
+		authOpts *gophercloud.AuthOptions
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:   "error authentication",
+			fields: fields{},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "error while authenticating:")
+			},
+		},
+		{
+			name: "compute client error",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return "", errors.New("this is a test error")
+						},
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not create compute client:")
+			},
+		},
+		{
+			name: "network client error",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							if eo.Type == "network" {
+								return "", errors.New("this is a test error")
+							}
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not create network client:")
+			},
+		},
+		{
+			name: "storage client error",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							if eo.Type == "block-storage" {
+								return "", errors.New("this is a test error")
+							}
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not create block storage client:")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				csID:     tt.fields.csID,
+				clients:  tt.fields.clients,
+				authOpts: tt.fields.authOpts,
+			}
+
+			err := d.authorize()
+
+			tt.wantErr(t, err)
+		})
+	}
+}
 
 func TestNewAuthorizer(t *testing.T) {
 	type envVariables struct {
