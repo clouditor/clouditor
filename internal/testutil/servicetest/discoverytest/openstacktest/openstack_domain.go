@@ -170,7 +170,7 @@ func HandleListDomainsSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, ListDomainOutput)
+		fmt.Fprint(w, ListDomainOutput)
 	})
 }
 
@@ -184,7 +184,7 @@ func HandleGetDomainSuccessfully(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, GetDomainOutput)
+		fmt.Fprint(w, GetDomainOutput)
 	})
 }
 
@@ -197,7 +197,7 @@ func HandleCreateDomainSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, CreateDomainRequest)
 
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, GetDomainOutput)
+		fmt.Fprint(w, GetDomainOutput)
 	})
 }
 
@@ -221,6 +221,6 @@ func HandleUpdateDomainSuccessfully(t *testing.T) {
 		th.TestJSONRequest(t, r, UpdateDomainRequest)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, UpdateDomainOutput)
+		fmt.Fprint(w, UpdateDomainOutput)
 	})
 }

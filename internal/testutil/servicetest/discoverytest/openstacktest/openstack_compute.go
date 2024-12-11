@@ -499,9 +499,9 @@ func HandleServerListSuccessfully(t *testing.T) {
 		marker := r.Form.Get("marker")
 		switch marker {
 		case "":
-			fmt.Fprintf(w, ServerListBody)
+			fmt.Fprint(w, ServerListBody)
 		case "9e5476bd-a4ec-4653-93d6-72c93aa682ba":
-			fmt.Fprintf(w, `{ "servers": [] }`)
+			fmt.Fprint(w, `{ "servers": [] }`)
 		default:
 			t.Fatalf("/servers/detail invoked with unexpected marker=[%s]", marker)
 		}
