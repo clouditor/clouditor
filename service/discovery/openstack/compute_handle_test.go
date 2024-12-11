@@ -26,6 +26,7 @@
 package openstack
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -65,6 +66,42 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 		want    assert.Want[ontology.IsResource]
 		wantErr assert.ErrorAssertionFunc
 	}{
+		{
+			name: "error getting network interfaces",
+			fields: fields{
+				authOpts: &gophercloud.AuthOptions{
+					IdentityEndpoint: testdata.MockOpenstackIdentityEndpoint,
+					Username:         testdata.MockOpenstackUsername,
+					Password:         testdata.MockOpenstackPassword,
+					TenantName:       testdata.MockOpenstackTenantName,
+				},
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return "", errors.New("test error")
+						},
+					},
+				},
+			},
+			args: args{
+				server: &servers.Server{
+					ID:       "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
+					Name:     "herp",
+					TenantID: "fcad67a6189847c4aecfa3c81a05783b",
+					AttachedVolumes: []servers.AttachedVolume{
+						{
+							ID: "2bdbc40f-a277-45d4-94ac-d9881c777d33",
+						},
+					},
+					Created: t1,
+				},
+			},
+			want: assert.Nil[ontology.IsResource],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not discover attached network interfaces:")
+			},
+		},
 		{
 			name: "Happy path",
 			fields: fields{
