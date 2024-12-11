@@ -57,7 +57,36 @@ func Test_openstackDiscovery_handleBlockStorage(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			name: "Happy path",
+			name: "Happy path: volume name missing",
+			args: args{
+				volume: &volumes.Volume{
+					ID: testdata.MockVolumeID1,
+					// Name:      testdata.MockVolumeName1,
+					TenantID:  testdata.MockVolumeTenantID,
+					CreatedAt: testTime,
+				},
+			},
+			want: func(t *testing.T, got ontology.IsResource) bool {
+				want := &ontology.BlockStorage{
+					Id:           testdata.MockVolumeID1,
+					Name:         testdata.MockVolumeID1,
+					CreationTime: timestamppb.New(testTime),
+					GeoLocation: &ontology.GeoLocation{
+						Region: "unknown", // TODO: Can we get the region?
+					},
+					ParentId: util.Ref(testdata.MockVolumeTenantID),
+				}
+
+				gotNew := got.(*ontology.BlockStorage)
+
+				assert.NotEmpty(t, gotNew.GetRaw())
+				gotNew.Raw = ""
+				return assert.Equal(t, want, gotNew)
+			},
+			wantErr: assert.NoError,
+		},
+		{
+			name: "Happy path: volume name available",
 			args: args{
 				volume: &volumes.Volume{
 					ID:        testdata.MockVolumeID1,
