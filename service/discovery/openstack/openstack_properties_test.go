@@ -29,6 +29,10 @@ import (
 	"testing"
 
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/testhelper"
+	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 )
 
 func Test_labels(t *testing.T) {
@@ -74,6 +78,90 @@ func Test_labels(t *testing.T) {
 			got := labels(tt.args.tags)
 
 			tt.want(t, got)
+		})
+	}
+}
+
+func Test_openstackDiscovery_getAttachedNetworkInterfaces(t *testing.T) {
+	testhelper.SetupHTTP()
+	defer testhelper.TeardownHTTP()
+
+	type fields struct {
+		csID       string
+		clients    clients
+		authOpts   *gophercloud.AuthOptions
+		testhelper bool
+	}
+	type args struct {
+		serverID string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    assert.Want[[]string]
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "error getting network interfaces",
+			fields: fields{
+				testhelper: false,
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			args: args{
+				serverID: "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
+			},
+			want: assert.Nil[[]string],
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(t, err, "could not list network interfaces:")
+			},
+		},
+		{
+			name: "Happy path",
+			fields: fields{
+				testhelper: true,
+				clients: clients{
+					provider: &gophercloud.ProviderClient{
+						TokenID: client.TokenID,
+						EndpointLocator: func(eo gophercloud.EndpointOpts) (string, error) {
+							return testhelper.Endpoint(), nil
+						},
+					},
+				},
+			},
+			args: args{
+				serverID: "ef079b0c-e610-4dfb-b1aa-b49f07ac48e5",
+			},
+			want: func(t *testing.T, got []string) bool {
+				return assert.Equal(t, "8a5fe506-7e9f-4091-899b-96336909d93c", got[0])
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &openstackDiscovery{
+				csID:     tt.fields.csID,
+				clients:  tt.fields.clients,
+				authOpts: tt.fields.authOpts,
+			}
+
+			if tt.fields.testhelper {
+				openstacktest.HandleInterfaceListSuccessfully(t)
+
+			}
+
+			got, err := d.getAttachedNetworkInterfaces(tt.args.serverID)
+
+			tt.want(t, got)
+			tt.wantErr(t, err)
 		})
 	}
 }
