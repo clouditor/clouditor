@@ -27,7 +27,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install buf
-        uses: bufbuild/buf-setup-action@v1.46.0
+        uses: bufbuild/buf-setup-action@v1.47.2
         with:
           github_token: ${{ github.token }}
       - name: Generate
@@ -70,7 +70,7 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.54
+          version: v1.60
           args: --timeout=10m
       - name: Check for forbidden licenses
         run: |
