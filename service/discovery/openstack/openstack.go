@@ -211,7 +211,6 @@ func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	projects, err := d.discoverProjects()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover projects: %w", err)
-		// log.Errorf("could not discover projects: %v", err)
 	}
 	list = append(list, projects...)
 
