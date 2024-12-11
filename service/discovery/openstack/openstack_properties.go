@@ -34,7 +34,6 @@ import (
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
 
-// TODO(anatheka): TBD: How is the string formatted?
 // labels converts the resource tags to the ontology label
 func labels(tags *[]string) map[string]string {
 	l := make(map[string]string)
