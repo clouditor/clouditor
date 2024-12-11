@@ -60,10 +60,10 @@ func (d *openstackDiscovery) handleDomain(domain *domains.Domain) (ontology.IsRe
 		Id:           domain.ID,
 		Name:         domain.Name,
 		Description:  domain.Description,
-		CreationTime: nil, // domain do not have a creation date
-		GeoLocation:  nil, // domain are global
-		Labels:       nil, // domain do not have labels,
-		ParentId:     nil, // domain are the top-most item and have no parent,
+		CreationTime: nil, // domain does not have a creation date
+		GeoLocation:  nil, // domain is global
+		Labels:       nil, // domain does not have labels,
+		ParentId:     nil, // domain is the top-most item and have no parent,
 		Raw:          discovery.Raw(domain),
 	}
 
