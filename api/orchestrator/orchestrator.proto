@@ -312,7 +312,7 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a Audit Scope
+  // Retrieves an Audit Scope
   rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
     option (google.api.http) = {get: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
@@ -333,7 +333,7 @@ service Orchestrator {
     };
   }
 
-  // Removes a Audit Scope
+  // Removes an Audit Scope
   rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
@@ -640,12 +640,6 @@ message CertificationTarget {
   ];
 
   string description = 3;
-
-  repeated Catalog catalogs_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:audit_scopes\"",
-    (buf.validate.field).repeated.items.required = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
 
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
@@ -1092,7 +1086,7 @@ message State {
   string certificate_id = 5;
 }
 
-// AuditScopeChangeEvent represents a change of either a Audit Scope
+// AuditScopeChangeEvent represents a change of either an Audit Scope
 // or Control Monitoring Status and the AuditScope hook
 // function can be informed about the reason of its call.
 message AuditScopeChangeEvent {

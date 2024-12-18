@@ -51,8 +51,8 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--db-in-memory",
-                "--dashboard-callback-url=http://localhost:5173/callback",
-                "--api-cors-allowed-origins=http://localhost:5173",
+                "--dashboard-callback-url=http://localhost:3000/api/auth/confirmate/callback",
+                "--api-cors-allowed-origins=http://localhost:3000",
                 "--discovery-auto-start",
                 "--discovery-provider=azure",
             ],

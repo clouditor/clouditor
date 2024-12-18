@@ -341,7 +341,7 @@ paths:
         get:
             tags:
                 - Orchestrator
-            description: Retrieves a Audit Scope
+            description: Retrieves an Audit Scope
             operationId: Orchestrator_GetAuditScope
             parameters:
                 - name: auditScopeId
@@ -365,7 +365,7 @@ paths:
         delete:
             tags:
                 - Orchestrator
-            description: Removes a Audit Scope
+            description: Removes an Audit Scope
             operationId: Orchestrator_RemoveAuditScope
             parameters:
                 - name: auditScopeId
@@ -1593,7 +1593,6 @@ components:
             required:
                 - id
                 - name
-                - catalogsInScope
                 - configuredMetrics
                 - targetType
             type: object
@@ -1604,10 +1603,6 @@ components:
                     type: string
                 description:
                     type: string
-                catalogsInScope:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/Catalog'
                 configuredMetrics:
                     type: array
                     items:

@@ -92,7 +92,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	res = new(orchestrator.AuditScope)
 	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, api.ErrAuditScopeNotFound.Error())
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
@@ -107,7 +107,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	return res, nil
 }
 
-// ListAuditScopes implements method for getting an Audit Scope
+// ListAuditScopes implements method for getting a AuditScope
 func (svc *Service) ListAuditScopes(ctx context.Context, req *orchestrator.ListAuditScopesRequest) (res *orchestrator.ListAuditScopesResponse, err error) {
 	var allowed []string
 	var all bool
@@ -185,9 +185,9 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 
 	err = svc.storage.Update(res, "Id = ?", req.AuditScope.GetId())
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, "%v", persistence.ErrConstraintFailed)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
@@ -199,7 +199,7 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 	return
 }
 
-// RemoveAuditScope implements method for removing a AuditScope
+// RemoveAuditScope implements method for removing an Audit Scope
 func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.RemoveAuditScopeRequest) (response *emptypb.Empty, err error) {
 	// Validate request
 	err = api.Validate(req)
