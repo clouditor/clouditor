@@ -35,10 +35,10 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/openstacktest"
 	"clouditor.io/clouditor/v2/internal/util"
-	"github.com/gophercloud/gophercloud/testhelper/client"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
+	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

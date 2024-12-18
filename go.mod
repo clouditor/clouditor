@@ -167,6 +167,11 @@ require (
 
 )
 
+// runtime dependencies (Openstack)
+require (	
+	github.com/gophercloud/gophercloud/v2 v2.2.0
+)
+
 // runtime dependencies (k8s)
 require (
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
@@ -233,9 +238,4 @@ require (
 	github.com/oxisto/owl2proto v0.2.1
 	github.com/srikrsna/protoc-gen-gotag v1.0.0
 
-)
-
-require (
-	github.com/gophercloud/gophercloud v1.14.1
-	github.com/gophercloud/gophercloud/v2 v2.2.0
 )
