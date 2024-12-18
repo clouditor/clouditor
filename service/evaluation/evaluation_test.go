@@ -579,7 +579,7 @@ func TestService_getMetricsFromSubControls(t *testing.T) {
 			},
 			wantMetrics: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrControlNotAvailable)
+				return assert.ErrorIs(t, err, api.ErrControlNotAvailable)
 			},
 		},
 		{
@@ -688,7 +688,7 @@ func TestService_StopEvaluation(t *testing.T) {
 			wantRes: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
-				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+				return assert.ErrorContains(t, err, api.ErrAuditScopeNotFound.Error())
 			},
 		},
 		{
@@ -856,7 +856,7 @@ func TestService_StartEvaluation(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+				return assert.ErrorContains(t, err, api.ErrAuditScopeNotFound.Error())
 			},
 		},
 		{
@@ -1128,7 +1128,7 @@ func TestService_getControl(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCatalogIdIsMissing)
+				return assert.ErrorIs(t, err, api.ErrCatalogIdIsMissing)
 			},
 		},
 		{
@@ -1140,7 +1140,7 @@ func TestService_getControl(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCategoryNameIsMissing)
+				return assert.ErrorIs(t, err, api.ErrCategoryNameIsMissing)
 			},
 		},
 		{
@@ -1152,7 +1152,7 @@ func TestService_getControl(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrControlIdIsMissing)
+				return assert.ErrorIs(t, err, api.ErrControlIdIsMissing)
 			},
 		},
 		{
@@ -1165,7 +1165,7 @@ func TestService_getControl(t *testing.T) {
 			},
 			want: nil,
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrControlNotAvailable)
+				return assert.ErrorIs(t, err, api.ErrControlNotAvailable)
 			},
 		},
 		{
@@ -1657,7 +1657,7 @@ func TestService_cacheControls(t *testing.T) {
 		{
 			name: "catalog_id missing",
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCatalogIdIsMissing)
+				return assert.ErrorIs(t, err, api.ErrCatalogIdIsMissing)
 			},
 		},
 		{

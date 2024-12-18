@@ -44,9 +44,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// ErrAuditScopeNotFound indicates the audit scope was not found
-var ErrAuditScopeNotFound = status.Error(codes.NotFound, "audit scope not found")
-
 func (svc *Service) CreateAuditScope(ctx context.Context, req *orchestrator.CreateAuditScopeRequest) (res *orchestrator.AuditScope, err error) {
 	if req.AuditScope == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%s", api.ErrEmptyRequest)
@@ -92,7 +89,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	res = new(orchestrator.AuditScope)
 	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, ErrAuditScopeNotFound
+		return nil, api.ErrAuditScopeNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
@@ -185,9 +182,9 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 
 	err = svc.storage.Update(res, "Id = ?", req.AuditScope.GetId())
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, ErrAuditScopeNotFound
+		return nil, api.ErrAuditScopeNotFound
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, ErrAuditScopeNotFound
+		return nil, api.ErrAuditScopeNotFound
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}

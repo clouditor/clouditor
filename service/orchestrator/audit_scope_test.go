@@ -285,7 +285,7 @@ func TestService_GetAuditScope(t *testing.T) {
 			wantResponse: assert.Nil[*orchestrator.AuditScope],
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+				return assert.ErrorContains(t, err, api.ErrAuditScopeNotFound.Error())
 			},
 		},
 		{
@@ -691,7 +691,7 @@ func TestService_RemoveAuditScope(t *testing.T) {
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+				return assert.ErrorContains(t, err, api.ErrAuditScopeNotFound.Error())
 			},
 		},
 		// {
@@ -871,7 +871,7 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			},
 			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.NotFound, status.Code(err))
-				return assert.ErrorContains(t, err, ErrAuditScopeNotFound.Error())
+				return assert.ErrorContains(t, err, api.ErrAuditScopeNotFound.Error())
 			},
 		},
 		{

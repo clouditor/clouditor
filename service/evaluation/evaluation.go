@@ -57,12 +57,7 @@ import (
 )
 
 var (
-	log                      *logrus.Entry
-	ErrCatalogIdIsMissing    = errors.New("catalog_id is missing")
-	ErrCategoryNameIsMissing = errors.New("category_name is missing")
-	ErrControlIdIsMissing    = errors.New("control_id is missing")
-	ErrControlNotAvailable   = errors.New("control not available")
-	ErrAuditScopeNotFound    = errors.New("audit scope not found")
+	log *logrus.Entry
 )
 
 // DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
@@ -197,7 +192,7 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		AuditScopeId: req.GetAuditScopeId(),
 	})
 	if err != nil {
-		err = fmt.Errorf("%w: %w", ErrAuditScopeNotFound, err)
+		err = fmt.Errorf("%w: %w", api.ErrAuditScopeNotFound, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -282,7 +277,7 @@ func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEval
 		AuditScopeId: req.GetAuditScopeId(),
 	})
 	if err != nil {
-		err = fmt.Errorf("%w: %w", ErrAuditScopeNotFound, err)
+		err = fmt.Errorf("%w: %w", api.ErrAuditScopeNotFound, err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -861,7 +856,7 @@ func (svc *Service) cacheControls(catalogId string) error {
 	)
 
 	if catalogId == "" {
-		return ErrCatalogIdIsMissing
+		return api.ErrCatalogIdIsMissing
 	}
 
 	// Get controls for given catalog
@@ -891,18 +886,18 @@ func (svc *Service) cacheControls(catalogId string) error {
 // getControl returns the control for the given catalogID, CategoryName and controlID.
 func (svc *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
 	if catalogId == "" {
-		return nil, ErrCatalogIdIsMissing
+		return nil, api.ErrCatalogIdIsMissing
 	} else if categoryName == "" {
-		return nil, ErrCategoryNameIsMissing
+		return nil, api.ErrCategoryNameIsMissing
 	} else if controlId == "" {
-		return nil, ErrControlIdIsMissing
+		return nil, api.ErrControlIdIsMissing
 	}
 
 	tag := fmt.Sprintf("%s-%s", categoryName, controlId)
 
 	control, ok := svc.catalogControls[catalogId][tag]
 	if !ok {
-		return nil, ErrControlNotAvailable
+		return nil, api.ErrControlNotAvailable
 	}
 
 	return
