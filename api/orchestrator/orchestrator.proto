@@ -641,7 +641,6 @@ message CertificationTarget {
 
   string description = 3;
 
-
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
     (buf.validate.field).repeated.items.required = true,
@@ -657,10 +656,10 @@ message CertificationTarget {
   }
 
   // creation time of the certification_target
-  optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp created_at = 6 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // last update time of the certification_target
-  optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp updated_at = 7 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // additional metadata of the certification target, mostly used for the UI
   optional Metadata metadata = 10 [(tagger.tags) = "gorm:\"serializer:json\""];
@@ -740,8 +739,7 @@ message Category {
   repeated Control controls = 4 [
     (tagger.tags) =
       "gorm:\"foreignKey:category_name,category_"
-      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\""
-,
+      "catalog_id;references:name,catalog_id;constraint:OnDelete:CASCADE\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];
@@ -785,8 +783,7 @@ message Control {
     (tagger.tags) =
       "gorm:\"foreignKey:parent_control_id,parent_control_"
       "category_name,parent_control_category_catalog_id;"
-      "references=id,category_name;category_catalog_id\""
-,
+      "references=id,category_name;category_catalog_id\"",
     (buf.validate.field).repeated.items.required = true,
     (google.api.field_behavior) = REQUIRED
   ];

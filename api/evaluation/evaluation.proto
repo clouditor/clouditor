@@ -164,7 +164,7 @@ message EvaluationResult {
   EvaluationStatus status = 7 [(buf.validate.field).enum.defined_only = true];
 
   // Time of evaluation
-  google.protobuf.Timestamp timestamp = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  google.protobuf.Timestamp timestamp = 8 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 
   // List of assessment results because of which the evaluation status is not
   // 'compliant'
@@ -178,7 +178,7 @@ message EvaluationResult {
   // Optional, but required if the status is one of the "manually" ones. This
   // denotes how long the (manual) created evaluation result is valid. During
   // this time, no automatic results are generated for the specific control.
-  optional google.protobuf.Timestamp valid_until = 20 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:datetime\""];
+  optional google.protobuf.Timestamp valid_until = 20 [(tagger.tags) = "gorm:\"serializer:timestamppb;type:timestamp\""];
 }
 
 enum EvaluationStatus {
