@@ -851,6 +851,29 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			},
 		},
 		{
+			name: "Error: permission denied: with authorization for audit scopes with a certain specific certification target",
+			fields: fields{
+				svc: NewService(
+					WithStorage(testutil.NewInMemoryStorage(t)),
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2)),
+				),
+			},
+			args: args{
+				ctx: context.Background(),
+				req: &orchestrator.UpdateAuditScopeRequest{
+					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+				},
+			},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.PermissionDenied, status.Code(err))
+				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
+			},
+		},
+		{
 			name: "Error: audit scope not found",
 			fields: fields{
 				svc: NewService(
@@ -875,6 +898,28 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			},
 		},
 		{
+			name: "Error: constraint failed",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(true)),
+					WithStorage(&testutil.StorageWithError{UpdateErr: persistence.ErrConstraintFailed}),
+				),
+			},
+			args: args{req: &orchestrator.UpdateAuditScopeRequest{
+				AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
+			}},
+			wantRes: assert.Nil[*orchestrator.AuditScope],
+			wantSvc: func(t *testing.T, svc *Service) bool {
+				n, err := svc.storage.Count(&orchestrator.AuditScope{})
+				assert.NoError(t, err)
+				return assert.Equal(t, 0, n)
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.NotFound, status.Code(err))
+				return assert.ErrorContains(t, err, persistence.ErrConstraintFailed.Error())
+			},
+		},
+		{
 			name: "Error: database error",
 			fields: fields{
 				svc: NewService(
@@ -894,29 +939,6 @@ func TestService_UpdateAuditScope(t *testing.T) {
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, codes.Internal, status.Code(err))
 				return assert.ErrorContains(t, err, persistence.ErrDatabase.Error())
-			},
-		},
-		{
-			name: "Error: permission denied",
-			fields: fields{
-				svc: NewService(
-					WithStorage(testutil.NewInMemoryStorage(t)),
-					WithAuthorizationStrategy(servicetest.NewAuthorizationStrategy(false, testdata.MockCertificationTargetID2)),
-				),
-			},
-			args: args{
-				ctx: context.Background(),
-				req: &orchestrator.UpdateAuditScopeRequest{
-					AuditScope: orchestratortest.MockAuditScopeCertTargetID1,
-				},
-			},
-			wantRes: assert.Nil[*orchestrator.AuditScope],
-			wantSvc: func(t *testing.T, got *Service) bool {
-				return true
-			},
-			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equal(t, codes.PermissionDenied, status.Code(err))
-				return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 			},
 		},
 		{

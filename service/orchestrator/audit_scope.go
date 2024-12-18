@@ -89,7 +89,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	res = new(orchestrator.AuditScope)
 	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, api.ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
@@ -182,9 +182,9 @@ func (svc *Service) UpdateAuditScope(ctx context.Context, req *orchestrator.Upda
 
 	err = svc.storage.Update(res, "Id = ?", req.AuditScope.GetId())
 	if err != nil && errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, api.ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
 	} else if err != nil && errors.Is(err, persistence.ErrConstraintFailed) {
-		return nil, api.ErrAuditScopeNotFound
+		return nil, status.Errorf(codes.NotFound, "%v", persistence.ErrConstraintFailed)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
