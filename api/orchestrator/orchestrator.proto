@@ -312,18 +312,14 @@ service Orchestrator {
     };
   }
 
-  // Retrieves a Audit Scope
+  // Retrieves an Audit Scope
   rpc GetAuditScope(GetAuditScopeRequest) returns (AuditScope) {
-    option (google.api.http) = {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Lists all Audit Scopes
   rpc ListAuditScopes(ListAuditScopesRequest) returns (ListAuditScopesResponse) {
-    option (google.api.http) = {
-      get: "/v1/orchestrator/audit_scopes"
-      additional_bindings: {get: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes"}
-      additional_bindings: {get: "/v1/orchestrator/catalogs/{catalog_id}/audit_scopes"}
-    };
+    option (google.api.http) = {get: "/v1/orchestrator/audit_scopes"};
   }
 
   // Updates an existing Audit Scope
@@ -337,9 +333,9 @@ service Orchestrator {
     };
   }
 
-  // Removes a Audit Scope
+  // Removes an Audit Scope
   rpc RemoveAuditScope(RemoveAuditScopeRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/orchestrator/certification_targets/{certification_target_id}/audit_scopes/{catalog_id}"};
+    option (google.api.http) = {delete: "/v1/orchestrator/audit_scopes/{audit_scope_id}"};
   }
 
   // Get Runtime Information
@@ -645,12 +641,6 @@ message CertificationTarget {
 
   string description = 3;
 
-  repeated Catalog catalogs_in_scope = 4 [
-    (tagger.tags) = "gorm:\"many2many:audit_scopes\"",
-    (buf.validate.field).repeated.items.required = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-
   repeated clouditor.assessment.v1.Metric configured_metrics = 5 [
     (tagger.tags) = "gorm:\"many2many:metric_configurations\"",
     (buf.validate.field).repeated.items.required = true,
@@ -820,17 +810,20 @@ message Control {
 // A Audit Scope binds a certification target to a catalog, so the certification target is
 // evaluated regarding this catalog's controls
 message AuditScope {
-  string certification_target_id = 1 [
+  // Audit Scope ID
+  string id = 4 [
     (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.uuid = true,
     (google.api.field_behavior) = REQUIRED
   ];
+  string certification_target_id = 1 [
+    (buf.validate.field).string.uuid = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
   string catalog_id = 2 [
-    (tagger.tags) = "gorm:\"primaryKey\"",
     (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
-
   // an assurance level is not offered by every catalog, therefore it is
   // optional
   optional string assurance_level = 3;
@@ -875,36 +868,28 @@ message CreateAuditScopeRequest {
 }
 
 message RemoveAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
 message GetAuditScopeRequest {
-  string certification_target_id = 1 [
+  string audit_scope_id = 1 [
     (buf.validate.field).string.uuid = true,
-    (google.api.field_behavior) = REQUIRED
-  ];
-  string catalog_id = 2 [
-    (buf.validate.field).string.min_len = 1,
     (google.api.field_behavior) = REQUIRED
   ];
 }
 
 message ListAuditScopesRequest {
-  // We cannot create additional bindings when the parameter is optional so we
-  // check for != "" in the method to see if it is set when the certification target is
-  // specified, return all Audit Scopes that evaluate the given certification target
-  // for any catalog
-  string certification_target_id = 1;
-  // when the catalog is specified, return all Audit Scopes that
-  // evaluate the given catalog for any certificationtarget
-  string catalog_id = 2;
+  message Filter {
+    // Optional. List only audit scopes of a specific certification target
+    optional string certification_target_id = 1;
+    // Optional. List only audit scopes that evaluate the given catalog for any certification target
+    optional string catalog_id = 2;
+  }
+
+  optional Filter filter = 1;
 
   int32 page_size = 10;
   string page_token = 11;
@@ -1099,7 +1084,7 @@ message State {
   string certificate_id = 5;
 }
 
-// AuditScopeChangeEvent represents a change of either a Audit Scope
+// AuditScopeChangeEvent represents a change of either an Audit Scope
 // or Control Monitoring Status and the AuditScope hook
 // function can be informed about the reason of its call.
 message AuditScopeChangeEvent {

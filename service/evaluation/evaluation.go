@@ -57,11 +57,7 @@ import (
 )
 
 var (
-	log                      *logrus.Entry
-	ErrCatalogIdIsMissing    = errors.New("catalog_id is missing")
-	ErrCategoryNameIsMissing = errors.New("category_name is missing")
-	ErrControlIdIsMissing    = errors.New("control_id is missing")
-	ErrControlNotAvailable   = errors.New("control not available")
+	log *logrus.Entry
 )
 
 // DefaultServiceSpec returns a [launcher.ServiceSpec] for this [Service] with all necessary options retrieved from the
@@ -191,8 +187,18 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
+	// Get Audit Scope
+	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
+		AuditScopeId: req.GetAuditScopeId(),
+	})
+	if err != nil {
+		err = fmt.Errorf("%w: %w", api.ErrAuditScopeNotFound, err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
 	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
 
@@ -207,27 +213,16 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Get all Controls from Orchestrator for the evaluation
-	err = svc.cacheControls(req.CatalogId)
+	err = svc.cacheControls(auditScope.GetCatalogId())
 	if err != nil {
 		err = fmt.Errorf("could not cache controls: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 
-	// Get Audit Scope
-	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
-		CertificationTargetId: req.CertificationTargetId,
-		CatalogId:             req.CatalogId,
-	})
-	if err != nil {
-		err = fmt.Errorf("could not get audit scope: %w", err)
-		log.Error(err)
-		return nil, status.Errorf(codes.Internal, "%s", err)
-	}
-
 	// Retrieve the catalog
 	catalog, err = svc.orchestrator.Client.GetCatalog(context.Background(), &orchestrator.GetCatalogRequest{
-		CatalogId: req.CatalogId,
+		CatalogId: auditScope.GetCatalogId(),
 	})
 	if err != nil {
 		err = fmt.Errorf("could not get catalog: %w", err)
@@ -236,13 +231,13 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 	}
 
 	// Check, if a previous job exists and/or is running
-	jobs, err = svc.scheduler.FindJobsByTag(req.CertificationTargetId, req.CatalogId)
+	jobs, err = svc.scheduler.FindJobsByTag(auditScope.GetId())
 	if err != nil && !errors.Is(err, gocron.ErrJobNotFoundWithTag) {
 		err = fmt.Errorf("error while retrieving existing scheduler job: %w", err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	} else if len(jobs) > 0 {
-		err = fmt.Errorf("evaluation for Certification Target '%s' and Catalog ID '%s' already started", auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
+		err = fmt.Errorf("evaluation for Audit Scope '%s' (certification target '%s' and catalog ID '%s') already started", auditScope.GetId(), auditScope.GetCertificationTargetId(), auditScope.GetCatalogId())
 		log.Error(err)
 		return nil, status.Errorf(codes.AlreadyExists, "%s", err)
 	}
@@ -256,9 +251,8 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 		return nil, err
 	}
 
-	log.Infof("Scheduled to evaluate catalog ID '%s' for certification target '%s' every %d minutes...",
-		catalog.GetId(),
-		auditScope.GetCertificationTargetId(),
+	log.Infof("Scheduled to evaluate audit scope '%s' every %d minutes...",
+		auditScope.GetId(),
 		interval,
 	)
 
@@ -270,23 +264,35 @@ func (svc *Service) StartEvaluation(ctx context.Context, req *evaluation.StartEv
 // StopEvaluation is a method implementation of the evaluation interface: It stops the evaluation for a
 // AuditScope.
 func (svc *Service) StopEvaluation(ctx context.Context, req *evaluation.StopEvaluationRequest) (resp *evaluation.StopEvaluationResponse, err error) {
+	var auditScope *orchestrator.AuditScope
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get audit scope
+	auditScope, err = svc.orchestrator.Client.GetAuditScope(context.Background(), &orchestrator.GetAuditScopeRequest{
+		AuditScopeId: req.GetAuditScopeId(),
+	})
+	if err != nil {
+		err = fmt.Errorf("%w: %w", api.ErrAuditScopeNotFound, err)
+		log.Error(err)
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
 	// Check, if this request has access to the certification target according to our authorization strategy.
-	if !svc.authz.CheckAccess(ctx, service.AccessCreate, req) {
+	if !svc.authz.CheckAccess(ctx, service.AccessCreate, auditScope) {
 		return nil, service.ErrPermissionDenied
 	}
 
-	// Stop jobs(s) for given certification target and catalog
-	err = svc.scheduler.RemoveByTags(req.CertificationTargetId, req.CatalogId)
+	// Stop jobs(s) for given audit scope
+	err = svc.scheduler.RemoveByTags(auditScope.GetId())
 	if err != nil && errors.Is(err, gocron.ErrJobNotFoundWithTag) {
-		return nil, status.Errorf(codes.FailedPrecondition, "job for certification target '%s' and catalog '%s' not running", req.CertificationTargetId, req.CatalogId)
+		return nil, status.Errorf(codes.FailedPrecondition, "job for audit scope '%s' not running", auditScope.GetId())
 	} else if err != nil {
-		err = fmt.Errorf("error while removing jobs for certification target '%s' and catalog '%s': %w", req.CertificationTargetId, req.CatalogId, err)
+		err = fmt.Errorf("error while removing jobs for audit scope '%s': %w", auditScope.GetId(), err)
 		log.Error(err)
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -396,7 +402,7 @@ func (svc *Service) ListEvaluationResults(ctx context.Context, req *evaluation.L
 		  	)
 		  	SELECT * FROM sorted_results WHERE row_number = 1 ORDER BY control_catalog_id, control_id;`, p, where), args...)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+			return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 		}
 	} else {
 		// join query with AND and prepend the query
@@ -443,7 +449,7 @@ func (svc *Service) CreateEvaluationResult(ctx context.Context, req *evaluation.
 	res.Id = uuid.NewString()
 	err = svc.storage.Create(res)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
 
 	return res, nil
@@ -466,15 +472,15 @@ func (svc *Service) addJobToScheduler(ctx context.Context, auditScope *orchestra
 	_, err = svc.scheduler.
 		Every(interval).
 		Minute().
-		Tag(auditScope.GetCertificationTargetId(), auditScope.GetCatalogId()).
+		Tag(auditScope.GetId()).
 		Do(svc.evaluateCatalog, ctx, auditScope, catalog, interval)
 	if err != nil {
-		err = fmt.Errorf("evaluation for certification target '%s' and catalog ID '%s' cannot be scheduled: %w", auditScope.GetCertificationTargetId(), catalog.GetId(), err)
+		err = fmt.Errorf("evaluation for audit scope '%s' cannot be scheduled: %w", auditScope.GetId(), err)
 		log.Error(err)
 		return status.Errorf(codes.Internal, "%s", err)
 	}
 
-	log.Debugf("certification target '%s' with catalog ID '%s' added to scheduler", auditScope.GetCertificationTargetId(), catalog.GetId())
+	log.Debugf("audit scope '%s' added to scheduler", auditScope.GetId())
 
 	return
 }
@@ -850,11 +856,11 @@ func (svc *Service) cacheControls(catalogId string) error {
 	)
 
 	if catalogId == "" {
-		return ErrCatalogIdIsMissing
+		return api.ErrCatalogIdIsMissing
 	}
 
 	// Get controls for given catalog
-	controls, err = api.ListAllPaginated[*orchestrator.ListControlsResponse](&orchestrator.ListControlsRequest{
+	controls, err = api.ListAllPaginated(&orchestrator.ListControlsRequest{
 		CatalogId: catalogId,
 	}, svc.orchestrator.Client.ListControls, func(res *orchestrator.ListControlsResponse) []*orchestrator.Control {
 		return res.Controls
@@ -880,18 +886,18 @@ func (svc *Service) cacheControls(catalogId string) error {
 // getControl returns the control for the given catalogID, CategoryName and controlID.
 func (svc *Service) getControl(catalogId, categoryName, controlId string) (control *orchestrator.Control, err error) {
 	if catalogId == "" {
-		return nil, ErrCatalogIdIsMissing
+		return nil, api.ErrCatalogIdIsMissing
 	} else if categoryName == "" {
-		return nil, ErrCategoryNameIsMissing
+		return nil, api.ErrCategoryNameIsMissing
 	} else if controlId == "" {
-		return nil, ErrControlIdIsMissing
+		return nil, api.ErrControlIdIsMissing
 	}
 
 	tag := fmt.Sprintf("%s-%s", categoryName, controlId)
 
 	control, ok := svc.catalogControls[catalogId][tag]
 	if !ok {
-		return nil, ErrControlNotAvailable
+		return nil, api.ErrControlNotAvailable
 	}
 
 	return

@@ -160,7 +160,7 @@ func (req *UpdateAuditScopeRequest) GetPayload() proto.Message {
 }
 
 func (req *RemoveAuditScopeRequest) GetPayload() proto.Message {
-	return &AuditScope{CertificationTargetId: req.CertificationTargetId, CatalogId: req.CatalogId}
+	return &AuditScope{Id: req.AuditScopeId}
 }
 
 // IsRelevantFor checks, whether this control is relevant for the given audit scope. For now this mainly

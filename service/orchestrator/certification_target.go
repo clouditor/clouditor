@@ -217,6 +217,10 @@ func (s *Service) RemoveCertificationTarget(ctx context.Context, req *orchestrat
 
 // GetCertificationTargetStatistics implements method for OrchestratorServer interface for retrieving certification target statistics
 func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orchestrator.GetCertificationTargetStatisticsRequest) (response *orchestrator.GetCertificationTargetStatisticsResponse, err error) {
+	var (
+		auditScopes *orchestrator.ListAuditScopesResponse
+	)
+
 	// Validate request
 	err = api.Validate(req)
 	if err != nil {
@@ -231,14 +235,15 @@ func (s *Service) GetCertificationTargetStatistics(ctx context.Context, req *orc
 	response = &orchestrator.GetCertificationTargetStatisticsResponse{}
 
 	// Get number of selected catalogs
-	CertificationTarget := new(orchestrator.CertificationTarget)
-	err = s.storage.Get(CertificationTarget, "Id = ?", req.CertificationTargetId)
-	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, "certification target not found")
-	} else if err != nil {
-		return nil, status.Errorf(codes.Internal, "database error getting certification target: %s", err)
+	auditScopes, err = s.ListAuditScopes(ctx,
+		&orchestrator.ListAuditScopesRequest{
+			Filter: &orchestrator.ListAuditScopesRequest_Filter{
+				CertificationTargetId: &req.CertificationTargetId,
+			}})
+	if err != nil {
+		return nil, err
 	}
-	response.NumberOfSelectedCatalogs = int64(len(CertificationTarget.CatalogsInScope))
+	response.NumberOfSelectedCatalogs = int64(len(auditScopes.AuditScopes))
 
 	// Get number of discovered resources
 	resources := new(discovery.Resource)

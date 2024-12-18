@@ -7,7 +7,7 @@ info:
     description: Manages the evaluation of Clouditor's assessment results
     version: 0.0.1
 paths:
-    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/start:
+    /v1/evaluation/evaluate/{auditScopeId}/start:
         post:
             tags:
                 - Evaluation
@@ -16,12 +16,7 @@ paths:
                  on the given catalog id. Part of the public API, also exposed as REST.
             operationId: Evaluation_StartEvaluation
             parameters:
-                - name: certificationTargetId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
+                - name: auditScopeId
                   in: path
                   required: true
                   schema:
@@ -47,7 +42,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/evaluation/evaluate/{certificationTargetId}/{catalogId}/stop:
+    /v1/evaluation/evaluate/{auditScopeId}/stop:
         post:
             tags:
                 - Evaluation
@@ -56,12 +51,7 @@ paths:
                  Part of the public API, also exposed as REST.
             operationId: Evaluation_StopEvaluation
             parameters:
-                - name: certificationTargetId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: catalogId
+                - name: auditScopeId
                   in: path
                   required: true
                   schema:

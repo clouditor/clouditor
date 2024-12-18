@@ -138,18 +138,18 @@ func TestPaginateStorage(t *testing.T) {
 					PageToken: "",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
 			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
 				want := []orchestrator.CertificationTarget{
-					{Id: "1", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-					{Id: "2", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+					{Id: "1", ConfiguredMetrics: []*assessment.Metric{}},
+					{Id: "2", ConfiguredMetrics: []*assessment.Metric{}},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -166,18 +166,18 @@ func TestPaginateStorage(t *testing.T) {
 					PageToken: "CAIQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
 			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
 				want := []orchestrator.CertificationTarget{
-					{Id: "3", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
-					{Id: "4", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}},
+					{Id: "3", ConfiguredMetrics: []*assessment.Metric{}},
+					{Id: "4", ConfiguredMetrics: []*assessment.Metric{}},
 				}
 				return assert.Equal(t, want, got)
 			},
@@ -194,16 +194,16 @@ func TestPaginateStorage(t *testing.T) {
 					PageToken: "CAQQAg==",
 				},
 				storage: testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "1"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "2"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "3"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "4"})
-					_ = s.Save(&orchestrator.CertificationTarget{Id: "5"})
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "1"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "2"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "3"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "4"}))
+					assert.NoError(t, s.Save(&orchestrator.CertificationTarget{Id: "5"}))
 				}),
 				opts: PaginationOpts{10, 10},
 			},
 			wantPage: func(t *testing.T, got []orchestrator.CertificationTarget) bool {
-				want := []orchestrator.CertificationTarget{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}, CatalogsInScope: []*orchestrator.Catalog{}}}
+				want := []orchestrator.CertificationTarget{{Id: "5", ConfiguredMetrics: []*assessment.Metric{}}}
 
 				return assert.Equal(t, want, got)
 			},
