@@ -92,7 +92,7 @@ func (svc *Service) GetAuditScope(ctx context.Context, req *orchestrator.GetAudi
 	res = new(orchestrator.AuditScope)
 	err = svc.storage.Get(res, "id = ?", req.GetAuditScopeId())
 	if errors.Is(err, persistence.ErrRecordNotFound) {
-		return nil, status.Errorf(codes.NotFound, api.ErrAuditScopeNotFound.Error())
+		return nil, status.Errorf(codes.NotFound, "%v", api.ErrAuditScopeNotFound)
 	} else if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v: %v", persistence.ErrDatabase, err)
 	}
