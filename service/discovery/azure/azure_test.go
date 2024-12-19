@@ -638,6 +638,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/disks/disk2",
@@ -651,6 +652,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithCustomerKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 				{
 					"id":       "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res2/providers/Microsoft.Compute/disks/disk3",
@@ -664,6 +666,7 @@ func (mockSender) Do(req *http.Request) (res *http.Response, err error) {
 							"type":                "EncryptionAtRestWithPlatformKey",
 						},
 					},
+					"managedBy": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/res1/providers/Microsoft.Compute/virtualMachines/vm1",
 				},
 			},
 		}, 200)

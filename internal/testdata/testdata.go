@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	MockGRPCTarget             = "localhost"
+	MockGRPCTarget = "localhost"
+
+	// Azure
 	MockLocationWestEurope     = "West Europe"
 	MockLocationEastUs         = "eastus"
 	MockSubscriptionID         = "00000000-0000-0000-0000-000000000000"
