@@ -38,7 +38,6 @@ import (
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/discoverytest/csaf/providertest"
 	"clouditor.io/clouditor/v2/internal/util"
-
 	"github.com/csaf-poc/csaf_distribution/v3/csaf"
 )
 
@@ -212,6 +211,39 @@ func Test_csafDiscovery_List(t *testing.T) {
 			gotList, err := d.List()
 			tt.wantErr(t, err)
 			tt.wantList(t, gotList)
+		})
+	}
+}
+
+func Test_csafDiscovery_CertificationTargetID(t *testing.T) {
+	type fields struct {
+		domain string
+		ctID   string
+		client *http.Client
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockCertificationTargetID1,
+			},
+			want: testdata.MockCertificationTargetID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &csafDiscovery{
+				domain: tt.fields.domain,
+				ctID:   tt.fields.ctID,
+				client: tt.fields.client,
+			}
+			if got := d.CertificationTargetID(); got != tt.want {
+				t.Errorf("csafDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
