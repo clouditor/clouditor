@@ -13,6 +13,7 @@ var (
 	MockEvaluationResult1 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult1ID,
 		Timestamp:                  timestamppb.New(time.Unix(5, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -23,6 +24,7 @@ var (
 	MockEvaluationResult2 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult2ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -34,6 +36,7 @@ var (
 	MockEvaluationResult22 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult9ID,
 		Timestamp:                  timestamppb.New(time.Unix(5, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -45,6 +48,7 @@ var (
 	MockEvaluationResult3 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult3ID,
 		Timestamp:                  timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -56,6 +60,7 @@ var (
 	MockEvaluationResult4 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult4ID,
 		Timestamp:                  timestamppb.New(time.Unix(1, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -66,6 +71,7 @@ var (
 	MockEvaluationResult5 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult5ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
@@ -77,6 +83,7 @@ var (
 	MockEvaluationResult6 = &evaluation.EvaluationResult{
 		Id:                         testdata.MockEvaluationResult6ID,
 		Timestamp:                  timestamppb.New(time.Unix(3, 0)),
+		CertificationTargetId:      testdata.MockCertificationTargetID1,
 		AuditScopeId:               testdata.MockAuditScopeID1,
 		ControlCategoryName:        testdata.MockCategoryName,
 		ControlCatalogId:           testdata.MockCatalogID1,
