@@ -49,7 +49,7 @@ func (d *openstackDiscovery) handleProject(project *projects.Project) (ontology.
 		Raw:         discovery.Raw(project),
 	}
 
-	log.Infof("Adding resource group '%s", project.Name)
+	log.Infof("Adding project '%s", project.Name)
 
 	return r, nil
 }
