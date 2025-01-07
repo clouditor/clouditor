@@ -33,6 +33,7 @@ import (
 	"strings"
 
 	"clouditor.io/clouditor/v2/api"
+	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/logging"
 	"clouditor.io/clouditor/v2/persistence"
@@ -228,6 +229,13 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
 	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
+
+	if req.RemoveEvaluationResults {
+		err := svc.storage.Delete(&evaluation.EvaluationResult{}, "audit_scope_id = ?", req.AuditScopeId)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "database error: %v", err)
+		}
+	}
 
 	return &emptypb.Empty{}, nil
 }
