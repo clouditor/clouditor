@@ -1412,6 +1412,7 @@ func TestService_evaluateControl(t *testing.T) {
 				ctx: context.Background(),
 				auditScope: &orchestrator.AuditScope{
 					CertificationTargetId: testdata.MockCertificationTargetID1,
+					Id:                    testdata.MockAuditScopeID1,
 					CatalogId:             testdata.MockCatalogID1,
 					AssuranceLevel:        &testdata.AssuranceLevelHigh,
 				},
