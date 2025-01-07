@@ -93,12 +93,6 @@ func WithAuthorizer(o gophercloud.AuthOptions) DiscoveryOption {
 	}
 }
 
-func WithProvider(p *gophercloud.ProviderClient) DiscoveryOption {
-	return func(d *openstackDiscovery) {
-		d.clients.provider = p
-	}
-}
-
 func init() {
 	log = logrus.WithField("component", "openstack-discovery")
 }
