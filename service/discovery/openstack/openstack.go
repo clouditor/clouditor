@@ -49,11 +49,7 @@ const (
 var (
 	log *logrus.Entry
 
-	ErrConversionProtobufToAuthOptions = errors.New("could not convert protobuf value to openstack.authOptions")
-	ErrGettingAuthOptionsFromEnv       = errors.New("error getting auth options from environment")
-	ErrCouldNotAuthenticate            = errors.New("could not authenticate to Azure")
-	ErrGettingNextPage                 = errors.New("error getting next page")
-	ErrNoCredentialsConfigured         = errors.New("no credentials were configured")
+	ErrGettingAuthOptionsFromEnv = errors.New("error getting auth options from environment")
 )
 
 type openstackDiscovery struct {
@@ -184,7 +180,7 @@ func (d *openstackDiscovery) authorize() (err error) {
 func NewAuthorizer() (gophercloud.AuthOptions, error) {
 	ao, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
-		log.Error("error getting auth options from environment: %w", err)
+		log.Error("%w: %w", ErrGettingAuthOptionsFromEnv, err)
 	}
 	return ao, err
 
