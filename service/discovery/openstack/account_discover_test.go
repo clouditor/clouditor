@@ -176,7 +176,7 @@ func Test_openstackDiscovery_discoverDomain(t *testing.T) {
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 			}
-			gotList, err := d.discoverDomain()
+			gotList, err := d.discoverDomains()
 
 			tt.wantList(t, gotList)
 			tt.wantErr(t, err)

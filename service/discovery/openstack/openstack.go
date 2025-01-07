@@ -201,7 +201,7 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 // * Block storages
 func (d *openstackDiscovery) List() (list []ontology.IsResource, err error) {
 	// Discover domains resource
-	domains, err := d.discoverDomain()
+	domains, err := d.discoverDomains()
 	if err != nil {
 		return nil, fmt.Errorf("could not discover domains: %w", err)
 	}
