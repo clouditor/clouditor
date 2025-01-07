@@ -55,10 +55,6 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
-
 	DefenderStorageType        = "StorageAccounts"
 	DefenderVirtualMachineType = "VirtualMachines"
 

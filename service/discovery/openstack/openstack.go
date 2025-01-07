@@ -43,10 +43,7 @@ import (
 )
 
 const (
-	StorageComponent = "storage"
-	ComputeComponent = "compute"
-	NetworkComponent = "network"
-	RegionName       = "OS_REGION_NAME"
+	RegionName = "OS_REGION_NAME"
 )
 
 var (
