@@ -44,10 +44,9 @@ const (
 	MockProjectParentID1    = MockDomainID1
 
 	// server
-	MockServerID1          = "00000000000000000000000000000002"
-	MockServerName1        = "Server 1"
-	MockServerDescription1 = "This is a mock server description (1)."
-	MockServerTenantID     = MockDomainID1
+	MockServerID1      = "00000000000000000000000000000002"
+	MockServerName1    = "Server 1"
+	MockServerTenantID = MockDomainID1
 
 	// volume
 	MockVolumeID1      = "00000000000000000000000000000003"
@@ -55,8 +54,6 @@ const (
 	MockVolumeTenantID = MockDomainID1
 
 	// network
-	MockNetworkID1          = "00000000000000000000000000000004"
-	MockNetworkName1        = "Network 1"
-	MockNetworkDescription1 = "This is a mock network description (1)."
-	MockNetworkTenantID     = MockDomainID1
+	MockNetworkID1   = "00000000000000000000000000000004"
+	MockNetworkName1 = "Network 1"
 )
