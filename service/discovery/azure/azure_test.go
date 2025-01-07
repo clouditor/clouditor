@@ -1090,7 +1090,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &azureDiscovery{
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1101,7 +1101,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
 			},
 			want: &azureDiscovery{
-				csID:               testdata.MockCertificationTargetID1,
+				ctID:               testdata.MockCertificationTargetID1,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1113,7 +1113,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				rg:                 util.Ref(testdata.MockResourceGroup),
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1129,7 +1129,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 						Transport: mockSender{},
 					},
 				},
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1141,7 +1141,7 @@ func TestNewAzureDiscovery(t *testing.T) {
 			},
 			want: &azureDiscovery{
 				cred:               &mockAuthorizer{},
-				csID:               config.DefaultCertificationTargetID,
+				ctID:               config.DefaultCertificationTargetID,
 				backupMap:          make(map[string]*backup),
 				defenderProperties: make(map[string]*defenderProperties),
 			},
@@ -1207,7 +1207,7 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 		clientOptions       arm.ClientOptions
 		discovererComponent string
 		clients             clients
-		csID                string
+		ctID                string
 		backupMap           map[string]*backup
 		defenderProperties  map[string]*defenderProperties
 	}
@@ -1219,7 +1219,7 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 		{
 			name: "Happy path",
 			fields: fields{
-				csID: testdata.MockCertificationTargetID1,
+				ctID: testdata.MockCertificationTargetID1,
 			},
 			want: testdata.MockCertificationTargetID1,
 		},
@@ -1234,7 +1234,7 @@ func Test_azureDiscovery_CertificationTargetID(t *testing.T) {
 				clientOptions:       tt.fields.clientOptions,
 				discovererComponent: tt.fields.discovererComponent,
 				clients:             tt.fields.clients,
-				csID:                tt.fields.csID,
+				ctID:                tt.fields.ctID,
 				backupMap:           tt.fields.backupMap,
 				defenderProperties:  tt.fields.defenderProperties,
 			}
@@ -1558,7 +1558,7 @@ func NewMockAzureDiscovery(transport policy.Transporter, opts ...DiscoveryOption
 				Transport: transport,
 			},
 		},
-		csID:      testdata.MockCertificationTargetID1,
+		ctID:      testdata.MockCertificationTargetID1,
 		backupMap: make(map[string]*backup),
 	}
 

@@ -184,7 +184,7 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	type args struct {
@@ -237,7 +237,7 @@ func Test_csafDiscovery_documentChecksum(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 				client: tt.fields.client,
 			}
 			got := d.documentChecksum(tt.args.checksumURL, tt.args.filename, tt.args.body, tt.args.algorithm, tt.args.h)
@@ -318,7 +318,7 @@ func Test_clientAuthenticity(t *testing.T) {
 func Test_csafDiscovery_documentPGPSignature(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	type args struct {
@@ -336,7 +336,7 @@ func Test_csafDiscovery_documentPGPSignature(t *testing.T) {
 			name: "happy path",
 			fields: fields{
 				domain: goodProvider.Domain(),
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultCertificationTargetID,
 				client: goodProvider.Client(),
 			},
 			args: args{
@@ -358,7 +358,7 @@ func Test_csafDiscovery_documentPGPSignature(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 				client: tt.fields.client,
 			}
 			if gotSig := d.documentPGPSignature(tt.args.signURL, tt.args.body, tt.args.keyring); !reflect.DeepEqual(gotSig, tt.wantSig) {

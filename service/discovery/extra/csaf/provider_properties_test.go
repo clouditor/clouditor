@@ -14,7 +14,7 @@ import (
 func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	type args struct {
@@ -59,7 +59,7 @@ func Test_csafDiscovery_providerTransportEncryption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 				client: tt.fields.client,
 			}
 			got := d.providerTransportEncryption(tt.args.url)

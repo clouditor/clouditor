@@ -384,7 +384,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		functionAPI       LambdaAPI
 		isDiscovering     bool
 		awsConfig         *Client
-		csID              string
+		ctID              string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -404,7 +404,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
-				csID:        testdata.MockCertificationTargetID1,
+				ctID:        testdata.MockCertificationTargetID1,
 			},
 			//args: args{client: mockClient},
 			[]*ontology.Function{
@@ -437,7 +437,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				functionAPI:       tt.fields.functionAPI,
 				isDiscovering:     tt.fields.isDiscovering,
 				awsConfig:         tt.fields.awsConfig,
-				csID:              tt.fields.csID,
+				ctID:              tt.fields.ctID,
 			}
 			got, err := d.discoverFunctions()
 
@@ -474,7 +474,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 
 	type args struct {
 		client *Client
-		csID   string
+		ctID   string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -488,19 +488,19 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, csID: testdata.MockCertificationTargetID1},
+			args: args{client: mockClient, ctID: testdata.MockCertificationTargetID1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				csID:              testdata.MockCertificationTargetID1,
+				ctID:              testdata.MockCertificationTargetID1,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewAwsComputeDiscovery(tt.args.client, tt.args.csID)
+			got := NewAwsComputeDiscovery(tt.args.client, tt.args.ctID)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
 		})
 	}

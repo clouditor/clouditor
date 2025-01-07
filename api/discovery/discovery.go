@@ -83,7 +83,7 @@ func Raw(raws ...any) string {
 
 // ToDiscoveryResource converts a proto message that complies to the interface [ontology.IsResource] into a resource
 // that can be persisted in our database ([*discovery.Resource]).
-func ToDiscoveryResource(resource ontology.IsResource, csID, collectorID string) (r *Resource, err error) {
+func ToDiscoveryResource(resource ontology.IsResource, ctID, collectorID string) (r *Resource, err error) {
 	var (
 		a *anypb.Any
 	)
@@ -99,7 +99,7 @@ func ToDiscoveryResource(resource ontology.IsResource, csID, collectorID string)
 	r = &Resource{
 		Id:                    string(resource.GetId()),
 		ResourceType:          strings.Join(ontology.ResourceTypes(resource), ","),
-		CertificationTargetId: csID,
+		CertificationTargetId: ctID,
 		ToolId:                collectorID,
 		Properties:            a,
 	}

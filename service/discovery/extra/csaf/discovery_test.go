@@ -127,7 +127,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 			name: "Happy path",
 			args: args{},
 			want: &csafDiscovery{
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultCertificationTargetID,
 				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
@@ -138,7 +138,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithCertificationTargetID(testdata.MockCertificationTargetID1)},
 			},
 			want: &csafDiscovery{
-				csID:   testdata.MockCertificationTargetID1,
+				ctID:   testdata.MockCertificationTargetID1,
 				domain: "clouditor.io",
 				client: http.DefaultClient,
 			},
@@ -149,7 +149,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 				opts: []DiscoveryOption{WithProviderDomain("mock")},
 			},
 			want: &csafDiscovery{
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultCertificationTargetID,
 				client: http.DefaultClient,
 				domain: "mock",
 			},
@@ -166,7 +166,7 @@ func TestNewTrustedProviderDiscovery(t *testing.T) {
 func Test_csafDiscovery_List(t *testing.T) {
 	type fields struct {
 		domain string
-		csID   string
+		ctID   string
 		client *http.Client
 	}
 	tests := []struct {
@@ -180,7 +180,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: "localhost:1234",
 				client: http.DefaultClient,
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultCertificationTargetID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.ErrorContains(t, err, "could not load provider-metadata.json")
@@ -192,7 +192,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			fields: fields{
 				domain: goodProvider.Domain(),
 				client: goodProvider.Client(),
-				csID:   config.DefaultCertificationTargetID,
+				ctID:   config.DefaultCertificationTargetID,
 			},
 			wantErr: func(t *testing.T, err error) bool {
 				return assert.NoError(t, err)
@@ -207,7 +207,7 @@ func Test_csafDiscovery_List(t *testing.T) {
 			d := &csafDiscovery{
 				domain: tt.fields.domain,
 				client: tt.fields.client,
-				csID:   tt.fields.csID,
+				ctID:   tt.fields.ctID,
 			}
 			gotList, err := d.List()
 			tt.wantErr(t, err)
