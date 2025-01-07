@@ -1757,7 +1757,7 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			},
 			wantRes: assert.Nil[*evaluation.EvaluationResult],
 			wantErr: func(t *testing.T, err error) bool {
-				return assert.ErrorContains(t, err, " validation error:\n - result.control_id")
+				return assert.ErrorContains(t, err, " validation error:\n - result.certification_target_id")
 			},
 		},
 		{
@@ -1769,10 +1769,12 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
-						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
-						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
-						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
+						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
+						ControlId:             orchestratortest.MockControl1.Id,
+						ControlCategoryName:   orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:      orchestratortest.MockControl1.CategoryCatalogId,
+						Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
 					},
 				},
 			},
@@ -1790,10 +1792,12 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
-						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
-						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
-						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
+						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
+						ControlId:             orchestratortest.MockControl1.Id,
+						ControlCategoryName:   orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:      orchestratortest.MockControl1.CategoryCatalogId,
+						Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
 					},
 				},
 			},
@@ -1811,11 +1815,13 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
-						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
-						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
-						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
-						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
+						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
+						ControlId:             orchestratortest.MockControl1.Id,
+						ControlCategoryName:   orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:      orchestratortest.MockControl1.CategoryCatalogId,
+						Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:            timestamppb.New(time.Now().Add(24 * time.Hour)),
 					},
 				},
 			},
@@ -1834,11 +1840,13 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
-						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
-						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
-						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
-						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
+						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
+						ControlId:             orchestratortest.MockControl1.Id,
+						ControlCategoryName:   orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:      orchestratortest.MockControl1.CategoryCatalogId,
+						Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:            timestamppb.New(time.Now().Add(24 * time.Hour)),
 					},
 				},
 			},
@@ -1857,11 +1865,13 @@ func TestService_CreateEvaluationResult(t *testing.T) {
 			args: args{
 				req: &evaluation.CreateEvaluationResultRequest{
 					Result: &evaluation.EvaluationResult{
-						ControlId:           orchestratortest.MockControl1.Id,
-						ControlCategoryName: orchestratortest.MockControl1.CategoryName,
-						ControlCatalogId:    orchestratortest.MockControl1.CategoryCatalogId,
-						Status:              evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
-						ValidUntil:          timestamppb.New(time.Now().Add(24 * time.Hour)),
+						CertificationTargetId: orchestratortest.MockAuditScopeCertTargetID1.GetCertificationTargetId(),
+						AuditScopeId:          orchestratortest.MockAuditScopeCertTargetID1.GetId(),
+						ControlId:             orchestratortest.MockControl1.Id,
+						ControlCategoryName:   orchestratortest.MockControl1.CategoryName,
+						ControlCatalogId:      orchestratortest.MockControl1.CategoryCatalogId,
+						Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT_MANUALLY,
+						ValidUntil:            timestamppb.New(time.Now().Add(24 * time.Hour)),
 					},
 				},
 			},
