@@ -84,7 +84,7 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		return nil, fmt.Errorf("could not discover attached network interfaces: %w", err)
 	}
 
-	log.Infof("Adding virtual machine '%s", server.Name)
+	log.Infof("Adding server '%s", server.Name)
 
 	return r, nil
 }
