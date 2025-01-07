@@ -47,17 +47,17 @@ type csafDiscovery struct {
 	client *http.Client
 }
 
-type DiscoveryOption func(a *csafDiscovery)
+type DiscoveryOption func(d *csafDiscovery)
 
 func WithProviderDomain(domain string) DiscoveryOption {
-	return func(a *csafDiscovery) {
-		a.domain = domain
+	return func(d *csafDiscovery) {
+		d.domain = domain
 	}
 }
 
 func WithCertificationTargetID(csID string) DiscoveryOption {
-	return func(a *csafDiscovery) {
-		a.csID = csID
+	return func(d *csafDiscovery) {
+		d.csID = csID
 	}
 }
 

@@ -81,15 +81,15 @@ func (*openstackDiscovery) Description() string {
 	return "Discovery OpenStack."
 }
 
-func (a *openstackDiscovery) CertificationTargetID() string {
-	return a.csID
+func (d *openstackDiscovery) CertificationTargetID() string {
+	return d.csID
 }
 
-type DiscoveryOption func(a *openstackDiscovery)
+type DiscoveryOption func(d *openstackDiscovery)
 
 func WithCertificationTargetID(csID string) DiscoveryOption {
-	return func(a *openstackDiscovery) {
-		a.csID = csID
+	return func(d *openstackDiscovery) {
+		d.csID = csID
 	}
 }
 
