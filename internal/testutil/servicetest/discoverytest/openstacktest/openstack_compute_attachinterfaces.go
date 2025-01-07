@@ -42,8 +42,9 @@ import (
 //
 // Changes:
 // - 2024-12-10: Extended function HandleInterfaceListSuccessfully() for all 3 virtual machines given in /internal/testuitl/servicetes/openstacktest/openstack_compute.go (@anatheka)
+// - 2025-01-07:  (@anatheka)
 
-// ListInterfacesExpected represents an expected repsonse from a ListInterfaces request.
+// ListInterfacesExpected represents an expected response from a ListInterfaces request.
 var ListInterfacesExpected = []attachinterfaces.Interface{
 	{
 		PortState: "ACTIVE",
@@ -63,7 +64,7 @@ var ListInterfacesExpected = []attachinterfaces.Interface{
 	},
 }
 
-// GetInterfaceExpected represents an expected repsonse from a GetInterface request.
+// GetInterfaceExpected represents an expected response from a GetInterface request.
 var GetInterfaceExpected = attachinterfaces.Interface{
 	PortState: "ACTIVE",
 	FixedIPs: []attachinterfaces.FixedIP{
@@ -81,7 +82,7 @@ var GetInterfaceExpected = attachinterfaces.Interface{
 	MACAddr: "fa:16:3e:38:2d:80",
 }
 
-// CreateInterfacesExpected represents an expected repsonse from a CreateInterface request.
+// CreateInterfacesExpected represents an expected response from a CreateInterface request.
 var CreateInterfacesExpected = attachinterfaces.Interface{
 	PortState: "ACTIVE",
 	FixedIPs: []attachinterfaces.FixedIP{
