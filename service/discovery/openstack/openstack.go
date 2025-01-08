@@ -115,7 +115,7 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	return d
 }
 
-// authorize authorizes to Openstack and asserts the following clients
+// authorize authorizes to OpenStack and asserts the following clients
 // * compute client
 // * block storage client
 func (d *openstackDiscovery) authorize() (err error) {
@@ -180,7 +180,7 @@ func NewAuthorizer() (gophercloud.AuthOptions, error) {
 
 }
 
-// List discovers the following Openstack resource types and translates them into the Clouditor ontology:
+// List discovers the following OpenStack resource types and translates them into the Clouditor ontology:
 // * Domains
 // * Projects
 // * Network interfaces

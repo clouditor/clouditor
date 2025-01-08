@@ -60,7 +60,7 @@
             "preLaunchTask": "go: generate"
         },
         {
-            "name": "Launch engine Openstack (in-memory, dashboard development redirect with Openstack discovery)",
+            "name": "Launch engine OpenStack (in-memory, dashboard development redirect with OpenStack discovery)",
             "type": "go",
             "request": "launch",
             "mode": "auto",

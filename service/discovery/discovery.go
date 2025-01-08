@@ -364,8 +364,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 		case provider == ProviderOpenstack:
 			authorizer, err := openstack.NewAuthorizer()
 			if err != nil {
-				log.Errorf("Could not authenticate to Openstack: %v", err)
-				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Openstack: %v", err)
+				log.Errorf("Could not authenticate to OpenStack: %v", err)
+				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to OpenStack: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
 			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithCertificationTargetID(svc.ctID))
