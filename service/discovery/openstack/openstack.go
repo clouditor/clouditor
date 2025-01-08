@@ -23,6 +23,7 @@
 //
 // This file is part of Clouditor Community Edition.
 
+// package openstack contains a Clouditor discoverer for OpenStack-based cloud environments.
 package openstack
 
 import (
