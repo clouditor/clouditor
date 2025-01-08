@@ -19,7 +19,7 @@ var (
 		ControlCatalogId:      testdata.MockCatalogID1,
 		Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_NOT_COMPLIANT,
 		ControlId:             testdata.MockControlID1,
-		AssessmentResultIds:   []string{},
+		AssessmentResultIds:   []string{testdata.MockAssessmentResult1ID},
 	}
 	MockEvaluationResult2 = &evaluation.EvaluationResult{
 		Id:                    testdata.MockEvaluationResult2ID,
