@@ -49,7 +49,7 @@ type awsS3Discovery struct {
 	storageAPI    S3API
 	isDiscovering bool
 	awsConfig     *Client
-	csID          string
+	ctID          string
 }
 
 // bucket contains metadata about a S3 bucket
@@ -169,7 +169,7 @@ func (d *awsS3Discovery) List() (resources []ontology.IsResource, err error) {
 }
 
 func (d *awsS3Discovery) CertificationTargetID() string {
-	return d.csID
+	return d.ctID
 }
 
 func (b *bucket) String() string {
@@ -182,7 +182,7 @@ func NewAwsStorageDiscovery(client *Client, CertificationTargetID string) discov
 		storageAPI:    s3.NewFromConfig(client.cfg),
 		isDiscovering: true,
 		awsConfig:     client,
-		csID:          CertificationTargetID,
+		ctID:          CertificationTargetID,
 	}
 }
 

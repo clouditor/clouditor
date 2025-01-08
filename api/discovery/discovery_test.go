@@ -102,7 +102,7 @@ func TestResource_ToOntologyResource(t *testing.T) {
 func TestToDiscoveryResource(t *testing.T) {
 	type args struct {
 		resource    ontology.IsResource
-		csID        string
+		ctID        string
 		collectorID string
 	}
 	tests := []struct {
@@ -124,7 +124,7 @@ func TestToDiscoveryResource(t *testing.T) {
 						},
 					},
 				},
-				csID:        testdata.MockCertificationTargetID1,
+				ctID:        testdata.MockCertificationTargetID1,
 				collectorID: testdata.MockEvidenceToolID1,
 			},
 			want: &Resource{
@@ -149,7 +149,7 @@ func TestToDiscoveryResource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.csID, tt.args.collectorID)
+			gotR, err := ToDiscoveryResource(tt.args.resource, tt.args.ctID, tt.args.collectorID)
 
 			tt.wantErr(t, err)
 			assert.Equal(t, tt.want, gotR)

@@ -66,7 +66,7 @@ func TestNewKubernetesNetworkDiscovery(t *testing.T) {
 			want: &k8sNetworkDiscovery{
 				k8sDiscovery: k8sDiscovery{
 					intf: &fake.Clientset{},
-					csID: testdata.MockCertificationTargetID1,
+					ctID: testdata.MockCertificationTargetID1,
 				},
 			},
 		},

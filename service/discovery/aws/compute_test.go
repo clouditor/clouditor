@@ -36,7 +36,6 @@ import (
 	"clouditor.io/clouditor/v2/api/ontology"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -384,7 +383,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 		functionAPI       LambdaAPI
 		isDiscovering     bool
 		awsConfig         *Client
-		csID              string
+		ctID              string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -404,7 +403,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 			fields{
 				functionAPI: mockLambdaAPI{},
 				awsConfig:   mockClient,
-				csID:        testdata.MockCertificationTargetID1,
+				ctID:        testdata.MockCertificationTargetID1,
 			},
 			//args: args{client: mockClient},
 			[]*ontology.Function{
@@ -437,7 +436,7 @@ func TestComputeDiscovery_discoverFunctions(t *testing.T) {
 				functionAPI:       tt.fields.functionAPI,
 				isDiscovering:     tt.fields.isDiscovering,
 				awsConfig:         tt.fields.awsConfig,
-				csID:              tt.fields.csID,
+				ctID:              tt.fields.ctID,
 			}
 			got, err := d.discoverFunctions()
 
@@ -474,7 +473,7 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 
 	type args struct {
 		client *Client
-		csID   string
+		ctID   string
 	}
 	mockClient := &Client{
 		cfg: aws.Config{
@@ -488,20 +487,57 @@ func TestComputeDiscovery_NewComputeDiscovery(t *testing.T) {
 		want discovery.Discoverer
 	}{
 		{
-			args: args{client: mockClient, csID: testdata.MockCertificationTargetID1},
+			args: args{client: mockClient, ctID: testdata.MockCertificationTargetID1},
 			want: &computeDiscovery{
 				virtualMachineAPI: &ec2.Client{},
 				functionAPI:       &lambda.Client{},
 				isDiscovering:     true,
 				awsConfig:         mockClient,
-				csID:              testdata.MockCertificationTargetID1,
+				ctID:              testdata.MockCertificationTargetID1,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewAwsComputeDiscovery(tt.args.client, tt.args.csID)
+			got := NewAwsComputeDiscovery(tt.args.client, tt.args.ctID)
 			assert.Equal(t, tt.want, got, assert.CompareAllUnexported())
+		})
+	}
+}
+
+func Test_computeDiscovery_CertificationTargetID(t *testing.T) {
+	type fields struct {
+		virtualMachineAPI EC2API
+		functionAPI       LambdaAPI
+		isDiscovering     bool
+		awsConfig         *Client
+		ctID              string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockCertificationTargetID1,
+			},
+			want: testdata.MockCertificationTargetID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &computeDiscovery{
+				virtualMachineAPI: tt.fields.virtualMachineAPI,
+				functionAPI:       tt.fields.functionAPI,
+				isDiscovering:     tt.fields.isDiscovering,
+				awsConfig:         tt.fields.awsConfig,
+				ctID:              tt.fields.ctID,
+			}
+			if got := d.CertificationTargetID(); got != tt.want {
+				t.Errorf("computeDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

@@ -31,14 +31,17 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+	"time"
 
 	"clouditor.io/clouditor/v2/api"
 	"clouditor.io/clouditor/v2/api/assessment"
+	"clouditor.io/clouditor/v2/api/evaluation"
 	"clouditor.io/clouditor/v2/api/orchestrator"
 	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest"
+	"clouditor.io/clouditor/v2/internal/testutil/servicetest/evaluationtest"
 	"clouditor.io/clouditor/v2/internal/testutil/servicetest/orchestratortest"
 	"clouditor.io/clouditor/v2/internal/util"
 	"clouditor.io/clouditor/v2/persistence"
@@ -46,6 +49,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -722,6 +726,84 @@ func TestService_RemoveAuditScope(t *testing.T) {
 		// 		return assert.ErrorContains(t, err, service.ErrPermissionDenied.Error())
 		// 	},
 		// },
+		{
+			name: "Error: remove evaluation results",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "")))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
+					})),
+				),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId:            testdata.MockAuditScopeID1,
+					RemoveEvaluationResults: true,
+				},
+			},
+			wantResponse: assert.Nil[*emptypb.Empty],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				return true
+			},
+			wantErr: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, codes.Internal, status.Code(err))
+				return assert.ErrorContains(t, err, "database error")
+			},
+		},
+		{
+			name: "Happy path: remove evaluation results",
+			fields: fields{
+				svc: NewService(
+					WithAuthorizationStrategy(&service.AuthorizationStrategyAllowAll{}),
+					WithStorage(testutil.NewInMemoryStorage(t, func(s persistence.Storage) {
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID1, "")))
+						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
+						assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
+						assert.NoError(t, s.Create(&evaluation.EvaluationResult{
+							Id:                         testdata.MockEvaluationResult10ID,
+							Timestamp:                  timestamppb.New(time.Unix(3, 0)),
+							CertificationTargetId:      testdata.MockCertificationTargetID1,
+							AuditScopeId:               testdata.MockAuditScopeID2,
+							ControlCategoryName:        testdata.MockCategoryName,
+							ControlCatalogId:           testdata.MockCatalogID1,
+							Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+							ControlId:                  testdata.MockSubControlID21,
+							ParentControlId:            util.Ref(testdata.MockControlID2),
+							FailingAssessmentResultIds: []string{},
+						}))
+					})),
+				),
+			},
+			args: args{
+				ctx: nil,
+				req: &orchestrator.RemoveAuditScopeRequest{
+					AuditScopeId:            testdata.MockAuditScopeID1,
+					RemoveEvaluationResults: true,
+				},
+			},
+			wantResponse: assert.NotNil[*emptypb.Empty],
+			wantSvc: func(t *testing.T, got *Service) bool {
+				// Verify that audit scope with ID 2 is still in the DB (by counting the number of occurrences = 1)
+				n, err := got.storage.Count(&orchestrator.AuditScope{}, "id=?", testdata.MockAuditScopeID2)
+				assert.NoError(t, err)
+				assert.Equal(t, 1, n)
+
+				// Verify that audit scope with ID 1 is not in the DB anymore (by counting the number of occurrences = 0)
+				n, err = got.storage.Count(&orchestrator.AuditScope{}, "id=?", testdata.MockAuditScopeID1)
+				assert.NoError(t, err)
+				assert.Equal(t, 0, n)
+
+				// Verify that evaluation results with audit scope ID 1 is not in the DB anymore (by counting the number of occurrences = 0)
+				n, err = got.storage.Count(&evaluation.EvaluationResult{}, "audit_scope_id=?", testdata.MockAuditScopeID1)
+				assert.NoError(t, err)
+				return assert.Equal(t, 0, n)
+
+			},
+			wantErr: assert.NoError,
+		},
 		{
 			name: "Happy path: with authorization allAllowed",
 			fields: fields{

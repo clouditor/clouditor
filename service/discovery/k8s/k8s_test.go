@@ -26,52 +26,39 @@
 package k8s
 
 import (
-	"errors"
-	"fmt"
-	"path/filepath"
+	"testing"
 
-	"github.com/sirupsen/logrus"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 )
 
-var log *logrus.Entry
-
-func init() {
-	log = logrus.WithField("component", "k8s-discovery")
-}
-
-type k8sDiscovery struct {
-	intf kubernetes.Interface
-	ctID string
-}
-
-func (d *k8sDiscovery) CertificationTargetID() string {
-	return d.ctID
-}
-
-func AuthFromKubeConfig() (intf kubernetes.Interface, err error) {
-	var kubeconfig string
-
-	// TODO(oxisto): this crashes if called twice
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = filepath.Join(home, ".kube", "config")
-	} else {
-		return nil, errors.New("could not find kubeconfig")
+func Test_k8sDiscovery_CertificationTargetID(t *testing.T) {
+	type fields struct {
+		intf kubernetes.Interface
+		ctID string
 	}
-
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		return nil, fmt.Errorf("could not read kubeconfig: %w", err)
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockCertificationTargetID1,
+			},
+			want: testdata.MockCertificationTargetID1,
+		},
 	}
-
-	// create the clientset
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("could not create client: %w", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &k8sDiscovery{
+				intf: tt.fields.intf,
+				ctID: tt.fields.ctID,
+			}
+			if got := d.CertificationTargetID(); got != tt.want {
+				t.Errorf("k8sDiscovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-
-	return client, nil
 }
