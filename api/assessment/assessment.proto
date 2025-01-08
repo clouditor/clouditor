@@ -168,7 +168,7 @@ message AssessmentResult {
   ];
 }
 
-// An optional structure containing more details how a comparison inside an assessment result was done and if it was succesful.
+// An optional structure containing more details how a comparison inside an assessment result was done and if it was successful.
 message ComparisonResult {
   // Property is the property that was compared
   string property = 1 [
