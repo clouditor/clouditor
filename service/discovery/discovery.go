@@ -138,8 +138,8 @@ type Service struct {
 
 	Events chan *DiscoveryEvent
 
-	// csID is the certification target ID for which we are gathering resources.
-	csID string
+	// ctID is the certification target ID for which we are gathering resources.
+	ctID string
 
 	// collectorID is the evidence collector tool ID which is gathering the resources.
 	collectorID string
@@ -170,7 +170,7 @@ func WithCertificationTargetID(ID string) service.Option[*Service] {
 	return func(svc *Service) {
 		log.Infof("Certification Target ID is set to %s", ID)
 
-		svc.csID = ID
+		svc.ctID = ID
 	}
 }
 
@@ -238,7 +238,7 @@ func NewService(opts ...service.Option[*Service]) *Service {
 		assessment:        api.NewRPCConnection(DefaultAssessmentAddress, assessment.NewAssessmentClient),
 		scheduler:         gocron.NewScheduler(time.UTC),
 		Events:            make(chan *DiscoveryEvent),
-		csID:              config.DefaultCertificationTargetID,
+		ctID:              config.DefaultCertificationTargetID,
 		collectorID:       config.DefaultEvidenceCollectorToolID,
 		authz:             &service.AuthorizationStrategyAllowAll{},
 		discoveryInterval: 5 * time.Minute, // Default discovery interval is 5 minutes
@@ -336,7 +336,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
-			optsAzure = append(optsAzure, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.csID))
+			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
 				optsAzure = append(optsAzure, azure.WithResourceGroup(req.GetResourceGroup()))
@@ -349,9 +349,9 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Kubernetes: %v", err)
 			}
 			svc.discoverers = append(svc.discoverers,
-				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.csID),
-				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.csID),
-				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.csID))
+				k8s.NewKubernetesComputeDiscovery(k8sClient, svc.ctID),
+				k8s.NewKubernetesNetworkDiscovery(k8sClient, svc.ctID),
+				k8s.NewKubernetesStorageDiscovery(k8sClient, svc.ctID))
 		case provider == ProviderAWS:
 			awsClient, err := aws.NewClient()
 			if err != nil {
@@ -359,8 +359,8 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to AWS: %v", err)
 			}
 			svc.discoverers = append(svc.discoverers,
-				aws.NewAwsStorageDiscovery(awsClient, svc.csID),
-				aws.NewAwsComputeDiscovery(awsClient, svc.csID))
+				aws.NewAwsStorageDiscovery(awsClient, svc.ctID),
+				aws.NewAwsComputeDiscovery(awsClient, svc.ctID))
 		case provider == ProviderOpenstack:
 			authorizer, err := openstack.NewAuthorizer()
 			if err != nil {
@@ -549,5 +549,5 @@ func (svc *Service) ListResources(ctx context.Context, req *discovery.ListResour
 // CheckAccess directly on the service. This is necessary because the discovery service itself is tied to a specific
 // certification target ID, instead of the individual requests that are made against the service.
 func (svc *Service) GetCertificationTargetId() string {
-	return svc.csID
+	return svc.ctID
 }

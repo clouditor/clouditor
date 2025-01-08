@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"clouditor.io/clouditor/v2/api/ontology"
+	"clouditor.io/clouditor/v2/internal/testdata"
 	"clouditor.io/clouditor/v2/internal/testutil/assert"
 	"clouditor.io/clouditor/v2/internal/util"
 
@@ -508,4 +509,39 @@ func TestAwsS3Discovery_List(t *testing.T) {
 	assert.Equal(t, expectedResourceNames[0], resources[1].GetName())
 	log.Println("Testing type of resource", 2)
 	assert.True(t, ontology.HasType(resources[1], "ObjectStorageService"))
+}
+
+func Test_awsS3Discovery_CertificationTargetID(t *testing.T) {
+	type fields struct {
+		storageAPI    S3API
+		isDiscovering bool
+		awsConfig     *Client
+		ctID          string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "Happy path",
+			fields: fields{
+				ctID: testdata.MockCertificationTargetID1,
+			},
+			want: testdata.MockCertificationTargetID1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &awsS3Discovery{
+				storageAPI:    tt.fields.storageAPI,
+				isDiscovering: tt.fields.isDiscovering,
+				awsConfig:     tt.fields.awsConfig,
+				ctID:          tt.fields.ctID,
+			}
+			if got := d.CertificationTargetID(); got != tt.want {
+				t.Errorf("awsS3Discovery.CertificationTargetID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

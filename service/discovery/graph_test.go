@@ -55,7 +55,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 		authz             service.AuthorizationStrategy
 		providers         []string
 		Events            chan *DiscoveryEvent
-		csID              string
+		ctID              string
 	}
 	type args struct {
 		ctx context.Context
@@ -162,7 +162,7 @@ func TestService_ListGraphEdges(t *testing.T) {
 				authz:             tt.fields.authz,
 				providers:         tt.fields.providers,
 				Events:            tt.fields.Events,
-				csID:              tt.fields.csID,
+				ctID:              tt.fields.ctID,
 			}
 			gotRes, err := svc.ListGraphEdges(tt.args.ctx, tt.args.req)
 
@@ -172,8 +172,8 @@ func TestService_ListGraphEdges(t *testing.T) {
 	}
 }
 
-func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, csID, collectorID string) *discovery.Resource {
-	r, err := discovery.ToDiscoveryResource(resource, csID, collectorID)
+func panicToDiscoveryResource(t *testing.T, resource ontology.IsResource, ctID, collectorID string) *discovery.Resource {
+	r, err := discovery.ToDiscoveryResource(resource, ctID, collectorID)
 	assert.NoError(t, err)
 
 	return r
@@ -188,7 +188,7 @@ func TestService_UpdateResource(t *testing.T) {
 		authz             service.AuthorizationStrategy
 		providers         []string
 		Events            chan *DiscoveryEvent
-		csID              string
+		ctID              string
 	}
 	type args struct {
 		ctx context.Context
@@ -265,7 +265,7 @@ func TestService_UpdateResource(t *testing.T) {
 				authz:             tt.fields.authz,
 				providers:         tt.fields.providers,
 				Events:            tt.fields.Events,
-				csID:              tt.fields.csID,
+				ctID:              tt.fields.ctID,
 			}
 			gotRes, err := svc.UpdateResource(tt.args.ctx, tt.args.req)
 			assert.Empty(t, cmp.Diff(gotRes, tt.wantRes, protocmp.Transform()))
