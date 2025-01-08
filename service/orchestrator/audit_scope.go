@@ -228,8 +228,6 @@ func (svc *Service) RemoveAuditScope(ctx context.Context, req *orchestrator.Remo
 
 	go svc.informToeHooks(ctx, &orchestrator.AuditScopeChangeEvent{Type: orchestrator.AuditScopeChangeEvent_TYPE_AUDIT_SCOPE_REMOVED, AuditScope: auditScope}, nil)
 
-	logging.LogRequest(log, logrus.DebugLevel, logging.Remove, req)
-
 	if req.RemoveEvaluationResults {
 		err := svc.storage.Delete(&evaluation.EvaluationResult{}, "audit_scope_id = ?", req.AuditScopeId)
 		if err != nil {

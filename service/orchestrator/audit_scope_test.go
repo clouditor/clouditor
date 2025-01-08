@@ -763,16 +763,16 @@ func TestService_RemoveAuditScope(t *testing.T) {
 						assert.NoError(t, s.Create(orchestratortest.NewAuditScope("", testdata.MockAuditScopeID2, "")))
 						assert.NoError(t, s.Create(evaluationtest.MockEvaluationResults))
 						assert.NoError(t, s.Create(&evaluation.EvaluationResult{
-							Id:                         testdata.MockEvaluationResult10ID,
-							Timestamp:                  timestamppb.New(time.Unix(3, 0)),
-							CertificationTargetId:      testdata.MockCertificationTargetID1,
-							AuditScopeId:               testdata.MockAuditScopeID2,
-							ControlCategoryName:        testdata.MockCategoryName,
-							ControlCatalogId:           testdata.MockCatalogID1,
-							Status:                     evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
-							ControlId:                  testdata.MockSubControlID21,
-							ParentControlId:            util.Ref(testdata.MockControlID2),
-							FailingAssessmentResultIds: []string{},
+							Id:                    testdata.MockEvaluationResult10ID,
+							Timestamp:             timestamppb.New(time.Unix(3, 0)),
+							CertificationTargetId: testdata.MockCertificationTargetID1,
+							AuditScopeId:          testdata.MockAuditScopeID2,
+							ControlCategoryName:   testdata.MockCategoryName,
+							ControlCatalogId:      testdata.MockCatalogID1,
+							Status:                evaluation.EvaluationStatus_EVALUATION_STATUS_COMPLIANT,
+							ControlId:             testdata.MockSubControlID21,
+							ParentControlId:       util.Ref(testdata.MockControlID2),
+							AssessmentResultIds:   []string{},
 						}))
 					})),
 				),

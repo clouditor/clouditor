@@ -40,6 +40,12 @@ var (
 	ErrMetricConfigurationTargetValueMissing = errors.New("target value in metric data is missing")
 )
 
+const (
+	DefaultNonCompliantMessage = "The result of the metric indicates that the resource contains properties that are not compliant with the target value."
+	DefaultCompliantMessage    = "The result of the metric shows that the evidence is compliant to the target value."
+	AdditionalDetailsMessage   = "Additional details can be found in the comparison below."
+)
+
 const AssessmentToolId = "Clouditor Assessment"
 
 func (req *AssessEvidenceRequest) GetPayload() proto.Message {
