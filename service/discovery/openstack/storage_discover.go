@@ -31,6 +31,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/volumes"
 )
 
+// discoverBlockStorage discovers block storages
 func (d *openstackDiscovery) discoverBlockStorage() (list []ontology.IsResource, err error) {
 	// TODO(oxisto): Limit the list to a specific tenant?
 	var opts volumes.ListOptsBuilder = &volumes.ListOpts{

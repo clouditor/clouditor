@@ -32,7 +32,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 )
 
-// Discover projects/tenants. OpenStack project and tenant are interchangeable.
+// discoverProjects discovers projects/tenants. OpenStack project and tenant are interchangeable.
 func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err error) {
 	var opts projects.ListOptsBuilder = &projects.ListOpts{}
 	list, err = genericList(d, d.identityClient, projects.List, d.handleProject, projects.ExtractProjects, opts)
@@ -40,7 +40,7 @@ func (d *openstackDiscovery) discoverProjects() (list []ontology.IsResource, err
 	return
 }
 
-// Discover domains
+// discoverDomains discovers domains
 func (d *openstackDiscovery) discoverDomains() (list []ontology.IsResource, err error) {
 	var opts domains.ListOptsBuilder = &domains.ListOpts{}
 	list, err = genericList(d, d.identityClient, domains.List, d.handleDomain, domains.ExtractDomains, opts)
