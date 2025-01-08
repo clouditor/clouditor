@@ -336,7 +336,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Azure: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
-			opts = append(opts, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
+			optsAzure = append(optsAzure, azure.WithAuthorizer(authorizer), azure.WithCertificationTargetID(svc.ctID))
 			// Check if resource group is given and append to discoverer
 			if req.GetResourceGroup() != "" {
 				optsAzure = append(optsAzure, azure.WithResourceGroup(req.GetResourceGroup()))
@@ -368,7 +368,7 @@ func (svc *Service) Start(ctx context.Context, req *discovery.StartDiscoveryRequ
 				return nil, status.Errorf(codes.FailedPrecondition, "could not authenticate to Openstack: %v", err)
 			}
 			// Add authorizer and CertificationTargetID
-			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithCertificationTargetID(svc.csID))
+			optsOpenstack = append(optsOpenstack, openstack.WithAuthorizer(authorizer), openstack.WithCertificationTargetID(svc.ctID))
 			svc.discoverers = append(svc.discoverers, openstack.NewOpenstackDiscovery(optsOpenstack...))
 		case provider == ProviderCSAF:
 			var (

@@ -53,7 +53,7 @@ var (
 )
 
 type openstackDiscovery struct {
-	csID     string
+	ctID     string
 	clients  clients
 	authOpts *gophercloud.AuthOptions
 }
@@ -75,14 +75,14 @@ func (*openstackDiscovery) Description() string {
 }
 
 func (d *openstackDiscovery) CertificationTargetID() string {
-	return d.csID
+	return d.ctID
 }
 
 type DiscoveryOption func(d *openstackDiscovery)
 
-func WithCertificationTargetID(csID string) DiscoveryOption {
+func WithCertificationTargetID(ctID string) DiscoveryOption {
 	return func(d *openstackDiscovery) {
-		d.csID = csID
+		d.ctID = ctID
 	}
 }
 
@@ -99,7 +99,7 @@ func init() {
 
 func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 	d := &openstackDiscovery{
-		csID: config.DefaultCertificationTargetID,
+		ctID: config.DefaultCertificationTargetID,
 	}
 
 	// Apply options

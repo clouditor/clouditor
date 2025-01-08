@@ -42,7 +42,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 	testTime := time.Date(2000, 01, 20, 9, 20, 12, 123, time.UTC)
 
 	type fields struct {
-		csID     string
+		ctID     string
 		clients  clients
 		authOpts *gophercloud.AuthOptions
 	}
@@ -89,7 +89,7 @@ func Test_openstackDiscovery_handleNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				csID:     tt.fields.csID,
+				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 			}

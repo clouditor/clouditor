@@ -87,7 +87,7 @@ func Test_openstackDiscovery_getAttachedNetworkInterfaces(t *testing.T) {
 	defer testhelper.TeardownHTTP()
 
 	type fields struct {
-		csID       string
+		ctID       string
 		clients    clients
 		authOpts   *gophercloud.AuthOptions
 		testhelper bool
@@ -148,7 +148,7 @@ func Test_openstackDiscovery_getAttachedNetworkInterfaces(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &openstackDiscovery{
-				csID:     tt.fields.csID,
+				ctID:     tt.fields.ctID,
 				clients:  tt.fields.clients,
 				authOpts: tt.fields.authOpts,
 			}
