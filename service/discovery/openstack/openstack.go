@@ -118,7 +118,9 @@ func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
 
 // authorize authorizes to OpenStack and asserts the following clients
 // * compute client
+// * network client
 // * block storage client
+// * identity client
 func (d *openstackDiscovery) authorize() (err error) {
 	if d.clients.provider == nil {
 		d.clients.provider, err = openstack.AuthenticatedClient(context.Background(), util.Deref(d.authOpts))
