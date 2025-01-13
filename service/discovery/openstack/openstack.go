@@ -100,6 +100,11 @@ func init() {
 }
 
 func NewOpenstackDiscovery(opts ...DiscoveryOption) discovery.Discoverer {
+	region := os.Getenv(RegionName)
+	if region == "" {
+		region = "unknown"
+	}
+
 	d := &openstackDiscovery{
 		ctID:   config.DefaultCertificationTargetID,
 		region: os.Getenv(RegionName),
