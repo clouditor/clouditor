@@ -74,6 +74,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					computeClient: client.ServiceClient(),
 				},
 				region: "test region",
 			},
@@ -97,6 +98,7 @@ func Test_openstackDiscovery_discoverServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					ActivityLogging:     &ontology.ActivityLogging{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
+					BootLogging:         &ontology.BootLogging{Enabled: false},
 				}
 
 				got0 := got[0].(*ontology.VirtualMachine)

@@ -42,19 +42,15 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 	var (
 		err         error
 		bootLogging *ontology.BootLogging
-		osLogging   *ontology.OSLogging
 	)
 
-	// TODO(anatheka): Check again!
-	// boot and os logging are logged together in the console log
+	// we cannot directly retrieve OS logging information
+	// boot logging is logged in the console log
 	consoleOutput := servers.ShowConsoleOutput(context.Background(), d.clients.computeClient, server.ID, servers.ShowConsoleOutputOpts{})
 	if consoleOutput.Result.Err == nil {
 		bootLogging = &ontology.BootLogging{
 			Enabled: true,
 		}
-		// osLogging = &ontology.OSLogging{
-		// 	Enabled: true,
-		// }
 	} else {
 		log.Errorf("Error getting boot logging: %s", consoleOutput.Err)
 		// When an error occurs, we assume that boot logging is disabled.
@@ -68,14 +64,13 @@ func (d *openstackDiscovery) handleServer(server *servers.Server) (ontology.IsRe
 		Name:         server.Name,
 		CreationTime: timestamppb.New(server.Created),
 		GeoLocation: &ontology.GeoLocation{
-			Region: d.region, // TODO: Can we get the region?
+			Region: d.region,
 		},
 		Labels:            labels(server.Tags),
 		ParentId:          util.Ref(server.TenantID),
 		Raw:               discovery.Raw(server),
 		MalwareProtection: &ontology.MalwareProtection{},
 		BootLogging:       bootLogging,
-		OsLogging:         osLogging,
 		ActivityLogging:   &ontology.ActivityLogging{},
 		AutomaticUpdates:  &ontology.AutomaticUpdates{},
 	}

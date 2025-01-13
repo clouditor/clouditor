@@ -43,10 +43,15 @@ import (
 )
 
 func Test_openstackDiscovery_handleServer(t *testing.T) {
+	const ConsoleOutputBody = `{
+		"output": "output test"
+	}`
+
 	testhelper.SetupHTTP()
 	defer testhelper.TeardownHTTP()
 	openstacktest.HandleServerListSuccessfully(t)
 	openstacktest.HandleInterfaceListSuccessfully(t)
+	openstacktest.HandleShowConsoleOutputSuccessfully(t, ConsoleOutputBody)
 
 	t1, err := time.Parse(time.RFC3339, "2014-09-25T13:10:02Z")
 	assert.NoError(t, err)
@@ -83,6 +88,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 							return "", errors.New("test error")
 						},
 					},
+					computeClient: client.ServiceClient(),
 				},
 			},
 			args: args{
@@ -119,6 +125,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 							return testhelper.Endpoint(), nil
 						},
 					},
+					computeClient: client.ServiceClient(),
 				},
 				region: "test region",
 			},
@@ -152,6 +159,7 @@ func Test_openstackDiscovery_handleServer(t *testing.T) {
 					MalwareProtection:   &ontology.MalwareProtection{},
 					ActivityLogging:     &ontology.ActivityLogging{},
 					AutomaticUpdates:    &ontology.AutomaticUpdates{},
+					BootLogging:         &ontology.BootLogging{Enabled: true},
 				}
 
 				gotNew := got.(*ontology.VirtualMachine)

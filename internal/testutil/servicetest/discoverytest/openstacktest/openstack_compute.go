@@ -33,6 +33,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/v2/testhelper"
+	th "github.com/gophercloud/gophercloud/v2/testhelper"
 	"github.com/gophercloud/gophercloud/v2/testhelper/client"
 )
 
@@ -42,7 +43,7 @@ import (
 // Source: https://github.com/gophercloud/gophercloud/blob/master/openstack/compute/v2/servers/testing/fixtures_test.go (2024-12-09)
 //
 // Changes:
-// - 20XX-XX-XX: Modified the function for specific requirements (Your Name)
+// - 2025-01-13: Added function HandleShowConsoleOutputSuccessfullyModified to get console output of server and delete `"length": 50` in TestJSONRequest, otherwise it does not work. (@anatheka)
 
 // ServerListBody contains the canned body of a servers.List response.
 const ServerListBody = `
@@ -505,5 +506,18 @@ func HandleServerListSuccessfully(t *testing.T) {
 		default:
 			t.Fatalf("/servers/detail invoked with unexpected marker=[%s]", marker)
 		}
+	})
+}
+
+// HandleShowConsoleOutputSuccessfully sets up the test server to respond to a os-getConsoleOutput request with success.
+func HandleShowConsoleOutputSuccessfully(t *testing.T, response string) {
+	th.Mux.HandleFunc("/servers/ef079b0c-e610-4dfb-b1aa-b49f07ac48e5/action", func(w http.ResponseWriter, r *http.Request) {
+		th.TestMethod(t, r, "POST")
+		th.TestHeader(t, r, "X-Auth-Token", client.TokenID)
+		th.TestJSONRequest(t, r, `{ "os-getConsoleOutput": {} }`)
+
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprint(w, response)
 	})
 }
